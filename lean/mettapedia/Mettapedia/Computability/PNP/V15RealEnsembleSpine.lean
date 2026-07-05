@@ -4368,6 +4368,70 @@ theorem realM4_conditionalClash_from_lowerMachine_addressSyntax_coverageDataAndR
     boundaryMixing.boundaryMixing
 
 /--
+Locked-message-data version of the address-syntax canonical-gap real-frontier
+staging theorem.  This route uses the explicit public-message invariant
+package for the upper readout side, rather than taking a raw D.8 rigidity
+proposition and a default message at the theorem boundary.
+-/
+theorem realM4_conditionalClash_from_lowerMachine_addressSyntax_coverageDataAndLockedMessageData_canonicalGap_realFrontier_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        ((realM4_formulaSyntaxCNFSupport_of_addressSyntax
+          variableAddressSyntax).withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM : RealM4MechanicalInterfaceData.SafeQSSMFrontier M)
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier M)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier M) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          M boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          M boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
+          (D := D) (F := lowerMachine.lowerFramework)
+          coverageData lockedMessageData
+          (realM4_formulaSyntaxCNFSupport_of_addressSyntax variableAddressSyntax)
+          pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing) :=
+  realM4_conditionalClash_from_coverageDataAndLockedMessageData_explicitPNP
+    (RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+      M boundaryMixing.epsSmall lowerMachine)
+    coverageData lockedMessageData
+    (realM4_formulaSyntaxCNFSupport_of_addressSyntax variableAddressSyntax)
+    pnpDeciderFamily constantDecoderRegime starSWHardness
+    safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+    boundaryMixing.boundaryMixing
+
+/--
 Component-level covered-locks staging theorem.  This removes the
 `RealM4EndgameMechanicalData` package from the theorem hypotheses by building
 it from the explicit construction components: the mechanical interface data,
@@ -6484,6 +6548,124 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
     lowerMachine defaultMessage coverageData lockedMessageRigidity
     variableAddressSyntax pnpDeciderFamily constantDecoderRegime
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
+No-target-rows real-frontier staging from address syntax and explicit
+locked-message data.  Compared with the raw-rigidity route, the theorem
+boundary carries the public-message invariant package used by the upper
+readout adapter directly.
+-/
+theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSyntax_coverageDataAndLockedMessageData_canonicalGap_realFrontier_explicitPNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        ((realM4_formulaSyntaxCNFSupport_of_addressSyntax
+          variableAddressSyntax).withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            i₀ coordinate law transcript observerBit phaseA semantics
+            observerEvidence pivotSummary epsMix safeCost safeBudget
+            gaugeIncidence gaugeBound hiddenGaugeProduct)
+          boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            i₀ coordinate law transcript observerBit phaseA semantics
+            observerEvidence pivotSummary epsMix safeCost safeBudget
+            gaugeIncidence gaugeBound hiddenGaugeProduct)
+          boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
+          (D := D) (F := lowerMachine.lowerFramework)
+          coverageData lockedMessageData
+          (realM4_formulaSyntaxCNFSupport_of_addressSyntax
+            variableAddressSyntax)
+          pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing) :=
+  realM4_conditionalClash_from_lowerMachine_addressSyntax_coverageDataAndLockedMessageData_canonicalGap_realFrontier_explicitPNP
+    (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+      (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
+      i₀ coordinate law transcript observerBit phaseA semantics
+      observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+      gaugeBound hiddenGaugeProduct)
+    lowerMachine coverageData lockedMessageData variableAddressSyntax
+    pnpDeciderFamily constantDecoderRegime starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing
 
 /--
 Cook-style official endpoint for the no-target-rows canonical-gap real-frontier
@@ -9718,6 +9900,95 @@ theorem realM4NoTargetRowsAddressSyntaxCanonicalGapRealFrontierEndgameHypothesis
 def realM4NoTargetRowsAddressSyntaxCanonicalGapRealFrontierEndgameStatementExplicitPNP : String :=
   "For the adjusted real no-target-rows public surface, UpperLowerClash follows from the no-target-rows CD-ENF mechanical constructor, canonical Phase-A fixed-gap choice, the real lower machine, public-lock representative data, D.8 locked-message rigidity, real CNF variable address syntax, and the constant decoder regime, then exactly StarSW hardness and the three real analytic frontier objects safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family.  The address syntax constructs the local syntax roundtrip, Nat coding, and formula support; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
+def realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "targetCoordinate",
+  "dimensionNontrivial",
+  "publicCoordinateHistory",
+  "law",
+  "transcript",
+  "observerBit",
+  "phaseA",
+  "semantics",
+  "observerEvidence",
+  "pivotSummary",
+  "epsMix",
+  "safeCost",
+  "safeBudget",
+  "gaugeIncidence",
+  "gaugeBound",
+  "hiddenGaugeProduct",
+  "realCompressionLowerMachineData",
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "cnfVariableAddressSyntax",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP_exact :
+    realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP_exact :
+    realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndgameStatementExplicitPNP : String :=
+  "For the adjusted real no-target-rows public surface, UpperLowerClash follows from the no-target-rows CD-ENF mechanical constructor, canonical Phase-A fixed-gap choice, the real lower machine, public-lock representative data, locked-message public-message data, real CNF variable address syntax, and the constant decoder regime, then exactly StarSW hardness and the three real analytic frontier objects safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family.  The address syntax constructs the local syntax roundtrip, Nat coding, and formula support; the locked-message data carries the public-message invariant used by the upper readout adapter.  This is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
 def realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP :
     List String :=
   realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP ++
@@ -10789,6 +11060,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Builds uniform formula support from real CNF address syntax before invoking the lower-machine, public-lock coverage, D.8 rigidity, explicit-P=NP upper, and real-frontier clash staging theorem."
   },
   {
+    item := "realLowerMachineAddressSyntaxCoverageAndLockedMessageDataConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_lowerMachine_addressSyntax_coverageDataAndLockedMessageData_canonicalGap_realFrontier_explicitPNP"
+    note := "Sharpens the address-syntax internal clash route so the upper readout side takes explicit locked-message public-message data instead of raw D.8 rigidity plus a default message."
+  },
+  {
     item := "realComponentCoveredLocksConditionalClashStaging"
     status := .partialConstructionTransferred
     checkedName := "realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP"
@@ -10960,6 +11237,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
