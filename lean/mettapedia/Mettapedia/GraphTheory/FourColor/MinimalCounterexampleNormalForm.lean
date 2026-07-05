@@ -1568,6 +1568,28 @@ theorem
   cap5Normal.normal.noSeparatingDualCycleOfLengthAtMostFive_of_noFive
     (cap5Normal.noSeparatingDualFiveCycle_of_diskToPrimalCAP5 htranslation)
 
+/-- The split Lemma 5.3 disk-local and charged-disk translation obligations also rule out
+separating dual 5-cycles in CAP5-free normal form. -/
+theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualFiveCycle_of_diskChargeLocalData
+    (cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T)
+    (hdisk : Lemma53DiskChargeLocalDataObligation cap5Normal.normal)
+    (htranslation : Lemma53ChargedDiskToPrimalCAP5TranslationObligation cap5Normal.normal) :
+    NoSeparatingDualCycleOfLength cap5Normal.normal.duality 5 :=
+  cap5Normal.noSeparatingDualFiveCycle
+    (lemma53_CAP5PinchObligation_of_diskChargeLocalData_of_chargedDiskTranslations
+      hdisk htranslation)
+
+/-- The split Lemma 5.3 disk-local and charged-disk translation obligations give the
+length-at-most-five separator exclusion in CAP5-free normal form. -/
+theorem
+    MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualCycleOfLengthAtMostFive_of_diskChargeLocalData
+    (cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T)
+    (hdisk : Lemma53DiskChargeLocalDataObligation cap5Normal.normal)
+    (htranslation : Lemma53ChargedDiskToPrimalCAP5TranslationObligation cap5Normal.normal) :
+    NoSeparatingDualCycleOfLengthAtMostFive cap5Normal.normal.duality :=
+  cap5Normal.normal.noSeparatingDualCycleOfLengthAtMostFive_of_noFive
+    (cap5Normal.noSeparatingDualFiveCycle_of_diskChargeLocalData hdisk htranslation)
+
 /-- CAP5 elimination obligation for the post-Lemma-5.3 regime: once the graph is in normal
 form, the CAP5 reducibility package must rule out realized CAP5 pinches. -/
 def CAP5EliminationObligation
@@ -1587,6 +1609,33 @@ structure MinimalCounterexampleS7CAP5FreeObligations
     ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
       CAP5EliminationObligation minimal normal
 
+/-- S7 obligation bundle using the split Lemma 5.3 boundary: first build the charged disk-local
+data, then translate any charged common-apex disk to a primal CAP5 pinch. -/
+structure MinimalCounterexampleS7SplitCAP5FreeObligations
+    (minimal : MinimalTaitCounterexample G) (dual : PlaneCubicDualData G T) : Prop where
+  lemma52 : Lemma52MinimalCounterexampleNormalFormObligation minimal dual
+  lemma53_disk :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      Lemma53DiskChargeLocalDataObligation normal
+  lemma53_charged_translation :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      Lemma53ChargedDiskToPrimalCAP5TranslationObligation normal
+  cap5_elimination :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      CAP5EliminationObligation minimal normal
+
+/-- The split S7 obligation bundle discharges the existing monolithic S7 CAP5-free bundle. -/
+def MinimalCounterexampleS7SplitCAP5FreeObligations.toS7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7CAP5FreeObligations minimal dual where
+  lemma52 := obligations.lemma52
+  lemma53_translation := fun normal hduality =>
+    lemma53_diskToPrimalCAP5Translations_of_diskChargeLocalData_of_chargedDiskTranslations
+      (obligations.lemma53_disk normal hduality)
+      (obligations.lemma53_charged_translation normal hduality)
+  cap5_elimination := obligations.cap5_elimination
+
 /-- The S7 obligation bundle yields the exact CAP5-free normal-form package and preserves the
 Lemma 5.3 translation/CAP5-pinch endpoints for downstream consumers. -/
 theorem minimalCounterexampleCAP5FreeNormalForm_of_s7CAP5FreeObligations
@@ -1605,6 +1654,18 @@ theorem minimalCounterexampleCAP5FreeNormalForm_of_s7CAP5FreeObligations
   exact lemma53_CAP5PinchObligation_of_tightnessObligation
     (lemma53_tightnessObligation_of_diskToPrimalCAP5Translations htranslation)
 
+/-- The split S7 obligation bundle yields the exact CAP5-free normal-form package via the split
+Lemma 5.3 bridge. -/
+theorem minimalCounterexampleCAP5FreeNormalForm_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    ∃ cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T,
+      cap5Normal.normal.duality = dual ∧
+        Lemma53DiskToPrimalCAP5TranslationObligation cap5Normal.normal ∧
+          Lemma53SeparatingDualFiveCycleCAP5PinchObligation cap5Normal.normal :=
+  minimalCounterexampleCAP5FreeNormalForm_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
+
 /-- The full S7 CAP5-free obligation bundle directly gives the length-at-most-five separator
 exclusion for the supplied duality package. -/
 theorem noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations
@@ -1615,6 +1676,15 @@ theorem noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations
     ⟨cap5Normal, hduality, _htranslation, h53⟩
   have hNoFive := cap5Normal.noSeparatingDualCycleOfLengthAtMostFive h53
   simpa [hduality] using hNoFive
+
+/-- The split S7 obligation bundle directly gives the length-at-most-five separator exclusion
+for the supplied duality package. -/
+theorem noSeparatingDualCycleOfLengthAtMostFive_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    NoSeparatingDualCycleOfLengthAtMostFive dual :=
+  noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
 
 /-- Downstream-facing S7 regime package.  This is the compact interface the CAP5, collar, and
 annulus layers can consume without reopening the Lemma 5.2/Lemma 5.3 obligation bundle. -/
@@ -1709,6 +1779,14 @@ theorem minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations
       minimum_degree := normal.dual_min_degree
       no_separating_dual_cycles_at_most_five := ?_ }
   exact noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations obligations
+
+/-- Build the downstream-facing S7 regime package from the split S7 CAP5-free obligations. -/
+theorem minimalCounterexampleS7NormalFormRegime_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7NormalFormRegime minimal dual :=
+  minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
 
 /-- S7 obligations supply the graph-side cyclic five-edge connectivity expected by existing
 CAP5 consumers. -/
