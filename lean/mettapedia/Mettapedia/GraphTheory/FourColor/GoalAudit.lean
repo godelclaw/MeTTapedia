@@ -696,6 +696,42 @@ theorem section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCer
     Section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget :=
   section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget
 
+theorem closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum_mem_audit
+    {caseKey : Nat × Nat}
+    (hkey :
+      closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+        caseKey) :
+    caseKey ∈
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases :=
+  closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum_mem hkey
+
+theorem closedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive_of_auditedArchiveKey_audit
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive :=
+  closedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive_of_auditedArchiveKey
+    hkeys
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates_audit
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
+    (hsliceSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
+    hradial hn6 hkeys hartifact hsampleSound hsliceSound
+
+theorem section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget_audit :
+    Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget :=
+  section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows_audit
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab) :

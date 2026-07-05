@@ -5624,6 +5624,111 @@ theorem section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCer
       hradial hn6 hmembership hartifact hsampleSound hsliceSound
 
 /--
+Explicit eight-row key spectrum for the audited radial-face n6 archive.  A
+future geometric coverage proof can target this concrete disjunction instead
+of reasoning directly about list membership.
+-/
+def closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+    (caseKey : Nat × Nat) : Prop :=
+  caseKey = (821205, 0) ∨
+    caseKey = (821205, 1) ∨
+      caseKey = (852969, 0) ∨
+        caseKey = (852969, 1) ∨
+          caseKey = (1000301, 0) ∨
+            caseKey = (1000301, 1) ∨
+              caseKey = (1000788, 0) ∨
+                caseKey = (1000788, 1)
+
+theorem closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum_mem
+    {caseKey : Nat × Nat}
+    (hkey :
+      closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+        caseKey) :
+    caseKey ∈
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases := by
+  rcases hkey with
+    hkey | hkey | hkey | hkey | hkey | hkey | hkey | hkey
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+  · subst caseKey
+    simp [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases]
+
+/--
+Key-spectrum version of archive membership: every radial-face n6 normal-form
+representation has one of the eight audited row keys.
+-/
+def ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data :
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormRadialFaceRepresentation
+        G) →
+      closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+        (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1)
+
+theorem closedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive_of_auditedArchiveKey
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive := by
+  intro V G data
+  exact
+    closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum_mem
+      (hkeys data)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
+    (hsliceSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6ArchiveMembership_of_rowCertificates
+    hradial hn6
+    (closedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive_of_auditedArchiveKey
+      hkeys)
+    hartifact hsampleSound hsliceSound
+
+/--
+Repaired Section 9.2 Step 4 target with the finite archive side exposed as an
+explicit eight-row key spectrum.  The remaining geometric proof must force one
+of those eight audited row keys for every radial-face n6 witness.
+-/
+def Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasRadialFace →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound →
+              ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget :
+    Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget := by
+  intro hradial hn6 hkeys hartifact hsampleSound hsliceSound
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
+      hradial hn6 hkeys hartifact hsampleSound hsliceSound
+
+/--
 Explicit row-level lab coverage for the six sampled radial-face archive rows.
 These are the concrete `(patchTopologyIndex, radialOrderIndex)` obligations
 that the sampled JSON certificates must discharge.
