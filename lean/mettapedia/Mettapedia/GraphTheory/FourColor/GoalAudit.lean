@@ -1272,6 +1272,27 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryG
   closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_geometryData_of_previousBoundaryWitnessUpgrade
     hgeometry hupgrade
 
+theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm)
+    (hwitnessCurrent :
+      geometry.collarGeometry.WitnessOnCurrentBoundary) :
+    Nonempty
+      (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+        geometry) :=
+  closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+    geometry hwitnessCurrent
+
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary_audit
+    (hwitness :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary) :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :=
+  closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+    hwitness
+
 theorem section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget_audit :
     Section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget :=
   section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
@@ -1557,6 +1578,10 @@ theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
 theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint_audit :
     Section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint :=
   section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint
+
+theorem section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint_audit :
+    Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint :=
+  section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint
 
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
