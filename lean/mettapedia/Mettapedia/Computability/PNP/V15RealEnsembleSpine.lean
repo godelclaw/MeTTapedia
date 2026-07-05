@@ -5076,6 +5076,96 @@ structure RealM4OfficialPToDeciderLanguageData
       RealM4UniformConstantDecoderRegime F
         (S.uniformSupport.withPNPDecider (pnpDeciderFamily_of_inP hP))
 
+/-- The official-language witness part of the Cook-style bridge, separated
+from the P-membership consequences. -/
+structure RealM4OfficialLanguageNPData
+    (C : CookStylePNPClassInterface.{p}) where
+  separatedLanguage : C.Language
+  separatedLanguage_inNP : C.inNP separatedLanguage
+
+/-- The P-membership-to-SAT-decider part of the Cook-style bridge, separated
+from both the named NP language and the K-poly constant-decoder regime. -/
+structure RealM4OfficialPToDeciderFamilyData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (C : CookStylePNPClassInterface.{p})
+    (N : RealM4OfficialLanguageNPData C) where
+  pnpDeciderFamily_of_inP :
+    C.inP N.separatedLanguage -> RealM4ExplicitPNPDeciderFamily D
+
+/-- The P-membership-to-constant-decoder-regime part of the Cook-style bridge.
+This keeps the real K-poly/floor compatibility obligation separate from the
+mere construction of SAT deciders from P-membership. -/
+structure RealM4OfficialPToConstantDecoderRegimeData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (F : CompressionLowerFramework)
+    (C : CookStylePNPClassInterface.{p})
+    (S : RealM4OfficialPToDeciderUpperSupportData D)
+    (N : RealM4OfficialLanguageNPData C)
+    (P : RealM4OfficialPToDeciderFamilyData D C N) where
+  constantDecoderRegime_of_inP :
+    ∀ hP : C.inP N.separatedLanguage,
+      RealM4UniformConstantDecoderRegime F
+        (S.uniformSupport.withPNPDecider (P.pnpDeciderFamily_of_inP hP))
+
+namespace RealM4OfficialPToDeciderLanguageData
+
+variable {PublicLock : Type g} {Quotient : Type h}
+variable {LockAux : Type i} {Message : Type j}
+variable {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+variable {Witness : CNFPublic -> Type l}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message CNFPublic Var Witness}
+variable {F : CompressionLowerFramework}
+variable {C : CookStylePNPClassInterface.{p}}
+variable {S : RealM4OfficialPToDeciderUpperSupportData D}
+
+/-- Reassemble the legacy language-data package from the split official bridge
+obligations. -/
+def ofSplitOfficialData
+    (N : RealM4OfficialLanguageNPData C)
+    (P : RealM4OfficialPToDeciderFamilyData D C N)
+    (R : RealM4OfficialPToConstantDecoderRegimeData D F C S N P) :
+    RealM4OfficialPToDeciderLanguageData D F C S where
+  separatedLanguage := N.separatedLanguage
+  separatedLanguage_inNP := N.separatedLanguage_inNP
+  pnpDeciderFamily_of_inP := P.pnpDeciderFamily_of_inP
+  constantDecoderRegime_of_inP := R.constantDecoderRegime_of_inP
+
+/-- Project the named NP language out of the legacy package. -/
+def languageNPData
+    (L : RealM4OfficialPToDeciderLanguageData D F C S) :
+    RealM4OfficialLanguageNPData C where
+  separatedLanguage := L.separatedLanguage
+  separatedLanguage_inNP := L.separatedLanguage_inNP
+
+/-- Project the P-membership-to-SAT-decider obligation out of the legacy
+package. -/
+def pToDeciderFamilyData
+    (L : RealM4OfficialPToDeciderLanguageData D F C S) :
+    RealM4OfficialPToDeciderFamilyData D C L.languageNPData where
+  pnpDeciderFamily_of_inP := L.pnpDeciderFamily_of_inP
+
+/-- Project the P-membership-to-constant-decoder-regime obligation out of the
+legacy package. -/
+def pToConstantDecoderRegimeData
+    (L : RealM4OfficialPToDeciderLanguageData D F C S) :
+    RealM4OfficialPToConstantDecoderRegimeData D F C S
+      L.languageNPData L.pToDeciderFamilyData where
+  constantDecoderRegime_of_inP := L.constantDecoderRegime_of_inP
+
+end RealM4OfficialPToDeciderLanguageData
+
 /--
 Decomposed official upper bridge.  This is the next sharper target behind
 `RealM4OfficialPToUpperBridgeData`: P-membership of the named NP language must
@@ -7981,6 +8071,62 @@ theorem realM4OfficialPToDeciderUpperSupportFromAddressSyntaxConstructionInputs_
         "cnfVariableAddressSyntax" ] := by
   rfl
 
+def realM4OfficialLanguageNPConstructionInputs : List String := [
+  "cookStylePNPClassInterface",
+  "separatedLanguage",
+  "separatedLanguageInNP"
+]
+
+theorem realM4OfficialLanguageNPConstructionInputs_exact :
+    realM4OfficialLanguageNPConstructionInputs =
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP" ] := by
+  rfl
+
+def realM4OfficialPToDeciderFamilyConstructionInputs : List String := [
+  "officialLanguageNPData",
+  "pMembershipToPNPDeciderFamily"
+]
+
+theorem realM4OfficialPToDeciderFamilyConstructionInputs_exact :
+    realM4OfficialPToDeciderFamilyConstructionInputs =
+      [ "officialLanguageNPData",
+        "pMembershipToPNPDeciderFamily" ] := by
+  rfl
+
+def realM4OfficialPToConstantDecoderRegimeConstructionInputs :
+    List String := [
+  "officialLanguageNPData",
+  "officialPToDeciderFamilyData",
+  "pMembershipConstantDecoderRegime"
+]
+
+theorem realM4OfficialPToConstantDecoderRegimeConstructionInputs_exact :
+    realM4OfficialPToConstantDecoderRegimeConstructionInputs =
+      [ "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialPToDeciderLanguageSplitConstructionInputs :
+    List String :=
+  realM4OfficialLanguageNPConstructionInputs ++
+    realM4OfficialPToDeciderFamilyConstructionInputs ++
+      realM4OfficialPToConstantDecoderRegimeConstructionInputs
+
+theorem realM4OfficialPToDeciderLanguageSplitConstructionInputs_exact :
+    realM4OfficialPToDeciderLanguageSplitConstructionInputs =
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "officialLanguageNPData",
+        "pMembershipToPNPDeciderFamily",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
 def realM4OfficialPToDeciderLanguageConstructionInputs : List String := [
   "cookStylePNPClassInterface",
   "separatedLanguage",
@@ -8017,7 +8163,7 @@ theorem realM4OfficialPToDeciderUpperBridgeDecomposedInputs_exact :
   rfl
 
 def realM4OfficialPToDeciderUpperBridgeDecompositionStatement : String :=
-  "The real v15/M4 official P-to-decider upper bridge decomposes into construction-side support data and official-language implication data.  The support data contains the default message, public-lock coverage, D.8 locked-message rigidity, and uniform CNF support.  The remaining official bridge obligation is to name the NP language and prove that P-membership yields the Appendix-I SAT decider family plus the matching constant-decoder regime."
+  "The real v15/M4 official P-to-decider upper bridge decomposes into construction-side support data and official-language implication data.  The support data contains the default message, public-lock coverage, D.8 locked-message rigidity, and uniform CNF support.  The official-language side further splits into the named NP language, the P-membership-to-SAT-decider implication, and the P-membership-to-constant-decoder-regime implication."
 
 def realM4OfficialPToDeciderUpperBridgeConstructionInputs : List String := [
   "cookStylePNPClassInterface",
@@ -10408,10 +10554,28 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Construction-side upper support is separated from the official bridge and can be built from default message, public-lock coverage, D.8 rigidity, and real CNF variable address syntax."
   },
   {
-    item := "officialPToDeciderLanguageData"
+    item := "officialLanguageNPData"
     status := .openConstruction
+    checkedName := "RealM4OfficialLanguageNPData"
+    note := "Official Cook-style bridge content: name the language represented by the real M4 ensemble and prove it is in NP."
+  },
+  {
+    item := "officialPToDeciderFamilyData"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToDeciderFamilyData"
+    note := "Official Cook-style bridge content: prove that P-membership of the named NP language supplies the Appendix-I SAT decider family."
+  },
+  {
+    item := "officialPToConstantDecoderRegimeData"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToConstantDecoderRegimeData"
+    note := "Official Cook-style bridge content: prove that the P-membership decider family also supplies the matching constant-decoder regime for the real lower framework."
+  },
+  {
+    item := "officialPToDeciderLanguageData"
+    status := .partialConstructionTransferred
     checkedName := "RealM4OfficialPToDeciderLanguageData"
-    note := "Remaining official Cook-style bridge content: name the NP language and prove that P-membership supplies the Appendix-I SAT decider family and matching constant-decoder regime."
+    note := "The legacy official-language package is now reassembled from the named NP-language data, P-to-decider data, and P-to-constant-decoder-regime data."
   },
   {
     item := "officialPToDeciderUpperBridgeAdapter"
@@ -10528,6 +10692,9 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -10549,7 +10716,9 @@ def realM4OpenConstructionItems : List String := [
   "cnfVariableAddressSyntax",
   "realCompressionLowerMachineData",
   "realConstantDecoderRegime",
-  "officialPToDeciderLanguageData"
+  "officialLanguageNPData",
+  "officialPToDeciderFamilyData",
+  "officialPToConstantDecoderRegimeData"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -10562,7 +10731,9 @@ theorem realM4OpenConstructionItems_exact :
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
         "realConstantDecoderRegime",
-        "officialPToDeciderLanguageData" ] := by
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "officialPToConstantDecoderRegimeData" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
