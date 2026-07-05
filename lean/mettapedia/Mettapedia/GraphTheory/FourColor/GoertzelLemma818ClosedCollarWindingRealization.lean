@@ -3554,6 +3554,31 @@ theorem section92Step4RadialFaceSampleEmbeddedGeometryObstructionTarget :
       data hsample
 
 /--
+Sample obstruction from actual-collar geometry data.  This is the same sampled
+radial-face obstruction, but with the normal-form side phrased in the
+geometry-data obligations that the serious S4 route must discharge.
+-/
+def Section92Step4RadialFaceSampleGeometryDataObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab →
+        ∀ {V : Type} {G : SimpleGraph V},
+          (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+            (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
+              False
+
+theorem section92Step4RadialFaceSampleGeometryDataObstructionTarget :
+    Section92Step4RadialFaceSampleGeometryDataObstructionTarget := by
+  intro hgeometry hradial hcovered V G data hsample
+  exact
+    section92Step4RadialFaceSampleEmbeddedGeometryObstructionTarget
+      (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+        hgeometry)
+      hradial hcovered data hsample
+
+/--
 Counts for a resumable radial-face slice search beginning at topology index
 `1000000`.  Unlike the earlier indexed sample, this mode scans a bounded
 range, discovers profile-preserving non-structural cases, and only then runs
@@ -4256,6 +4281,31 @@ theorem section92Step4RadialFaceSlice1000000EmbeddedGeometryObstructionTarget :
       (closedCollarWindingFreedomSimplePatchN6NormalFormSampleForcesRadialFace_of_embeddedGeometryExtraction_of_radialFace
         hextract hradial)
       data hcase
+
+/--
+Bounded-slice obstruction from actual-collar geometry data.  This packages the
+normal-form side of the slice obstruction in the same geometry-data obligations
+as the global repaired S4 target.
+-/
+def Section92Step4RadialFaceSlice1000000GeometryDataObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceCoveredByLab →
+        ∀ {V : Type} {G : SimpleGraph V},
+          (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+            (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+              False
+
+theorem section92Step4RadialFaceSlice1000000GeometryDataObstructionTarget :
+    Section92Step4RadialFaceSlice1000000GeometryDataObstructionTarget := by
+  intro hgeometry hradial hcovered V G data hcase
+  exact
+    section92Step4RadialFaceSlice1000000EmbeddedGeometryObstructionTarget
+      (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+        hgeometry)
+      hradial hcovered data hcase
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
