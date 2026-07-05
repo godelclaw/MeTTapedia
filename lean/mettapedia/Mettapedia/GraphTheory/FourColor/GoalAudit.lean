@@ -3037,6 +3037,126 @@ theorem section92Step4CurrentFiniteFrontierConcreteBadFaceFork_audit :
     Section92Step4CurrentFiniteFrontierConcreteBadFaceFork :=
   section92Step4CurrentFiniteFrontierConcreteBadFaceFork
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness_audit
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness
+    hforces hgeometry hradial hn6 hkeys hsound
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_iff_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness
+    hgeometry hradial hn6 hkeys hsound
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_maxCutHistogramSoundness_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_maxCutHistogramSoundness_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hsound hnot
+
+theorem closedCollarWindingFreedom_not_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate :=
+  closedCollarWindingFreedom_not_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hsound hnot
+
+theorem closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_maxCutHistogramSoundness_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction :=
+  closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_maxCutHistogramSoundness
+    hgeometry hradial hn6 hkeys hsound
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction :=
+  closedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hsound hnot
+
+theorem closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction :=
+  closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness
+    hgeometry hradial hn6 hkeys hsound
+
+theorem section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork_audit :
+    Section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork :=
+  section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
