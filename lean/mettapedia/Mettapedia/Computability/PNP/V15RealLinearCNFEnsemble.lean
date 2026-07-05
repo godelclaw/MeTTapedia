@@ -576,6 +576,17 @@ coordinate. -/
       cases gamma <;> cases delta <;>
         simp [v13RealLinearGaugeCNFGaugeAction]
 
+/-- The hidden-gauge coordinate transforms by xor under the Boolean
+hidden-gauge action. -/
+@[simp] theorem v13RealLinearGaugeCNFGaugeAction_hiddenGauge {m : Nat}
+    (gamma : Bool) (W : V13RealLinearGaugeCNFWitness m) :
+    v13RealLinearGaugeCNFHiddenGauge
+        (v13RealLinearGaugeCNFGaugeAction gamma W) =
+      (gamma ^^ v13RealLinearGaugeCNFHiddenGauge W) := by
+  cases gamma <;>
+    simp [v13RealLinearGaugeCNFHiddenGauge,
+      v13RealLinearGaugeCNFGaugeAction]
+
 /-- The hidden gauge action preserves verifier validity because the formula
 does not mention the hidden gauge coordinate. -/
 theorem v13RealLinearGaugeCNFGaugeAction_preserves_verifier {m : Nat}
@@ -5730,6 +5741,80 @@ def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
         (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
     Bool :=
   v13RealLinearGaugeCNFHiddenGauge omega.assignment
+
+/-- Direct carrier characterization: a no-target-rows Appendix-I CNF world
+is exactly a base no-target-rows public instance plus the free hidden gauge
+bit. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+    {m : Nat} {i₀ : Fin m} :
+    RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) ≃
+      V13RealLinearNoTargetRowsWorld m i₀ × Bool :=
+  v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.trans
+    v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
+
+/-- The direct carrier equivalence exposes exactly the public instance and
+the Appendix-I hidden-gauge coordinate. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_apply
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+        omega =
+      (omega.publicInstance,
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega) :=
+  rfl
+
+/-- The inverse direct carrier equivalence rebuilds the canonical
+Appendix-I CNF world from a base public instance and hidden-gauge bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_symm_apply
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) (gauge : Bool) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv).symm
+        (omega, gauge) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+        omega gauge :=
+  rfl
+
+/-- Under the direct carrier equivalence, the concrete hidden-gauge action is
+identity on the base public instance and xor on the free hidden-gauge bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_action
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega) =
+      (omega.publicInstance,
+        (gamma ^^
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega)) := by
+  calc
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega) =
+      ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega).publicInstance,
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+            gamma omega)) :=
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_apply
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega)
+    _ =
+      (omega.publicInstance,
+        (gamma ^^
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega)) := by
+      cases gamma <;>
+        simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge]
 
 /-- Acting by the nontrivial gauge element flips the free hidden-gauge
 coordinate in the Appendix-I CNF world. -/
