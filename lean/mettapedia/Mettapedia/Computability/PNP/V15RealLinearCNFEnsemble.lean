@@ -705,6 +705,64 @@ theorem v13RealLinearSmallGaugeCNFFormula_eq_realGaugeCNFFormula
       v13RealLinearSmallGaugeCNFMessageIndex,
       v13RealLinearSmallGaugeCNFSpareIndex, v13RealLinearIdentity]
 
+/-- Public message readout `M(Y)` for the explicit small instance. -/
+def v13RealLinearSmallGaugeCNFMessage (msg : Bool) : Bool :=
+  msg
+
+/-- Public formula-syntax tag for the explicit small CNF: whether the public
+formula contains the positive unit clause for the locked message coordinate. -/
+def v13RealLinearSmallGaugeCNFFormulaPositiveTargetTag
+    (formula : ConcreteCNF.Formula V13RealLinearSmallGaugeCNFVar) : Bool :=
+  decide
+    (ConcreteCNF.unitClause
+        (some v13RealLinearSmallGaugeCNFMessageIndex) true ∈ formula)
+
+/-- In the explicit small CNF, the public formula-syntax target tag is exactly
+the message bit. -/
+theorem v13RealLinearSmallGaugeCNFFormulaPositiveTargetTag_eq_message
+    (msg : Bool) :
+    v13RealLinearSmallGaugeCNFFormulaPositiveTargetTag
+        (v13RealLinearSmallGaugeCNFFormula msg) =
+      msg := by
+  cases msg <;>
+    simp [v13RealLinearSmallGaugeCNFFormulaPositiveTargetTag,
+      v13RealLinearSmallGaugeCNFFormula,
+      v13RealLinearSmallGaugeCNFMessageIndex,
+      v13RealLinearSmallGaugeCNFSpareIndex,
+      ConcreteCNF.unitClause, ConcreteCNF.unitLiteral]
+
+/-- Formula-syntax-only message determination for the explicit small
+gauge-CNF. -/
+theorem v13RealLinearSmallGaugeCNFFormula_publicSyntaxDeterminesMessage :
+    ∃ f : ConcreteCNF.Formula V13RealLinearSmallGaugeCNFVar -> Bool,
+      ∀ msg : Bool,
+        v13RealLinearSmallGaugeCNFMessage msg =
+          f (v13RealLinearSmallGaugeCNFFormula msg) := by
+  exact
+    ⟨v13RealLinearSmallGaugeCNFFormulaPositiveTargetTag,
+      fun msg =>
+        (v13RealLinearSmallGaugeCNFFormulaPositiveTargetTag_eq_message
+          msg).symm⟩
+
+/-- No-public-target-tags shape for the explicit small CNF when the full
+public formula syntax is taken as the public skeleton. -/
+def V13RealLinearSmallGaugeCNFFormulaNoPublicTargetTags : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula V13RealLinearSmallGaugeCNFVar -> Bool,
+      ∀ msg : Bool,
+        v13RealLinearSmallGaugeCNFMessage msg =
+          f (v13RealLinearSmallGaugeCNFFormula msg)
+
+/-- Named obstruction: the explicit small CNF is single-message and has a
+hidden gauge coordinate, but its full public formula syntax still exposes the
+message through the target unit clause.  Therefore this concrete syntax cannot
+provide `noPublicTargetTags` unless the public skeleton is restricted away from
+the target row. -/
+theorem v13RealLinearSmallGaugeCNFFormula_noPublicTargetTags_obstruction :
+    ¬ V13RealLinearSmallGaugeCNFFormulaNoPublicTargetTags := by
+  intro hNoTags
+  exact hNoTags
+    v13RealLinearSmallGaugeCNFFormula_publicSyntaxDeterminesMessage
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
@@ -809,10 +867,6 @@ coordinate. -/
 def v13RealLinearSmallGaugeCNFReadout
     (W : V13RealLinearSmallGaugeCNFWitness) : Bool :=
   W (some v13RealLinearSmallGaugeCNFMessageIndex)
-
-/-- Public message readout `M(Y)` for the explicit small instance. -/
-def v13RealLinearSmallGaugeCNFMessage (msg : Bool) : Bool :=
-  msg
 
 /-- Any verifier-valid witness for the small concrete CNF reads the public
 message. -/
