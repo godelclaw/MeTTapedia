@@ -30,6 +30,19 @@ TEMPLATE_BLOCKER_FILES = (
     "section92_closed_collar_winding_simple_patch_template_blockers_n6_1600000_1858980.json",
 )
 
+RADIAL_FACE_SAMPLE_FILES = (
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r0.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r1.json",
+)
+
+RADIAL_FACE_SLICE_FILES = (
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+)
+
+REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
+
 
 def read_json(path: Path) -> dict[str, object]:
     with path.open() as handle:
@@ -63,6 +76,25 @@ def dict_field(data: dict[str, object], name: str, field: str) -> dict[str, int]
             raise ValueError(f"{name}: summary.{field} has non-string/non-int entry")
         result[key] = item
     return result
+
+
+def samples(data: dict[str, object], name: str) -> list[dict[str, object]]:
+    value = data.get("samples")
+    if not isinstance(value, list):
+        raise ValueError(f"{name}: missing list samples")
+    result: list[dict[str, object]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise ValueError(f"{name}: samples[{index}] is not an object")
+        result.append(item)
+    return result
+
+
+def bool_field(data: dict[str, object], name: str, field: str) -> bool:
+    value = data.get(field)
+    if not isinstance(value, bool):
+        raise ValueError(f"{name}: {field} is not a boolean")
+    return value
 
 
 def assert_equal(label: str, actual: object, expected: object) -> None:
@@ -225,6 +257,193 @@ def audit(results_dir: Path) -> dict[str, object]:
     }
 
 
+def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
+    sample_cases: list[tuple[int, int]] = []
+    slice_cases: list[tuple[int, int]] = []
+    sample_patch_indices: set[int] = set()
+    slice_patch_indices: set[int] = set()
+    sample_planar_rotations = 0
+    slice_planar_rotations = 0
+    sample_enumerated_rotations = 0
+    slice_enumerated_rotations = 0
+    sample_coherent_rotations = 0
+    slice_coherent_rotations = 0
+    sample_template_blockers = 0
+    slice_template_blockers = 0
+    max_radial_cut_hist: Counter[str] = Counter()
+    slice_template_hist: Counter[str] = Counter()
+
+    def audit_case(name: str, case: dict[str, object], source: str) -> tuple[int, int]:
+        patch_index = case.get("patch_index")
+        radial_order_index = case.get("radial_order_index")
+        if not isinstance(patch_index, int) or not isinstance(radial_order_index, int):
+            raise ValueError(f"{name}: sample is missing integer patch/radial indices")
+        embedding = case.get("embedding_audit")
+        if not isinstance(embedding, dict):
+            raise ValueError(f"{name}: sample {patch_index}/{radial_order_index} missing embedding_audit")
+        assert_equal(f"{name}: embedding checked", bool_field(embedding, name, "checked"), True)
+        assert_equal(
+            f"{name}: enumerated rotations for {patch_index}/{radial_order_index}",
+            int_field(embedding, name, "enumerated_rotation_system_count"),
+            262_144,
+        )
+        assert_equal(
+            f"{name}: planar rotations for {patch_index}/{radial_order_index}",
+            int_field(embedding, name, "planar_rotation_system_count"),
+            8,
+        )
+        assert_equal(
+            f"{name}: radial-face coherent rotations for {patch_index}/{radial_order_index}",
+            int_field(embedding, name, "radial_face_coherent_rotation_count"),
+            0,
+        )
+        hist = dict_field(embedding, name, "max_radial_cut_edges_on_single_face_histogram")
+        assert_equal(
+            f"{name}: max radial-cut face histogram for {patch_index}/{radial_order_index}",
+            hist,
+            {"2": 8},
+        )
+        max_radial_cut_hist.update(hist)
+        assert_equal(
+            f"{name}: template blocker for {patch_index}/{radial_order_index}",
+            case.get("template_exclusion_blocker"),
+            "excluded_exact_diagonal_two_pole_template",
+        )
+        if source == "slice":
+            assert_equal(
+                f"{name}: exact template key for {patch_index}/{radial_order_index}",
+                case.get("exact_template_key"),
+                REVERSE_TEMPLATE_KEY,
+            )
+            cut = case.get("exact_template_cut")
+            if not isinstance(cut, dict):
+                raise ValueError(f"{name}: slice case {patch_index}/{radial_order_index} missing cut")
+            assert_equal(
+                f"{name}: exact template cut edges for {patch_index}/{radial_order_index}",
+                cut.get("cut_edges"),
+                ["g0:F4F5", "g1:F1F0"],
+            )
+            assert_equal(
+                f"{name}: exact template side vertex count for {patch_index}/{radial_order_index}",
+                cut.get("side_vertex_count"),
+                4,
+            )
+            slice_template_hist.update([REVERSE_TEMPLATE_KEY])
+        return patch_index, radial_order_index
+
+    for filename in RADIAL_FACE_SAMPLE_FILES:
+        data = read_json(results_dir / filename)
+        file_cases = samples(data, filename)
+        for case in file_cases:
+            pair = audit_case(filename, case, "sample")
+            sample_cases.append(pair)
+            sample_patch_indices.add(pair[0])
+            embedding = case["embedding_audit"]
+            if not isinstance(embedding, dict):
+                raise AssertionError("unreachable: embedding_audit was checked above")
+            sample_enumerated_rotations += int_field(
+                embedding, filename, "enumerated_rotation_system_count"
+            )
+            sample_planar_rotations += int_field(embedding, filename, "planar_rotation_system_count")
+            sample_coherent_rotations += int_field(
+                embedding, filename, "radial_face_coherent_rotation_count"
+            )
+            sample_template_blockers += 1
+
+    for filename in RADIAL_FACE_SLICE_FILES:
+        data = read_json(results_dir / filename)
+        file_cases = samples(data, filename)
+        block = summary(data, filename)
+        assert_equal(
+            f"{filename}: embedding audited case count",
+            int_field(block, filename, "embedding_audited_case_count"),
+            len(file_cases),
+        )
+        assert_equal(
+            f"{filename}: radial-face coherent rotation count",
+            int_field(block, filename, "radial_face_coherent_rotation_count"),
+            0,
+        )
+        for case in file_cases:
+            pair = audit_case(filename, case, "slice")
+            slice_cases.append(pair)
+            slice_patch_indices.add(pair[0])
+            embedding = case["embedding_audit"]
+            if not isinstance(embedding, dict):
+                raise AssertionError("unreachable: embedding_audit was checked above")
+            slice_enumerated_rotations += int_field(
+                embedding, filename, "enumerated_rotation_system_count"
+            )
+            slice_planar_rotations += int_field(embedding, filename, "planar_rotation_system_count")
+            slice_coherent_rotations += int_field(
+                embedding, filename, "radial_face_coherent_rotation_count"
+            )
+            slice_template_blockers += 1
+
+    sample_case_set = set(sample_cases)
+    slice_case_set = set(slice_cases)
+    overlap = sample_case_set & slice_case_set
+    unique_cases = sample_case_set | slice_case_set
+    unique_patch_indices = sample_patch_indices | slice_patch_indices
+    rows_with_overlap = len(sample_cases) + len(slice_cases)
+    planar_rows_with_overlap = sample_planar_rotations + slice_planar_rotations
+    overlap_planar_rotations = 8 * len(overlap)
+    unique_planar_rotations = planar_rows_with_overlap - overlap_planar_rotations
+
+    assert_equal("sample cases", sorted(sample_case_set), [(821205, 0), (821205, 1), (852969, 0), (852969, 1), (1000301, 0), (1000301, 1)])
+    assert_equal("slice cases", sorted(slice_case_set), [(1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)])
+    assert_equal("overlapping radial-order cases", sorted(overlap), [(1000301, 0), (1000301, 1)])
+    assert_equal("sample radial-order case count", len(sample_cases), 6)
+    assert_equal("slice radial-order case count", len(slice_cases), 4)
+    assert_equal("archive rows with overlap", rows_with_overlap, 10)
+    assert_equal("unique audited radial-order case count", len(unique_cases), 8)
+    assert_equal("unique audited patch topology count", len(unique_patch_indices), 4)
+    assert_equal("sample enumerated rotations", sample_enumerated_rotations, 1_572_864)
+    assert_equal("slice enumerated rotations", slice_enumerated_rotations, 1_048_576)
+    assert_equal("sample planar rotations", sample_planar_rotations, 48)
+    assert_equal("slice planar rotations", slice_planar_rotations, 32)
+    assert_equal("planar rows with overlap", planar_rows_with_overlap, 80)
+    assert_equal("unique planar rotations", unique_planar_rotations, 64)
+    assert_equal("sample coherent rotations", sample_coherent_rotations, 0)
+    assert_equal("slice coherent rotations", slice_coherent_rotations, 0)
+    assert_equal("archive coherent rotations", sample_coherent_rotations + slice_coherent_rotations, 0)
+    assert_equal("sample template blockers", sample_template_blockers, 6)
+    assert_equal("slice template blockers", slice_template_blockers, 4)
+    assert_equal("slice template histogram", dict(slice_template_hist), {REVERSE_TEMPLATE_KEY: 4})
+    assert_equal("max radial-cut histogram", dict(max_radial_cut_hist), {"2": 80})
+
+    return {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n6-radial-face-archive-audit-v1",
+        "source": "Artifact audit for radial-face annular embedding verdicts",
+        "sample_archive_files": list(RADIAL_FACE_SAMPLE_FILES),
+        "slice_archive_files": list(RADIAL_FACE_SLICE_FILES),
+        "sample_archive_json_file_count": len(RADIAL_FACE_SAMPLE_FILES),
+        "slice_archive_json_file_count": len(RADIAL_FACE_SLICE_FILES),
+        "total_archive_json_file_count": len(RADIAL_FACE_SAMPLE_FILES) + len(RADIAL_FACE_SLICE_FILES),
+        "sample_cases": sorted(sample_case_set),
+        "slice_cases": sorted(slice_case_set),
+        "overlapping_cases": sorted(overlap),
+        "sample_archive_radial_order_case_count": len(sample_cases),
+        "slice_archive_radial_order_case_count": len(slice_cases),
+        "archive_radial_order_rows_with_overlap": rows_with_overlap,
+        "overlapping_radial_order_case_count": len(overlap),
+        "unique_audited_radial_order_case_count": len(unique_cases),
+        "unique_audited_patch_topology_count": len(unique_patch_indices),
+        "sample_enumerated_rotation_system_count": sample_enumerated_rotations,
+        "slice_enumerated_rotation_system_count": slice_enumerated_rotations,
+        "sample_planar_rotation_system_count": sample_planar_rotations,
+        "slice_planar_rotation_system_count": slice_planar_rotations,
+        "planar_rotation_system_rows_with_overlap": planar_rows_with_overlap,
+        "unique_planar_rotation_system_count": unique_planar_rotations,
+        "archive_radial_face_coherent_rotation_count": sample_coherent_rotations + slice_coherent_rotations,
+        "sample_exact_template_blocker_count": sample_template_blockers,
+        "slice_exact_template_blocker_count": slice_template_blockers,
+        "slice_exact_template_histogram": dict(slice_template_hist),
+        "max_radial_cut_edges_on_single_face_histogram": dict(max_radial_cut_hist),
+        "verdict": "radial_face_archive_all_planar_rotations_incoherent",
+    }
+
+
 def write_json(path: Path, data: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
@@ -234,6 +453,12 @@ def write_json(path: Path, data: dict[str, object]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode",
+        choices=("taxonomy", "radial-face", "all"),
+        default="taxonomy",
+        help="which archived verdict family to audit",
+    )
     parser.add_argument(
         "--results-dir",
         type=Path,
@@ -249,13 +474,36 @@ def main() -> None:
         ),
         help="write the audited taxonomy JSON",
     )
+    parser.add_argument(
+        "--radial-face-output",
+        type=Path,
+        default=Path(
+            "results/fourcolor/"
+            "section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json"
+        ),
+        help="write the audited radial-face archive JSON",
+    )
     parser.add_argument("--check-only", action="store_true", help="skip writing output")
     args = parser.parse_args()
 
-    report = audit(args.results_dir)
-    if not args.check_only:
-        write_json(args.output, report)
-    print(json.dumps(report, indent=2, sort_keys=True))
+    reports: dict[str, object] = {}
+    if args.mode in ("taxonomy", "all"):
+        taxonomy_report = audit(args.results_dir)
+        reports["taxonomy"] = taxonomy_report
+        if not args.check_only:
+            write_json(args.output, taxonomy_report)
+    if args.mode in ("radial-face", "all"):
+        radial_face_report = audit_radial_face_archive(args.results_dir)
+        reports["radial_face_archive"] = radial_face_report
+        if not args.check_only:
+            write_json(args.radial_face_output, radial_face_report)
+
+    if args.mode == "taxonomy":
+        print(json.dumps(reports["taxonomy"], indent=2, sort_keys=True))
+    elif args.mode == "radial-face":
+        print(json.dumps(reports["radial_face_archive"], indent=2, sort_keys=True))
+    else:
+        print(json.dumps(reports, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
