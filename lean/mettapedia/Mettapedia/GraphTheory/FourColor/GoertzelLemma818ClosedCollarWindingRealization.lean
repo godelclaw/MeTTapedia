@@ -139,6 +139,29 @@ structure ClosedCollarWindingFreedomAnnularRealization
   realizesCoreWitness : ClosedCollarWindingFreedomWitnessRealizationData
 
 /--
+Interface for the face created by cutting an annular collar open along a radial
+arc.  A genuine embedded realization must supply an actual cut-open collar
+face; this record keeps that geometric obligation explicit instead of folding
+it into a numerical lab verdict.
+-/
+structure ClosedCollarCutOpenRadialFace
+    {G : SimpleGraph V}
+    (annular : ClosedCollarWindingFreedomAnnularRealization G) where
+  faceEdges : Finset G.edgeSet
+  isCutOpenCollarFace : Prop
+  hface : isCutOpenCollarFace
+  radialCut_subset_faceEdges : annular.radialCut ⊆ faceEdges
+
+/--
+Radial-face coherence for a cut-open annular realization: all radial-cut edges
+are incident with one cut-open collar face.
+-/
+def ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+    {G : SimpleGraph V}
+    (annular : ClosedCollarWindingFreedomAnnularRealization G) : Prop :=
+  Nonempty (ClosedCollarCutOpenRadialFace annular)
+
+/--
 Normal-form hypotheses for an annular realization of the winding-freedom
 witness.  Only cyclic five-edge-connectivity is already connected to a reusable
 graph theorem here; the remaining fields record the serious geometric regime
@@ -158,6 +181,15 @@ structure ClosedCollarWindingFreedomNormalFormRealization
   hnoSmallSeparatingCuts : noSmallSeparatingCuts
   hcap5FreeWhereNeeded : cap5FreeWhereNeeded
   hactualCollarEmbeddingConstraints : actualCollarEmbeddingConstraints
+
+/--
+Normal-form realization together with the specific radial-face coherence datum
+needed to compare the embedded annulus with the cut-open rotation-system lab.
+-/
+structure ClosedCollarWindingFreedomNormalFormRadialFaceRealization
+    (G : SimpleGraph V) where
+  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  radialFace : ClosedCollarCutOpenRadialFace normalForm.annular
 
 /--
 The direct finite winding-freedom witness is not an honest simple endpoint
@@ -1923,6 +1955,17 @@ structure ClosedCollarWindingFreedomSimplePatchN6Representation
   radialOrderIndex : Fin 2
 
 /--
+A normal-form realization represented by one enumerated six-internal simple
+patch.  The equality field records that the normal-form annulus and the
+finite patch representation are the same annular realization.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation
+    (G : SimpleGraph V) where
+  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  representation : ClosedCollarWindingFreedomSimplePatchN6Representation G
+  annular_eq : representation.annular = normalForm.annular
+
+/--
 A normal-form realization that survives the exhausted six-internal
 simple-patch lab as a post-template-exclusion pass.  The final field is the
 finite lab certificate that such a pass was counted.
@@ -2200,6 +2243,83 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFa
         0 := rfl
   have hpos := candidate.hrotationCountPositive
   omega
+
+/--
+Coverage obligation for the radial-face sample: if a sampled six-internal
+simple-patch representation carries a genuine cut-open radial face, then the
+rotation-system lab counts at least one radial-face coherent planar rotation.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      representation.patchTopologyIndex ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          representation.annular →
+          Nonempty
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRotationCandidate
+
+/--
+Sample-level obstruction for radial-face coherent annular realizations.  It
+does not assert the coverage obligation; it states the exact implication the
+geometry proof must feed from honest collar embeddings into the finite lab.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoherentRepresentation :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab →
+    ∀ {V : Type} {G : SimpleGraph V},
+      (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+        representation.patchTopologyIndex ∈
+            closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+          ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+            representation.annular →
+            False
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoherentRepresentation :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoherentRepresentation := by
+  intro hcovered V G representation hsample hradial
+  rcases hcovered representation hsample hradial with ⟨candidate⟩
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceRotationCandidate
+      candidate
+
+/--
+Missing geometric reduction for using the radial-face sample against the
+normal-form regime: every sampled six-internal normal-form representation must
+provide a radial-face coherent cut-open annulus.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NormalFormSampleForcesRadialFace :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      data.representation.patchTopologyIndex ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          data.representation.annular
+
+/--
+Radial-face version of the serious S4 repair target for the sampled
+six-internal subclass.  Once the embedding geometry proves radial-face
+coherence for honest normal-form collars and the lab coverage map is supplied,
+the sampled normal-form representations are excluded by the archived
+rotation-system verdict.
+-/
+def Section92Step4RadialFaceSampleNormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormSampleForcesRadialFace →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          data.representation.patchTopologyIndex ∈
+              closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+            False
+
+theorem section92Step4RadialFaceSampleNormalFormObstructionTarget :
+    Section92Step4RadialFaceSampleNormalFormObstructionTarget := by
+  intro hcovered hforces V G data hsample
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoherentRepresentation
+      hcovered data.representation hsample (hforces data hsample)
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
