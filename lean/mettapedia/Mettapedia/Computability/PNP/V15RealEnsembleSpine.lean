@@ -15806,6 +15806,22 @@ theorem realM4LargeTargetKpolyCompatibilityConstructionItems_exact :
         "pMembershipTargetBlocksExceedsConstantDecoderCost" ] := by
   rfl
 
+def realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems :
+    List String := [
+  "pEqualsNPIndexedEtaPositive",
+  "pEqualsNPIndexedKpolyAtConstantDecoderIdentification",
+  "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
+  "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost"
+]
+
+theorem realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems_exact :
+    realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems =
+      [ "pEqualsNPIndexedEtaPositive",
+        "pEqualsNPIndexedKpolyAtConstantDecoderIdentification",
+        "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
+        "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost" ] := by
+  rfl
+
 theorem realM4OpenConstructionItems_decomposes :
     realM4OpenConstructionItems =
       realM4ConcreteEnsembleConstructionItems ++
@@ -15843,6 +15859,37 @@ theorem realM4LargeTargetOpenConstructionItems_decomposes :
         realM4LargeTargetLowerMachineConstructionItems ++
           realM4OfficialBridgeConstructionItems ++
             realM4LargeTargetKpolyCompatibilityConstructionItems := by
+  rfl
+
+def realM4EqualityIndexedLargeTargetOpenConstructionItems : List String :=
+  realM4ConcreteEnsembleConstructionItems ++
+    realM4LargeTargetLowerMachineConstructionItems ++
+      realM4OfficialBridgeConstructionItems ++
+        realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems
+
+theorem realM4EqualityIndexedLargeTargetOpenConstructionItems_exact :
+    realM4EqualityIndexedLargeTargetOpenConstructionItems =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "noPublicTargetTags",
+        "hiddenGaugeProduct",
+        "admissibleHistories",
+        "cnfVariableAddressSyntax",
+        "realCompressionLowerMachineData",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pEqualsNPIndexedEtaPositive",
+        "pEqualsNPIndexedKpolyAtConstantDecoderIdentification",
+        "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
+        "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost" ] := by
+  rfl
+
+theorem realM4EqualityIndexedLargeTargetOpenConstructionItems_decomposes :
+    realM4EqualityIndexedLargeTargetOpenConstructionItems =
+      realM4ConcreteEnsembleConstructionItems ++
+        realM4LargeTargetLowerMachineConstructionItems ++
+          realM4OfficialBridgeConstructionItems ++
+            realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems := by
   rfl
 
 def realM4PNPConditionalUpperInputs : List String := [
@@ -15932,6 +15979,35 @@ theorem realM4LargeTargetCompletionFrontierHypothesisAudit_exact :
 
 def realM4LargeTargetCompletionFrontierStatement : String :=
   "The large-target real v15/M4 completion frontier is the same real-spine audit with the prepackaged constant-decoder regime and direct below-linear-floor K-poly item replaced by eta positivity, K-poly/floor identifications, and the concrete target-block growth fact that the target count exceeds the fixed self-reduction decoder cost.  This records the intended constant-program self-reduction route for the real ensemble while leaving construction of the real target-block regime explicit.  After these construction obligations are discharged, the irreducible mathematical frontier is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing, with the P=NP side used only to derive the SAT decider family for self-reduction."
+
+def realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit :
+    List String :=
+  realM4EqualityIndexedLargeTargetOpenConstructionItems ++
+    realM4AfterConstructionIrreducibleInputs
+
+theorem realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit_exact :
+    realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "noPublicTargetTags",
+        "hiddenGaugeProduct",
+        "admissibleHistories",
+        "cnfVariableAddressSyntax",
+        "realCompressionLowerMachineData",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pEqualsNPIndexedEtaPositive",
+        "pEqualsNPIndexedKpolyAtConstantDecoderIdentification",
+        "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
+        "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4EqualityIndexedLargeTargetCompletionFrontierStatement : String :=
+  "The equality-indexed large-target real v15/M4 completion frontier records the strongest current official endpoint route.  The P=NP side appears only through construction obligations indexed by a candidate equality witness: eta positivity, K-poly identification with the extracted fixed self-reduction decoder, etaTimes identification with the linear floor, and the target-block count exceeding that fixed decoder cost.  No separate P=NP witness or hidden Cook bridge object is a theorem hypothesis at this official layer.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
