@@ -7539,6 +7539,86 @@ theorem
         omega.publicInstance omega.toWitness := by
   exact ⟨omega.support, ⟨rfl, omega.sat⟩⟩
 
+/-- Reify any verifier-valid Appendix-I CNF hidden witness as a satisfying
+Appendix-I CNF world carrying the same public instance and assignment. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    RealM4CNFWorld
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := W.publicInstance
+  support := by
+    rcases hW with ⟨hSupport, ⟨hPublic, _hSat⟩⟩
+    rw [hPublic]
+    exact hSupport
+  assignment := W.assignment
+  sat := by
+    rcases hW with ⟨_hSupport, ⟨_hPublic, hSat⟩⟩
+    exact hSat
+
+/-- The world reified from a verifier-valid witness lies over the verifier's
+public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness_publicInstance_eq
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+        W hW).publicInstance =
+      Y := by
+  rcases hW with ⟨_hSupport, ⟨hPublic, _hSat⟩⟩
+  exact hPublic
+
+/-- Reifying a verifier-valid witness as a world and projecting back with
+`toWitness` recovers exactly the original witness. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness_toWitness
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+        W hW).toWitness =
+      W :=
+  rfl
+
+/-- Reifying a verifier-valid witness as a world preserves the free
+hidden-gauge coordinate. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness_hiddenGauge
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+          W hW) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W :=
+  rfl
+
 /-- Projecting the world-level Appendix-I CNF hidden-gauge action to a witness
 is exactly the witness-level hidden-gauge action. -/
 @[simp] theorem
