@@ -1141,6 +1141,77 @@ theorem v13RealLinearSmallGaugeCNFEnsemble_singleMessage :
     v13RealLinearSmallGaugeCNFEnsembleTarget_eq_message omega₁]
   exact congrArg v13RealLinearSmallGaugeCNFMessage hPublic
 
+/-! ## Global small real-linear gauge-CNF hidden-gauge-product transfer -/
+
+/-- Hidden-gauge action on the global small real-linear gauge-CNF ensemble.
+It preserves the public message bit and applies the concrete SAT-level
+hidden-gauge flip to the represented witness assignment. -/
+def v13RealLinearSmallGaugeCNFEnsembleGaugeAction
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    V13RealLinearSmallGaugeCNFEnsembleWorld where
+  msg := omega.msg
+  gauge := if gamma then !omega.gauge else omega.gauge
+
+/-- The global hidden-gauge action is exactly the SAT-level hidden-gauge
+action on the represented concrete witness assignment. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_assignment
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleAssignment
+        (v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma omega) =
+      v13RealLinearSmallGaugeCNFGaugeAction gamma
+        (v13RealLinearSmallGaugeCNFEnsembleAssignment omega) := by
+  funext v
+  cases v with
+  | some j =>
+      rfl
+  | none =>
+      rfl
+
+/-- The global hidden-gauge action preserves target readout because it is the
+concrete SAT-level hidden-gauge action on the represented witness. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_preserves_target
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleTarget
+        (v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma omega) =
+      v13RealLinearSmallGaugeCNFEnsembleTarget omega := by
+  unfold v13RealLinearSmallGaugeCNFEnsembleTarget
+  rw [v13RealLinearSmallGaugeCNFEnsembleGaugeAction_assignment]
+  exact
+    v13RealLinearSmallGaugeCNFGaugeAction_preserves_readout
+      gamma (v13RealLinearSmallGaugeCNFEnsembleAssignment omega)
+
+/-- Gauge satisfaction for the global small ensemble is target preservation
+under the concrete hidden-gauge action. -/
+def v13RealLinearSmallGaugeCNFEnsembleGaugeSat
+    (gamma : V13RealLinearSmallGaugeCNFGauge)
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) : Prop :=
+  v13RealLinearSmallGaugeCNFEnsembleTarget
+      (v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma omega) =
+    v13RealLinearSmallGaugeCNFEnsembleTarget omega
+
+/-- Evidence semantics for the global small real-linear gauge-CNF ensemble. -/
+def v13RealLinearSmallGaugeCNFEnsembleSemantics :
+    EvidenceSemantics
+      V13RealLinearSmallGaugeCNFEnsembleWorld
+      V13RealLinearSmallGaugeCNFNeutral
+      V13RealLinearSmallGaugeCNFSafe
+      V13RealLinearSmallGaugeCNFGauge where
+  neutralSat := fun _ _ => True
+  safeSat := fun _ _ => True
+  gaugeSat := v13RealLinearSmallGaugeCNFEnsembleGaugeSat
+
+/-- Structural `hiddenGaugeProduct` transfer for the global two-message small
+real-linear gauge-CNF ensemble.  Every Boolean hidden-gauge action is
+satisfied at every global world because the action only flips the hidden
+coordinate and preserves the represented SAT witness readout. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct :
+    ∀ gamma omega,
+      v13RealLinearSmallGaugeCNFEnsembleSemantics.gaugeSat gamma omega := by
+  intro gamma omega
+  exact
+    v13RealLinearSmallGaugeCNFEnsembleGaugeAction_preserves_target
+      gamma omega
+
 /-- History field for the global small ensemble: observe only the hidden gauge
 bit, not the public message bit. -/
 def v13RealLinearSmallGaugeCNFEnsembleHistoryField :
