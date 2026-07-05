@@ -2333,6 +2333,17 @@ theorem xorGaugeSingleMessageAppendixICNF_atomCompleteness :
   intro E
   exact CDENF_semantics xorGaugeSingleMessageAppendixICNFSemantics E
 
+/-- Structural `gaugeFaithfulness` transferred to the Appendix-I CNF world
+carrier: a normalized hidden-gauge leaf denotes the transported hidden-gauge
+predicate. -/
+theorem xorGaugeSingleMessageAppendixICNF_gaugeFaithfulness :
+    ∀ gamma : XorGaugeSingleMessageGauge,
+      xorGaugeSingleMessageAppendixICNFSemantics.SatNormal
+          (CDENF (.gauge gamma)) =
+        xorGaugeSingleMessageAppendixICNFSemantics.gaugeSat gamma := by
+  intro gamma
+  rfl
+
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
 
 /-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered
