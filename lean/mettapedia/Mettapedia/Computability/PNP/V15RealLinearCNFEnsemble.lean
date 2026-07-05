@@ -632,6 +632,81 @@ theorem v13RealLinearGaugeCNFSingleMessageSATSpine_singleMessage
           v13RealLinearGaugeCNFReadout i₀ w1.assignment :=
   (v13RealLinearGaugeCNFSingleMessageSATSpine i₀).singleMessage
 
+/-- Gauge-buffered real linear CNF instantiated in the manuscript CNF readout
+interface.  The extra hidden gauge variable is not locked by the public
+instance, while the selected message coordinate is forced for every satisfying
+witness. -/
+def v13RealLinearGaugeCNFReadoutData {m : Nat} (i₀ : Fin m) :
+    ManuscriptCNFReadoutData
+      (V13RealLinearPublic m)
+      (fun _Y => V13RealLinearGaugeCNFVar m)
+      (fun _Y => V13RealLinearGaugeCNFWitness m)
+      Bool where
+  support := fun _Y => True
+  formula := v13RealLinearGaugeCNFFormula
+  validWitness := v13RealLinearGaugeCNFVerifier
+  extract := fun _Y α => α
+  witnessMessage := fun _Y W => v13RealLinearGaugeCNFReadout i₀ W
+  projection := fun _Y α => v13RealLinearGaugeCNFReadout i₀ α
+  cnfSound := by
+    intro Y α hα
+    exact hα
+  projection_eq_witnessMessage := by
+    intro Y α hα
+    rfl
+
+/-- The gauge-buffered real linear CNF readout data has the semantic
+single-message promise: hidden gauge choices may vary, but valid witnesses
+agree on the selected public message bit. -/
+theorem v13RealLinearGaugeCNFReadoutData_singleMessagePromise
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearGaugeCNFReadoutData i₀).SingleMessagePromise := by
+  intro Y W W' _hY hW hW'
+  calc
+    v13RealLinearGaugeCNFReadout i₀ W =
+        v13RealLinearMessageOfPublic i₀ Y :=
+      v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW
+    _ = v13RealLinearGaugeCNFReadout i₀ W' :=
+      (v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid
+        i₀ hW').symm
+
+/-- Every supported gauge-buffered real linear public instance has satisfying
+CNF witnesses, one for each hidden-gauge choice. -/
+theorem v13RealLinearGaugeCNFReadoutData_supportedSatisfiable
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearGaugeCNFReadoutData i₀).SupportedCNFSatisfiable := by
+  intro Y _hY
+  exact
+    ⟨v13RealLinearGaugeCNFAssignment Y false,
+      v13RealLinearGaugeCNFFormula_satisfied_assignment Y false⟩
+
+/-- Any satisfying SAT-search output for the gauge-buffered CNF reads the
+fixed public message coordinate. -/
+theorem v13RealLinearGaugeCNFReadoutData_projection_eq_publicMessage
+    {m : Nat} (i₀ : Fin m) {Y : V13RealLinearPublic m}
+    (_hY : (v13RealLinearGaugeCNFReadoutData i₀).support Y)
+    {W : V13RealLinearGaugeCNFWitness m}
+    (hW :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearGaugeCNFReadoutData i₀).formula Y) W) :
+    (v13RealLinearGaugeCNFReadoutData i₀).projection Y W =
+      v13RealLinearMessageOfPublic i₀ Y := by
+  exact v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW
+
+/-- The arbitrary-output SAT-search readout obligation holds for the
+gauge-buffered CNF: the search may return either hidden-gauge choice, but the
+message coordinate is fixed. -/
+theorem
+    v13RealLinearGaugeCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearGaugeCNFReadoutData i₀)
+      |>.SupportedArbitraryOutputSATSearchCorrect := by
+  exact
+    (v13RealLinearGaugeCNFReadoutData i₀)
+      |>.supportedArbitraryOutputSATSearchCorrect_of_singleMessagePromise
+        (v13RealLinearGaugeCNFReadoutData_singleMessagePromise i₀)
+        (v13RealLinearGaugeCNFReadoutData_supportedSatisfiable i₀)
+
 /-! ## Concrete small real-linear gauge-CNF instance -/
 
 /-- The selected message coordinate in the concrete two-coordinate real-linear
