@@ -3157,6 +3157,25 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessF
     Section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork :=
   section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork
 
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction_of_laterBridge_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction :=
+  closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction_of_laterBridge_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hnot
+
+theorem section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork_audit :
+    Section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork :=
+  section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :

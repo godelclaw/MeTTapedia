@@ -14049,6 +14049,79 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessF
       closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_maxCutHistogramSoundness
         hgeometry hradial hn6 hkeys hsound⟩
 
+/--
+Exact obstruction for the combined route: after the later geometric fields,
+any remaining normal-form realization means either the bad-face-to-template
+extraction theorem is false, or the histogram-soundness semantics are false.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction :
+    Prop :=
+  ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate ∨
+    ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction_of_laterBridge_of_not_nonrealizable
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction := by
+  classical
+  by_cases hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate
+  · by_cases hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness
+    · exact
+        False.elim
+          (hnot
+            (closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness
+              hforces hgeometry hradial hn6 hkeys hsound))
+    · exact Or.inr hsound
+  · exact Or.inl hforces
+
+/--
+Two-obligation fork for the current finite frontier.  The positive branch says
+that bad-face extraction plus histogram soundness kills the winding-freedom
+witness in the intended normal-form regime.  The negative branch says that any
+surviving normal-form realization must refute one of those two obligations.
+-/
+def Section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ((ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate ∧
+                ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+              (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+                ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction) ∧
+              (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ClosedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction))))
+
+theorem section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork :
+    Section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork := by
+  refine
+    ⟨section92Step4CurrentFiniteFrontierBadFaceTemplateAndHistogramSoundnessFork,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys
+  exact
+    ⟨fun hrepair =>
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness
+        hrepair.1 hgeometry hradial hn6 hkeys hrepair.2,
+      closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrHistogramSoundnessObstruction_of_laterBridge_of_not_nonrealizable
+        hgeometry hradial hn6 hkeys,
+      fun hsound =>
+        closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness
+          hgeometry hradial hn6 hkeys hsound⟩
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
