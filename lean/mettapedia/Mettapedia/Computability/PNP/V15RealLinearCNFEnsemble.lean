@@ -6320,6 +6320,28 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_hidden_true
       !v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega :=
   rfl
 
+/-- The false gauge element acts as the identity on no-target-rows
+gauge-buffered CNF worlds. -/
+@[simp] theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_false
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction false omega = omega := by
+  cases omega with
+  | mk base assignment sat =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFGaugeAction]
+
+/-- The concrete no-target-rows hidden-gauge action composes by xor. -/
+@[simp] theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_xor
+    {m : Nat} {i₀ : Fin m} (gamma delta : Bool)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma
+        (v13RealLinearNoTargetRowsGaugeCNFGaugeAction delta omega) =
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction
+        (gamma ^^ delta) omega := by
+  cases omega with
+  | mk base assignment sat =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFGaugeAction]
+
 /-- Under the base/gauge equivalence, the concrete hidden-gauge action is
 identity on the base world and xor on the free hidden-gauge bit. -/
 theorem v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_action
@@ -6417,6 +6439,39 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_nontrivial
     v13RealLinearGaugeCNFAssignment,
     v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
     v13RealLinearGaugeCNFGaugeAction] at hcoord
+
+/-- The nontrivial gauge element changes every no-target-rows gauge-buffered
+CNF world by flipping the free hidden-gauge coordinate. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_true_ne
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction true omega ≠
+      omega := by
+  intro hfixed
+  have hcoord :=
+    congrFun
+      (congrArg
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          omega.assignment) hfixed) none
+  simp [v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
+    v13RealLinearGaugeCNFGaugeAction] at hcoord
+
+/-- The no-target-rows gauge-CNF hidden-gauge action is free: the only gauge
+element fixing a concrete world is `false`. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_eq_self_iff
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega =
+      omega ↔ gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearNoTargetRowsGaugeCNFGaugeAction_true_ne
+          omega hfixed)
+    · intro hfalse
+      cases hfalse
 
 /-- A nontrivial hidden public fiber for the gauge-buffered no-target-rows
 CNF surface is a pair of verifier-valid worlds over the same public CNF input
