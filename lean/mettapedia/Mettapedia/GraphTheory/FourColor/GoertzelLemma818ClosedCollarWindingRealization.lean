@@ -1709,6 +1709,25 @@ def closedCollarSimplePatchN8Stratified33FirstIndex : Nat :=
 def closedCollarSimplePatchN8Stratified33LastIndex : Nat :=
   1189087724
 
+def closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts :
+    ClosedCollarSimplePatchTemplateBlockerIndexSampleCounts where
+  internalVertexCount := 8
+  exactPatchTopologyCount := 1189087725
+  sampledPatchTopologyCount := 65
+  radialOrderCaseCount := 130
+  profilePreservingCaseCount := 0
+  structuralFirstBlockerCount := 0
+  exactTemplateBlockerCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN8Stratified65FirstIndex : Nat :=
+  0
+
+def closedCollarSimplePatchN8Stratified65LastIndex : Nat :=
+  1189087724
+
 def closedCollarSimplePatchN6TemplateBlockerArchiveCounts :
     ClosedCollarSimplePatchTemplateBlockerArchiveCounts where
   internalVertexCount := 6
@@ -3118,22 +3137,83 @@ theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingC
   omega
 
 /--
+Stratified-sample evidence for the eight-internal simple-patch space.  The lab
+unranked 65 evenly spaced exact topology indices, including the first and last
+generated topology, tested both radial orders, and found no profile-preserving
+candidate for the closed-collar winding-freedom witness.  This is distribution
+coverage evidence, not an exhaustion certificate.
+-/
+def ClosedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.internalVertexCount =
+      8 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.exactPatchTopologyCount =
+      closedCollarSimplePatchN8ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.exactPatchTopologyCount =
+      1189087725 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.sampledPatchTopologyCount =
+      65 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.radialOrderCaseCount =
+      130 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.profilePreservingCaseCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.structuralFirstBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.exactTemplateBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.radialOrderCaseCount =
+      2 *
+        closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.sampledPatchTopologyCount ∧
+    closedCollarSimplePatchN8Stratified65FirstIndex = 0 ∧
+    closedCollarSimplePatchN8Stratified65LastIndex + 1 =
+      closedCollarSimplePatchN8ExactPatchTopologyCount
+
+theorem closedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence :
+    ClosedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/-- Lab-side impossibility of a profile-preserving candidate in the 65-point
+stratified eight-internal simple-patch sample. -/
+structure ClosedCollarWindingFreedomSimplePatchN8Stratified65ProfilePreservingCandidate where
+  hprofileCountPositive :
+    0 <
+      closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN8Stratified65_noProfilePreservingCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN8Stratified65ProfilePreservingCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN8Stratified65TemplateBlockerIndexSampleCounts.profilePreservingCaseCount =
+        0 := rfl
+  have hpos := candidate.hprofileCountPositive
+  omega
+
+/--
 Current eight-internal frontier evidence.  The continuous first-6000000
-prefix and the 33-point indexed sample found no profile-preserving
+prefix and the 65-point indexed sample found no profile-preserving
 eight-internal simple-patch candidate, while the coverage certificate records
 that this is not an exhaustion of the n8 space.
 -/
 def ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence : Prop :=
   ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence ∧
     ClosedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence ∧
-      ClosedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence
+      ClosedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence
 
 theorem closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence :
     ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence := by
   exact
     ⟨closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence,
       closedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence,
-      closedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence⟩
+      closedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence⟩
 
 /--
 Graph-facing hook for the finite six-internal simple-patch subclass tested by

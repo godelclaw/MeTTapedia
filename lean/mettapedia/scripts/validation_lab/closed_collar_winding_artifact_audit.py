@@ -61,7 +61,7 @@ N8_TEMPLATE_BLOCKER_FILES = (
 )
 
 N8_STRATIFIED_SAMPLE_FILE = (
-    "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_33.json"
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_65.json"
 )
 
 REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
@@ -698,7 +698,7 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
         isinstance(index, int) for index in sampled_indices
     ):
         raise ValueError("n8 stratified sample indices are not an integer list")
-    assert_equal("n8 stratified sample count", len(sampled_indices), 33)
+    assert_equal("n8 stratified sample count", len(sampled_indices), 65)
     assert_equal("n8 stratified first sample", sampled_indices[0], 0)
     assert_equal(
         "n8 stratified last sample",
@@ -713,7 +713,7 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
     assert_equal(
         "n8 stratified radial-order count",
         int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "radial_order_case_count"),
-        66,
+        130,
     )
     assert_equal(
         "n8 stratified profile-preserving count",
@@ -771,7 +771,7 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
                 N8_STRATIFIED_SAMPLE_FILE,
                 "normal_form_after_template_exclusion_passing_count",
             ),
-            "verdict": "n8_stratified_33_found_no_profile_preserving_patch",
+            "verdict": "n8_stratified_65_found_no_profile_preserving_patch",
         },
         "remaining_prefix_unprocessed_patch_topology_count": (
             N8_EXACT_PATCH_TOPOLOGY_COUNT

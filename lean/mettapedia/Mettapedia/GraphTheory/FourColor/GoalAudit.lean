@@ -1774,6 +1774,16 @@ theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingC
     False :=
   closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingCandidate candidate
 
+theorem closedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence :=
+  closedCollarWindingFreedomSimplePatchN8Stratified65NoProfilePreservingEvidence
+
+theorem closedCollarWindingFreedomSimplePatchN8Stratified65_noProfilePreservingCandidate_audit
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN8Stratified65ProfilePreservingCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN8Stratified65_noProfilePreservingCandidate candidate
+
 theorem closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence :=
   closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence
