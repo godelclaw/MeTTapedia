@@ -1408,6 +1408,34 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstructi
   closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable
     hrows hnot
 
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker_of_no_concretePreviousBoundaryNormalFormExtraction_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
+    (hno :
+      ¬ Nonempty
+        (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
+          normalForm)) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
+      normalForm :=
+  closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker_of_no_concretePreviousBoundaryNormalFormExtraction
+    normalForm hno
+
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_not_concretePreviousBoundaryNormalFormRealization_audit
+    (hnot :
+      ¬ ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction :=
+  closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_not_concretePreviousBoundaryNormalFormRealization
+    hnot
+
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_concreteBridgeFailure_of_auditedRows_of_not_nonrealizable_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction :=
+  closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_concreteBridgeFailure_of_auditedRows_of_not_nonrealizable
+    hrows hnot
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage_audit
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
