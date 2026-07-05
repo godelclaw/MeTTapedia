@@ -1585,6 +1585,80 @@ theorem realM4_uniformSelfReductionUpperHypothesis_givenPNP
     rw [R.kpolyAt_eq, R.etaTimes_eq]
     exact R.floor_dominates_decoder
 
+/-! ## Real-M4 public-lock coverage as construction data -/
+
+/-- Explicit construction data for Appendix I public-lock coverage.  For every
+supported public lock, the real ensemble must construct a supported public
+instance whose public-lock syntax is exactly that lock. -/
+structure RealM4PublicLockCoverageData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  representative :
+    ∀ {Ylock : PublicLock}, D.core.support Ylock -> Public
+  representative_support :
+    ∀ {Ylock : PublicLock} (hYlock : D.core.support Ylock),
+      D.support (representative hYlock)
+  representative_publicLock :
+    ∀ {Ylock : PublicLock} (hYlock : D.core.support Ylock),
+      D.publicLock (representative hYlock) = Ylock
+
+namespace RealM4PublicLockCoverageData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+/-- The representative data discharges the Appendix D proposition-level
+coverage condition used to lift Appendix I satisfiability to D.7. -/
+theorem publicLockCoverage
+    (C : RealM4PublicLockCoverageData D) :
+    D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances := by
+  intro Ylock hYlock
+  exact
+    ⟨C.representative hYlock,
+      C.representative_support hYlock,
+      C.representative_publicLock hYlock⟩
+
+/-- Appendix I satisfiability on supported representatives gives D.7 lock
+satisfiability once the coverage representative data is constructed. -/
+theorem lockSatisfiable
+    (C : RealM4PublicLockCoverageData D) :
+    D.core.LockSatisfiable :=
+  D.core_lockSatisfiable_of_publicLockCovered C.publicLockCoverage
+
+end RealM4PublicLockCoverageData
+
+/-- Top-level alias for the real-M4 public-lock coverage transfer. -/
+theorem realM4_publicLockCoverage_of_representatives
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (C : RealM4PublicLockCoverageData D) :
+    D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances :=
+  C.publicLockCoverage
+
+theorem realM4_lockSatisfiable_of_publicLockCoverageData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (C : RealM4PublicLockCoverageData D) :
+    D.core.LockSatisfiable :=
+  C.lockSatisfiable
+
 /-! ## Real-M4 self-reduction upper discharge package -/
 
 /-- Real Appendix I package that discharges the upper self-reduction side once
@@ -1724,6 +1798,25 @@ noncomputable def ofCoveredLocksAndRigidity
     lockedMessageRigidity
     uniformSupport pnpDeciderFamily constantDecoderRegime
 
+/-- Build the explicit-P=NP upper discharge package from public-lock
+representative data and D.8 rigidity.  The representative data is the concrete
+construction obligation behind public-lock coverage. -/
+noncomputable def ofCoverageDataAndRigidity
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime F
+        (uniformSupport.withPNPDecider pnpDeciderFamily)) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  ofCoveredLocksAndRigidity
+    defaultMessage
+    coverageData.publicLockCoverage
+    lockedMessageRigidity
+    uniformSupport pnpDeciderFamily constantDecoderRegime
+
 def uniformBitFixing
     (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
     RealM4CNFUniformBitFixingData D :=
@@ -1854,19 +1947,32 @@ theorem realM4PublicMessageInvariantConstructionInputs_exact :
         "lockedMessageRigidity" ] := by
   rfl
 
+def realM4PublicLockCoverageDataConstructionInputs : List String := [
+  "publicLockRepresentative",
+  "publicLockRepresentativeSupport",
+  "publicLockRepresentativeSyntax"
+]
+
+theorem realM4PublicLockCoverageDataConstructionInputs_exact :
+    realM4PublicLockCoverageDataConstructionInputs =
+      [ "publicLockRepresentative",
+        "publicLockRepresentativeSupport",
+        "publicLockRepresentativeSyntax" ] := by
+  rfl
+
 def realM4LockSatisfiableConstructionInputs : List String := [
-  "publicLockSupportCoverage",
+  "publicLockCoverageData",
   "appendixISatOnSupport"
 ]
 
 theorem realM4LockSatisfiableConstructionInputs_exact :
     realM4LockSatisfiableConstructionInputs =
-      [ "publicLockSupportCoverage",
+      [ "publicLockCoverageData",
         "appendixISatOnSupport" ] := by
   rfl
 
 def realM4SelfReductionUpperDischargePrerequisites : List String := [
-  "publicLockSupportCoverage",
+  "publicLockCoverageData",
   "lockedMessageRigidity",
   "uniformCNFBitFixingPackage",
   "realCompressionLowerFramework"
@@ -1874,7 +1980,7 @@ def realM4SelfReductionUpperDischargePrerequisites : List String := [
 
 theorem realM4SelfReductionUpperDischargePrerequisites_exact :
     realM4SelfReductionUpperDischargePrerequisites =
-      [ "publicLockSupportCoverage",
+      [ "publicLockCoverageData",
         "lockedMessageRigidity",
         "uniformCNFBitFixingPackage",
         "realCompressionLowerFramework" ] := by
@@ -1890,7 +1996,7 @@ theorem realM4SelfReductionUpperConditionalInputs_exact :
   rfl
 
 def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
-  "publicLockSupportCoverage",
+  "publicLockCoverageData",
   "lockedMessageRigidity",
   "uniformCNFSupportData",
   "realCompressionLowerFramework"
@@ -1898,7 +2004,7 @@ def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
 
 theorem realM4SelfReductionUpperExplicitPNPConstructionInputs_exact :
     realM4SelfReductionUpperExplicitPNPConstructionInputs =
-      [ "publicLockSupportCoverage",
+      [ "publicLockCoverageData",
         "lockedMessageRigidity",
         "uniformCNFSupportData",
         "realCompressionLowerFramework" ] := by
@@ -2483,6 +2589,60 @@ theorem realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
 /--
+Coverage-data version of the real-ensemble conditional endgame staging
+theorem.  Public-lock coverage is supplied as representative construction data
+rather than as a raw proposition; the self-reduction upper side remains
+conditional on the explicit P=NP decider family.
+-/
+theorem realM4_conditionalClash_from_coverageDataAndRigidity_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime C.lowerFramework
+        (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    UpperLowerClash
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      (C.parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+          (D := D) (F := C.lowerFramework)
+          defaultMessage coverageData lockedMessageRigidity
+          uniformSupport pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
+    C defaultMessage coverageData.publicLockCoverage lockedMessageRigidity
+    uniformSupport pnpDeciderFamily constantDecoderRegime
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
 Component-level covered-locks staging theorem.  This removes the
 `RealM4EndgameMechanicalData` package from the theorem hypotheses by building
 it from the explicit construction components: the mechanical interface data,
@@ -2811,6 +2971,57 @@ theorem realM4CoveredLocksEndgameHypothesisAuditExplicitPNP_exact :
 def realM4CoveredLocksEndgameStatementExplicitPNP : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the explicit P=NP-side self-reduction package from public-lock coverage, D.8 locked-message rigidity, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing."
 
+def realM4CoverageDataEndgameConstructionInputsExplicitPNP : List String := [
+  "realM4MechanicalInterfaceData",
+  "phaseABudget",
+  "epsSmall",
+  "realCompressionLowerFramework",
+  "kernelNeutrality",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "uniformCNFSupportData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4CoverageDataEndgameConstructionInputsExplicitPNP_exact :
+    realM4CoverageDataEndgameConstructionInputsExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerFramework",
+        "kernelNeutrality",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4CoverageDataEndgameHypothesisAuditExplicitPNP : List String :=
+  realM4CoverageDataEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4CoverageDataEndgameHypothesisAuditExplicitPNP_exact :
+    realM4CoverageDataEndgameHypothesisAuditExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerFramework",
+        "kernelNeutrality",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4CoverageDataEndgameStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the explicit P=NP-side self-reduction package from public-lock representative data, D.8 locked-message rigidity, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing."
+
 def realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP :
     List String := [
   "law",
@@ -2995,8 +3206,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "selfReductionUpperDischargePackage"
     status := .partialConstructionTransferred
-    checkedName := "RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity"
-    note := "Appendix I support plus public-lock coverage supplies D.7; D.8 then constructs the public-message invariant inside the explicit-P=NP upper package."
+    checkedName := "RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity"
+    note := "Appendix I support plus public-lock representative data supplies D.7; D.8 then constructs the public-message invariant inside the explicit-P=NP upper package."
   },
   {
     item := "deterministicReadoutOnly"
@@ -3011,10 +3222,16 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "D.7 lock satisfiability plus D.8 locked-message rigidity construct the public-message invariant; D.7 is transferred from Appendix I support once public-lock coverage is supplied."
   },
   {
-    item := "publicLockSupportCoverage"
+    item := "publicLockCoverageData"
     status := .openConstruction
-    checkedName := "AppendixDWitnessData.PublicLockCoveredBySupportedInstances"
-    note := "The real M4 Appendix I public instances must cover every supported public lock syntax."
+    checkedName := "RealM4PublicLockCoverageData"
+    note := "The real M4 Appendix I construction must give a supported public-instance representative for every supported public lock syntax."
+  },
+  {
+    item := "publicLockSupportCoverage"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4PublicLockCoverageData.publicLockCoverage"
+    note := "The proposition-level Appendix D coverage condition follows from explicit public-lock representative data."
   },
   {
     item := "lockSatisfiable"
@@ -3113,6 +3330,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Constructs the explicit-P=NP upper package from public-lock coverage, D.8, uniform CNF support, and the constant decoder regime before invoking the v13 UpperLowerClash wiring."
   },
   {
+    item := "realCoverageDataConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_coverageDataAndRigidity_explicitPNP"
+    note := "Constructs the explicit-P=NP upper package from public-lock representative data, D.8, uniform CNF support, and the constant decoder regime before invoking the v13 UpperLowerClash wiring."
+  },
+  {
     item := "realComponentCoveredLocksConditionalClashStaging"
     status := .partialConstructionTransferred
     checkedName := "realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP"
@@ -3170,6 +3393,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.constructionTransferred,
@@ -3180,6 +3404,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -3195,7 +3420,7 @@ theorem realM4LiftLedger_statuses_exact :
   rfl
 
 def realM4OpenConstructionItems : List String := [
-  "publicLockSupportCoverage",
+  "publicLockCoverageData",
   "lockedMessageRigidity",
   "noPublicTargetTags",
   "hiddenGaugeProduct",
@@ -3209,7 +3434,7 @@ def realM4OpenConstructionItems : List String := [
 
 theorem realM4OpenConstructionItems_exact :
     realM4OpenConstructionItems =
-      [ "publicLockSupportCoverage",
+      [ "publicLockCoverageData",
         "lockedMessageRigidity",
         "noPublicTargetTags",
         "hiddenGaugeProduct",
