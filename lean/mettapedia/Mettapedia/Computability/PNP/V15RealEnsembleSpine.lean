@@ -2050,6 +2050,28 @@ variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
 variable {HistoryAtom : Type d} {Pivot : Type e}
 variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
 
+def ofComponents
+    (interfaceData :
+      RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+        Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+        Skeleton)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * interfaceData.phaseA.telescoping.derivativeSum ≤
+        fixedGapBudget)
+    (epsSmall : interfaceData.epsMix < (1 / 2 : Rat))
+    (lowerFramework : CompressionLowerFramework)
+    (kernelNeutrality : CompressionKernelNeutrality lowerFramework) :
+    RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+      Skeleton where
+  interfaceData := interfaceData
+  fixedGapBudget := fixedGapBudget
+  phaseABudget := phaseABudget
+  epsSmall := epsSmall
+  lowerFramework := lowerFramework
+  kernelNeutrality := kernelNeutrality
+
 def interfaceWithAnalyticFrontier
     (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
       Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
@@ -2312,6 +2334,72 @@ theorem realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
       (D := D) (F := C.lowerFramework)
       defaultMessage publicLockCoverage lockedMessageRigidity
       uniformSupport pnpDeciderFamily constantDecoderRegime)
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
+Component-level covered-locks staging theorem.  This removes the
+`RealM4EndgameMechanicalData` package from the theorem hypotheses by building
+it from the explicit construction components: the mechanical interface data,
+phase-A budget, small-boundary-mixing bound, real lower framework, and kernel
+neutrality payload.
+
+This still leaves those components as real M4 construction obligations; it
+only prevents the endgame wrapper from hiding them as one opaque parameter.
+-/
+theorem realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * M.phaseA.telescoping.derivativeSum ≤ fixedGapBudget)
+    (epsSmall : M.epsMix < (1 / 2 : Rat))
+    (lowerFramework : CompressionLowerFramework)
+    (kernelNeutrality : CompressionKernelNeutrality lowerFramework)
+    (defaultMessage : Message)
+    (publicLockCoverage :
+      D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerFramework
+        (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness : CompressionStarSWHardness lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.target M.pivotSummary M.epsMix) :
+    UpperLowerClash
+      (M.withAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponents
+          M fixedGapBudget phaseABudget epsSmall lowerFramework
+          kernelNeutrality).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity
+          (D := D) (F := lowerFramework)
+          defaultMessage publicLockCoverage lockedMessageRigidity
+          uniformSupport pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
+    (RealM4EndgameMechanicalData.ofComponents
+      M fixedGapBudget phaseABudget epsSmall lowerFramework kernelNeutrality)
+    defaultMessage publicLockCoverage lockedMessageRigidity
+    uniformSupport pnpDeciderFamily constantDecoderRegime
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
 def realM4EndgameStagingConstructionInputs : List String := [
@@ -2596,6 +2684,24 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "The real lower framework must use manuscript compression-from-success data, not toy dummy budgets."
   },
   {
+    item := "phaseABudget"
+    status := .openConstruction
+    checkedName := "RealM4EndgameMechanicalData.phaseABudget"
+    note := "The real M4 construction must prove the phase-A derivative budget bound used by the v13 parameter record."
+  },
+  {
+    item := "epsSmall"
+    status := .openConstruction
+    checkedName := "RealM4EndgameMechanicalData.epsSmall"
+    note := "The real M4 construction must prove the strict boundary-mixing smallness bound."
+  },
+  {
+    item := "kernelNeutrality"
+    status := .openConstruction
+    checkedName := "CompressionKernelNeutrality"
+    note := "The real compression lower framework must still supply kernel neutrality."
+  },
+  {
     item := "selfReductionUpper"
     status := .partialConstructionTransferred
     checkedName := "realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper"
@@ -2609,9 +2715,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "realM4EndgameMechanicalData"
-    status := .openConstruction
-    checkedName := "RealM4EndgameMechanicalData"
-    note := "The real M4 construction still has to supply the mechanical interface data, phase-A budget, eps-small bound, lower framework, and kernel-neutrality payload."
+    status := .partialConstructionTransferred
+    checkedName := "RealM4EndgameMechanicalData.ofComponents"
+    note := "The endgame wrapper is assembled from explicit components; those components remain the construction obligations."
   },
   {
     item := "realConditionalClashStaging"
@@ -2624,6 +2730,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .partialConstructionTransferred
     checkedName := "realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP"
     note := "Constructs the explicit-P=NP upper package from public-lock coverage, D.8, uniform CNF support, and the constant decoder regime before invoking the v13 UpperLowerClash wiring."
+  },
+  {
+    item := "realComponentCoveredLocksConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP"
+    note := "Builds the endgame mechanical-data wrapper from explicit components before the covered-locks clash staging theorem is invoked."
   },
   {
     item := "pnpDecider"
@@ -2678,9 +2790,13 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
-        RealM4LiftStatus.partialConstructionTransferred,
-        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
@@ -2700,7 +2816,9 @@ def realM4OpenConstructionItems : List String := [
   "admissibleHistories",
   "uniformCNFSupportData",
   "realCompressionLowerFramework",
-  "realM4EndgameMechanicalData"
+  "phaseABudget",
+  "epsSmall",
+  "kernelNeutrality"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -2714,7 +2832,9 @@ theorem realM4OpenConstructionItems_exact :
         "admissibleHistories",
         "uniformCNFSupportData",
         "realCompressionLowerFramework",
-        "realM4EndgameMechanicalData" ] := by
+        "phaseABudget",
+        "epsSmall",
+        "kernelNeutrality" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
