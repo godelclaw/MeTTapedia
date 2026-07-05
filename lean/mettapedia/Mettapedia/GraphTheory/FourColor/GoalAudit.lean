@@ -153,9 +153,22 @@ theorem closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_pla
   closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_planar
     candidate
 
+theorem closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_not_realizesAgainstNormalForm_audit
+    {V : Type} {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G)
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase) :
+    ¬ candidate.blocker.RealizesAgainstNormalForm data :=
+  closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_not_realizesAgainstNormalForm
+    data candidate
+
 theorem section92Step4N6DetailedNormalFormObstructionTarget_audit :
     Section92Step4N6DetailedNormalFormObstructionTarget :=
   section92Step4N6DetailedNormalFormObstructionTarget
+
+theorem section92Step4N6PlanarityTemplateTaxonomyObstructionTarget_audit :
+    Section92Step4N6PlanarityTemplateTaxonomyObstructionTarget :=
+  section92Step4N6PlanarityTemplateTaxonomyObstructionTarget
 
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=

@@ -2316,6 +2316,24 @@ theorem closedCollarSimplePatchN6StructuralBlocker_not_realizesAgainstNormalForm
   · exact hblocker data.normalForm.hactualCollarEmbeddingConstraints
 
 /--
+The detailed n6 taxonomy sharpens the structural branch: any positive
+structural blocker is the `planar_multigraph` prefix failure, so normal-form
+data excludes it specifically through dual-triangulation normal form.
+-/
+theorem closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_not_realizesAgainstNormalForm
+    {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G)
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase) :
+    ¬ candidate.blocker.RealizesAgainstNormalForm data := by
+  have hplanar :=
+    closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_planar
+      candidate
+  rw [hplanar]
+  intro hblocker
+  exact hblocker data.normalForm.hdualTriangulationNormalForm
+
+/--
 Detailed exhaustive lab outcome for an honest n6 normal-form representation.
 The structural branch records the exact lab prefix blocker and the normal-form
 field whose failure would be required for that blocker to apply.
@@ -2365,6 +2383,67 @@ theorem section92Step4N6DetailedNormalFormObstructionTarget :
       exact
         closedCollarSimplePatchN6StructuralBlocker_not_realizesAgainstNormalForm
           data blocker hrealizes
+  | exactTemplate candidate hrealizes =>
+      exact
+        closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+          data.normalForm candidate hrealizes
+  | residualPass pass =>
+      exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass pass
+
+/--
+Artifact-taxonomy version of the exhaustive n6 lab outcome.  The structural
+branch is not an arbitrary prefix failure; it must be a positive structural
+blocker from the detailed taxonomy, which the audit proves is always the
+planarity prefix failure.
+-/
+inductive ClosedCollarWindingFreedomSimplePatchN6TaxonomyLabOutcome
+    {V : Type} {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) where
+  | structural
+      (candidate :
+        ClosedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase)
+      (hrealizes : candidate.blocker.RealizesAgainstNormalForm data)
+  | exactTemplate
+      (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G)
+      (hrealizes : candidate.Realizes)
+  | residualPass
+      (pass : ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G)
+
+/--
+Sharper graph-facing coverage obligation for the exhaustive n6 artifact
+taxonomy: every represented normal-form annulus is assigned either the unique
+planarity-prefix structural branch, one of the two exact diagonal templates,
+or a residual pass counted after template exclusion.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      Nonempty
+        (ClosedCollarWindingFreedomSimplePatchN6TaxonomyLabOutcome data)
+
+/--
+N6 finite-subclass obstruction target with the first exact blocker named:
+the archived taxonomy reduces structural failures to the planarity prefix, so
+normal form kills that branch through dual-triangulation normal form; cyclic
+five-edge-connectivity kills exact templates; the residual pass count is zero.
+-/
+def Section92Step4N6PlanarityTemplateTaxonomyObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          False
+
+theorem section92Step4N6PlanarityTemplateTaxonomyObstructionTarget :
+    Section92Step4N6PlanarityTemplateTaxonomyObstructionTarget := by
+  intro _htaxonomy hclassified V G data
+  rcases hclassified data with ⟨outcome⟩
+  cases outcome with
+  | structural blockerCase hrealizes =>
+      exact
+        closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_not_realizesAgainstNormalForm
+          data blockerCase hrealizes
   | exactTemplate candidate hrealizes =>
       exact
         closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
