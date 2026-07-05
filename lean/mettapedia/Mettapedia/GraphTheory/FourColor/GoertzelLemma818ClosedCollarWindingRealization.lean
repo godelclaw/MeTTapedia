@@ -7326,6 +7326,86 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutH
     closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound_of_rowHistogramEntrySound
       hrowSound.1 hrowSound.2⟩
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound_of_radialCutCardinalitySound
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound := by
+  intro V G representation certificate hcertificate hkey
+  have hradialCutCountMem :
+      certificate.radialCutEdgeCount ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+          (fun certificate => certificate.radialCutEdgeCount) :=
+    List.mem_map_of_mem
+      (f := fun certificate => certificate.radialCutEdgeCount)
+      hcertificate
+  have hradialCutEdgeCount :
+      certificate.radialCutEdgeCount = 4 := by
+    simpa [hmaxcut.2.2.2.1] using hradialCutCountMem
+  have hcaseKeyMem :
+      ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+          certificate ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey :=
+    List.mem_map_of_mem
+      (f := ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey)
+      hcertificate
+  have hcaseKeyArchive :
+      ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+          certificate ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases := by
+    simpa [hmaxcut.1.2.1] using hcaseKeyMem
+  have hcase :
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases := by
+    simpa [hkey] using hcaseKeyArchive
+  have hcutCard :
+      representation.annular.radialCut.card = 4 :=
+    hcut representation hcase
+  exact hradialCutEdgeCount.trans hcutCard.symm
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound_of_rowCardinalitySound_of_maxHistogramCountSound
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound := by
+  intro V G representation certificate hcertificate hkey hradial
+  have hcard :
+      certificate.radialCutEdgeCount =
+        representation.annular.radialCut.card :=
+    hrowCard representation certificate hcertificate hkey
+  rcases hhist representation certificate hcertificate hkey hradial with
+    ⟨count, hmem, hpos⟩
+  exact ⟨count, by simpa [hcard] using hmem, hpos⟩
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_of_maxCutHistogramSoundness
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness := by
+  have hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound :=
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound_of_radialCutCardinalitySound
+      hmaxcut
+      (hsound.1 :
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound)
+  exact
+    ⟨hrowCard,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound_of_rowCardinalitySound_of_maxHistogramCountSound
+        hrowCard hsound.2⟩
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_iff_maxCutHistogramSoundness
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness ↔
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness :=
+  ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness,
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_of_maxCutHistogramSoundness
+      hmaxcut⟩
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
     (hmaxcut :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
