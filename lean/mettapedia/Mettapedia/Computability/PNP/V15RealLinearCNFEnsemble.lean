@@ -6473,6 +6473,29 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_eq_self_iff
     · intro hfalse
       cases hfalse
 
+/-- The concrete no-target-rows gauge-CNF hidden-gauge fiber over every world
+is nontrivial: flipping the free gauge bit preserves the base public instance
+and target readout while changing the satisfying witness assignment. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_nontrivialHiddenGaugeFiber
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    ∃ omega' : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+      omega'.base = omega.base ∧
+        v13RealLinearNoTargetRowsPublicInput omega'.base =
+          v13RealLinearNoTargetRowsPublicInput omega.base ∧
+        v13RealLinearNoTargetRowsGaugeCNFTarget omega' =
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega ∧
+        omega'.assignment ≠ omega.assignment := by
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFGaugeAction true omega,
+      rfl, rfl,
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction_preserves_target
+        true omega, ?_⟩
+  intro hassign
+  have hcoord := congrFun hassign none
+  simp [v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
+    v13RealLinearGaugeCNFGaugeAction] at hcoord
+
 /-- A nontrivial hidden public fiber for the gauge-buffered no-target-rows
 CNF surface is a pair of verifier-valid worlds over the same public CNF input
 with distinct satisfying assignments. -/
