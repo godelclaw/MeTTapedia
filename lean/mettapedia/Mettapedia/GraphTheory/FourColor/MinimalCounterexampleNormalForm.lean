@@ -1105,6 +1105,42 @@ theorem exists_common_boundary_apex
 
 end FiveCycleDiskTriangulationLocalData
 
+/-- Bundled local Lemma 5.3 disk data: Euler charge data plus the local triangulation facts
+interpreted against the boundary-charge profile produced by that Euler count. -/
+structure FiveCycleDiskChargeLocalData (T : SimpleGraph W) where
+  chargeData : FiveCycleDiskEulerChargeData
+  localData : FiveCycleDiskTriangulationLocalData T chargeData.toFiveBoundaryChargeProfile
+
+namespace FiveCycleDiskChargeLocalData
+
+variable {T : SimpleGraph W}
+
+/-- The bundled disk data exposes the three consecutive unit boundary charges from the Euler
+count. -/
+theorem exists_three_consecutive_charges_eq_one
+    (data : FiveCycleDiskChargeLocalData T) :
+    ∃ i : FiveBoundaryIndex,
+      data.chargeData.toFiveBoundaryChargeProfile.charge i = 1 ∧
+        data.chargeData.toFiveBoundaryChargeProfile.charge (FiveBoundaryIndex.next i) = 1 ∧
+          data.chargeData.toFiveBoundaryChargeProfile.charge
+            (FiveBoundaryIndex.next (FiveBoundaryIndex.next i)) = 1 :=
+  data.chargeData.exists_three_consecutive_charges_eq_one
+
+/-- The bundled disk data forces all boundary-edge triangle apices to coincide. -/
+theorem edgeApex_eq_edgeApex_b0
+    (data : FiveCycleDiskChargeLocalData T) :
+    ∀ i : FiveBoundaryIndex, data.localData.edgeApex i = data.localData.edgeApex .b0 :=
+  data.localData.edgeApex_eq_edgeApex_b0
+
+/-- The bundled disk data forces one interior apex adjacent to all five boundary vertices. -/
+theorem exists_common_boundary_apex
+    (data : FiveCycleDiskChargeLocalData T) :
+    ∃ x : W, data.localData.interior x ∧
+      ∀ i : FiveBoundaryIndex, T.Adj (data.localData.boundary i) x :=
+  data.localData.exists_common_boundary_apex
+
+end FiveCycleDiskChargeLocalData
+
 /-- Lemma 5.3 as the exact remaining disk-triangulation obligation: in normal form, every
 separating dual 5-cycle is tight, i.e. yields CAP5 pinch data on the primal side. -/
 def Lemma53DiskTriangulationTightnessObligation
