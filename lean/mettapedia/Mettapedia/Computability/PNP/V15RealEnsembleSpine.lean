@@ -20445,6 +20445,77 @@ theorem
 def realM4NoTargetRowsEqualityIndexedOpenSurfaceStatement : String :=
   "For the no-target-rows equality-indexed route, the public surface plus CD-ENF already derives singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories.  The concrete construction surface therefore keeps the actual no-target-rows public fields, hiddenGaugeProduct, public-lock coverage, locked-message data, and CNF address syntax as construction obligations, rather than listing those derived structural fields as theorem-level inputs."
 
+def realM4NoTargetRowsNamedLanguageLargeTargetPublicSurfaceConstructionItems :
+    List String :=
+  realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems
+
+theorem
+    realM4NoTargetRowsNamedLanguageLargeTargetPublicSurfaceConstructionItems_exact :
+    realM4NoTargetRowsNamedLanguageLargeTargetPublicSurfaceConstructionItems =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound" ] := by
+  rfl
+
+def realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems :
+    List String :=
+  realM4NoTargetRowsNamedLanguageLargeTargetPublicSurfaceConstructionItems ++
+    [ "hiddenGaugeProduct",
+      "realCompressionLowerMachineData",
+      "publicLockCoverageData",
+      "lockedMessageRigidityData",
+      "cnfVariableAddressSyntax" ]
+
+theorem
+    realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems_exact :
+    realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax" ] := by
+  rfl
+
+def realM4NoTargetRowsNamedLanguageLargeTargetDerivedStructuralItems :
+    List String :=
+  realM4NoTargetRowsEqualityIndexedDerivedStructuralItems
+
+theorem
+    realM4NoTargetRowsNamedLanguageLargeTargetDerivedStructuralItems_exact :
+    realM4NoTargetRowsNamedLanguageLargeTargetDerivedStructuralItems =
+      [ "singleMessage",
+        "noPublicTargetTags",
+        "atomCompleteness",
+        "gaugeFaithfulness",
+        "admissibleHistories" ] := by
+  rfl
+
+def realM4NoTargetRowsNamedLanguageLargeTargetOpenSurfaceStatement : String :=
+  "For the strict named-language large-target route, the no-target-rows public surface plus CD-ENF derives singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories.  The construction surface keeps the actual public fields, hidden-gauge product, real lower machine, public-lock coverage, locked-message data, and CNF address syntax as construction obligations rather than reintroducing derived structural fields as endpoint assumptions."
+
 def realM4LowerMachineConstructionItems : List String := [
   "realCompressionLowerMachineData",
   "realConstantDecoderRegime"
@@ -20730,10 +20801,9 @@ def realM4EqualityIndexedLargeTargetCompletionFrontierStatement : String :=
   "The equality-indexed large-target real v15/M4 completion frontier records the supplemental P=NP-indexed endpoint route.  Its open construction surface is the no-target-rows public surface, hiddenGaugeProduct, public-lock coverage, locked-message data, CNF address syntax, real lower-machine data, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block obligations.  The no-target-rows public surface and CD-ENF already derive singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories, so those structural fields are not repeated as open items on this route.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
 
 def realM4RealLockInConstructionObligations : List String :=
-  realM4NoTargetRowsEqualityIndexedConcreteConstructionItems ++
-    realM4LargeTargetLowerMachineConstructionItems ++
-      realM4OfficialBridgeConstructionItems ++
-        realM4LargeTargetKpolyCompatibilityConstructionItems
+  realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems ++
+    realM4OfficialBridgeConstructionItems ++
+      realM4LargeTargetKpolyCompatibilityConstructionItems
 
 theorem realM4RealLockInConstructionObligations_exact :
     realM4RealLockInConstructionObligations =
@@ -20751,10 +20821,10 @@ theorem realM4RealLockInConstructionObligations_exact :
         "gaugeIncidence",
         "gaugeBound",
         "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
         "cnfVariableAddressSyntax",
-        "realCompressionLowerMachineData",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
         "pMembershipEtaPositive",
@@ -20820,10 +20890,9 @@ def realM4RealLockInCompletionAudit : List String :=
 
 theorem realM4RealLockInCompletionAudit_eq_namedLargeTargetFrontier :
     realM4RealLockInCompletionAudit =
-      (realM4NoTargetRowsEqualityIndexedConcreteConstructionItems ++
-        realM4LargeTargetLowerMachineConstructionItems ++
-          realM4OfficialBridgeConstructionItems ++
-            realM4LargeTargetKpolyCompatibilityConstructionItems) ++
+      (realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems ++
+        realM4OfficialBridgeConstructionItems ++
+          realM4LargeTargetKpolyCompatibilityConstructionItems) ++
           realM4AfterConstructionIrreducibleInputs := by
   rfl
 
@@ -20843,10 +20912,10 @@ theorem realM4RealLockInCompletionAudit_exact :
         "gaugeIncidence",
         "gaugeBound",
         "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
         "cnfVariableAddressSyntax",
-        "realCompressionLowerMachineData",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
         "pMembershipEtaPositive",
@@ -20977,14 +21046,9 @@ def realM4NamedLanguageLargeTargetKpolySplitEndpointStatement : String :=
 
 def realM4NamedLanguageLargeTargetKpolySplitConstructionObligations :
     List String :=
-  realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems ++
-    [ "hiddenGaugeProduct",
-      "realCompressionLowerMachineData",
-      "publicLockCoverageData",
-      "lockedMessageRigidityData",
-      "cnfVariableAddressSyntax" ] ++
-      realM4OfficialBridgeConstructionItems ++
-        realM4LargeTargetKpolyCompatibilityConstructionItems
+  realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems ++
+    realM4OfficialBridgeConstructionItems ++
+      realM4LargeTargetKpolyCompatibilityConstructionItems
 
 theorem
     realM4NamedLanguageLargeTargetKpolySplitConstructionObligations_exact :
