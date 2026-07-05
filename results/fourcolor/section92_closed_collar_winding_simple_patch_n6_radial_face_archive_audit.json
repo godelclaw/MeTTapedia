@@ -249,6 +249,24 @@
       1
     ]
   ],
+  "row_coverage_slice_cases": [
+    [
+      1000788,
+      0
+    ],
+    [
+      1000788,
+      1
+    ],
+    [
+      1001293,
+      0
+    ],
+    [
+      1001293,
+      1
+    ]
+  ],
   "row_coverage_verdict": "radial_face_row_coverage_all_planar_rotations_incoherent",
   "sample_archive_files": [
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
@@ -400,9 +418,10 @@
   "slice_archive_files": [
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000789_500_cases2.json",
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json"
   ],
-  "slice_archive_json_file_count": 3,
+  "slice_archive_json_file_count": 4,
   "slice_archive_radial_order_case_count": 6,
   "slice_cases": [
     [
@@ -553,7 +572,7 @@
     }
   ],
   "source": "Artifact audit for radial-face annular embedding verdicts",
-  "total_archive_json_file_count": 6,
+  "total_archive_json_file_count": 7,
   "unique_audited_patch_topology_count": 5,
   "unique_audited_radial_order_case_count": 10,
   "unique_planar_rotation_system_count": 80,
