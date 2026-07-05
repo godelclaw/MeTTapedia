@@ -1530,6 +1530,22 @@ def closedCollarSimplePatchN8Slices5000000_5500000TemplateBlockerCounts :
   cap5LikeBlockerCount := 0
   normalFormAfterTemplateExclusionPassingCount := 0
 
+def closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 8
+  patchStartIndex := 5500000
+  patchTopologyLimit := 500000
+  processedPatchTopologyCount := 500000
+  radialOrderCaseCount := 1000000
+  profilePreservingCaseCount := 0
+  structuralFirstBlockerCount := 0
+  exactTemplateBlockerCount := 0
+  diagonalForwardTemplateCount := 0
+  diagonalReverseTemplateCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
 def closedCollarSimplePatchN8First2000000TemplateBlockerCounts :
     ClosedCollarSimplePatchTemplateBlockerSliceCounts where
   internalVertexCount := 8
@@ -1649,6 +1665,22 @@ def closedCollarSimplePatchN8First5500000TemplateBlockerCounts :
   patchTopologyLimit := 5500000
   processedPatchTopologyCount := 5500000
   radialOrderCaseCount := 11000000
+  profilePreservingCaseCount := 0
+  structuralFirstBlockerCount := 0
+  exactTemplateBlockerCount := 0
+  diagonalForwardTemplateCount := 0
+  diagonalReverseTemplateCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN8First6000000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 8
+  patchStartIndex := 0
+  patchTopologyLimit := 6000000
+  processedPatchTopologyCount := 6000000
+  radialOrderCaseCount := 12000000
   profilePreservingCaseCount := 0
   structuralFirstBlockerCount := 0
   exactTemplateBlockerCount := 0
@@ -1830,6 +1862,23 @@ def closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts :
   cap5LikeBlockerCount := 0
   normalFormAfterTemplateExclusionPassingCount := 0
 
+def closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts :
+    ClosedCollarSimplePatchTemplateBlockerArchiveCounts where
+  internalVertexCount := 8
+  archivedSliceFileCount := 13
+  archivedPatchStartIndex := 0
+  archivedPatchEndIndex := 6000000
+  processedPatchTopologyCount := 6000000
+  radialOrderCaseCount := 12000000
+  profilePreservingCaseCount := 0
+  structuralFirstBlockerCount := 0
+  exactTemplateBlockerCount := 0
+  diagonalForwardTemplateCount := 0
+  diagonalReverseTemplateCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
 /--
 Template-exclusion evidence through the 800000-1200000 six-internal
 simple-patch window.  After direct search for the two exact diagonal templates,
@@ -1999,8 +2048,8 @@ theorem closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyF
 Tracked archive manifest for the template-blocker verdict JSONs.  The n6
 archive covers the five template-blocker slices from index 800000 through the
 end of the exact six-internal space; the first 800000 cases are represented by
-the earlier structural slice aggregate.  The n8 archive covers the twelve
-template-blocker slices making up the first 5500000 prefix.
+the earlier structural slice aggregate.  The n8 archive covers the thirteen
+template-blocker slices making up the first 6000000 prefix.
 -/
 def ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :
     Prop :=
@@ -2037,20 +2086,20 @@ def ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :
     closedCollarSimplePatchN6First800000StructuralCounts.profilePreservingCaseCount +
         closedCollarSimplePatchN6TemplateBlockerArchiveCounts.profilePreservingCaseCount =
       closedCollarSimplePatchN6AllTemplateBlockerCounts.profilePreservingCaseCount ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.archivedSliceFileCount =
-      12 ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.archivedPatchStartIndex =
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.archivedSliceFileCount =
+      13 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.archivedPatchStartIndex =
       0 ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.archivedPatchEndIndex =
-      5500000 ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.processedPatchTopologyCount =
-      closedCollarSimplePatchN8First5500000TemplateBlockerCounts.processedPatchTopologyCount ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.radialOrderCaseCount =
-      closedCollarSimplePatchN8First5500000TemplateBlockerCounts.radialOrderCaseCount ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.profilePreservingCaseCount =
-      closedCollarSimplePatchN8First5500000TemplateBlockerCounts.profilePreservingCaseCount ∧
-    closedCollarSimplePatchN8First5500000TemplateBlockerArchiveCounts.normalFormAfterTemplateExclusionPassingCount =
-      closedCollarSimplePatchN8First5500000TemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.archivedPatchEndIndex =
+      6000000 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.radialOrderCaseCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.radialOrderCaseCount ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerArchiveCounts.normalFormAfterTemplateExclusionPassingCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount
 
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence := by
@@ -2910,6 +2959,104 @@ theorem closedCollarWindingFreedomSimplePatchN8First5500000CoverageEvidence :
     decide
 
 /--
+Six-million-prefix eight-internal simple-patch evidence.  The lab processed
+the first 6000000 simple cubic four-terminal patch topologies at eight
+internal vertices, tested both radial orders, and found no profile-preserving
+candidate for the closed-collar winding-freedom witness.  This is a
+continuous prefix certificate, not an exhaustion certificate.
+-/
+def ClosedCollarWindingFreedomSimplePatchN8First6000000NoProfilePreservingEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN8First5500000NoProfilePreservingEvidence ∧
+    closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts.internalVertexCount =
+      8 ∧
+    closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts.patchStartIndex =
+      5500000 ∧
+    closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts.patchTopologyLimit =
+      500000 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.internalVertexCount =
+      8 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.patchStartIndex =
+      0 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.patchTopologyLimit =
+      6000000 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount =
+      6000000 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.radialOrderCaseCount =
+      12000000 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.profilePreservingCaseCount =
+      0 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.structuralFirstBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.exactTemplateBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN8First5500000TemplateBlockerCounts.processedPatchTopologyCount +
+        closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN8First5500000TemplateBlockerCounts.radialOrderCaseCount +
+        closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts.radialOrderCaseCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.radialOrderCaseCount ∧
+    closedCollarSimplePatchN8First5500000TemplateBlockerCounts.profilePreservingCaseCount +
+        closedCollarSimplePatchN8Slices5500000_6000000TemplateBlockerCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN8First6000000NoProfilePreservingEvidence :
+    ClosedCollarWindingFreedomSimplePatchN8First6000000NoProfilePreservingEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN8First5500000NoProfilePreservingEvidence,
+      ?_⟩
+  decide
+
+/-- Lab-side impossibility of a profile-preserving candidate in the first
+6000000 eight-internal simple-patch prefix. -/
+structure ClosedCollarWindingFreedomSimplePatchN8First6000000ProfilePreservingCandidate where
+  hprofileCountPositive :
+    0 <
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN8First6000000_noProfilePreservingCandidate
+    (candidate : ClosedCollarWindingFreedomSimplePatchN8First6000000ProfilePreservingCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN8First6000000TemplateBlockerCounts.profilePreservingCaseCount =
+        0 := rfl
+  have hpos := candidate.hprofileCountPositive
+  omega
+
+/--
+Scope certificate for the current eight-internal simple-patch lab: the checked
+first-6000000 prefix is strict, leaves 1183087725 generated topologies outside
+the prefix, and covers less than one one-hundred-ninetieth of the exact n8
+labelled simple-patch topology space.
+-/
+def ClosedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN8First6000000NoProfilePreservingEvidence ∧
+    closedCollarSimplePatchN8ExactPatchTopologyCount = 1189087725 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount =
+      6000000 ∧
+    closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount <
+      closedCollarSimplePatchN8ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN8ExactPatchTopologyCount -
+        closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount =
+      1183087725 ∧
+    190 *
+        closedCollarSimplePatchN8First6000000TemplateBlockerCounts.processedPatchTopologyCount <
+      closedCollarSimplePatchN8ExactPatchTopologyCount
+
+theorem closedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence :
+    ClosedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN8First6000000NoProfilePreservingEvidence,
+      ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
 Stratified-sample evidence for the eight-internal simple-patch space.  The lab
 unranked 33 evenly spaced exact topology indices, including the first and last
 generated topology, tested both radial orders, and found no profile-preserving
@@ -2971,21 +3118,21 @@ theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingC
   omega
 
 /--
-Current eight-internal frontier evidence.  The continuous first-5500000
+Current eight-internal frontier evidence.  The continuous first-6000000
 prefix and the 33-point indexed sample found no profile-preserving
 eight-internal simple-patch candidate, while the coverage certificate records
 that this is not an exhaustion of the n8 space.
 -/
 def ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence : Prop :=
   ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence ∧
-    ClosedCollarWindingFreedomSimplePatchN8First5500000CoverageEvidence ∧
+    ClosedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence ∧
       ClosedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence
 
 theorem closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence :
     ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence := by
   exact
     ⟨closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence,
-      closedCollarWindingFreedomSimplePatchN8First5500000CoverageEvidence,
+      closedCollarWindingFreedomSimplePatchN8First6000000CoverageEvidence,
       closedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence⟩
 
 /--
