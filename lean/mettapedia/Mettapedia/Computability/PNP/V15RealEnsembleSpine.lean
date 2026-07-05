@@ -18301,6 +18301,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The no-target-rows locked-message official endpoint can use the large-target K-poly compatibility decomposition instead of a direct below-linear-floor assumption."
   },
   {
+    item := "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityNamedLanguageBundle"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilitySplit"
+    note := "The large-target K-poly compatibility route now packages named-language NP membership and non-membership, class inequality, official separation, and the existential endpoint from one explicit construction surface."
+  },
+  {
     item := "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityClassInequality"
     status := .partialConstructionTransferred
     checkedName := "realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality"
@@ -18406,6 +18412,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realSelfReductionUpperExplicitPNPLargeTargetDischarge",
         "realInternalLargeTargetKpolyCompatibilityConditionalClash",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityOfficialClassInequality",
+        "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityNamedLanguageBundle",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityClassInequality",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityOfficialEndpoint",
         "realNoTargetRowsEqualityIndexedConstructionDataMechanicalInterface",
@@ -18429,6 +18436,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -19104,6 +19112,104 @@ theorem realM4NamedLanguageLargeTargetKpolySplitEndpointHypothesisAudit_exact :
 
 def realM4NamedLanguageLargeTargetKpolySplitEndpointStatement : String :=
   "The large-target K-poly split named-language endpoint refutes P-membership of the official language after replacing the bundled uniform constant-decoder regime by explicit P-membership-indexed eta positivity, K-poly identification with the fixed decoder, etaTimes identification with the linear floor, and target-block growth over the fixed decoder cost.  After those construction obligations, the remaining mathematical inputs are exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing."
+
+def realM4NamedLanguageLargeTargetKpolySplitConstructionObligations :
+    List String :=
+  realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems ++
+    [ "hiddenGaugeProduct",
+      "realCompressionLowerMachineData",
+      "publicLockCoverageData",
+      "lockedMessageRigidityData",
+      "cnfVariableAddressSyntax" ] ++
+      realM4OfficialBridgeConstructionItems ++
+        realM4LargeTargetKpolyCompatibilityConstructionItems
+
+theorem
+    realM4NamedLanguageLargeTargetKpolySplitConstructionObligations_exact :
+    realM4NamedLanguageLargeTargetKpolySplitConstructionObligations =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost" ] := by
+  rfl
+
+def realM4NamedLanguageLargeTargetKpolySplitIrreducibleInputs :
+    List String :=
+  realM4AfterConstructionIrreducibleInputs
+
+theorem realM4NamedLanguageLargeTargetKpolySplitIrreducibleInputs_exact :
+    realM4NamedLanguageLargeTargetKpolySplitIrreducibleInputs =
+      [ "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NamedLanguageLargeTargetKpolySplitCompletionAudit :
+    List String :=
+  realM4NamedLanguageLargeTargetKpolySplitConstructionObligations ++
+    realM4NamedLanguageLargeTargetKpolySplitIrreducibleInputs
+
+theorem
+    realM4NamedLanguageLargeTargetKpolySplitCompletionAudit_eq_endpoint :
+    realM4NamedLanguageLargeTargetKpolySplitCompletionAudit =
+      realM4NamedLanguageLargeTargetKpolySplitEndpointHypothesisAudit := by
+  rfl
+
+theorem realM4NamedLanguageLargeTargetKpolySplitCompletionAudit_exact :
+    realM4NamedLanguageLargeTargetKpolySplitCompletionAudit =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NamedLanguageLargeTargetKpolySplitCompletionStatement : String :=
+  "The named-language large-target K-poly split route has a checked theorem boundary equal to its construction obligations followed by exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  The construction side contains the no-target-rows public surface, hidden-gauge product, real lower machine, public-lock coverage, locked-message data, CNF address syntax, official language/P-to-decider data, and P-membership-indexed eta/K-poly/target-block facts.  It is the strict named-language route, not an unconditional PNP proof and not a claim that the real M4 construction surface is already inhabited."
 
 def realM4NamedLanguageLargeTargetKpolySplitBundleStatement : String :=
   "The large-target K-poly split bundle packages named-language NP membership and non-membership, Cook-style class inequality, the official separation proposition, and the existential NP-not-P endpoint from the same explicit construction surface.  Its mathematical frontier inputs remain exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; the P-membership-indexed eta, K-poly, floor, and target-block facts are construction obligations for locking the real route."
