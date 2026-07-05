@@ -1837,6 +1837,115 @@ def v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple :
     rcases data with ⟨msg, spare, gauge⟩
     rfl
 
+/-- The concrete carrier equivalence exposes exactly the public message bit,
+public spare-row bit, and free hidden-gauge bit. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_apply
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple omega =
+      (omega.publicInput.msg,
+        (omega.publicInput.spare, omega.assignment none)) :=
+  rfl
+
+/-- Under the concrete carrier equivalence, the hidden-gauge action preserves
+both public row bits and xors the free hidden-gauge coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_action
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction
+          gamma omega) =
+      (omega.publicInput.msg,
+        (omega.publicInput.spare,
+          gamma ^^
+            v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega)) := by
+  cases gamma <;>
+    simp [v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_apply,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge,
+      v13RealLinearSmallNoTargetRowsCNFHiddenGauge,
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction,
+      v13RealLinearGaugeCNFGaugeAction]
+
+/-- Over a fixed public no-target-row CNF instance, any two verifier-valid
+SAT worlds differ by one Boolean hidden-gauge action. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_transitive_of_publicInput_eq
+    (omega₀ omega₁ : V13RealLinearSmallNoTargetRowsCNFSATWorld)
+    (hPublic : omega₀.publicInput = omega₁.publicInput) :
+    ∃ gamma : V13RealLinearSmallNoTargetRowsCNFGauge,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega₀ =
+        omega₁ := by
+  refine
+    ⟨v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega₀ ^^
+      v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega₁,
+      ?_⟩
+  apply v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple.injective
+  rw [v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_action,
+    v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_apply]
+  cases h₀ : omega₀.assignment none <;>
+    cases h₁ : omega₁.assignment none <;>
+    simp [hPublic, h₀, h₁,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge,
+      v13RealLinearSmallNoTargetRowsCNFHiddenGauge]
+
+/-- Exact orbit characterization for the concrete no-target-row SAT-world
+hidden-gauge action. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_eq_iff
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega₀ omega₁ : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega₀ =
+      omega₁ ↔
+      omega₀.publicInput = omega₁.publicInput ∧
+        (gamma ^^
+          v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega₀) =
+          v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega₁ := by
+  constructor
+  · intro hAction
+    have hEquiv :=
+      congrArg v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple
+        hAction
+    rw [v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_action,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_apply]
+      at hEquiv
+    constructor
+    · cases omega₀ with
+      | mk Y₀ assignment₀ sat₀ =>
+          cases omega₁ with
+          | mk Y₁ assignment₁ sat₁ =>
+              cases Y₀ with
+              | mk msg₀ spare₀ =>
+                  cases Y₁ with
+                  | mk msg₁ spare₁ =>
+                      simp at hEquiv ⊢
+                      exact ⟨hEquiv.1, hEquiv.2.1⟩
+    · simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge,
+        v13RealLinearSmallNoTargetRowsCNFHiddenGauge] using
+        congrArg Prod.snd (congrArg Prod.snd hEquiv)
+  · rintro ⟨hPublic, hGauge⟩
+    apply v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple.injective
+    calc
+      v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple
+          (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction
+            gamma omega₀) =
+        (omega₀.publicInput.msg,
+          (omega₀.publicInput.spare,
+            gamma ^^
+              v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge
+                omega₀)) :=
+        v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_action
+          gamma omega₀
+      _ =
+        (omega₁.publicInput.msg,
+          (omega₁.publicInput.spare,
+            v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge
+              omega₁)) := by
+        rw [hPublic, hGauge]
+      _ =
+        v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple
+          omega₁ := by
+        rw [v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple_apply]
+        rfl
+
 instance v13RealLinearSmallNoTargetRowsCNFSATWorldFintype :
     Fintype V13RealLinearSmallNoTargetRowsCNFSATWorld :=
   Fintype.ofEquiv (Bool × (Bool × Bool))
