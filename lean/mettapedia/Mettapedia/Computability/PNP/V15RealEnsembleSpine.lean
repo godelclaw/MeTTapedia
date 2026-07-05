@@ -4608,6 +4608,50 @@ structure RealM4OfficialPToUpperBridgeData
     C.inP separatedLanguage -> RealM4SelfReductionUpperExplicitPNPDischarge D F
 
 /--
+Construction-side support for the decomposed official P-to-decider bridge.
+These are M4/Appendix-I upper ingredients, not official complexity-class
+content: a default message, public-lock coverage, D.8 rigidity, and uniform
+CNF support.
+-/
+structure RealM4OfficialPToDeciderUpperSupportData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness) where
+  defaultMessage : Message
+  coverageData : RealM4PublicLockCoverageData D
+  lockedMessageRigidity : D.core.LockedMessageRigidity
+  uniformSupport : RealM4CNFUniformSupportData D
+
+/--
+Official-language part of the decomposed P-to-decider bridge.  This is the
+remaining Cook-style bridge content after construction-side M4 support has
+been separated: name the NP language, prove it is in NP, and show that
+P-membership for that language supplies the explicit SAT-decider family and
+constant-decoder regime required by the upper self-reduction.
+-/
+structure RealM4OfficialPToDeciderLanguageData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (F : CompressionLowerFramework)
+    (C : CookStylePNPClassInterface.{p})
+    (S : RealM4OfficialPToDeciderUpperSupportData D) where
+  separatedLanguage : C.Language
+  separatedLanguage_inNP : C.inNP separatedLanguage
+  pnpDeciderFamily_of_inP :
+    C.inP separatedLanguage -> RealM4ExplicitPNPDeciderFamily D
+  constantDecoderRegime_of_inP :
+    ∀ hP : C.inP separatedLanguage,
+      RealM4UniformConstantDecoderRegime F
+        (S.uniformSupport.withPNPDecider (pnpDeciderFamily_of_inP hP))
+
+/--
 Decomposed official upper bridge.  This is the next sharper target behind
 `RealM4OfficialPToUpperBridgeData`: P-membership of the named NP language must
 produce the explicit SAT decider family and constant-decoder regime, while the
@@ -4634,6 +4678,29 @@ structure RealM4OfficialPToDeciderUpperBridgeData
     ∀ hP : C.inP separatedLanguage,
       RealM4UniformConstantDecoderRegime F
         (uniformSupport.withPNPDecider (pnpDeciderFamily_of_inP hP))
+
+/-- Reassemble the monolithic P-to-decider bridge from separated construction
+support and official-language implication data. -/
+def realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {F : CompressionLowerFramework}
+    {C : CookStylePNPClassInterface.{p}}
+    (S : RealM4OfficialPToDeciderUpperSupportData D)
+    (L : RealM4OfficialPToDeciderLanguageData D F C S) :
+    RealM4OfficialPToDeciderUpperBridgeData D F C where
+  separatedLanguage := L.separatedLanguage
+  separatedLanguage_inNP := L.separatedLanguage_inNP
+  defaultMessage := S.defaultMessage
+  coverageData := S.coverageData
+  lockedMessageRigidity := S.lockedMessageRigidity
+  uniformSupport := S.uniformSupport
+  pnpDeciderFamily_of_inP := L.pnpDeciderFamily_of_inP
+  constantDecoderRegime_of_inP := L.constantDecoderRegime_of_inP
 
 namespace RealM4OfficialPToDeciderUpperBridgeData
 
@@ -6040,6 +6107,174 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
       M hStar hSafe hBounded hBoundary hBridge
 
 /--
+No-target-rows official endpoint from separated support and language bridge
+data.  This is the same route as
+`realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderBridge`,
+but the construction-side M4 support data and the official-language
+P-membership implication are separate hypotheses.
+-/
+theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (supportData : RealM4OfficialPToDeciderUpperSupportData D)
+    (languageData :
+      RealM4OfficialPToDeciderLanguageData
+        D lowerMachine.lowerFramework C supportData) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderBridge
+    i₀ coordinate law transcript observerBit phaseA semantics
+    observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing
+    (realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
+      supportData languageData)
+
+/--
+Existential no-target-rows endpoint from separated construction support and
+official-language implication data.
+-/
+theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (supportData : RealM4OfficialPToDeciderUpperSupportData D)
+    (languageData :
+      RealM4OfficialPToDeciderLanguageData
+        D lowerMachine.lowerFramework C supportData) :
+    ∃ separatedLanguage : C.Language,
+      C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderBridge
+    i₀ coordinate law transcript observerBit phaseA semantics
+    observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing
+    (realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
+      supportData languageData)
+
+/--
 Cook-style official endpoint wrapper for the no-target-rows canonical-gap
 real-frontier route.  The internal clash uses exactly the three analytic
 frontier objects plus StarSW and the explicit P=NP decider; the Cook bridge
@@ -6781,6 +7016,60 @@ theorem realM4OfficialUpperBridgeConstructionInputs_exact :
 
 def realM4OfficialUpperBridgeStatement : String :=
   "For the real v15/M4 Cook-style bridge, the nondegenerate endpoint obligation is to name an NP language and prove that P-membership for that language constructs the explicit self-reduction upper discharge used by the real endgame.  StarSW hardness, the lower machine, and the three analytic fields remain outside this bridge and visible at the theorem boundary."
+
+def realM4OfficialPToDeciderUpperSupportConstructionInputs :
+    List String := [
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "uniformCNFSupportData"
+]
+
+theorem realM4OfficialPToDeciderUpperSupportConstructionInputs_exact :
+    realM4OfficialPToDeciderUpperSupportConstructionInputs =
+      [ "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData" ] := by
+  rfl
+
+def realM4OfficialPToDeciderLanguageConstructionInputs : List String := [
+  "cookStylePNPClassInterface",
+  "separatedLanguage",
+  "separatedLanguageInNP",
+  "pMembershipToPNPDeciderFamily",
+  "pMembershipConstantDecoderRegime"
+]
+
+theorem realM4OfficialPToDeciderLanguageConstructionInputs_exact :
+    realM4OfficialPToDeciderLanguageConstructionInputs =
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "pMembershipToPNPDeciderFamily",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialPToDeciderUpperBridgeDecomposedInputs :
+    List String :=
+  realM4OfficialPToDeciderUpperSupportConstructionInputs ++
+    realM4OfficialPToDeciderLanguageConstructionInputs
+
+theorem realM4OfficialPToDeciderUpperBridgeDecomposedInputs_exact :
+    realM4OfficialPToDeciderUpperBridgeDecomposedInputs =
+      [ "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "pMembershipToPNPDeciderFamily",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialPToDeciderUpperBridgeDecompositionStatement : String :=
+  "The real v15/M4 official P-to-decider upper bridge decomposes into construction-side support data and official-language implication data.  The support data contains the default message, public-lock coverage, D.8 locked-message rigidity, and uniform CNF support.  The remaining official bridge obligation is to name the NP language and prove that P-membership yields the Appendix-I SAT decider family plus the matching constant-decoder regime."
 
 def realM4OfficialPToDeciderUpperBridgeConstructionInputs : List String := [
   "cookStylePNPClassInterface",
@@ -8424,7 +8713,8 @@ def realM4NoTargetRowsPToDeciderOfficialEndpointConstructionInputs :
     "gaugeBound",
     "hiddenGaugeProduct",
     "realCompressionLowerMachineData",
-    "officialPToDeciderUpperBridgeData" ]
+    "officialPToDeciderUpperSupportData",
+    "officialPToDeciderLanguageData" ]
 
 theorem realM4NoTargetRowsPToDeciderOfficialEndpointConstructionInputs_exact :
     realM4NoTargetRowsPToDeciderOfficialEndpointConstructionInputs =
@@ -8443,7 +8733,8 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointConstructionInputs_exact :
         "gaugeBound",
         "hiddenGaugeProduct",
         "realCompressionLowerMachineData",
-        "officialPToDeciderUpperBridgeData" ] := by
+        "officialPToDeciderUpperSupportData",
+        "officialPToDeciderLanguageData" ] := by
   rfl
 
 def realM4NoTargetRowsPToDeciderOfficialEndpointContentInputs :
@@ -8483,7 +8774,8 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointHypothesisAudit_exact :
         "gaugeBound",
         "hiddenGaugeProduct",
         "realCompressionLowerMachineData",
-        "officialPToDeciderUpperBridgeData",
+        "officialPToDeciderUpperSupportData",
+        "officialPToDeciderLanguageData",
         "starSWHardness",
         "safeQSSM",
         "boundedGaugeIncidence",
@@ -8491,7 +8783,7 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointHypothesisAudit_exact :
   rfl
 
 def realM4NoTargetRowsPToDeciderOfficialEndpointStatement : String :=
-  "For the real v15/M4 no-target-rows staging route, the Cook-style endpoint follows from the explicit real public-surface and lower-machine construction data, the decomposed official P-membership-to-decider upper bridge, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The theorem does not take a free P=NP decider family or raw clash-to-not-P bridge; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+  "For the real v15/M4 no-target-rows staging route, the Cook-style endpoint follows from the explicit real public-surface and lower-machine construction data, separated official upper support data, official P-membership-to-decider language data, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The theorem does not take a free P=NP decider family or raw clash-to-not-P bridge; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
 def realM4OfficialEndpointConstructionInputsExplicitPNP : List String :=
   realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgameConstructionInputsExplicitPNP ++
@@ -8869,9 +9161,21 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "officialPToDeciderUpperBridgeData"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage"
+    note := "The monolithic official P-to-decider bridge is assembled from separated construction-side upper support data and official-language implication data."
+  },
+  {
+    item := "officialPToDeciderUpperSupportData"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToDeciderUpperSupportData"
+    note := "Construction-side upper support is now separated from the official bridge: default message, public-lock coverage, D.8 rigidity, and uniform CNF support are visible construction obligations."
+  },
+  {
+    item := "officialPToDeciderLanguageData"
     status := .openConstruction
-    checkedName := "RealM4OfficialPToDeciderUpperBridgeData"
-    note := "The official bridge must prove that P-membership of the named NP language yields the Appendix-I SAT decider family and constant-decoder regime."
+    checkedName := "RealM4OfficialPToDeciderLanguageData"
+    note := "Remaining official Cook-style bridge content: name the NP language and prove that P-membership supplies the Appendix-I SAT decider family and matching constant-decoder regime."
   },
   {
     item := "officialPToDeciderUpperBridgeAdapter"
@@ -8980,6 +9284,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -9001,7 +9307,7 @@ def realM4OpenConstructionItems : List String := [
   "admissibleHistories",
   "cnfVariableNatCoding",
   "realCompressionLowerMachineData",
-  "officialPToDeciderUpperBridgeData"
+  "officialPToDeciderLanguageData"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -9013,7 +9319,7 @@ theorem realM4OpenConstructionItems_exact :
         "admissibleHistories",
         "cnfVariableNatCoding",
         "realCompressionLowerMachineData",
-        "officialPToDeciderUpperBridgeData" ] := by
+        "officialPToDeciderLanguageData" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
