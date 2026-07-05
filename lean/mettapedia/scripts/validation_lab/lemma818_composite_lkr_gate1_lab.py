@@ -1938,6 +1938,91 @@ def simple_patch_profile_preserving_extension(
     return rec(0)
 
 
+def simple_patch_profile_extension_diagnostic(
+    model: CompositeModel,
+    patch_edge_names: tuple[str, ...],
+    radial_edges: tuple[str, str],
+    fixed_edge_colors: dict[str, str],
+    desired_profile: list[dict[str, object]],
+) -> dict[str, object]:
+    colors = dict(fixed_edge_colors)
+    for edge, color in zip(radial_edges, ("r", "b")):
+        colors[edge] = color
+
+    incident: dict[str, list[str]] = {
+        vertex: [] for vertex in model.gadget.internal_vertices
+    }
+    for edge, (u, v) in model.gadget.endpoints.items():
+        incident[u].append(edge)
+        incident[v].append(edge)
+
+    def vertex_partial_ok(vertex: str) -> bool:
+        seen = [colors[edge] for edge in incident[vertex] if edge in colors]
+        return len(seen) == len(set(seen))
+
+    terminal_conflicts = [
+        vertex for vertex in incident if not vertex_partial_ok(vertex)
+    ]
+    if terminal_conflicts:
+        return {
+            "profile_failure_kind": "terminal_precolor_conflict",
+            "proper_tait_extension_count": 0,
+            "matching_profile_extension_count": 0,
+            "profile_variant_count": 0,
+            "terminal_precolor_conflict_vertices": terminal_conflicts,
+        }
+
+    unassigned_patch_edges = [edge for edge in patch_edge_names if edge not in colors]
+    unassigned_patch_edges.sort(
+        key=lambda edge: -sum(
+            1
+            for vertex in model.gadget.endpoints[edge]
+            for incident_edge in incident[vertex]
+            if incident_edge in colors
+        )
+    )
+
+    proper_tait_extension_count = 0
+    matching_profile_extension_count = 0
+    profile_variants: set[str] = set()
+
+    def rec(i: int) -> None:
+        nonlocal proper_tait_extension_count, matching_profile_extension_count
+        if i == len(unassigned_patch_edges):
+            state = tuple(colors[edge] for edge in model.gadget.edges)
+            if not proper_state_check(model.gadget, state)["proper"]:
+                return
+            proper_tait_extension_count += 1
+            profile = closed_collar_profile_payload_for_model(model, state)
+            profile_variants.add(json.dumps(profile, sort_keys=True))
+            if profile == desired_profile:
+                matching_profile_extension_count += 1
+            return
+
+        edge = unassigned_patch_edges[i]
+        u, v = model.gadget.endpoints[edge]
+        for color in COLORS:
+            colors[edge] = color
+            if vertex_partial_ok(u) and vertex_partial_ok(v):
+                rec(i + 1)
+            del colors[edge]
+
+    rec(0)
+    if matching_profile_extension_count:
+        profile_failure_kind = None
+    elif proper_tait_extension_count:
+        profile_failure_kind = "proper_extensions_wrong_profile"
+    else:
+        profile_failure_kind = "no_proper_tait_extension"
+    return {
+        "profile_failure_kind": profile_failure_kind,
+        "proper_tait_extension_count": proper_tait_extension_count,
+        "matching_profile_extension_count": matching_profile_extension_count,
+        "profile_variant_count": len(profile_variants),
+        "terminal_precolor_conflict_vertices": [],
+    }
+
+
 def audit_closed_collar_winding_simple_patch_search(
     tau_states: list[tuple[str, ...]],
     max_internal_vertices: int,
@@ -3568,6 +3653,9 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
     first_blocker_histogram: Counter[str] = Counter()
     exact_template_histogram: Counter[str] = Counter()
     non_template_minimum_small_cut_histogram: Counter[str] = Counter()
+    profile_failure_kind_histogram: Counter[str] = Counter()
+    first_blocking_state_index_histogram: Counter[str] = Counter()
+    wrong_profile_proper_extension_count_histogram: Counter[str] = Counter()
     samples: list[dict[str, object]] = []
     case_verdicts: list[dict[str, object]] = []
     sampled_blockers: set[str] = set()
@@ -3584,6 +3672,61 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
         radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
         for radial_order_index, radial_order in enumerate(radial_orders):
             radial_order_case_count += 1
+            model, patch_edge_names, radial_edges = simple_patch_model(
+                base_model,
+                patch_edges,
+                radial_order,
+            )
+            first_profile_failure: dict[str, object] | None = None
+            for state_payload in base_states:
+                assert isinstance(state_payload, dict)
+                raw_state = state_payload.get("state", {})
+                desired_profile = state_payload.get("winding_profile", [])
+                assert isinstance(raw_state, dict)
+                assert isinstance(desired_profile, list)
+                fixed_edge_colors = {
+                    edge: str(raw_state[edge])
+                    for edge in base_model.gadget.edges
+                    if edge not in PATCH_REMOVED_PARALLEL_EDGES
+                }
+                diagnostic = simple_patch_profile_extension_diagnostic(
+                    model,
+                    patch_edge_names,
+                    radial_edges,
+                    fixed_edge_colors,
+                    desired_profile,
+                )
+                if int(diagnostic["matching_profile_extension_count"]) == 0:
+                    first_profile_failure = {
+                        "first_blocking_state_index":
+                            state_payload.get("state_index"),
+                        **diagnostic,
+                    }
+                    break
+
+            if first_profile_failure is not None:
+                failure_kind = str(first_profile_failure["profile_failure_kind"])
+                profile_failure_kind_histogram[failure_kind] += 1
+                first_blocking_state_index_histogram[
+                    str(first_profile_failure["first_blocking_state_index"])
+                ] += 1
+                if failure_kind == "proper_extensions_wrong_profile":
+                    wrong_profile_proper_extension_count_histogram[
+                        str(first_profile_failure["proper_tait_extension_count"])
+                    ] += 1
+                case_verdicts.append(
+                    {
+                        "patch_index": patch_index,
+                        "patch_edge_count": len(patch_edges),
+                        "radial_order_index": radial_order_index,
+                        "radial_order": list(radial_order),
+                        "profile_preserving": False,
+                        "verdict": "no_profile_preserving_extension",
+                        **first_profile_failure,
+                    }
+                )
+                continue
+
             case_result = classify_simple_patch_template_blocker_case(
                 base_model,
                 base_states,
@@ -3593,17 +3736,7 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
                 sample_limit,
             )
             if case_result is None:
-                case_verdicts.append(
-                    {
-                        "patch_index": patch_index,
-                        "patch_edge_count": len(patch_edges),
-                        "radial_order_index": radial_order_index,
-                        "radial_order": list(radial_order),
-                        "profile_preserving": False,
-                        "verdict": "no_profile_preserving_extension",
-                    }
-                )
-                continue
+                raise AssertionError("profile diagnostic and classifier disagree")
             profile_preserving_case_count += 1
             blocker_name = str(case_result["blocker_name"])
             case_verdicts.append(
@@ -3703,6 +3836,12 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
                 normal_form_after_template_exclusion_passing_count,
             "first_failed_after_template_exclusion_histogram":
                 dict(sorted(first_blocker_histogram.items())),
+            "profile_failure_kind_histogram":
+                dict(sorted(profile_failure_kind_histogram.items())),
+            "first_blocking_state_index_histogram":
+                dict(sorted(first_blocking_state_index_histogram.items())),
+            "wrong_profile_proper_extension_count_histogram":
+                dict(sorted(wrong_profile_proper_extension_count_histogram.items())),
             "exact_template_histogram":
                 dict(sorted(exact_template_histogram.items())),
             "non_template_minimum_small_cyclic_cut_size_histogram":

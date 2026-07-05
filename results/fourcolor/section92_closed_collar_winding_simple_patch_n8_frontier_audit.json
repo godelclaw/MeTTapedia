@@ -98,8 +98,17 @@
   "source": "Artifact audit for n8 closed-collar winding simple-patch frontier verdicts",
   "stratified_sample": {
     "case_verdict_count": 130,
+    "first_blocking_state_index_histogram": {
+      "0": 125,
+      "2": 5
+    },
     "no_profile_preserving_case_count": 130,
     "normal_form_after_template_exclusion_passing_count": 0,
+    "profile_failure_kind_histogram": {
+      "no_proper_tait_extension": 38,
+      "proper_extensions_wrong_profile": 76,
+      "terminal_precolor_conflict": 16
+    },
     "profile_preserving_case_count": 0,
     "radial_order_case_count": 130,
     "sampled_patch_indices": [
@@ -170,7 +179,14 @@
       1189087724
     ],
     "sampled_patch_topology_count": 65,
-    "verdict": "n8_stratified_65_found_no_profile_preserving_patch"
+    "verdict": "n8_stratified_65_found_no_profile_preserving_patch",
+    "wrong_profile_proper_extension_count_histogram": {
+      "1": 39,
+      "2": 23,
+      "3": 8,
+      "4": 4,
+      "6": 2
+    }
   },
   "stratified_sample_file": "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_65.json",
   "verdict": "n8_frontier_no_profile_preserving_cases_in_checked_prefix_or_stratified_sample"
