@@ -7226,6 +7226,106 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHisto
   ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound ∧
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound
 
+/--
+Row-level semantic cardinality obligation: the audited row certificate's
+`radialCutEdgeCount` is the cardinality of the radial cut in the represented
+annulus.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (certificate : ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate) →
+        certificate ∈
+            closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates →
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+              certificate =
+            (representation.patchTopologyIndex, representation.radialOrderIndex.1) →
+            certificate.radialCutEdgeCount =
+              representation.annular.radialCut.card
+
+/--
+Row-level semantic histogram obligation: if a represented annulus has a
+coherent cut-open radial face, the matching audited row records a positive
+histogram entry at the row's radial-cut cardinality.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (certificate : ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate) →
+        certificate ∈
+            closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates →
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+              certificate =
+            (representation.patchTopologyIndex, representation.radialOrderIndex.1) →
+            ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+              representation.annular →
+              ∃ count : Nat,
+                (certificate.radialCutEdgeCount, count) ∈
+                    certificate.maxRadialCutEdgesOnSingleFaceHistogram ∧
+                  0 < count
+
+/--
+Row-level semantic soundness package for the radial-face archive.  This is the
+graph-facing meaning of the archived row counts before they are collapsed to
+the existing max-cut histogram soundness package.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∧
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound_of_rowCardinalitySound
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hrow :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound := by
+  intro V G representation hcase
+  rcases
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCertificate_exists_of_archiveCase
+      hmaxcut.1 hcase with
+    ⟨certificate, hcertificate, hkey⟩
+  have hradialCutCountMem :
+      certificate.radialCutEdgeCount ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+          (fun certificate => certificate.radialCutEdgeCount) :=
+    List.mem_map_of_mem
+      (f := fun certificate => certificate.radialCutEdgeCount)
+      hcertificate
+  have hradialCutEdgeCount :
+      certificate.radialCutEdgeCount = 4 := by
+    simpa [hmaxcut.2.2.2.1] using hradialCutCountMem
+  exact
+    (hrow representation certificate hcertificate hkey).symm.trans
+      hradialCutEdgeCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound_of_rowHistogramEntrySound
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound := by
+  intro V G representation certificate hcertificate hkey hradial
+  have hcard :
+      certificate.radialCutEdgeCount =
+        representation.annular.radialCut.card :=
+    hrowCard representation certificate hcertificate hkey
+  rcases hrowHist representation certificate hcertificate hkey hradial with
+    ⟨count, hmem, hpos⟩
+  exact ⟨count, by simpa [hcard] using hmem, hpos⟩
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+    (hrowSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness :=
+  ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound_of_rowCardinalitySound
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence
+      hrowSound.1,
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound_of_rowHistogramEntrySound
+      hrowSound.1 hrowSound.2⟩
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
     (hmaxcut :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
@@ -14121,6 +14221,101 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoO
       fun hsound =>
         closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness
           hgeometry hradial hn6 hkeys hsound⟩
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowHistogramSoundness
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrowSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_maxCutHistogramSoundness
+    hforces hgeometry hradial hn6 hkeys
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+      hrowSound)
+
+/--
+Row-level obstruction for the combined route: after the later geometric fields,
+any remaining normal-form realization means either the bad-face-to-template
+extraction theorem is false, or the row-level radial-face histogram semantics
+are false.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowHistogramSoundnessObstruction :
+    Prop :=
+  ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate ∨
+    ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowHistogramSoundnessObstruction_of_laterBridge_of_not_nonrealizable
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowHistogramSoundnessObstruction := by
+  classical
+  by_cases hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate
+  · by_cases hrowSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness
+    · exact
+        False.elim
+          (hnot
+            (closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowHistogramSoundness
+              hforces hgeometry hradial hn6 hkeys hrowSound))
+    · exact Or.inr hrowSound
+  · exact Or.inl hforces
+
+/--
+Row-level two-obligation fork for the current finite frontier.  The positive
+branch uses bad-face extraction and row-level radial-face histogram semantics;
+the negative branch says any surviving normal-form realization refutes one of
+those two obligations.
+-/
+def Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ((ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate ∧
+                ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+              (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+                ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowHistogramSoundnessObstruction) ∧
+              (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness →
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ClosedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction))))
+
+theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork :
+    Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork := by
+  refine
+    ⟨section92Step4CurrentFiniteFrontierBadFaceTemplateHistogramSoundnessTwoObligationFork,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys
+  exact
+    ⟨fun hrepair =>
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowHistogramSoundness
+        hrepair.1 hgeometry hradial hn6 hkeys hrepair.2,
+      closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowHistogramSoundnessObstruction_of_laterBridge_of_not_nonrealizable
+        hgeometry hradial hn6 hkeys,
+      fun hrowSound =>
+        closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness
+          hgeometry hradial hn6 hkeys
+          (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+            hrowSound)⟩
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
