@@ -1456,6 +1456,48 @@ def varDecidable
 
 end RealM4CNFVariableNatCodingData
 
+/-- Encodable real CNF variable syntax for Appendix I instances.  The PNP
+target does not depend on Mathlib's `Encodable`; this is the minimal local
+program-syntax interface needed here: an encoder, a decoder, and the
+decode-after-encode roundtrip.  It mechanically supplies the injective Nat
+code used by the formula-syntax support route. -/
+structure RealM4CNFVariableEncodableSyntaxData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (_D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  varEncode : (Y : Public) -> Var Y -> Nat
+  varDecode : (Y : Public) -> Nat -> Option (Var Y)
+  varDecode_varEncode :
+    ∀ (Y : Public) (v : Var Y), varDecode Y (varEncode Y v) = some v
+
+namespace RealM4CNFVariableEncodableSyntaxData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+def variableNatCoding
+    (E : RealM4CNFVariableEncodableSyntaxData D) :
+    RealM4CNFVariableNatCodingData D where
+  varCode := E.varEncode
+  varCode_injective := by
+    intro Y v v' hcode
+    have hdecode :
+        E.varDecode Y (E.varEncode Y v) =
+          E.varDecode Y (E.varEncode Y v') := by
+      rw [hcode]
+    rw [E.varDecode_varEncode Y v, E.varDecode_varEncode Y v'] at hdecode
+    exact Option.some.inj hdecode
+
+end RealM4CNFVariableEncodableSyntaxData
+
 /-- Top-level alias: injective natural coding of real CNF variables supplies
 the decidable equality needed by formula-syntax CNF support. -/
 def realM4_varDecidable_of_variableNatCoding
@@ -1589,6 +1631,50 @@ def realM4_uniformCNFSupport_of_variableNatCoding
     (C : RealM4CNFVariableNatCodingData D) :
     RealM4CNFUniformSupportData D :=
   C.formulaSyntaxSupport
+
+namespace RealM4CNFVariableEncodableSyntaxData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+def formulaSyntaxSupport
+    (E : RealM4CNFVariableEncodableSyntaxData D) :
+    RealM4CNFUniformSupportData D :=
+  E.variableNatCoding.formulaSyntaxSupport
+
+end RealM4CNFVariableEncodableSyntaxData
+
+/-- Top-level alias: locally encodable real variable syntax supplies the
+Nat-coded variable package used by formula-syntax CNF support. -/
+def realM4_variableNatCoding_of_encodableSyntax
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (E : RealM4CNFVariableEncodableSyntaxData D) :
+    RealM4CNFVariableNatCodingData D :=
+  E.variableNatCoding
+
+/-- Top-level alias: locally encodable real variable syntax supplies
+formula-syntax CNF support, deriving decidable equality from the roundtrip
+encoder/decoder rather than assuming a raw equality procedure. -/
+def realM4_formulaSyntaxCNFSupport_of_encodableSyntax
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (E : RealM4CNFVariableEncodableSyntaxData D) :
+    RealM4CNFUniformSupportData D :=
+  E.formulaSyntaxSupport
 
 /-- Construction-side finite variable-type data.  This is weaker than the
 older finite variable-family package because it asks only for finite variable
@@ -2619,6 +2705,29 @@ theorem realM4VariableNatCodingConstructionInputs_exact :
         "varCodeInjective" ] := by
   rfl
 
+def realM4VariableEncodableSyntaxConstructionInputs : List String := [
+  "varEncode",
+  "varDecode",
+  "varDecodeEncodeRoundtrip"
+]
+
+theorem realM4VariableEncodableSyntaxConstructionInputs_exact :
+    realM4VariableEncodableSyntaxConstructionInputs =
+      [ "varEncode",
+        "varDecode",
+        "varDecodeEncodeRoundtrip" ] := by
+  rfl
+
+def realM4VariableNatCodingFromEncodableSyntaxConstructionInputs :
+    List String := [
+  "cnfVariableEncodableSyntax"
+]
+
+theorem realM4VariableNatCodingFromEncodableSyntaxConstructionInputs_exact :
+    realM4VariableNatCodingFromEncodableSyntaxConstructionInputs =
+      [ "cnfVariableEncodableSyntax" ] := by
+  rfl
+
 def realM4FormulaSyntaxCNFSupportFromNatCodingConstructionInputs :
     List String := [
   "cnfVariableNatCoding"
@@ -2627,6 +2736,16 @@ def realM4FormulaSyntaxCNFSupportFromNatCodingConstructionInputs :
 theorem realM4FormulaSyntaxCNFSupportFromNatCodingConstructionInputs_exact :
     realM4FormulaSyntaxCNFSupportFromNatCodingConstructionInputs =
       [ "cnfVariableNatCoding" ] := by
+  rfl
+
+def realM4FormulaSyntaxCNFSupportFromEncodableSyntaxConstructionInputs :
+    List String := [
+  "cnfVariableEncodableSyntax"
+]
+
+theorem realM4FormulaSyntaxCNFSupportFromEncodableSyntaxConstructionInputs_exact :
+    realM4FormulaSyntaxCNFSupportFromEncodableSyntaxConstructionInputs =
+      [ "cnfVariableEncodableSyntax" ] := by
   rfl
 
 def realM4CompressionLowerMachineDataConstructionInputs : List String := [
@@ -4625,6 +4744,57 @@ structure RealM4OfficialPToDeciderUpperSupportData
   lockedMessageRigidity : D.core.LockedMessageRigidity
   uniformSupport : RealM4CNFUniformSupportData D
 
+namespace RealM4OfficialPToDeciderUpperSupportData
+
+variable {PublicLock : Type g} {Quotient : Type h}
+variable {LockAux : Type i} {Message : Type j}
+variable {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+variable {Witness : CNFPublic -> Type l}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message CNFPublic Var Witness}
+
+/-- Package construction-side official upper support from already-derived
+uniform CNF support. -/
+def ofCoverageRigidityAndUniformSupport
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D) :
+    RealM4OfficialPToDeciderUpperSupportData D where
+  defaultMessage := defaultMessage
+  coverageData := coverageData
+  lockedMessageRigidity := lockedMessageRigidity
+  uniformSupport := uniformSupport
+
+/-- Package construction-side official upper support from injectively
+Nat-coded formula syntax. -/
+def ofCoverageRigidityAndVariableNatCoding
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (variableNatCoding : RealM4CNFVariableNatCodingData D) :
+    RealM4OfficialPToDeciderUpperSupportData D :=
+  ofCoverageRigidityAndUniformSupport defaultMessage coverageData
+    lockedMessageRigidity
+    (realM4_uniformCNFSupport_of_variableNatCoding variableNatCoding)
+
+/-- Package construction-side official upper support from locally encodable
+real variable syntax.  This is the sharper supplier for the real M4 route:
+syntax roundtrip data yields the Nat coding, which yields decidable equality
+and formula-syntax CNF support. -/
+def ofCoverageRigidityAndEncodableSyntax
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (variableSyntax : RealM4CNFVariableEncodableSyntaxData D) :
+    RealM4OfficialPToDeciderUpperSupportData D :=
+  ofCoverageRigidityAndVariableNatCoding defaultMessage coverageData
+    lockedMessageRigidity
+    (realM4_variableNatCoding_of_encodableSyntax variableSyntax)
+
+end RealM4OfficialPToDeciderUpperSupportData
+
 /--
 Official-language part of the decomposed P-to-decider bridge.  This is the
 remaining Cook-style bridge content after construction-side M4 support has
@@ -6275,6 +6445,189 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
       supportData languageData)
 
 /--
+No-target-rows official endpoint from locally encodable real CNF variable
+syntax.  This is only a supplier wrapper around the decomposed
+P-membership-to-decider route: syntax encodability constructs the
+construction-side upper support, while the official-language implication data,
+StarSW hardness, and the three analytic frontier fields remain theorem
+hypotheses.
+-/
+theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderEncodableSyntax
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (variableSyntax : RealM4CNFVariableEncodableSyntaxData D)
+    (languageData :
+      RealM4OfficialPToDeciderLanguageData
+        D lowerMachine.lowerFramework C
+          (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax
+            defaultMessage coverageData lockedMessageRigidity
+            variableSyntax)) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
+    i₀ coordinate law transcript observerBit phaseA semantics
+    observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing
+    (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax
+      defaultMessage coverageData lockedMessageRigidity variableSyntax)
+    languageData
+
+/--
+Existential no-target-rows official endpoint from locally encodable real CNF
+variable syntax and official-language P-membership-to-decider data.
+-/
+theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderEncodableSyntax
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (variableSyntax : RealM4CNFVariableEncodableSyntaxData D)
+    (languageData :
+      RealM4OfficialPToDeciderLanguageData
+        D lowerMachine.lowerFramework C
+          (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax
+            defaultMessage coverageData lockedMessageRigidity
+            variableSyntax)) :
+    ∃ separatedLanguage : C.Language,
+      C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
+    i₀ coordinate law transcript observerBit phaseA semantics
+    observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing
+    (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax
+      defaultMessage coverageData lockedMessageRigidity variableSyntax)
+    languageData
+
+/--
 Cook-style official endpoint wrapper for the no-target-rows canonical-gap
 real-frontier route.  The internal clash uses exactly the three analytic
 frontier objects plus StarSW and the explicit P=NP decider; the Cook bridge
@@ -7031,6 +7384,22 @@ theorem realM4OfficialPToDeciderUpperSupportConstructionInputs_exact :
         "publicLockCoverageData",
         "lockedMessageRigidity",
         "uniformCNFSupportData" ] := by
+  rfl
+
+def realM4OfficialPToDeciderUpperSupportFromEncodableSyntaxConstructionInputs :
+    List String := [
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "cnfVariableEncodableSyntax"
+]
+
+theorem realM4OfficialPToDeciderUpperSupportFromEncodableSyntaxConstructionInputs_exact :
+    realM4OfficialPToDeciderUpperSupportFromEncodableSyntaxConstructionInputs =
+      [ "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "cnfVariableEncodableSyntax" ] := by
   rfl
 
 def realM4OfficialPToDeciderLanguageConstructionInputs : List String := [
@@ -8785,6 +9154,89 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointHypothesisAudit_exact :
 def realM4NoTargetRowsPToDeciderOfficialEndpointStatement : String :=
   "For the real v15/M4 no-target-rows staging route, the Cook-style endpoint follows from the explicit real public-surface and lower-machine construction data, separated official upper support data, official P-membership-to-decider language data, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The theorem does not take a free P=NP decider family or raw clash-to-not-P bridge; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
+def realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionInputs :
+    List String :=
+  [ "noTargetRowsPublicSurface",
+    "law",
+    "transcript",
+    "observerBit",
+    "phaseA",
+    "semantics",
+    "observerEvidence",
+    "pivotSummary",
+    "epsMix",
+    "safeCost",
+    "safeBudget",
+    "gaugeIncidence",
+    "gaugeBound",
+    "hiddenGaugeProduct",
+    "realCompressionLowerMachineData",
+    "defaultMessage",
+    "publicLockCoverageData",
+    "lockedMessageRigidity",
+    "cnfVariableEncodableSyntax",
+    "officialPToDeciderLanguageData" ]
+
+theorem realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionInputs_exact :
+    realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionInputs =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "cnfVariableEncodableSyntax",
+        "officialPToDeciderLanguageData" ] := by
+  rfl
+
+def realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointHypothesisAudit :
+    List String :=
+  realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionInputs ++
+    realM4NoTargetRowsPToDeciderOfficialEndpointContentInputs
+
+theorem realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointHypothesisAudit_exact :
+    realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointHypothesisAudit =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "cnfVariableEncodableSyntax",
+        "officialPToDeciderLanguageData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointStatement : String :=
+  "For the real v15/M4 no-target-rows staging route, the Cook-style endpoint follows from the explicit real public-surface and lower-machine construction data, public-lock coverage, D.8 locked-message rigidity, locally encodable CNF variable syntax, official P-membership-to-decider language data, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The syntax roundtrip constructs the Nat coding and uniform formula support; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
 def realM4OfficialEndpointConstructionInputsExplicitPNP : List String :=
   realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgameConstructionInputsExplicitPNP ++
     realM4OfficialPNPBridgeConstructionInputs
@@ -8942,6 +9394,18 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .partialConstructionTransferred
     checkedName := "realM4_varDecidable_of_variableNatCoding"
     note := "Decidable equality for real CNF variables follows from injective natural coding of the variable syntax; the remaining construction obligation is the code and its injectivity proof."
+  },
+  {
+    item := "cnfVariableEncodableSyntax"
+    status := .openConstruction
+    checkedName := "RealM4CNFVariableEncodableSyntaxData"
+    note := "The real M4 variable syntax must supply an encoder, decoder, and decode-after-encode roundtrip, e.g. by structural recursion on the manuscript's address syntax."
+  },
+  {
+    item := "cnfVariableNatCodingFromEncodableSyntax"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_variableNatCoding_of_encodableSyntax"
+    note := "Locally encodable real variable syntax mechanically supplies the injective Nat code used by formula-syntax CNF support."
   },
   {
     item := "cnfVariableNatCodingFromFiniteTypes"
@@ -9168,8 +9632,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "officialPToDeciderUpperSupportData"
     status := .partialConstructionTransferred
-    checkedName := "RealM4OfficialPToDeciderUpperSupportData"
-    note := "Construction-side upper support is now separated from the official bridge: default message, public-lock coverage, D.8 rigidity, and uniform CNF support are visible construction obligations."
+    checkedName := "RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax"
+    note := "Construction-side upper support is now separated from the official bridge and can be built from default message, public-lock coverage, D.8 rigidity, and locally encodable CNF variable syntax."
   },
   {
     item := "officialPToDeciderLanguageData"
@@ -9186,8 +9650,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "realNoTargetRowsPToDeciderOfficialEndpointStaging"
     status := .partialConstructionTransferred
-    checkedName := "realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderBridge"
-    note := "Routes the current no-target-rows, canonical-gap, real-frontier construction through the decomposed official P-membership-to-decider bridge; no free explicit P=NP decider family or raw clash-to-not-P bridge is a theorem hypothesis on this route."
+    checkedName := "realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderEncodableSyntax"
+    note := "Routes the current no-target-rows, canonical-gap, real-frontier construction through the decomposed official P-membership-to-decider bridge, with construction-side upper support supplied by locally encodable CNF syntax; no free explicit P=NP decider family or raw clash-to-not-P bridge is a theorem hypothesis on this route."
   },
   {
     item := "officialPNPUpperBridgeAdapter"
@@ -9248,6 +9712,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -9305,7 +9771,7 @@ def realM4OpenConstructionItems : List String := [
   "noPublicTargetTags",
   "hiddenGaugeProduct",
   "admissibleHistories",
-  "cnfVariableNatCoding",
+  "cnfVariableEncodableSyntax",
   "realCompressionLowerMachineData",
   "officialPToDeciderLanguageData"
 ]
@@ -9317,7 +9783,7 @@ theorem realM4OpenConstructionItems_exact :
         "noPublicTargetTags",
         "hiddenGaugeProduct",
         "admissibleHistories",
-        "cnfVariableNatCoding",
+        "cnfVariableEncodableSyntax",
         "realCompressionLowerMachineData",
         "officialPToDeciderLanguageData" ] := by
   rfl
