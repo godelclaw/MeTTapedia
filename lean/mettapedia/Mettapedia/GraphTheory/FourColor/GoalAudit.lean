@@ -190,6 +190,18 @@ theorem section92Step4RepairedByN6ExtractionAndTaxonomyTarget_audit :
     Section92Step4RepairedByN6ExtractionAndTaxonomyTarget :=
   section92Step4RepairedByN6ExtractionAndTaxonomyTarget
 
+theorem closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_radialFace_of_radialFaceN6_audit
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation) :
+    ClosedCollarWindingFreedomEveryNormalFormHasN6Representation :=
+  closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_radialFace_of_radialFaceN6
+    hradial hn6
+
+theorem section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget_audit :
+    Section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget :=
+  section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
