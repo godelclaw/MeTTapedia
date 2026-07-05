@@ -16221,6 +16221,291 @@ theorem
     boundaryMixing
 
 /--
+Manuscript-M4 realization gate for the current strict named-language route.
+To use the real lock-in endpoint through this gate, one must identify the
+manuscript single-message SAT ensemble with the no-target-rows strict
+construction surface: public surface, locked readout data, address-coded CNF
+variables, lower machine, official named-language bridge, and large-target
+K-poly compatibility.
+
+This structure is intentionally an uninhabited construction obligation in this
+module.  It does not assert that the manuscript M4 ensemble has been built; it
+only names the exact data needed before the four mathematical frontier inputs
+become the remaining theorem hypotheses.
+-/
+structure RealM4ManuscriptSingleMessageSATRealizationData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (C : CookStylePNPClassInterface.{p}) where
+  strictNamedConstructionData :
+    RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+      (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+      (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+      (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+      (Observer := Observer) (Output := Output)
+      (PublicLock := PublicLock) (Quotient := Quotient)
+      (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+      (Address := Address) (Var := Var) (Witness := Witness)
+      i₀ coordinate D C
+
+/-- Forget a manuscript-M4 realization gate to the strict named construction
+surface consumed by the current real lock-in theorem. -/
+def realM4_manuscriptSingleMessageSATRealizationData_strictConstructionData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+      (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+      (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+      (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+      (Observer := Observer) (Output := Output)
+      (PublicLock := PublicLock) (Quotient := Quotient)
+      (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+      (Address := Address) (Var := Var) (Witness := Witness)
+      i₀ coordinate D C :=
+  R.strictNamedConstructionData
+
+/-- Mechanical interface projected from a manuscript-M4 realization gate. -/
+noncomputable def
+    realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4MechanicalInterfaceData
+      (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+      Neutral Safe Gauge Transcript Pair Stage Branch HistoryAtom Pivot
+      Observer Output (V13RealLinearNoTargetRowsMap m i₀) :=
+  realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
+    i₀ coordinate
+    (realM4_manuscriptSingleMessageSATRealizationData_strictConstructionData
+      i₀ coordinate R)
+
+/-- Projection audit for the manuscript-M4 realization gate. -/
+theorem
+    realM4_manuscriptSingleMessageSATRealizationData_projection_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let K :=
+      realM4_manuscriptSingleMessageSATRealizationData_strictConstructionData
+        i₀ coordinate R
+    K = R.strictNamedConstructionData ∧
+      K.lowerMachine = R.strictNamedConstructionData.lowerMachine ∧
+        K.variableAddressSyntax =
+          R.strictNamedConstructionData.variableAddressSyntax ∧
+          K.languageNPData.separatedLanguage =
+            R.strictNamedConstructionData.languageNPData.separatedLanguage := by
+  dsimp
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+/--
+Structural-field audit for a manuscript-M4 realization gate.  The structural
+interface fields are not theorem-level frontier hypotheses after the gate is
+inhabited; they project through the strict named construction surface.
+-/
+theorem
+    realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface_structuralFields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let M :=
+      realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface
+        i₀ coordinate R
+    (∀ w0 w1, M.publicInput w0 = M.publicInput w1 ->
+      M.target w0 = M.target w1) ∧
+      (PairNeutral M.oppositeSupport M.neutralSkeleton ∧
+        HasMessageOppositePair M.oppositeSupport M.target ∧
+          ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+            ∀ omega, M.target omega = f (M.neutralSkeleton omega)) ∧
+        (∀ E : RawEvidence Neutral Safe Gauge,
+          M.semantics.SatNormal (CDENF E) = M.semantics.SatRaw E) ∧
+          (∀ gamma : Gauge,
+            M.semantics.SatNormal (CDENF (.gauge gamma)) =
+              M.semantics.gaugeSat gamma) ∧
+            (BalancedBit M.target ∧
+              BalancedConditioning (Omega := V13RealLinearNoTargetRowsWorld m i₀)
+                M.historyField M.target) ∧
+              (∀ gamma omega, M.semantics.gaugeSat gamma omega) := by
+  simpa [
+    realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface,
+    realM4_manuscriptSingleMessageSATRealizationData_strictConstructionData]
+    using
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface_structuralFields
+        i₀ coordinate R.strictNamedConstructionData
+
+/--
+Preferred real endpoint through the manuscript-M4 realization gate.  Once this
+gate is inhabited, the theorem-level frontier is exactly StarSW hardness and
+the three analytic fields over the projected mechanical interface.  The
+self-reduction upper side remains construction-proved from the named language's
+P-membership and the P=NP branch only supplies that P-membership inside the
+proof.
+
+This is still conditional real-spine staging: the realization gate is not
+constructed here, and the theorem is not an unconditional proof of `P != NP`.
+-/
+theorem
+    realM4_strictNamedRealLockInEndpoints_from_manuscriptSingleMessageSATRealizationData_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness
+        R.strictNamedConstructionData.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface
+          i₀ coordinate R))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface
+          i₀ coordinate R))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface
+          i₀ coordinate R)) :
+    (C.inNP R.strictNamedConstructionData.languageNPData.separatedLanguage ∧
+      ¬ C.inP R.strictNamedConstructionData.languageNPData.separatedLanguage) ∧
+      (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+        ∃ separatedLanguage : C.Language,
+          C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage := by
+  simpa [
+    realM4_manuscriptSingleMessageSATRealizationData_mechanicalInterface,
+    realM4_manuscriptSingleMessageSATRealizationData_strictConstructionData]
+    using
+      realM4_strictNamedRealLockInEndpoints_from_noTargetRowsNamedLanguageLargeTargetConstructionData_realFrontier
+        i₀ coordinate R.strictNamedConstructionData starSWHardness
+        safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
 Finite-variable supplier endpoint for the preferred strict named-language
 route.  The construction object carries finite CNF variable-family data rather
 than raw address syntax; the theorem projects it to the existing strict
@@ -22932,6 +23217,46 @@ theorem realM4StrictNamedRealLockInEndpointHypothesisAudit_exact :
 
 def realM4StrictNamedRealLockInStatement : String :=
   "The strict named-language large-target route is the preferred real lock-in audit surface: its construction obligations are exactly the fields of the no-target-rows named-language large-target construction object, and after that construction object is supplied, the preferred endpoint theorem uses the direct strict named clash chain with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The equality-indexed lock-in route is retained as a supplemental specialization at a candidate P=NP witness."
+
+def realM4ManuscriptSingleMessageSATRealizationGateItems :
+    List String := [
+  "manuscriptM4RealizationGate",
+  "strictNamedConstructionProjection",
+  "projectedMechanicalInterface",
+  "projectedStructuralFields",
+  "strictNamedEndpointThroughRealizationGate"
+]
+
+theorem realM4ManuscriptSingleMessageSATRealizationGateItems_exact :
+    realM4ManuscriptSingleMessageSATRealizationGateItems =
+      [ "manuscriptM4RealizationGate",
+        "strictNamedConstructionProjection",
+        "projectedMechanicalInterface",
+        "projectedStructuralFields",
+        "strictNamedEndpointThroughRealizationGate" ] := by
+  rfl
+
+def realM4ManuscriptSingleMessageSATRealizationEndpointHypothesisAudit :
+    List String := [
+  "manuscriptM4SingleMessageSATRealizationData",
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem
+    realM4ManuscriptSingleMessageSATRealizationEndpointHypothesisAudit_exact :
+    realM4ManuscriptSingleMessageSATRealizationEndpointHypothesisAudit =
+      [ "manuscriptM4SingleMessageSATRealizationData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4ManuscriptSingleMessageSATRealizationStatement : String :=
+  "The manuscript-M4 realization gate is the exact next construction boundary: once the real single-message SAT ensemble is identified with the strict named no-target-rows construction surface, structural fields and the P=NP-side self-reduction upper package project through that gate, and the endpoint theorem has exactly one realization object plus StarSW hardness and safeQSSM / boundedGaugeIncidence / boundaryMixing as hypotheses.  This does not construct M4 and is not an unconditional proof of P != NP."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
