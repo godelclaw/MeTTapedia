@@ -1393,6 +1393,141 @@ theorem noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations
   have hNoFive := cap5Normal.noSeparatingDualCycleOfLengthAtMostFive h53
   simpa [hduality] using hNoFive
 
+/-- Downstream-facing S7 regime package.  This is the compact interface the CAP5, collar, and
+annulus layers can consume without reopening the Lemma 5.2/Lemma 5.3 obligation bundle. -/
+structure MinimalCounterexampleS7NormalFormRegime
+    (minimal : MinimalTaitCounterexample G) (dual : PlaneCubicDualData G T) : Prop where
+  normal_form : Lemma52MinimalCounterexampleNormalFormObligation minimal dual
+  lemma53_translation :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      Lemma53DiskToPrimalCAP5TranslationObligation normal
+  lemma53_cap5Pinch :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      Lemma53SeparatingDualFiveCycleCAP5PinchObligation normal
+  cap5_elimination :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      CAP5EliminationObligation minimal normal
+  cap5_free : CAP5Free G
+  cyclically_five_edge_connected : CyclicallyFiveEdgeConnected G
+  minimum_degree : MinimumDegreeAtLeast T 5
+  no_separating_dual_cycles_at_most_five : NoSeparatingDualCycleOfLengthAtMostFive dual
+
+namespace MinimalCounterexampleS7NormalFormRegime
+
+variable {minimal : MinimalTaitCounterexample G}
+variable {dual : PlaneCubicDualData G T}
+
+/-- The graph side of the S7 regime is cyclically five-edge-connected in the existing cut API. -/
+theorem cyclicallyFiveEdgeConnected
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    CyclicallyFiveEdgeConnected G :=
+  regime.cyclically_five_edge_connected
+
+/-- The dual triangulation side of the S7 regime has minimum degree at least five. -/
+theorem minimumDegreeAtLeast
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    MinimumDegreeAtLeast T 5 :=
+  regime.minimum_degree
+
+/-- The graph side of the S7 regime is CAP5-free. -/
+theorem cap5Free
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    CAP5Free G :=
+  regime.cap5_free
+
+/-- The S7 regime excludes separating dual cycles through length five. -/
+theorem noSeparatingDualCycleOfLength
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) {k : Nat} (hk : k ≤ 5) :
+    NoSeparatingDualCycleOfLength dual k :=
+  regime.no_separating_dual_cycles_at_most_five k hk
+
+/-- The S7 regime excludes separating dual cycles through length four. -/
+theorem noSeparatingDualCycleOfLengthAtMostFour
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    NoSeparatingDualCycleOfLengthAtMostFour dual :=
+  fun k hk => regime.noSeparatingDualCycleOfLength (Nat.le_trans hk (by decide))
+
+/-- The S7 regime excludes separating dual triangles. -/
+theorem noSeparatingTriangle
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    NoSeparatingDualCycleOfLength dual 3 :=
+  regime.noSeparatingDualCycleOfLength (k := 3) (by decide)
+
+/-- The S7 regime excludes separating dual 4-cycles. -/
+theorem noSeparatingFourCycle
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    NoSeparatingDualCycleOfLength dual 4 :=
+  regime.noSeparatingDualCycleOfLength (k := 4) (by decide)
+
+/-- The S7 regime excludes separating dual 5-cycles. -/
+theorem noSeparatingFiveCycle
+    (regime : MinimalCounterexampleS7NormalFormRegime minimal dual) :
+    NoSeparatingDualCycleOfLength dual 5 :=
+  regime.noSeparatingDualCycleOfLength (k := 5) (by decide)
+
+end MinimalCounterexampleS7NormalFormRegime
+
+/-- Build the downstream-facing S7 regime package from the named S7 CAP5-free obligations. -/
+theorem minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7NormalFormRegime minimal dual := by
+  rcases obligations.lemma52 with ⟨normal, hduality⟩
+  refine
+    { normal_form := obligations.lemma52
+      lemma53_translation := obligations.lemma53_translation
+      lemma53_cap5Pinch := fun normal hduality =>
+        lemma53_CAP5PinchObligation_of_tightnessObligation
+          (lemma53_tightnessObligation_of_diskToPrimalCAP5Translations
+            (obligations.lemma53_translation normal hduality))
+      cap5_elimination := obligations.cap5_elimination
+      cap5_free := obligations.cap5_elimination normal hduality
+      cyclically_five_edge_connected := normal.cyclicallyFiveEdgeConnected
+      minimum_degree := normal.dual_min_degree
+      no_separating_dual_cycles_at_most_five := ?_ }
+  exact noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations obligations
+
+/-- S7 obligations supply the graph-side cyclic five-edge connectivity expected by existing
+CAP5 consumers. -/
+theorem cyclicallyFiveEdgeConnected_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    CyclicallyFiveEdgeConnected G :=
+  let regime := minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations
+  regime.cyclicallyFiveEdgeConnected
+
+/-- S7 obligations supply the dual minimum-degree lower bound. -/
+theorem minimumDegreeAtLeast_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    MinimumDegreeAtLeast T 5 :=
+  let regime := minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations
+  regime.minimumDegreeAtLeast
+
+/-- S7 obligations supply graph-side CAP5-freeness. -/
+theorem cap5Free_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    CAP5Free G :=
+  let regime := minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations
+  regime.cap5Free
+
+/-- S7 obligations rule out separating dual cycles of any supplied length at most five. -/
+theorem noSeparatingDualCycleOfLength_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual)
+    {k : Nat} (hk : k ≤ 5) :
+    NoSeparatingDualCycleOfLength dual k :=
+  let regime := minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations
+  regime.noSeparatingDualCycleOfLength hk
+
+/-- S7 obligations rule out separating dual 5-cycles. -/
+theorem noSeparatingDualFiveCycle_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    NoSeparatingDualCycleOfLength dual 5 :=
+  noSeparatingDualCycleOfLength_of_s7CAP5FreeObligations obligations (k := 5) (by decide)
+
 end CAP5Tightness
 
 section EdgeColoringGlue
