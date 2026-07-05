@@ -6553,7 +6553,11 @@ structure ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate where
   sourceFile : String
   patchTopologyIndex : Nat
   radialOrderIndex : Nat
+  totalRotationSystemCount : Nat
+  rotationSystemEnumerationExhausted : Bool
   enumeratedRotationSystemCount : Nat
+  radialCutEdgeCount : Nat
+  maxRadialCutEdgesOnSingleFace : Nat
   planarRotationSystemCount : Nat
   radialFaceCoherentRotationCount : Nat
   templateExclusionBlocker : String
@@ -6573,7 +6577,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
       patchTopologyIndex := 821205,
       radialOrderIndex := 0,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6583,7 +6591,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
       patchTopologyIndex := 821205,
       radialOrderIndex := 1,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6593,7 +6605,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
       patchTopologyIndex := 852969,
       radialOrderIndex := 0,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6603,7 +6619,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
       patchTopologyIndex := 852969,
       radialOrderIndex := 1,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6613,7 +6633,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r0.json",
       patchTopologyIndex := 1000301,
       radialOrderIndex := 0,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6623,7 +6647,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r1.json",
       patchTopologyIndex := 1000301,
       radialOrderIndex := 1,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6636,7 +6664,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificat
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
       patchTopologyIndex := 1000788,
       radialOrderIndex := 0,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6646,7 +6678,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificat
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
       patchTopologyIndex := 1000788,
       radialOrderIndex := 1,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6659,7 +6695,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificat
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
       patchTopologyIndex := 1001293,
       radialOrderIndex := 0,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6669,7 +6709,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificat
         "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
       patchTopologyIndex := 1001293,
       radialOrderIndex := 1,
+      totalRotationSystemCount := 262144,
+      rotationSystemEnumerationExhausted := true,
       enumeratedRotationSystemCount := 262144,
+      radialCutEdgeCount := 4,
+      maxRadialCutEdgesOnSingleFace := 2,
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6708,8 +6752,20 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverage
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.length =
       10 ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.totalRotationSystemCount) =
+      List.replicate 10 262144 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.rotationSystemEnumerationExhausted) =
+      List.replicate 10 true ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
         (fun certificate => certificate.enumeratedRotationSystemCount) =
       List.replicate 10 262144 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.radialCutEdgeCount) =
+      List.replicate 10 4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.maxRadialCutEdgesOnSingleFace) =
+      List.replicate 10 2 ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
         (fun certificate => certificate.planarRotationSystemCount) =
       List.replicate 10 8 ∧
@@ -6729,7 +6785,39 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCove
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence := by
   refine
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Sharper shape invariant behind the ten radial-face row certificates.  Every
+audited row exhausts all rotation systems, has four radial-cut edges, but no
+planar rotation places more than two of those edges on a single face.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.totalRotationSystemCount) =
+      List.replicate 10 262144 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.rotationSystemEnumerationExhausted) =
+      List.replicate 10 true ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.radialCutEdgeCount) =
+      List.replicate 10 4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.maxRadialCutEdgesOnSingleFace) =
+      List.replicate 10 2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.uniquePlanarRotationSystemCount =
+      80 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialFaceCoherentRotationCount =
+      0
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
 /-- Lab-side candidate for a radial-face coherent rotation in the archive. -/

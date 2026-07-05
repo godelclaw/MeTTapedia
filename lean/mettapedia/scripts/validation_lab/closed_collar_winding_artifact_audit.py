@@ -333,6 +333,16 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
             raise ValueError(f"{name}: sample {patch_index}/{radial_order_index} missing embedding_audit")
         assert_equal(f"{name}: embedding checked", bool_field(embedding, name, "checked"), True)
         assert_equal(
+            f"{name}: total rotations for {patch_index}/{radial_order_index}",
+            int_field(embedding, name, "total_rotation_system_count"),
+            262_144,
+        )
+        assert_equal(
+            f"{name}: rotation enumeration exhausted for {patch_index}/{radial_order_index}",
+            bool_field(embedding, name, "rotation_system_enumeration_exhausted"),
+            True,
+        )
+        assert_equal(
             f"{name}: enumerated rotations for {patch_index}/{radial_order_index}",
             int_field(embedding, name, "enumerated_rotation_system_count"),
             262_144,
@@ -353,6 +363,19 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         planar_rotation_count = int_field(embedding, name, "planar_rotation_system_count")
         coherent_rotation_count = int_field(
             embedding, name, "radial_face_coherent_rotation_count"
+        )
+        radial_cut_edges = embedding.get("radial_cut_edges")
+        if not isinstance(radial_cut_edges, list) or not all(
+            isinstance(edge, str) for edge in radial_cut_edges
+        ):
+            raise ValueError(
+                f"{name}: radial cut edges for {patch_index}/{radial_order_index} "
+                "are not a string list"
+            )
+        assert_equal(
+            f"{name}: radial cut edge count for {patch_index}/{radial_order_index}",
+            len(radial_cut_edges),
+            4,
         )
         hist = dict_field(embedding, name, "max_radial_cut_edges_on_single_face_histogram")
         assert_equal(
@@ -389,7 +412,15 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         certificate: dict[str, object] = {
             "archive_family": source,
             "case": [patch_index, radial_order_index],
+            "total_rotation_system_count": int_field(
+                embedding, name, "total_rotation_system_count"
+            ),
+            "rotation_system_enumeration_exhausted": bool_field(
+                embedding, name, "rotation_system_enumeration_exhausted"
+            ),
             "enumerated_rotation_system_count": enumerated_rotation_count,
+            "radial_cut_edge_count": len(radial_cut_edges),
+            "max_radial_cut_edges_on_single_face": 2,
             "max_radial_cut_edges_on_single_face_histogram": hist,
             "patch_index": patch_index,
             "planar_rotation_system_count": planar_rotation_count,
