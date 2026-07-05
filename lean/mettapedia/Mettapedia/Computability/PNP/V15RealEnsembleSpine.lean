@@ -15329,6 +15329,15 @@ theorem realM4LowerMachineConstructionItems_exact :
         "realConstantDecoderRegime" ] := by
   rfl
 
+def realM4LargeTargetLowerMachineConstructionItems : List String := [
+  "realCompressionLowerMachineData"
+]
+
+theorem realM4LargeTargetLowerMachineConstructionItems_exact :
+    realM4LargeTargetLowerMachineConstructionItems =
+      [ "realCompressionLowerMachineData" ] := by
+  rfl
+
 def realM4OfficialBridgeConstructionItems : List String := [
   "officialLanguageNPData",
   "officialPToDeciderFamilyData"
@@ -15378,7 +15387,7 @@ theorem realM4OpenConstructionItems_decomposes :
 
 def realM4LargeTargetOpenConstructionItems : List String :=
   realM4ConcreteEnsembleConstructionItems ++
-    realM4LowerMachineConstructionItems ++
+    realM4LargeTargetLowerMachineConstructionItems ++
       realM4OfficialBridgeConstructionItems ++
         realM4LargeTargetKpolyCompatibilityConstructionItems
 
@@ -15391,7 +15400,6 @@ theorem realM4LargeTargetOpenConstructionItems_exact :
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
-        "realConstantDecoderRegime",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
         "pMembershipEtaPositive",
@@ -15403,7 +15411,7 @@ theorem realM4LargeTargetOpenConstructionItems_exact :
 theorem realM4LargeTargetOpenConstructionItems_decomposes :
     realM4LargeTargetOpenConstructionItems =
       realM4ConcreteEnsembleConstructionItems ++
-        realM4LowerMachineConstructionItems ++
+        realM4LargeTargetLowerMachineConstructionItems ++
           realM4OfficialBridgeConstructionItems ++
             realM4LargeTargetKpolyCompatibilityConstructionItems := by
   rfl
@@ -15479,7 +15487,6 @@ theorem realM4LargeTargetCompletionFrontierHypothesisAudit_exact :
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
-        "realConstantDecoderRegime",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
         "pMembershipEtaPositive",
@@ -15495,7 +15502,7 @@ theorem realM4LargeTargetCompletionFrontierHypothesisAudit_exact :
   rfl
 
 def realM4LargeTargetCompletionFrontierStatement : String :=
-  "The large-target real v15/M4 completion frontier is the same real-spine audit with the direct below-linear-floor K-poly item replaced by eta positivity and the concrete target-block growth fact that the target count exceeds the fixed self-reduction decoder cost.  This records the intended constant-program self-reduction route for the real ensemble while leaving construction of the real target-block regime explicit.  After these construction obligations are discharged, the irreducible mathematical frontier is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing, with the P=NP side used only to derive the SAT decider family for self-reduction."
+  "The large-target real v15/M4 completion frontier is the same real-spine audit with the prepackaged constant-decoder regime and direct below-linear-floor K-poly item replaced by eta positivity, K-poly/floor identifications, and the concrete target-block growth fact that the target count exceeds the fixed self-reduction decoder cost.  This records the intended constant-program self-reduction route for the real ensemble while leaving construction of the real target-block regime explicit.  After these construction obligations are discharged, the irreducible mathematical frontier is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing, with the P=NP side used only to derive the SAT decider family for self-reduction."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
