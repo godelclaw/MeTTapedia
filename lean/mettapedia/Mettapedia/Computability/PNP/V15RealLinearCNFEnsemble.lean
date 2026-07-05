@@ -4109,6 +4109,31 @@ theorem
           i₀)
         hY hW hW'
 
+/-- Every supported concrete no-target-rows Appendix-I CNF public instance has
+a satisfying assignment. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_supportedSatisfiable
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toManuscriptCNFReadoutData
+      |>.SupportedCNFSatisfiable := by
+  intro Y hY
+  exact
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.satOnSupport hY
+
+/-- Every verifier-valid semantic witness for the concrete no-target-rows
+Appendix-I CNF readout data is represented by the same satisfying CNF
+assignment, because extraction is the identity map. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_cnfExtractionComplete
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toManuscriptCNFReadoutData
+      |>.CNFExtractionComplete := by
+  intro Y W _hY hW
+  exact ⟨W, hW, rfl⟩
+
 /-- The no-target-rows gauge-CNF Appendix-I data supplies the semantic
 I.26(i)--(iii) items: satisfiability on support, sound extraction, and fixed
 projection readout. -/
@@ -4375,6 +4400,25 @@ theorem
   simpa [AppendixICNFReadoutData.toManuscriptCNFReadoutData] using
     v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_projection_eq_targetBit
       (Y := Y) (α := out.witness) i₀ hY out.isSat
+
+/-- Concrete `singleMessage` transfer for the no-target-rows Appendix-I CNF:
+complete identity extraction and arbitrary-output SAT-search readout
+correctness force the semantic single-message promise for the real CNF
+readout data. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_singleMessagePromise_fromSATSearchContracts
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toManuscriptCNFReadoutData
+      |>.SingleMessagePromise := by
+  exact
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toManuscriptCNFReadoutData
+      |>.singleMessagePromise_of_cnfExtractionComplete_of_supportedArbitraryOutputSATSearchCorrect
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_cnfExtractionComplete
+          i₀)
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+          i₀)
 
 /-- Appendix-I CNF witness returned by the explicit P=NP-side bit-fixing
 self-reduction for the no-target-rows gauge-CNF formula. -/
