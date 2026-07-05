@@ -87,6 +87,17 @@ variable [DecidableRel G.Adj] [DecidableRel T.Adj]
 def primalEdgeOfDualEdge (dual : PlaneCubicDualData G T) : T.edgeSet ≃ G.edgeSet :=
   dual.dualEdgeEquiv.symm
 
+/-- Translate a finite dual-edge support into its primal edge-cut support. -/
+def primalCutOfDualSupport (dual : PlaneCubicDualData G T)
+    (support : Finset T.edgeSet) : Finset G.edgeSet :=
+  support.map dual.primalEdgeOfDualEdge.toEmbedding
+
+@[simp]
+theorem primalCutOfDualSupport_card (dual : PlaneCubicDualData G T)
+    (support : Finset T.edgeSet) :
+    (dual.primalCutOfDualSupport support).card = support.card := by
+  simp [primalCutOfDualSupport]
+
 end PlaneCubicDualData
 
 /-- A separating cycle on the dual side, represented by the primal cyclic cut it induces.  The
@@ -99,13 +110,75 @@ structure SeparatingDualCycleData [DecidableRel G.Adj] [DecidableRel T.Adj]
   dual_card : dualEdgeSupport.card = k
   primal_card : primalCut.card = k
   primalCut_eq_dualEdgeSupport :
-    primalCut = dualEdgeSupport.map dual.primalEdgeOfDualEdge.toEmbedding
+    primalCut = dual.primalCutOfDualSupport dualEdgeSupport
   realization : CyclicEdgeCutRealization G primalCut
+
+namespace SeparatingDualCycleData
+
+variable [DecidableRel G.Adj] [DecidableRel T.Adj]
+variable {dual : PlaneCubicDualData G T} {k : Nat}
+
+@[simp]
+theorem primalCut_card (cycle : SeparatingDualCycleData dual k) :
+    cycle.primalCut.card = k :=
+  cycle.primal_card
+
+@[simp]
+theorem dualEdgeSupport_card (cycle : SeparatingDualCycleData dual k) :
+    cycle.dualEdgeSupport.card = k :=
+  cycle.dual_card
+
+/-- Membership in the primal support of a separating dual cycle is exactly crossing the induced
+Jordan side. -/
+theorem primalCut_mem_iff_crosses
+    (cycle : SeparatingDualCycleData dual k) (e : G.edgeSet) :
+    e ∈ cycle.primalCut ↔ EdgeCrossesVertexSide G cycle.realization.side e :=
+  cycle.realization.hcut_eq e
+
+/-- A separating dual cycle of length at most four induces a bundled graph-side small cyclic
+edge cut. -/
+def toSmallCyclicEdgeCutOfLengthLeFour
+    (cycle : SeparatingDualCycleData dual k) (hk : k ≤ 4) :
+    SmallCyclicEdgeCut G :=
+  cycle.realization.toSmallCyclicEdgeCut (by
+    rw [cycle.primal_card]
+    exact hk)
+
+/-- Existence form of the same conversion, matching the repository's cyclic-cut obstruction API. -/
+theorem hasCyclicEdgeCutOfSizeAtMostFour_of_length_le_four
+    (cycle : SeparatingDualCycleData dual k) (hk : k ≤ 4) :
+    HasCyclicEdgeCutOfSizeAtMostFour G :=
+  cycle.realization.hasCyclicEdgeCutOfSizeAtMostFour (by
+    rw [cycle.primal_card]
+    exact hk)
+
+/-- A walk crossing the two Jordan sides of a separating dual cycle hits its primal cut support. -/
+theorem exists_mem_primalCut_of_walk_endpoint_sides
+    (cycle : SeparatingDualCycleData dual k)
+    {u v : V} (p : G.Walk u v)
+    (hu : cycle.realization.side u) (hv : ¬ cycle.realization.side v) :
+    ∃ e : G.edgeSet, e ∈ cycle.primalCut ∧ (e : Sym2 V) ∈ p.edges :=
+  cycle.realization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv
+
+/-- A walk avoiding the primal cut of a separating dual cycle cannot change Jordan sides. -/
+theorem side_iff_of_forall_not_mem_primalCut_of_walk
+    (cycle : SeparatingDualCycleData dual k)
+    {u v : V} (p : G.Walk u v)
+    (havoid : ∀ e : G.edgeSet, e ∈ cycle.primalCut → (e : Sym2 V) ∉ p.edges) :
+    cycle.realization.side u ↔ cycle.realization.side v :=
+  cycle.realization.side_iff_of_forall_not_mem_edgeCut_of_walk p havoid
+
+end SeparatingDualCycleData
 
 /-- There is no separating dual cycle of a fixed length. -/
 def NoSeparatingDualCycleOfLength [DecidableRel G.Adj] [DecidableRel T.Adj]
     (dual : PlaneCubicDualData G T) (k : Nat) : Prop :=
   ¬ Nonempty (SeparatingDualCycleData dual k)
+
+/-- There is no separating dual cycle of any length at most four. -/
+def NoSeparatingDualCycleOfLengthAtMostFour [DecidableRel G.Adj] [DecidableRel T.Adj]
+    (dual : PlaneCubicDualData G T) : Prop :=
+  ∀ k : Nat, k ≤ 4 → NoSeparatingDualCycleOfLength dual k
 
 /-- The Lemma 5.2 small-separator exclusion on the dual side. -/
 def NoSeparatingDualCyclesOfLengthThreeAndFour [DecidableRel G.Adj] [DecidableRel T.Adj]
@@ -121,19 +194,25 @@ theorem noSeparatingDualCycleOfLength_of_noCyclicEdgeCutOfSizeAtMostFour
     {k : Nat} (hk : k ≤ 4) :
     NoSeparatingDualCycleOfLength dual k := by
   rintro ⟨cycle⟩
-  have hcard : cycle.primalCut.card ≤ 4 := by
-    rw [cycle.primal_card]
-    exact hk
-  exact hno.not_cyclicEdgeCutRealization_card_le_four cycle.realization hcard
+  exact hno (cycle.hasCyclicEdgeCutOfSizeAtMostFour_of_length_le_four hk)
+
+/-- The graph-side no-small-cyclic-cut predicate rules out separating dual cycles of every
+length at most four. -/
+theorem noSeparatingDualCycleOfLengthAtMostFour_of_noCyclicEdgeCutOfSizeAtMostFour
+    (dual : PlaneCubicDualData G T) (hno : NoCyclicEdgeCutOfSizeAtMostFour G) :
+    NoSeparatingDualCycleOfLengthAtMostFour dual :=
+  fun _ hk => noSeparatingDualCycleOfLength_of_noCyclicEdgeCutOfSizeAtMostFour dual hno hk
 
 /-- The graph-side no-small-cyclic-cut predicate gives the dual-side exclusion of separating
 triangles and separating 4-cycles. -/
 theorem noSeparatingDualCyclesOfLengthThreeAndFour_of_noCyclicEdgeCutOfSizeAtMostFour
     (dual : PlaneCubicDualData G T) (hno : NoCyclicEdgeCutOfSizeAtMostFour G) :
     NoSeparatingDualCyclesOfLengthThreeAndFour dual := by
+  have hle4 := noSeparatingDualCycleOfLengthAtMostFour_of_noCyclicEdgeCutOfSizeAtMostFour
+    dual hno
   constructor
-  · exact noSeparatingDualCycleOfLength_of_noCyclicEdgeCutOfSizeAtMostFour dual hno (by decide)
-  · exact noSeparatingDualCycleOfLength_of_noCyclicEdgeCutOfSizeAtMostFour dual hno (by decide)
+  · exact hle4 3 (by decide)
+  · exact hle4 4 (by decide)
 
 /-- A graph-side normal-form package for the minimal-counterexample regime. -/
 structure MinimalCounterexampleNormalForm (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -163,6 +242,14 @@ theorem cyclicallyFiveEdgeConnected
     (normal : MinimalCounterexampleNormalForm G T) :
     CyclicallyFiveEdgeConnected G :=
   normal.no_small_cyclic_edge_cut.cyclicallyFiveEdgeConnected
+
+/-- Normal form excludes every separating dual cycle whose translated cyclic cut has size at
+most four. -/
+theorem noSeparatingDualCycleOfLengthAtMostFour
+    (normal : MinimalCounterexampleNormalForm G T) :
+    NoSeparatingDualCycleOfLengthAtMostFour normal.duality :=
+  noSeparatingDualCycleOfLengthAtMostFour_of_noCyclicEdgeCutOfSizeAtMostFour
+    normal.duality normal.no_small_cyclic_edge_cut
 
 end MinimalCounterexampleNormalForm
 
@@ -302,16 +389,98 @@ structure CAP5Pinch (G : SimpleGraph V) where
   boundary : CAP5BoundaryEdgeEnumeration edgeCut
   capCycle : LiteralFiveCycleOnSide G realization.side
 
+namespace CAP5Pinch
+
+/-- Construct CAP5 pinch data from a realized cyclic cut, a five-edge boundary enumeration, and
+a literal side 5-cycle. -/
+def ofBoundary
+    {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (boundary : CAP5BoundaryEdgeEnumeration edgeCut)
+    (capCycle : LiteralFiveCycleOnSide G realization.side) :
+    CAP5Pinch G where
+  edgeCut := edgeCut
+  realization := realization
+  hcard := boundary.card_support
+  boundary := boundary
+  capCycle := capCycle
+
+@[simp]
+theorem edgeCut_card (pinch : CAP5Pinch G) :
+    pinch.edgeCut.card = 5 :=
+  pinch.hcard
+
+@[simp]
+theorem boundary_card (pinch : CAP5Pinch G) :
+    pinch.edgeCut.card = 5 :=
+  pinch.boundary.card_support
+
+/-- The selected side of a CAP5 pinch contains the literal boundary 5-cycle. -/
+theorem capCycle_length_five (pinch : CAP5Pinch G) :
+    pinch.capCycle.cycle.length = 5 :=
+  pinch.capCycle.length_five
+
 /-- The selected side of a CAP5 pinch contains a cycle. -/
-theorem CAP5Pinch.hasCycleOnCapSide (pinch : CAP5Pinch G) :
+theorem hasCycleOnCapSide (pinch : CAP5Pinch G) :
     HasCycleOnSide G pinch.realization.side :=
   pinch.capCycle.hasCycleOnSide
+
+/-- The complementary side of a CAP5 pinch also contains a cycle, because the pinch is a cyclic
+edge-cut realization. -/
+theorem hasCycleOnOutside (pinch : CAP5Pinch G) :
+    HasCycleOnSide G (fun v => ¬ pinch.realization.side v) :=
+  pinch.realization.houtside_cycle
+
+/-- Every enumerated CAP5 boundary edge belongs to the pinch edge support. -/
+theorem boundaryEdge_mem (pinch : CAP5Pinch G) (i : Fin 5) :
+    pinch.boundary.boundaryEdge i ∈ pinch.edgeCut :=
+  pinch.boundary.boundaryEdge_mem_support i
+
+/-- Every enumerated CAP5 boundary edge crosses the chosen Jordan side. -/
+theorem boundaryEdge_crosses (pinch : CAP5Pinch G) (i : Fin 5) :
+    EdgeCrossesVertexSide G pinch.realization.side (pinch.boundary.boundaryEdge i) :=
+  (pinch.realization.hcut_eq (pinch.boundary.boundaryEdge i)).1
+    (pinch.boundaryEdge_mem i)
+
+end CAP5Pinch
 
 /-- Tightness data for a separating dual 5-cycle: its translated primal cut is a CAP5 pinch. -/
 structure TightSeparatingDualFiveCycle
     {dual : PlaneCubicDualData G T} (cycle : SeparatingDualCycleData dual 5) where
   pinch : CAP5Pinch G
   same_cut : pinch.edgeCut = cycle.primalCut
+
+namespace TightSeparatingDualFiveCycle
+
+variable {dual : PlaneCubicDualData G T}
+variable {cycle : SeparatingDualCycleData dual 5}
+
+@[simp]
+theorem pinch_edgeCut_eq_primalCut (tight : TightSeparatingDualFiveCycle cycle) :
+    tight.pinch.edgeCut = cycle.primalCut :=
+  tight.same_cut
+
+@[simp]
+theorem primalCut_card (_tight : TightSeparatingDualFiveCycle cycle) :
+    cycle.primalCut.card = 5 :=
+  cycle.primal_card
+
+theorem pinch_card (tight : TightSeparatingDualFiveCycle cycle) :
+    tight.pinch.edgeCut.card = 5 :=
+  tight.pinch.hcard
+
+/-- Tightness transports the CAP5 boundary enumeration onto the separating cycle's primal cut. -/
+theorem primalCut_has_boundary_enumeration (tight : TightSeparatingDualFiveCycle cycle) :
+    Nonempty (CAP5BoundaryEdgeEnumeration cycle.primalCut) := by
+  rw [← tight.same_cut]
+  exact ⟨tight.pinch.boundary⟩
+
+/-- Tightness transports the CAP5 side-cycle witness onto the induced primal realization. -/
+theorem hasCycleOnTightSide (tight : TightSeparatingDualFiveCycle cycle) :
+    HasCycleOnSide G tight.pinch.realization.side :=
+  tight.pinch.hasCycleOnCapSide
+
+end TightSeparatingDualFiveCycle
 
 /-- Lemma 5.3 as the exact remaining disk-triangulation obligation: in normal form, every
 separating dual 5-cycle is tight, i.e. yields CAP5 pinch data on the primal side. -/
@@ -362,6 +531,20 @@ noncomputable def sideGlueVertexColor
   by
     classical
     exact fun v => if side v then inside v else outside v
+
+@[simp]
+theorem sideGlueVertexColor_of_side
+    (side : V → Prop) (inside outside : G.Coloring α)
+    {v : V} (hv : side v) :
+    sideGlueVertexColor side inside outside v = inside v := by
+  simp [sideGlueVertexColor, hv]
+
+@[simp]
+theorem sideGlueVertexColor_of_not_side
+    (side : V → Prop) (inside outside : G.Coloring α)
+    {v : V} (hv : ¬ side v) :
+    sideGlueVertexColor side inside outside v = outside v := by
+  simp [sideGlueVertexColor, hv]
 
 /-- The direct compatibility condition saying that the side-glued function is a proper coloring. -/
 def SideGlueCompatible
