@@ -4903,6 +4903,175 @@ theorem section92Step4RadialFaceArchiveFactoredCoverageGeometryDataObstructionTa
         hgeometry)
       hradial hsample hslice data hcase
 
+/--
+Per-case finite lab coverage for a sampled radial-face row.  This is the
+row-level form that a JSON archive certificate should discharge before it is
+assembled into the sample-wide coverage map.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCaseCoveredByLab
+    (caseKey : Nat × Nat) :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) =
+          caseKey →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          representation.annular →
+          Nonempty
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRotationCandidate
+
+/-- The six sampled radial-face rows are individually covered by the lab. -/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab :
+    Prop :=
+  ∀ caseKey,
+    caseKey ∈ closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCaseCoveredByLab
+        caseKey
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab_of_cases
+    (hcases :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab := by
+  intro V G representation hcase hradial
+  exact
+    hcases (representation.patchTopologyIndex, representation.radialOrderIndex.1)
+      hcase representation rfl hradial
+
+/--
+Per-case finite lab coverage for a second-slice radial-face row.  Keeping this
+separate from the sampled rows preserves the archive overlap accounting.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCaseCoveredByLab
+    (caseKey : Nat × Nat) :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) =
+          caseKey →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          representation.annular →
+          Nonempty
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRotationCandidate
+
+/-- The two non-overlapping second-slice radial-face rows are covered by the lab. -/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab :
+    Prop :=
+  ∀ caseKey,
+    caseKey ∈ closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Cases →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCaseCoveredByLab
+        caseKey
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCoveredByLab_of_cases
+    (hcases :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCoveredByLab := by
+  intro V G representation hcase hradial
+  exact
+    hcases (representation.patchTopologyIndex, representation.radialOrderIndex.1)
+      hcase representation rfl hradial
+
+/--
+Archive obstruction from row-level coverage certificates.  This is the form
+the finite lab should aim to provide: one obligation per archived row, then
+the Lean bridge assembles the normal-form obstruction.
+-/
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_case_coverage
+    (hsample :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab)
+    (hslice :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab)
+    {V : Type} {G : SimpleGraph V}
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G)
+    (hcase :
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases)
+    (hradial :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        representation.annular) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slice1000302
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab_of_cases
+      hsample)
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCoveredByLab_of_cases
+      hslice)
+    representation hcase hradial
+
+/--
+Normal-form archive target with the finite lab side factored all the way down
+to exact per-row coverage obligations.
+-/
+def Section92Step4RadialFaceArchiveCaseFactoredCoverageNormalFormObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab →
+        ClosedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace →
+          ∀ {V : Type} {G : SimpleGraph V},
+            (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+              (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                  closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+                False
+
+theorem section92Step4RadialFaceArchiveCaseFactoredCoverageNormalFormObstructionTarget :
+    Section92Step4RadialFaceArchiveCaseFactoredCoverageNormalFormObstructionTarget := by
+  intro _hevidence hsample hslice hforces V G data hcase
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_case_coverage
+      hsample hslice data.representation hcase (hforces data hcase)
+
+/--
+Embedded-geometry archive target with row-level finite lab coverage.
+-/
+def Section92Step4RadialFaceArchiveCaseFactoredCoverageEmbeddedGeometryObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence →
+    ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab →
+            ∀ {V : Type} {G : SimpleGraph V},
+              (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+                (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+                  False
+
+theorem section92Step4RadialFaceArchiveCaseFactoredCoverageEmbeddedGeometryObstructionTarget :
+    Section92Step4RadialFaceArchiveCaseFactoredCoverageEmbeddedGeometryObstructionTarget := by
+  intro hevidence hextract hradial hsample hslice V G data hcase
+  exact
+    section92Step4RadialFaceArchiveCaseFactoredCoverageNormalFormObstructionTarget
+      hevidence hsample hslice
+      (closedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace_of_embeddedGeometryExtraction_of_radialFace
+        hextract hradial)
+      data hcase
+
+/--
+Geometry-data archive target with row-level finite lab coverage.  This is the
+current most factored finite-archive S4 obstruction statement.
+-/
+def Section92Step4RadialFaceArchiveCaseFactoredCoverageGeometryDataObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence →
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab →
+            ∀ {V : Type} {G : SimpleGraph V},
+              (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+                (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+                  False
+
+theorem section92Step4RadialFaceArchiveCaseFactoredCoverageGeometryDataObstructionTarget :
+    Section92Step4RadialFaceArchiveCaseFactoredCoverageGeometryDataObstructionTarget := by
+  intro hevidence hgeometry hradial hsample hslice V G data hcase
+  exact
+    section92Step4RadialFaceArchiveCaseFactoredCoverageEmbeddedGeometryObstructionTarget
+      hevidence
+      (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+        hgeometry)
+      hradial hsample hslice data hcase
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
