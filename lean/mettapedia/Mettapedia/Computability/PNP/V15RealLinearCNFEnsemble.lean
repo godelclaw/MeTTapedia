@@ -326,6 +326,15 @@ theorem v13RealLinearCNFReadoutData_supportedSatisfiable {m : Nat}
     ⟨v13RealLinearCNFDecodedAssignment Y,
       v13RealLinearCNFFormula_satisfied_decodedAssignment Y⟩
 
+/-- Every verifier-valid semantic witness for the real linear CNF readout data
+is represented by the same satisfying CNF assignment, because extraction is
+the identity map from assignments. -/
+theorem v13RealLinearCNFReadoutData_cnfExtractionComplete {m : Nat}
+    (i₀ : Fin m) :
+    (v13RealLinearCNFReadoutData i₀).CNFExtractionComplete := by
+  intro Y W _hY hW
+  exact ⟨W, hW, rfl⟩
+
 /-- The arbitrary-output SAT-search readout obligation holds for the concrete
 real linear CNF because every satisfying assignment has the same selected
 witness-coordinate readout. -/
@@ -679,6 +688,15 @@ theorem v13RealLinearGaugeCNFReadoutData_supportedSatisfiable
   exact
     ⟨v13RealLinearGaugeCNFAssignment Y false,
       v13RealLinearGaugeCNFFormula_satisfied_assignment Y false⟩
+
+/-- Every verifier-valid semantic witness for the gauge-buffered real linear
+CNF readout data is represented by the same satisfying CNF assignment, because
+extraction is the identity map. -/
+theorem v13RealLinearGaugeCNFReadoutData_cnfExtractionComplete
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearGaugeCNFReadoutData i₀).CNFExtractionComplete := by
+  intro Y W _hY hW
+  exact ⟨W, hW, rfl⟩
 
 /-- Any satisfying SAT-search output for the gauge-buffered CNF reads the
 fixed public message coordinate. -/
