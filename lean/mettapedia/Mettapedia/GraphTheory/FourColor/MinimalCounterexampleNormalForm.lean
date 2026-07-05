@@ -789,6 +789,30 @@ theorem not_two_boundaryCharges_ne_one
   cases i <;> cases j <;> simp [charge] at hij hi hj hi0 hj0
   all_goals omega
 
+/-- If one boundary position is chosen as the non-unit exception, every other boundary charge
+is forced to be one. -/
+theorem charge_eq_one_of_ne_of_charge_ne_one
+    (profile : FiveBoundaryChargeProfile) {exception i : FiveBoundaryIndex}
+    (hne : i ≠ exception) (hexception : profile.charge exception ≠ 1) :
+    profile.charge i = 1 := by
+  by_contra hi
+  exact profile.not_two_boundaryCharges_ne_one hne hi hexception
+
+/-- There is a boundary position away from which all five-cycle boundary charges are one.  This
+is the form consumed by the disk-triangulation part of Lemma 5.3: the charge count leaves at most
+one possible exceptional boundary vertex. -/
+theorem exists_exception_charge_eq_one_of_ne
+    (profile : FiveBoundaryChargeProfile) :
+    ∃ exception : FiveBoundaryIndex, ∀ i : FiveBoundaryIndex, i ≠ exception →
+      profile.charge i = 1 := by
+  classical
+  by_cases hall : ∀ i : FiveBoundaryIndex, profile.charge i = 1
+  · exact ⟨.b0, fun i _ => hall i⟩
+  · push Not at hall
+    rcases hall with ⟨exception, hexception⟩
+    exact ⟨exception, fun i hne =>
+      profile.charge_eq_one_of_ne_of_charge_ne_one hne hexception⟩
+
 end FiveBoundaryChargeProfile
 
 /-- Lemma 5.3 as the exact remaining disk-triangulation obligation: in normal form, every
