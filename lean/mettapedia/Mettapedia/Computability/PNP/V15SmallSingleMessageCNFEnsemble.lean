@@ -654,4 +654,227 @@ theorem xorSingleMessage_noPublicReadoutTags :
       simpa [xorSingleMessageProjection, xorSingleMessageAssignment] using
         hreadout)
 
+/-! ## XOR admissible histories -/
+
+/-- The target bit for the XOR public surface. -/
+def xorSingleMessageTarget (Y : XorSingleMessagePublic) : Bool :=
+  xorSingleMessageM Y
+
+/-- Flip the left public coordinate.  This toggles the XOR target and gives
+the global target-balance pairing. -/
+def xorSingleMessageFlipLeft
+    (Y : XorSingleMessagePublic) : XorSingleMessagePublic :=
+  (!Y.1, Y.2)
+
+/-- The global XOR target false fiber is in bijection with its true fiber. -/
+def xorSingleMessageTargetFlipEquiv :
+    {Y : XorSingleMessagePublic // xorSingleMessageTarget Y = false} ≃
+      {Y : XorSingleMessagePublic // xorSingleMessageTarget Y = true} where
+  toFun := fun Y =>
+    ⟨xorSingleMessageFlipLeft Y.val, by
+      rcases Y with ⟨Y, hY⟩
+      cases Y with
+      | mk b0 b1 =>
+          cases b0 <;> cases b1 <;>
+            simp [xorSingleMessageTarget, xorSingleMessageFlipLeft,
+              xorSingleMessageM] at hY ⊢⟩
+  invFun := fun Y =>
+    ⟨xorSingleMessageFlipLeft Y.val, by
+      rcases Y with ⟨Y, hY⟩
+      cases Y with
+      | mk b0 b1 =>
+          cases b0 <;> cases b1 <;>
+            simp [xorSingleMessageTarget, xorSingleMessageFlipLeft,
+              xorSingleMessageM] at hY ⊢⟩
+  left_inv := by
+    intro Y
+    apply Subtype.ext
+    rcases Y with ⟨Y, hY⟩
+    rcases Y with ⟨b0, b1⟩
+    simp [xorSingleMessageFlipLeft]
+  right_inv := by
+    intro Y
+    apply Subtype.ext
+    rcases Y with ⟨Y, hY⟩
+    rcases Y with ⟨b0, b1⟩
+    simp [xorSingleMessageFlipLeft]
+
+theorem xorSingleMessageTarget_false_card_eq_true :
+    Fintype.card
+        {Y : XorSingleMessagePublic //
+          xorSingleMessageTarget Y = false} =
+      Fintype.card
+        {Y : XorSingleMessagePublic //
+          xorSingleMessageTarget Y = true} :=
+  Fintype.card_congr xorSingleMessageTargetFlipEquiv
+
+theorem xorSingleMessage_constantTrue_correct_card_eq_true :
+    Fintype.card
+        {Y : XorSingleMessagePublic //
+          (fun _ : XorSingleMessagePublic => true) Y =
+            xorSingleMessageTarget Y} =
+      Fintype.card
+        {Y : XorSingleMessagePublic //
+          xorSingleMessageTarget Y = true} := by
+  let e :
+      {Y : XorSingleMessagePublic //
+        (fun _ : XorSingleMessagePublic => true) Y =
+          xorSingleMessageTarget Y} ≃
+        {Y : XorSingleMessagePublic //
+          xorSingleMessageTarget Y = true} :=
+    { toFun := fun Y => ⟨Y.val, Y.property.symm⟩
+      invFun := fun Y => ⟨Y.val, Y.property.symm⟩
+      left_inv := by
+        intro Y
+        cases Y
+        rfl
+      right_inv := by
+        intro Y
+        cases Y
+        rfl }
+  exact Fintype.card_congr e
+
+theorem xorSingleMessage_world_card_eq_two_mul_target_true :
+    Fintype.card XorSingleMessagePublic =
+      2 * Fintype.card
+        {Y : XorSingleMessagePublic //
+          xorSingleMessageTarget Y = true} := by
+  set a : Nat :=
+    Fintype.card
+      {Y : XorSingleMessagePublic //
+        xorSingleMessageTarget Y = true}
+  have hcomp :
+      Fintype.card
+          {Y : XorSingleMessagePublic //
+            xorSingleMessageTarget Y = false} =
+        Fintype.card XorSingleMessagePublic - a := by
+    simpa [a] using
+      (Fintype.card_subtype_compl
+        (fun Y : XorSingleMessagePublic =>
+          xorSingleMessageTarget Y = true))
+  have heq :
+      a =
+        Fintype.card
+          {Y : XorSingleMessagePublic //
+            xorSingleMessageTarget Y = false} := by
+    simpa [a] using xorSingleMessageTarget_false_card_eq_true.symm
+  have hsub :
+      Fintype.card XorSingleMessagePublic - a = a := by
+    simpa [heq] using hcomp.symm
+  have hle :
+      a ≤ Fintype.card XorSingleMessagePublic := by
+    simpa [a] using
+      Fintype.card_subtype_le
+        (fun Y : XorSingleMessagePublic =>
+          xorSingleMessageTarget Y = true)
+  have hsum :
+      Fintype.card XorSingleMessagePublic = a + a :=
+    Nat.eq_add_of_sub_eq hle hsub
+  simpa [a, two_mul, Nat.add_comm] using hsum
+
+theorem xorSingleMessageTarget_true_card_pos :
+    0 <
+      Fintype.card
+        {Y : XorSingleMessagePublic //
+          xorSingleMessageTarget Y = true} := by
+  exact
+    Fintype.card_pos_iff.mpr
+      ⟨⟨(false, true), by
+        simp [xorSingleMessageTarget, xorSingleMessageM]⟩⟩
+
+/-- The XOR target is balanced on the finite public surface. -/
+theorem xorSingleMessage_target_balanced :
+    BalancedBit xorSingleMessageTarget := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [xorSingleMessage_constantTrue_correct_card_eq_true]
+  rw [xorSingleMessage_world_card_eq_two_mul_target_true]
+  set a : Nat :=
+    Fintype.card
+      {Y : XorSingleMessagePublic //
+        xorSingleMessageTarget Y = true}
+  have hpos : 0 < a := by
+    simpa [a] using xorSingleMessageTarget_true_card_pos
+  have hne : (a : Rat) ≠ 0 := by
+    exact_mod_cast (Nat.ne_of_gt hpos)
+  rw [Nat.cast_mul]
+  field_simp [hne]
+  norm_num
+
+/-- The single-coordinate history field for the XOR public surface. -/
+def xorSingleMessageHistoryField
+    (coord : XorSingleMessagePublicCoordinate) :
+    FiniteSigmaField XorSingleMessagePublic where
+  Atom := Bool
+  atomDecidable := inferInstance
+  atom := xorSingleMessagePublicCoordinateValue coord
+
+/-- Flip the coordinate not observed by a history field.  This preserves the
+history atom and toggles the XOR target. -/
+def xorSingleMessageFlipUnobserved
+    (coord : XorSingleMessagePublicCoordinate)
+    (Y : XorSingleMessagePublic) : XorSingleMessagePublic :=
+  match coord with
+  | .left => (Y.1, !Y.2)
+  | .right => (!Y.1, Y.2)
+
+/-- Within any single-coordinate fiber, the true and false XOR target fibers
+are paired by flipping the unobserved coordinate. -/
+def xorSingleMessageHistoryFieldFiberFlipEquiv
+    (coord : XorSingleMessagePublicCoordinate) (atom : Bool) :
+    FiberTrue (xorSingleMessagePublicCoordinateValue coord)
+        xorSingleMessageTarget atom ≃
+      FiberFalse (xorSingleMessagePublicCoordinateValue coord)
+        xorSingleMessageTarget atom where
+  toFun := fun Y =>
+    ⟨xorSingleMessageFlipUnobserved coord Y.val, by
+      rcases Y with ⟨Y, hY⟩
+      cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+        cases b0 <;> cases b1 <;> cases atom <;>
+          simp [xorSingleMessageFlipUnobserved,
+            xorSingleMessagePublicCoordinateValue,
+            xorSingleMessageTarget, xorSingleMessageM] at hY ⊢⟩
+  invFun := fun Y =>
+    ⟨xorSingleMessageFlipUnobserved coord Y.val, by
+      rcases Y with ⟨Y, hY⟩
+      cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+        cases b0 <;> cases b1 <;> cases atom <;>
+          simp [xorSingleMessageFlipUnobserved,
+            xorSingleMessagePublicCoordinateValue,
+            xorSingleMessageTarget, xorSingleMessageM] at hY ⊢⟩
+  left_inv := by
+    intro Y
+    apply Subtype.ext
+    rcases Y with ⟨Y, hY⟩
+    cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+      simp [xorSingleMessageFlipUnobserved]
+  right_inv := by
+    intro Y
+    apply Subtype.ext
+    rcases Y with ⟨Y, hY⟩
+    cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+      simp [xorSingleMessageFlipUnobserved]
+
+/-- Every single-coordinate XOR history field has balanced target fibers. -/
+theorem xorSingleMessage_historyField_balancedConditioning
+    (coord : XorSingleMessagePublicCoordinate) :
+    BalancedConditioning
+      (xorSingleMessageHistoryField coord) xorSingleMessageTarget := by
+  change Neutral
+    (xorSingleMessagePublicCoordinateValue coord) xorSingleMessageTarget
+  intro atom
+  exact
+    Fintype.card_congr
+      (xorSingleMessageHistoryFieldFiberFlipEquiv coord atom)
+
+/-- Structural `admissibleHistories` field for the XOR public surface:
+the target is globally balanced and remains balanced after conditioning on
+either single public coordinate. -/
+theorem xorSingleMessage_admissibleHistories
+    (coord : XorSingleMessagePublicCoordinate) :
+    BalancedBit xorSingleMessageTarget ∧
+      BalancedConditioning
+        (xorSingleMessageHistoryField coord) xorSingleMessageTarget :=
+  ⟨xorSingleMessage_target_balanced,
+    xorSingleMessage_historyField_balancedConditioning coord⟩
+
 end Mettapedia.Computability.PNP
