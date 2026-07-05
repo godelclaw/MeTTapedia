@@ -13305,6 +13305,26 @@ theorem realM4OfficialUpperBridgeConstructionInputs_exact :
 def realM4OfficialUpperBridgeStatement : String :=
   "For the real v15/M4 Cook-style bridge, the nondegenerate endpoint obligation is to name an NP language and prove that P-membership for that language constructs the explicit self-reduction upper discharge used by the real endgame.  StarSW hardness, the lower machine, and the three analytic fields remain outside this bridge and visible at the theorem boundary."
 
+def realM4OfficialBridgeNondegenerateRouteItems : List String := [
+  "rawOfficialBridgeRejectedAsEndpoint",
+  "strictPToUpperBridge",
+  "decomposedPToDeciderBridge",
+  "supportNeutralConstantDecoderRegime",
+  "classInterfaceOfficialEndpoint"
+]
+
+theorem realM4OfficialBridgeNondegenerateRouteItems_exact :
+    realM4OfficialBridgeNondegenerateRouteItems =
+      [ "rawOfficialBridgeRejectedAsEndpoint",
+        "strictPToUpperBridge",
+        "decomposedPToDeciderBridge",
+        "supportNeutralConstantDecoderRegime",
+        "classInterfaceOfficialEndpoint" ] := by
+  rfl
+
+def realM4OfficialBridgeNondegenerateRouteStatement : String :=
+  "The real v15/M4 Cook-style endpoint must use the strict P-to-upper route, not the raw clash-to-not-P adapter.  The raw adapter is a typed transport target only, because it can be inhabited by ex falso from UpperLowerClash.  The nondegenerate route names the NP language, derives the SAT-decider family from P-membership, constructs the support-neutral constant-decoder regime from visible K-poly and floor facts, and then uses the class-interface equivalence to state the official endpoint.  StarSW hardness and the three analytic fields remain outside the bridge."
+
 def realM4OfficialPToDeciderUpperSupportConstructionInputs :
     List String := [
   "defaultMessage",
