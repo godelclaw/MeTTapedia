@@ -363,6 +363,36 @@ def v13RealLinearNoTargetRowsCNFWorldOfBase {m : Nat} {i₀ : Fin m}
     v13RealLinearCNFFormula_satisfied_decodedAssignment
       (v13RealLinearNoTargetRowsPublicInput omega)
 
+/-- The no-target-rows CNF world has exactly one satisfying assignment over
+each base no-target-rows world. -/
+noncomputable def v13RealLinearNoTargetRowsCNFWorldBaseEquiv
+    {m : Nat} {i₀ : Fin m} :
+    V13RealLinearNoTargetRowsCNFWorld m i₀ ≃
+      V13RealLinearNoTargetRowsWorld m i₀ where
+  toFun := fun omega => omega.base
+  invFun := v13RealLinearNoTargetRowsCNFWorldOfBase
+  left_inv := by
+    intro omega
+    cases omega with
+    | mk base assignment sat =>
+        have hassign :
+            assignment =
+              v13RealLinearCNFDecodedAssignment
+                (v13RealLinearNoTargetRowsPublicInput base) := by
+          funext j
+          exact v13RealLinearCNFFormula_forces_decodedBit sat j
+        cases hassign
+        rfl
+  right_inv := by
+    intro omega
+    rfl
+
+noncomputable instance v13RealLinearNoTargetRowsCNFWorldFintype
+    {m : Nat} {i₀ : Fin m} :
+    Fintype (V13RealLinearNoTargetRowsCNFWorld m i₀) :=
+  Fintype.ofEquiv (V13RealLinearNoTargetRowsWorld m i₀)
+    v13RealLinearNoTargetRowsCNFWorldBaseEquiv.symm
+
 /-- The neutral skeleton of a no-target-rows CNF world is the same map
 skeleton as the base public-surface world.  It deliberately does not include
 the full formula syntax, whose target-unit leak is recorded separately. -/
@@ -383,6 +413,18 @@ def v13RealLinearNoTargetRowsCNFTarget {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsCNFWorld m i₀) : Bool :=
   v13RealLinearCNFReadout i₀ omega.assignment
 
+/-- Public-coordinate history field lifted from the base no-target-rows
+surface to the concrete CNF world. -/
+noncomputable def v13RealLinearNoTargetRowsCNFPublicCoordinateField
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    FiniteSigmaField (V13RealLinearNoTargetRowsCNFWorld m i₀) where
+  Atom := ZMod 2
+  atomDecidable := inferInstance
+  atom := fun omega =>
+    v13RealLinearCoordinateValue coordinate
+      (v13RealLinearNoTargetRowsPublicInput omega.base)
+
 /-- The CNF readout target agrees with the base no-target-rows target bit. -/
 theorem v13RealLinearNoTargetRowsCNFReadout_eq_targetBit {m : Nat}
     {i₀ : Fin m}
@@ -400,6 +442,200 @@ theorem v13RealLinearNoTargetRowsCNFReadout_eq_targetBit {m : Nat}
       simpa [v13RealLinearMessageOfPublic,
         v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
         using congrArg v13RealLinearBit hdecode
+
+/-- Target-true public-coordinate fibers in the CNF world are the corresponding
+base no-target-rows fibers. -/
+noncomputable def v13RealLinearNoTargetRowsCNFFiberTrueEquivBase
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    FiberTrue
+        (fun omega : V13RealLinearNoTargetRowsCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsCNFTarget m i₀) value ≃
+      FiberTrue
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega))
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) value where
+  toFun := fun omega =>
+    ⟨omega.val.base, by
+      exact ⟨omega.property.1,
+        by
+          have htarget :=
+            v13RealLinearNoTargetRowsCNFReadout_eq_targetBit omega.val
+          exact htarget ▸ omega.property.2⟩⟩
+  invFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsCNFWorldOfBase omega.val, by
+      constructor
+      · exact omega.property.1
+      · rw [v13RealLinearNoTargetRowsCNFReadout_eq_targetBit]
+        exact omega.property.2⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsCNFWorldBaseEquiv.left_inv omega.val
+  right_inv := by
+    intro omega
+    rfl
+
+/-- Target-false public-coordinate fibers in the CNF world are the
+corresponding base no-target-rows fibers. -/
+noncomputable def v13RealLinearNoTargetRowsCNFFiberFalseEquivBase
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    FiberFalse
+        (fun omega : V13RealLinearNoTargetRowsCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsCNFTarget m i₀) value ≃
+      FiberFalse
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega))
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) value where
+  toFun := fun omega =>
+    ⟨omega.val.base, by
+      exact ⟨omega.property.1,
+        by
+          have htarget :=
+            v13RealLinearNoTargetRowsCNFReadout_eq_targetBit omega.val
+          exact htarget ▸ omega.property.2⟩⟩
+  invFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsCNFWorldOfBase omega.val, by
+      constructor
+      · exact omega.property.1
+      · rw [v13RealLinearNoTargetRowsCNFReadout_eq_targetBit]
+        exact omega.property.2⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsCNFWorldBaseEquiv.left_inv omega.val
+  right_inv := by
+    intro omega
+    rfl
+
+/-- Public-coordinate conditioning balance transfers from the base
+no-target-rows surface to the concrete CNF world. -/
+theorem v13RealLinearNoTargetRowsCNF_publicCoordinate_balancedConditioning
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    BalancedConditioning
+      (v13RealLinearNoTargetRowsCNFPublicCoordinateField (i₀ := i₀)
+        coordinate)
+      (@v13RealLinearNoTargetRowsCNFTarget m i₀) := by
+  classical
+  change Neutral
+    (fun omega : V13RealLinearNoTargetRowsCNFWorld m i₀ =>
+      v13RealLinearCoordinateValue coordinate
+        (v13RealLinearNoTargetRowsPublicInput omega.base))
+    (@v13RealLinearNoTargetRowsCNFTarget m i₀)
+  intro value
+  calc
+    Fintype.card
+        (FiberTrue
+          (fun omega : V13RealLinearNoTargetRowsCNFWorld m i₀ =>
+            v13RealLinearCoordinateValue coordinate
+              (v13RealLinearNoTargetRowsPublicInput omega.base))
+          (@v13RealLinearNoTargetRowsCNFTarget m i₀) value) =
+        Fintype.card
+          (FiberTrue
+            (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega))
+            (@v13RealLinearNoTargetRowsTargetBit m i₀) value) :=
+      Fintype.card_congr
+        (v13RealLinearNoTargetRowsCNFFiberTrueEquivBase coordinate value)
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega))
+            (@v13RealLinearNoTargetRowsTargetBit m i₀) value) := by
+      have h :=
+        v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
+          i₀ coordinate
+      change Neutral
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega))
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) at h
+      exact h value
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega : V13RealLinearNoTargetRowsCNFWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega.base))
+            (@v13RealLinearNoTargetRowsCNFTarget m i₀) value) :=
+      (Fintype.card_congr
+        (v13RealLinearNoTargetRowsCNFFiberFalseEquivBase
+          coordinate value)).symm
+
+/-- Constant-true correct fibers in the CNF world are the corresponding base
+no-target-rows fibers. -/
+noncomputable def v13RealLinearNoTargetRowsCNFCorrectTrueEquivBase
+    {m : Nat} {i₀ : Fin m} :
+    {omega : V13RealLinearNoTargetRowsCNFWorld m i₀ //
+      (fun _ : V13RealLinearNoTargetRowsCNFWorld m i₀ => true) omega =
+        v13RealLinearNoTargetRowsCNFTarget omega} ≃
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        (fun _ : V13RealLinearNoTargetRowsWorld m i₀ => true) omega =
+          v13RealLinearNoTargetRowsTargetBit omega} where
+  toFun := fun omega =>
+    ⟨omega.val.base, by
+      have htarget :=
+        v13RealLinearNoTargetRowsCNFReadout_eq_targetBit omega.val
+      exact htarget ▸ omega.property⟩
+  invFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsCNFWorldOfBase omega.val, by
+      rw [v13RealLinearNoTargetRowsCNFReadout_eq_targetBit]
+      exact omega.property⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsCNFWorldBaseEquiv.left_inv omega.val
+  right_inv := by
+    intro omega
+    rfl
+
+/-- Global target balance transfers from the base no-target-rows surface to
+the concrete CNF world. -/
+theorem v13RealLinearNoTargetRowsCNF_target_balanced {m : Nat}
+    (i₀ : Fin m) (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsCNFTarget m i₀) := by
+  unfold BalancedBit globalDecoderSuccess
+  have hcorrect :
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsCNFWorld m i₀ //
+          (fun _ : V13RealLinearNoTargetRowsCNFWorld m i₀ => true) omega =
+            v13RealLinearNoTargetRowsCNFTarget omega} =
+        Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          (fun _ : V13RealLinearNoTargetRowsWorld m i₀ => true) omega =
+            v13RealLinearNoTargetRowsTargetBit omega} :=
+    Fintype.card_congr v13RealLinearNoTargetRowsCNFCorrectTrueEquivBase
+  have hall :
+      Fintype.card (V13RealLinearNoTargetRowsCNFWorld m i₀) =
+        Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) :=
+    Fintype.card_congr v13RealLinearNoTargetRowsCNFWorldBaseEquiv
+  rw [hcorrect, hall]
+  exact v13RealLinearNoTargetRows_target_balanced i₀ hm
+
+/-- Structural `admissibleHistories` transfer for the concrete no-target-rows
+CNF world using a single public-coordinate history field. -/
+theorem v13RealLinearNoTargetRowsCNF_admissibleHistories {m : Nat}
+    (i₀ : Fin m) (coordinate : V13RealLinearPublicCoordinate m)
+    (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsCNFTarget m i₀) ∧
+      BalancedConditioning
+        (v13RealLinearNoTargetRowsCNFPublicCoordinateField (i₀ := i₀)
+          coordinate)
+        (@v13RealLinearNoTargetRowsCNFTarget m i₀) :=
+  ⟨v13RealLinearNoTargetRowsCNF_target_balanced i₀ hm,
+    v13RealLinearNoTargetRowsCNF_publicCoordinate_balancedConditioning
+      i₀ coordinate⟩
 
 /-- Pair-neutrality transfers from the no-target-rows public surface to the
 CNF world when the neutral skeleton is the base no-target-rows map skeleton. -/
