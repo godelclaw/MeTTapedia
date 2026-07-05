@@ -313,6 +313,7 @@ set_option autoImplicit false
 #check v13RealLinearNoTargetRowsCNF_pairNeutral
 #check v13RealLinearNoTargetRowsCNF_hasMessageOppositePair
 #check v13RealLinearNoTargetRowsCNF_noPublicTargetTags
+#check v13RealLinearNoTargetRowsCNF_noPublicReadoutTags
 #check V13RealLinearNoTargetRowsGaugeCNFWorld
 #check v13RealLinearNoTargetRowsGaugeCNFWorldOfBase
 #check v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction
@@ -742,6 +743,7 @@ set_option autoImplicit false
 #print axioms v13RealLinearNoTargetRowsCNF_pairNeutral
 #print axioms v13RealLinearNoTargetRowsCNF_hasMessageOppositePair
 #print axioms v13RealLinearNoTargetRowsCNF_noPublicTargetTags
+#print axioms v13RealLinearNoTargetRowsCNF_noPublicReadoutTags
 #print axioms V13RealLinearNoTargetRowsGaugeCNFWorld
 #print axioms v13RealLinearNoTargetRowsGaugeCNFWorldOfBase
 #print axioms v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction

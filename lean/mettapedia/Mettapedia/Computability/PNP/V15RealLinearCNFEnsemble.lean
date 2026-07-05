@@ -4053,6 +4053,35 @@ theorem v13RealLinearNoTargetRowsCNF_noPublicTargetTags {m : Nat}
         (@v13RealLinearNoTargetRowsCNFTarget m i₀)
         hPair hOpp⟩
 
+/-- Readout-level `noPublicReadoutTags` transfer for the concrete real
+linear CNF world over the adjusted no-target-rows surface: no function of the
+neutral no-target-row skeleton can predict the selected-coordinate readout
+for every verifier-valid CNF witness. -/
+theorem v13RealLinearNoTargetRowsCNF_noPublicReadoutTags {m : Nat}
+    (i₀ : Fin m) (hm : 1 < m) :
+    ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+      ∀ {Y : V13RealLinearNoTargetRowsWorld m i₀}
+        {W : V13RealLinearCNFWitness m},
+        v13RealLinearCNFVerifier
+            (v13RealLinearNoTargetRowsPublicInput Y) W →
+          v13RealLinearCNFReadout i₀ W =
+            f (v13RealLinearNoTargetRowsNeutralSkeleton Y) := by
+  intro htag
+  rcases htag with ⟨f, hf⟩
+  have hNoTarget :
+      ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+        ∀ omega : V13RealLinearNoTargetRowsCNFWorld m i₀,
+          v13RealLinearNoTargetRowsCNFTarget omega =
+            f (v13RealLinearNoTargetRowsCNFNeutralSkeleton omega) :=
+    (v13RealLinearNoTargetRowsCNF_noPublicTargetTags i₀ hm).2.2
+  exact hNoTarget
+    ⟨f, by
+      intro omega
+      have hReadout :=
+        hf (Y := omega.base) (W := omega.assignment) omega.sat
+      simpa [v13RealLinearNoTargetRowsCNFTarget,
+        v13RealLinearNoTargetRowsCNFNeutralSkeleton] using hReadout⟩
+
 /-! ## No-target-rows gauge-buffered CNF construction -/
 
 /-- Gauge-buffered CNF world over the adjusted no-target-rows real linear
