@@ -2082,6 +2082,125 @@ theorem closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+/--
+Counts for the radial-face annular embedding audit on selected six-internal
+simple-patch realizations.  The audit enumerates all cubic rotation systems
+for the sampled planar profile-preserving cases and asks whether the four
+radial-cut edges can lie on a single face of the cut-open collar graph.
+-/
+structure ClosedCollarSimplePatchAnnularEmbeddingSampleCounts where
+  internalVertexCount : Nat
+  sampledPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  planarProfilePreservingCaseCount : Nat
+  radialFaceCoherentCaseCount : Nat
+  radialFaceIncoherentCaseCount : Nat
+  totalRotationSystemCount : Nat
+  enumeratedRotationSystemCount : Nat
+  planarRotationSystemCount : Nat
+  radialFaceCoherentRotationCount : Nat
+  exactDiagonalTwoPoleTemplateBlockerCount : Nat
+  maxRadialCutEdgesOnSingleFaceTwoCount : Nat
+
+def closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices : List Nat :=
+  [821205, 852969]
+
+def closedCollarSimplePatchN6AnnularEmbeddingSampleCounts :
+    ClosedCollarSimplePatchAnnularEmbeddingSampleCounts where
+  internalVertexCount := 6
+  sampledPatchTopologyCount := 2
+  radialOrderCaseCount := 4
+  profilePreservingCaseCount := 4
+  planarProfilePreservingCaseCount := 4
+  radialFaceCoherentCaseCount := 0
+  radialFaceIncoherentCaseCount := 4
+  totalRotationSystemCount := 1048576
+  enumeratedRotationSystemCount := 1048576
+  planarRotationSystemCount := 32
+  radialFaceCoherentRotationCount := 0
+  exactDiagonalTwoPoleTemplateBlockerCount := 4
+  maxRadialCutEdgesOnSingleFaceTwoCount := 32
+
+/--
+Archived radial-face evidence for the first two planar profile-preserving
+six-internal samples.  These samples preserve the winding-freedom witness and
+pass planarity, but no planar rotation system among the 32 found places all
+four radial-cut edges on one face.  This is a concrete annular embedding
+constraint, not an exhaustive nonrealizability theorem for all fillers.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices =
+      [821205, 852969] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.internalVertexCount =
+      6 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.sampledPatchTopologyCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialOrderCaseCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.profilePreservingCaseCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarProfilePreservingCaseCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceIncoherentCaseCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.totalRotationSystemCount =
+      1048576 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.enumeratedRotationSystemCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.totalRotationSystemCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarRotationSystemCount =
+      32 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentRotationCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.exactDiagonalTwoPoleTemplateBlockerCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.maxRadialCutEdgesOnSingleFaceTwoCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarRotationSystemCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/-- Lab-side candidate for a radial-face coherent case in this n6 sample. -/
+structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCaseCandidate where
+  hcaseCountPositive :
+    0 <
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceCaseCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCaseCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentCaseCount =
+        0 := rfl
+  have hpos := candidate.hcaseCountPositive
+  omega
+
+/--
+Lab-side candidate for a radial-face coherent planar rotation system in this
+n6 sample.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRotationCandidate where
+  hrotationCountPositive :
+    0 <
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentRotationCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceRotationCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRotationCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentRotationCount =
+        0 := rfl
+  have hpos := candidate.hrotationCountPositive
+  omega
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
