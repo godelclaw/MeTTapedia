@@ -1072,6 +1072,107 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_singleMessage {m : Nat}
       (v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage
         omega₁).symm
 
+/-- The neutral skeleton of a no-target-rows gauge-buffered CNF world is the
+same map skeleton as the base no-target-rows world. -/
+def v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    V13RealLinearNoTargetRowsMap m i₀ :=
+  v13RealLinearNoTargetRowsNeutralSkeleton omega.base
+
+/-- Opposite support for the no-target-rows gauge-buffered CNF world is
+inherited from the base no-target-rows world. -/
+def v13RealLinearNoTargetRowsGaugeCNFOppositeSupport
+    {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    Prop :=
+  v13RealLinearNoTargetRowsOppositeSupport omega₀.base omega₁.base
+
+/-- The gauge-buffered CNF readout target agrees with the base
+no-target-rows target bit. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFTarget omega =
+      v13RealLinearNoTargetRowsTargetBit omega.base := by
+  calc
+    v13RealLinearNoTargetRowsGaugeCNFTarget omega =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega.base) :=
+      v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage omega
+    _ = v13RealLinearNoTargetRowsTargetBit omega.base := by
+      have hdecode :=
+        v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega.base
+      simpa [v13RealLinearMessageOfPublic,
+        v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
+        using congrArg v13RealLinearBit hdecode
+
+/-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
+neutral skeleton is the base no-target-rows map skeleton. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
+    {m : Nat} {i₀ : Fin m} :
+    PairNeutral
+      (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+      (@v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton m i₀) := by
+  intro omega₀ omega₁ hSupport
+  exact
+    v13RealLinearNoTargetRows_pairNeutral omega₀.base omega₁.base
+      hSupport
+
+/-- Opposite-message pairs transfer to the gauge-buffered CNF world by using
+canonical satisfying assignments with a fixed hidden gauge bit. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_hasMessageOppositePair
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    HasMessageOppositePair
+      (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+      (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) := by
+  rcases v13RealLinearNoTargetRows_hasMessageOppositePair i₀ hm with
+    ⟨omega₀, omega₁, hSupport, h0, h1⟩
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFWorldOfBase omega₀ false,
+      v13RealLinearNoTargetRowsGaugeCNFWorldOfBase omega₁ false,
+      hSupport, ?_, ?_⟩
+  · rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+    exact h0
+  · rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+    exact h1
+
+/-- Structural `noPublicTargetTags` transfer for the no-target-rows
+gauge-buffered CNF world.  The transferred public skeleton is the
+manuscript-shaped no-target-rows map skeleton; the hidden gauge coordinate is
+not public data and the full locking formula-syntax leak remains recorded by
+the separate obstruction theorem above. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_noPublicTargetTags
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    PairNeutral
+        (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton m i₀) ∧
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) ∧
+        ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+          ∀ omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+            v13RealLinearNoTargetRowsGaugeCNFTarget omega =
+              f (v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton
+                omega) := by
+  have hPair :
+      PairNeutral
+        (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton m i₀) :=
+    v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) :=
+    v13RealLinearNoTargetRowsGaugeCNF_hasMessageOppositePair i₀ hm
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        (@v13RealLinearNoTargetRowsGaugeCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀)
+        hPair hOpp⟩
+
 /-- Flip the hidden gauge coordinate of a no-target-rows gauge-buffered CNF
 world, preserving the base public instance and verifier validity. -/
 def v13RealLinearNoTargetRowsGaugeCNFGaugeAction {m : Nat}
