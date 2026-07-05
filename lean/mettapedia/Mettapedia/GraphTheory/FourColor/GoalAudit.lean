@@ -1306,6 +1306,20 @@ theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWi
   closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
     hwitness
 
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary_of_oneCollar_audit
+    (hone :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar) :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary :=
+  closedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary_of_oneCollar
+    hone
+
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_oneCollar_audit
+    (hone :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar) :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :=
+  closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_oneCollar
+    hone
+
 theorem section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget_audit :
     Section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget :=
   section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
@@ -1652,6 +1666,20 @@ theorem closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNorma
   closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingCurrentBoundaryBridge
     hbridge
 
+theorem closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge :=
+  closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge
+    hbridge
+
+theorem closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingOneCollarBridge_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingOneCollarBridge
+    hbridge
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows_audit
     (hbridge :
       ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
@@ -1670,6 +1698,15 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFron
   closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows
     hbridge hrows
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows
+    hbridge hrows
+
 theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
   section92Step4CurrentFiniteFrontierFactoredBridgeFork
@@ -1678,6 +1715,10 @@ theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork :=
   section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork
 
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeFork_audit :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeFork :=
+  section92Step4CurrentFiniteFrontierOneCollarBridgeFork
+
 theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint_audit :
     Section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint :=
   section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint
@@ -1685,6 +1726,10 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressur
 theorem section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint_audit :
     Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint :=
   section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint
+
+theorem section92Step4CurrentFiniteFrontierOneCollarPressurePoint_audit :
+    Section92Step4CurrentFiniteFrontierOneCollarPressurePoint :=
+  section92Step4CurrentFiniteFrontierOneCollarPressurePoint
 
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
