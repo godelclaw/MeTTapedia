@@ -260,6 +260,8 @@ def audit(results_dir: Path) -> dict[str, object]:
 def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     sample_cases: list[tuple[int, int]] = []
     slice_cases: list[tuple[int, int]] = []
+    sample_row_certificates: list[dict[str, object]] = []
+    slice_row_certificates: list[dict[str, object]] = []
     sample_patch_indices: set[int] = set()
     slice_patch_indices: set[int] = set()
     sample_planar_rotations = 0
@@ -273,7 +275,9 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     max_radial_cut_hist: Counter[str] = Counter()
     slice_template_hist: Counter[str] = Counter()
 
-    def audit_case(name: str, case: dict[str, object], source: str) -> tuple[int, int]:
+    def audit_case(
+        name: str, case: dict[str, object], source: str
+    ) -> tuple[tuple[int, int], dict[str, object]]:
         patch_index = case.get("patch_index")
         radial_order_index = case.get("radial_order_index")
         if not isinstance(patch_index, int) or not isinstance(radial_order_index, int):
@@ -296,6 +300,13 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
             f"{name}: radial-face coherent rotations for {patch_index}/{radial_order_index}",
             int_field(embedding, name, "radial_face_coherent_rotation_count"),
             0,
+        )
+        enumerated_rotation_count = int_field(
+            embedding, name, "enumerated_rotation_system_count"
+        )
+        planar_rotation_count = int_field(embedding, name, "planar_rotation_system_count")
+        coherent_rotation_count = int_field(
+            embedding, name, "radial_face_coherent_rotation_count"
         )
         hist = dict_field(embedding, name, "max_radial_cut_edges_on_single_face_histogram")
         assert_equal(
@@ -329,14 +340,30 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
                 4,
             )
             slice_template_hist.update([REVERSE_TEMPLATE_KEY])
-        return patch_index, radial_order_index
+        certificate: dict[str, object] = {
+            "archive_family": source,
+            "case": [patch_index, radial_order_index],
+            "enumerated_rotation_system_count": enumerated_rotation_count,
+            "max_radial_cut_edges_on_single_face_histogram": hist,
+            "patch_index": patch_index,
+            "planar_rotation_system_count": planar_rotation_count,
+            "radial_face_coherent_rotation_count": coherent_rotation_count,
+            "radial_order_index": radial_order_index,
+            "source_file": name,
+            "template_exclusion_blocker": case.get("template_exclusion_blocker"),
+            "verdict": "row_has_no_radial_face_coherent_rotation",
+        }
+        if source == "slice":
+            certificate["exact_template_key"] = case.get("exact_template_key")
+        return (patch_index, radial_order_index), certificate
 
     for filename in RADIAL_FACE_SAMPLE_FILES:
         data = read_json(results_dir / filename)
         file_cases = samples(data, filename)
         for case in file_cases:
-            pair = audit_case(filename, case, "sample")
+            pair, certificate = audit_case(filename, case, "sample")
             sample_cases.append(pair)
+            sample_row_certificates.append(certificate)
             sample_patch_indices.add(pair[0])
             embedding = case["embedding_audit"]
             if not isinstance(embedding, dict):
@@ -365,8 +392,9 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
             0,
         )
         for case in file_cases:
-            pair = audit_case(filename, case, "slice")
+            pair, certificate = audit_case(filename, case, "slice")
             slice_cases.append(pair)
+            slice_row_certificates.append(certificate)
             slice_patch_indices.add(pair[0])
             embedding = case["embedding_audit"]
             if not isinstance(embedding, dict):
@@ -384,6 +412,29 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     slice_case_set = set(slice_cases)
     overlap = sample_case_set & slice_case_set
     unique_cases = sample_case_set | slice_case_set
+    row_coverage_sample_cases = {
+        (821205, 0),
+        (821205, 1),
+        (852969, 0),
+        (852969, 1),
+        (1000301, 0),
+        (1000301, 1),
+    }
+    row_coverage_slice_cases = {(1000788, 0), (1000788, 1)}
+    row_coverage_sample_certificates = [
+        certificate
+        for certificate in sample_row_certificates
+        if tuple(certificate["case"]) in row_coverage_sample_cases
+    ]
+    row_coverage_slice_certificates = [
+        certificate
+        for certificate in slice_row_certificates
+        if tuple(certificate["case"]) in row_coverage_slice_cases
+    ]
+    row_coverage_certificates = sorted(
+        row_coverage_sample_certificates + row_coverage_slice_certificates,
+        key=lambda certificate: tuple(certificate["case"]),
+    )
     unique_patch_indices = sample_patch_indices | slice_patch_indices
     rows_with_overlap = len(sample_cases) + len(slice_cases)
     planar_rows_with_overlap = sample_planar_rotations + slice_planar_rotations
@@ -393,8 +444,20 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     assert_equal("sample cases", sorted(sample_case_set), [(821205, 0), (821205, 1), (852969, 0), (852969, 1), (1000301, 0), (1000301, 1)])
     assert_equal("slice cases", sorted(slice_case_set), [(1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)])
     assert_equal("overlapping radial-order cases", sorted(overlap), [(1000301, 0), (1000301, 1)])
+    assert_equal("row coverage sample cases", sorted(row_coverage_sample_cases), sorted(sample_case_set))
+    assert_equal(
+        "row coverage slice cases",
+        sorted(row_coverage_slice_cases),
+        [(1000788, 0), (1000788, 1)],
+    )
+    assert_equal(
+        "row coverage certificate cases",
+        [tuple(certificate["case"]) for certificate in row_coverage_certificates],
+        [(821205, 0), (821205, 1), (852969, 0), (852969, 1), (1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)],
+    )
     assert_equal("sample radial-order case count", len(sample_cases), 6)
     assert_equal("slice radial-order case count", len(slice_cases), 4)
+    assert_equal("row coverage certificate count", len(row_coverage_certificates), 8)
     assert_equal("archive rows with overlap", rows_with_overlap, 10)
     assert_equal("unique audited radial-order case count", len(unique_cases), 8)
     assert_equal("unique audited patch topology count", len(unique_patch_indices), 4)
@@ -423,6 +486,17 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         "sample_cases": sorted(sample_case_set),
         "slice_cases": sorted(slice_case_set),
         "overlapping_cases": sorted(overlap),
+        "sample_row_certificates": sorted(
+            sample_row_certificates, key=lambda certificate: tuple(certificate["case"])
+        ),
+        "slice_row_certificates": sorted(
+            slice_row_certificates, key=lambda certificate: tuple(certificate["case"])
+        ),
+        "row_coverage_sample_cases": sorted(row_coverage_sample_cases),
+        "row_coverage_slice1000302_cases": sorted(row_coverage_slice_cases),
+        "row_coverage_certificates": row_coverage_certificates,
+        "row_coverage_certificate_count": len(row_coverage_certificates),
+        "row_coverage_verdict": "radial_face_row_coverage_all_planar_rotations_incoherent",
         "sample_archive_radial_order_case_count": len(sample_cases),
         "slice_archive_radial_order_case_count": len(slice_cases),
         "archive_radial_order_rows_with_overlap": rows_with_overlap,

@@ -4311,6 +4311,168 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
       ?_, ?_⟩ <;>
     decide
 
+/--
+Row certificate extracted from the radial-face archive audit JSON.  Each row
+records the source artifact and the rotation-system verdict for one audited
+`(patchTopologyIndex, radialOrderIndex)` pair.
+-/
+structure ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate where
+  archiveFamily : String
+  sourceFile : String
+  patchTopologyIndex : Nat
+  radialOrderIndex : Nat
+  enumeratedRotationSystemCount : Nat
+  planarRotationSystemCount : Nat
+  radialFaceCoherentRotationCount : Nat
+  templateExclusionBlocker : String
+  verdict : String
+deriving DecidableEq, Repr
+
+def ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+    (certificate :
+      ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate) :
+    Nat × Nat :=
+  (certificate.patchTopologyIndex, certificate.radialOrderIndex)
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
+    List ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate :=
+  [{ archiveFamily := "sample",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
+      patchTopologyIndex := 821205,
+      radialOrderIndex := 0,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" },
+    { archiveFamily := "sample",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
+      patchTopologyIndex := 821205,
+      radialOrderIndex := 1,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" },
+    { archiveFamily := "sample",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
+      patchTopologyIndex := 852969,
+      radialOrderIndex := 0,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" },
+    { archiveFamily := "sample",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
+      patchTopologyIndex := 852969,
+      radialOrderIndex := 1,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" },
+    { archiveFamily := "sample",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r0.json",
+      patchTopologyIndex := 1000301,
+      radialOrderIndex := 0,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" },
+    { archiveFamily := "sample",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r1.json",
+      patchTopologyIndex := 1000301,
+      radialOrderIndex := 1,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" }]
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates :
+    List ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate :=
+  [{ archiveFamily := "slice",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+      patchTopologyIndex := 1000788,
+      radialOrderIndex := 0,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" },
+    { archiveFamily := "slice",
+      sourceFile :=
+        "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+      patchTopologyIndex := 1000788,
+      radialOrderIndex := 1,
+      enumeratedRotationSystemCount := 262144,
+      planarRotationSystemCount := 8,
+      radialFaceCoherentRotationCount := 0,
+      templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      verdict := "row_has_no_radial_face_coherent_rotation" }]
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates :
+    List ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate :=
+  closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates ++
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageVerdict :
+    String :=
+  "radial_face_row_coverage_all_planar_rotations_incoherent"
+
+/--
+Artifact manifest for the row-coverage target.  It says exactly which archived
+rows and source files back the eight row obligations used by the current
+row-factored radial-face obstruction target.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates.map
+        ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey =
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCases ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates.map
+        ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Cases ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.length =
+      8 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.enumeratedRotationSystemCount) =
+      List.replicate 8 262144 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.planarRotationSystemCount) =
+      List.replicate 8 8 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.radialFaceCoherentRotationCount) =
+      List.replicate 8 0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.templateExclusionBlocker) =
+      List.replicate 8 "excluded_exact_diagonal_two_pole_template" ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.verdict) =
+      List.replicate 8 "row_has_no_radial_face_coherent_rotation" ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageVerdict =
+      "radial_face_row_coverage_all_planar_rotations_incoherent"
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
 /-- Lab-side candidate for a radial-face coherent rotation in the archive. -/
 structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate where
   hrotationCountPositive :
