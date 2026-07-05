@@ -11,6 +11,7 @@ import os
 
 
 N6_EXACT_PATCH_TOPOLOGY_COUNT = 1_858_980
+N8_EXACT_PATCH_TOPOLOGY_COUNT = 1_189_087_725
 FIRST_PREFIX_END = 800_000
 FIRST_PREFIX_SLICE_WIDTH = 50_000
 
@@ -43,6 +44,18 @@ RADIAL_FACE_SLICE_FILES = (
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
 )
 
+N8_TEMPLATE_BLOCKER_FILES = (
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_000000_050000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_050000_500000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_500000_1000000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_1000000_1500000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_1500000_2000000.json",
+)
+
+N8_STRATIFIED_SAMPLE_FILE = (
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_33.json"
+)
+
 REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
@@ -55,6 +68,10 @@ DEFAULT_TAXONOMY_OUTPUT = (
 DEFAULT_RADIAL_FACE_OUTPUT = (
     DEFAULT_RADIAL_FACE_RESULTS_DIR
     / "section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json"
+)
+DEFAULT_N8_OUTPUT = (
+    DEFAULT_RADIAL_FACE_RESULTS_DIR
+    / "section92_closed_collar_winding_simple_patch_n8_frontier_audit.json"
 )
 
 
@@ -102,6 +119,13 @@ def samples(data: dict[str, object], name: str) -> list[dict[str, object]]:
             raise ValueError(f"{name}: samples[{index}] is not an object")
         result.append(item)
     return result
+
+
+def object_field(data: dict[str, object], name: str, field: str) -> dict[str, object]:
+    value = data.get(field)
+    if not isinstance(value, dict):
+        raise ValueError(f"{name}: {field} is not an object")
+    return value
 
 
 def bool_field(data: dict[str, object], name: str, field: str) -> bool:
@@ -565,6 +589,190 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     }
 
 
+def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) -> dict[str, object]:
+    prefix_totals: Counter[str] = Counter()
+    prefix_files: list[str] = []
+    prefix_ranges: list[dict[str, int]] = []
+
+    for filename in N8_TEMPLATE_BLOCKER_FILES:
+        data = read_json(prefix_results_dir / filename)
+        search = object_field(data, filename, "search")
+        block = summary(data, filename)
+        assert_equal(
+            f"{filename}: internal vertex count",
+            int_field(search, filename, "internal_vertex_count"),
+            8,
+        )
+        assert_equal(
+            f"{filename}: verdict",
+            block.get("verdict"),
+            "template_exclusion_slice_found_no_profile_preserving_patch",
+        )
+        processed = int_field(block, filename, "processed_patch_topology_count")
+        radial = int_field(block, filename, "radial_order_case_count")
+        profile = int_field(block, filename, "profile_preserving_case_count")
+        structural = int_field(block, filename, "structural_first_blocker_count")
+        exact = int_field(block, filename, "exact_template_blocker_count")
+        non_template = int_field(block, filename, "non_template_cyclic_cut_blocker_count")
+        cap5 = int_field(block, filename, "cap5_like_blocker_count")
+        passing = int_field(block, filename, "normal_form_after_template_exclusion_passing_count")
+        assert_equal(f"{filename}: radial count", radial, 2 * processed)
+        assert_equal(f"{filename}: profile-preserving count", profile, 0)
+        assert_equal(f"{filename}: structural blocker count", structural, 0)
+        assert_equal(f"{filename}: exact-template blocker count", exact, 0)
+        assert_equal(f"{filename}: non-template cyclic-cut blocker count", non_template, 0)
+        assert_equal(f"{filename}: cap5-like blocker count", cap5, 0)
+        assert_equal(f"{filename}: post-template pass count", passing, 0)
+        assert_equal(
+            f"{filename}: exact template histogram",
+            dict_field(block, filename, "exact_template_histogram"),
+            {},
+        )
+        assert_equal(
+            f"{filename}: post-template failure histogram",
+            dict_field(block, filename, "first_failed_after_template_exclusion_histogram"),
+            {},
+        )
+        start = int_field(search, filename, "patch_start_index")
+        next_start = int_field(search, filename, "next_patch_start_index")
+        assert_equal(f"{filename}: next start", start + processed, next_start)
+        prefix_files.append(filename)
+        prefix_ranges.append(
+            {
+                "patch_start_index": start,
+                "next_patch_start_index": next_start,
+                "processed_patch_topology_count": processed,
+            }
+        )
+        prefix_totals["processed_patch_topology_count"] += processed
+        prefix_totals["radial_order_case_count"] += radial
+        prefix_totals["profile_preserving_case_count"] += profile
+        prefix_totals["structural_first_blocker_count"] += structural
+        prefix_totals["exact_template_blocker_count"] += exact
+        prefix_totals["non_template_cyclic_cut_blocker_count"] += non_template
+        prefix_totals["cap5_like_blocker_count"] += cap5
+        prefix_totals["normal_form_after_template_exclusion_passing_count"] += passing
+
+    assert_equal("n8 prefix first start", prefix_ranges[0]["patch_start_index"], 0)
+    for left, right in zip(prefix_ranges, prefix_ranges[1:]):
+        assert_equal(
+            "n8 prefix contiguous slices",
+            left["next_patch_start_index"],
+            right["patch_start_index"],
+        )
+    assert_equal("n8 prefix end", prefix_ranges[-1]["next_patch_start_index"], 2_000_000)
+    assert_equal("n8 prefix processed count", prefix_totals["processed_patch_topology_count"], 2_000_000)
+    assert_equal("n8 prefix radial-order count", prefix_totals["radial_order_case_count"], 4_000_000)
+    assert_equal("n8 prefix profile-preserving count", prefix_totals["profile_preserving_case_count"], 0)
+    assert_equal(
+        "n8 prefix post-template pass count",
+        prefix_totals["normal_form_after_template_exclusion_passing_count"],
+        0,
+    )
+    if not prefix_totals["processed_patch_topology_count"] < N8_EXACT_PATCH_TOPOLOGY_COUNT:
+        raise AssertionError("n8 prefix unexpectedly exhausts the exact topology space")
+
+    stratified_data = read_json(stratified_results_dir / N8_STRATIFIED_SAMPLE_FILE)
+    stratified_search = object_field(stratified_data, N8_STRATIFIED_SAMPLE_FILE, "search")
+    stratified_summary = summary(stratified_data, N8_STRATIFIED_SAMPLE_FILE)
+    assert_equal(
+        "n8 stratified internal vertex count",
+        int_field(stratified_search, N8_STRATIFIED_SAMPLE_FILE, "internal_vertex_count"),
+        8,
+    )
+    assert_equal(
+        "n8 stratified exact patch count",
+        int_field(stratified_search, N8_STRATIFIED_SAMPLE_FILE, "exact_patch_topology_count"),
+        N8_EXACT_PATCH_TOPOLOGY_COUNT,
+    )
+    sampled_indices = stratified_search.get("sampled_patch_indices")
+    if not isinstance(sampled_indices, list) or not all(
+        isinstance(index, int) for index in sampled_indices
+    ):
+        raise ValueError("n8 stratified sample indices are not an integer list")
+    assert_equal("n8 stratified sample count", len(sampled_indices), 33)
+    assert_equal("n8 stratified first sample", sampled_indices[0], 0)
+    assert_equal(
+        "n8 stratified last sample",
+        sampled_indices[-1],
+        N8_EXACT_PATCH_TOPOLOGY_COUNT - 1,
+    )
+    assert_equal(
+        "n8 stratified verdict",
+        stratified_summary.get("verdict"),
+        "template_exclusion_index_sample_found_no_profile_preserving_patch",
+    )
+    assert_equal(
+        "n8 stratified radial-order count",
+        int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "radial_order_case_count"),
+        66,
+    )
+    assert_equal(
+        "n8 stratified profile-preserving count",
+        int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "profile_preserving_case_count"),
+        0,
+    )
+    assert_equal(
+        "n8 stratified post-template pass count",
+        int_field(
+            stratified_summary,
+            N8_STRATIFIED_SAMPLE_FILE,
+            "normal_form_after_template_exclusion_passing_count",
+        ),
+        0,
+    )
+    assert_equal(
+        "n8 stratified exact template histogram",
+        dict_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "exact_template_histogram"),
+        {},
+    )
+    assert_equal(
+        "n8 stratified post-template failure histogram",
+        dict_field(
+            stratified_summary,
+            N8_STRATIFIED_SAMPLE_FILE,
+            "first_failed_after_template_exclusion_histogram",
+        ),
+        {},
+    )
+
+    return {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-frontier-audit-v1",
+        "source": "Artifact audit for n8 closed-collar winding simple-patch frontier verdicts",
+        "n8_exact_patch_topology_count": N8_EXACT_PATCH_TOPOLOGY_COUNT,
+        "prefix_template_blocker_files": prefix_files,
+        "prefix_ranges": prefix_ranges,
+        "prefix": {
+            **dict(prefix_totals),
+            "verdict": "n8_first_2000000_found_no_profile_preserving_patch",
+        },
+        "stratified_sample_file": N8_STRATIFIED_SAMPLE_FILE,
+        "stratified_sample": {
+            "sampled_patch_indices": sampled_indices,
+            "sampled_patch_topology_count": len(sampled_indices),
+            "radial_order_case_count": int_field(
+                stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "radial_order_case_count"
+            ),
+            "profile_preserving_case_count": int_field(
+                stratified_summary,
+                N8_STRATIFIED_SAMPLE_FILE,
+                "profile_preserving_case_count",
+            ),
+            "normal_form_after_template_exclusion_passing_count": int_field(
+                stratified_summary,
+                N8_STRATIFIED_SAMPLE_FILE,
+                "normal_form_after_template_exclusion_passing_count",
+            ),
+            "verdict": "n8_stratified_33_found_no_profile_preserving_patch",
+        },
+        "remaining_prefix_unprocessed_patch_topology_count": (
+            N8_EXACT_PATCH_TOPOLOGY_COUNT
+            - prefix_totals["processed_patch_topology_count"]
+        ),
+        "verdict": "n8_frontier_no_profile_preserving_cases_in_checked_prefix_or_stratified_sample",
+    }
+
+
 def write_json(path: Path, data: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
@@ -576,7 +784,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=("taxonomy", "radial-face", "all"),
+        choices=("taxonomy", "radial-face", "n8", "all"),
         default="taxonomy",
         help="which archived verdict family to audit",
     )
@@ -604,6 +812,18 @@ def main() -> None:
         default=DEFAULT_RADIAL_FACE_OUTPUT,
         help="write the audited radial-face archive JSON",
     )
+    parser.add_argument(
+        "--n8-stratified-results-dir",
+        type=Path,
+        default=DEFAULT_RADIAL_FACE_RESULTS_DIR,
+        help="directory containing the archived n8 stratified verdict JSON file",
+    )
+    parser.add_argument(
+        "--n8-output",
+        type=Path,
+        default=DEFAULT_N8_OUTPUT,
+        help="write the audited n8 frontier JSON",
+    )
     parser.add_argument("--check-only", action="store_true", help="skip writing output")
     args = parser.parse_args()
 
@@ -618,11 +838,18 @@ def main() -> None:
         reports["radial_face_archive"] = radial_face_report
         if not args.check_only:
             write_json(args.radial_face_output, radial_face_report)
+    if args.mode in ("n8", "all"):
+        n8_report = audit_n8_frontier(args.results_dir, args.n8_stratified_results_dir)
+        reports["n8_frontier"] = n8_report
+        if not args.check_only:
+            write_json(args.n8_output, n8_report)
 
     if args.mode == "taxonomy":
         print(json.dumps(reports["taxonomy"], indent=2, sort_keys=True))
     elif args.mode == "radial-face":
         print(json.dumps(reports["radial_face_archive"], indent=2, sort_keys=True))
+    elif args.mode == "n8":
+        print(json.dumps(reports["n8_frontier"], indent=2, sort_keys=True))
     else:
         print(json.dumps(reports, indent=2, sort_keys=True))
 

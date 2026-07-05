@@ -1522,6 +1522,18 @@ theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingC
     False :=
   closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingCandidate candidate
 
+theorem closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence :=
+  closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence
+
+theorem closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence_audit :
+    ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :=
+  closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence
+
+theorem section92Step4CurrentFiniteFrontierAndConcreteFork_audit :
+    Section92Step4CurrentFiniteFrontierAndConcreteFork :=
+  section92Step4CurrentFiniteFrontierAndConcreteFork
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
