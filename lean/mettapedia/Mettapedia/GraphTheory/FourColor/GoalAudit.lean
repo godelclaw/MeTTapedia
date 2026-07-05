@@ -1774,6 +1774,70 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPla
   closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPlacementFailure
     hnotWitness
 
+def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_numCollars_gt_one_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    1 < bad.geometry.collarGeometry.numCollars :=
+  bad.numCollars_gt_one
+
+def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_interiorEdgeSupport_nonempty_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    (interiorEdgeSupport bad.geometry.emb.faceBoundary
+      bad.geometry.emb.faces).Nonempty :=
+  bad.interiorEdgeSupport_nonempty
+
+def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_toMultiCollarEscape_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
+      normalForm :=
+  bad.toMultiCollarEscape
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessPlacementFailure_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm}
+    (hnotWitness :
+      ¬ geometry.collarGeometry.WitnessOnCurrentBoundary) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+      normalForm :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessPlacementFailure
+    hnotWitness
+
+theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_badWitnessFaceEscape_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (hbad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+        normalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
+      normalForm :=
+  closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_badWitnessFaceEscape
+    hbad
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCollarEscape_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (escape :
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
+        normalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+      normalForm :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCollarEscape
+    escape
+
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessOnCurrentBoundaryBlocker_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
@@ -1785,6 +1849,20 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessOnC
       normalForm :=
   closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessOnCurrentBoundaryBlocker
     normalForm hblocker
+
+theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_badWitnessFaceObstruction_audit
+    (hbad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction) :
+    ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_badWitnessFaceObstruction
+    hbad
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_multiCollarEscapeObstruction_audit
+    (hmulti :
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_multiCollarEscapeObstruction
+    hmulti
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryMultiCollarEscape_of_laterBridge_of_auditedRows_audit
     (hgeometry :
@@ -1820,9 +1898,47 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of
   closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
     hgeometry hradial hn6 hkeys hrows hnot
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryBadWitnessFace_of_laterBridge_of_auditedRows_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnoBad :
+      ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryBadWitnessFace_of_laterBridge_of_auditedRows
+    hgeometry hradial hn6 hkeys hrows hnoBad
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hrows hnot
+
 theorem section92Step4CurrentFiniteFrontierMultiCollarEscapePressurePoint_audit :
     Section92Step4CurrentFiniteFrontierMultiCollarEscapePressurePoint :=
   section92Step4CurrentFiniteFrontierMultiCollarEscapePressurePoint
+
+theorem section92Step4CurrentFiniteFrontierBadWitnessFacePressurePoint_audit :
+    Section92Step4CurrentFiniteFrontierBadWitnessFacePressurePoint :=
+  section92Step4CurrentFiniteFrontierBadWitnessFacePressurePoint
 
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
