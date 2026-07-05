@@ -11315,6 +11315,138 @@ theorem
           K.variableAddressSyntax).formulaUsesOnly hY)⟩
 
 /--
+Uniform bit-fixing data extracted from the bundled equality-indexed
+construction surface at a candidate `P = NP` witness.  The equality witness
+puts the named NP language in `P`; the official P-to-decider data then supplies
+the SAT decider family, and real CNF address syntax supplies the finite formula
+support used by bit-fixing.
+-/
+def
+    realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    RealM4CNFUniformBitFixingData D :=
+  let hP : C.inP K.languageNPData.separatedLanguage :=
+    hEq K.languageNPData.separatedLanguage
+      K.languageNPData.separatedLanguage_inNP
+  (realM4_formulaSyntaxCNFSupport_of_addressSyntax
+    K.variableAddressSyntax).withPNPDecider
+      (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)
+
+/--
+Field audit for the equality-indexed `P = NP` branch.  It exposes the exact
+conditional upper-side ingredients: the named NP language is put in `P`, the
+derived uniform bit-fixing data satisfies supported formulas, the instance
+decoder costs are bounded by the uniform constant decoder, and the bundled
+large-target K-poly facts identify that decoder below the linear floor.
+-/
+theorem
+    realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    let U :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+        i₀ coordinate K hEq
+    C.inP K.languageNPData.separatedLanguage ∧
+      0 < K.eta_of_pEqualsNP hEq ∧
+        (∀ {Y : CNFPublic}, D.support Y ->
+          ConcreteCNF.IsSatFormula (D.formula Y)
+            (U.bitFixingAssignment Y)) ∧
+          (∀ Y : CNFPublic,
+            realCNFSelfReductionDecoderCost (U.satDecider Y) ≤
+              realM4UniformSelfReductionDecoderCost U) ∧
+            K.lowerMachine.lowerFramework.kpolyAt =
+              realM4UniformConstantDecoderKpolyAt U ∧
+              K.lowerMachine.lowerFramework.etaTimes =
+                realCNFLinearEtaTimes (K.eta_of_pEqualsNP hEq) ∧
+                realM4UniformSelfReductionDecoderCost U <
+                  K.eta_of_pEqualsNP hEq *
+                    K.lowerMachine.lowerFramework.targetBlocks := by
+  dsimp
+  let hP : C.inP K.languageNPData.separatedLanguage :=
+    hEq K.languageNPData.separatedLanguage
+      K.languageNPData.separatedLanguage_inNP
+  let U :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+      i₀ coordinate K hEq
+  have hKpoly :
+      K.lowerMachine.lowerFramework.kpolyAt =
+        realM4UniformConstantDecoderKpolyAt U := by
+    simpa [U,
+      realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+      hP] using K.kpolyAt_eq_of_pEqualsNP hEq
+  have hFloor :
+      realM4UniformSelfReductionDecoderCost U <
+        K.eta_of_pEqualsNP hEq *
+          K.lowerMachine.lowerFramework.targetBlocks := by
+    exact
+      realM4_uniformSelfReductionDecoderCost_lt_linearFloor_of_targetBlocks_gt
+        (F := K.lowerMachine.lowerFramework) U (K.eta_of_pEqualsNP hEq)
+        (K.eta_pos_of_pEqualsNP hEq)
+        (by
+          simpa [U,
+            realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+            hP] using K.targetBlocks_gt_decoder_of_pEqualsNP hEq)
+  exact
+    ⟨hP,
+      K.eta_pos_of_pEqualsNP hEq,
+      (fun hY => realM4_uniformBitFixingAssignment_satisfies D U hY),
+      (fun Y => realM4UniformSelfReductionDecoderCost_bounds_instance U Y),
+      hKpoly,
+      K.etaTimes_eq_of_pEqualsNP hEq,
+      hFloor⟩
+
+/--
 Extract the explicit-P=NP self-reduction upper discharge from the bundled
 equality-indexed construction surface at a candidate `P = NP` witness.  The
 SAT decider family is obtained from the named official NP language's
@@ -11927,6 +12059,33 @@ theorem
 def realM4NoTargetRowsEqualityIndexedLockedMessageUpperSupportStatement :
     String :=
   "For the real v15/M4 no-target-rows equality-indexed construction surface, public-lock coverage, D.7 lock satisfiability, explicit public-message invariance, D.8 locked-message rigidity, and formula-syntax uniform CNF support are projected from the construction bundle.  The uniform support is derived mechanically from real CNF address syntax; no StarSW, analytic, or official-language hypothesis is used."
+
+def realM4NoTargetRowsEqualityIndexedPEqualsNPBranchItems :
+    List String := [
+  "namedLanguageInP",
+  "pnpDeciderFamily",
+  "addressDerivedUniformBitFixing",
+  "etaPositive",
+  "kpolyConstantDecoderIdentification",
+  "etaTimesLinearFloorIdentification",
+  "linearFloorDominatesConstantDecoderCost"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedPEqualsNPBranchItems_exact :
+    realM4NoTargetRowsEqualityIndexedPEqualsNPBranchItems =
+      [ "namedLanguageInP",
+        "pnpDeciderFamily",
+        "addressDerivedUniformBitFixing",
+        "etaPositive",
+        "kpolyConstantDecoderIdentification",
+        "etaTimesLinearFloorIdentification",
+        "linearFloorDominatesConstantDecoderCost" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedPEqualsNPBranchStatement :
+    String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, a candidate P=NP witness puts the named NP language in P, extracts the SAT decider family, combines it with address-derived uniform CNF support into a uniform bit-fixing object, and identifies that fixed decoder below the linear floor.  This is the conditional upper-side branch only, not an unconditional SAT algorithm."
 
 def realM4NoTargetRowsEqualityIndexedParameterRecordHypothesisAudit :
     List String := [
@@ -16847,6 +17006,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The bundled equality-indexed surface now projects public-lock coverage, D.7 satisfiability, explicit public-message invariance, D.8 rigidity, and address-derived uniform CNF support without theorem-level frontier hypotheses."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataPEqualsNPBranch"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP_fields"
+    note := "At a candidate P=NP witness, the equality-indexed surface now exposes the named-language P-membership, derived SAT decider family, uniform bit-fixing data, and constant-decoder floor facts before packaging the upper discharge."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP"
     status := .partialConstructionTransferred
     checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_parameterRecord_givenPEqualsNP"
@@ -16909,6 +17074,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsEqualityIndexedConstructionDataMechanicalInterface",
         "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData",
         "realNoTargetRowsEqualityIndexedConstructionDataLockedMessageUpperSupport",
+        "realNoTargetRowsEqualityIndexedConstructionDataPEqualsNPBranch",
         "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataInternalClashAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataContradictionAtPEqualsNP",
@@ -16924,6 +17090,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
