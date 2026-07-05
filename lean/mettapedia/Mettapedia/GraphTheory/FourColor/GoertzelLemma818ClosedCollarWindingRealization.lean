@@ -1171,6 +1171,22 @@ structure ClosedCollarSimplePatchTemplateBlockerIndexSampleCounts where
   cap5LikeBlockerCount : Nat
   normalFormAfterTemplateExclusionPassingCount : Nat
 
+structure ClosedCollarSimplePatchTemplateBlockerArchiveCounts where
+  internalVertexCount : Nat
+  archivedSliceFileCount : Nat
+  archivedPatchStartIndex : Nat
+  archivedPatchEndIndex : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  structuralFirstBlockerCount : Nat
+  exactTemplateBlockerCount : Nat
+  diagonalForwardTemplateCount : Nat
+  diagonalReverseTemplateCount : Nat
+  nonTemplateCyclicCutBlockerCount : Nat
+  cap5LikeBlockerCount : Nat
+  normalFormAfterTemplateExclusionPassingCount : Nat
+
 def closedCollarSimplePatchN6ExactPatchTopologyCount : Nat :=
   1858980
 
@@ -1404,6 +1420,40 @@ def closedCollarSimplePatchN8Stratified33FirstIndex : Nat :=
 def closedCollarSimplePatchN8Stratified33LastIndex : Nat :=
   1189087724
 
+def closedCollarSimplePatchN6TemplateBlockerArchiveCounts :
+    ClosedCollarSimplePatchTemplateBlockerArchiveCounts where
+  internalVertexCount := 6
+  archivedSliceFileCount := 5
+  archivedPatchStartIndex := 800000
+  archivedPatchEndIndex := 1858980
+  processedPatchTopologyCount := 1058980
+  radialOrderCaseCount := 2117960
+  profilePreservingCaseCount := 11160
+  structuralFirstBlockerCount := 9000
+  exactTemplateBlockerCount := 2160
+  diagonalForwardTemplateCount := 1080
+  diagonalReverseTemplateCount := 1080
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts :
+    ClosedCollarSimplePatchTemplateBlockerArchiveCounts where
+  internalVertexCount := 8
+  archivedSliceFileCount := 5
+  archivedPatchStartIndex := 0
+  archivedPatchEndIndex := 2000000
+  processedPatchTopologyCount := 2000000
+  radialOrderCaseCount := 4000000
+  profilePreservingCaseCount := 0
+  structuralFirstBlockerCount := 0
+  exactTemplateBlockerCount := 0
+  diagonalForwardTemplateCount := 0
+  diagonalReverseTemplateCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
 /--
 Template-exclusion evidence through the 800000-1200000 six-internal
 simple-patch window.  After direct search for the two exact diagonal templates,
@@ -1568,6 +1618,68 @@ theorem closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyF
   exact
     ⟨closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedByStructuralOrExcludedTemplateEvidence,
       section92WindingExactTemplateNormalFormExclusion⟩
+
+/--
+Tracked archive manifest for the template-blocker verdict JSONs.  The n6
+archive covers the five template-blocker slices from index 800000 through the
+end of the exact six-internal space; the first 800000 cases are represented by
+the earlier structural slice aggregate.  The n8 archive covers the five
+template-blocker slices making up the first 2000000 prefix.
+-/
+def ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.archivedSliceFileCount =
+      5 ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.archivedPatchStartIndex =
+      800000 ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.archivedPatchEndIndex =
+      closedCollarSimplePatchN6ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.radialOrderCaseCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.radialOrderCaseCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.structuralFirstBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.structuralFirstBlockerCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.exactTemplateBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.exactTemplateBlockerCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.diagonalForwardTemplateCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.diagonalForwardTemplateCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.diagonalReverseTemplateCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.diagonalReverseTemplateCount ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6TemplateBlockerArchiveCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN6First800000StructuralCounts.processedPatchTopologyCount +
+        closedCollarSimplePatchN6TemplateBlockerArchiveCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN6First800000StructuralCounts.profilePreservingCaseCount +
+        closedCollarSimplePatchN6TemplateBlockerArchiveCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.archivedSliceFileCount =
+      5 ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.archivedPatchStartIndex =
+      0 ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.archivedPatchEndIndex =
+      2000000 ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN8First2000000TemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.radialOrderCaseCount =
+      closedCollarSimplePatchN8First2000000TemplateBlockerCounts.radialOrderCaseCount ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN8First2000000TemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerArchiveCounts.normalFormAfterTemplateExclusionPassingCount =
+      closedCollarSimplePatchN8First2000000TemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount
+
+theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :
+    ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
 
 /--
 First-million eight-internal simple-patch evidence.  The lab processed the
