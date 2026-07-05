@@ -1201,6 +1201,72 @@ structure XorGaugeSingleMessageSATWorld where
   assignment : XorGaugeSingleMessageWitness publicInput
   sat : xorGaugeSingleMessageVerifier publicInput assignment
 
+/-- Build a gauge-buffered SAT world from a public instance and a hidden gauge
+bit.  The message bit is the canonical forced assignment. -/
+def xorGaugeSingleMessageSATWorldOf
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    XorGaugeSingleMessageSATWorld where
+  publicInput := Y
+  assignment := xorGaugeSingleMessageAssignment Y gauge
+  sat := xorGaugeSingleMessageFormula_satisfied_assignment Y gauge
+
+/-- Read the hidden gauge bit from a gauge-buffered SAT world. -/
+def xorGaugeSingleMessageSATWorldGauge
+    (omega : XorGaugeSingleMessageSATWorld) : Bool :=
+  omega.assignment 1
+
+@[simp] theorem xorGaugeSingleMessageSATWorldOf_publicInput
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    (xorGaugeSingleMessageSATWorldOf Y gauge).publicInput = Y :=
+  rfl
+
+@[simp] theorem xorGaugeSingleMessageSATWorldOf_gauge
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    xorGaugeSingleMessageSATWorldGauge
+      (xorGaugeSingleMessageSATWorldOf Y gauge) = gauge := by
+  simp [xorGaugeSingleMessageSATWorldGauge,
+    xorGaugeSingleMessageSATWorldOf]
+
+/-- A satisfying two-variable world is exactly a public XOR instance plus the
+free hidden gauge bit. -/
+def xorGaugeSingleMessageSATWorldEquiv :
+    XorGaugeSingleMessageSATWorld ≃
+      XorGaugeSingleMessagePublic × Bool where
+  toFun := fun omega =>
+    (omega.publicInput, xorGaugeSingleMessageSATWorldGauge omega)
+  invFun := fun yg =>
+    xorGaugeSingleMessageSATWorldOf yg.1 yg.2
+  left_inv := by
+    intro omega
+    cases omega with
+    | mk Y W sat =>
+        have hmsg : W 0 = xorGaugeSingleMessageM Y :=
+          xorGaugeSingleMessageFormula_sat_iff.mp sat
+        simp [xorGaugeSingleMessageSATWorldGauge,
+          xorGaugeSingleMessageSATWorldOf,
+          XorGaugeSingleMessageSATWorld.mk.injEq]
+        funext i
+        fin_cases i <;>
+          simp [xorGaugeSingleMessageAssignment, hmsg]
+  right_inv := by
+    intro yg
+    cases yg with
+    | mk Y gauge =>
+        simp [xorGaugeSingleMessageSATWorldGauge,
+          xorGaugeSingleMessageSATWorldOf]
+
+/-- The gauge-buffered SAT-world surface is finite because it is equivalent to
+a finite public instance plus one hidden gauge bit. -/
+noncomputable instance :
+    Fintype XorGaugeSingleMessageSATWorld :=
+  Fintype.ofEquiv (XorGaugeSingleMessagePublic × Bool)
+    xorGaugeSingleMessageSATWorldEquiv.symm
+
+/-- The gauge-buffered SAT-world surface is inhabited by any canonical
+satisfying assignment. -/
+instance : Nonempty XorGaugeSingleMessageSATWorld :=
+  ⟨xorGaugeSingleMessageSATWorldOf (false, false) false⟩
+
 /-- SAT-spine readout for the gauge-buffered anchor. -/
 def xorGaugeSingleMessageSATReadout
     {Y : XorGaugeSingleMessagePublic}
@@ -1245,6 +1311,307 @@ theorem xorGaugeSingleMessageRealSingleMessageSATSpine_singleMessage :
         xorGaugeSingleMessageM w0.publicInput =
           xorGaugeSingleMessageM w1.publicInput :=
   xorGaugeSingleMessageRealSingleMessageSATSpine.singleMessage
+
+/-! ## Gauge-buffered XOR SAT-world admissible histories -/
+
+/-- The target bit over gauge-buffered SAT worlds. -/
+def xorGaugeSingleMessageSATWorldTarget
+    (omega : XorGaugeSingleMessageSATWorld) : Bool :=
+  xorGaugeSingleMessageM omega.publicInput
+
+/-- Flipping the left public coordinate toggles the world target while keeping
+the hidden gauge bit fixed. -/
+def xorGaugeSingleMessageSATWorldFlipLeft
+    (omega : XorGaugeSingleMessageSATWorld) :
+    XorGaugeSingleMessageSATWorld :=
+  xorGaugeSingleMessageSATWorldOf
+    (xorSingleMessageFlipLeft omega.publicInput)
+    (xorGaugeSingleMessageSATWorldGauge omega)
+
+theorem xorSingleMessageFlipLeft_involutive
+    (Y : XorSingleMessagePublic) :
+    xorSingleMessageFlipLeft (xorSingleMessageFlipLeft Y) = Y := by
+  rcases Y with ⟨b0, b1⟩
+  simp [xorSingleMessageFlipLeft]
+
+theorem xorGaugeSingleMessageSATWorldOf_public_gauge_eq
+    (omega : XorGaugeSingleMessageSATWorld) :
+    xorGaugeSingleMessageSATWorldOf omega.publicInput
+        (xorGaugeSingleMessageSATWorldGauge omega) =
+      omega :=
+  xorGaugeSingleMessageSATWorldEquiv.left_inv omega
+
+/-- The false and true target fibers of the gauge-buffered SAT-world surface
+are paired by flipping the left public coordinate and preserving the hidden
+gauge bit. -/
+def xorGaugeSingleMessageSATWorldTargetFlipEquiv :
+    {omega : XorGaugeSingleMessageSATWorld //
+      xorGaugeSingleMessageSATWorldTarget omega = false} ≃
+      {omega : XorGaugeSingleMessageSATWorld //
+        xorGaugeSingleMessageSATWorldTarget omega = true} where
+  toFun := fun omega =>
+    ⟨xorGaugeSingleMessageSATWorldFlipLeft omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y W sat =>
+          rcases Y with ⟨b0, b1⟩
+          cases b0 <;> cases b1 <;>
+            simp [xorGaugeSingleMessageSATWorldTarget,
+              xorGaugeSingleMessageSATWorldFlipLeft,
+              xorGaugeSingleMessageSATWorldOf, xorGaugeSingleMessageM,
+              xorSingleMessageFlipLeft, xorSingleMessageM] at hω ⊢⟩
+  invFun := fun omega =>
+    ⟨xorGaugeSingleMessageSATWorldFlipLeft omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y W sat =>
+          rcases Y with ⟨b0, b1⟩
+          cases b0 <;> cases b1 <;>
+            simp [xorGaugeSingleMessageSATWorldTarget,
+              xorGaugeSingleMessageSATWorldFlipLeft,
+              xorGaugeSingleMessageSATWorldOf, xorGaugeSingleMessageM,
+              xorSingleMessageFlipLeft, xorSingleMessageM] at hω ⊢⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageSATWorldFlipLeft
+          (xorGaugeSingleMessageSATWorldFlipLeft omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageSATWorldFlipLeft,
+      xorSingleMessageFlipLeft_involutive,
+      xorGaugeSingleMessageSATWorldOf_public_gauge_eq]
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageSATWorldFlipLeft
+          (xorGaugeSingleMessageSATWorldFlipLeft omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageSATWorldFlipLeft,
+      xorSingleMessageFlipLeft_involutive,
+      xorGaugeSingleMessageSATWorldOf_public_gauge_eq]
+
+theorem xorGaugeSingleMessageSATWorldTarget_false_card_eq_true :
+    Fintype.card
+        {omega : XorGaugeSingleMessageSATWorld //
+          xorGaugeSingleMessageSATWorldTarget omega = false} =
+      Fintype.card
+        {omega : XorGaugeSingleMessageSATWorld //
+          xorGaugeSingleMessageSATWorldTarget omega = true} :=
+  Fintype.card_congr xorGaugeSingleMessageSATWorldTargetFlipEquiv
+
+theorem xorGaugeSingleMessageSATWorld_constantTrue_correct_card_eq_true :
+    Fintype.card
+        {omega : XorGaugeSingleMessageSATWorld //
+          (fun _ : XorGaugeSingleMessageSATWorld => true) omega =
+            xorGaugeSingleMessageSATWorldTarget omega} =
+      Fintype.card
+        {omega : XorGaugeSingleMessageSATWorld //
+          xorGaugeSingleMessageSATWorldTarget omega = true} := by
+  let e :
+      {omega : XorGaugeSingleMessageSATWorld //
+        (fun _ : XorGaugeSingleMessageSATWorld => true) omega =
+          xorGaugeSingleMessageSATWorldTarget omega} ≃
+        {omega : XorGaugeSingleMessageSATWorld //
+          xorGaugeSingleMessageSATWorldTarget omega = true} :=
+    { toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      left_inv := by
+        intro omega
+        cases omega
+        rfl
+      right_inv := by
+        intro omega
+        cases omega
+        rfl }
+  exact Fintype.card_congr e
+
+theorem xorGaugeSingleMessageSATWorld_card_eq_two_mul_target_true :
+    Fintype.card XorGaugeSingleMessageSATWorld =
+      2 * Fintype.card
+        {omega : XorGaugeSingleMessageSATWorld //
+          xorGaugeSingleMessageSATWorldTarget omega = true} := by
+  set a : Nat :=
+    Fintype.card
+      {omega : XorGaugeSingleMessageSATWorld //
+        xorGaugeSingleMessageSATWorldTarget omega = true}
+  have hcomp :
+      Fintype.card
+          {omega : XorGaugeSingleMessageSATWorld //
+            xorGaugeSingleMessageSATWorldTarget omega = false} =
+        Fintype.card XorGaugeSingleMessageSATWorld - a := by
+    simpa [a] using
+      (Fintype.card_subtype_compl
+        (fun omega : XorGaugeSingleMessageSATWorld =>
+          xorGaugeSingleMessageSATWorldTarget omega = true))
+  have heq :
+      a =
+        Fintype.card
+          {omega : XorGaugeSingleMessageSATWorld //
+            xorGaugeSingleMessageSATWorldTarget omega = false} := by
+    simpa [a] using
+      xorGaugeSingleMessageSATWorldTarget_false_card_eq_true.symm
+  have hsub :
+      Fintype.card XorGaugeSingleMessageSATWorld - a = a := by
+    simpa [heq] using hcomp.symm
+  have hle :
+      a ≤ Fintype.card XorGaugeSingleMessageSATWorld := by
+    simpa [a] using
+      Fintype.card_subtype_le
+        (fun omega : XorGaugeSingleMessageSATWorld =>
+          xorGaugeSingleMessageSATWorldTarget omega = true)
+  have hsum :
+      Fintype.card XorGaugeSingleMessageSATWorld = a + a :=
+    Nat.eq_add_of_sub_eq hle hsub
+  simpa [a, two_mul, Nat.add_comm] using hsum
+
+theorem xorGaugeSingleMessageSATWorldTarget_true_card_pos :
+    0 <
+      Fintype.card
+        {omega : XorGaugeSingleMessageSATWorld //
+          xorGaugeSingleMessageSATWorldTarget omega = true} := by
+  exact
+    Fintype.card_pos_iff.mpr
+      ⟨⟨xorGaugeSingleMessageSATWorldOf (false, true) false, by
+        simp [xorGaugeSingleMessageSATWorldTarget,
+          xorGaugeSingleMessageSATWorldOf, xorGaugeSingleMessageM,
+          xorSingleMessageM]⟩⟩
+
+/-- The gauge-buffered SAT-world target is globally balanced. -/
+theorem xorGaugeSingleMessageSATWorld_target_balanced :
+    BalancedBit xorGaugeSingleMessageSATWorldTarget := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [xorGaugeSingleMessageSATWorld_constantTrue_correct_card_eq_true]
+  rw [xorGaugeSingleMessageSATWorld_card_eq_two_mul_target_true]
+  set a : Nat :=
+    Fintype.card
+      {omega : XorGaugeSingleMessageSATWorld //
+        xorGaugeSingleMessageSATWorldTarget omega = true}
+  have hpos : 0 < a := by
+    simpa [a] using
+      xorGaugeSingleMessageSATWorldTarget_true_card_pos
+  have hne : (a : Rat) ≠ 0 := by
+    exact_mod_cast (Nat.ne_of_gt hpos)
+  rw [Nat.cast_mul]
+  field_simp [hne]
+  norm_num
+
+/-- A single-public-coordinate history field over gauge-buffered SAT worlds. -/
+def xorGaugeSingleMessageSATWorldHistoryField
+    (coord : XorSingleMessagePublicCoordinate) :
+    FiniteSigmaField XorGaugeSingleMessageSATWorld where
+  Atom := Bool
+  atomDecidable := inferInstance
+  atom := fun omega =>
+    xorSingleMessagePublicCoordinateValue coord omega.publicInput
+
+/-- Flip the public coordinate not observed by the history field, preserving
+the observed atom and hidden gauge bit while toggling the target. -/
+def xorGaugeSingleMessageSATWorldFlipUnobserved
+    (coord : XorSingleMessagePublicCoordinate)
+    (omega : XorGaugeSingleMessageSATWorld) :
+    XorGaugeSingleMessageSATWorld :=
+  xorGaugeSingleMessageSATWorldOf
+    (xorSingleMessageFlipUnobserved coord omega.publicInput)
+    (xorGaugeSingleMessageSATWorldGauge omega)
+
+theorem xorSingleMessageFlipUnobserved_involutive
+    (coord : XorSingleMessagePublicCoordinate)
+    (Y : XorSingleMessagePublic) :
+    xorSingleMessageFlipUnobserved coord
+        (xorSingleMessageFlipUnobserved coord Y) =
+      Y := by
+  cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+    simp [xorSingleMessageFlipUnobserved]
+
+/-- Inside each single-coordinate history atom, preserving the hidden gauge bit
+and flipping the unobserved public coordinate pairs target-true and
+target-false worlds. -/
+def xorGaugeSingleMessageSATWorldHistoryFieldFiberFlipEquiv
+    (coord : XorSingleMessagePublicCoordinate) (atom : Bool) :
+    FiberTrue
+        (fun omega : XorGaugeSingleMessageSATWorld =>
+          xorSingleMessagePublicCoordinateValue coord omega.publicInput)
+        xorGaugeSingleMessageSATWorldTarget atom ≃
+      FiberFalse
+        (fun omega : XorGaugeSingleMessageSATWorld =>
+          xorSingleMessagePublicCoordinateValue coord omega.publicInput)
+        xorGaugeSingleMessageSATWorldTarget atom where
+  toFun := fun omega =>
+    ⟨xorGaugeSingleMessageSATWorldFlipUnobserved coord omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y W sat =>
+          cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+            cases b0 <;> cases b1 <;> cases atom <;>
+              simp [xorGaugeSingleMessageSATWorldFlipUnobserved,
+                xorGaugeSingleMessageSATWorldOf,
+                xorSingleMessagePublicCoordinateValue,
+                xorGaugeSingleMessageSATWorldTarget,
+                xorGaugeSingleMessageM, xorSingleMessageFlipUnobserved,
+                xorSingleMessageM] at hω ⊢⟩
+  invFun := fun omega =>
+    ⟨xorGaugeSingleMessageSATWorldFlipUnobserved coord omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y W sat =>
+          cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+            cases b0 <;> cases b1 <;> cases atom <;>
+              simp [xorGaugeSingleMessageSATWorldFlipUnobserved,
+                xorGaugeSingleMessageSATWorldOf,
+                xorSingleMessagePublicCoordinateValue,
+                xorGaugeSingleMessageSATWorldTarget,
+                xorGaugeSingleMessageM, xorSingleMessageFlipUnobserved,
+                xorSingleMessageM] at hω ⊢⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageSATWorldFlipUnobserved coord
+          (xorGaugeSingleMessageSATWorldFlipUnobserved coord omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageSATWorldFlipUnobserved,
+      xorSingleMessageFlipUnobserved_involutive,
+      xorGaugeSingleMessageSATWorldOf_public_gauge_eq]
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageSATWorldFlipUnobserved coord
+          (xorGaugeSingleMessageSATWorldFlipUnobserved coord omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageSATWorldFlipUnobserved,
+      xorSingleMessageFlipUnobserved_involutive,
+      xorGaugeSingleMessageSATWorldOf_public_gauge_eq]
+
+/-- Every single-public-coordinate history field over gauge-buffered SAT worlds
+has balanced target fibers. -/
+theorem xorGaugeSingleMessageSATWorld_historyField_balancedConditioning
+    (coord : XorSingleMessagePublicCoordinate) :
+    BalancedConditioning
+      (xorGaugeSingleMessageSATWorldHistoryField coord)
+      xorGaugeSingleMessageSATWorldTarget := by
+  change Neutral
+    (fun omega : XorGaugeSingleMessageSATWorld =>
+      xorSingleMessagePublicCoordinateValue coord omega.publicInput)
+    xorGaugeSingleMessageSATWorldTarget
+  intro atom
+  exact
+    Fintype.card_congr
+      (xorGaugeSingleMessageSATWorldHistoryFieldFiberFlipEquiv coord atom)
+
+/-- Structural `admissibleHistories` field for the gauge-buffered XOR CNF SAT
+worlds: the target is globally balanced and remains balanced after conditioning
+on either single public coordinate, with hidden gauge multiplicity preserved. -/
+theorem xorGaugeSingleMessageSATWorld_admissibleHistories
+    (coord : XorSingleMessagePublicCoordinate) :
+    BalancedBit xorGaugeSingleMessageSATWorldTarget ∧
+      BalancedConditioning
+        (xorGaugeSingleMessageSATWorldHistoryField coord)
+        xorGaugeSingleMessageSATWorldTarget :=
+  ⟨xorGaugeSingleMessageSATWorld_target_balanced,
+    xorGaugeSingleMessageSATWorld_historyField_balancedConditioning coord⟩
 
 /-- CD-ENF neutral evidence for the gauge-buffered anchor. -/
 abbrev XorGaugeSingleMessageNeutral :=
