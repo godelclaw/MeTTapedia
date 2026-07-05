@@ -2267,6 +2267,17 @@ theorem section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructe
     Section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructedFork :=
   section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructedFork
 
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction_of_not_nonrealizable_audit
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction :=
+  closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction_of_not_nonrealizable
+    hnot
+
+theorem section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork_audit :
+    Section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork :=
+  section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork
+
 theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
   section92Step4CurrentFiniteFrontierFactoredBridgeFork

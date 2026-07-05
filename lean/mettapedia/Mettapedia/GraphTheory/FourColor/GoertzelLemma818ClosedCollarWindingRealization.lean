@@ -12976,6 +12976,59 @@ theorem section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructe
       hrows hnot
 
 /--
+The precise residual obstruction after the current finite frontier and
+histogram audit: either the factored normal-form bridge is false, or the
+histogram soundness package is false.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction :
+    Prop :=
+  (¬ ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge) ∨
+    ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction_of_not_nonrealizable
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction := by
+  classical
+  by_cases hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge
+  · by_cases hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness
+    · exact
+        False.elim
+          (hnot
+            (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness
+              hbridge hsound))
+    · exact Or.inr hsound
+  · exact Or.inl hbridge
+
+/--
+Compact exact fork for the current S4 repair route.  The finite side is already
+recorded; the positive branch is the conjunction of the factored geometric
+bridge and histogram soundness, while the negative branch localizes any
+surviving counterexample to one of those two obligations.
+-/
+def Section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge ∧
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+        ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction)
+
+theorem section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork :
+    Section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      ?_,
+      closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrHistogramSoundnessObstruction_of_not_nonrealizable⟩
+  rintro ⟨hbridge, hsound⟩
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness
+      hbridge hsound
+
+/--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
 finite evidence is on record; if the five factored normal-form obligations are
 proved, the audited rows kill the winding-freedom witness.  If audited rows are
