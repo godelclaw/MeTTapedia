@@ -11110,6 +11110,116 @@ theorem
         i₀ coordinate K).hiddenGaugeProduct⟩
 
 /--
+Endgame mechanical data extracted from the equality-indexed construction
+surface once the boundary-mixing frontier supplies the strict `epsSmall`
+bound.  The lower framework and kernel-neutrality proof are projected from
+the real lower-machine data; the Phase-A budget is discharged by the canonical
+fixed-gap choice.
+-/
+noncomputable def
+    realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    RealM4EndgameMechanicalData
+      (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+      Neutral Safe Gauge Transcript Pair Stage Branch HistoryAtom Pivot
+      Observer Output (V13RealLinearNoTargetRowsMap m i₀) :=
+  RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+    (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+      i₀ coordinate K)
+    boundaryMixing.epsSmall
+    K.lowerMachine
+
+/--
+Audit theorem for the generic endgame mechanical package extracted from the
+equality-indexed construction bundle.  It confirms that the named mechanical
+interface, real lower framework, Phase-A budget, strict epsilon bound, and
+kernel-neutrality proof are supplied by construction data plus the
+boundary-mixing frontier's `epsSmall` field.
+-/
+theorem
+    realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    let M :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+        i₀ coordinate K
+    let E :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing
+    E.interfaceData = M ∧
+      E.lowerFramework = K.lowerMachine.lowerFramework ∧
+        ((1 / 2 : Rat) * E.interfaceData.phaseA.telescoping.derivativeSum ≤
+          E.fixedGapBudget) ∧
+          E.interfaceData.epsMix < (1 / 2 : Rat) ∧
+            CompressionKernelNeutrality E.lowerFramework := by
+  dsimp [realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData]
+  exact
+    ⟨rfl, rfl,
+      (realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing).phaseABudget,
+      (realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing).epsSmall,
+      (realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing).kernelNeutrality⟩
+
+/--
 Extract the explicit-P=NP self-reduction upper discharge from the bundled
 equality-indexed construction surface at a candidate `P = NP` witness.  The
 SAT decider family is obtained from the named official NP language's
@@ -11220,6 +11330,75 @@ theorem
       (S :=
         realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructionData_pEqualsNP
           i₀ coordinate K hEq)
+
+/--
+The v13 parameter record extracted from the equality-indexed construction
+surface at a concrete `P = NP` witness.  This packages the construction
+surface, explicit P=NP-side self-reduction upper discharge, StarSW hardness,
+and the three analytic frontier fields into the exact record consumed by the
+existing conditional clash theorem.
+-/
+noncomputable def
+    realM4_noTargetRowsEqualityIndexedConstructionData_parameterRecord_givenPEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    let E :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing
+    ParameterRecord
+      (E.interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing) := by
+  dsimp
+  exact
+    (realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData
+      i₀ coordinate K boundaryMixing).parameterRecordExplicitPNP
+      (realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructionData_pEqualsNP
+        i₀ coordinate K hEq)
+      starSWHardness
+      safeQSSM.safeQSSM
+      boundedGaugeIncidence.boundedGaugeIncidence
+      boundaryMixing.boundaryMixing
 
 /--
 Cook-style class-inequality endpoint from the bundled equality-indexed
@@ -11428,6 +11607,53 @@ theorem realM4NoTargetRowsEqualityIndexedStructuralTransferItems_exact :
 
 def realM4NoTargetRowsEqualityIndexedStructuralTransferStatement : String :=
   "For the real v15/M4 no-target-rows equality-indexed construction surface, the named mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; hiddenGaugeProduct is carried as the explicit real construction field.  These structural fields are not theorem-level hypotheses of the equality-indexed endpoint."
+
+def realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataItems :
+    List String := [
+  "namedMechanicalInterface",
+  "canonicalFixedGapBudget",
+  "canonicalPhaseABudget",
+  "boundaryMixingEpsSmall",
+  "realLowerFramework",
+  "kernelNeutrality"
+]
+
+theorem realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataItems_exact :
+    realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataItems =
+      [ "namedMechanicalInterface",
+        "canonicalFixedGapBudget",
+        "canonicalPhaseABudget",
+        "boundaryMixingEpsSmall",
+        "realLowerFramework",
+        "kernelNeutrality" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataStatement :
+    String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, the generic endgame mechanical-data package is obtained from the named mechanical interface, the canonical fixed-gap/Phase-A budget construction, the real lower-machine data, and the epsSmall field of boundaryMixing.  This removes lower-framework instantiation and Phase-A budgeting from the theorem boundary while leaving boundaryMixing as one of the four irreducible frontier inputs."
+
+def realM4NoTargetRowsEqualityIndexedParameterRecordHypothesisAudit :
+    List String := [
+  "noTargetRowsEqualityIndexedOfficialConstructionData",
+  "pEqualsNPWitness",
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem realM4NoTargetRowsEqualityIndexedParameterRecordHypothesisAudit_exact :
+    realM4NoTargetRowsEqualityIndexedParameterRecordHypothesisAudit =
+      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+        "pEqualsNPWitness",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedParameterRecordStatement : String :=
+  "At a concrete P=NP witness, the real v15/M4 no-target-rows equality-indexed construction surface assembles the exact v13 ParameterRecord from StarSW hardness and the three analytic frontiers.  The self-reduction upper side is derived from the P=NP witness and the bundle's indexed constant-decoder fields; structural interface fields, Phase-A budgeting, lower-framework instantiation, and kernel neutrality are construction-projected."
 
 def realM4NoTargetRowsEqualityIndexedPNPUpperHypothesisAudit :
     List String := [
@@ -16245,6 +16471,18 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The bundled no-target-rows equality-indexed construction surface now exposes a named mechanical interface whose structural fields are construction-transferred or explicitly carried, so the endpoint theorem boundary uses only the named analytic frontier objects over that interface."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_endgameMechanicalData_fields"
+    note := "The bundled equality-indexed surface now projects to the generic endgame mechanical-data package: named interface, canonical Phase-A budget, epsSmall from boundaryMixing, real lower framework, and kernel neutrality."
+  },
+  {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_parameterRecord_givenPEqualsNP"
+    note := "At a concrete P=NP witness, the construction bundle, StarSW, and the three analytic frontiers assemble the exact v13 ParameterRecord; the upper side is extracted internally from the equality witness."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge"
     status := .partialConstructionTransferred
     checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_selfReduction_outputs_givenPEqualsNP"
@@ -16281,6 +16519,8 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityClassInequality",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityOfficialEndpoint",
         "realNoTargetRowsEqualityIndexedConstructionDataMechanicalInterface",
+        "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData",
+        "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge",
         "realNoTargetRowsEqualityIndexedConstructionDataClassInequality",
         "realNoTargetRowsEqualityIndexedConstructionDataOfficialEndpoint",
@@ -16292,6 +16532,8 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
