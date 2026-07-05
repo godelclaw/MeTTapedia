@@ -135,6 +135,43 @@ theorem false (reduction : SmallerTaitSurgeryReduction minimal H) : False :=
 
 end SmallerTaitSurgeryReduction
 
+/-- A universe- and instance-carrying witness that some smaller Birkhoff surgery target exists.
+This is the ergonomic form used by configuration-specific surgery lemmas: construct one witness,
+then the generic minimality theorem refutes the bad configuration. -/
+structure SmallerTaitSurgeryWitness
+    {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+    {G : SimpleGraph V0} [DecidableRel G.Adj]
+    (minimal : MinimalTaitCounterexample.{uMin, uSurgery} G) : Type (max uMin (uSurgery + 1)) where
+  U : Type uSurgery
+  [decidableEq : DecidableEq U]
+  [fintype : Fintype U]
+  H : SimpleGraph U
+  [decidableRel : DecidableRel H.Adj]
+  reduction : SmallerTaitSurgeryReduction minimal H
+
+namespace SmallerTaitSurgeryWitness
+
+variable {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+variable {G : SimpleGraph V0} [DecidableRel G.Adj]
+variable {minimal : MinimalTaitCounterexample.{uMin, uSurgery} G}
+
+/-- The bundled smaller surgery target is Tait edge-colorable by minimality. -/
+theorem target_taitEdgeColorable (witness : SmallerTaitSurgeryWitness minimal) :
+    TaitEdgeColorable witness.H := by
+  letI := witness.decidableEq
+  letI := witness.fintype
+  letI := witness.decidableRel
+  exact witness.reduction.target_taitEdgeColorable
+
+/-- Any smaller surgery witness contradicts minimality. -/
+theorem false (witness : SmallerTaitSurgeryWitness minimal) : False := by
+  letI := witness.decidableEq
+  letI := witness.fintype
+  letI := witness.decidableRel
+  exact witness.reduction.false
+
+end SmallerTaitSurgeryWitness
+
 end BasicPredicates
 
 section PlaneDuality
@@ -383,6 +420,85 @@ structure SmallCyclicCutBirkhoffSurgery
     (minimal : MinimalTaitCounterexample G) : Prop where
   no_small_cyclic_edge_cut : NoCyclicEdgeCutOfSizeAtMostFour G
 
+/-- Generic vertex-deletion normal-form step: if every low-degree dual vertex supplies a smaller
+Birkhoff surgery witness, then no low-degree dual vertex exists. -/
+theorem minimumDegreeAtLeast_of_forall_lowDegree_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G}
+    (hreduce :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    MinimumDegreeAtLeast T 5 := by
+  intro v
+  by_contra hnot
+  have hlt : T.degree v < 5 := Nat.lt_of_not_ge hnot
+  rcases hreduce v hlt with ⟨witness⟩
+  exact witness.false
+
+/-- Vertex-deletion surgery from its concrete smaller-surgery reduction target. -/
+def vertexDeletionSurgery_of_forall_lowDegree_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hreduce :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    VertexDeletionSurgery minimal dual where
+  minimum_degree :=
+    minimumDegreeAtLeast_of_forall_lowDegree_smallerTaitSurgeryWitness hreduce
+
+/-- Generic cut-and-paste normal-form step: if every separating dual cycle of length `k` supplies
+a smaller Birkhoff surgery witness, then no such separator exists. -/
+theorem noSeparatingDualCycleOfLength_of_forall_cycle_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T} {k : Nat}
+    (hreduce :
+      ∀ _cycle : SeparatingDualCycleData dual k,
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    NoSeparatingDualCycleOfLength dual k := by
+  rintro ⟨cycle⟩
+  rcases hreduce cycle with ⟨witness⟩
+  exact witness.false
+
+/-- Triangle cut-and-paste surgery from concrete smaller-surgery reductions for every separating
+dual triangle. -/
+def separatingTriangleCutPasteSurgery_of_forall_triangle_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hreduce :
+      ∀ _cycle : SeparatingDualCycleData dual 3,
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    SeparatingTriangleCutPasteSurgery minimal dual where
+  no_separating_triangle :=
+    noSeparatingDualCycleOfLength_of_forall_cycle_smallerTaitSurgeryWitness hreduce
+
+/-- Four-cycle identification surgery from concrete smaller-surgery reductions for every
+separating dual 4-cycle. -/
+def separatingFourCycleIdentificationSurgery_of_forall_fourCycle_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hreduce :
+      ∀ _cycle : SeparatingDualCycleData dual 4,
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    SeparatingFourCycleIdentificationSurgery minimal dual where
+  no_separating_four_cycle :=
+    noSeparatingDualCycleOfLength_of_forall_cycle_smallerTaitSurgeryWitness hreduce
+
+/-- Generic small-cut normal-form step: if every small cyclic cut supplies a smaller Birkhoff
+surgery witness, then the graph has no cyclic edge cut of size at most four. -/
+theorem noCyclicEdgeCutOfSizeAtMostFour_of_forall_smallCut_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G}
+    (hreduce :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    NoCyclicEdgeCutOfSizeAtMostFour G := by
+  rintro ⟨cut, hcard⟩
+  rcases hreduce cut hcard with ⟨witness⟩
+  exact witness.false
+
+/-- Small cyclic-cut surgery from concrete smaller-surgery reductions for every size-at-most-four
+cyclic cut. -/
+def smallCyclicCutBirkhoffSurgery_of_forall_smallCut_smallerTaitSurgeryWitness
+    {minimal : MinimalTaitCounterexample G}
+    (hreduce :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    SmallCyclicCutBirkhoffSurgery minimal where
+  no_small_cyclic_edge_cut :=
+    noCyclicEdgeCutOfSizeAtMostFour_of_forall_smallCut_smallerTaitSurgeryWitness hreduce
+
 /-- The Birkhoff surgery suite organized by the three manuscript moves.  The triangle and
 4-cycle fields expose the dual separator conclusions directly; the small-cut field is the
 graph-side form consumed by the existing `CyclicEdgeCut` API. -/
@@ -438,6 +554,52 @@ theorem lemma52_minimalCounterexampleNormalForm_of_birkhoffSurgerySuite
     (suite : Lemma52BirkhoffSurgerySuite minimal dual) :
     Nonempty (MinimalCounterexampleNormalForm G T) :=
   lemma52_minimalCounterexampleNormalForm suite.toObligation
+
+/-- Assemble the full Lemma 5.2 surgery suite from the concrete smaller-surgery reduction
+targets for each forbidden configuration family. -/
+def lemma52BirkhoffSurgerySuite_of_smallerTaitSurgeryWitnesses
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hlowDegree :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal))
+    (htriangle :
+      ∀ _cycle : SeparatingDualCycleData dual 3,
+        Nonempty (SmallerTaitSurgeryWitness minimal))
+    (hfourCycle :
+      ∀ _cycle : SeparatingDualCycleData dual 4,
+        Nonempty (SmallerTaitSurgeryWitness minimal))
+    (hsmallCut :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    Lemma52BirkhoffSurgerySuite minimal dual where
+  vertex_deletion :=
+    vertexDeletionSurgery_of_forall_lowDegree_smallerTaitSurgeryWitness hlowDegree
+  triangle_cut_paste :=
+    separatingTriangleCutPasteSurgery_of_forall_triangle_smallerTaitSurgeryWitness htriangle
+  four_cycle_identification :=
+    separatingFourCycleIdentificationSurgery_of_forall_fourCycle_smallerTaitSurgeryWitness
+      hfourCycle
+  small_cyclic_cut :=
+    smallCyclicCutBirkhoffSurgery_of_forall_smallCut_smallerTaitSurgeryWitness hsmallCut
+
+/-- Lemma 5.2 normal-form endpoint directly from concrete smaller-surgery reductions for all
+forbidden configuration families. -/
+theorem lemma52_minimalCounterexampleNormalForm_of_smallerTaitSurgeryWitnesses
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hlowDegree :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal))
+    (htriangle :
+      ∀ _cycle : SeparatingDualCycleData dual 3,
+        Nonempty (SmallerTaitSurgeryWitness minimal))
+    (hfourCycle :
+      ∀ _cycle : SeparatingDualCycleData dual 4,
+        Nonempty (SmallerTaitSurgeryWitness minimal))
+    (hsmallCut :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    Nonempty (MinimalCounterexampleNormalForm G T) :=
+  lemma52_minimalCounterexampleNormalForm_of_birkhoffSurgerySuite
+    (lemma52BirkhoffSurgerySuite_of_smallerTaitSurgeryWitnesses
+      hlowDegree htriangle hfourCycle hsmallCut)
 
 end PlaneDuality
 
