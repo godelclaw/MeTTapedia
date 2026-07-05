@@ -7806,6 +7806,47 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_eq_iff
         (v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_apply
           omega₁).symm
 
+/-- Over a fixed base world, the no-target-rows gauge-CNF hidden-gauge
+action is simply transitive: there is a unique Boolean gauge element sending
+one concrete satisfying world to another. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction_unique_of_base_eq
+    {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀)
+    (hBase : omega₀.base = omega₁.base) :
+    ∃! gamma : Bool,
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega₀ =
+        omega₁ := by
+  let gamma :=
+    v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀ ^^
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁
+  refine ⟨gamma, ?_, ?_⟩
+  · change
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega₀ =
+        omega₁
+    rw [v13RealLinearNoTargetRowsGaugeCNFGaugeAction_eq_iff]
+    constructor
+    · exact hBase
+    · dsimp [gamma]
+      cases h₀ :
+          v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀ <;>
+        cases h₁ :
+          v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁ <;>
+        simp
+  · intro delta hdelta
+    have hHidden :
+        (delta ^^ v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀) =
+          v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁ :=
+      (v13RealLinearNoTargetRowsGaugeCNFGaugeAction_eq_iff
+        delta omega₀ omega₁).mp hdelta |>.2
+    dsimp [gamma]
+    cases h₀ :
+        v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀ <;>
+      cases h₁ :
+        v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁ <;>
+      cases delta <;>
+      simp [h₀, h₁] at hHidden ⊢
+
 /-- The no-target-rows gauge action is nontrivial over every base world:
 choosing hidden gauge `false` and acting by `true` changes the satisfying
 assignment while preserving the public instance. -/
@@ -8514,6 +8555,58 @@ theorem
           omega₁ :=
         (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_apply
           omega₁).symm
+
+/-- Over a fixed Appendix-I CNF public instance, the concrete hidden-gauge
+action is simply transitive: there is a unique Boolean gauge element sending
+one satisfying Appendix-I CNF world to another. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_unique_of_publicInstance_eq
+    {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hPublic : omega₀.publicInstance = omega₁.publicInstance) :
+    ∃! gamma : Bool,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega₀ =
+        omega₁ := by
+  let gamma :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega₀ ^^
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega₁
+  refine ⟨gamma, ?_, ?_⟩
+  · change
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega₀ =
+        omega₁
+    rw [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_eq_iff]
+    constructor
+    · exact hPublic
+    · dsimp [gamma]
+      cases h₀ :
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega₀ <;>
+        cases h₁ :
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega₁ <;>
+        simp
+  · intro delta hdelta
+    have hHidden :
+        (delta ^^
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+              omega₀) =
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega₁ :=
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_eq_iff
+        delta omega₀ omega₁).mp hdelta |>.2
+    dsimp [gamma]
+    cases h₀ :
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+          omega₀ <;>
+      cases h₁ :
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+          omega₁ <;>
+      cases delta <;>
+      simp [h₀, h₁] at hHidden ⊢
 
 /-- Acting by the nontrivial gauge element flips the free hidden-gauge
 coordinate in the Appendix-I CNF world. -/
