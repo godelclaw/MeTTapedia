@@ -170,6 +170,14 @@ theorem section92Step4N6PlanarityTemplateTaxonomyObstructionTarget_audit :
     Section92Step4N6PlanarityTemplateTaxonomyObstructionTarget :=
   section92Step4N6PlanarityTemplateTaxonomyObstructionTarget
 
+theorem closedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy_audit :
+    ClosedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy :=
+  closedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy
+
+theorem section92Step4RepairedByN6DetailedTaxonomyTarget_audit :
+    Section92Step4RepairedByN6DetailedTaxonomyTarget :=
+  section92Step4RepairedByN6DetailedTaxonomyTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
