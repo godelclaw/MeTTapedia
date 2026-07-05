@@ -461,6 +461,77 @@ theorem v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid
       v13RealLinearMessageOfPublic i₀ Y := by
   exact v13RealLinearGaugeCNFFormula_forces_decodedBit hW i₀
 
+/-- Public formula-syntax tag for the gauge-buffered CNF: whether the
+concrete CNF contains the positive unit clause for the selected locked target
+coordinate. -/
+def v13RealLinearGaugeCNFFormulaPositiveTargetTag {m : Nat}
+    (i₀ : Fin m)
+    (formula : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m)) : Bool :=
+  decide (ConcreteCNF.unitClause (some i₀) true ∈ formula)
+
+/-- In the gauge-buffered CNF, the public target-unit tag is still exactly the
+fixed public message.  The extra hidden gauge coordinate does not remove the
+formula-syntax leak. -/
+theorem v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
+    {m : Nat} (i₀ : Fin m) (Y : V13RealLinearPublic m) :
+    v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀
+        (v13RealLinearGaugeCNFFormula Y) =
+      v13RealLinearMessageOfPublic i₀ Y := by
+  by_cases hmsg : v13RealLinearMessageOfPublic i₀ Y = true
+  · have hmem :
+        ConcreteCNF.unitClause (some i₀) true ∈
+          v13RealLinearGaugeCNFFormula Y := by
+      refine List.mem_ofFn.mpr ⟨i₀, ?_⟩
+      simp [v13RealLinearCNFDecodedAssignment, hmsg]
+    simp [v13RealLinearGaugeCNFFormulaPositiveTargetTag, hmem, hmsg]
+  · have hfalse : v13RealLinearMessageOfPublic i₀ Y = false :=
+      Bool.eq_false_iff.mpr hmsg
+    have hnot :
+        ConcreteCNF.unitClause (some i₀) true ∉
+          v13RealLinearGaugeCNFFormula Y := by
+      intro hmem
+      rcases List.mem_ofFn.mp hmem with ⟨j, hEq⟩
+      have hparts := ConcreteCNF.unitClause_eq_unitClause_iff.mp hEq
+      have hj : j = i₀ := Option.some.inj hparts.1
+      have hval : v13RealLinearCNFDecodedAssignment Y j = true := hparts.2
+      subst i₀
+      simp [v13RealLinearCNFDecodedAssignment, hfalse] at hval
+    simp [v13RealLinearGaugeCNFFormulaPositiveTargetTag, hnot, hfalse]
+
+/-- Formula-syntax-only message determination for the gauge-buffered real
+linear CNF. -/
+theorem v13RealLinearGaugeCNFFormula_publicSyntaxDeterminesMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ Y : V13RealLinearPublic m,
+        v13RealLinearMessageOfPublic i₀ Y =
+          f (v13RealLinearGaugeCNFFormula Y) := by
+  exact
+    ⟨v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀,
+      fun Y =>
+        (v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
+          i₀ Y).symm⟩
+
+/-- No-public-target-tags shape for the full gauge-buffered CNF formula syntax
+viewed as the public skeleton. -/
+def V13RealLinearGaugeCNFFormulaNoPublicTargetTags {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ Y : V13RealLinearPublic m,
+        v13RealLinearMessageOfPublic i₀ Y =
+          f (v13RealLinearGaugeCNFFormula Y)
+
+/-- Named obstruction: the gauge-buffered CNF still exposes the target message
+through the public target-coordinate unit clause when the full formula syntax
+is used as the public skeleton.  The transferred `noPublicTargetTags` theorem
+therefore has to use the no-target-rows neutral skeleton instead. -/
+theorem v13RealLinearGaugeCNFFormula_noPublicTargetTags_obstruction
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13RealLinearGaugeCNFFormulaNoPublicTargetTags i₀ := by
+  intro hNoTags
+  exact hNoTags
+    (v13RealLinearGaugeCNFFormula_publicSyntaxDeterminesMessage i₀)
+
 /-- Flip the free hidden gauge coordinate when `gamma = true`; leave every
 locked witness coordinate unchanged. -/
 def v13RealLinearGaugeCNFGaugeAction {m : Nat}
