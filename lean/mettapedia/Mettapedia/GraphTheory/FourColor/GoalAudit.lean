@@ -1304,6 +1304,28 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
   closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows
     extraction hrows
 
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows
+    data hrows
+
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows
+    hrows
+
+theorem section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget_audit :
+    Section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :=
+  section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget
+
 theorem closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBlocker_of_auditedRows_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :

@@ -7585,6 +7585,115 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
       hcoherentRepresentation
 
 /--
+Concrete previous-boundary normal-form realization of the winding-freedom
+witness along the current serious repair route.  It packages, for one witness,
+ordinary embedded collar geometry, the previous-boundary witness upgrade, the
+cut-open radial face, the n6 radial-face representation, and the audited
+archive key.
+-/
+structure ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+    {V : Type} [DecidableEq V] (G : SimpleGraph V) where
+  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  geometry :
+    ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm
+  previousUpgrade :
+    ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+      geometry
+  radialFace :
+    ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+      previousUpgrade.toPreviousBoundaryGeometryData.toGeometryData
+  n6 :
+    ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+      (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+        previousUpgrade.toPreviousBoundaryGeometryData
+        radialFace).toNormalFormRadialFaceRealization
+  auditedKey :
+    closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+      (n6.data.representation.patchTopologyIndex,
+        n6.data.representation.radialOrderIndex.1)
+
+def ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization.previousBoundaryGeometryData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+      data.normalForm :=
+  data.previousUpgrade.toPreviousBoundaryGeometryData
+
+def ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization.previousBoundaryRadialFaceData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+      data.normalForm :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+    data.previousBoundaryGeometryData
+    data.radialFace
+
+def ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization.previousBoundaryRadialFaceN6AuditedArchiveExtraction
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G) :
+    ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
+      data.normalForm where
+  previousBoundaryRadialFaceData := data.previousBoundaryRadialFaceData
+  n6 := data.n6
+  auditedKey := data.auditedKey
+
+/--
+Local concrete obstruction: once the audited radial-face rows are accepted, no
+single normal-form witness can carry all previous-boundary geometry, radial
+face, n6 extraction, and audited archive key data at once.
+-/
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows
+    data.previousBoundaryRadialFaceN6AuditedArchiveExtraction hrows
+
+/--
+Concrete previous-boundary nonrealizability statement: the fully assembled
+previous-boundary normal-form witness package is empty.
+-/
+def ClosedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
+    ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization G →
+      False
+
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm := by
+  intro V _hV G data
+  exact
+    closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows
+      data hrows
+
+/--
+Route-facing concrete obstruction target: after the finite audited rows, the
+remaining serious normal-form work is exactly to show that honest minimal
+counterexample annuli instantiate this concrete previous-boundary package, or
+to locate the first field that they fail to supply.
+-/
+def Section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+    ClosedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm
+
+theorem section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :
+    Section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows
+
+/--
 The staged witness-level blockers for the previous-boundary repair route.
 Unlike the global blocker type, these are attached to one concrete normal-form
 realization and identify the first missing datum along the current extraction
