@@ -142,6 +142,10 @@ theorem section92Step4N6ExhaustiveNormalFormObstructionTarget_audit :
     Section92Step4N6ExhaustiveNormalFormObstructionTarget :=
   section92Step4N6ExhaustiveNormalFormObstructionTarget
 
+theorem section92Step4N6DetailedNormalFormObstructionTarget_audit :
+    Section92Step4N6DetailedNormalFormObstructionTarget :=
+  section92Step4N6DetailedNormalFormObstructionTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
