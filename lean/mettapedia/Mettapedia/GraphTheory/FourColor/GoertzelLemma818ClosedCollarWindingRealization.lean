@@ -2369,6 +2369,206 @@ theorem section92Step4RadialFaceSampleNormalFormObstructionTarget :
     closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoherentRepresentation
       hcovered data.representation hsample (hforces data hsample)
 
+/--
+Counts for a resumable radial-face slice search beginning at topology index
+`1000000`.  Unlike the earlier indexed sample, this mode scans a bounded
+range, discovers profile-preserving non-structural cases, and only then runs
+the rotation-system radial-face audit.
+-/
+structure ClosedCollarSimplePatchAnnularEmbeddingSliceCounts where
+  internalVertexCount : Nat
+  exactPatchTopologyCount : Nat
+  patchStartIndex : Nat
+  patchTopologyLimit : Nat
+  nextPatchStartIndex : Nat
+  stoppedByEmbeddingCaseLimit : Bool
+  embeddingCaseLimit : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  structuralSkippedCaseCount : Nat
+  embeddingAuditedCaseCount : Nat
+  radialFaceCoherentCaseCount : Nat
+  radialFaceIncoherentCaseCount : Nat
+  totalRotationSystemCount : Nat
+  enumeratedRotationSystemCount : Nat
+  planarRotationSystemCount : Nat
+  radialFaceCoherentRotationCount : Nat
+  exactDiagonalTwoPoleTemplateBlockerCount : Nat
+  maxRadialCutEdgesOnSingleFaceTwoCount : Nat
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases :
+    List (Nat × Nat) :=
+  [(1000301, 0), (1000301, 1)]
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts :
+    ClosedCollarSimplePatchAnnularEmbeddingSliceCounts where
+  internalVertexCount := 6
+  exactPatchTopologyCount := 1858980
+  patchStartIndex := 1000000
+  patchTopologyLimit := 500
+  nextPatchStartIndex := 1000302
+  stoppedByEmbeddingCaseLimit := true
+  embeddingCaseLimit := 2
+  processedPatchTopologyCount := 302
+  radialOrderCaseCount := 604
+  profilePreservingCaseCount := 2
+  structuralSkippedCaseCount := 0
+  embeddingAuditedCaseCount := 2
+  radialFaceCoherentCaseCount := 0
+  radialFaceIncoherentCaseCount := 2
+  totalRotationSystemCount := 524288
+  enumeratedRotationSystemCount := 524288
+  planarRotationSystemCount := 16
+  radialFaceCoherentRotationCount := 0
+  exactDiagonalTwoPoleTemplateBlockerCount := 2
+  maxRadialCutEdgesOnSingleFaceTwoCount := 16
+
+/--
+Archived evidence from the bounded radial-face slice mode.  The scan
+processed topology indices `1000000` through `1000301`, discovered two
+profile-preserving non-structural cases at topology `1000301`, exhausted both
+rotation-system searches, and found no radial-face coherent planar rotation.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases =
+      [(1000301, 0), (1000301, 1)] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.internalVertexCount =
+      6 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactPatchTopologyCount =
+      1858980 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.patchStartIndex =
+      1000000 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.patchTopologyLimit =
+      500 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.nextPatchStartIndex =
+      1000302 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.stoppedByEmbeddingCaseLimit =
+      true ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.embeddingCaseLimit =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.processedPatchTopologyCount =
+      302 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialOrderCaseCount =
+      604 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.profilePreservingCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.structuralSkippedCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.embeddingAuditedCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceIncoherentCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.totalRotationSystemCount =
+      524288 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.enumeratedRotationSystemCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.totalRotationSystemCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.planarRotationSystemCount =
+      16 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentRotationCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactDiagonalTwoPoleTemplateBlockerCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.maxRadialCutEdgesOnSingleFaceTwoCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.planarRotationSystemCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/-- Lab-side candidate for a radial-face coherent rotation in the slice. -/
+structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceRotationCandidate where
+  hrotationCountPositive :
+    0 <
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentRotationCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000_noRadialFaceRotationCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceRotationCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentRotationCount =
+        0 := rfl
+  have hpos := candidate.hrotationCountPositive
+  omega
+
+/--
+Coverage obligation for the bounded radial-face slice: if a representation
+lies in one of the discovered audited cases and carries a genuine cut-open
+radial face, then the slice lab would count a coherent planar rotation.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceCoveredByLab :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          representation.annular →
+          Nonempty
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceRotationCandidate
+
+/--
+Slice-level obstruction for radial-face coherent annular realizations in the
+new resumable search mode.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NoRadialFaceCoherentRepresentation :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceCoveredByLab →
+    ∀ {V : Type} {G : SimpleGraph V},
+      (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+        (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+          ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+            representation.annular →
+            False
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NoRadialFaceCoherentRepresentation :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NoRadialFaceCoherentRepresentation := by
+  intro hcovered V G representation hcase hradial
+  rcases hcovered representation hcase hradial with ⟨candidate⟩
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000_noRadialFaceRotationCandidate
+      candidate
+
+/--
+Radial-face normal-form target for the bounded slice search.  This is the same
+serious S4 bridge as the indexed sample, but now attached to a resumable
+discovery run rather than hand-picked topology indices.
+-/
+def Section92Step4RadialFaceSlice1000000NormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceCoveredByLab →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormSampleForcesRadialFace →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+              closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+            False
+
+theorem section92Step4RadialFaceSlice1000000NormalFormObstructionTarget :
+    Section92Step4RadialFaceSlice1000000NormalFormObstructionTarget := by
+  intro hcovered hforces V G data hcase
+  have hsample :
+      (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSampleCases := by
+    have hpairs :
+        (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) =
+            (1000301, 0) ∨
+          (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) =
+            (1000301, 1) := by
+      simpa [closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases] using hcase
+    rcases hpairs with h0 | h1
+    · simp [closedCollarSimplePatchN6AnnularEmbeddingSampleCases, h0]
+    · simp [closedCollarSimplePatchN6AnnularEmbeddingSampleCases, h1]
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NoRadialFaceCoherentRepresentation
+      hcovered data.representation hcase (hforces data hsample)
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
