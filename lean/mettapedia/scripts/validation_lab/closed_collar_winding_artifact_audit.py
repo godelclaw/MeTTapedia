@@ -45,6 +45,15 @@ RADIAL_FACE_SLICE_FILES = (
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
 )
 
+RADIAL_FACE_SLICE_TEMPLATE_CASE_DEFS = (
+    "closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template",
+    "closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template",
+    "closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Case0Template",
+    "closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Case1Template",
+    "closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template",
+    "closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template",
+)
+
 N8_TEMPLATE_BLOCKER_FILES = (
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_000000_050000.json",
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_050000_500000.json",
@@ -192,6 +201,33 @@ def parse_lean_option_string_field(record: str, field: str) -> str | None:
     raise ValueError(f"Lean radial-face row certificate missing Option String field {field}")
 
 
+def parse_lean_template_key_field(record: str, field: str) -> str:
+    direct_match = re.search(rf'{field}\s*:=\s*"([^"]+)"', record)
+    if direct_match is not None:
+        return direct_match.group(1)
+    reverse_key = "ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey"
+    if re.search(rf"{field}\s*:=\s*{re.escape(reverse_key)}", record):
+        return REVERSE_TEMPLATE_KEY
+    raise ValueError(f"Lean exact-template case missing key field {field}")
+
+
+def parse_lean_template_id_field(record: str, field: str) -> str:
+    match = re.search(
+        rf"{field}\s*:=\s*ClosedCollarDiagonalTwoPoleTemplateId\.(forward|reverse)",
+        record,
+    )
+    if match is None:
+        raise ValueError(f"Lean exact-template case missing template field {field}")
+    return match.group(1)
+
+
+def parse_lean_string_list_field(record: str, field: str) -> list[str]:
+    match = re.search(rf"{field}\s*:=\s*\[([^\]]*)\]", record)
+    if match is None:
+        raise ValueError(f"Lean exact-template case missing string-list field {field}")
+    return re.findall(r'"([^"]+)"', match.group(1))
+
+
 def parse_lean_histogram_field(record: str, field: str) -> list[tuple[int, int]]:
     match = re.search(rf"{field}\s*:=\s*\[\(([0-9]+),\s*([0-9]+)\)\]", record)
     if match is None:
@@ -211,6 +247,28 @@ def lean_row_certificate_def_body(source: str, def_name: str) -> str:
     if end == -1:
         raise ValueError(f"Lean radial-face row certificate definition {def_name} has no end")
     return source[assignment + 2 : end]
+
+
+def lean_template_case_def_body(source: str, def_name: str) -> str:
+    marker = f"def {def_name}"
+    start = source.find(marker)
+    if start == -1:
+        raise ValueError(f"Lean exact-template case definition {def_name} not found")
+    where = source.find("where", start)
+    if where == -1:
+        raise ValueError(f"Lean exact-template case definition {def_name} has no where")
+    candidates = [
+        index
+        for index in (
+            source.find("\ndef ", where),
+            source.find("\n/--", where),
+            source.find("\ntheorem ", where),
+        )
+        if index != -1
+    ]
+    if not candidates:
+        raise ValueError(f"Lean exact-template case definition {def_name} has no end")
+    return source[where : min(candidates)]
 
 
 def parse_lean_radial_face_row_certificates(source: str, def_name: str) -> list[dict[str, object]]:
@@ -276,6 +334,38 @@ def lean_radial_face_row_certificates() -> list[dict[str, object]]:
     )
 
 
+def parse_lean_slice_template_case(source: str, def_name: str) -> dict[str, object]:
+    body = lean_template_case_def_body(source, def_name)
+    return {
+        "case": [
+            parse_lean_nat_field(body, "patchTopologyIndex"),
+            parse_lean_nat_field(body, "radialOrderIndex"),
+        ],
+        "template": parse_lean_template_id_field(body, "template"),
+        "exact_template_key": parse_lean_template_key_field(body, "exactTemplateKey"),
+        "exact_template_cut_edges": parse_lean_string_list_field(body, "cutEdges"),
+        "exact_template_side_collar_vertices": parse_lean_string_list_field(
+            body, "sideCollarVertices"
+        ),
+        "exact_template_side_vertices": parse_lean_string_list_field(body, "sideVertices"),
+        "exact_template_cut_size": parse_lean_nat_field(body, "cutSize"),
+        "exact_template_side_vertex_count": parse_lean_nat_field(
+            body, "sideVertexCount"
+        ),
+        "exact_template_other_side_vertex_count": parse_lean_nat_field(
+            body, "otherSideVertexCount"
+        ),
+    }
+
+
+def lean_radial_face_slice_template_cases() -> list[dict[str, object]]:
+    source = LEAN_REALIZATION_SOURCE.read_text()
+    return [
+        parse_lean_slice_template_case(source, def_name)
+        for def_name in RADIAL_FACE_SLICE_TEMPLATE_CASE_DEFS
+    ]
+
+
 def radial_face_certificate_lean_projection(
     certificate: dict[str, object],
 ) -> dict[str, object]:
@@ -309,6 +399,26 @@ def radial_face_certificate_lean_projection(
         "template_exclusion_blocker": certificate["template_exclusion_blocker"],
         "exact_template_key": certificate.get("exact_template_key"),
         "verdict": certificate["verdict"],
+    }
+
+
+def radial_face_slice_template_artifact_projection(
+    certificate: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "case": certificate["case"],
+        "template": "reverse",
+        "exact_template_key": certificate["exact_template_key"],
+        "exact_template_cut_edges": certificate["exact_template_cut_edges"],
+        "exact_template_side_collar_vertices": ["g0:F5", "g1:F1"],
+        "exact_template_side_vertices": certificate["exact_template_side_vertices"],
+        "exact_template_cut_size": certificate["exact_template_cut_size"],
+        "exact_template_side_vertex_count": certificate[
+            "exact_template_side_vertex_count"
+        ],
+        "exact_template_other_side_vertex_count": certificate[
+            "exact_template_other_side_vertex_count"
+        ],
     }
 
 
@@ -553,6 +663,7 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
             case.get("template_exclusion_blocker"),
             "excluded_exact_diagonal_two_pole_template",
         )
+        exact_template_payload: dict[str, object] | None = None
         if source == "slice":
             assert_equal(
                 f"{name}: exact template key for {patch_index}/{radial_order_index}",
@@ -568,10 +679,37 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
                 ["g0:F4F5", "g1:F1F0"],
             )
             assert_equal(
+                f"{name}: exact template cut size for {patch_index}/{radial_order_index}",
+                cut.get("cut_size"),
+                2,
+            )
+            assert_equal(
                 f"{name}: exact template side vertex count for {patch_index}/{radial_order_index}",
                 cut.get("side_vertex_count"),
                 4,
             )
+            assert_equal(
+                f"{name}: exact template other-side vertex count for {patch_index}/{radial_order_index}",
+                cut.get("other_side_vertex_count"),
+                14,
+            )
+            side_vertices = cut.get("side_vertices")
+            if not isinstance(side_vertices, list) or not all(
+                isinstance(vertex, str) for vertex in side_vertices
+            ):
+                raise ValueError(
+                    f"{name}: slice case {patch_index}/{radial_order_index} "
+                    "has no string side-vertices list"
+                )
+            exact_template_payload = {
+                "exact_template_cut_edges": cut.get("cut_edges"),
+                "exact_template_side_vertices": side_vertices,
+                "exact_template_cut_size": cut.get("cut_size"),
+                "exact_template_side_vertex_count": cut.get("side_vertex_count"),
+                "exact_template_other_side_vertex_count": cut.get(
+                    "other_side_vertex_count"
+                ),
+            }
             slice_template_hist.update([REVERSE_TEMPLATE_KEY])
         certificate: dict[str, object] = {
             "archive_family": source,
@@ -596,6 +734,9 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         }
         if source == "slice":
             certificate["exact_template_key"] = case.get("exact_template_key")
+            if exact_template_payload is None:
+                raise AssertionError("unreachable: slice template payload was checked")
+            certificate.update(exact_template_payload)
         return (patch_index, radial_order_index), certificate
 
     for filename in RADIAL_FACE_SAMPLE_FILES:
@@ -685,6 +826,14 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         for certificate in row_coverage_certificates
     ]
     lean_row_coverage_certificates = lean_radial_face_row_certificates()
+    slice_template_artifact_projection = [
+        radial_face_slice_template_artifact_projection(certificate)
+        for certificate in sorted(
+            slice_row_certificates,
+            key=lambda certificate: tuple(certificate["case"]),
+        )
+    ]
+    lean_slice_template_cases = lean_radial_face_slice_template_cases()
     unique_patch_indices = sample_patch_indices | slice_patch_indices
     rows_with_overlap = len(sample_cases) + len(slice_cases)
     planar_rows_with_overlap = sample_planar_rotations + slice_planar_rotations
@@ -751,6 +900,11 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     assert_equal("slice template blockers", slice_template_blockers, 6)
     assert_equal("slice template histogram", dict(slice_template_hist), {REVERSE_TEMPLATE_KEY: 6})
     assert_equal(
+        "Lean radial-face slice template case projection",
+        slice_template_artifact_projection,
+        lean_slice_template_cases,
+    )
+    assert_equal(
         "row coverage exact template keys",
         [certificate.get("exact_template_key") for certificate in row_coverage_certificates],
         [None] * 6 + [REVERSE_TEMPLATE_KEY] * 4,
@@ -787,6 +941,8 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         "row_coverage_lean_projection": row_coverage_lean_projection,
         "lean_row_coverage_certificate_count": len(lean_row_coverage_certificates),
         "lean_row_coverage_projection_match": True,
+        "slice_template_lean_projection": lean_slice_template_cases,
+        "slice_template_lean_projection_match": True,
         "row_coverage_certificate_count": len(row_coverage_certificates),
         "row_coverage_verdict": "radial_face_row_coverage_all_planar_rotations_incoherent",
         "sample_archive_radial_order_case_count": len(sample_cases),

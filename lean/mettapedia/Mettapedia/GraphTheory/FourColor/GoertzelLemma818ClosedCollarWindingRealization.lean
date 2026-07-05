@@ -5450,6 +5450,11 @@ structure ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
   sideVertexCount : Nat
   otherSideVertexCount : Nat
 
+def ClosedCollarAnnularEmbeddingSliceExactTemplateCase.caseKey
+    (templateCase : ClosedCollarAnnularEmbeddingSliceExactTemplateCase) :
+    Nat × Nat :=
+  (templateCase.patchTopologyIndex, templateCase.radialOrderIndex)
+
 def closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template :
     ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
   patchTopologyIndex := 1000301
@@ -6842,6 +6847,74 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExac
   refine
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence,
       ?_, ?_, ?_⟩ <;>
+    decide
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases :
+    List ClosedCollarAnnularEmbeddingSliceExactTemplateCase :=
+  [closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Case0Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Case1Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template]
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageSliceExactTemplateCases :
+    List ClosedCollarAnnularEmbeddingSliceExactTemplateCase :=
+  [closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Case0Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Case1Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template,
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template]
+
+/--
+Concrete reverse-template case payload behind the radial-face slice archive.
+The row-coverage slice certificates are the non-overlapping tail of the same
+six template cases parsed by the artifact audit.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceSliceTemplateCasePayloadEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ReverseTemplatePayloadEvidence ∧
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302ReverseTemplatePayloadEvidence ∧
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            ClosedCollarAnnularEmbeddingSliceExactTemplateCase.caseKey =
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases ++
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Cases ++
+              closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            (fun templateCase => templateCase.exactTemplateKey) =
+          List.replicate 6 ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            (fun templateCase => templateCase.cutEdges) =
+          List.replicate 6 ClosedCollarDiagonalTwoPoleTemplateId.reverse.cutEdges ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            (fun templateCase => templateCase.sideCollarVertices) =
+          List.replicate 6 ClosedCollarDiagonalTwoPoleTemplateId.reverse.sideCollarVertices ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            (fun templateCase => templateCase.cutSize) =
+          List.replicate 6 2 ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            (fun templateCase => templateCase.sideVertexCount) =
+          List.replicate 6 4 ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSliceExactTemplateCases.map
+            (fun templateCase => templateCase.otherSideVertexCount) =
+          List.replicate 6 14 ∧
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageSliceExactTemplateCases.map
+            ClosedCollarAnnularEmbeddingSliceExactTemplateCase.caseKey =
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Cases ++
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases ∧
+        (closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates ++
+            closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificates).map
+            (fun certificate => certificate.exactTemplateKey) =
+          closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageSliceExactTemplateCases.map
+            (fun templateCase => some templateCase.exactTemplateKey)
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceSliceTemplateCasePayloadEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceSliceTemplateCasePayloadEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ReverseTemplatePayloadEvidence,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302ReverseTemplatePayloadEvidence,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
 /--
@@ -13691,6 +13764,21 @@ theorem section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterio
     Section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterion :=
   ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExactTemplateKeyEvidence,
     section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriterion⟩
+
+/--
+Concrete template-payload criterion for the remaining bad-face route.  The
+radial-face row certificates are linked to the parsed reverse-template case
+records, including their cut and separator-side payloads.
+-/
+def Section92Step4CurrentFiniteFrontierBadWitnessFaceConcreteTemplatePayloadCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceSliceTemplateCasePayloadEvidence ∧
+    Section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterion
+
+theorem section92Step4CurrentFiniteFrontierBadWitnessFaceConcreteTemplatePayloadCriterion :
+    Section92Step4CurrentFiniteFrontierBadWitnessFaceConcreteTemplatePayloadCriterion :=
+  ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceSliceTemplateCasePayloadEvidence,
+    section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterion⟩
 
 /--
 Exact first-hinge equivalence for the current frontier: the previous-boundary
