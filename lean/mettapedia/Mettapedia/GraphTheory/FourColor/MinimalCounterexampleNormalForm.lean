@@ -1751,6 +1751,72 @@ theorem noSeparatingDualFiveCycle_of_s7CAP5FreeObligations
     NoSeparatingDualCycleOfLength dual 5 :=
   noSeparatingDualCycleOfLength_of_s7CAP5FreeObligations obligations (k := 5) (by decide)
 
+universe uS7
+
+/-- Prop-level S7 existence endpoint: some finite dual package carries the S7 CAP5-free
+obligation bundle.  This is the existential counterpart of the fixed-dual
+`MinimalCounterexampleS7CAP5FreeObligations`. -/
+def MinimalCounterexampleS7CAP5FreeExistenceObligation
+    (minimal : MinimalTaitCounterexample G) : Prop :=
+  ∃ U : Type uS7, ∃ hU : DecidableEq U, ∃ fU : Fintype U,
+    letI := hU
+    letI := fU
+    ∃ Tdual : SimpleGraph U, ∃ hT : DecidableRel Tdual.Adj,
+      letI := hT
+      ∃ dual : PlaneCubicDualData G Tdual,
+        MinimalCounterexampleS7CAP5FreeObligations minimal dual
+
+/-- Prop-level S7 regime endpoint: some finite dual package is in the downstream-facing S7
+normal-form regime. -/
+def MinimalCounterexampleS7NormalFormRegimeExistenceObligation
+    (minimal : MinimalTaitCounterexample G) : Prop :=
+  ∃ U : Type uS7, ∃ hU : DecidableEq U, ∃ fU : Fintype U,
+    letI := hU
+    letI := fU
+    ∃ Tdual : SimpleGraph U, ∃ hT : DecidableRel Tdual.Adj,
+      letI := hT
+      ∃ dual : PlaneCubicDualData G Tdual,
+        MinimalCounterexampleS7NormalFormRegime minimal dual
+
+/-- Fixed-dual S7 CAP5-free obligations supply the Prop-level S7 CAP5-free existence endpoint. -/
+theorem minimalCounterexampleS7CAP5FreeExistenceObligation_of_s7CAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7CAP5FreeExistenceObligation.{uS7} minimal :=
+  ⟨U, inferInstance, inferInstance, Tdual, inferInstance, dual, obligations⟩
+
+/-- Fixed-dual S7 CAP5-free obligations also supply the Prop-level S7 regime existence endpoint. -/
+theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7NormalFormRegimeExistenceObligation.{uS7} minimal :=
+  ⟨U, inferInstance, inferInstance, Tdual, inferInstance, dual,
+    minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations⟩
+
+/-- Prop-level S7 CAP5-free existence supplies Prop-level S7 regime existence. -/
+theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeExistence
+    {minimal : MinimalTaitCounterexample G}
+    (h : MinimalCounterexampleS7CAP5FreeExistenceObligation.{uS7} minimal) :
+    MinimalCounterexampleS7NormalFormRegimeExistenceObligation.{uS7} minimal := by
+  rcases h with ⟨U, hU, fU, Tdual, hT, dual, obligations⟩
+  letI := hU
+  letI := fU
+  letI := hT
+  exact ⟨U, hU, fU, Tdual, hT, dual,
+    minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations⟩
+
+/-- Prop-level S7 regime existence implies the Lemma 5.2 normal-form existence endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
+    {minimal : MinimalTaitCounterexample G}
+    (h : MinimalCounterexampleS7NormalFormRegimeExistenceObligation.{uS7} minimal) :
+    Lemma52NormalFormExistenceObligation.{uS7} minimal := by
+  rcases h with ⟨U, hU, fU, Tdual, hT, dual, regime⟩
+  exact ⟨U, hU, fU, Tdual, hT, dual, regime.normal_form⟩
+
 end CAP5Tightness
 
 section EdgeColoringGlue
