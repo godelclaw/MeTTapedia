@@ -613,6 +613,34 @@ theorem section92Step4RadialFaceArchiveRowCertificateSoundGeometryDataObstructio
     Section92Step4RadialFaceArchiveRowCertificateSoundGeometryDataObstructionTarget :=
   section92Step4RadialFaceArchiveRowCertificateSoundGeometryDataObstructionTarget
 
+theorem closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_archiveN6_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation) :
+    ClosedCollarWindingFreedomEveryNormalFormHasN6Representation :=
+  closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_archiveN6
+    hextract
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_radialFaceRowCertificates_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hsampleSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
+    (hsliceSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_radialFaceRowCertificates
+    hextract hartifact hgeometry hradial hsampleSound hsliceSound
+
+theorem section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget_audit :
+    Section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget :=
+  section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows_audit
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab) :
