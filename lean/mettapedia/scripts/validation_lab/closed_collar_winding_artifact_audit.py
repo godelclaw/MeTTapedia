@@ -50,6 +50,7 @@ N8_TEMPLATE_BLOCKER_FILES = (
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_500000_1000000.json",
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_1000000_1500000.json",
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_1500000_2000000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_2000000_2500000.json",
 )
 
 N8_STRATIFIED_SAMPLE_FILE = (
@@ -660,9 +661,9 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
             left["next_patch_start_index"],
             right["patch_start_index"],
         )
-    assert_equal("n8 prefix end", prefix_ranges[-1]["next_patch_start_index"], 2_000_000)
-    assert_equal("n8 prefix processed count", prefix_totals["processed_patch_topology_count"], 2_000_000)
-    assert_equal("n8 prefix radial-order count", prefix_totals["radial_order_case_count"], 4_000_000)
+    assert_equal("n8 prefix end", prefix_ranges[-1]["next_patch_start_index"], 2_500_000)
+    assert_equal("n8 prefix processed count", prefix_totals["processed_patch_topology_count"], 2_500_000)
+    assert_equal("n8 prefix radial-order count", prefix_totals["radial_order_case_count"], 5_000_000)
     assert_equal("n8 prefix profile-preserving count", prefix_totals["profile_preserving_case_count"], 0)
     assert_equal(
         "n8 prefix post-template pass count",
@@ -744,7 +745,7 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
         "prefix_ranges": prefix_ranges,
         "prefix": {
             **dict(prefix_totals),
-            "verdict": "n8_first_2000000_found_no_profile_preserving_patch",
+            "verdict": "n8_first_2500000_found_no_profile_preserving_patch",
         },
         "stratified_sample_file": N8_STRATIFIED_SAMPLE_FILE,
         "stratified_sample": {
