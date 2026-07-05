@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
 import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWinding
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusGeometry
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -249,6 +250,219 @@ theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut :
     LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut := by
   intro stats
   exact localTwoPoleReplacementSideExceedsTreeBound stats
+
+/--
+Tree-rank form of the two-pole side obstruction.  In an arbitrary-size simple
+replacement side, if the side graph is connected, has the two terminals plus
+`internalVertexCount` internal vertices, and its edge count is the
+handshaking-counted `sideEdgeCount`, then the all-size inequality forces an
+actual cycle on that side.
+-/
+theorem localTwoPoleReplacementConnectedSide_hasCycle
+    {W : Type} (sideGraph : SimpleGraph W) [Finite W]
+    (stats : LocalTwoPoleReplacementStats)
+    (hconnected : sideGraph.Connected)
+    (hvertexCount : Nat.card W = stats.internalVertexCount + 2)
+    (hedgeCount : Nat.card sideGraph.edgeSet = stats.sideEdgeCount) :
+    ∃ u : W, ∃ p : sideGraph.Walk u u, p.IsCycle := by
+  classical
+  by_contra hnoCycle
+  have hacyclic : sideGraph.IsAcyclic := by
+    intro u p hp
+    exact hnoCycle ⟨u, p, hp⟩
+  have htree : sideGraph.IsTree :=
+    ⟨hconnected, hacyclic⟩
+  have htreeCard :
+      Nat.card sideGraph.edgeSet + 1 = Nat.card W :=
+    ((SimpleGraph.isTree_iff_connected_and_card (G := sideGraph)).1 htree).2
+  have hexceeds : stats.internalVertexCount + 1 < stats.sideEdgeCount :=
+    localTwoPoleReplacementSideExceedsTreeBound stats
+  omega
+
+/--
+Rank model for the desingularized side of the winding-freedom parallel bundle.
+The abstract side graph keeps the tree-rank count separate from the ambient
+collar graph; `cycle_to_ambient` is the local embedding map that turns a side
+cycle into a cycle on the chosen ambient side.
+-/
+structure LocalTwoPoleReplacementSideRankModel
+    {V : Type} (G : SimpleGraph V) (side : V → Prop)
+    (stats : LocalTwoPoleReplacementStats) where
+  SideVertex : Type
+  sideGraph : SimpleGraph SideVertex
+  finiteSideVertex : Finite SideVertex
+  connected : sideGraph.Connected
+  vertexCount : Nat.card SideVertex = stats.internalVertexCount + 2
+  edgeCount : Nat.card sideGraph.edgeSet = stats.sideEdgeCount
+  cycle_to_ambient :
+    (∃ u : SideVertex, ∃ p : sideGraph.Walk u u, p.IsCycle) →
+      HasCycleOnSide G side
+
+theorem LocalTwoPoleReplacementSideRankModel.hasCycleOnSide
+    {G : SimpleGraph V} {side : V → Prop}
+    {stats : LocalTwoPoleReplacementStats}
+    (model : LocalTwoPoleReplacementSideRankModel G side stats) :
+    HasCycleOnSide G side := by
+  haveI : Finite model.SideVertex := model.finiteSideVertex
+  exact
+    model.cycle_to_ambient
+      (localTwoPoleReplacementConnectedSide_hasCycle
+        model.sideGraph stats model.connected model.vertexCount model.edgeCount)
+
+/--
+Graph-facing interface for an arbitrary-size simple planar desingularization
+of the winding-freedom parallel endpoint bundle.  The side classification is
+the local Jordan/separation obligation: the two listed terminal-crossing edges
+are exactly the edges crossing the chosen side.  The side cycle itself is not a
+field; it is derived from the all-size two-pole rank count.
+-/
+structure ClosedCollarWindingFreedomParallelBundleDesingularization
+    (G : SimpleGraph V) where
+  realizesCoreWitness : ClosedCollarWindingFreedomWitnessRealizationData
+  desingularizesParallelEndpointBundle :
+    closedCollarHasParallelEndpointEdges windingFreedomWord
+  profilePreserving : Prop
+  hprofilePreserving : profilePreserving
+  stats : LocalTwoPoleReplacementStats
+  edgeCut : Finset G.edgeSet
+  side : V → Prop
+  rankModel : LocalTwoPoleReplacementSideRankModel G side stats
+  edgeCut_card_eq_two : edgeCut.card = 2
+  hcut_crosses :
+    ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e
+  hnoncut_not_crosses :
+    ∀ e : G.edgeSet, e ∉ edgeCut → ¬ EdgeCrossesVertexSide G side e
+  houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)
+
+def ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandidate
+    {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomParallelBundleDesingularization G) :
+    CyclicSeparatorCandidate G where
+  edgeCut := data.edgeCut
+  side := data.side
+  hcard_le_four := by
+    rw [data.edgeCut_card_eq_two]
+    omega
+  hcut_crosses := data.hcut_crosses
+  hinside_cycle := data.rankModel.hasCycleOnSide
+  houtside_cycle := data.houtside_cycle
+
+theorem ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandidate_card
+    {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomParallelBundleDesingularization G) :
+    data.cyclicTwoCutCandidate.edgeCut.card = 2 :=
+  data.edgeCut_card_eq_two
+
+theorem ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandidate_realizes
+    {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomParallelBundleDesingularization G) :
+    data.cyclicTwoCutCandidate.Realizes := by
+  intro e
+  constructor
+  · exact data.hcut_crosses e
+  · intro hcross
+    by_contra hmem
+    exact data.hnoncut_not_crosses e hmem hcross
+
+/--
+Existence form for a simple planar collar realization of the winding-freedom
+escape.  Such a realization must replace the parallel endpoint bundle by an
+arbitrary-size simple two-pole side while preserving the winding profile.
+-/
+def ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    (G : SimpleGraph V) : Prop :=
+  Nonempty (ClosedCollarWindingFreedomParallelBundleDesingularization G)
+
+/-- A cyclic two-cut in the graph-facing collar API: a realized cyclic separator
+whose listed crossing support has cardinality two. -/
+def ClosedCollarHasCyclicTwoCut (G : SimpleGraph V) : Prop :=
+  ∃ candidate : CyclicSeparatorCandidate G,
+    candidate.edgeCut.card = 2 ∧ candidate.Realizes
+
+/--
+All-size structural theorem: every simple planar desingularization of the
+winding-freedom escape forces a cyclic two-cut.  The proof uses only the
+two-pole handshaking count to obtain the side cycle; the rest is the exact
+side-crossing classification supplied by the local planar separation datum.
+-/
+def ClosedCollarWindingFreedomEscapeForcesCyclicTwoCutAllSizes : Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    ClosedCollarWindingFreedomSimplePlanarEscapeRealization G →
+      ClosedCollarHasCyclicTwoCut G
+
+theorem closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes :
+    ClosedCollarWindingFreedomEscapeForcesCyclicTwoCutAllSizes := by
+  intro V G hrealization
+  rcases hrealization with ⟨data⟩
+  exact
+    ⟨data.cyclicTwoCutCandidate,
+      data.cyclicTwoCutCandidate_card,
+      data.cyclicTwoCutCandidate_realizes⟩
+
+/-- Local collar connectivity fact needed to rule out the escape: no realized
+cyclic separator of cardinality two is admitted. -/
+def ClosedCollarForbidsCyclicTwoCut (G : SimpleGraph V) : Prop :=
+  ∀ candidate : CyclicSeparatorCandidate G,
+    candidate.edgeCut.card = 2 → ¬ candidate.Realizes
+
+/--
+The existing cyclic five-edge-connectivity API is a sufficient graph-facing
+way to discharge the local triangulation-collar no-two-cut fact.
+-/
+theorem closedCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ClosedCollarForbidsCyclicTwoCut G := by
+  intro candidate _hcard
+  exact candidate.not_realizes_of_cyclicallyFiveEdgeConnected hcyclic
+
+/-- Triangulation-collar connectivity surface used by the all-size repair. -/
+def ClosedCollarTriangulationCollarForbidsCyclicTwoCut
+    (G : SimpleGraph V) : Prop :=
+  ClosedCollarForbidsCyclicTwoCut G
+
+theorem closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ClosedCollarTriangulationCollarForbidsCyclicTwoCut G :=
+  closedCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected hcyclic
+
+/--
+Closing all-size repair theorem for the S4 winding-freedom escape: once the
+collar supplies the local triangulation connectivity fact forbidding cyclic
+two-cuts, no simple planar collar realization of the escape exists.
+-/
+def ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes : Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    ClosedCollarTriangulationCollarForbidsCyclicTwoCut G →
+      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization G
+
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes :
+    ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes := by
+  intro V G hnoTwoCut hrealization
+  rcases
+    closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes
+      hrealization with
+    ⟨candidate, hcard, hrealizes⟩
+  exact hnoTwoCut candidate hcard hrealizes
+
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization G :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes
+    (closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected
+      hcyclic)
+
+/--
+Repaired Section 9.2 Step 4 target at the collar level: the winding-freedom
+escape class is empty for simple planar triangulation collars, because every
+simple profile-preserving desingularization forces a cyclic two-cut and the
+collar connectivity fact forbids such a cut.
+-/
+def Section92Step4RepairedByAllSizesCyclicTwoCutTarget : Prop :=
+  ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes
+
+theorem section92Step4RepairedByAllSizesCyclicTwoCutTarget :
+    Section92Step4RepairedByAllSizesCyclicTwoCutTarget :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes
 
 /--
 Summary counts for the bounded simple cubic four-terminal patch search.  The
