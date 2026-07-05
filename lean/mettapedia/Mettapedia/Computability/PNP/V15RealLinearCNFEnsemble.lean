@@ -1548,6 +1548,32 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_noPublicTargetTags :
         v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
         hPair hOpp⟩
 
+/-- Readout-level no-public-tags transfer for the concrete small no-target-row
+CNF/SAT surface: no function of the target-blind neutral skeleton can predict
+the fixed readout of every verifier-valid witness. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_noPublicReadoutTags :
+    ¬ ∃ f : Bool × Bool -> Bool,
+      ∀ {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+        {W : V13RealLinearSmallNoTargetRowsCNFWitness},
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y W →
+          v13RealLinearSmallNoTargetRowsCNFReadout W =
+            f (Y.spare, W none) := by
+  intro htag
+  rcases htag with ⟨f, hf⟩
+  have hNoTarget :
+      ¬ ∃ f : Bool × Bool -> Bool,
+        ∀ omega : V13RealLinearSmallNoTargetRowsCNFSATWorld,
+          v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega =
+            f
+              (v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+                omega) :=
+    (v13RealLinearSmallNoTargetRowsCNFSATWorld_noPublicTargetTags).2.2
+  exact hNoTarget
+    ⟨f, by
+      intro omega
+      exact
+        hf (Y := omega.publicInput) (W := omega.assignment) omega.sat⟩
+
 /-- Hidden gauge readout for the concrete no-target-row CNF. -/
 def v13RealLinearSmallNoTargetRowsCNFHiddenGauge
     (W : V13RealLinearSmallNoTargetRowsCNFWitness) : Bool :=
