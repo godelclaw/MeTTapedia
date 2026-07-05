@@ -6508,6 +6508,57 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289Radia
     exact h10012931
 
 /--
+Exact row coverage discharges the row-certificate soundness obligation for
+the sampled archive rows.
+-/
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound_of_rows
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound := by
+  intro caseKey hcase
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows
+      hrows caseKey
+      (by
+        simpa [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates,
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey,
+          closedCollarSimplePatchN6AnnularEmbeddingSampleCases] using hcase)
+
+/--
+Exact row coverage discharges the row-certificate soundness obligation for
+the non-overlapping `1000302` slice rows.
+-/
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound_of_rows
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound := by
+  intro caseKey hcase
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab_of_rows
+      hrows caseKey
+      (by
+        simpa [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates,
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey,
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Cases] using hcase)
+
+/--
+Exact row coverage discharges the row-certificate soundness obligation for
+the non-overlapping `1001289` slice rows.
+-/
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound_of_rows
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound := by
+  intro caseKey hcase
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab_of_rows
+      hrows caseKey
+      (by
+        simpa [closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificates,
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey,
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases] using hcase)
+
+/--
 Archive obstruction from exact row-level coverage certificates.
 -/
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_row_coverage
@@ -6614,6 +6665,54 @@ theorem section92Step4RadialFaceArchiveRowFactoredCoverageGeometryDataObstructio
       (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
         hgeometry)
       hradial hsample hslice1000302 hslice1001289 data hcase
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCoverage
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
+    hradial hn6 hkeys hartifact
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound_of_rows
+      hsampleRows)
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound_of_rows
+      hslice1000302Rows)
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound_of_rows
+      hslice1001289Rows)
+
+/--
+Repaired Section 9.2 Step 4 target with the finite archive side reduced to
+the explicit ten audited row-coverage obligations.  The remaining geometric
+work is to prove radial-face extraction, n6 extraction, and the ten-row key
+spectrum for honest normal-form witnesses.
+-/
+def Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasRadialFace →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+                ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageTarget :
+    Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageTarget := by
+  intro hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCoverage
+      hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
