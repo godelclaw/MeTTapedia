@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftSeparation
+import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftBarrier
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -162,6 +162,60 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleSeparatedPeeledCollarRouteInputs
 
 /--
+Edge-barrier index of the regime route inputs: the remaining planar normal-form
+obligation is stated edgewise, as every ambient side-crossing edge belonging to
+the mapped collar-cut support.
+-/
+structure MinimalCounterexampleBarrierPeeledCollarRouteInputs
+    (G : SimpleGraph V) (H : SimpleGraph W) where
+  regime : MinimalCounterexamplePeeledCollarRegime G W H
+  embedding : H ↪g G
+  ambientSideBarriers :
+    PeeledCollarCutAmbientSideBarriersToAmbient embedding
+
+namespace MinimalCounterexampleBarrierPeeledCollarRouteInputs
+
+/-- Edge-barrier route inputs supply the separation-facing route input record. -/
+def toSeparatedRouteInputs
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleBarrierPeeledCollarRouteInputs G H) :
+    MinimalCounterexampleSeparatedPeeledCollarRouteInputs G H where
+  regime := inputs.regime
+  embedding := inputs.embedding
+  ambientSideSeparations :=
+    peeledCollarCutAmbientSideSeparationsToAmbient_of_ambientSideBarriers
+      inputs.ambientSideBarriers
+
+/-- The edge-barrier route inputs supply cyclic five-edge-connectivity for the
+peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleBarrierPeeledCollarRouteInputs G H) :
+    CyclicallyFiveEdgeConnected H :=
+  inputs.toSeparatedRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The edge-barrier route inputs supply the no-cyclic-two-cut fact consumed by
+the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleBarrierPeeledCollarRouteInputs G H) :
+    ClosedCollarForbidsCyclicTwoCut H :=
+  inputs.toSeparatedRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Barrier-regime S4 winding salvage: cyclic five-edge-connectivity is obtained
+from the minimal-counterexample normal form plus edge-barrier data for every
+small cyclic collar cut.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleBarrierPeeledCollarRouteInputs G H) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+  inputs.toSeparatedRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleBarrierPeeledCollarRouteInputs
+
+/--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
 collar route.  The route input record supplies the upstream collar
 connectivity bridge; the downstream closed-collar theorem then rules out the
@@ -208,6 +262,21 @@ def Section92Step4SeparatedRegimeDischargedS4SalvageTarget : Prop :=
 /-- Verbatim end-to-end separation-regime S4 salvage statement. -/
 theorem section92Step4SeparatedRegimeDischargedS4SalvageTarget :
     Section92Step4SeparatedRegimeDischargedS4SalvageTarget := by
+  intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the edge-barrier route interface.
+-/
+def Section92Step4BarrierRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W},
+      MinimalCounterexampleBarrierPeeledCollarRouteInputs G H →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+
+/-- Verbatim end-to-end barrier-regime S4 salvage statement. -/
+theorem section92Step4BarrierRegimeDischargedS4SalvageTarget :
+    Section92Step4BarrierRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
