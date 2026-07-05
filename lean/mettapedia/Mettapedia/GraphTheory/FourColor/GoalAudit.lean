@@ -641,6 +641,32 @@ theorem section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesT
     Section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget :=
   section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget
 
+theorem closedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation_of_radialFace_of_radialFaceArchiveN6_audit
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation) :
+    ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation :=
+  closedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation_of_radialFace_of_radialFaceArchiveN6
+    hradial hn6
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceArchiveN6Representation_of_radialFaceRowCertificates_audit
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
+    (hsliceSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceArchiveN6Representation_of_radialFaceRowCertificates
+    hradial hn6 hartifact hsampleSound hsliceSound
+
+theorem section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget_audit :
+    Section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget :=
+  section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows_audit
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab) :
