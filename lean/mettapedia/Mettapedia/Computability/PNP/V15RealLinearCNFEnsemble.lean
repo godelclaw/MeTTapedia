@@ -1119,6 +1119,99 @@ theorem v13RealLinearSmallNoTargetRowsCNF_singleMessage
     _ = v13RealLinearSmallNoTargetRowsCNFReadout W' :=
       (v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW').symm
 
+/-- The concrete small no-target-row CNF instantiated in the manuscript CNF
+readout interface.  The formula is the explicit spare-unit plus two
+row-equation clauses, the verifier is the concrete CNF verifier, extraction is
+identity, and the fixed projection reads the selected witness coordinate. -/
+def v13RealLinearSmallNoTargetRowsCNFReadoutData :
+    ManuscriptCNFReadoutData
+      V13RealLinearSmallNoTargetRowsCNFPublic
+      (fun _Y => V13RealLinearSmallNoTargetRowsCNFVar)
+      (fun _Y => V13RealLinearSmallNoTargetRowsCNFWitness)
+      Bool where
+  support := fun _Y => True
+  formula := v13RealLinearSmallNoTargetRowsCNFFormula
+  validWitness := v13RealLinearSmallNoTargetRowsCNFVerifier
+  extract := fun _Y α => α
+  witnessMessage := fun _Y W => v13RealLinearSmallNoTargetRowsCNFReadout W
+  projection := fun _Y α => v13RealLinearSmallNoTargetRowsCNFReadout α
+  cnfSound := by
+    intro Y α hα
+    exact hα
+  projection_eq_witnessMessage := by
+    intro Y α hα
+    rfl
+
+/-- The executable verifier decides the verifier carried by the concrete
+small no-target-row CNF readout data. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFReadoutData_verifierDecision_correct
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness} :
+    v13RealLinearSmallNoTargetRowsCNFVerifierDecision Y W = true ↔
+      v13RealLinearSmallNoTargetRowsCNFReadoutData.validWitness Y W :=
+  v13RealLinearSmallNoTargetRowsCNFVerifierDecision_correct
+
+/-- The concrete small no-target-row CNF readout data has the semantic
+single-message promise. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFReadoutData_singleMessagePromise :
+    v13RealLinearSmallNoTargetRowsCNFReadoutData.SingleMessagePromise := by
+  intro Y W W' _hY hW hW'
+  calc
+    v13RealLinearSmallNoTargetRowsCNFReadout W =
+        v13RealLinearSmallNoTargetRowsCNFMessage Y :=
+      v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW
+    _ = v13RealLinearSmallNoTargetRowsCNFReadout W' :=
+      (v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW').symm
+
+/-- Every supported public instance of the concrete small no-target-row CNF
+has a satisfying assignment. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFReadoutData_supportedSatisfiable :
+    v13RealLinearSmallNoTargetRowsCNFReadoutData.SupportedCNFSatisfiable := by
+  intro Y _hY
+  exact
+    ⟨v13RealLinearSmallNoTargetRowsCNFAssignment Y false,
+      v13RealLinearSmallNoTargetRowsCNFFormula_satisfied_assignment Y
+        false⟩
+
+/-- Every verifier-valid witness for the concrete small no-target-row CNF
+readout data is represented by the same satisfying CNF assignment, because
+extraction is identity. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFReadoutData_cnfExtractionComplete :
+    v13RealLinearSmallNoTargetRowsCNFReadoutData.CNFExtractionComplete := by
+  intro Y W _hY hW
+  exact ⟨W, hW, rfl⟩
+
+/-- Every satisfying SAT-search output for the concrete small no-target-row
+CNF reads the fixed public message. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFReadoutData_projection_eq_message
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    (_hY : v13RealLinearSmallNoTargetRowsCNFReadoutData.support Y)
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW :
+      ConcreteCNF.IsSatFormula
+        (v13RealLinearSmallNoTargetRowsCNFReadoutData.formula Y) W) :
+    v13RealLinearSmallNoTargetRowsCNFReadoutData.projection Y W =
+      v13RealLinearSmallNoTargetRowsCNFMessage Y :=
+  v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW
+
+/-- The arbitrary-output SAT-search readout obligation holds for the concrete
+small no-target-row CNF: every satisfying assignment returned by SAT search
+projects to the fixed public message. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFReadoutData_supportedArbitraryOutputSATSearchCorrect :
+    v13RealLinearSmallNoTargetRowsCNFReadoutData
+      |>.SupportedArbitraryOutputSATSearchCorrect := by
+  exact
+    v13RealLinearSmallNoTargetRowsCNFReadoutData
+      |>.supportedArbitraryOutputSATSearchCorrect_of_singleMessagePromise
+        v13RealLinearSmallNoTargetRowsCNFReadoutData_singleMessagePromise
+        v13RealLinearSmallNoTargetRowsCNFReadoutData_supportedSatisfiable
+
 /-! ## Global small no-target-row CNF SAT-world surface -/
 
 /-- Global SAT worlds for the concrete no-target-row CNF ensemble: the public
