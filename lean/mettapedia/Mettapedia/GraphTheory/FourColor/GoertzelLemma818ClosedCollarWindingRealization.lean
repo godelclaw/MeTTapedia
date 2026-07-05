@@ -2476,6 +2476,28 @@ structure ClosedCollarWindingFreedomNormalFormN6RepresentationExtraction
   normalForm_eq : data.normalForm = normalForm
 
 /--
+First radial-face sub-obligation for n6 extraction: an honest normal-form
+annulus has the cut-open radial-face datum needed by the finite embedding
+lab.
+-/
+structure ClosedCollarWindingFreedomNormalFormRadialFaceExtraction
+    {V : Type} {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  normalFormRadialFace : ClosedCollarWindingFreedomNormalFormRadialFaceRealization G
+  normalForm_eq : normalFormRadialFace.normalForm = normalForm
+
+/--
+Second radial-face sub-obligation: a normal-form annulus with its cut-open
+radial-face datum has one of the enumerated n6 simple-patch representations.
+-/
+structure ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+    {V : Type} {G : SimpleGraph V}
+    (normalFormRadialFace :
+      ClosedCollarWindingFreedomNormalFormRadialFaceRealization G) where
+  data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRadialFaceRepresentation G
+  normalFormRadialFace_eq : data.normalFormRadialFace = normalFormRadialFace
+
+/--
 Global extraction theorem needed before the finite taxonomy can apply: every
 honest normal-form annulus for the winding-freedom witness has an n6
 simple-patch representation.
@@ -2486,6 +2508,48 @@ def ClosedCollarWindingFreedomEveryNormalFormHasN6Representation :
     (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
       Nonempty
         (ClosedCollarWindingFreedomNormalFormN6RepresentationExtraction normalForm)
+
+/-- Every honest normal-form annulus supplies a cut-open radial-face datum. -/
+def ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomNormalFormRadialFaceExtraction normalForm)
+
+/--
+Every cut-open radial-face normal-form annulus is represented by an n6
+simple-patch case.
+-/
+def ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (normalFormRadialFace :
+      ClosedCollarWindingFreedomNormalFormRadialFaceRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+          normalFormRadialFace)
+
+/--
+The n6 extraction bridge factors through the cut-open radial-face geometry:
+first get the radial face from normal form, then represent that radial-face
+annulus by an enumerated n6 simple patch.
+-/
+theorem closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_radialFace_of_radialFaceN6
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation) :
+    ClosedCollarWindingFreedomEveryNormalFormHasN6Representation := by
+  intro V G normalForm
+  rcases hradial normalForm with ⟨radialExtraction⟩
+  rcases hn6 radialExtraction.normalFormRadialFace with ⟨n6Extraction⟩
+  let data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G :=
+    { normalForm := n6Extraction.data.normalFormRadialFace.normalForm
+      representation := n6Extraction.data.representation
+      annular_eq := n6Extraction.data.annular_eq.symm }
+  refine ⟨⟨data, ?_⟩⟩
+  dsimp [data]
+  rw [n6Extraction.normalFormRadialFace_eq, radialExtraction.normalForm_eq]
 
 /--
 The exact remaining geometric bridge for the n6 repair route: every honest
@@ -2579,6 +2643,26 @@ theorem section92Step4RepairedByN6ExtractionAndTaxonomyTarget :
     section92Step4RepairedByN6DetailedTaxonomyTarget
       (closedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy_of_extraction_of_classification
         hextract hclassified)
+
+/--
+Radial-face factored repaired target: prove radial-face existence, prove n6
+representation for radial-face normal-form annuli, then classify the extracted
+n6 representations by the detailed taxonomy.
+-/
+def Section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget : Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasRadialFace →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget :
+    Section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget := by
+  intro hradial hn6 hclassified
+  exact
+    section92Step4RepairedByN6ExtractionAndTaxonomyTarget
+      (closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_radialFace_of_radialFaceN6
+        hradial hn6)
+      hclassified
 
 /--
 Representative planar profile-preserving samples from the six-internal
