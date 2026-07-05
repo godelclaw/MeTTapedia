@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
+import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWinding
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -98,6 +99,65 @@ theorem closedCollarWindingFreedomWitnessRealizationData :
   · exact
       windingFreedom_aggregateParity_same.1.trans
         windingFreedom_aggregateParity_same.2.symm
+
+/--
+Graph-facing realization interface for the winding-freedom witness in an
+embedded annular collar.  The finite closed-collar witness supplies the
+abstract winding data; this structure names the geometric data that a genuine
+minimal-counterexample annulus would additionally have to provide.
+-/
+structure ClosedCollarWindingFreedomAnnularRealization
+    (G : SimpleGraph V) where
+  outerBoundary : Finset V
+  innerBoundary : Finset V
+  radialCut : Finset G.edgeSet
+  collarEdges : Finset G.edgeSet
+  collarCells : Finset (Finset V)
+  outerBoundaryEdges : Finset G.edgeSet
+  noWindingColoring : G.EdgeColoring Color
+  withWindingColoring : G.EdgeColoring Color
+  noWindingTait : IsTaitEdgeColoring G noWindingColoring
+  withWindingTait : IsTaitEdgeColoring G withWindingColoring
+  outerBoundary_nonempty : outerBoundary.Nonempty
+  innerBoundary_nonempty : innerBoundary.Nonempty
+  outer_inner_disjoint : ∀ v, v ∈ outerBoundary → v ∉ innerBoundary
+  radialCut_nonempty : radialCut.Nonempty
+  collarEdges_nonempty : collarEdges.Nonempty
+  radialCut_subset_collarEdges : radialCut ⊆ collarEdges
+  outerBoundaryEdges_subset_collarEdges : outerBoundaryEdges ⊆ collarEdges
+  outerBoundary_fixed :
+    ∀ e : G.edgeSet, e ∈ outerBoundaryEdges →
+      noWindingColoring e = withWindingColoring e
+  aggregateCutParityNoWinding : List ((Color × Color) × Bool)
+  aggregateCutParityWithWinding : List ((Color × Color) × Bool)
+  windingProfileNoWinding : List ((Color × Color) × ClosedCollarWindingCounts)
+  windingProfileWithWinding : List ((Color × Color) × ClosedCollarWindingCounts)
+  aggregateCutParity_agrees :
+    aggregateCutParityNoWinding = aggregateCutParityWithWinding
+  windingProfile_differs :
+    windingProfileNoWinding ≠ windingProfileWithWinding
+  realizesCoreWitness : ClosedCollarWindingFreedomWitnessRealizationData
+
+/--
+Normal-form hypotheses for an annular realization of the winding-freedom
+witness.  Only cyclic five-edge-connectivity is already connected to a reusable
+graph theorem here; the remaining fields record the serious geometric regime
+that later work must discharge rather than hiding it inside a lab verdict.
+-/
+structure ClosedCollarWindingFreedomNormalFormRealization
+    (G : SimpleGraph V) where
+  annular : ClosedCollarWindingFreedomAnnularRealization G
+  cyclicallyFiveEdgeConnected : CyclicallyFiveEdgeConnected G
+  cubicBridgelessTaitSetting : Prop
+  dualTriangulationNormalForm : Prop
+  noSmallSeparatingCuts : Prop
+  cap5FreeWhereNeeded : Prop
+  actualCollarEmbeddingConstraints : Prop
+  hcubicBridgelessTaitSetting : cubicBridgelessTaitSetting
+  hdualTriangulationNormalForm : dualTriangulationNormalForm
+  hnoSmallSeparatingCuts : noSmallSeparatingCuts
+  hcap5FreeWhereNeeded : cap5FreeWhereNeeded
+  hactualCollarEmbeddingConstraints : actualCollarEmbeddingConstraints
 
 /--
 The direct finite winding-freedom witness is not an honest simple endpoint
@@ -1010,6 +1070,55 @@ theorem section92WindingExactTemplateNormalFormExclusion :
     Section92WindingExactTemplateNormalFormExclusion := by
   intro V G candidate hcyclic
   exact candidate.not_realizes_of_cyclicallyFiveEdgeConnected hcyclic
+
+/--
+The missing geometric reduction needed to turn the finite simple-patch evidence
+into a full normal-form nonrealizability theorem: every honest normal-form
+annular realization of the winding-freedom witness must expose one of the exact
+diagonal collar two-pole templates as a realized cyclic separator.
+-/
+def ClosedCollarWindingFreedomNormalFormRealizationForcesExactTemplate : Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    ClosedCollarWindingFreedomNormalFormRealization G →
+      ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+        candidate.Realizes
+
+/-- Full repair-side statement: the winding-freedom witness has no honest
+normal-form annular realization. -/
+def ClosedCollarWindingFreedomNonrealizableInNormalForm : Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    ClosedCollarWindingFreedomNormalFormRealization G → False
+
+theorem closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+    {G : SimpleGraph V} (data : ClosedCollarWindingFreedomNormalFormRealization G)
+    (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G)
+    (hrealizes : candidate.Realizes) :
+    False :=
+  (candidate.not_realizes_of_cyclicallyFiveEdgeConnected
+    data.cyclicallyFiveEdgeConnected) hrealizes
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_forcesExactTemplate
+    (hforces : ClosedCollarWindingFreedomNormalFormRealizationForcesExactTemplate) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  intro V G data
+  rcases hforces data with ⟨candidate, hrealizes⟩
+  exact
+    closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+      data candidate hrealizes
+
+/--
+Repaired Section 9.2 Step 4 target exposed by the winding work: residual
+per-component winding freedom is killed by the minimal-counterexample
+normal-form regime once the forced-template reduction is proved, not by
+abstract boundary parity alone.
+-/
+def Section92Step4RepairedByNormalFormWindingTarget : Prop :=
+  ClosedCollarWindingFreedomNormalFormRealizationForcesExactTemplate →
+    ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByNormalFormWindingTarget :
+    Section92Step4RepairedByNormalFormWindingTarget :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_forcesExactTemplate
 
 /--
 The current formally supported S4 repair fork.  The lab has narrowed the
