@@ -3586,6 +3586,54 @@ noncomputable def ofNoTargetRowsPublicCoordinateCDENFComponents
       i₀ coordinate hm.out)
 
 /-- The real no-target-rows CD-ENF mechanical constructor transfers the
+`singleMessage` structural field from the checked no-target-rows public
+surface. -/
+theorem ofNoTargetRowsPublicCoordinateCDENFComponents_singleMessage
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega) :
+    let M :=
+      ofNoTargetRowsPublicCoordinateCDENFComponents
+        (HistoryAtom := HistoryAtom) (Observer := Observer)
+        (Output := Output)
+        i₀ coordinate law transcript observerBit phaseA semantics
+        observerEvidence pivotSummary epsMix safeCost safeBudget
+        gaugeIncidence gaugeBound hiddenGaugeProduct
+    ∀ w0 w1,
+      M.publicInput w0 = M.publicInput w1 ->
+        M.target w0 = M.target w1 := by
+  simpa [ofNoTargetRowsPublicCoordinateCDENFComponents,
+    ofCDENFComponents] using
+    v13RealLinearNoTargetRows_singleMessage i₀
+
+/-- The real no-target-rows CD-ENF mechanical constructor transfers the
 `noPublicTargetTags` structural field from the checked no-target-rows public
 surface.  This is a field-transfer theorem for the construction itself, not an
 endpoint wrapper. -/
