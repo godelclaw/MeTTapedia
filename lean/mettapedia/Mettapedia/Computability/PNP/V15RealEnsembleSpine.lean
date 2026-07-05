@@ -3634,6 +3634,53 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_singleMessage
     v13RealLinearNoTargetRows_singleMessage i₀
 
 /-- The real no-target-rows CD-ENF mechanical constructor transfers the
+`hiddenGaugeProduct` structural field carried by the explicit real
+construction obligation.  This does not derive hidden-gauge product from
+CD-ENF or the no-target-rows public surface. -/
+theorem ofNoTargetRowsPublicCoordinateCDENFComponents_hiddenGaugeProduct
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega) :
+    let M :=
+      ofNoTargetRowsPublicCoordinateCDENFComponents
+        (HistoryAtom := HistoryAtom) (Observer := Observer)
+        (Output := Output)
+        i₀ coordinate law transcript observerBit phaseA semantics
+        observerEvidence pivotSummary epsMix safeCost safeBudget
+        gaugeIncidence gaugeBound hiddenGaugeProduct
+    ∀ gamma omega, M.semantics.gaugeSat gamma omega := by
+  simpa [ofNoTargetRowsPublicCoordinateCDENFComponents,
+    ofCDENFComponents] using
+    hiddenGaugeProduct
+
+/-- The real no-target-rows CD-ENF mechanical constructor transfers the
 `noPublicTargetTags` structural field from the checked no-target-rows public
 surface.  This is a field-transfer theorem for the construction itself, not an
 endpoint wrapper. -/
