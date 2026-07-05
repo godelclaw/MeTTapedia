@@ -1585,6 +1585,89 @@ theorem realM4_uniformSelfReductionUpperHypothesis_givenPNP
     rw [R.kpolyAt_eq, R.etaTimes_eq]
     exact R.floor_dominates_decoder
 
+/-! ## Real-M4 lower machine as construction data -/
+
+/-- Explicit real lower-side machine data: the product small-success and
+compression-from-success budget machine, plus the kernel/local-neutrality
+certificate needed by the v13 lower-bound chain.  Constructing this for M4
+must use the manuscript compression-from-success machinery, not toy budgets. -/
+structure RealM4CompressionLowerMachineData where
+  Predictor : Type u
+  short : Predictor -> Prop
+  uLocal : Predictor -> Prop
+  pivotSuccess : Predictor -> Nat
+  tupleSuccess : Predictor -> Nat
+  halfBudget : Nat
+  halfPlusSlackBudget : Nat
+  smallSuccessBudget : Nat
+  targetBlocks : Nat
+  etaTimes : Nat -> Nat
+  kpolyAt : Nat -> Nat
+  productSmallSuccess :
+    ∀ A : Predictor,
+      pivotSuccess A ≤ halfPlusSlackBudget ->
+        tupleSuccess A ≤ smallSuccessBudget
+  compressionFromSuccess :
+    (∀ A : Predictor, short A -> tupleSuccess A ≤ smallSuccessBudget) ->
+      etaTimes targetBlocks ≤ kpolyAt targetBlocks
+  exactLocalHalfBound :
+    ∀ A : Predictor, uLocal A -> pivotSuccess A ≤ halfBudget
+  halfBudget_le_starBudget :
+    halfBudget ≤ halfPlusSlackBudget
+
+namespace RealM4CompressionLowerMachineData
+
+/-- Forget the real lower-machine data to the v13 lower framework. -/
+def lowerFramework
+    (M : RealM4CompressionLowerMachineData) :
+    CompressionLowerFramework where
+  Predictor := M.Predictor
+  short := M.short
+  uLocal := M.uLocal
+  pivotSuccess := M.pivotSuccess
+  tupleSuccess := M.tupleSuccess
+  halfBudget := M.halfBudget
+  halfPlusSlackBudget := M.halfPlusSlackBudget
+  smallSuccessBudget := M.smallSuccessBudget
+  targetBlocks := M.targetBlocks
+  etaTimes := M.etaTimes
+  kpolyAt := M.kpolyAt
+  productSmallSuccess := M.productSmallSuccess
+  compressionFromSuccess := M.compressionFromSuccess
+
+/-- The same data supplies the v13 kernel-neutrality certificate. -/
+def kernelNeutrality
+    (M : RealM4CompressionLowerMachineData) :
+    CompressionKernelNeutrality M.lowerFramework where
+  exactLocalHalfBound := M.exactLocalHalfBound
+  halfBudget_le_starBudget := M.halfBudget_le_starBudget
+
+/-- Lower consequence obtained from the real lower-machine data and the
+StarSW transfer input. -/
+theorem compressionLower
+    (M : RealM4CompressionLowerMachineData)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework) :
+    M.lowerFramework.etaTimes M.lowerFramework.targetBlocks ≤
+      M.lowerFramework.kpolyAt M.lowerFramework.targetBlocks :=
+  compressionLower_of_budget_machine
+    M.kernelNeutrality starSWHardness
+
+end RealM4CompressionLowerMachineData
+
+/-- Top-level alias exposing the v13 lower framework supplied by the real
+lower-machine data. -/
+def realM4_lowerFramework_of_lowerMachineData
+    (M : RealM4CompressionLowerMachineData) :
+    CompressionLowerFramework :=
+  M.lowerFramework
+
+/-- Top-level alias exposing kernel neutrality supplied by the real lower
+machine data. -/
+def realM4_kernelNeutrality_of_lowerMachineData
+    (M : RealM4CompressionLowerMachineData) :
+    CompressionKernelNeutrality M.lowerFramework :=
+  M.kernelNeutrality
+
 /-! ## Real-M4 public-lock coverage as construction data -/
 
 /-- Explicit construction data for Appendix I public-lock coverage.  For every
@@ -2059,6 +2142,37 @@ theorem realM4LockedMessageRigidityDataConstructionInputs_exact :
         "lockedCompletionMessageEq" ] := by
   rfl
 
+def realM4CompressionLowerMachineDataConstructionInputs : List String := [
+  "predictorClass",
+  "shortPredicate",
+  "localPredicate",
+  "pivotSuccess",
+  "tupleSuccess",
+  "lowerBudgets",
+  "targetBlocks",
+  "etaTimes",
+  "kpolyAt",
+  "productSmallSuccess",
+  "compressionFromSuccess",
+  "kernelLocalHalfBound"
+]
+
+theorem realM4CompressionLowerMachineDataConstructionInputs_exact :
+    realM4CompressionLowerMachineDataConstructionInputs =
+      [ "predictorClass",
+        "shortPredicate",
+        "localPredicate",
+        "pivotSuccess",
+        "tupleSuccess",
+        "lowerBudgets",
+        "targetBlocks",
+        "etaTimes",
+        "kpolyAt",
+        "productSmallSuccess",
+        "compressionFromSuccess",
+        "kernelLocalHalfBound" ] := by
+  rfl
+
 def realM4LockSatisfiableConstructionInputs : List String := [
   "publicLockCoverageData",
   "appendixISatOnSupport"
@@ -2362,6 +2476,26 @@ def ofComponents
   epsSmall := epsSmall
   lowerFramework := lowerFramework
   kernelNeutrality := kernelNeutrality
+
+/-- Assemble endgame mechanical data from explicit interface data and the real
+lower-machine construction data. -/
+def ofComponentsWithLowerMachine
+    (interfaceData :
+      RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+        Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+        Skeleton)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * interfaceData.phaseA.telescoping.derivativeSum ≤
+        fixedGapBudget)
+    (epsSmall : interfaceData.epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData) :
+    RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+      Skeleton :=
+  ofComponents
+    interfaceData fixedGapBudget phaseABudget epsSmall
+    lowerMachine.lowerFramework lowerMachine.kernelNeutrality
 
 /-- Build the real endgame mechanical package directly from CD-ENF component
 data.  This avoids reintroducing `atomCompleteness` and `gaugeFaithfulness` as
@@ -2799,6 +2933,69 @@ theorem realM4_conditionalClash_from_coverageDataAndLockedMessageData_explicitPN
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
 /--
+Lower-machine-data version of the real-ensemble conditional endgame staging
+theorem.  The real lower framework and kernel neutrality are supplied by one
+explicit lower-machine construction object, while public-lock coverage,
+locked-message data, uniform CNF support, the constant-decoder regime, the
+StarSW input, and the three analytic fields remain visible.
+-/
+theorem realM4_conditionalClash_from_lowerMachine_coverageDataAndLockedMessageData_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * M.phaseA.telescoping.derivativeSum ≤ fixedGapBudget)
+    (epsSmall : M.epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.target M.pivotSummary M.epsMix) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
+          M fixedGapBudget phaseABudget epsSmall
+          lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
+          M fixedGapBudget phaseABudget epsSmall
+          lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
+          (D := D) (F := lowerMachine.lowerFramework)
+          coverageData lockedMessageData
+          uniformSupport pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  realM4_conditionalClash_from_coverageDataAndLockedMessageData_explicitPNP
+    (RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
+      M fixedGapBudget phaseABudget epsSmall lowerMachine)
+    coverageData lockedMessageData
+    uniformSupport pnpDeciderFamily constantDecoderRegime
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
 Component-level covered-locks staging theorem.  This removes the
 `RealM4EndgameMechanicalData` package from the theorem hypotheses by building
 it from the explicit construction components: the mechanical interface data,
@@ -3231,6 +3428,56 @@ theorem realM4CoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP_exac
 def realM4CoverageAndLockedMessageDataEndgameStatementExplicitPNP : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the explicit P=NP-side self-reduction package from public-lock representative data, locked-message public-message data, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing."
 
+def realM4LowerMachineCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "realM4MechanicalInterfaceData",
+  "phaseABudget",
+  "epsSmall",
+  "realCompressionLowerMachineData",
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "uniformCNFSupportData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4LowerMachineCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP_exact :
+    realM4LowerMachineCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4LowerMachineCoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4LowerMachineCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4LowerMachineCoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP_exact :
+    realM4LowerMachineCoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4LowerMachineCoverageAndLockedMessageDataEndgameStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the real lower machine, public-lock representative data, locked-message public-message data, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family."
+
 def realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP :
     List String := [
   "law",
@@ -3491,10 +3738,16 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Every single public coordinate of the adjusted real no-target-rows surface has the balanced-bit and balanced-conditioning pair; full M4 histories still need manuscript-history atom identification and connection."
   },
   {
-    item := "realCompressionLowerFramework"
+    item := "realCompressionLowerMachineData"
     status := .openConstruction
-    checkedName := "CompressionLowerFramework"
-    note := "The real lower framework must use manuscript compression-from-success data, not toy dummy budgets."
+    checkedName := "RealM4CompressionLowerMachineData"
+    note := "The real M4 construction must build the product-small-success/compression-from-success lower machine and its kernel-local half-bound from manuscript data."
+  },
+  {
+    item := "realCompressionLowerFramework"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4CompressionLowerMachineData.lowerFramework"
+    note := "The v13 lower framework is obtained by forgetting the explicit real lower-machine data."
   },
   {
     item := "phaseABudget"
@@ -3510,9 +3763,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "kernelNeutrality"
-    status := .openConstruction
-    checkedName := "CompressionKernelNeutrality"
-    note := "The real compression lower framework must still supply kernel neutrality."
+    status := .partialConstructionTransferred
+    checkedName := "RealM4CompressionLowerMachineData.kernelNeutrality"
+    note := "Kernel neutrality is supplied by the explicit real lower-machine data."
   },
   {
     item := "selfReductionUpper"
@@ -3555,6 +3808,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .partialConstructionTransferred
     checkedName := "realM4_conditionalClash_from_coverageDataAndLockedMessageData_explicitPNP"
     note := "Constructs the explicit-P=NP upper package from public-lock representative data, locked-message public-message data, uniform CNF support, and the constant decoder regime before invoking the v13 UpperLowerClash wiring."
+  },
+  {
+    item := "realLowerMachineCoverageAndLockedMessageDataConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_lowerMachine_coverageDataAndLockedMessageData_explicitPNP"
+    note := "Builds the endgame wrapper from explicit lower-machine data, then invokes the covered-lock and locked-message-data clash staging theorem."
   },
   {
     item := "realComponentCoveredLocksConditionalClashStaging"
@@ -3623,9 +3882,11 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
-        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -3649,10 +3910,9 @@ def realM4OpenConstructionItems : List String := [
   "hiddenGaugeProduct",
   "admissibleHistories",
   "uniformCNFSupportData",
-  "realCompressionLowerFramework",
+  "realCompressionLowerMachineData",
   "phaseABudget",
-  "epsSmall",
-  "kernelNeutrality"
+  "epsSmall"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -3663,10 +3923,9 @@ theorem realM4OpenConstructionItems_exact :
         "hiddenGaugeProduct",
         "admissibleHistories",
         "uniformCNFSupportData",
-        "realCompressionLowerFramework",
+        "realCompressionLowerMachineData",
         "phaseABudget",
-        "epsSmall",
-        "kernelNeutrality" ] := by
+        "epsSmall" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
