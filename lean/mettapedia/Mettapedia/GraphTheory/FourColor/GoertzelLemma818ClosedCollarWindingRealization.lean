@@ -8161,6 +8161,121 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstructi
         hrows normalForm
   exact hnone ⟨V, Classical.decEq V, G, normalForm, hblocker⟩
 
+/--
+If a particular normal-form witness cannot instantiate the concrete
+previous-boundary package, then one of the five factored package fields is the
+first missing datum for that witness.
+-/
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker_of_no_concretePreviousBoundaryNormalFormExtraction
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
+    (hno :
+      ¬ Nonempty
+        (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
+          normalForm)) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
+      normalForm := by
+  classical
+  by_cases hgeometry :
+      Nonempty
+        (ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+          normalForm)
+  · rcases hgeometry with ⟨geometry⟩
+    by_cases hupgrade :
+        Nonempty
+          (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+            geometry)
+    · rcases hupgrade with ⟨upgrade⟩
+      let previousData :
+          ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+            normalForm :=
+        upgrade.toPreviousBoundaryGeometryData
+      by_cases hradial :
+          Nonempty
+            (ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+              previousData.toGeometryData)
+      · rcases hradial with ⟨radialFace⟩
+        let previousRadialFaceData :
+            ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+              normalForm :=
+          ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+            previousData radialFace
+        by_cases hn6 :
+            Nonempty
+              (ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+                previousRadialFaceData.toNormalFormRadialFaceRealization)
+        · rcases hn6 with ⟨n6⟩
+          by_cases hkey :
+              closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+                (n6.data.representation.patchTopologyIndex,
+                  n6.data.representation.radialOrderIndex.1)
+          · let concrete :
+                ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+                  G :=
+              { normalForm := normalForm
+                geometry := geometry
+                previousUpgrade := upgrade
+                radialFace := radialFace
+                n6 := n6
+                auditedKey := hkey }
+            exact
+              (hno
+                ⟨{
+                  concrete := concrete
+                  normalForm_eq := rfl
+                }⟩).elim
+          · exact
+              ⟨.auditedArchiveKey,
+                ⟨geometry, upgrade, radialFace, n6, hkey⟩⟩
+        · exact
+            ⟨.radialFaceN6Extraction,
+              ⟨geometry, upgrade, radialFace, by
+                simpa [previousData, previousRadialFaceData] using hn6⟩⟩
+      · exact
+          ⟨.radialFaceExtraction,
+            ⟨geometry, upgrade, by
+              simpa [previousData] using hradial⟩⟩
+    · exact
+        ⟨.previousBoundaryWitnessUpgrade,
+          ⟨geometry, hupgrade⟩⟩
+  · exact
+      ⟨.collarGeometry, hgeometry⟩
+
+/--
+Failure of the concrete extraction bridge yields an existential five-field
+witness obstruction.  This is the package-level form of the remaining fork:
+some surviving normal-form witness lacks a specific concrete field.
+-/
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_not_concretePreviousBoundaryNormalFormRealization
+    (hnot :
+      ¬ ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction := by
+  classical
+  by_contra hnone
+  apply hnot
+  intro V hV G normalForm
+  by_cases hextract :
+      Nonempty
+        (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
+          normalForm)
+  · exact hextract
+  · have hblocker :
+        @ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
+          V hV G normalForm :=
+      closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker_of_no_concretePreviousBoundaryNormalFormExtraction
+        normalForm hextract
+    exact (hnone ⟨V, hV, G, normalForm, hblocker⟩).elim
+
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_concreteBridgeFailure_of_auditedRows_of_not_nonrealizable
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction :=
+  closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_not_concretePreviousBoundaryNormalFormRealization
+    (closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
+      hrows hnot)
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)
