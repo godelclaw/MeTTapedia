@@ -4663,6 +4663,78 @@ theorem
     (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesTarget
       i₀)
 
+/-- Formula-syntax no-public-readout-tags shape for the no-target-rows
+Appendix-I CNF data.  It asks whether the full concrete CNF formula syntax
+alone hides the fixed readout of every verifier-valid witness. -/
+def V13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormulaNoPublicReadoutTags
+    {m : Nat} (i₀ : Fin m) : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ {Y : V13RealLinearNoTargetRowsWorld m i₀}
+        {W :
+          RealM4CNFWitness
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀)},
+          realM4CNFVerifier
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀)
+              Y W →
+            realM4CNFWitnessReadout (fun bit => bit) W =
+              f ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀).formula Y)
+
+/-- The full Appendix-I concrete CNF formula syntax determines the readout of
+every verifier-valid witness, again via the selected target-coordinate unit
+tag in the full locking formula. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesReadout
+    {m : Nat} (i₀ : Fin m) :
+    ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ {Y : V13RealLinearNoTargetRowsWorld m i₀}
+        {W :
+          RealM4CNFWitness
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀)},
+          realM4CNFVerifier
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀)
+              Y W →
+            realM4CNFWitnessReadout (fun bit => bit) W =
+              f ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀).formula Y) := by
+  refine ⟨v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀, ?_⟩
+  intro Y W hW
+  calc
+    realM4CNFWitnessReadout (fun bit => bit) W =
+        v13RealLinearNoTargetRowsTargetBit Y :=
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+        i₀ hW
+    _ =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput Y) :=
+      v13RealLinearNoTargetRowsTargetBit_eq_publicMessage i₀ Y
+    _ =
+        v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀
+          ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula Y) := by
+      simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData]
+        using
+          (v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
+            i₀ (v13RealLinearNoTargetRowsPublicInput Y)).symm
+
+/-- Named readout obstruction: with the full concrete Appendix-I CNF formula
+syntax public, no-public-readout-tags fails for verifier-valid witnesses.  The
+same target-unit tag that exposes the target also exposes the single-message
+witness readout. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_noPublicReadoutTags_obstruction
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormulaNoPublicReadoutTags
+      i₀ := by
+  intro hNoTags
+  exact hNoTags
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesReadout
+      i₀)
+
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
