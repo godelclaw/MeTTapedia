@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftBarrier
+import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftPreimage
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -216,6 +216,60 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleBarrierPeeledCollarRouteInputs
 
 /--
+Preimage-facing index of the regime route inputs: the remaining planar
+normal-form obligation is stated as every ambient side-crossing edge having a
+collar-edge preimage.
+-/
+structure MinimalCounterexamplePreimagePeeledCollarRouteInputs
+    (G : SimpleGraph V) (H : SimpleGraph W) where
+  regime : MinimalCounterexamplePeeledCollarRegime G W H
+  embedding : H ↪g G
+  ambientSidePreimages :
+    PeeledCollarCutAmbientSidePreimagesToAmbient embedding
+
+namespace MinimalCounterexamplePreimagePeeledCollarRouteInputs
+
+/-- Preimage-facing route inputs supply the edge-barrier route input record. -/
+def toBarrierRouteInputs
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexamplePreimagePeeledCollarRouteInputs G H) :
+    MinimalCounterexampleBarrierPeeledCollarRouteInputs G H where
+  regime := inputs.regime
+  embedding := inputs.embedding
+  ambientSideBarriers :=
+    peeledCollarCutAmbientSideBarriersToAmbient_of_ambientSidePreimages
+      inputs.ambientSidePreimages
+
+/-- The preimage-facing route inputs supply cyclic five-edge-connectivity for
+the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexamplePreimagePeeledCollarRouteInputs G H) :
+    CyclicallyFiveEdgeConnected H :=
+  inputs.toBarrierRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The preimage-facing route inputs supply the no-cyclic-two-cut fact consumed
+by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexamplePreimagePeeledCollarRouteInputs G H) :
+    ClosedCollarForbidsCyclicTwoCut H :=
+  inputs.toBarrierRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Preimage-regime S4 winding salvage: cyclic five-edge-connectivity is obtained
+from the minimal-counterexample normal form plus collar-edge preimages for
+ambient side-crossing edges.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexamplePreimagePeeledCollarRouteInputs G H) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+  inputs.toBarrierRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexamplePreimagePeeledCollarRouteInputs
+
+/--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
 collar route.  The route input record supplies the upstream collar
 connectivity bridge; the downstream closed-collar theorem then rules out the
@@ -277,6 +331,21 @@ def Section92Step4BarrierRegimeDischargedS4SalvageTarget : Prop :=
 /-- Verbatim end-to-end barrier-regime S4 salvage statement. -/
 theorem section92Step4BarrierRegimeDischargedS4SalvageTarget :
     Section92Step4BarrierRegimeDischargedS4SalvageTarget := by
+  intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the preimage-facing route interface.
+-/
+def Section92Step4PreimageRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W},
+      MinimalCounterexamplePreimagePeeledCollarRouteInputs G H →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+
+/-- Verbatim end-to-end preimage-regime S4 salvage statement. -/
+theorem section92Step4PreimageRegimeDischargedS4SalvageTarget :
+    Section92Step4PreimageRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
