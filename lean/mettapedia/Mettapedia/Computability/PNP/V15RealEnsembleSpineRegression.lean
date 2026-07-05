@@ -665,6 +665,8 @@ set_option autoImplicit false
 #check realM4ConcreteEnsembleConstructionItems_exact
 #check realM4LowerMachineConstructionItems
 #check realM4LowerMachineConstructionItems_exact
+#check realM4LargeTargetLowerMachineConstructionItems
+#check realM4LargeTargetLowerMachineConstructionItems_exact
 #check realM4OfficialBridgeConstructionItems
 #check realM4OfficialBridgeConstructionItems_exact
 #check realM4KpolyCompatibilityConstructionItems
@@ -1355,6 +1357,8 @@ set_option autoImplicit false
 #print axioms realM4ConcreteEnsembleConstructionItems_exact
 #print axioms realM4LowerMachineConstructionItems
 #print axioms realM4LowerMachineConstructionItems_exact
+#print axioms realM4LargeTargetLowerMachineConstructionItems
+#print axioms realM4LargeTargetLowerMachineConstructionItems_exact
 #print axioms realM4OfficialBridgeConstructionItems
 #print axioms realM4OfficialBridgeConstructionItems_exact
 #print axioms realM4KpolyCompatibilityConstructionItems
