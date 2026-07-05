@@ -4870,8 +4870,9 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_100
 /--
 Archive manifest for the radial-face annular embedding JSON verdicts.  The
 indexed sample archive is split across one four-case file plus two single-case
-files; the resumable slice archive has two two-case files and intentionally
-overlaps the indexed archive on the `1000301` radial-order cases.
+files; the resumable slice archive has three row-bearing files, one zero-profile
+interval file, and intentionally overlaps the indexed archive on the `1000301`
+radial-order cases.
 -/
 structure ClosedCollarSimplePatchAnnularEmbeddingRadialFaceArchiveCounts where
   sampleArchiveJsonFileCount : Nat
@@ -4900,6 +4901,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingSliceArchiveFiles :
     List String :=
   ["results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
     "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+    "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000789_500_cases2.json",
     "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json"]
 
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveAuditFile :
@@ -4915,8 +4917,8 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases :
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts :
     ClosedCollarSimplePatchAnnularEmbeddingRadialFaceArchiveCounts where
   sampleArchiveJsonFileCount := 3
-  sliceArchiveJsonFileCount := 3
-  totalArchiveJsonFileCount := 6
+  sliceArchiveJsonFileCount := 4
+  totalArchiveJsonFileCount := 7
   sampleArchiveRadialOrderCaseCount := 6
   sliceArchiveRadialOrderCaseCount := 6
   archiveRadialOrderRowsWithOverlap := 12
@@ -4932,9 +4934,10 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts :
 
 /--
 Tracked archive manifest for the radial-face annular embedding verdict JSONs.
-It records the six row-bearing files behind the sampled and resumable-slice
-radial-face audits, the deliberate two-case overlap, and the zero coherent-rotation
-aggregate used by the radial-face obstruction targets.
+It records the seven source files behind the sampled and resumable-slice
+radial-face audits, the deliberate two-case overlap, the empty `1000789`
+interval, and the zero coherent-rotation aggregate used by the radial-face
+obstruction targets.
 -/
 def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvidence :
     Prop :=

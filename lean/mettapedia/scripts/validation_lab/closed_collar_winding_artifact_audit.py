@@ -39,6 +39,8 @@ RADIAL_FACE_SAMPLE_FILES = (
 RADIAL_FACE_SLICE_FILES = (
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000789_500_cases2.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
 )
 
 REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
@@ -420,7 +422,11 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         (1000301, 0),
         (1000301, 1),
     }
-    row_coverage_slice_cases = {(1000788, 0), (1000788, 1)}
+    row_coverage_slice1000302_cases = {(1000788, 0), (1000788, 1)}
+    row_coverage_slice1001289_cases = {(1001293, 0), (1001293, 1)}
+    row_coverage_slice_cases = (
+        row_coverage_slice1000302_cases | row_coverage_slice1001289_cases
+    )
     row_coverage_sample_certificates = [
         certificate
         for certificate in sample_row_certificates
@@ -442,38 +448,65 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     unique_planar_rotations = planar_rows_with_overlap - overlap_planar_rotations
 
     assert_equal("sample cases", sorted(sample_case_set), [(821205, 0), (821205, 1), (852969, 0), (852969, 1), (1000301, 0), (1000301, 1)])
-    assert_equal("slice cases", sorted(slice_case_set), [(1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)])
+    assert_equal(
+        "slice cases",
+        sorted(slice_case_set),
+        [
+            (1000301, 0),
+            (1000301, 1),
+            (1000788, 0),
+            (1000788, 1),
+            (1001293, 0),
+            (1001293, 1),
+        ],
+    )
     assert_equal("overlapping radial-order cases", sorted(overlap), [(1000301, 0), (1000301, 1)])
     assert_equal("row coverage sample cases", sorted(row_coverage_sample_cases), sorted(sample_case_set))
     assert_equal(
-        "row coverage slice cases",
-        sorted(row_coverage_slice_cases),
+        "row coverage slice 1000302 cases",
+        sorted(row_coverage_slice1000302_cases),
         [(1000788, 0), (1000788, 1)],
+    )
+    assert_equal(
+        "row coverage slice 1001289 cases",
+        sorted(row_coverage_slice1001289_cases),
+        [(1001293, 0), (1001293, 1)],
     )
     assert_equal(
         "row coverage certificate cases",
         [tuple(certificate["case"]) for certificate in row_coverage_certificates],
-        [(821205, 0), (821205, 1), (852969, 0), (852969, 1), (1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)],
+        [
+            (821205, 0),
+            (821205, 1),
+            (852969, 0),
+            (852969, 1),
+            (1000301, 0),
+            (1000301, 1),
+            (1000788, 0),
+            (1000788, 1),
+            (1001293, 0),
+            (1001293, 1),
+        ],
     )
     assert_equal("sample radial-order case count", len(sample_cases), 6)
-    assert_equal("slice radial-order case count", len(slice_cases), 4)
-    assert_equal("row coverage certificate count", len(row_coverage_certificates), 8)
-    assert_equal("archive rows with overlap", rows_with_overlap, 10)
-    assert_equal("unique audited radial-order case count", len(unique_cases), 8)
-    assert_equal("unique audited patch topology count", len(unique_patch_indices), 4)
+    assert_equal("slice radial-order case count", len(slice_cases), 6)
+    assert_equal("row coverage certificate count", len(row_coverage_certificates), 10)
+    assert_equal("archive rows with overlap", rows_with_overlap, 12)
+    assert_equal("unique audited radial-order case count", len(unique_cases), 10)
+    assert_equal("unique audited patch topology count", len(unique_patch_indices), 5)
     assert_equal("sample enumerated rotations", sample_enumerated_rotations, 1_572_864)
-    assert_equal("slice enumerated rotations", slice_enumerated_rotations, 1_048_576)
+    assert_equal("slice enumerated rotations", slice_enumerated_rotations, 1_572_864)
     assert_equal("sample planar rotations", sample_planar_rotations, 48)
-    assert_equal("slice planar rotations", slice_planar_rotations, 32)
-    assert_equal("planar rows with overlap", planar_rows_with_overlap, 80)
-    assert_equal("unique planar rotations", unique_planar_rotations, 64)
+    assert_equal("slice planar rotations", slice_planar_rotations, 48)
+    assert_equal("planar rows with overlap", planar_rows_with_overlap, 96)
+    assert_equal("unique planar rotations", unique_planar_rotations, 80)
     assert_equal("sample coherent rotations", sample_coherent_rotations, 0)
     assert_equal("slice coherent rotations", slice_coherent_rotations, 0)
     assert_equal("archive coherent rotations", sample_coherent_rotations + slice_coherent_rotations, 0)
     assert_equal("sample template blockers", sample_template_blockers, 6)
-    assert_equal("slice template blockers", slice_template_blockers, 4)
-    assert_equal("slice template histogram", dict(slice_template_hist), {REVERSE_TEMPLATE_KEY: 4})
-    assert_equal("max radial-cut histogram", dict(max_radial_cut_hist), {"2": 80})
+    assert_equal("slice template blockers", slice_template_blockers, 6)
+    assert_equal("slice template histogram", dict(slice_template_hist), {REVERSE_TEMPLATE_KEY: 6})
+    assert_equal("max radial-cut histogram", dict(max_radial_cut_hist), {"2": 96})
 
     return {
         "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n6-radial-face-archive-audit-v1",
@@ -493,7 +526,9 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
             slice_row_certificates, key=lambda certificate: tuple(certificate["case"])
         ),
         "row_coverage_sample_cases": sorted(row_coverage_sample_cases),
-        "row_coverage_slice1000302_cases": sorted(row_coverage_slice_cases),
+        "row_coverage_slice_cases": sorted(row_coverage_slice_cases),
+        "row_coverage_slice1000302_cases": sorted(row_coverage_slice1000302_cases),
+        "row_coverage_slice1001289_cases": sorted(row_coverage_slice1001289_cases),
         "row_coverage_certificates": row_coverage_certificates,
         "row_coverage_certificate_count": len(row_coverage_certificates),
         "row_coverage_verdict": "radial_face_row_coverage_all_planar_rotations_incoherent",
