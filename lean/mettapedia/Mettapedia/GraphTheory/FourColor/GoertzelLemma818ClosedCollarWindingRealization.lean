@@ -2826,6 +2826,32 @@ def ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization : Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
     ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G → False
 
+/--
+Global extraction obligation from arbitrary normal-form annuli to the concrete
+embedded-collar certificate.  This is the serious geometric theorem still
+needed to turn the certified embedded obstruction into full normal-form
+nonrealizability.
+-/
+def ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G)
+
+theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_suppliesRadialFaceData
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData) :
+    ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization := by
+  intro V _hV G normalForm
+  rcases hdata normalForm normalForm.hactualCollarEmbeddingConstraints with
+    ⟨radialFaceData⟩
+  exact
+    ⟨{
+      normalForm := normalForm
+      radialFaceData := radialFaceData
+    }⟩
+
 theorem closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
     (hn6 :
       ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
@@ -2873,6 +2899,38 @@ theorem section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget :
   exact
     closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
       hn6 hclassified embedded
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExtraction_of_noEmbeddedCollar
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization)
+    (hno :
+      ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  intro V G normalForm
+  classical
+  rcases hextract normalForm with ⟨embedded⟩
+  exact hno embedded
+
+/--
+Embedded-collar extraction repaired target: once every honest normal-form
+annulus produces the certified embedded collar realization, radial-face n6
+extraction plus detailed taxonomy refutes all such normal-form realizations.
+-/
+def Section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget :
+    Section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget := by
+  intro hextract hn6 hclassified
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExtraction_of_noEmbeddedCollar
+      hextract
+      (section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget
+        hn6 hclassified)
 
 /--
 Representative planar profile-preserving samples from the six-internal

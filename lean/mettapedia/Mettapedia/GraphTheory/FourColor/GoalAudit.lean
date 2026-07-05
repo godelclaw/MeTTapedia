@@ -239,6 +239,26 @@ theorem section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget_audit :
     Section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget :=
   section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget
 
+theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_suppliesRadialFaceData_audit
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData) :
+    ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_suppliesRadialFaceData
+    hdata
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExtraction_of_noEmbeddedCollar_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization)
+    (hno :
+      ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExtraction_of_noEmbeddedCollar
+    hextract hno
+
+theorem section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget_audit :
+    Section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget :=
+  section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
