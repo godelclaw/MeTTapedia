@@ -2896,6 +2896,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
     tau_states: list[tuple[str, ...]],
     internal_vertex_count: int,
     patch_indices: tuple[int, ...],
+    radial_order_indices: tuple[int, ...],
     sample_limit: int,
     max_rotation_systems: int,
 ) -> dict[str, object]:
@@ -2913,6 +2914,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
     exact_patch_topology_count = simple_patch_edge_set_count(internal_vertex_count)
     if not patch_indices:
         raise ValueError("patch index sample must be nonempty")
+    if not radial_order_indices:
+        raise ValueError("radial order index sample must be nonempty")
     if max_rotation_systems <= 0:
         raise ValueError("maximum rotation systems must be positive")
     for patch_index in patch_indices:
@@ -2921,6 +2924,9 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                 f"patch index {patch_index} is outside "
                 f"[0, {exact_patch_topology_count})"
             )
+    for radial_order_index in radial_order_indices:
+        if radial_order_index not in (0, 1):
+            raise ValueError("radial order indices must be 0 or 1")
 
     sampled_patch_topology_count = len(patch_indices)
     radial_order_case_count = 0
@@ -2946,7 +2952,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
             patch_edges,
         )
         radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
-        for radial_order in radial_orders:
+        for radial_order_index in radial_order_indices:
+            radial_order = radial_orders[radial_order_index]
             radial_order_case_count += 1
             case_result = classify_simple_patch_template_blocker_case(
                 base_model,
@@ -2966,6 +2973,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                     samples.append(
                         {
                             "patch_index": patch_index,
+                            "radial_order_index": radial_order_index,
                             "radial_order": list(radial_order),
                             "template_exclusion_blocker": blocker_name,
                             "embedding_audit_skipped": "structural_blocker",
@@ -3012,6 +3020,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                 samples.append(
                     {
                         "patch_index": patch_index,
+                        "radial_order_index": radial_order_index,
                         "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
                         "radial_order": list(radial_edges),
                         "template_exclusion_blocker": blocker_name,
@@ -3038,7 +3047,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
         "run_id": (
             f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}::"
             f"simple_patch_{internal_vertex_count}_annular_embedding_"
-            f"indexed_{sampled_patch_topology_count}"
+            f"indexed_{sampled_patch_topology_count}_radial_orders_"
+            f"{'_'.join(str(i) for i in radial_order_indices)}"
         ),
         "word": list(word_names(word)),
         "fixed_outer_key": list(fixed_outer_key),
@@ -3047,6 +3057,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
             "exact_patch_topology_count": exact_patch_topology_count,
             "sampled_patch_indices": list(patch_indices),
             "sampled_patch_topology_count": sampled_patch_topology_count,
+            "sampled_radial_order_indices": list(radial_order_indices),
             "max_rotation_systems_per_case": max_rotation_systems,
             "radial_face_coherence_condition": (
                 "there exists a planar rotation system with all four radial "
@@ -4117,6 +4128,7 @@ def run_closed_collar_winding_simple_patch_annular_embedding_sample(
     resume: bool,
     internal_vertex_count: int,
     patch_indices: tuple[int, ...],
+    radial_order_indices: tuple[int, ...],
     sample_limit: int,
     max_rotation_systems: int,
 ) -> dict[str, object]:
@@ -4127,6 +4139,7 @@ def run_closed_collar_winding_simple_patch_annular_embedding_sample(
         proper_states(TAU),
         internal_vertex_count=internal_vertex_count,
         patch_indices=patch_indices,
+        radial_order_indices=radial_order_indices,
         sample_limit=sample_limit,
         max_rotation_systems=max_rotation_systems,
     )
@@ -4260,6 +4273,14 @@ def main() -> None:
         help=(
             "comma-separated exact topology indices for "
             "--closed-collar-winding-simple-patch-template-blocker-index-sample"
+        ),
+    )
+    parser.add_argument(
+        "--patch-radial-order-indices",
+        help=(
+            "comma-separated radial order indices, 0 or 1, for "
+            "--closed-collar-winding-simple-patch-annular-embedding-sample; "
+            "defaults to both orders"
         ),
     )
     parser.add_argument(
@@ -4449,11 +4470,18 @@ def main() -> None:
                 exact_count,
                 args.patch_stratified_sample_count,
             )
+        if args.patch_radial_order_indices:
+            radial_order_indices = parse_patch_index_list(
+                args.patch_radial_order_indices
+            )
+        else:
+            radial_order_indices = (0, 1)
         report = run_closed_collar_winding_simple_patch_annular_embedding_sample(
             output=args.output,
             resume=args.resume,
             internal_vertex_count=args.patch_internal_vertices,
             patch_indices=patch_indices,
+            radial_order_indices=radial_order_indices,
             sample_limit=args.patch_candidate_sample_limit,
             max_rotation_systems=args.embedding_rotation_system_limit,
         )

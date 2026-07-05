@@ -47,7 +47,7 @@
     "b",
     "b"
   ],
-  "run_id": "tau,tau::rrbb::simple_patch_6_annular_embedding_indexed_2",
+  "run_id": "tau,tau::rrbb::simple_patch_6_annular_embedding_indexed_2_radial_orders_0_1",
   "samples": [
     {
       "embedding_audit": {
@@ -500,6 +500,7 @@
         "P0:A-N0",
         "P1:A-N1"
       ],
+      "radial_order_index": 0,
       "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template"
     },
     {
@@ -953,6 +954,7 @@
         "P1:A-N1",
         "P0:A-N0"
       ],
+      "radial_order_index": 1,
       "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template"
     },
     {
@@ -1422,6 +1424,7 @@
         "P0:A-N0",
         "P1:A-N1"
       ],
+      "radial_order_index": 0,
       "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template"
     },
     {
@@ -1891,6 +1894,7 @@
         "P1:A-N1",
         "P0:A-N0"
       ],
+      "radial_order_index": 1,
       "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template"
     }
   ],
@@ -1916,7 +1920,11 @@
       821205,
       852969
     ],
-    "sampled_patch_topology_count": 2
+    "sampled_patch_topology_count": 2,
+    "sampled_radial_order_indices": [
+      0,
+      1
+    ]
   },
   "source": "Annular embedding constraint audit for profile-preserving simple patches in the closed-collar winding-freedom realization lab",
   "summary": {
