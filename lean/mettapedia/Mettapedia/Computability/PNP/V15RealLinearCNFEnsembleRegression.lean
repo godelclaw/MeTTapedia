@@ -108,6 +108,8 @@ set_option autoImplicit false
 #check V13RealLinearSmallGaugeCNFGauge
 #check v13RealLinearSmallGaugeCNFGaugeSat
 #check v13RealLinearSmallGaugeCNFSemantics
+#check v13RealLinearSmallGaugeCNF_atomCompleteness
+#check v13RealLinearSmallGaugeCNF_gaugeFaithfulness
 #check v13RealLinearSmallGaugeCNF_hiddenGaugeProduct
 #check V13RealLinearGaugeCNFPNPSATDecider
 #check v13RealLinearGaugeCNFBitFixVarOrder
@@ -284,6 +286,8 @@ set_option autoImplicit false
 #print axioms V13RealLinearSmallGaugeCNFGauge
 #print axioms v13RealLinearSmallGaugeCNFGaugeSat
 #print axioms v13RealLinearSmallGaugeCNFSemantics
+#print axioms v13RealLinearSmallGaugeCNF_atomCompleteness
+#print axioms v13RealLinearSmallGaugeCNF_gaugeFaithfulness
 #print axioms v13RealLinearSmallGaugeCNF_hiddenGaugeProduct
 #print axioms V13RealLinearGaugeCNFPNPSATDecider
 #print axioms v13RealLinearGaugeCNFBitFixVarOrder
