@@ -21,7 +21,7 @@ namespace Mettapedia.Computability.PNP
 
 set_option autoImplicit false
 
-universe u v w x y z a b c d e f g h i j k l
+universe u v w x y z a b c d e f g h i j k l p
 
 /-- Real single-message SAT spine: every supported world supplies a public
 instance and a hidden witness; every verifier-valid witness reads the fixed
@@ -3539,7 +3539,7 @@ structure RealM4OfficialPNPBridgeData
       GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
         Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
     (P : ParameterRecord L)
-    (C : CookStylePNPClassInterface.{k}) where
+    (C : CookStylePNPClassInterface.{p}) where
   separatedLanguage : C.Language
   separatedLanguage_inNP : C.inNP separatedLanguage
   internalClash_not_inP :
@@ -3562,7 +3562,7 @@ theorem realM4_officialSeparation_from_internalClash_bridge
       GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
         Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton}
     {P : ParameterRecord L}
-    {C : CookStylePNPClassInterface.{k}}
+    {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPNPBridgeData L P C)
     (clash : UpperLowerClash L P) :
@@ -3570,6 +3570,171 @@ theorem realM4_officialSeparation_from_internalClash_bridge
   C.officialSeparation_of_np_not_p
     bridge.separatedLanguage_inNP
     (bridge.internalClash_not_inP clash)
+
+/--
+Official-endpoint staging theorem for already packaged real endgame data.
+Given the explicit P=NP-side upper package, StarSW hardness, the three
+analytic fields, and a separate Cook-style bridge, the internal real-M4
+`UpperLowerClash` transports to the Cook-style separation proposition.
+
+This remains conditional staging.  It does not construct the manuscript M4
+ensemble, the four hard inputs, or the Cook-style bridge data.
+-/
+theorem realM4_officialSeparation_from_endgameMechanicalData_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D M.lowerFramework)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPNPBridgeData
+        (M.interfaceWithAnalyticFrontier
+          safeQSSM boundedGaugeIncidence boundaryMixing)
+        (M.parameterRecordExplicitPNP S starSWHardness
+          safeQSSM boundedGaugeIncidence boundaryMixing)
+        C) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_internalClash_bridge bridge
+    (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+      M S starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing)
+
+/--
+Official-endpoint staging theorem for the sharpest current real component
+assembly.  CD-ENF supplies atom-completeness and gauge-faithfulness, the lower
+framework comes from explicit lower-machine data, uniform CNF support comes
+from finite variable-family data, and the P=NP-side upper package is built
+from public-lock coverage data plus locked-message data.
+
+The theorem still exposes every real construction obligation and the
+Cook-style bridge as hypotheses.  It is not a proof of P != NP and not a claim
+that the manuscript M4 construction or the four hard inputs have been proved.
+-/
+theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVariables_coverageDataAndLockedMessageData_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw Omega)
+    (target : Omega -> Bool)
+    (publicInput : Omega -> Public)
+    (neutralSkeleton : Omega -> Skeleton)
+    (oppositeSupport : Omega -> Omega -> Prop)
+    (transcript : Omega -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law target transcript observerBit Pair Stage Branch)
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface Omega Public Observer Output Neutral Safe Gauge)
+    (historyField : FiniteSigmaField.{u, d} Omega)
+    (pivotSummary : Omega -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (singleMessage :
+      ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (noPublicTargetTags :
+      PairNeutral oppositeSupport neutralSkeleton ∧
+        HasMessageOppositePair oppositeSupport target ∧
+          ¬ ∃ f : Skeleton -> Bool,
+            ∀ omega, target omega = f (neutralSkeleton omega))
+    (admissibleHistories :
+      BalancedBit target ∧
+        BalancedConditioning (Omega := Omega) historyField target)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * phaseA.telescoping.derivativeSum ≤ fixedGapBudget)
+    (epsSmall : epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ safeCost q ∧ safeCost q ≤ safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, gaugeIncidence gamma ≤ gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound target pivotSummary epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPNPBridgeData
+        ((RealM4EndgameMechanicalData.ofCDENFComponentsWithLowerMachine
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            law target publicInput neutralSkeleton oppositeSupport transcript
+            observerBit phaseA semantics observerEvidence historyField
+            pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
+            singleMessage hiddenGaugeProduct noPublicTargetTags
+            admissibleHistories fixedGapBudget phaseABudget epsSmall
+            lowerMachine).interfaceWithAnalyticFrontier
+          safeQSSM boundedGaugeIncidence boundaryMixing)
+        ((RealM4EndgameMechanicalData.ofCDENFComponentsWithLowerMachine
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            law target publicInput neutralSkeleton oppositeSupport transcript
+            observerBit phaseA semantics observerEvidence historyField
+            pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
+            singleMessage hiddenGaugeProduct noPublicTargetTags
+            admissibleHistories fixedGapBudget phaseABudget epsSmall
+            lowerMachine).parameterRecordExplicitPNP
+          (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
+            (D := D) (F := lowerMachine.lowerFramework)
+            coverageData lockedMessageData
+            finiteVariables.uniformSupport pnpDeciderFamily
+            constantDecoderRegime)
+          starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing)
+        C) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_internalClash_bridge bridge
+    (realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVariables_coverageDataAndLockedMessageData_explicitPNP
+      law target publicInput neutralSkeleton oppositeSupport transcript
+      observerBit phaseA semantics observerEvidence historyField pivotSummary
+      epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
+      hiddenGaugeProduct noPublicTargetTags admissibleHistories
+      fixedGapBudget phaseABudget epsSmall lowerMachine coverageData
+      lockedMessageData finiteVariables pnpDeciderFamily constantDecoderRegime
+      starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing)
 
 def realM4OfficialPNPBridgeConstructionInputs : List String := [
   "cookStylePNPClassInterface",
@@ -4166,6 +4331,97 @@ theorem realM4CDENFComponentCoveredLocksEndgameHypothesisAuditExplicitPNP_exact 
 def realM4CDENFComponentCoveredLocksEndgameStatementExplicitPNP : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows from explicit CD-ENF mechanical components, public-lock coverage, D.8 locked-message rigidity, uniform CNF support, the real constant-decoder regime, StarSW hardness, and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, with atomCompleteness and gaugeFaithfulness construction-transferred from generic CD-ENF semantics and the upper side conditional on the explicit P=NP decider family."
 
+def realM4OfficialEndpointConstructionInputsExplicitPNP : List String :=
+  realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP ++
+    realM4OfficialPNPBridgeConstructionInputs
+
+theorem realM4OfficialEndpointConstructionInputsExplicitPNP_exact :
+    realM4OfficialEndpointConstructionInputsExplicitPNP =
+      [ "law",
+        "target",
+        "publicInput",
+        "neutralSkeleton",
+        "oppositeSupport",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "historyField",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "singleMessage",
+        "hiddenGaugeProduct",
+        "noPublicTargetTags",
+        "admissibleHistories",
+        "fixedGapBudget",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP" ] := by
+  rfl
+
+def realM4OfficialEndpointHypothesisAuditExplicitPNP : List String :=
+  realM4OfficialEndpointConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4OfficialEndpointHypothesisAuditExplicitPNP_exact :
+    realM4OfficialEndpointHypothesisAuditExplicitPNP =
+      [ "law",
+        "target",
+        "publicInput",
+        "neutralSkeleton",
+        "oppositeSupport",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "historyField",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "singleMessage",
+        "hiddenGaugeProduct",
+        "noPublicTargetTags",
+        "admissibleHistories",
+        "fixedGapBudget",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4OfficialEndpointStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, a Cook-style official separation follows from the sharp real component assembly, StarSW hardness, the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge that names the separated NP language and proves the internal clash rules out membership in P.  This is conditional staging, not a proof of P != NP."
+
 /-! ## Real-M4 lift ledger -/
 
 inductive RealM4LiftStatus where
@@ -4430,6 +4686,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Once the official bridge data is constructed, any internal UpperLowerClash can be transported to the official endpoint; this does not construct the bridge."
   },
   {
+    item := "realOfficialEndpointStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVariables_coverageDataAndLockedMessageData_explicitPNP"
+    note := "Wires the sharpest current real internal clash assembly through the explicit Cook-style bridge data; the bridge and real construction fields remain exposed obligations."
+  },
+  {
     item := "pnpDecider"
     status := .pnpConditionalInput
     checkedName := "RealM4ExplicitPNPDeciderFamily"
@@ -4502,6 +4764,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
