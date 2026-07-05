@@ -1406,6 +1406,349 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_hiddenGaugeProduct :
       v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_preserves_target
         gamma omega⟩
 
+/-- Every verifier-valid no-target-row SAT world is the canonical world with
+the same public row payload and hidden-gauge coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_eq_worldOfPublicGauge
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+        omega.publicInput (omega.assignment none) = omega := by
+  cases omega with
+  | mk Y assignment sat =>
+  simp [v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge]
+  funext v
+  cases v with
+  | none =>
+      rfl
+  | some j =>
+      rcases v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mp sat with
+        ⟨hspare, _hxor⟩
+      have hmsg :
+          assignment (some v13RealLinearSmallGaugeCNFMessageIndex) =
+            Y.msg := by
+        simpa [v13RealLinearSmallNoTargetRowsCNFReadout,
+          v13RealLinearSmallNoTargetRowsCNFMessage] using
+          v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid sat
+      fin_cases j
+      · simpa [v13RealLinearSmallNoTargetRowsCNFAssignment,
+          v13RealLinearSmallGaugeCNFMessageIndex] using hmsg.symm
+      · simpa [v13RealLinearSmallNoTargetRowsCNFAssignment,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex] using hspare.symm
+
+/-- The no-target-row SAT-world surface is exactly a public message bit,
+a public non-target row bit, and a hidden gauge bit. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple :
+    V13RealLinearSmallNoTargetRowsCNFSATWorld ≃ Bool × (Bool × Bool) where
+  toFun := fun omega =>
+    (omega.publicInput.msg,
+      (omega.publicInput.spare, omega.assignment none))
+  invFun := fun data =>
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+      { msg := data.1, spare := data.2.1 } data.2.2
+  left_inv := by
+    intro omega
+    exact v13RealLinearSmallNoTargetRowsCNFSATWorld_eq_worldOfPublicGauge
+      omega
+  right_inv := by
+    intro data
+    rcases data with ⟨msg, spare, gauge⟩
+    rfl
+
+instance v13RealLinearSmallNoTargetRowsCNFSATWorldFintype :
+    Fintype V13RealLinearSmallNoTargetRowsCNFSATWorld :=
+  Fintype.ofEquiv (Bool × (Bool × Bool))
+    v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple.symm
+
+/-- History field for no-target-row SAT worlds: observe the public non-target
+row and hidden gauge bit, but not the public message bit. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldHistoryField :
+    FiniteSigmaField V13RealLinearSmallNoTargetRowsCNFSATWorld where
+  Atom := Bool × Bool
+  atomDecidable := inferInstance
+  atom := v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+
+/-- The global no-target-row SAT-world surface has eight states. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_card :
+    Fintype.card V13RealLinearSmallNoTargetRowsCNFSATWorld = 8 := by
+  calc
+    Fintype.card V13RealLinearSmallNoTargetRowsCNFSATWorld =
+        Fintype.card (Bool × (Bool × Bool)) :=
+      Fintype.card_congr
+        v13RealLinearSmallNoTargetRowsCNFSATWorldEquivBoolTriple
+    _ = 8 := by
+      norm_num
+
+/-- Target-true no-target-row SAT worlds are exactly the two public spare-row
+choices times the two hidden gauge choices over the true public message. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldTargetTrueEquivSpareGauge :
+    {omega : V13RealLinearSmallNoTargetRowsCNFSATWorld //
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega = true} ≃
+      Bool × Bool where
+  toFun := fun omega =>
+    v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton omega.val
+  invFun := fun data =>
+    ⟨v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+        { msg := true, spare := data.1 } data.2, by
+      simp [v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge,
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget,
+        v13RealLinearSmallNoTargetRowsCNFReadout,
+        v13RealLinearSmallNoTargetRowsCNFAssignment]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    have hmsg : omega.val.publicInput.msg = true := by
+      have htarget :=
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega.val
+      rw [omega.property] at htarget
+      simpa [v13RealLinearSmallNoTargetRowsCNFMessage] using htarget.symm
+    have hpublic :
+        { msg := true
+          spare := omega.val.publicInput.spare } =
+          omega.val.publicInput := by
+      cases hY : omega.val.publicInput with
+      | mk msg spare =>
+          have hmsg' : msg = true := by
+            simpa [hY] using hmsg
+          simp [hmsg']
+    calc
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+          { msg := true
+            spare := omega.val.publicInput.spare }
+          (omega.val.assignment none) =
+          v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+            omega.val.publicInput (omega.val.assignment none) := by
+            exact congrArg
+              (fun Y =>
+                v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+                  Y (omega.val.assignment none))
+              hpublic
+      _ = omega.val :=
+          v13RealLinearSmallNoTargetRowsCNFSATWorld_eq_worldOfPublicGauge
+            omega.val
+  right_inv := by
+    intro data
+    cases data
+    rfl
+
+/-- Correct no-target-row SAT worlds for the constant-true decoder are
+target-true worlds. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldCorrectTrueEquivTargetTrue :
+    {omega : V13RealLinearSmallNoTargetRowsCNFSATWorld //
+      (fun _ : V13RealLinearSmallNoTargetRowsCNFSATWorld => true) omega =
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega} ≃
+      {omega : V13RealLinearSmallNoTargetRowsCNFSATWorld //
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega = true} where
+  toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+  invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+  left_inv := by
+    intro omega
+    cases omega
+    rfl
+  right_inv := by
+    intro omega
+    cases omega
+    rfl
+
+/-- There are four target-true no-target-row SAT worlds. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_true_card :
+    Fintype.card
+        {omega : V13RealLinearSmallNoTargetRowsCNFSATWorld //
+          v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega = true} = 4 := by
+  calc
+    Fintype.card
+        {omega : V13RealLinearSmallNoTargetRowsCNFSATWorld //
+          v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega = true} =
+        Fintype.card (Bool × Bool) :=
+      Fintype.card_congr
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTargetTrueEquivSpareGauge
+    _ = 4 := by
+      norm_num
+
+/-- The no-target-row SAT-world target is balanced across the two public
+message bits, with public spare-row and hidden-gauge bits held as neutral
+coordinates. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_target_balanced :
+    BalancedBit v13RealLinearSmallNoTargetRowsCNFSATWorldTarget := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [Fintype.card_congr
+    v13RealLinearSmallNoTargetRowsCNFSATWorldCorrectTrueEquivTargetTrue,
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_true_card,
+    v13RealLinearSmallNoTargetRowsCNFSATWorld_card]
+  norm_num
+
+/-- In a fixed spare-row/hidden-gauge fiber, the target-true no-target-row SAT
+world is unique. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldFiberTrueEquivUnit
+    (skeleton : Bool × Bool) :
+    FiberTrue
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget skeleton ≃ Unit where
+  toFun := fun _ => ()
+  invFun := fun _ =>
+    ⟨v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+        { msg := true, spare := skeleton.1 } skeleton.2, by
+      simp [v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge,
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton,
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget,
+        v13RealLinearSmallNoTargetRowsCNFReadout,
+        v13RealLinearSmallNoTargetRowsCNFAssignment]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    rcases omega.property with ⟨hskeleton, htarget⟩
+    have hmsg : omega.val.publicInput.msg = true := by
+      have htargetMsg :=
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega.val
+      rw [htarget] at htargetMsg
+      simpa [v13RealLinearSmallNoTargetRowsCNFMessage] using
+        htargetMsg.symm
+    have hspare : skeleton.1 = omega.val.publicInput.spare := by
+      simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton]
+        using congrArg Prod.fst hskeleton.symm
+    have hgauge : skeleton.2 = omega.val.assignment none := by
+      simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton]
+        using congrArg Prod.snd hskeleton.symm
+    have hpublic :
+        { msg := true, spare := skeleton.1 } =
+          omega.val.publicInput := by
+      cases hY : omega.val.publicInput with
+      | mk msg spare =>
+          have hmsg' : msg = true := by
+            simpa [hY] using hmsg
+          have hspare' : skeleton.1 = spare := by
+            simpa [hY] using hspare
+          simp [hmsg', hspare']
+    calc
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+          { msg := true, spare := skeleton.1 } skeleton.2 =
+          v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+            omega.val.publicInput (omega.val.assignment none) := by
+            exact
+              Eq.trans
+                (congrArg
+                  (fun Y =>
+                    v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+                      Y skeleton.2)
+                  hpublic)
+                (congrArg
+                  (v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+                    omega.val.publicInput)
+                  hgauge)
+      _ = omega.val :=
+          v13RealLinearSmallNoTargetRowsCNFSATWorld_eq_worldOfPublicGauge
+            omega.val
+  right_inv := by
+    intro unitValue
+    cases unitValue
+    rfl
+
+/-- In a fixed spare-row/hidden-gauge fiber, the target-false no-target-row SAT
+world is unique. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldFiberFalseEquivUnit
+    (skeleton : Bool × Bool) :
+    FiberFalse
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget skeleton ≃ Unit where
+  toFun := fun _ => ()
+  invFun := fun _ =>
+    ⟨v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+        { msg := false, spare := skeleton.1 } skeleton.2, by
+      simp [v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge,
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton,
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget,
+        v13RealLinearSmallNoTargetRowsCNFReadout,
+        v13RealLinearSmallNoTargetRowsCNFAssignment]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    rcases omega.property with ⟨hskeleton, htarget⟩
+    have hmsg : omega.val.publicInput.msg = false := by
+      have htargetMsg :=
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega.val
+      rw [htarget] at htargetMsg
+      simpa [v13RealLinearSmallNoTargetRowsCNFMessage] using
+        htargetMsg.symm
+    have hspare : skeleton.1 = omega.val.publicInput.spare := by
+      simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton]
+        using congrArg Prod.fst hskeleton.symm
+    have hgauge : skeleton.2 = omega.val.assignment none := by
+      simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton]
+        using congrArg Prod.snd hskeleton.symm
+    have hpublic :
+        { msg := false, spare := skeleton.1 } =
+          omega.val.publicInput := by
+      cases hY : omega.val.publicInput with
+      | mk msg spare =>
+          have hmsg' : msg = false := by
+            simpa [hY] using hmsg
+          have hspare' : skeleton.1 = spare := by
+            simpa [hY] using hspare
+          simp [hmsg', hspare']
+    calc
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+          { msg := false, spare := skeleton.1 } skeleton.2 =
+          v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+            omega.val.publicInput (omega.val.assignment none) := by
+            exact
+              Eq.trans
+                (congrArg
+                  (fun Y =>
+                    v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+                      Y skeleton.2)
+                  hpublic)
+                (congrArg
+                  (v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+                    omega.val.publicInput)
+                  hgauge)
+      _ = omega.val :=
+          v13RealLinearSmallNoTargetRowsCNFSATWorld_eq_worldOfPublicGauge
+            omega.val
+  right_inv := by
+    intro unitValue
+    cases unitValue
+    rfl
+
+/-- The no-target-row SAT-world history field is balanced: conditioning on
+the public non-target row and hidden gauge leaves one false-message and one
+true-message world. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorld_historyField_balancedConditioning :
+    BalancedConditioning
+      v13RealLinearSmallNoTargetRowsCNFSATWorldHistoryField
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget := by
+  change Neutral
+    v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+  intro skeleton
+  calc
+    Fintype.card
+        (FiberTrue
+          v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+          v13RealLinearSmallNoTargetRowsCNFSATWorldTarget skeleton) =
+        Fintype.card Unit :=
+      Fintype.card_congr
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldFiberTrueEquivUnit skeleton)
+    _ = Fintype.card Unit := rfl
+    _ =
+        Fintype.card
+          (FiberFalse
+            v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+            v13RealLinearSmallNoTargetRowsCNFSATWorldTarget skeleton) :=
+      (Fintype.card_congr
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldFiberFalseEquivUnit
+          skeleton)).symm
+
+/-- Structural `admissibleHistories` transfer for the concrete no-target-row
+SAT world.  The balanced surface uses both public message values, while the
+history field observes only the public non-target row and hidden gauge. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_admissibleHistories :
+    BalancedBit v13RealLinearSmallNoTargetRowsCNFSATWorldTarget ∧
+      BalancedConditioning
+        v13RealLinearSmallNoTargetRowsCNFSATWorldHistoryField
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget :=
+  ⟨v13RealLinearSmallNoTargetRowsCNFSATWorld_target_balanced,
+    v13RealLinearSmallNoTargetRowsCNFSATWorld_historyField_balancedConditioning⟩
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
