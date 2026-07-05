@@ -2800,6 +2800,81 @@ theorem section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget :
       hn6 hclassified
 
 /--
+A concrete embedded normal-form realization of the winding-freedom witness:
+normal-form data together with the embedded collar radial-face certificate
+extracted from actual planar annulus-collar geometry.
+-/
+structure ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization
+    {V : Type} [DecidableEq V] (G : SimpleGraph V) where
+  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  radialFaceData :
+    ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData normalForm
+
+def ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization.toNormalFormRadialFaceRealization
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G) :
+    ClosedCollarWindingFreedomNormalFormRadialFaceRealization G where
+  normalForm := data.normalForm
+  radialFace :=
+    { faceEdges := data.radialFaceData.emb.faceBoundary data.radialFaceData.cutOpenFace.1
+      isCutOpenCollarFace := data.radialFaceData.cutOpenFaceIsCutOpenCollarFace
+      hface := data.radialFaceData.hcutOpenFace
+      radialCut_subset_faceEdges :=
+        data.radialFaceData.radialCut_subset_cutOpenFaceBoundary }
+
+def ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization : Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
+    ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G → False
+
+theorem closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hclassified :
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy)
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (embedded :
+      ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G) :
+    False := by
+  let radialFace :=
+    embedded.toNormalFormRadialFaceRealization
+  rcases hn6 radialFace with ⟨n6Extraction⟩
+  let data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G :=
+    { normalForm := n6Extraction.data.normalFormRadialFace.normalForm
+      representation := n6Extraction.data.representation
+      annular_eq := n6Extraction.data.annular_eq.symm }
+  rcases hclassified data with ⟨outcome⟩
+  cases outcome with
+  | structural blockerCase hrealizes =>
+      exact
+        closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_not_realizesAgainstNormalForm
+          data blockerCase hrealizes
+  | exactTemplate candidate hrealizes =>
+      exact
+        closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+          data.normalForm candidate hrealizes
+  | residualPass pass =>
+      exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass pass
+
+/--
+Certified embedded-collar repaired target: once radial-face normal-form annuli
+extract to n6 representations and those representations are classified by the
+detailed taxonomy, no concrete embedded normal-form realization of the
+winding-freedom witness remains.
+-/
+def Section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy →
+      ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization
+
+theorem section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget :
+    Section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget := by
+  intro hn6 hclassified V _hV G embedded
+  exact
+    closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
+      hn6 hclassified embedded
+
+/--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
 normal-form blocker after planarity has been passed.
