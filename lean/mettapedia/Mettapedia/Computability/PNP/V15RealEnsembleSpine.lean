@@ -2680,6 +2680,58 @@ def ofCoverageDataAndLockedMessageData
   ofLockedMessageData
     lockedMessageData uniformSupport pnpDeciderFamily constantDecoderRegime
 
+/-- Construct the explicit-P=NP upper discharge package on the sharp
+locked-message route while building the real constant-decoder regime from the
+large-target K-poly compatibility facts.  This keeps the SAT decider family
+as the explicit P=NP-side input and exposes the remaining real growth
+obligation instead of accepting a prepackaged constant-decoder regime. -/
+def ofLockedMessageDataAndLargeTargetKpolyCompatibility
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (eta : Nat)
+    (eta_pos : 0 < eta)
+    (kpolyAt_eq :
+      F.kpolyAt =
+        realM4UniformConstantDecoderKpolyAt
+          (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta)
+    (targetBlocks_gt_decoder :
+      realM4UniformSelfReductionDecoderCost
+          (uniformSupport.withPNPDecider pnpDeciderFamily) <
+        F.targetBlocks) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  ofLockedMessageData
+    lockedMessageData uniformSupport pnpDeciderFamily
+    (realM4_uniformConstantDecoderRegime_of_kpolyCompatibility_largeTarget
+      (uniformSupport.withPNPDecider pnpDeciderFamily)
+      eta eta_pos kpolyAt_eq etaTimes_eq targetBlocks_gt_decoder)
+
+/-- Coverage-data wrapper for the large-target locked-message upper package.
+Coverage stays visible as a real construction obligation for public-lock
+support, while the upper self-reduction side uses the explicit locked-message
+public-message data and the large-target constant-decoder construction. -/
+def ofCoverageDataLockedMessageDataAndLargeTargetKpolyCompatibility
+    (_coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (eta : Nat)
+    (eta_pos : 0 < eta)
+    (kpolyAt_eq :
+      F.kpolyAt =
+        realM4UniformConstantDecoderKpolyAt
+          (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta)
+    (targetBlocks_gt_decoder :
+      realM4UniformSelfReductionDecoderCost
+          (uniformSupport.withPNPDecider pnpDeciderFamily) <
+        F.targetBlocks) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  ofLockedMessageDataAndLargeTargetKpolyCompatibility
+    lockedMessageData uniformSupport pnpDeciderFamily eta eta_pos
+    kpolyAt_eq etaTimes_eq targetBlocks_gt_decoder
+
 def uniformBitFixing
     (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
     RealM4CNFUniformBitFixingData D :=
@@ -2796,6 +2848,62 @@ theorem realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_an
         RealM4SelfReductionUpperExplicitPNPDischarge.instanceDecoderCost_le_uniform
           S Y,
       RealM4SelfReductionUpperExplicitPNPDischarge.selfReductionUpper S⟩
+
+/-- Checked output of the sharp explicit-P=NP real upper route: locked-message
+data supplies the public readout, the P=NP-derived SAT decider family supplies
+bit-fixing search, and large-target K-poly compatibility constructs the
+constant decoder regime internally.  The theorem is conditional on the
+explicit SAT decider family and does not prove the real target-block growth
+facts. -/
+theorem
+    realM4_selfReductionUpperExplicitPNPLargeTarget_lockedMessageData_assignment_readout_cost_and_upper
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (eta : Nat)
+    (eta_pos : 0 < eta)
+    (kpolyAt_eq :
+      F.kpolyAt =
+        realM4UniformConstantDecoderKpolyAt
+          (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta)
+    (targetBlocks_gt_decoder :
+      realM4UniformSelfReductionDecoderCost
+          (uniformSupport.withPNPDecider pnpDeciderFamily) <
+        F.targetBlocks) :
+    (∀ {Y : Public}, D.support Y ->
+      ConcreteCNF.IsSatFormula (D.formula Y)
+        ((uniformSupport.withPNPDecider pnpDeciderFamily).bitFixingAssignment Y)) ∧
+    (∀ {Y : Public}, D.support Y ->
+      D.projection Y
+          ((uniformSupport.withPNPDecider pnpDeciderFamily).bitFixingAssignment Y) =
+        lockedMessageData.publicMessage (D.publicLock Y)) ∧
+    (∀ Y : Public,
+      realCNFSelfReductionDecoderCost
+          ((uniformSupport.withPNPDecider pnpDeciderFamily).satDecider Y) ≤
+        realM4UniformSelfReductionDecoderCost
+          (uniformSupport.withPNPDecider pnpDeciderFamily)) ∧
+    SelfReductionUpperHypothesis F := by
+  let S :=
+    RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageDataAndLargeTargetKpolyCompatibility
+      lockedMessageData uniformSupport pnpDeciderFamily eta eta_pos
+      kpolyAt_eq etaTimes_eq targetBlocks_gt_decoder
+  have hS :=
+    realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper
+      (S := S)
+  simpa
+    [S,
+      RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageDataAndLargeTargetKpolyCompatibility,
+      RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageData,
+      RealM4SelfReductionUpperExplicitPNPDischarge.uniformBitFixing]
+    using hS
 
 def realM4PublicMessageInvariantConstructionInputs : List String := [
   "defaultMessageForUnsupportedLocks",
@@ -3121,6 +3229,41 @@ theorem realM4SelfReductionUpperExplicitPNPConditionalInputs_exact :
     realM4SelfReductionUpperExplicitPNPConditionalInputs =
       [ "pnpDeciderFamily" ] := by
   rfl
+
+def realM4SelfReductionUpperExplicitPNPLargeTargetConstructionInputs :
+    List String := [
+  "lockedMessageRigidityData",
+  "uniformCNFSupportData",
+  "realCompressionLowerFramework",
+  "explicitPNPEtaPositive",
+  "explicitPNPKpolyAtConstantDecoderIdentification",
+  "explicitPNPEtaTimesLinearFloorIdentification",
+  "explicitPNPTargetBlocksExceedsConstantDecoderCost"
+]
+
+theorem realM4SelfReductionUpperExplicitPNPLargeTargetConstructionInputs_exact :
+    realM4SelfReductionUpperExplicitPNPLargeTargetConstructionInputs =
+      [ "lockedMessageRigidityData",
+        "uniformCNFSupportData",
+        "realCompressionLowerFramework",
+        "explicitPNPEtaPositive",
+        "explicitPNPKpolyAtConstantDecoderIdentification",
+        "explicitPNPEtaTimesLinearFloorIdentification",
+        "explicitPNPTargetBlocksExceedsConstantDecoderCost" ] := by
+  rfl
+
+def realM4SelfReductionUpperExplicitPNPLargeTargetConditionalInputs :
+    List String := [
+  "pnpDeciderFamily"
+]
+
+theorem realM4SelfReductionUpperExplicitPNPLargeTargetConditionalInputs_exact :
+    realM4SelfReductionUpperExplicitPNPLargeTargetConditionalInputs =
+      [ "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4SelfReductionUpperExplicitPNPLargeTargetStatement : String :=
+  "The sharp real explicit-P=NP self-reduction upper package can be constructed from locked-message public-message data, uniform CNF support, the explicit P=NP SAT decider family, and large-target K-poly compatibility facts.  The prepackaged realConstantDecoderRegime input is replaced by eta positivity, kpolyAt identification with the fixed constant decoder program, etaTimes identification with the linear floor, and target-block growth beyond the fixed decoder cost."
 
 /-! ## Real-M4 endgame staging without toy parameters -/
 
@@ -14860,6 +15003,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The real target-block regime must prove that the target-block count exceeds the fixed self-reduction decoder cost for each P-derived decider family."
   },
   {
+    item := "realSelfReductionUpperExplicitPNPLargeTargetDischarge"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_selfReductionUpperExplicitPNPLargeTarget_lockedMessageData_assignment_readout_cost_and_upper"
+    note := "The explicit-P=NP upper package can now build the constant decoder regime internally from locked-message data, uniform support, the P=NP decider family, eta positivity, K-poly/floor identifications, and target-block growth."
+  },
+  {
     item := "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityOfficialClassInequality"
     status := .partialConstructionTransferred
     checkedName := "realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilitySplit"
@@ -14878,6 +15027,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
       [ "officialPToUniformConstantDecoderRegimeLargeTargetCompatibility",
         "pMembershipEtaPositive",
         "pMembershipTargetBlocksExceedsConstantDecoderCost",
+        "realSelfReductionUpperExplicitPNPLargeTargetDischarge",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityOfficialClassInequality",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityContradiction" ] := by
   rfl
@@ -14887,6 +15037,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred ] := by
   rfl
