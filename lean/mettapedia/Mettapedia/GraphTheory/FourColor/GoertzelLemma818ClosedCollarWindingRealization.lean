@@ -2720,6 +2720,28 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceDat
   normalForm := normalForm
   radialFace := data.toCutOpenRadialFace
 
+def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (previousData :
+      ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+        normalForm)
+    (radialFace :
+      ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+        previousData.toGeometryData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+      normalForm where
+  emb := previousData.emb
+  previousGeometry := previousData.previousGeometry
+  collarEdges_eq := previousData.collarEdges_eq
+  outerBoundaryEdges_eq := previousData.outerBoundaryEdges_eq
+  cutOpenFace := radialFace.cutOpenFace
+  cutOpenFace_mem_collar := radialFace.cutOpenFace_mem_collar
+  radialCut_subset_cutOpenFaceBoundary :=
+    radialFace.radialCut_subset_cutOpenFaceBoundary
+  cutOpenFaceIsCutOpenCollarFace := radialFace.cutOpenFaceIsCutOpenCollarFace
+  hcutOpenFace := radialFace.hcutOpenFace
+
 def ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData.ofGeometryExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
@@ -2847,6 +2869,19 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of
   exact
     ⟨ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData.ofGeometryExtraction
       geometry radialFace⟩
+
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData_of_previousBoundaryGeometryData_of_radialFace
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData := by
+  intro V _hV G normalForm hactual
+  rcases hgeometry normalForm hactual with ⟨previousData⟩
+  rcases hradial previousData.toGeometryData with ⟨radialFace⟩
+  exact
+    ⟨ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+      previousData radialFace⟩
 
 theorem closedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace_of_suppliesRadialFaceData
     (hdata :
@@ -6648,6 +6683,21 @@ theorem closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6
       auditedKey := hkeys n6.data
     }⟩
 
+theorem closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryGeometryData_of_radialFace_of_radialFaceN6_of_auditedArchiveKey
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction :=
+  closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryRadialFaceData_of_radialFaceN6_of_auditedArchiveKey
+    (closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData_of_previousBoundaryGeometryData_of_radialFace
+      hgeometry hradial)
+    hn6 hkeys
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
     (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
     (hn6 :
@@ -7193,6 +7243,32 @@ theorem section92Step4RepairedByFactoredPreviousBoundaryRadialFaceN6AuditedArchi
     section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionTarget
       (closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryRadialFaceData_of_radialFaceN6_of_auditedArchiveKey
         hdata hn6 hkeys)
+      hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Further factored form of the previous-boundary radial-face archive target.
+It replaces the combined previous-boundary radial-face data obligation by the
+two lower geometric obligations: previous-boundary annulus geometry plus
+selection of the cut-open radial face.
+-/
+def Section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+        ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+                ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionTarget :
+    Section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionTarget := by
+  intro hgeometry hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionTarget
+      (closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryGeometryData_of_radialFace_of_radialFaceN6_of_auditedArchiveKey
+        hgeometry hradial hn6 hkeys)
       hsampleRows hslice1000302Rows hslice1001289Rows
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
