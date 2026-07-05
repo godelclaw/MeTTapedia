@@ -4052,6 +4052,24 @@ theorem
         i₀)
       trivial
 
+/-- Structural `singleMessage` transfer at the manuscript CNF-readout layer:
+for the concrete no-target-rows Appendix-I CNF data, any two verifier-valid
+witness assignments over one supported public instance read the same message. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_singleMessagePromise
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toManuscriptCNFReadoutData
+      |>.SingleMessagePromise := by
+  intro Y W W' hY hW hW'
+  exact
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toAppendixDWitnessData
+      |>.singleMessagePromise_of_lockedMessageRigidity
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixD_lockedMessageRigidity
+          i₀)
+        hY hW hW'
+
 /-- The no-target-rows gauge-CNF Appendix-I data supplies the semantic
 I.26(i)--(iii) items: satisfiability on support, sound extraction, and fixed
 projection readout. -/
