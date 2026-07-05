@@ -1382,6 +1382,17 @@ theorem minimalCounterexampleCAP5FreeNormalForm_of_s7CAP5FreeObligations
   exact lemma53_CAP5PinchObligation_of_tightnessObligation
     (lemma53_tightnessObligation_of_diskToPrimalCAP5Translations htranslation)
 
+/-- The full S7 CAP5-free obligation bundle directly gives the length-at-most-five separator
+exclusion for the supplied duality package. -/
+theorem noSeparatingDualCycleOfLengthAtMostFive_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    NoSeparatingDualCycleOfLengthAtMostFive dual := by
+  rcases minimalCounterexampleCAP5FreeNormalForm_of_s7CAP5FreeObligations obligations with
+    ⟨cap5Normal, hduality, _htranslation, h53⟩
+  have hNoFive := cap5Normal.noSeparatingDualCycleOfLengthAtMostFive h53
+  simpa [hduality] using hNoFive
+
 end CAP5Tightness
 
 section EdgeColoringGlue
