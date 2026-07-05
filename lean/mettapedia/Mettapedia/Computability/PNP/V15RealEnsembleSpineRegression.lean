@@ -24,6 +24,7 @@ set_option autoImplicit false
 #check v13RealLinearSingleMessageSATSpine_singleMessage
 #check v13RealLinear_validWitness_readout_eq_publicMessage
 #check v13RealLinearNoTargetRowsTargetBit
+#check v13RealLinearNoTargetRowsWorldInstNonempty
 #check v13RealLinearBit_eq_true_iff
 #check v13RealLinearBit_eq_false_iff
 #check v13RealLinearNoTargetRowsTargetFlipEquiv
@@ -43,6 +44,7 @@ set_option autoImplicit false
 #check v13RealLinearNoTargetRowsPublicCoordinateField
 #check v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
 #check v13RealLinearNoTargetRows_publicCoordinate_admissible
+#check v13RealLinearNoTargetRows_singleMessage
 #check RealM4LockedCoreWorld
 #check RealM4LockedCoreWitness
 #check RealM4LockedCoreWorld.toWitness
@@ -193,6 +195,7 @@ set_option autoImplicit false
 #check realM4_gaugeFaithfulness_of_CDENF
 #check RealM4MechanicalInterfaceData
 #check RealM4MechanicalInterfaceData.ofCDENFComponents
+#check RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
 #check RealM4MechanicalInterfaceData.withAnalyticFrontier
 #check RealM4EndgameMechanicalData
 #check RealM4EndgameMechanicalData.ofComponents
@@ -313,6 +316,7 @@ set_option autoImplicit false
 #print axioms v13RealLinearSingleMessageSATSpine_singleMessage
 #print axioms v13RealLinear_validWitness_readout_eq_publicMessage
 #print axioms v13RealLinearNoTargetRowsTargetBit
+#print axioms v13RealLinearNoTargetRowsWorldInstNonempty
 #print axioms v13RealLinearBit_eq_true_iff
 #print axioms v13RealLinearBit_eq_false_iff
 #print axioms v13RealLinearNoTargetRowsTargetFlipEquiv
@@ -332,6 +336,7 @@ set_option autoImplicit false
 #print axioms v13RealLinearNoTargetRowsPublicCoordinateField
 #print axioms v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
 #print axioms v13RealLinearNoTargetRows_publicCoordinate_admissible
+#print axioms v13RealLinearNoTargetRows_singleMessage
 #print axioms RealM4LockedCoreWorld
 #print axioms RealM4LockedCoreWitness
 #print axioms RealM4LockedCoreWorld.toWitness
@@ -482,6 +487,7 @@ set_option autoImplicit false
 #print axioms realM4_gaugeFaithfulness_of_CDENF
 #print axioms RealM4MechanicalInterfaceData
 #print axioms RealM4MechanicalInterfaceData.ofCDENFComponents
+#print axioms RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
 #print axioms RealM4MechanicalInterfaceData.withAnalyticFrontier
 #print axioms RealM4EndgameMechanicalData
 #print axioms RealM4EndgameMechanicalData.ofComponents
