@@ -950,6 +950,101 @@ theorem v13RealLinearSmallNoTargetRowsCNFFormula_no_target_unit
           v13RealLinearSmallGaugeCNFSpareIndex,
           ConcreteCNF.unitClause, ConcreteCNF.unitLiteral]
 
+/-- Public formula-syntax tag for the concrete no-target-row CNF: whether the
+formula contains the positive unit clause for the public spare coordinate. -/
+def v13RealLinearSmallNoTargetRowsCNFFormulaSpareTag
+    (formula : ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar) :
+    Bool :=
+  decide
+    (ConcreteCNF.unitClause
+      (some v13RealLinearSmallGaugeCNFSpareIndex) true ∈ formula)
+
+/-- The spare-coordinate formula tag recovers the public spare bit. -/
+theorem v13RealLinearSmallNoTargetRowsCNFFormulaSpareTag_eq_spare
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFFormulaSpareTag
+        (v13RealLinearSmallNoTargetRowsCNFFormula Y) =
+      Y.spare := by
+  cases Y with
+  | mk msg spare =>
+      cases msg <;> cases spare <;>
+        simp [v13RealLinearSmallNoTargetRowsCNFFormulaSpareTag,
+          v13RealLinearSmallNoTargetRowsCNFFormula,
+          v13RealLinearSmallNoTargetRowsCNFXorClauses,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex,
+          ConcreteCNF.unitClause, ConcreteCNF.unitLiteral]
+
+/-- Public formula-syntax tag for the concrete no-target-row CNF: whether the
+formula contains the positive-positive xor clause, which is exactly the
+`x0 xor x1 = true` row-equation branch. -/
+def v13RealLinearSmallNoTargetRowsCNFFormulaXorTag
+    (formula : ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar) :
+    Bool :=
+  let x0 := some v13RealLinearSmallGaugeCNFMessageIndex
+  let x1 := some v13RealLinearSmallGaugeCNFSpareIndex
+  decide ([ConcreteCNF.Literal.pos x0, ConcreteCNF.Literal.pos x1] ∈ formula)
+
+/-- The xor-branch formula tag recovers the public row-equation right-hand
+side `msg xor spare`. -/
+theorem v13RealLinearSmallNoTargetRowsCNFFormulaXorTag_eq_rhs
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFFormulaXorTag
+        (v13RealLinearSmallNoTargetRowsCNFFormula Y) =
+      Bool.xor Y.msg Y.spare := by
+  cases Y with
+  | mk msg spare =>
+      cases msg <;> cases spare <;>
+        simp [v13RealLinearSmallNoTargetRowsCNFFormulaXorTag,
+          v13RealLinearSmallNoTargetRowsCNFFormula,
+          v13RealLinearSmallNoTargetRowsCNFXorClauses,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex,
+          ConcreteCNF.unitClause, ConcreteCNF.unitLiteral, Bool.xor]
+
+/-- Formula-syntax-only message determination for the concrete no-target-row
+CNF: even without a target unit clause, the public spare unit plus the xor
+row-equation branch determine the hidden message bit. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFFormula_publicSyntaxDeterminesMessage :
+    ∃ f : ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar -> Bool,
+      ∀ Y : V13RealLinearSmallNoTargetRowsCNFPublic,
+        v13RealLinearSmallNoTargetRowsCNFMessage Y =
+          f (v13RealLinearSmallNoTargetRowsCNFFormula Y) := by
+  refine
+    ⟨fun formula =>
+      Bool.xor
+        (v13RealLinearSmallNoTargetRowsCNFFormulaXorTag formula)
+        (v13RealLinearSmallNoTargetRowsCNFFormulaSpareTag formula), ?_⟩
+  intro Y
+  cases Y with
+  | mk msg spare =>
+      cases msg <;> cases spare <;>
+        simp [v13RealLinearSmallNoTargetRowsCNFMessage,
+          v13RealLinearSmallNoTargetRowsCNFFormulaSpareTag_eq_spare,
+          v13RealLinearSmallNoTargetRowsCNFFormulaXorTag_eq_rhs,
+          Bool.xor]
+
+/-- No-public-target-tags shape for the concrete no-target-row CNF when the
+full public formula syntax is taken as the public skeleton. -/
+def V13RealLinearSmallNoTargetRowsCNFFormulaNoPublicTargetTags : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar -> Bool,
+      ∀ Y : V13RealLinearSmallNoTargetRowsCNFPublic,
+        v13RealLinearSmallNoTargetRowsCNFMessage Y =
+          f (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+
+/-- Named obstruction: removing the target-coordinate unit clause is not
+enough to hide the message from full concrete formula syntax.  The spare unit
+and xor row-equation branch together determine the message, so this concrete
+syntax cannot provide formula-level `noPublicTargetTags` without restricting
+the public skeleton. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFFormula_noPublicTargetTags_obstruction :
+    ¬ V13RealLinearSmallNoTargetRowsCNFFormulaNoPublicTargetTags := by
+  intro hNoTags
+  exact hNoTags
+    v13RealLinearSmallNoTargetRowsCNFFormula_publicSyntaxDeterminesMessage
+
 /-- Semantic verifier for the concrete no-target-row CNF. -/
 def v13RealLinearSmallNoTargetRowsCNFVerifier
     (Y : V13RealLinearSmallNoTargetRowsCNFPublic)
