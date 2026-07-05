@@ -3490,6 +3490,72 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
       simpa [RealM4MechanicalInterfaceData.ofCDENFComponents] using
         boundaryMixing)
 
+/-! ## Official Cook-style endpoint bridge boundary -/
+
+/--
+Bridge data from the internal real-M4 clash endpoint to an official
+Cook-style P-vs-NP separation statement.  This structure is intentionally only
+an interface: this module does not construct the bridge and does not claim that
+`UpperLowerClash` is already the official theorem.
+
+To finish the real route, the official statement must be instantiated by the
+formal complexity-class development, and the bridge must prove that the
+particular internal M4 `UpperLowerClash` implies that official statement
+without hiding ensemble existence, lower hardness, or analytic assumptions in
+parameters.
+-/
+structure RealM4OfficialPNPBridgeData
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    (L :
+      GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
+        Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (P : ParameterRecord L)
+    (officialCookPNPSeparation : Prop) where
+  internalClash_to_official :
+    UpperLowerClash L P -> officialCookPNPSeparation
+
+/--
+Adapter from a proved internal clash to the official endpoint, assuming the
+separate bridge data.  This theorem is not a proof of P-vs-NP; the bridge data
+is the still-open Cook-style endpoint obligation.
+-/
+theorem realM4_officialSeparation_from_internalClash_bridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {L :
+      GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
+        Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton}
+    {P : ParameterRecord L}
+    {officialCookPNPSeparation : Prop}
+    (bridge :
+      RealM4OfficialPNPBridgeData L P officialCookPNPSeparation)
+    (clash : UpperLowerClash L P) :
+    officialCookPNPSeparation :=
+  bridge.internalClash_to_official clash
+
+def realM4OfficialPNPBridgeConstructionInputs : List String := [
+  "officialCookPNPBridgeData"
+]
+
+theorem realM4OfficialPNPBridgeConstructionInputs_exact :
+    realM4OfficialPNPBridgeConstructionInputs =
+      [ "officialCookPNPBridgeData" ] := by
+  rfl
+
+def realM4OfficialPNPBridgeStatement : String :=
+  "The real v15/M4 UpperLowerClash is only an internal endpoint.  A separate official Cook-style P-vs-NP bridge must instantiate the official separation statement and prove that this internal clash implies it without hiding ensemble existence, lower hardness, or analytic assumptions in parameters."
+
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
   "realM4SelfReductionUpperDischarge"
@@ -4319,6 +4385,18 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Builds CD-ENF mechanical data, lower framework/kernel neutrality, uniform CNF support, and the explicit-P=NP upper package from construction data before invoking the v13 clash wiring."
   },
   {
+    item := "officialPNPBridgeData"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPNPBridgeData"
+    note := "The internal UpperLowerClash still needs a separate Cook-style endpoint bridge before it can be read as an official P-vs-NP separation statement."
+  },
+  {
+    item := "officialPNPBridgeAdapter"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_officialSeparation_from_internalClash_bridge"
+    note := "Once the official bridge data is constructed, any internal UpperLowerClash can be transported to the official endpoint; this does not construct the bridge."
+  },
+  {
     item := "pnpDecider"
     status := .pnpConditionalInput
     checkedName := "RealM4ExplicitPNPDeciderFamily"
@@ -4390,6 +4468,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
         RealM4LiftStatus.irreducibleInput,
@@ -4406,7 +4486,8 @@ def realM4OpenConstructionItems : List String := [
   "finiteCNFVariableFamilyData",
   "realCompressionLowerMachineData",
   "phaseABudget",
-  "epsSmall"
+  "epsSmall",
+  "officialPNPBridgeData"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -4419,7 +4500,8 @@ theorem realM4OpenConstructionItems_exact :
         "finiteCNFVariableFamilyData",
         "realCompressionLowerMachineData",
         "phaseABudget",
-        "epsSmall" ] := by
+        "epsSmall",
+        "officialPNPBridgeData" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
