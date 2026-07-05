@@ -2594,6 +2594,47 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData.
   outerBoundaryEdges_eq := data.outerBoundaryEdges_eq
 
 /--
+Previous-boundary annulus geometry together with the specific cut-open collar
+face whose boundary contains the winding radial cut.  This is the combined
+geometric certificate needed before the finite radial-face archive obstruction
+can be applied to the normal-form witness.
+-/
+structure ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  emb : PlaneEmbeddingWithBoundary G
+  previousGeometry : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb
+  collarEdges_eq :
+    normalForm.annular.collarEdges =
+      closedCollarActualCollarGeometryEdgeSupport
+        previousGeometry.toPlanarBoundaryAnnulusCollarGeometry
+  outerBoundaryEdges_eq :
+    normalForm.annular.outerBoundaryEdges =
+      previousGeometry.toPlanarBoundaryAnnulusCollarGeometry.outerAmbientBoundary
+  cutOpenFace : AmbientFace emb.faces
+  cutOpenFace_mem_collar :
+    ∃ i : Fin previousGeometry.toPlanarBoundaryAnnulusCollarGeometry.numCollars,
+      cutOpenFace ∈
+        previousGeometry.toPlanarBoundaryAnnulusCollarGeometry.collarFaces i
+  radialCut_subset_cutOpenFaceBoundary :
+    normalForm.annular.radialCut ⊆ emb.faceBoundary cutOpenFace.1
+  cutOpenFaceIsCutOpenCollarFace : Prop
+  hcutOpenFace : cutOpenFaceIsCutOpenCollarFace
+
+def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.toPreviousBoundaryGeometryData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (data :
+      ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+        normalForm) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+      normalForm where
+  emb := data.emb
+  previousGeometry := data.previousGeometry
+  collarEdges_eq := data.collarEdges_eq
+  outerBoundaryEdges_eq := data.outerBoundaryEdges_eq
+
+/--
 Cut-open radial face extracted from already identified embedded collar
 geometry.  This is the second geometric obligation needed by the finite n6
 taxonomy route.
@@ -2637,6 +2678,26 @@ structure ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData
   cutOpenFaceIsCutOpenCollarFace : Prop
   hcutOpenFace : cutOpenFaceIsCutOpenCollarFace
 
+def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.toRadialFaceData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (data :
+      ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+        normalForm) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData
+      normalForm where
+  emb := data.emb
+  collarGeometry :=
+    data.previousGeometry.toPlanarBoundaryAnnulusCollarGeometry
+  collarEdges_eq := data.collarEdges_eq
+  outerBoundaryEdges_eq := data.outerBoundaryEdges_eq
+  cutOpenFace := data.cutOpenFace
+  cutOpenFace_mem_collar := data.cutOpenFace_mem_collar
+  radialCut_subset_cutOpenFaceBoundary :=
+    data.radialCut_subset_cutOpenFaceBoundary
+  cutOpenFaceIsCutOpenCollarFace := data.cutOpenFaceIsCutOpenCollarFace
+  hcutOpenFace := data.hcutOpenFace
+
 def ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData.ofGeometryExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
@@ -2673,6 +2734,20 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData :
             normalForm)
 
 /--
+Combined geometric supply obligation: actual collar constraints produce the
+repaired previous-boundary annulus geometry and the cut-open radial face whose
+boundary contains the winding radial cut.
+-/
+def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      normalForm.actualCollarEmbeddingConstraints →
+        Nonempty
+          (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+            normalForm)
+
+/--
 First factored data obligation: actual collar constraints produce embedded
 annulus-collar geometry with the normal-form support equalities.
 -/
@@ -2698,6 +2773,22 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeome
         Nonempty
           (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
             normalForm)
+
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_previousBoundaryRadialFaceData
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData := by
+  intro V _hV G normalForm hactual
+  rcases hdata normalForm hactual with ⟨previousRadialFaceData⟩
+  exact ⟨previousRadialFaceData.toPreviousBoundaryGeometryData⟩
+
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of_previousBoundaryRadialFaceData
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData := by
+  intro V _hV G normalForm hactual
+  rcases hdata normalForm hactual with ⟨previousRadialFaceData⟩
+  exact ⟨previousRadialFaceData.toRadialFaceData⟩
 
 theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData_of_previousBoundaryGeometryData
     (hgeometry :
@@ -2762,6 +2853,15 @@ theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_actualCollarEm
         radialFace := radialFace },
       rfl
     ⟩⟩
+
+theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_previousBoundaryRadialFaceData
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData) :
+    ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :=
+  closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_actualCollarEmbeddingForcesRadialFace
+    (closedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace_of_suppliesRadialFaceData
+      (closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of_previousBoundaryRadialFaceData
+        hdata))
 
 /--
 Every cut-open radial-face normal-form annulus is represented by an n6
@@ -7158,6 +7258,49 @@ theorem section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6Au
   exact
     closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryGeometryN6AuditedArchiveKey_of_exactRowCoverage
       hgeometry hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceDataN6AuditedArchiveKey_of_exactRowCoverage
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_exactRowCoverage
+    (closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_previousBoundaryRadialFaceData
+      hdata)
+    hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Repaired Section 9.2 Step 4 target with the geometric side compressed to the
+single combined certificate that carries both previous-boundary annulus
+geometry and the cut-open radial face for the winding radial cut.  The
+remaining extraction work is radial-face n6 extraction plus the audited
+ten-key spectrum.
+-/
+def Section92Step4RepairedByPreviousBoundaryRadialFaceDataN6AuditedKeysAndExactRowCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByPreviousBoundaryRadialFaceDataN6AuditedKeysAndExactRowCoverageTarget :
+    Section92Step4RepairedByPreviousBoundaryRadialFaceDataN6AuditedKeysAndExactRowCoverageTarget := by
+  intro hdata hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceDataN6AuditedArchiveKey_of_exactRowCoverage
+      hdata hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage
     (hextract :

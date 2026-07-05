@@ -1087,6 +1087,27 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData_of_p
   closedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData_of_previousBoundaryGeometryData
     hgeometry
 
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_previousBoundaryRadialFaceData_audit
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData :=
+  closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_previousBoundaryRadialFaceData
+    hdata
+
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of_previousBoundaryRadialFaceData_audit
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData :=
+  closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of_previousBoundaryRadialFaceData
+    hdata
+
+theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_previousBoundaryRadialFaceData_audit
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData) :
+    ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :=
+  closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_previousBoundaryRadialFaceData
+    hdata
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryGeometryN6AuditedArchiveKey_of_exactRowCoverage_audit
     (hgeometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData)
@@ -1109,6 +1130,27 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryG
 theorem section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6AuditedKeysAndExactRowCoverageTarget_audit :
     Section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6AuditedKeysAndExactRowCoverageTarget :=
   section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6AuditedKeysAndExactRowCoverageTarget
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceDataN6AuditedArchiveKey_of_exactRowCoverage_audit
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceDataN6AuditedArchiveKey_of_exactRowCoverage
+    hdata hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem section92Step4RepairedByPreviousBoundaryRadialFaceDataN6AuditedKeysAndExactRowCoverageTarget_audit :
+    Section92Step4RepairedByPreviousBoundaryRadialFaceDataN6AuditedKeysAndExactRowCoverageTarget :=
+  section92Step4RepairedByPreviousBoundaryRadialFaceDataN6AuditedKeysAndExactRowCoverageTarget
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage_audit
     (hextract :
