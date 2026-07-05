@@ -632,6 +632,130 @@ theorem v13RealLinearGaugeCNFSingleMessageSATSpine_singleMessage
           v13RealLinearGaugeCNFReadout i₀ w1.assignment :=
   (v13RealLinearGaugeCNFSingleMessageSATSpine i₀).singleMessage
 
+/-! ## Gauge-buffered real linear CNF self-reduction -/
+
+/-- Explicit P=NP-side SAT decider object for the gauge-buffered real linear
+CNF variable type.  The theorems below remain conditional on this object; they
+do not construct an unconditional SAT solver. -/
+abbrev V13RealLinearGaugeCNFPNPSATDecider (m : Nat) :=
+  RealCNFPNPSATDecider (V13RealLinearGaugeCNFVar m)
+
+/-- Bit-fixing variable order for a concrete gauge-buffered real linear CNF,
+computed from the variables that actually occur in the finite formula.  The
+free hidden gauge coordinate is absent from the formula and need not be
+fixed. -/
+def v13RealLinearGaugeCNFBitFixVarOrder {m : Nat}
+    (Y : V13RealLinearPublic m) :
+    List (V13RealLinearGaugeCNFVar m) :=
+  ConcreteCNF.formulaVarCover (v13RealLinearGaugeCNFFormula Y)
+
+/-- The formula-syntax variable cover has no duplicate variables. -/
+theorem v13RealLinearGaugeCNFBitFixVarOrder_nodup {m : Nat}
+    (Y : V13RealLinearPublic m) :
+    (v13RealLinearGaugeCNFBitFixVarOrder Y).Nodup := by
+  unfold v13RealLinearGaugeCNFBitFixVarOrder
+  exact ConcreteCNF.formulaVarCover_nodup (v13RealLinearGaugeCNFFormula Y)
+
+/-- The bit-fixing variable order covers every variable used by the concrete
+gauge-buffered CNF formula. -/
+theorem v13RealLinearGaugeCNFFormula_usesOnly_bitFixVarOrder
+    {m : Nat} (Y : V13RealLinearPublic m) :
+    ConcreteCNF.FormulaUsesOnly
+      (v13RealLinearGaugeCNFFormula Y)
+      (v13RealLinearGaugeCNFBitFixVarOrder Y) := by
+  unfold v13RealLinearGaugeCNFBitFixVarOrder
+  exact
+    ConcreteCNF.formulaUsesOnly_formulaVarCover
+      (v13RealLinearGaugeCNFFormula Y)
+
+/-- Every concrete gauge-buffered real linear public instance has a satisfying
+assignment, for either choice of the free hidden gauge coordinate. -/
+theorem v13RealLinearGaugeCNFFormula_satisfiable {m : Nat}
+    (Y : V13RealLinearPublic m) :
+    ∃ σ : V13RealLinearGaugeCNFWitness m,
+      v13RealLinearGaugeCNFVerifier Y σ :=
+  ⟨v13RealLinearGaugeCNFAssignment Y false,
+    v13RealLinearGaugeCNFFormula_satisfied_assignment Y false⟩
+
+/-- Standard bit-fixing search-to-decision assignment for the concrete
+gauge-buffered real linear CNF, conditional on the explicit SAT decider
+object. -/
+def v13RealLinearGaugeCNFSelfReductionAssignment {m : Nat}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearPublic m) :
+    V13RealLinearGaugeCNFWitness m :=
+  realCNFBitFixAssignment D
+    (v13RealLinearGaugeCNFFormula Y)
+    (v13RealLinearGaugeCNFBitFixVarOrder Y)
+
+/-- Bit-fixing with the explicit SAT decider returns a satisfying assignment
+for the concrete gauge-buffered CNF. -/
+theorem v13RealLinearGaugeCNFSelfReductionAssignment_satisfies
+    {m : Nat} (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearPublic m) :
+    v13RealLinearGaugeCNFVerifier Y
+      (v13RealLinearGaugeCNFSelfReductionAssignment D Y) := by
+  exact
+    realCNFBitFixAssignment_satisfies
+      D
+      (v13RealLinearGaugeCNFFormula_usesOnly_bitFixVarOrder Y)
+      (v13RealLinearGaugeCNFBitFixVarOrder_nodup Y)
+      (v13RealLinearGaugeCNFFormula_satisfiable Y)
+
+/-- The recovered bit-fixing witness reads the fixed public message.  This is
+the P=NP-conditional upper side: the hidden gauge coordinate may be chosen by
+search, but the selected locked coordinate is forced by the CNF. -/
+theorem v13RealLinearGaugeCNFSelfReduction_readout_eq_publicMessage
+    {m : Nat} (i₀ : Fin m)
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearPublic m) :
+    v13RealLinearGaugeCNFReadout i₀
+        (v13RealLinearGaugeCNFSelfReductionAssignment D Y) =
+      v13RealLinearMessageOfPublic i₀ Y :=
+  v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀
+    (v13RealLinearGaugeCNFSelfReductionAssignment_satisfies D Y)
+
+/-- Any verifier-valid witness has the same readout as the bit-fixing witness
+returned by the explicit P=NP-side search-to-decision decoder. -/
+theorem
+    v13RealLinearGaugeCNFSelfReduction_readout_eq_validWitness_readout
+    {m : Nat} (i₀ : Fin m)
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    {Y : V13RealLinearPublic m} {W : V13RealLinearGaugeCNFWitness m}
+    (hW : v13RealLinearGaugeCNFVerifier Y W) :
+    v13RealLinearGaugeCNFReadout i₀
+        (v13RealLinearGaugeCNFSelfReductionAssignment D Y) =
+      v13RealLinearGaugeCNFReadout i₀ W := by
+  calc
+    v13RealLinearGaugeCNFReadout i₀
+        (v13RealLinearGaugeCNFSelfReductionAssignment D Y) =
+        v13RealLinearMessageOfPublic i₀ Y :=
+      v13RealLinearGaugeCNFSelfReduction_readout_eq_publicMessage i₀ D Y
+    _ = v13RealLinearGaugeCNFReadout i₀ W :=
+      (v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW).symm
+
+/-- The concrete self-reduction uses a fixed program skeleton around the
+explicit SAT decider, so the associated `kpolyAt` model is constant in the
+target-block count. -/
+theorem v13RealLinearGaugeCNFConstantDecoderKpolyAt_const {m : Nat}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (targetBlocks targetBlocks' : Nat) :
+    realCNFConstantDecoderKpolyAt D targetBlocks =
+      realCNFConstantDecoderKpolyAt D targetBlocks' :=
+  realCNFConstantDecoderKpolyAt_const D targetBlocks targetBlocks'
+
+/-- Conditional upper-bound discharge for the concrete gauge-buffered real
+linear CNF: given the explicit P=NP-side SAT decider and a lower-framework
+regime identifying `kpolyAt` with the fixed self-reduction decoder and
+`etaTimes t` with a linear floor, the self-reduction upper inequality follows.
+-/
+theorem v13RealLinearGaugeCNF_selfReductionUpperHypothesis_givenPNP
+    {m : Nat} {F : CompressionLowerFramework}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (R : RealCNFConstantDecoderRegime F D) :
+    SelfReductionUpperHypothesis F :=
+  realCNF_selfReductionUpperHypothesis_givenPNP D R
+
 /-! ## No-target-rows CNF structural transfer -/
 
 /-- CNF world over the adjusted no-target-rows real linear surface: a base
@@ -1100,6 +1224,21 @@ def v13RealLinearNoTargetRowsGaugeCNFWorldOfBase {m : Nat}
     v13RealLinearGaugeCNFFormula_satisfied_assignment
       (v13RealLinearNoTargetRowsPublicInput omega) gauge
 
+/-- No-target-rows gauge-buffered CNF world whose satisfying assignment is
+recovered by the explicit P=NP-side bit-fixing self-reduction. -/
+def v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ where
+  base := omega
+  assignment :=
+    v13RealLinearGaugeCNFSelfReductionAssignment D
+      (v13RealLinearNoTargetRowsPublicInput omega)
+  sat :=
+    v13RealLinearGaugeCNFSelfReductionAssignment_satisfies D
+      (v13RealLinearNoTargetRowsPublicInput omega)
+
 /-- Target readout for the no-target-rows gauge-buffered CNF world. -/
 def v13RealLinearNoTargetRowsGaugeCNFTarget {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) : Bool :=
@@ -1174,6 +1313,33 @@ theorem v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit
     _ = v13RealLinearNoTargetRowsTargetBit omega.base := by
       have hdecode :=
         v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega.base
+      simpa [v13RealLinearMessageOfPublic,
+        v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
+        using congrArg v13RealLinearBit hdecode
+
+/-- In the no-target-rows gauge-buffered CNF surface, bit-fixing under the
+explicit P=NP-side SAT decider recovers a satisfying witness whose readout is
+the hidden target bit of the base world. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFSelfReduction_target_eq_targetBit
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction D omega) =
+      v13RealLinearNoTargetRowsTargetBit omega := by
+  calc
+    v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction D omega) =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega) := by
+      simpa [v13RealLinearNoTargetRowsGaugeCNFTarget,
+        v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction] using
+        v13RealLinearGaugeCNFSelfReduction_readout_eq_publicMessage
+          i₀ D (v13RealLinearNoTargetRowsPublicInput omega)
+    _ = v13RealLinearNoTargetRowsTargetBit omega := by
+      have hdecode :=
+        v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega
       simpa [v13RealLinearMessageOfPublic,
         v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
         using congrArg v13RealLinearBit hdecode
