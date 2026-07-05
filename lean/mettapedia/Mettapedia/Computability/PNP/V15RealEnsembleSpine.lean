@@ -13523,6 +13523,273 @@ theorem
       i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing⟩
 
+/--
+The strict named-language large-target construction surface subsumes the
+equality-indexed official construction surface.  A candidate `P = NP` witness
+puts the named NP language in `P`; the strict surface's P-membership-indexed
+eta/K-poly/target-block facts can therefore be specialized to the indexed
+fields required by the equality route.
+
+This is a transfer between real-spine construction surfaces.  It does not
+inhabit the manuscript M4 construction and does not add any StarSW or analytic
+frontier hypothesis.
+-/
+def
+    realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+      (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+      (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+      (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+      (Observer := Observer) (Output := Output)
+      (PublicLock := PublicLock) (Quotient := Quotient)
+      (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+      (Address := Address) (Var := Var) (Witness := Witness)
+      i₀ coordinate D C where
+  law := K.law
+  transcript := K.transcript
+  observerBit := K.observerBit
+  phaseA := K.phaseA
+  semantics := K.semantics
+  observerEvidence := K.observerEvidence
+  pivotSummary := K.pivotSummary
+  epsMix := K.epsMix
+  safeCost := K.safeCost
+  safeBudget := K.safeBudget
+  gaugeIncidence := K.gaugeIncidence
+  gaugeBound := K.gaugeBound
+  hiddenGaugeProduct := K.hiddenGaugeProduct
+  lowerMachine := K.lowerMachine
+  coverageData := K.coverageData
+  lockedMessageData := K.lockedMessageData
+  variableAddressSyntax := K.variableAddressSyntax
+  languageNPData := K.languageNPData
+  pToDeciderFamilyData := K.pToDeciderFamilyData
+  eta_of_pEqualsNP := fun hEq =>
+    K.eta_of_inP
+      (hEq K.languageNPData.separatedLanguage
+        K.languageNPData.separatedLanguage_inNP)
+  eta_pos_of_pEqualsNP := fun hEq =>
+    K.eta_pos_of_inP
+      (hEq K.languageNPData.separatedLanguage
+        K.languageNPData.separatedLanguage_inNP)
+  kpolyAt_eq_of_pEqualsNP := fun hEq => by
+    simpa [
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax,
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndEncodableSyntax,
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndVariableNatCoding,
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndUniformSupport,
+      realM4_formulaSyntaxCNFSupport_of_addressSyntax,
+      realM4_variableNatCoding_of_encodableSyntax,
+      realM4_uniformCNFSupport_of_variableNatCoding,
+      RealM4CNFVariableEncodableSyntaxData.formulaSyntaxSupport]
+      using
+        K.kpolyAt_eq_of_inP
+          (hEq K.languageNPData.separatedLanguage
+            K.languageNPData.separatedLanguage_inNP)
+  etaTimes_eq_of_pEqualsNP := fun hEq =>
+    K.etaTimes_eq_of_inP
+      (hEq K.languageNPData.separatedLanguage
+        K.languageNPData.separatedLanguage_inNP)
+  targetBlocks_gt_decoder_of_pEqualsNP := fun hEq => by
+    simpa [
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax,
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndEncodableSyntax,
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndVariableNatCoding,
+      RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndUniformSupport,
+      realM4_formulaSyntaxCNFSupport_of_addressSyntax,
+      realM4_variableNatCoding_of_encodableSyntax,
+      realM4_uniformCNFSupport_of_variableNatCoding,
+      RealM4CNFVariableEncodableSyntaxData.formulaSyntaxSupport]
+      using
+        K.targetBlocks_gt_decoder_of_inP
+          (hEq K.languageNPData.separatedLanguage
+            K.languageNPData.separatedLanguage_inNP)
+
+/--
+Field audit for the strict-to-equality construction transfer.  It records the
+only nontrivial move: each equality-indexed K-poly field is the strict
+P-membership-indexed field specialized at the named NP language placed in `P`
+by a candidate equality witness.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_subsumes_equalityIndexed_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let KEq :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData
+        i₀ coordinate K
+    KEq.lowerMachine.lowerFramework = K.lowerMachine.lowerFramework ∧
+      (∀ hEq : C.pEqualsNP,
+        KEq.eta_of_pEqualsNP hEq =
+          K.eta_of_inP
+            (hEq K.languageNPData.separatedLanguage
+              K.languageNPData.separatedLanguage_inNP)) ∧
+        (∀ hEq : C.pEqualsNP, 0 < KEq.eta_of_pEqualsNP hEq) ∧
+          (∀ hEq : C.pEqualsNP,
+            K.lowerMachine.lowerFramework.kpolyAt =
+              realM4UniformConstantDecoderKpolyAt
+                ((realM4_formulaSyntaxCNFSupport_of_addressSyntax
+                    K.variableAddressSyntax).withPNPDecider
+                  (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP
+                    (hEq K.languageNPData.separatedLanguage
+                      K.languageNPData.separatedLanguage_inNP)))) ∧
+            (∀ hEq : C.pEqualsNP,
+              K.lowerMachine.lowerFramework.etaTimes =
+                realCNFLinearEtaTimes (KEq.eta_of_pEqualsNP hEq)) ∧
+              (∀ hEq : C.pEqualsNP,
+                realM4UniformSelfReductionDecoderCost
+                    ((realM4_formulaSyntaxCNFSupport_of_addressSyntax
+                        K.variableAddressSyntax).withPNPDecider
+                      (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP
+                        (hEq K.languageNPData.separatedLanguage
+                          K.languageNPData.separatedLanguage_inNP))) <
+                  K.lowerMachine.lowerFramework.targetBlocks) := by
+  dsimp
+  exact
+    ⟨rfl,
+      (fun _ => rfl),
+      (fun hEq =>
+        K.eta_pos_of_inP
+          (hEq K.languageNPData.separatedLanguage
+            K.languageNPData.separatedLanguage_inNP)),
+      (fun hEq =>
+        (realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData
+          i₀ coordinate K).kpolyAt_eq_of_pEqualsNP hEq),
+      (fun hEq =>
+        (realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData
+          i₀ coordinate K).etaTimes_eq_of_pEqualsNP hEq),
+      (fun hEq =>
+        (realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData
+          i₀ coordinate K).targetBlocks_gt_decoder_of_pEqualsNP hEq)⟩
+
+/--
+The strict named-language construction surface also yields the bundled
+equality-indexed real lock-in endpoints through the transfer above.  This
+shows that the current strict named route and the equality-indexed official
+route are connected mechanically; the theorem boundary is still one real
+construction object plus exactly StarSW hardness and the three analytic
+frontiers.
+-/
+theorem
+    realM4_realLockInEndpoints_from_noTargetRowsNamedLanguageLargeTargetConstructionData_viaEqualityIndexedRealFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+      ∃ separatedLanguage : C.Language,
+        C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage := by
+  let KEq :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData
+      i₀ coordinate K
+  exact
+    realM4_realLockInEndpoints_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate KEq starSWHardness
+      (by
+        simpa [KEq,
+          realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData,
+          realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface]
+          using safeQSSM)
+      (by
+        simpa [KEq,
+          realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData,
+          realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface]
+          using boundedGaugeIncidence)
+      (by
+        simpa [KEq,
+          realM4_noTargetRowsEqualityIndexedConstructionData_of_noTargetRowsNamedLanguageLargeTargetConstructionData,
+          realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface]
+          using boundaryMixing)
+
 def realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields :
     List String := [
   "noTargetRowsPublicSurface",
@@ -19671,6 +19938,49 @@ theorem
 def realM4NamedLanguageLargeTargetNamedInterfaceEndpointStatement :
     String :=
   "The preferred strict named-language large-target endpoint states the three analytic frontier hypotheses over the named mechanical interface projected from the construction surface.  Its theorem boundary is one construction-data object plus exactly StarSW hardness and safeQSSM / boundedGaugeIncidence / boundaryMixing; the structural interface fields are projected from the construction object, not reintroduced as endpoint assumptions."
+
+def realM4NamedLanguageLargeTargetSubsumesEqualityIndexedItems :
+    List String := [
+  "sameRealConstructionFields",
+  "pEqualsNPPutsNamedLanguageInP",
+  "pMembershipEtaSpecializesAtPEqualsNP",
+  "pMembershipKpolySpecializesAtPEqualsNP",
+  "pMembershipEtaTimesSpecializesAtPEqualsNP",
+  "pMembershipTargetBlocksSpecializesAtPEqualsNP"
+]
+
+theorem
+    realM4NamedLanguageLargeTargetSubsumesEqualityIndexedItems_exact :
+    realM4NamedLanguageLargeTargetSubsumesEqualityIndexedItems =
+      [ "sameRealConstructionFields",
+        "pEqualsNPPutsNamedLanguageInP",
+        "pMembershipEtaSpecializesAtPEqualsNP",
+        "pMembershipKpolySpecializesAtPEqualsNP",
+        "pMembershipEtaTimesSpecializesAtPEqualsNP",
+        "pMembershipTargetBlocksSpecializesAtPEqualsNP" ] := by
+  rfl
+
+def realM4NamedLanguageLargeTargetSubsumesEqualityIndexedStatement :
+    String :=
+  "The strict named-language large-target construction surface projects to the equality-indexed official construction surface by specializing its P-membership-indexed eta/K-poly/target-block facts at the named NP language placed in P by a candidate P=NP witness.  This connects the strict named route to the equality-indexed lock-in route without adding StarSW, analytic frontier, or hidden structural hypotheses."
+
+def realM4NamedLanguageLargeTargetViaEqualityIndexedLockInHypothesisAudit :
+    List String :=
+  realM4NamedLanguageLargeTargetNamedInterfaceEndpointHypothesisAudit
+
+theorem
+    realM4NamedLanguageLargeTargetViaEqualityIndexedLockInHypothesisAudit_exact :
+    realM4NamedLanguageLargeTargetViaEqualityIndexedLockInHypothesisAudit =
+      [ "noTargetRowsNamedLanguageLargeTargetOfficialConstructionData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NamedLanguageLargeTargetViaEqualityIndexedLockInStatement :
+    String :=
+  "Via the strict-to-equality construction transfer, the real lock-in endpoints follow from the strict named-language large-target construction surface plus exactly StarSW hardness and the three analytic frontier objects over the projected named mechanical interface.  The route still does not inhabit the real M4 construction surface and does not prove P != NP without the four frontier inputs."
 
 def realM4NamedLanguageLargeTargetKpolySplitBundleStatement : String :=
   "The large-target K-poly split bundle packages named-language NP membership and non-membership, Cook-style class inequality, the official separation proposition, and the existential NP-not-P endpoint from the same explicit construction surface.  Its mathematical frontier inputs remain exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; the P-membership-indexed eta, K-poly, floor, and target-block facts are construction obligations for locking the real route."
