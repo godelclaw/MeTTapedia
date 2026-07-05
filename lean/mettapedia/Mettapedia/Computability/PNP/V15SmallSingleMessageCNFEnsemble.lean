@@ -1804,6 +1804,87 @@ theorem xorGaugeSingleMessageAppendixICNFSingleMessageSATSpine_singleMessage :
             w1.publicInstance :=
   xorGaugeSingleMessageAppendixICNFSingleMessageSATSpine.singleMessage
 
+/-- Target bit on the concrete Appendix-I CNF world spine. -/
+def xorGaugeSingleMessageAppendixICNFWorldTarget
+    (omega : RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :
+    Bool :=
+  realM4CNFMessageOfPublic
+    xorGaugeSingleMessageAppendixICNFReadoutData
+    xorGaugeSingleMessageM
+    (fun bit => bit)
+    omega.publicInstance
+
+/-- No single public coordinate should determine the concrete Appendix-I CNF
+world target. -/
+def XorGaugeSingleMessageAppendixICNFNoPublicCoordinateTargetTags : Prop :=
+  ∀ coord : XorSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool -> Bool,
+      ∀ omega :
+        RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData,
+        xorGaugeSingleMessageAppendixICNFWorldTarget omega =
+          f (xorSingleMessagePublicCoordinateValue coord omega.publicInstance)
+
+/-- Structural `noPublicTargetTags` transferred to the stronger Appendix-I CNF
+world spine: adding satisfying assignments and the Appendix-D/I readout layer
+does not make one public coordinate determine the target. -/
+theorem xorGaugeSingleMessageAppendixICNF_noPublicTargetTags :
+    XorGaugeSingleMessageAppendixICNFNoPublicCoordinateTargetTags := by
+  intro coord htag
+  exact xorGaugeSingleMessage_noPublicTargetTags coord
+    (by
+      rcases htag with ⟨f, hf⟩
+      refine ⟨f, ?_⟩
+      intro Y
+      let omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData :=
+        { publicInstance := Y
+          support := trivial
+          assignment := xorGaugeSingleMessageAssignment Y false
+          sat := xorGaugeSingleMessageFormula_satisfied_assignment Y false }
+      have htarget := hf omega
+      simpa [omega, xorGaugeSingleMessageAppendixICNFWorldTarget,
+        realM4CNFMessageOfPublic, xorGaugeSingleMessageAppendixICNFReadoutData]
+        using htarget)
+
+/-- No single public coordinate should determine the readout of every
+verifier-valid witness in the concrete Appendix-I CNF spine. -/
+def XorGaugeSingleMessageAppendixICNFNoPublicCoordinateReadoutTags : Prop :=
+  ∀ coord : XorSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool -> Bool,
+      ∀ {Y : XorGaugeSingleMessagePublic}
+        {W : RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData},
+          realM4CNFVerifier
+              xorGaugeSingleMessageAppendixICNFReadoutData Y W ->
+            realM4CNFWitnessReadout (fun bit => bit) W =
+              f (xorSingleMessagePublicCoordinateValue coord Y)
+
+/-- Structural readout-tag transfer for the concrete Appendix-I CNF spine:
+even after moving to verifier-valid CNF witnesses, no single public coordinate
+predicts the fixed message readout. -/
+theorem xorGaugeSingleMessageAppendixICNF_noPublicReadoutTags :
+    XorGaugeSingleMessageAppendixICNFNoPublicCoordinateReadoutTags := by
+  intro coord htag
+  exact xorGaugeSingleMessage_noPublicTargetTags coord
+    (by
+      rcases htag with ⟨f, hf⟩
+      refine ⟨f, ?_⟩
+      intro Y
+      let W :
+          RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData :=
+        { publicInstance := Y
+          assignment := xorGaugeSingleMessageAssignment Y false }
+      have hvalid :
+          realM4CNFVerifier
+              xorGaugeSingleMessageAppendixICNFReadoutData Y W := by
+        exact
+          ⟨trivial, ⟨rfl,
+            xorGaugeSingleMessageFormula_satisfied_assignment Y false⟩⟩
+      have hreadout := hf (Y := Y) (W := W) hvalid
+      simpa [W, realM4CNFWitnessReadout,
+        xorGaugeSingleMessageAppendixICNFReadoutData,
+        xorGaugeSingleMessageProjection, xorGaugeSingleMessageAssignment,
+        xorGaugeSingleMessageM] using hreadout)
+
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
 
 /-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered
