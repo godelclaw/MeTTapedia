@@ -307,6 +307,11 @@ def NoSeparatingDualCycleOfLengthAtMostFour [DecidableRel G.Adj] [DecidableRel T
     (dual : PlaneCubicDualData G T) : Prop :=
   ∀ k : Nat, k ≤ 4 → NoSeparatingDualCycleOfLength dual k
 
+/-- There is no separating dual cycle of any length at most five. -/
+def NoSeparatingDualCycleOfLengthAtMostFive [DecidableRel G.Adj] [DecidableRel T.Adj]
+    (dual : PlaneCubicDualData G T) : Prop :=
+  ∀ k : Nat, k ≤ 5 → NoSeparatingDualCycleOfLength dual k
+
 /-- The Lemma 5.2 small-separator exclusion on the dual side. -/
 def NoSeparatingDualCyclesOfLengthThreeAndFour [DecidableRel G.Adj] [DecidableRel T.Adj]
     (dual : PlaneCubicDualData G T) : Prop :=
@@ -329,6 +334,18 @@ theorem noSeparatingDualCycleOfLengthAtMostFour_of_noCyclicEdgeCutOfSizeAtMostFo
     (dual : PlaneCubicDualData G T) (hno : NoCyclicEdgeCutOfSizeAtMostFour G) :
     NoSeparatingDualCycleOfLengthAtMostFour dual :=
   fun _ hk => noSeparatingDualCycleOfLength_of_noCyclicEdgeCutOfSizeAtMostFour dual hno hk
+
+/-- Combine the Lemma 5.2 small-separator exclusion with a no-5-cycle theorem. -/
+theorem noSeparatingDualCycleOfLengthAtMostFive_of_atMostFour_of_five
+    (dual : PlaneCubicDualData G T)
+    (hfour : NoSeparatingDualCycleOfLengthAtMostFour dual)
+    (hfive : NoSeparatingDualCycleOfLength dual 5) :
+    NoSeparatingDualCycleOfLengthAtMostFive dual := by
+  intro k hk
+  by_cases hkfour : k ≤ 4
+  · exact hfour k hkfour
+  · have hk5 : k = 5 := by omega
+    simpa [hk5] using hfive
 
 /-- The graph-side no-small-cyclic-cut predicate gives the dual-side exclusion of separating
 triangles and separating 4-cycles. -/
@@ -377,6 +394,14 @@ theorem noSeparatingDualCycleOfLengthAtMostFour
     NoSeparatingDualCycleOfLengthAtMostFour normal.duality :=
   noSeparatingDualCycleOfLengthAtMostFour_of_noCyclicEdgeCutOfSizeAtMostFour
     normal.duality normal.no_small_cyclic_edge_cut
+
+/-- Normal form plus a no-5-cycle theorem excludes separating dual cycles of length at most five. -/
+theorem noSeparatingDualCycleOfLengthAtMostFive_of_noFive
+    (normal : MinimalCounterexampleNormalForm G T)
+    (hfive : NoSeparatingDualCycleOfLength normal.duality 5) :
+    NoSeparatingDualCycleOfLengthAtMostFive normal.duality :=
+  noSeparatingDualCycleOfLengthAtMostFive_of_atMostFour_of_five
+    normal.duality normal.noSeparatingDualCycleOfLengthAtMostFour hfive
 
 end MinimalCounterexampleNormalForm
 
@@ -1291,6 +1316,15 @@ theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualFiveCycle
   noSeparatingDualFiveCycle_of_CAP5Free_of_lemma53CAP5PinchObligation
     cap5Normal.cap5_free h53
 
+/-- CAP5-free normal form excludes separating dual cycles of length at most five once the
+graph-facing Lemma 5.3 endpoint is available. -/
+theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualCycleOfLengthAtMostFive
+    (cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T)
+    (h53 : Lemma53SeparatingDualFiveCycleCAP5PinchObligation cap5Normal.normal) :
+    NoSeparatingDualCycleOfLengthAtMostFive cap5Normal.normal.duality :=
+  cap5Normal.normal.noSeparatingDualCycleOfLengthAtMostFive_of_noFive
+    (cap5Normal.noSeparatingDualFiveCycle h53)
+
 /-- The disk-to-primal translation formulation of Lemma 5.3 also gives the no-separating-dual-
 5-cycle conclusion in CAP5-free normal form. -/
 theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualFiveCycle_of_diskToPrimalCAP5
@@ -1300,6 +1334,16 @@ theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualFiveCycle_of_dis
   cap5Normal.noSeparatingDualFiveCycle
     (lemma53_CAP5PinchObligation_of_tightnessObligation
       (lemma53_tightnessObligation_of_diskToPrimalCAP5Translations htranslation))
+
+/-- The disk-to-primal translation formulation of Lemma 5.3 gives the length-at-most-five
+separator exclusion in CAP5-free normal form. -/
+theorem
+    MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualCycleOfLengthAtMostFive_of_diskToPrimalCAP5
+    (cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T)
+    (htranslation : Lemma53DiskToPrimalCAP5TranslationObligation cap5Normal.normal) :
+    NoSeparatingDualCycleOfLengthAtMostFive cap5Normal.normal.duality :=
+  cap5Normal.normal.noSeparatingDualCycleOfLengthAtMostFive_of_noFive
+    (cap5Normal.noSeparatingDualFiveCycle_of_diskToPrimalCAP5 htranslation)
 
 /-- CAP5 elimination obligation for the post-Lemma-5.3 regime: once the graph is in normal
 form, the CAP5 reducibility package must rule out realized CAP5 pinches. -/
