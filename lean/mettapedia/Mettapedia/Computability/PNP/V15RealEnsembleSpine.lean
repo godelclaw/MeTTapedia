@@ -2680,6 +2680,60 @@ def ofComponentsWithLowerMachine
     interfaceData fixedGapBudget phaseABudget epsSmall
     lowerMachine.lowerFramework lowerMachine.kernelNeutrality
 
+/-- Canonical Phase-A fixed gap budget: choose the declared budget to be
+exactly the half-derivative bound supplied by the v13 Phase-A lemma. -/
+noncomputable def canonicalFixedGapBudget
+    (interfaceData :
+      RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+        Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+        Skeleton) : Rat :=
+  (1 / 2 : Rat) * interfaceData.phaseA.telescoping.derivativeSum
+
+/-- With the canonical fixed gap budget, the Phase-A budget inequality is a
+definition-level numeric fact rather than a separate construction input. -/
+theorem canonicalPhaseABudget
+    (interfaceData :
+      RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+        Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+        Skeleton) :
+    (1 / 2 : Rat) * interfaceData.phaseA.telescoping.derivativeSum ≤
+      canonicalFixedGapBudget interfaceData := by
+  exact le_rfl
+
+/-- Assemble endgame mechanical data while discharging the Phase-A budget by
+the canonical fixed-gap choice.  The strict `epsSmall` bound and lower-machine
+data remain real construction obligations. -/
+noncomputable def ofComponentsWithCanonicalGap
+    (interfaceData :
+      RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+        Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+        Skeleton)
+    (epsSmall : interfaceData.epsMix < (1 / 2 : Rat))
+    (lowerFramework : CompressionLowerFramework)
+    (kernelNeutrality : CompressionKernelNeutrality lowerFramework) :
+    RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+      Skeleton :=
+  ofComponents
+    interfaceData (canonicalFixedGapBudget interfaceData)
+    (canonicalPhaseABudget interfaceData) epsSmall lowerFramework
+    kernelNeutrality
+
+/-- Lower-machine version of `ofComponentsWithCanonicalGap`. -/
+noncomputable def ofComponentsWithLowerMachineCanonicalGap
+    (interfaceData :
+      RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+        Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+        Skeleton)
+    (epsSmall : interfaceData.epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData) :
+    RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+      Skeleton :=
+  ofComponentsWithCanonicalGap
+    interfaceData epsSmall lowerMachine.lowerFramework
+    lowerMachine.kernelNeutrality
+
 /-- Build the real endgame mechanical package directly from CD-ENF component
 data.  This avoids reintroducing `atomCompleteness` and `gaugeFaithfulness` as
 hidden fields of a prebuilt `RealM4MechanicalInterfaceData`; both are derived
@@ -3356,6 +3410,72 @@ theorem realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDat
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
 /--
+Canonical-gap version of the finite-variable lower-machine staging theorem.
+The Phase-A fixed budget is chosen to be exactly the half-derivative bound, so
+`fixedGapBudget` and `phaseABudget` are not theorem hypotheses on this route.
+
+This only discharges the numeric Phase-A budget wrapper.  The lower-machine
+data, D.8 rigidity, public-lock coverage, finite CNF variables, strict
+boundary-mixing smallness, explicit P=NP decider, StarSW hardness, and the
+three analytic fields remain visible inputs.
+-/
+theorem realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (epsSmall : M.epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.target M.pivotSummary M.epsMix) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          M epsSmall lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          M epsSmall lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+          (D := D) (F := lowerMachine.lowerFramework)
+          defaultMessage coverageData lockedMessageRigidity
+          finiteVariables.uniformSupport pnpDeciderFamily
+          constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) := by
+  simpa [RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+    RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+    RealM4EndgameMechanicalData.ofComponentsWithLowerMachine] using
+    (realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_explicitPNP
+      M (RealM4EndgameMechanicalData.canonicalFixedGapBudget M)
+      (RealM4EndgameMechanicalData.canonicalPhaseABudget M) epsSmall
+      lowerMachine defaultMessage coverageData lockedMessageRigidity
+      finiteVariables pnpDeciderFamily constantDecoderRegime starSWHardness
+      safeQSSM boundedGaugeIncidence boundaryMixing)
+
+/--
 Component-level covered-locks staging theorem.  This removes the
 `RealM4EndgameMechanicalData` package from the theorem hypotheses by building
 it from the explicit construction components: the mechanical interface data,
@@ -3926,6 +4046,69 @@ theorem realM4_officialSeparation_from_endgameMechanicalData_explicitPNP
       M S starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing)
 
 /--
+Official-endpoint staging for the canonical-gap lower-machine route.  The
+Phase-A fixed budget is chosen by construction, so the official endpoint
+adapter does not take `fixedGapBudget` or `phaseABudget` as hypotheses.  The
+Cook-style bridge remains a separate visible construction obligation.
+-/
+theorem realM4_officialSeparation_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (epsSmall : M.epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.target M.pivotSummary M.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPNPBridgeData
+        ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+            M epsSmall lowerMachine).interfaceWithAnalyticFrontier
+          safeQSSM boundedGaugeIncidence boundaryMixing)
+        ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+            M epsSmall lowerMachine).parameterRecordExplicitPNP
+          (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+            (D := D) (F := lowerMachine.lowerFramework)
+            defaultMessage coverageData lockedMessageRigidity
+            finiteVariables.uniformSupport pnpDeciderFamily
+            constantDecoderRegime)
+          starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing)
+        C) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_internalClash_bridge bridge
+    (realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_explicitPNP
+      M epsSmall lowerMachine defaultMessage coverageData
+      lockedMessageRigidity finiteVariables pnpDeciderFamily
+      constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing)
+
+/--
 Official-endpoint staging theorem for the sharpest current real component
 assembly.  CD-ENF supplies atom-completeness and gauge-faithfulness, the lower
 framework comes from explicit lower-machine data, uniform CNF support comes
@@ -4280,6 +4463,174 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
       simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
         RealM4MechanicalInterfaceData.ofCDENFComponents] using
         boundaryMixing)
+
+/--
+Canonical-gap no-target-rows conditional staging theorem.  Compared with
+`realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_explicitPNP`,
+this route also discharges the Phase-A numeric budget wrapper by choosing the
+fixed gap budget canonically as the half-derivative bound.  Thus
+`fixedGapBudget` and `phaseABudget` are not hypotheses.
+
+This remains conditional real-spine staging, not a proof of `P != NP` and not
+a full manuscript M4 identification.  The strict `epsSmall` bound, hidden gauge
+product, lower-machine data, public-lock coverage, D.8 rigidity, finite CNF
+variables, explicit P=NP decider, StarSW hardness, and the three analytic
+fields remain visible inputs.
+-/
+theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_explicitPNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (epsSmall : epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ safeCost q ∧ safeCost q ≤ safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, gaugeIncidence gamma ≤ gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) pivotSummary epsMix) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            i₀ coordinate law transcript observerBit phaseA semantics
+            observerEvidence pivotSummary epsMix safeCost safeBudget
+            gaugeIncidence gaugeBound hiddenGaugeProduct)
+          (by
+            simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+              RealM4MechanicalInterfaceData.ofCDENFComponents] using
+              epsSmall)
+          lowerMachine).interfaceWithAnalyticFrontier
+        (by
+          simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+            RealM4MechanicalInterfaceData.ofCDENFComponents,
+            RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponents] using safeQSSM)
+        (by
+          simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+            RealM4MechanicalInterfaceData.ofCDENFComponents,
+            RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponents] using
+            boundedGaugeIncidence)
+        (by
+          simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+            RealM4MechanicalInterfaceData.ofCDENFComponents,
+            RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponents] using
+            boundaryMixing))
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            i₀ coordinate law transcript observerBit phaseA semantics
+            observerEvidence pivotSummary epsMix safeCost safeBudget
+            gaugeIncidence gaugeBound hiddenGaugeProduct)
+          (by
+            simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+              RealM4MechanicalInterfaceData.ofCDENFComponents] using
+              epsSmall)
+          lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+          (D := D) (F := lowerMachine.lowerFramework)
+          defaultMessage coverageData lockedMessageRigidity
+          finiteVariables.uniformSupport pnpDeciderFamily
+          constantDecoderRegime)
+        starSWHardness
+        (by
+          simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+            RealM4MechanicalInterfaceData.ofCDENFComponents,
+            RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponents] using safeQSSM)
+        (by
+          simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+            RealM4MechanicalInterfaceData.ofCDENFComponents,
+            RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponents] using
+            boundedGaugeIncidence)
+        (by
+          simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+            RealM4MechanicalInterfaceData.ofCDENFComponents,
+            RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+            RealM4EndgameMechanicalData.ofComponents] using
+            boundaryMixing)) := by
+  simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+    RealM4MechanicalInterfaceData.ofCDENFComponents,
+    RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap,
+    RealM4EndgameMechanicalData.ofComponentsWithCanonicalGap,
+    RealM4EndgameMechanicalData.ofComponents] using
+    (realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_explicitPNP
+      (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+        (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
+        i₀ coordinate law transcript observerBit phaseA semantics
+        observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+        gaugeBound hiddenGaugeProduct)
+      (by
+        simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+          RealM4MechanicalInterfaceData.ofCDENFComponents] using epsSmall)
+      lowerMachine defaultMessage coverageData lockedMessageRigidity
+      finiteVariables pnpDeciderFamily constantDecoderRegime starSWHardness
+      (by
+        simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+          RealM4MechanicalInterfaceData.ofCDENFComponents] using safeQSSM)
+      (by
+        simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+          RealM4MechanicalInterfaceData.ofCDENFComponents] using
+          boundedGaugeIncidence)
+      (by
+        simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
+          RealM4MechanicalInterfaceData.ofCDENFComponents] using
+          boundaryMixing))
 
 /--
 Cook-style official endpoint staging for the adjusted real no-target-rows
@@ -5285,6 +5636,182 @@ theorem realM4NoTargetRowsOfficialEndpointHypothesisAuditExplicitPNP_exact :
 def realM4NoTargetRowsOfficialEndpointStatementExplicitPNP : String :=
   "For the adjusted real no-target-rows public surface, a Cook-style official separation follows from the no-target-rows component assembly, D.8 locked-message rigidity, StarSW hardness, the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge.  The no-target-rows constructor derives singleMessage, noPublicTargetTags, and admissibleHistories; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
+def realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "targetCoordinate",
+  "dimensionNontrivial",
+  "publicCoordinateHistory",
+  "law",
+  "transcript",
+  "observerBit",
+  "phaseA",
+  "semantics",
+  "observerEvidence",
+  "pivotSummary",
+  "epsMix",
+  "safeCost",
+  "safeBudget",
+  "gaugeIncidence",
+  "gaugeBound",
+  "hiddenGaugeProduct",
+  "epsSmall",
+  "realCompressionLowerMachineData",
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "finiteCNFVariableFamilyData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4NoTargetRowsCanonicalGapEndgameHypothesisAuditExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapEndgameHypothesisAuditExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapEndgameStatementExplicitPNP : String :=
+  "For the adjusted real no-target-rows public surface, UpperLowerClash follows from the no-target-rows CD-ENF mechanical constructor, canonical Phase-A fixed-gap choice, the real lower machine, public-lock representative data, D.8 locked-message rigidity, finite CNF variable-family data, and the constant decoder regime, then StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family.  The route derives singleMessage, noPublicTargetTags, admissibleHistories, and the phaseABudget inequality by construction; full M4 must still identify its public surface and history atoms with this constructor."
+
+def realM4NoTargetRowsCanonicalGapOfficialEndpointConstructionInputsExplicitPNP :
+    List String :=
+  realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP ++
+    realM4OfficialPNPBridgeConstructionInputs
+
+theorem realM4NoTargetRowsCanonicalGapOfficialEndpointConstructionInputsExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapOfficialEndpointConstructionInputsExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapOfficialEndpointHypothesisAuditExplicitPNP :
+    List String :=
+  realM4NoTargetRowsCanonicalGapOfficialEndpointConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4NoTargetRowsCanonicalGapOfficialEndpointHypothesisAuditExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapOfficialEndpointHypothesisAuditExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapOfficialEndpointStatementExplicitPNP : String :=
+  "For the adjusted real no-target-rows public surface, a Cook-style official separation follows from the no-target-rows canonical-gap component assembly, D.8 locked-message rigidity, StarSW hardness, the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge.  The route derives singleMessage, noPublicTargetTags, admissibleHistories, and phaseABudget; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
 def realM4OfficialEndpointConstructionInputsExplicitPNP : List String :=
   realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgameConstructionInputsExplicitPNP ++
     realM4OfficialPNPBridgeConstructionInputs
@@ -5541,9 +6068,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "phaseABudget"
-    status := .openConstruction
-    checkedName := "RealM4EndgameMechanicalData.phaseABudget"
-    note := "The real M4 construction must prove the phase-A derivative budget bound used by the v13 parameter record."
+    status := .constructionTransferred
+    checkedName := "RealM4EndgameMechanicalData.canonicalPhaseABudget"
+    note := "The sharp canonical-gap route chooses the fixed gap budget to be the half-derivative bound, so the v13 Phase-A budget inequality is discharged by construction."
   },
   {
     item := "epsSmall"
@@ -5704,7 +6231,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
-        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -5737,7 +6264,6 @@ def realM4OpenConstructionItems : List String := [
   "admissibleHistories",
   "finiteCNFVariableFamilyData",
   "realCompressionLowerMachineData",
-  "phaseABudget",
   "epsSmall",
   "officialPNPBridgeData"
 ]
@@ -5751,7 +6277,6 @@ theorem realM4OpenConstructionItems_exact :
         "admissibleHistories",
         "finiteCNFVariableFamilyData",
         "realCompressionLowerMachineData",
-        "phaseABudget",
         "epsSmall",
         "officialPNPBridgeData" ] := by
   rfl
