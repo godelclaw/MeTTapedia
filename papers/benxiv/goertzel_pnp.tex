@@ -540,6 +540,59 @@ implication whose axiom print is \emph{empty}: pure plumbing, asserting no
 separation. (This is the concrete-instantiation frontier; the evidence spine of
 \S\ref{sec:spine} is the more settled core.)
 
+\subsection{The real gauge-buffered locked CNF ensemble (the M4 object)}
+\label{sec:realM4}
+The linear testbed above is a stepping stone to the manuscript's actual milestone
+M4: \emph{one} concrete gauge-buffered locked ensemble satisfying every interface
+hypothesis of Thm.~4.31 at once. The development has since built that object
+directly --- the real regioned CNF world \texttt{RealM4CNFWorld} and its gauge-CNF
+realization \texttt{v13RealLinearGaugeCNF\dots} (a regioned public geometry with a
+hidden gauge coordinate and a locked global-message layer; not the two-point toy of
+\S\ref{sec:phaseD}, nor the inadmissible scaled family of \S\ref{sec:inadmissible}).
+On this real object the \emph{mechanical} half of the interface is discharged and
+the \emph{analytic} half is isolated as four named inputs --- an honest separation
+of what transfers from what stays open.
+
+\paragraph{What transfers (mechanical, status (b), modulo a public-message
+invariant).} The structural interface fields hold on the real CNF ensemble as
+proved implications from a single \texttt{publicMessageInvariant} hypothesis:
+\begin{itemize}
+  \item the \textbf{single-message promise}
+        (\texttt{realM4CNF\_singleMessage\_of\_publicMessageInvariant},
+        \texttt{v13RealLinearGaugeCNFReadoutData\_singleMessagePromise}) with readout
+        consistency and CNF-extraction completeness on the real support;
+  \item the \textbf{gauge action}: it preserves the verifier and the readout and is
+        nontrivial (\texttt{v13RealLinearGaugeCNFGaugeAction\_preserves\_verifier},
+        \texttt{\_preserves\_readout}, \texttt{\_nontrivial}) --- the hidden-gauge
+        structure Cor.~4.19 needs;
+  \item \textbf{locked-message rigidity} and the \textbf{bit-fixing self-reduction}:
+        any supported SAT-search output decodes to the same message
+        (\texttt{realM4\_supportedArbitraryOutputSATSearchCorrect\dots},
+        \texttt{realM4\_bitFixingAssignment\_satisfies}) --- the
+        $\mathrm{P}=\mathrm{NP}$ upper side on the real object;
+  \item \textbf{admissibility}, the condition the scaled family failed
+        (\S\ref{sec:inadmissible}): the real CNF carries \emph{no} public target tag
+        and \emph{no} public readout tag
+        (\texttt{v13RealLinearGaugeCNFFormula\_noPublicTargetTags\_obstruction},
+        \texttt{\_noPublicReadoutTags\_obstruction}) --- it does not print the answer.
+\end{itemize}
+All are axiom-clean and conditional on the public-message invariant, which is the
+mechanical promise a regioned construction is built to enforce.
+
+\paragraph{What stays open (analytic, status (c)/(d)) --- the four inputs, now on
+the real ensemble.} What the lift does \emph{not} discharge, and names precisely as
+frontier structures over the real ensemble, are the four Millennium-hard analytic
+inputs: \texttt{SafeQSSMFrontier} (soft-buffer leakage),
+\texttt{BoundedGaugeIncidenceFrontier} (gauge-rank entropy),
+\texttt{BoundaryMixingFrontier} (boundary-law mixing), and
+\texttt{CompressionStarSWHardness} (the $\StarSW$ average-case witness-bit
+hardness); the real lower-machine data threads $\StarSW$ explicitly
+(\texttt{starSWHardness : CompressionStarSWHardness \dots}). This is the honest state
+of the concrete route: the \emph{mechanical} interface now transfers to the
+manuscript's real M4 object, while the \emph{analytic} weight is reduced to the same
+four inputs the abstract interface named --- open mathematics, not Lean plumbing,
+and not established here. The terminal separation node remains at $0\%$.
+
 \section{Obstructions and reroutings}
 \label{sec:obstructions}
 
@@ -617,7 +670,11 @@ gap bound; the Phase-C ledger-coherence lemmas; the \textbf{Phase-D upper--lower
 clash} (from the nine-field ledger plus a \texttt{ParameterRecord} bundling the two
 flagged open inputs); and the no-target sequential certificate (modulo a pinned
 counting \texttt{Prop}). These are the reduction skeleton toward \S11, not a
-separation.
+separation. On the concrete side, the real M4 CNF ensemble's \emph{mechanical}
+interface --- single-message promise, gauge action, locked-message rigidity,
+bit-fixing self-reduction, and no-public-tag admissibility --- now transfers on the
+real object modulo a public-message invariant (\S\ref{sec:realM4}), isolating the
+four analytic inputs as the residual.
 
 \paragraph{Open.} The sharp $2^q/2^m$ causal counting bounds for $q\ge2$; the
 random-switching lift \texttt{PhaseEScaledSwitchingStatementNeeded}; the $\StarSW$
@@ -651,7 +708,9 @@ ladder are the modules \texttt{V13EvidenceSpine}, \texttt{V13CDENF},
 the steelman conditional and its inputs are \texttt{PNPSteelmanConditional},
 \texttt{KernelFlipInvolution}, and \texttt{NoThreadingLemma}; the linear
 replacement route is the \texttt{V13RealRungOne*} / \texttt{V13RealRungTwoBitJunta}
-family. Lean listings are ASCII transliterations of the source declarations
+family; the real M4 gauge-buffered locked CNF ensemble (\S\ref{sec:realM4}) is
+\texttt{V15RealEnsembleSpine} and \texttt{V15RealLinearCNFEnsemble}. Lean listings
+are ASCII transliterations of the source declarations
 (the sources are normative); every headline was checked with \texttt{\#print
 axioms}. Per-declaration source links are omitted pending publication of the
 development tree.
