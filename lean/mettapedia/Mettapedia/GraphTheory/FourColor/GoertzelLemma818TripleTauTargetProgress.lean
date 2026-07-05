@@ -3948,6 +3948,75 @@ theorem ttFiber3AppendParentRowsBaseDataStructural :
     chainFiberAppendParentRowsCertifiedTriple_baseDataStructural
       ttFiber3AppendParentRowsCertifiedTriple
 
+/--
+The live finite target-surface remainder after the two checked `TTT` append
+certificates.
+
+This is strictly narrower than the universal non-singleton append-transfer
+remainder: it ranges only over representative-target final appends, and it
+removes the two `TTT` fixed-input keys already carrying certified parent-row
+append structure in this file.
+-/
+def ttFiber32Key3RepresentativeTargetAppendParentRowsRemainderPin : Prop :=
+  ∀ target : RepresentativeSemanticTarget,
+    Nonempty
+      (ChainWordConcreteFibrationCertificate (targetAppendPrefix target)) →
+      ∀ key : List LColor,
+        key ∈ colorAssignments4 →
+          ¬ ((target = RepresentativeSemanticTarget.ttt ∧
+                key = GoertzelLemma818CompositeCertificate.ttFiber32Key) ∨
+              (target = RepresentativeSemanticTarget.ttt ∧
+                key = GoertzelLemma818CompositeCertificate.ttFiber3Key)) →
+            Nonempty
+              (Sigma (fun data :
+                ChainFiberAppendQuotientFibrationParentRowsBaseData
+                  (targetAppendPrefix target) (targetAppendOrient target)
+                  key =>
+                ChainFiberAppendQuotientFibrationParentRowsStructuralFields
+                  data))
+
+theorem ttFiber32Key3RepresentativeTargetAppendParentRowsBaseDataStructuralClosed_of_remainder_pin
+    (hRemainder :
+      ttFiber32Key3RepresentativeTargetAppendParentRowsRemainderPin) :
+    ∀ target : RepresentativeSemanticTarget,
+      Nonempty
+        (ChainWordConcreteFibrationCertificate (targetAppendPrefix target)) →
+        ∀ key : List LColor,
+          key ∈ colorAssignments4 →
+            Nonempty
+              (Sigma (fun data :
+                ChainFiberAppendQuotientFibrationParentRowsBaseData
+                  (targetAppendPrefix target) (targetAppendOrient target)
+                  key =>
+                ChainFiberAppendQuotientFibrationParentRowsStructuralFields
+                  data)) := by
+  intro target hcert key hkey
+  by_cases hhandled :
+      (target = RepresentativeSemanticTarget.ttt ∧
+          key = GoertzelLemma818CompositeCertificate.ttFiber32Key) ∨
+        (target = RepresentativeSemanticTarget.ttt ∧
+          key = GoertzelLemma818CompositeCertificate.ttFiber3Key)
+  · rcases hhandled with h32 | h3
+    · rcases h32 with ⟨htarget, hkeyEq⟩
+      subst target
+      subst key
+      simpa [targetAppendPrefix, targetAppendOrient, ttFiber32FrontierWord] using
+        ttFiber32AppendParentRowsBaseDataStructural
+    · rcases h3 with ⟨htarget, hkeyEq⟩
+      subst target
+      subst key
+      simpa [targetAppendPrefix, targetAppendOrient, ttFiber3FrontierWord] using
+        ttFiber3AppendParentRowsBaseDataStructural
+  · exact hRemainder target hcert key hkey hhandled
+
+/--
+Superseded as the live finite target-surface pin by
+`ttFiber32Key3RepresentativeTargetAppendParentRowsRemainderPin`.
+
+This legacy condition still ranges over arbitrary non-singleton prefix appends;
+the current generated evidence isolates only the representative-target final
+append surface.
+-/
 def ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin :
     Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)

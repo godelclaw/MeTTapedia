@@ -134,12 +134,30 @@ plus the legacy all-data structural hypothesis
 That all-data hypothesis is now superseded as the live Gate-2 remainder: it
 asks for structural fields for every supplied parent-row base-data record,
 whereas the current route only needs one paired base-data/structural witness
-for each append.  The newer live one-pin route is
-`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`.
-It removes every triple carrying a `ChainFiberAppendCertifiedParentRowsTriple`
-(appended root-closure connectedness plus an injective prefix-to-append
-selector) and asks for the paired base-data/structural witness only on the
-uncertified remainder.  The direct wrappers are
+for each append.
+
+The universal one-pin route
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`
+is now retained as a stronger legacy append-transfer hypothesis.  It removes
+every triple carrying a `ChainFiberAppendCertifiedParentRowsTriple` (appended
+root-closure connectedness plus an injective prefix-to-append selector), but it
+still ranges over every non-singleton prefix with a concrete fibration
+certificate.  The present formal evidence does not close that open-ended
+quantifier from the length-6/7 lab summaries alone.
+
+The live finite Gate-2 target-surface pin is now
+`ttFiber32Key3RepresentativeTargetAppendParentRowsRemainderPin`.  It restricts
+the residual obligation to representative-target final appends and removes the
+two `TTT` fixed-input keys whose append parent-row structure is already
+machine-checked by `ttFiber32AppendParentRowsCertifiedTriple` and
+`ttFiber3AppendParentRowsCertifiedTriple`.  The theorem
+`ttFiber32Key3RepresentativeTargetAppendParentRowsBaseDataStructuralClosed_of_remainder_pin`
+states the exact remaining target-surface obligation: under that one residual
+pin, every representative-target append has the paired base-data/structural
+witness.  This is a strictly smaller target-surface remainder, not a proof of
+the universal append-transfer theorem.
+
+The direct wrappers from the stronger universal hypothesis are
 `concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_certified_parent_rows_remainder`,
 `concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
 `concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
@@ -742,14 +760,15 @@ The glued last-edge switched-color case is also closed locally by
 The all-data structural route
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
 is now retired as the live Gate-2 pin and retained only as a stronger legacy
-sufficient hypothesis.  The current exact one-pin remainder is
-`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`.
-It discharges every append triple with a
-`ChainFiberAppendCertifiedParentRowsTriple`; the remaining work is the paired
-base-data/structural witness only for non-certified triples.  Thus there is
-still no unconditional `semanticFrontierStateSufficientForChain` or
-`chainAuditForFrontierWord` theorem, but the old all-supplied-base-data pin is
-no longer the live obligation.
+sufficient hypothesis.  The universal certified-parent-rows remainder is also
+retired as the live pin and retained only as a stronger append-transfer route.
+The current exact one-pin remainder is the representative-target surface
+`ttFiber32Key3RepresentativeTargetAppendParentRowsRemainderPin`; it leaves only
+the target append/key cases not already discharged by the two checked `TTT`
+append triples.  Thus there is still no unconditional
+`semanticFrontierStateSufficientForChain` or `chainAuditForFrontierWord`
+theorem, but the old all-supplied-base-data and universal append-transfer pins
+are no longer the live obligations.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
