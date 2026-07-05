@@ -18317,6 +18317,77 @@ theorem
       i₀ coordinate R starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing⟩
 
+/--
+Direct official endpoint bundle for the CNF-anchored manuscript-M4
+realization gate.  This packages the individual direct CNF endpoint wrappers:
+the named NP language is outside `P`, hence the Cook-style class inequality,
+official separation proposition, and existential NP-not-P endpoint all follow.
+
+The theorem boundary is the CNF realization object plus exactly StarSW
+hardness and the three analytic fields.  It does not inhabit the realization
+gate and does not prove the four frontier inputs.
+-/
+theorem
+    realM4_directOfficialEndpoints_from_manuscriptCNFSATRealizationComponents_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptCNFSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness R.components.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R)) :
+    (C.inNP R.components.languageNPData.separatedLanguage ∧
+      ¬ C.inP R.components.languageNPData.separatedLanguage) ∧
+      (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+        ∃ separatedLanguage : C.Language,
+          C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  ⟨⟨R.components.languageNPData.separatedLanguage_inNP,
+      realM4_namedLanguage_not_inP_from_manuscriptCNFSATRealizationComponents_realFrontier
+        i₀ coordinate R starSWHardness safeQSSM boundedGaugeIncidence
+        boundaryMixing⟩,
+    realM4_not_pEqualsNP_from_manuscriptCNFSATRealizationComponents_realFrontier
+      i₀ coordinate R starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing,
+    realM4_officialSeparation_from_manuscriptCNFSATRealizationComponents_realFrontier
+      i₀ coordinate R starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing,
+    realM4_exists_np_not_p_from_manuscriptCNFSATRealizationComponents_realFrontier
+      i₀ coordinate R starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing⟩
+
 /-- Package a CNF-anchored realization gate as the combined manuscript SAT
 interface component gate. -/
 noncomputable def
@@ -25771,6 +25842,7 @@ def realM4ManuscriptCNFSATRealizationComponentItems :
   "classInequalityThroughCNFRealizationComponents",
   "officialSeparationThroughCNFRealizationComponents",
   "existsNPNotPThroughCNFRealizationComponents",
+  "directOfficialEndpointBundleThroughCNFRealizationComponents",
   "cnfSpineStructuralReadoutAudit",
   "cnfFullStructuralTransferAudit",
   "strictNamedEndpointThroughCNFRealizationComponents",
@@ -25795,6 +25867,7 @@ theorem realM4ManuscriptCNFSATRealizationComponentItems_exact :
         "classInequalityThroughCNFRealizationComponents",
         "officialSeparationThroughCNFRealizationComponents",
         "existsNPNotPThroughCNFRealizationComponents",
+        "directOfficialEndpointBundleThroughCNFRealizationComponents",
         "cnfSpineStructuralReadoutAudit",
         "cnfFullStructuralTransferAudit",
         "strictNamedEndpointThroughCNFRealizationComponents",
@@ -25820,8 +25893,47 @@ theorem
         "boundaryMixing" ] := by
   rfl
 
+def realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointItems :
+    List String := [
+  "namedLanguageInNP",
+  "namedLanguageNotInP",
+  "cookStyleClassInequality",
+  "officialSeparation",
+  "existentialNPNotP"
+]
+
+theorem
+    realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointItems_exact :
+    realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointItems =
+      [ "namedLanguageInNP",
+        "namedLanguageNotInP",
+        "cookStyleClassInequality",
+        "officialSeparation",
+        "existentialNPNotP" ] := by
+  rfl
+
+def
+    realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointHypothesisAudit :
+    List String :=
+  realM4ManuscriptCNFSATRealizationComponentEndpointHypothesisAudit
+
+theorem
+    realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointHypothesisAudit_exact :
+    realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointHypothesisAudit =
+      [ "manuscriptM4CNFSATRealizationComponents",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def
+    realM4ManuscriptCNFSATRealizationComponentDirectOfficialEndpointStatement :
+    String :=
+  "The direct CNF-anchored manuscript-M4 endpoint bundle packages the named NP language outside P, Cook-style class inequality, official separation proposition, and existential NP-not-P endpoint from one CNF realization component object plus exactly StarSW hardness and the three analytic frontiers safeQSSM / boundedGaugeIncidence / boundaryMixing.  The bundle uses the direct CNF clash wrappers and does not inhabit the realization object or prove the four frontier inputs."
+
 def realM4ManuscriptCNFSATRealizationComponentStatement : String :=
-  "The CNF-anchored manuscript-M4 realization gate refines the transparent strict component gate with explicit CNF/mechanical identification data.  It constructs the manuscript-facing SAT interface from the Appendix-I CNF readout spine, audits the six named structural fields plus CNF readout over the same mechanical target, and reuses the strict named endpoint with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The direct-clash lift projects the same gate to the strict named construction surface, derives the v13 parameter record from P-membership of the named NP language, and extracts UpperLowerClash before proving the named language outside P.  Specializing that same lift to a candidate P=NP witness yields the internal clash, the P=NP contradiction, the class inequality, the official separation proposition, and the existential NP-not-P endpoint through the CNF realization gate.  The full lock-in audit packages these structural and endpoint consequences from the same CNF realization object, while the completion audit expands the uninhabited construction gate into strict named real lock-in fields plus CNF/mechanical SAT-spine identification fields.  The gate is not inhabited here; it marks the remaining real construction work needed to identify the manuscript SAT ensemble with the mechanical endpoint."
+  "The CNF-anchored manuscript-M4 realization gate refines the transparent strict component gate with explicit CNF/mechanical identification data.  It constructs the manuscript-facing SAT interface from the Appendix-I CNF readout spine, audits the six named structural fields plus CNF readout over the same mechanical target, and reuses the strict named endpoint with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The direct-clash lift projects the same gate to the strict named construction surface, derives the v13 parameter record from P-membership of the named NP language, and extracts UpperLowerClash before proving the named language outside P.  Specializing that same lift to a candidate P=NP witness yields the internal clash, the P=NP contradiction, the class inequality, the official separation proposition, and the existential NP-not-P endpoint through the CNF realization gate; the direct official endpoint bundle packages these consequences with an exact CNF-gate hypothesis audit.  The full lock-in audit packages these structural and endpoint consequences from the same CNF realization object, while the completion audit expands the uninhabited construction gate into strict named real lock-in fields plus CNF/mechanical SAT-spine identification fields.  The gate is not inhabited here; it marks the remaining real construction work needed to identify the manuscript SAT ensemble with the mechanical endpoint."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
