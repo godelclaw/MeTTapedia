@@ -3493,15 +3493,38 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
 /-! ## Official Cook-style endpoint bridge boundary -/
 
 /--
-Bridge data from the internal real-M4 clash endpoint to an official
-Cook-style P-vs-NP separation statement.  This structure is intentionally only
-an interface: this module does not construct the bridge and does not claim that
-`UpperLowerClash` is already the official theorem.
+Minimal Cook-style complexity-class endpoint interface.  It exposes the
+language universe, the two class predicates, and the official separation
+proposition as the existence of an NP language outside P.  This is still an
+interface, not a construction of the global complexity-class development.
+-/
+structure CookStylePNPClassInterface where
+  Language : Type u
+  inP : Language -> Prop
+  inNP : Language -> Prop
+  officialSeparation : Prop
+  officialSeparation_iff_exists_np_not_p :
+    officialSeparation ↔ ∃ L : Language, inNP L ∧ ¬ inP L
+
+namespace CookStylePNPClassInterface
+
+theorem officialSeparation_of_np_not_p
+    (C : CookStylePNPClassInterface) {L : C.Language}
+    (hNP : C.inNP L) (hNotP : ¬ C.inP L) :
+    C.officialSeparation :=
+  C.officialSeparation_iff_exists_np_not_p.mpr ⟨L, hNP, hNotP⟩
+
+end CookStylePNPClassInterface
+
+/--
+Bridge data from the internal real-M4 clash endpoint to a Cook-style P-vs-NP
+separation statement.  The bridge must expose the separated language, prove it
+is in NP, and show that the internal clash rules out membership in P.
 
 To finish the real route, the official statement must be instantiated by the
 formal complexity-class development, and the bridge must prove that the
-particular internal M4 `UpperLowerClash` implies that official statement
-without hiding ensemble existence, lower hardness, or analytic assumptions in
+particular internal M4 `UpperLowerClash` rules out P membership without hiding
+ensemble existence, lower hardness, or analytic assumptions in
 parameters.
 -/
 structure RealM4OfficialPNPBridgeData
@@ -3516,9 +3539,11 @@ structure RealM4OfficialPNPBridgeData
       GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
         Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
     (P : ParameterRecord L)
-    (officialCookPNPSeparation : Prop) where
-  internalClash_to_official :
-    UpperLowerClash L P -> officialCookPNPSeparation
+    (C : CookStylePNPClassInterface.{k}) where
+  separatedLanguage : C.Language
+  separatedLanguage_inNP : C.inNP separatedLanguage
+  internalClash_not_inP :
+    UpperLowerClash L P -> ¬ C.inP separatedLanguage
 
 /--
 Adapter from a proved internal clash to the official endpoint, assuming the
@@ -3537,24 +3562,32 @@ theorem realM4_officialSeparation_from_internalClash_bridge
       GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
         Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton}
     {P : ParameterRecord L}
-    {officialCookPNPSeparation : Prop}
+    {C : CookStylePNPClassInterface.{k}}
     (bridge :
-      RealM4OfficialPNPBridgeData L P officialCookPNPSeparation)
+      RealM4OfficialPNPBridgeData L P C)
     (clash : UpperLowerClash L P) :
-    officialCookPNPSeparation :=
-  bridge.internalClash_to_official clash
+    C.officialSeparation :=
+  C.officialSeparation_of_np_not_p
+    bridge.separatedLanguage_inNP
+    (bridge.internalClash_not_inP clash)
 
 def realM4OfficialPNPBridgeConstructionInputs : List String := [
-  "officialCookPNPBridgeData"
+  "cookStylePNPClassInterface",
+  "separatedLanguage",
+  "separatedLanguageInNP",
+  "internalClashNotInP"
 ]
 
 theorem realM4OfficialPNPBridgeConstructionInputs_exact :
     realM4OfficialPNPBridgeConstructionInputs =
-      [ "officialCookPNPBridgeData" ] := by
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP" ] := by
   rfl
 
 def realM4OfficialPNPBridgeStatement : String :=
-  "The real v15/M4 UpperLowerClash is only an internal endpoint.  A separate official Cook-style P-vs-NP bridge must instantiate the official separation statement and prove that this internal clash implies it without hiding ensemble existence, lower hardness, or analytic assumptions in parameters."
+  "The real v15/M4 UpperLowerClash is only an internal endpoint.  A separate Cook-style P-vs-NP bridge must instantiate the official class interface, name the separated NP language, and prove that the internal clash rules out membership in P without hiding ensemble existence, lower hardness, or analytic assumptions in parameters."
 
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
