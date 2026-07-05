@@ -2943,6 +2943,29 @@ def ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBounda
         geometry.collarGeometry.WitnessOnCurrentBoundary
 
 /--
+Radius-one spelling of the collar-geometry normal-form bridge: every embedded
+collar geometry extracted from an honest normal-form witness is represented by
+a single annulus collar layer.
+-/
+def ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+      (geometry :
+        ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+          normalForm) →
+        geometry.collarGeometry.numCollars = 1
+
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary_of_oneCollar
+    (hone :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar) :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary := by
+  intro V _hV G normalForm geometry
+  exact
+    geometry.collarGeometry.witnessOnCurrentBoundary_of_numCollars_eq_one
+      (hone geometry)
+
+/--
 Factored form of the first previous-boundary blocker: actual collar constraints
 must first supply ordinary embedded collar geometry, and that geometry must
 then upgrade to the previous-boundary witness geometry.
@@ -2966,6 +2989,14 @@ theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWi
   exact
     closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
       geometry (hwitness geometry)
+
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_oneCollar
+    (hone :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar) :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :=
+  closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+    (closedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary_of_oneCollar
+      hone)
 
 theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_geometryData_of_previousBoundaryWitnessUpgrade
     (hgeometry :
@@ -9070,6 +9101,19 @@ def ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridg
         ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation ∧
           ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey
 
+/--
+One-collar spelling of the remaining current-boundary bridge.  The witness
+placement field is replaced by the stronger radius-one collar extraction
+condition, which makes witness placement vacuous by the annulus-geometry API.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData ∧
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar ∧
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction ∧
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation ∧
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey
+
 theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge
     (hbridge :
       ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge) :
@@ -9087,6 +9131,25 @@ theorem closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNorma
   exact
     closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_factoredBridge
       hgeometry hwitness hradial hn6 hkeys
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge := by
+  rcases hbridge with ⟨hgeometry, hone, hradial, hn6, hkeys⟩
+  exact
+    ⟨hgeometry,
+      closedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary_of_oneCollar
+        hone,
+      hradial, hn6, hkeys⟩
+
+theorem closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingOneCollarBridge
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingCurrentBoundaryBridge
+    (closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge
+      hbridge)
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows
     (hbridge :
@@ -9107,6 +9170,17 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFron
     ClosedCollarWindingFreedomNonrealizableInNormalForm :=
   closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_auditedRows
     (closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingCurrentBoundaryBridge
+      hbridge)
+    hrows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows
+    (closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge
       hbridge)
     hrows
 
@@ -9161,6 +9235,34 @@ theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork :
   exact
     hnot
       (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows
+        hbridge hrows)
+
+/--
+One-collar finite-frontier fork.  If the actual collar extraction theorem
+produces one collar layer, then the current-boundary bridge follows and the
+audited rows kill the winding-freedom witness.  If the audited rows hold but
+nonrealizability still fails, the one-collar bridge is false.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarBridgeFork :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeFork :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeFork := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows,
+      ?_⟩
+  intro hrows hnot hbridge
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows
         hbridge hrows)
 
 /--
@@ -9242,6 +9344,49 @@ theorem section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint
           hgeometry
           (closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
             hwitness)
+          hradial hn6 hkeys hrows)
+
+/--
+Radius-one version of the witness-placement pressure point.  Under ordinary
+collar geometry and the later radial-face/n6/archive obligations, proving that
+every extracted collar geometry has a single collar layer is enough to kill
+the winding-freedom witness; if nonrealizability still fails under those later
+fields, this one-collar extraction condition is false.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarPressurePoint :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ((ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+                  ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar)))
+
+theorem section92Step4CurrentFiniteFrontierOneCollarPressurePoint :
+    Section92Step4CurrentFiniteFrontierOneCollarPressurePoint := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  constructor
+  · intro hone
+    exact
+      section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+        hgeometry
+        (closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_oneCollar
+          hone)
+        hradial hn6 hkeys hrows
+  · intro hnot hone
+    exact
+      hnot
+        (section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+          hgeometry
+          (closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_oneCollar
+            hone)
           hradial hn6 hkeys hrows)
 
 end GoertzelLemma818ClosedCollarWindingRealization
