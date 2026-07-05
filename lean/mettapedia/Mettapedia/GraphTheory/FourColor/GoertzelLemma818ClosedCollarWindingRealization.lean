@@ -2927,6 +2927,39 @@ theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpg
     ⟨ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.ofWitnessOnCurrentBoundary
       geometry hwitnessCurrent⟩
 
+theorem ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.toWitnessOnCurrentBoundary
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm}
+    (upgrade :
+      ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+        geometry) :
+    geometry.collarGeometry.WitnessOnCurrentBoundary := by
+  rw [← upgrade.collarGeometry_eq]
+  exact
+    (upgrade.previousGeometry.toPlanarBoundaryAnnulusCollarGeometry
+      |>.witnessOnCurrentBoundary_iff_previousBoundaryWitness).2
+      (@upgrade.previousGeometry.hwitnessPrev)
+
+theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_iff_witnessOnCurrentBoundary
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm) :
+    Nonempty
+      (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+        geometry) ↔
+      geometry.collarGeometry.WitnessOnCurrentBoundary := by
+  constructor
+  · rintro ⟨upgrade⟩
+    exact upgrade.toWitnessOnCurrentBoundary
+  · exact
+      closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+        geometry
+
 /--
 Winding-route spelling of the corrected annulus-geometry condition: every
 embedded collar geometry extracted from an honest normal-form witness places
@@ -2989,6 +3022,16 @@ theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWi
   exact
     closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
       geometry (hwitness geometry)
+
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_iff_witnessOnCurrentBoundary :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade ↔
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary := by
+  constructor
+  · intro hupgrade V _hV G normalForm geometry
+    rcases hupgrade geometry with ⟨upgrade⟩
+    exact upgrade.toWitnessOnCurrentBoundary
+  · exact
+      closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
 
 theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_oneCollar
     (hone :
@@ -8763,6 +8806,46 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.interiorEdgeSupport_
     |>.interiorEdgeSupport_nonempty_of_one_lt_numCollars
       bad.numCollars_gt_one
 
+def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.notWitnessOnCurrentBoundary
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    ¬ bad.geometry.collarGeometry.WitnessOnCurrentBoundary := by
+  intro hwitness
+  exact
+    bad.witness_not_current
+      (hwitness (j := bad.collar) (g := bad.face)
+        bad.face_mem bad.collar_pos)
+
+def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.witness_not_previousBoundaryCycle
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    bad.geometry.collarGeometry.witnessEdge bad.face ∉
+      bad.geometry.collarGeometry.boundaryCycle (Fin.castSucc bad.collar) := by
+  intro hprevious
+  exact
+    bad.witness_not_current
+      (by
+        simpa [PlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData]
+          using hprevious)
+
+def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.notPreviousBoundaryWitnessUpgrade
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    ¬ Nonempty
+      (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+        bad.geometry) := by
+  rintro ⟨upgrade⟩
+  exact bad.notWitnessOnCurrentBoundary upgrade.toWitnessOnCurrentBoundary
+
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.toMultiCollarEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
@@ -8854,6 +8937,81 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPla
       (closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessPlacementFailure
         hnotWitness)
 
+theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker_of_badWitnessFaceEscape
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (hbad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+        normalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
+      normalForm
+      .witnessOnCurrentBoundary := by
+  rcases hbad with ⟨bad⟩
+  exact ⟨bad.geometry, bad.notWitnessOnCurrentBoundary⟩
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessOnCurrentBoundaryBlocker
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (hblocker :
+      ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
+        normalForm
+        .witnessOnCurrentBoundary) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+      normalForm := by
+  rcases hblocker with ⟨_geometry, hnotWitness⟩
+  exact
+    closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessPlacementFailure
+      hnotWitness
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_witnessOnCurrentBoundaryBlocker
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+      normalForm ↔
+      ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
+        normalForm
+        .witnessOnCurrentBoundary := by
+  constructor
+  · exact closedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker_of_badWitnessFaceEscape
+  · exact closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessOnCurrentBoundaryBlocker
+
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessUpgradeBlocker_iff_witnessOnCurrentBoundaryBlocker
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
+      normalForm
+      .previousBoundaryWitnessUpgrade ↔
+      ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
+        normalForm
+        .witnessOnCurrentBoundary := by
+  constructor
+  · rintro ⟨geometry, hnoUpgrade⟩
+    refine ⟨geometry, ?_⟩
+    intro hwitness
+    exact
+      hnoUpgrade
+        (closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+          geometry hwitness)
+  · rintro ⟨geometry, hnotWitness⟩
+    refine ⟨geometry, ?_⟩
+    intro hupgrade
+    exact
+      hnotWitness
+        ((closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_iff_witnessOnCurrentBoundary
+          geometry).1 hupgrade)
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previousBoundaryWitnessUpgradeBlocker
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
+      normalForm ↔
+      ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
+        normalForm
+        .previousBoundaryWitnessUpgrade := by
+  rw [closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_witnessOnCurrentBoundaryBlocker]
+  exact
+    (closedCollarWindingFreedomFactoredPreviousBoundaryWitnessUpgradeBlocker_iff_witnessOnCurrentBoundaryBlocker).symm
+
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessOnCurrentBoundaryBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
@@ -8890,6 +9048,28 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :
     ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
       @ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
         V hV G normalForm
+
+def ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction :
+    Prop :=
+  ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+      @ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
+        V hV G normalForm .previousBoundaryWitnessUpgrade
+
+theorem closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_currentBoundaryBadWitnessFaceObstruction :
+    ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction ↔
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction := by
+  constructor
+  · rintro ⟨V, hV, G, normalForm, hupgradeBlocker⟩
+    exact
+      ⟨V, hV, G, normalForm,
+        (closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previousBoundaryWitnessUpgradeBlocker).2
+          hupgradeBlocker⟩
+  · rintro ⟨V, hV, G, normalForm, hbad⟩
+    exact
+      ⟨V, hV, G, normalForm,
+        (closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previousBoundaryWitnessUpgradeBlocker).1
+          hbad⟩
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_badWitnessFaceObstruction
     (hbad :
@@ -9947,6 +10127,23 @@ theorem section92Step4CurrentFiniteFrontierBadWitnessFacePressurePoint :
         hgeometry hradial hn6 hkeys hrows,
       closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
         hgeometry hradial hn6 hkeys hrows⟩
+
+/--
+Exact first-hinge equivalence for the current frontier: the previous-boundary
+witness-upgrade blocker is precisely the face-level current-boundary bad
+witness obstruction.
+-/
+def Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction ↔
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction)
+
+theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge :
+    Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge := by
+  exact
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_currentBoundaryBadWitnessFaceObstruction⟩
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
