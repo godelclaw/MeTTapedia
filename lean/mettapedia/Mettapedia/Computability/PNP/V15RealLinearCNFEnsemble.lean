@@ -562,6 +562,20 @@ def v13RealLinearGaugeCNFGaugeAction {m : Nat}
   | some j => rfl
   | none => rfl
 
+/-- Boolean hidden-gauge actions compose by xor on the free hidden
+coordinate. -/
+@[simp] theorem v13RealLinearGaugeCNFGaugeAction_xor {m : Nat}
+    (gamma delta : Bool) (W : V13RealLinearGaugeCNFWitness m) :
+    v13RealLinearGaugeCNFGaugeAction gamma
+        (v13RealLinearGaugeCNFGaugeAction delta W) =
+      v13RealLinearGaugeCNFGaugeAction (gamma ^^ delta) W := by
+  funext v
+  cases v with
+  | some j => rfl
+  | none =>
+      cases gamma <;> cases delta <;>
+        simp [v13RealLinearGaugeCNFGaugeAction]
+
 /-- The hidden gauge action preserves verifier validity because the formula
 does not mention the hidden gauge coordinate. -/
 theorem v13RealLinearGaugeCNFGaugeAction_preserves_verifier {m : Nat}
@@ -5730,6 +5744,58 @@ theorem
           true omega) =
       !v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega :=
   rfl
+
+/-- The false gauge element acts as the identity on Appendix-I CNF worlds. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_false
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction false omega =
+      omega := by
+  cases omega with
+  | mk publicInstance support assignment sat =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction]
+
+/-- The lifted Appendix-I CNF hidden-gauge action composes by xor, matching
+the concrete Boolean gauge family. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_xor
+    {m : Nat} {i₀ : Fin m} (gamma delta : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction gamma
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          delta omega) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+        (gamma ^^ delta) omega := by
+  cases omega with
+  | mk publicInstance support assignment sat =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction]
+
+/-- The nontrivial gauge element really changes every Appendix-I CNF world by
+flipping the free hidden-gauge coordinate. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_true_ne
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction true omega ≠
+      omega := by
+  intro hfixed
+  have hcoord :=
+    congrFun
+      (congrArg
+        (fun omega :
+          RealM4CNFWorld
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀) =>
+          omega.assignment) hfixed) none
+  simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
+    v13RealLinearGaugeCNFGaugeAction] at hcoord
 
 /-! ## Appendix-I CNF CD-ENF structural fields -/
 
