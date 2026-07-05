@@ -1034,6 +1034,33 @@ def v13RealLinearSmallGaugeCNFSemantics
   safeSat := fun _ _ => True
   gaugeSat := v13RealLinearSmallGaugeCNFGaugeSat msg
 
+/-- Structural `atomCompleteness` transfer for the explicit small
+real-linear gauge-CNF surface: CD-ENF normalization preserves the concrete
+evidence semantics. -/
+theorem v13RealLinearSmallGaugeCNF_atomCompleteness
+    (msg : Bool) :
+    ∀ E :
+      RawEvidence
+        V13RealLinearSmallGaugeCNFNeutral
+        V13RealLinearSmallGaugeCNFSafe
+        V13RealLinearSmallGaugeCNFGauge,
+      (v13RealLinearSmallGaugeCNFSemantics msg).SatNormal (CDENF E) =
+        (v13RealLinearSmallGaugeCNFSemantics msg).SatRaw E := by
+  intro E
+  exact CDENF_semantics (v13RealLinearSmallGaugeCNFSemantics msg) E
+
+/-- Structural `gaugeFaithfulness` transfer for the explicit small
+real-linear gauge-CNF surface: a raw gauge atom normalizes to exactly the
+concrete hidden-gauge predicate. -/
+theorem v13RealLinearSmallGaugeCNF_gaugeFaithfulness
+    (msg : Bool) :
+    ∀ gamma : V13RealLinearSmallGaugeCNFGauge,
+      (v13RealLinearSmallGaugeCNFSemantics msg).SatNormal
+          (CDENF (.gauge gamma)) =
+        (v13RealLinearSmallGaugeCNFSemantics msg).gaugeSat gamma := by
+  intro gamma
+  rfl
+
 /-- Structural `hiddenGaugeProduct` transfer for the explicit small
 real-linear gauge-CNF instance: every Boolean gauge action is satisfied at
 every verifier-valid world because it only flips the hidden gauge coordinate
