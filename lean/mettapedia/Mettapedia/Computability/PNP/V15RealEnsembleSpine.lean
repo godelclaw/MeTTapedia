@@ -165,6 +165,13 @@ theorem v13RealLinear_validWitness_readout_eq_publicMessage {m : Nat}
 
 /-! ## Real no-target-rows public neutrality package -/
 
+noncomputable instance v13RealLinearNoTargetRowsWorldInstNonempty
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)] :
+    Nonempty (V13RealLinearNoTargetRowsWorld m i₀) :=
+  ⟨(⟨v13RealLinearNoTargetRowShear i₀ hm.out,
+      v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm.out⟩,
+    f2ZeroVec m)⟩
+
 def v13RealLinearNoTargetRowsTargetBit {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsWorld m i₀) : Bool :=
   v13RealLinearBit (omega.2 i₀)
@@ -491,6 +498,18 @@ theorem v13RealLinearNoTargetRows_publicCoordinate_admissible
   ⟨v13RealLinearNoTargetRows_target_balanced i₀ hm,
     v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
       i₀ coordinate⟩
+
+theorem v13RealLinearNoTargetRows_singleMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∀ omega₀ omega₁ : V13RealLinearNoTargetRowsWorld m i₀,
+      v13RealLinearNoTargetRowsPublicInput omega₀ =
+        v13RealLinearNoTargetRowsPublicInput omega₁ ->
+      v13RealLinearNoTargetRowsTargetBit omega₀ =
+        v13RealLinearNoTargetRowsTargetBit omega₁ := by
+  intro omega₀ omega₁ hPublic
+  unfold v13RealLinearNoTargetRowsTargetBit
+  rw [v13RealLinearNoTargetRows_fullPublic_determines_target
+    i₀ omega₀ omega₁ hPublic]
 
 /-! ## Appendix D locked-core adapter for the real spine -/
 
@@ -2480,6 +2499,68 @@ def ofCDENFComponents
   atomCompleteness := realM4_atomCompleteness_of_CDENF semantics
   gaugeFaithfulness := realM4_gaugeFaithfulness_of_CDENF semantics
   admissibleHistories := admissibleHistories
+
+/--
+Specialized real-public-surface constructor for the adjusted linear
+no-target-rows spine.  The full public input determines the target bit, while
+the neutral skeleton and chosen public-coordinate history field use the
+checked no-target-rows cardinality proofs.  Thus `noPublicTargetTags` and
+`admissibleHistories` are derived from the public-surface certificate instead
+of being passed as opaque mechanical fields.
+
+This is still a transfer constructor for the real linear public surface, not a
+claim that the full M4 ensemble has already been identified with that surface.
+-/
+noncomputable def ofNoTargetRowsPublicCoordinateCDENFComponents
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega) :
+    RealM4MechanicalInterfaceData
+      (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+      Neutral Safe Gauge Transcript Pair Stage Branch HistoryAtom Pivot
+      Observer Output (V13RealLinearNoTargetRowsMap m i₀) :=
+  ofCDENFComponents
+    law
+    (@v13RealLinearNoTargetRowsTargetBit m i₀)
+    (@v13RealLinearNoTargetRowsPublicInput m i₀)
+    (@v13RealLinearNoTargetRowsNeutralSkeleton m i₀)
+    (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+    transcript observerBit phaseA semantics observerEvidence
+    (v13RealLinearNoTargetRowsPublicCoordinateField (i₀ := i₀)
+      coordinate)
+    pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
+    (v13RealLinearNoTargetRows_singleMessage i₀)
+    hiddenGaugeProduct
+    (v13RealLinearNoTargetRows_noPublicTargetTags i₀ hm.out)
+    (v13RealLinearNoTargetRows_publicCoordinate_admissible
+      i₀ coordinate hm.out)
 
 /-- Fill the real mechanical interface with the three analytic frontier
 fields.  This is the exact point where safe-QSSM, bounded gauge incidence, and
@@ -5004,8 +5085,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "noPublicTargetTags"
     status := .partialConstructionTransferred
-    checkedName := "v13RealLinearNoTargetRows_noPublicTargetTags"
-    note := "The adjusted real no-target-rows linear surface proves the v13 neutral-skeleton/opposite-pair shape; the full M4 mechanical interface still has to connect this surface to its neutral skeleton."
+    checkedName := "RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents"
+    note := "The adjusted real no-target-rows linear surface now fills the mechanical no-public-target-tags field in the CD-ENF constructor; full M4 still has to identify its neutral skeleton with this surface."
   },
   {
     item := "atomCompleteness"
@@ -5028,8 +5109,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "admissibleHistories"
     status := .partialConstructionTransferred
-    checkedName := "v13RealLinearNoTargetRows_publicCoordinate_admissible"
-    note := "Every single public coordinate of the adjusted real no-target-rows surface has the balanced-bit and balanced-conditioning pair; full M4 histories still need manuscript-history atom identification and connection."
+    checkedName := "RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents"
+    note := "The adjusted real no-target-rows linear surface now fills the mechanical admissible-histories field for a chosen public-coordinate history; full M4 histories still need manuscript-history atom identification and connection."
   },
   {
     item := "realCompressionLowerMachineData"
