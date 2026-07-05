@@ -2561,6 +2561,177 @@ def audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
     }
 
 
+STRUCTURAL_TEMPLATE_BLOCKERS = frozenset(
+    (
+        "connected_multigraph",
+        "cubic_multigraph",
+        "bridgeless_multigraph",
+        "planar_multigraph",
+        "simple_endpoint_realization",
+    )
+)
+
+
+def classify_simple_patch_template_blocker_case(
+    base_model: CompositeModel,
+    base_states: list[object],
+    patch_index: int,
+    patch_edges: tuple[tuple[str, str], ...],
+    radial_order: tuple[str, str],
+    sample_limit: int,
+) -> dict[str, object] | None:
+    model, patch_edge_names, radial_edges = simple_patch_model(
+        base_model,
+        patch_edges,
+        radial_order,
+    )
+    state_extensions: list[dict[str, object]] = []
+    for state_payload in base_states:
+        assert isinstance(state_payload, dict)
+        raw_state = state_payload.get("state", {})
+        desired_profile = state_payload.get("winding_profile", [])
+        assert isinstance(raw_state, dict)
+        assert isinstance(desired_profile, list)
+        fixed_edge_colors = {
+            edge: str(raw_state[edge])
+            for edge in base_model.gadget.edges
+            if edge not in PATCH_REMOVED_PARALLEL_EDGES
+        }
+        extension = simple_patch_profile_preserving_extension(
+            model,
+            patch_edge_names,
+            radial_edges,
+            fixed_edge_colors,
+            desired_profile,
+        )
+        if extension is None:
+            return None
+        state_extensions.append(
+            {
+                "state_index": state_payload.get("state_index"),
+                "profile_preserved": True,
+            }
+        )
+
+    graph_audit = closed_collar_multigraph_prefix_audit(
+        model,
+        sample_limit=sample_limit,
+    )
+    first_blocker = graph_audit["first_failed_normal_form_test"]
+    first_blocker_name = first_blocker["name"] if first_blocker else "none"
+    if first_blocker_name in STRUCTURAL_TEMPLATE_BLOCKERS:
+        return {
+            "blocker_name": first_blocker_name,
+            "patch_index": patch_index,
+            "patch_edges": patch_edges,
+            "radial_edges": radial_edges,
+            "state_extensions": state_extensions,
+            "payload": {
+                "graph_summary": {
+                    "vertex_count": graph_audit["vertex_count"],
+                    "edge_count": graph_audit["edge_count"],
+                    "first_failed_normal_form_test": first_blocker_name,
+                }
+            },
+        }
+
+    vertices, edges = multigraph_vertices_and_edges(model)
+    template_cut = first_matching_cyclic_cut_payload(
+        vertices,
+        edges,
+        4,
+        closed_collar_cut_is_exact_diagonal_template,
+    )
+    if template_cut is not None:
+        template_key = closed_collar_cut_template_key(template_cut)
+        return {
+            "blocker_name": "excluded_exact_diagonal_two_pole_template",
+            "patch_index": patch_index,
+            "patch_edges": patch_edges,
+            "radial_edges": radial_edges,
+            "state_extensions": state_extensions,
+            "exact_template_key": template_key,
+            "payload": {
+                "exact_template_key": template_key,
+                "exact_template_cut": closed_collar_cut_shape_payload(template_cut),
+            },
+        }
+
+    small_cuts = cyclic_cut_payloads(vertices, edges, 4)
+    if small_cuts:
+        minimum_small_cut = min(int(cut["cut_size"]) for cut in small_cuts)
+        return {
+            "blocker_name": "non_template_cyclic_edge_cut_of_size_at_most_four",
+            "patch_index": patch_index,
+            "patch_edges": patch_edges,
+            "radial_edges": radial_edges,
+            "state_extensions": state_extensions,
+            "minimum_small_cut": minimum_small_cut,
+            "payload": {
+                "minimum_small_cyclic_cut_size": minimum_small_cut,
+                "small_cyclic_cut_count": len(small_cuts),
+                "first_small_cyclic_cut":
+                    closed_collar_cut_shape_payload(small_cuts[0]),
+            },
+        }
+
+    cap5_like = cap5_like_payloads(vertices, edges)
+    if cap5_like:
+        return {
+            "blocker_name": "cap5_free_literal_five_cycle_test",
+            "patch_index": patch_index,
+            "patch_edges": patch_edges,
+            "radial_edges": radial_edges,
+            "state_extensions": state_extensions,
+            "payload": {
+                "cap5_like_cut_count": len(cap5_like),
+                "cap5_like_cut_sample": cap5_like[:sample_limit],
+            },
+        }
+
+    return {
+        "blocker_name": "none_after_template_exclusion",
+        "patch_index": patch_index,
+        "patch_edges": patch_edges,
+        "radial_edges": radial_edges,
+        "state_extensions": state_extensions,
+        "payload": {
+            "graph_summary": {
+                "vertex_count": graph_audit["vertex_count"],
+                "edge_count": graph_audit["edge_count"],
+            }
+        },
+    }
+
+
+def add_template_blocker_sample(
+    samples: list[dict[str, object]],
+    sampled_blockers: set[str],
+    sample_limit: int,
+    case_result: dict[str, object],
+) -> None:
+    blocker_name = str(case_result["blocker_name"])
+    if len(samples) >= sample_limit and blocker_name in sampled_blockers:
+        return
+    sampled_blockers.add(blocker_name)
+    patch_edges = case_result["patch_edges"]
+    radial_edges = case_result["radial_edges"]
+    payload = case_result["payload"]
+    assert isinstance(patch_edges, tuple)
+    assert isinstance(radial_edges, tuple)
+    assert isinstance(payload, dict)
+    samples.append(
+        {
+            "patch_index": case_result["patch_index"],
+            "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
+            "radial_order": list(radial_edges),
+            "state_extensions": case_result["state_extensions"],
+            "template_exclusion_blocker": blocker_name,
+            **payload,
+        }
+    )
+
+
 def audit_closed_collar_winding_simple_patch_template_blockers(
     tau_states: list[tuple[str, ...]],
     internal_vertex_count: int,
@@ -2586,13 +2757,6 @@ def audit_closed_collar_winding_simple_patch_template_blockers(
     if patch_topology_limit <= 0:
         raise ValueError("patch topology limit must be positive")
 
-    structural_blockers = {
-        "connected_multigraph",
-        "cubic_multigraph",
-        "bridgeless_multigraph",
-        "planar_multigraph",
-        "simple_endpoint_realization",
-    }
     processed_patch_topology_count = 0
     radial_order_case_count = 0
     profile_preserving_case_count = 0
@@ -2608,28 +2772,6 @@ def audit_closed_collar_winding_simple_patch_template_blockers(
     sampled_blockers: set[str] = set()
     last_seen_patch_index: int | None = None
     exhausted = True
-
-    def add_sample(
-        blocker_name: str,
-        patch_index: int,
-        patch_edges: tuple[tuple[str, str], ...],
-        radial_edges: tuple[str, str],
-        state_extensions: list[dict[str, object]],
-        payload: dict[str, object],
-    ) -> None:
-        if len(samples) >= sample_limit and blocker_name in sampled_blockers:
-            return
-        sampled_blockers.add(blocker_name)
-        samples.append(
-            {
-                "patch_index": patch_index,
-                "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
-                "radial_order": list(radial_edges),
-                "state_extensions": state_extensions,
-                "template_exclusion_blocker": blocker_name,
-                **payload,
-            }
-        )
 
     for patch_index, patch_edges in enumerate(
         iter_simple_patch_edge_sets(internal_vertex_count)
@@ -2649,147 +2791,43 @@ def audit_closed_collar_winding_simple_patch_template_blockers(
         radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
         for radial_order in radial_orders:
             radial_order_case_count += 1
-            model, patch_edge_names, radial_edges = simple_patch_model(
+            case_result = classify_simple_patch_template_blocker_case(
                 base_model,
+                base_states,
+                patch_index,
                 patch_edges,
                 radial_order,
+                sample_limit,
             )
-            state_extensions: list[dict[str, object]] = []
-            for state_payload in base_states:
-                assert isinstance(state_payload, dict)
-                raw_state = state_payload.get("state", {})
-                desired_profile = state_payload.get("winding_profile", [])
-                assert isinstance(raw_state, dict)
-                assert isinstance(desired_profile, list)
-                fixed_edge_colors = {
-                    edge: str(raw_state[edge])
-                    for edge in base_model.gadget.edges
-                    if edge not in PATCH_REMOVED_PARALLEL_EDGES
-                }
-                extension = simple_patch_profile_preserving_extension(
-                    model,
-                    patch_edge_names,
-                    radial_edges,
-                    fixed_edge_colors,
-                    desired_profile,
-                )
-                if extension is None:
-                    break
-                state_extensions.append(
-                    {
-                        "state_index": state_payload.get("state_index"),
-                        "profile_preserved": True,
-                    }
-                )
-            else:
-                profile_preserving_case_count += 1
-                graph_audit = closed_collar_multigraph_prefix_audit(
-                    model,
-                    sample_limit=sample_limit,
-                )
-                first_blocker = graph_audit["first_failed_normal_form_test"]
-                first_blocker_name = first_blocker["name"] if first_blocker else "none"
-                if first_blocker_name in structural_blockers:
-                    structural_first_blocker_count += 1
-                    first_blocker_histogram[first_blocker_name] += 1
-                    add_sample(
-                        first_blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "graph_summary": {
-                                "vertex_count": graph_audit["vertex_count"],
-                                "edge_count": graph_audit["edge_count"],
-                                "first_failed_normal_form_test": first_blocker_name,
-                            }
-                        },
-                    )
-                    continue
-
-                vertices, edges = multigraph_vertices_and_edges(model)
-                template_cut = first_matching_cyclic_cut_payload(
-                    vertices,
-                    edges,
-                    4,
-                    closed_collar_cut_is_exact_diagonal_template,
-                )
-                if template_cut is not None:
-                    blocker_name = "excluded_exact_diagonal_two_pole_template"
-                    template_key = closed_collar_cut_template_key(template_cut)
-                    exact_template_blocker_count += 1
-                    exact_template_histogram[template_key] += 1
-                    first_blocker_histogram[blocker_name] += 1
-                    add_sample(
-                        blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "exact_template_key": template_key,
-                            "exact_template_cut": closed_collar_cut_shape_payload(template_cut),
-                        },
-                    )
-                    continue
-
-                small_cuts = cyclic_cut_payloads(vertices, edges, 4)
-                if small_cuts:
-                    blocker_name = "non_template_cyclic_edge_cut_of_size_at_most_four"
-                    minimum_small_cut = min(int(cut["cut_size"]) for cut in small_cuts)
-                    non_template_cyclic_cut_blocker_count += 1
-                    non_template_minimum_small_cut_histogram[str(minimum_small_cut)] += 1
-                    first_blocker_histogram[blocker_name] += 1
-                    add_sample(
-                        blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "minimum_small_cyclic_cut_size": minimum_small_cut,
-                            "small_cyclic_cut_count": len(small_cuts),
-                            "first_small_cyclic_cut":
-                                closed_collar_cut_shape_payload(small_cuts[0]),
-                        },
-                    )
-                    continue
-
-                cap5_like = cap5_like_payloads(vertices, edges)
-                if cap5_like:
-                    blocker_name = "cap5_free_literal_five_cycle_test"
-                    cap5_like_blocker_count += 1
-                    first_blocker_histogram[blocker_name] += 1
-                    add_sample(
-                        blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "cap5_like_cut_count": len(cap5_like),
-                            "cap5_like_cut_sample": cap5_like[:sample_limit],
-                        },
-                    )
-                    continue
-
-                blocker_name = "none_after_template_exclusion"
+            if case_result is None:
+                continue
+            profile_preserving_case_count += 1
+            blocker_name = str(case_result["blocker_name"])
+            first_blocker_histogram[blocker_name] += 1
+            if blocker_name in STRUCTURAL_TEMPLATE_BLOCKERS:
+                structural_first_blocker_count += 1
+            elif blocker_name == "excluded_exact_diagonal_two_pole_template":
+                template_key = case_result["exact_template_key"]
+                assert isinstance(template_key, str)
+                exact_template_blocker_count += 1
+                exact_template_histogram[template_key] += 1
+            elif blocker_name == "non_template_cyclic_edge_cut_of_size_at_most_four":
+                minimum_small_cut = case_result["minimum_small_cut"]
+                assert isinstance(minimum_small_cut, int)
+                non_template_cyclic_cut_blocker_count += 1
+                non_template_minimum_small_cut_histogram[str(minimum_small_cut)] += 1
+            elif blocker_name == "cap5_free_literal_five_cycle_test":
+                cap5_like_blocker_count += 1
+            elif blocker_name == "none_after_template_exclusion":
                 normal_form_after_template_exclusion_passing_count += 1
-                first_blocker_histogram[blocker_name] += 1
-                add_sample(
-                    blocker_name,
-                    patch_index,
-                    patch_edges,
-                    radial_edges,
-                    state_extensions,
-                    {
-                        "graph_summary": {
-                            "vertex_count": graph_audit["vertex_count"],
-                            "edge_count": graph_audit["edge_count"],
-                        }
-                    },
-                )
+            else:
+                raise AssertionError(blocker_name)
+            add_template_blocker_sample(
+                samples,
+                sampled_blockers,
+                sample_limit,
+                case_result,
+            )
 
     next_patch_start_index = patch_start_index + processed_patch_topology_count
     if exhausted and last_seen_patch_index is not None:
@@ -2884,13 +2922,6 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
                 f"[0, {exact_patch_topology_count})"
             )
 
-    structural_blockers = {
-        "connected_multigraph",
-        "cubic_multigraph",
-        "bridgeless_multigraph",
-        "planar_multigraph",
-        "simple_endpoint_realization",
-    }
     sampled_patch_topology_count = len(patch_indices)
     radial_order_case_count = 0
     profile_preserving_case_count = 0
@@ -2905,28 +2936,6 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
     samples: list[dict[str, object]] = []
     sampled_blockers: set[str] = set()
 
-    def add_sample(
-        blocker_name: str,
-        patch_index: int,
-        patch_edges: tuple[tuple[str, str], ...],
-        radial_edges: tuple[str, str],
-        state_extensions: list[dict[str, object]],
-        payload: dict[str, object],
-    ) -> None:
-        if len(samples) >= sample_limit and blocker_name in sampled_blockers:
-            return
-        sampled_blockers.add(blocker_name)
-        samples.append(
-            {
-                "patch_index": patch_index,
-                "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
-                "radial_order": list(radial_edges),
-                "state_extensions": state_extensions,
-                "template_exclusion_blocker": blocker_name,
-                **payload,
-            }
-        )
-
     for patch_index in patch_indices:
         patch_edges = simple_patch_edge_set_at_index(
             internal_vertex_count,
@@ -2939,150 +2948,43 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
         radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
         for radial_order in radial_orders:
             radial_order_case_count += 1
-            model, patch_edge_names, radial_edges = simple_patch_model(
+            case_result = classify_simple_patch_template_blocker_case(
                 base_model,
+                base_states,
+                patch_index,
                 patch_edges,
                 radial_order,
+                sample_limit,
             )
-            state_extensions: list[dict[str, object]] = []
-            for state_payload in base_states:
-                assert isinstance(state_payload, dict)
-                raw_state = state_payload.get("state", {})
-                desired_profile = state_payload.get("winding_profile", [])
-                assert isinstance(raw_state, dict)
-                assert isinstance(desired_profile, list)
-                fixed_edge_colors = {
-                    edge: str(raw_state[edge])
-                    for edge in base_model.gadget.edges
-                    if edge not in PATCH_REMOVED_PARALLEL_EDGES
-                }
-                extension = simple_patch_profile_preserving_extension(
-                    model,
-                    patch_edge_names,
-                    radial_edges,
-                    fixed_edge_colors,
-                    desired_profile,
-                )
-                if extension is None:
-                    break
-                state_extensions.append(
-                    {
-                        "state_index": state_payload.get("state_index"),
-                        "profile_preserved": True,
-                    }
-                )
-            else:
-                profile_preserving_case_count += 1
-                graph_audit = closed_collar_multigraph_prefix_audit(
-                    model,
-                    sample_limit=sample_limit,
-                )
-                first_blocker = graph_audit["first_failed_normal_form_test"]
-                first_blocker_name = first_blocker["name"] if first_blocker else "none"
-                if first_blocker_name in structural_blockers:
-                    structural_first_blocker_count += 1
-                    first_blocker_histogram[first_blocker_name] += 1
-                    add_sample(
-                        first_blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "graph_summary": {
-                                "vertex_count": graph_audit["vertex_count"],
-                                "edge_count": graph_audit["edge_count"],
-                                "first_failed_normal_form_test": first_blocker_name,
-                            }
-                        },
-                    )
-                    continue
-
-                vertices, edges = multigraph_vertices_and_edges(model)
-                template_cut = first_matching_cyclic_cut_payload(
-                    vertices,
-                    edges,
-                    4,
-                    closed_collar_cut_is_exact_diagonal_template,
-                )
-                if template_cut is not None:
-                    blocker_name = "excluded_exact_diagonal_two_pole_template"
-                    template_key = closed_collar_cut_template_key(template_cut)
-                    exact_template_blocker_count += 1
-                    exact_template_histogram[template_key] += 1
-                    first_blocker_histogram[blocker_name] += 1
-                    add_sample(
-                        blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "exact_template_key": template_key,
-                            "exact_template_cut":
-                                closed_collar_cut_shape_payload(template_cut),
-                        },
-                    )
-                    continue
-
-                small_cuts = cyclic_cut_payloads(vertices, edges, 4)
-                if small_cuts:
-                    blocker_name = "non_template_cyclic_edge_cut_of_size_at_most_four"
-                    minimum_small_cut = min(int(cut["cut_size"]) for cut in small_cuts)
-                    non_template_cyclic_cut_blocker_count += 1
-                    non_template_minimum_small_cut_histogram[
-                        str(minimum_small_cut)
-                    ] += 1
-                    first_blocker_histogram[blocker_name] += 1
-                    add_sample(
-                        blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "minimum_small_cyclic_cut_size": minimum_small_cut,
-                            "small_cyclic_cut_count": len(small_cuts),
-                            "first_small_cyclic_cut":
-                                closed_collar_cut_shape_payload(small_cuts[0]),
-                        },
-                    )
-                    continue
-
-                cap5_like = cap5_like_payloads(vertices, edges)
-                if cap5_like:
-                    blocker_name = "cap5_free_literal_five_cycle_test"
-                    cap5_like_blocker_count += 1
-                    first_blocker_histogram[blocker_name] += 1
-                    add_sample(
-                        blocker_name,
-                        patch_index,
-                        patch_edges,
-                        radial_edges,
-                        state_extensions,
-                        {
-                            "cap5_like_cut_count": len(cap5_like),
-                            "cap5_like_cut_sample": cap5_like[:sample_limit],
-                        },
-                    )
-                    continue
-
-                blocker_name = "none_after_template_exclusion"
+            if case_result is None:
+                continue
+            profile_preserving_case_count += 1
+            blocker_name = str(case_result["blocker_name"])
+            first_blocker_histogram[blocker_name] += 1
+            if blocker_name in STRUCTURAL_TEMPLATE_BLOCKERS:
+                structural_first_blocker_count += 1
+            elif blocker_name == "excluded_exact_diagonal_two_pole_template":
+                template_key = case_result["exact_template_key"]
+                assert isinstance(template_key, str)
+                exact_template_blocker_count += 1
+                exact_template_histogram[template_key] += 1
+            elif blocker_name == "non_template_cyclic_edge_cut_of_size_at_most_four":
+                minimum_small_cut = case_result["minimum_small_cut"]
+                assert isinstance(minimum_small_cut, int)
+                non_template_cyclic_cut_blocker_count += 1
+                non_template_minimum_small_cut_histogram[str(minimum_small_cut)] += 1
+            elif blocker_name == "cap5_free_literal_five_cycle_test":
+                cap5_like_blocker_count += 1
+            elif blocker_name == "none_after_template_exclusion":
                 normal_form_after_template_exclusion_passing_count += 1
-                first_blocker_histogram[blocker_name] += 1
-                add_sample(
-                    blocker_name,
-                    patch_index,
-                    patch_edges,
-                    radial_edges,
-                    state_extensions,
-                    {
-                        "graph_summary": {
-                            "vertex_count": graph_audit["vertex_count"],
-                            "edge_count": graph_audit["edge_count"],
-                        }
-                    },
-                )
+            else:
+                raise AssertionError(blocker_name)
+            add_template_blocker_sample(
+                samples,
+                sampled_blockers,
+                sample_limit,
+                case_result,
+            )
 
     verdict = (
         "template_exclusion_index_sample_found_normal_form_prefix_realization"
