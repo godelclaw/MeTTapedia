@@ -1200,6 +1200,31 @@ def v13RealLinearSmallGaugeCNFEnsembleSemantics :
   safeSat := fun _ _ => True
   gaugeSat := v13RealLinearSmallGaugeCNFEnsembleGaugeSat
 
+/-- Structural `atomCompleteness` transfer for the global two-message small
+real-linear gauge-CNF ensemble: CD-ENF normalization preserves the concrete
+global evidence semantics. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_atomCompleteness :
+    ∀ E :
+      RawEvidence
+        V13RealLinearSmallGaugeCNFNeutral
+        V13RealLinearSmallGaugeCNFSafe
+        V13RealLinearSmallGaugeCNFGauge,
+      v13RealLinearSmallGaugeCNFEnsembleSemantics.SatNormal (CDENF E) =
+        v13RealLinearSmallGaugeCNFEnsembleSemantics.SatRaw E := by
+  intro E
+  exact CDENF_semantics v13RealLinearSmallGaugeCNFEnsembleSemantics E
+
+/-- Structural `gaugeFaithfulness` transfer for the global two-message small
+real-linear gauge-CNF ensemble: a normalized gauge atom is exactly the
+concrete global hidden-gauge target-preservation predicate. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_gaugeFaithfulness :
+    ∀ gamma : V13RealLinearSmallGaugeCNFGauge,
+      v13RealLinearSmallGaugeCNFEnsembleSemantics.SatNormal
+          (CDENF (.gauge gamma)) =
+        v13RealLinearSmallGaugeCNFEnsembleSemantics.gaugeSat gamma := by
+  intro gamma
+  rfl
+
 /-- Structural `hiddenGaugeProduct` transfer for the global two-message small
 real-linear gauge-CNF ensemble.  Every Boolean hidden-gauge action is
 satisfied at every global world because the action only flips the hidden
