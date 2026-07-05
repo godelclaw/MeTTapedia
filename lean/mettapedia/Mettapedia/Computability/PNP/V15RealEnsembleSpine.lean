@@ -4585,6 +4585,118 @@ theorem realM4_exists_np_not_p_from_internalClash_bridge
     bridge.internalClash_not_inP clash⟩
 
 /--
+Stricter Cook-style bridge boundary for the real endpoint.
+
+Unlike `RealM4OfficialPNPBridgeData`, this data does not consume an already
+contradictory `UpperLowerClash`.  It names an NP language and requires a proof
+that P-membership for that language supplies the explicit upper-side
+self-reduction discharge used by the real endgame.  The lower machine,
+StarSW hardness, and the three analytic fields remain outside this bridge.
+-/
+structure RealM4OfficialPToUpperBridgeData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (F : CompressionLowerFramework)
+    (C : CookStylePNPClassInterface.{p}) where
+  separatedLanguage : C.Language
+  separatedLanguage_inNP : C.inNP separatedLanguage
+  upperDischarge_of_inP :
+    C.inP separatedLanguage -> RealM4SelfReductionUpperExplicitPNPDischarge D F
+
+/--
+Official endpoint from the stricter upper bridge.  The bridge contributes only
+the NP language and the P-membership-to-upper-discharge implication; StarSW and
+the three analytic frontiers remain visible theorem hypotheses.
+-/
+theorem realM4_officialSeparation_from_endgameMechanicalData_upperBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToUpperBridgeData D M.lowerFramework C) :
+    C.officialSeparation :=
+  C.officialSeparation_of_np_not_p
+    bridge.separatedLanguage_inNP
+    (by
+      intro hP
+      exact
+        (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+          M (bridge.upperDischarge_of_inP hP) starSWHardness
+          safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds)
+
+/--
+Cook-style existential endpoint from the stricter upper bridge.  This is the
+same content as `realM4_officialSeparation_from_endgameMechanicalData_upperBridge`
+spelled directly as `∃ L, inNP L ∧ ¬ inP L`.
+-/
+theorem realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToUpperBridgeData D M.lowerFramework C) :
+    ∃ separatedLanguage : C.Language,
+      C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  ⟨bridge.separatedLanguage,
+    bridge.separatedLanguage_inNP,
+    by
+      intro hP
+      exact
+        (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+          M (bridge.upperDischarge_of_inP hP) starSWHardness
+          safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds⟩
+
+/--
 Official-endpoint staging theorem for already packaged real endgame data.
 Given the explicit P=NP-side upper package, StarSW hardness, the three
 analytic fields, and a separate Cook-style bridge, the internal real-M4
@@ -6245,6 +6357,24 @@ theorem realM4OfficialPNPBridgeConstructionInputs_exact :
 
 def realM4OfficialPNPBridgeStatement : String :=
   "The real v15/M4 UpperLowerClash is only an internal endpoint.  A separate Cook-style P-vs-NP bridge must instantiate the official class interface, name the separated NP language, and prove that membership in P would generate the internal upper/lower clash without hiding ensemble existence, lower hardness, or analytic assumptions in parameters.  A proof that only uses the False field inside UpperLowerClash is degenerate and does not constitute the real Cook-style bridge."
+
+def realM4OfficialUpperBridgeConstructionInputs : List String := [
+  "cookStylePNPClassInterface",
+  "separatedLanguage",
+  "separatedLanguageInNP",
+  "pMembershipToSelfReductionUpperDischarge"
+]
+
+theorem realM4OfficialUpperBridgeConstructionInputs_exact :
+    realM4OfficialUpperBridgeConstructionInputs =
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "pMembershipToSelfReductionUpperDischarge" ] := by
+  rfl
+
+def realM4OfficialUpperBridgeStatement : String :=
+  "For the real v15/M4 Cook-style bridge, the nondegenerate endpoint obligation is to name an NP language and prove that P-membership for that language constructs the explicit self-reduction upper discharge used by the real endgame.  StarSW hardness, the lower machine, and the three analytic fields remain outside this bridge and visible at the theorem boundary."
 
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
@@ -8201,15 +8331,27 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "officialPNPBridgeData"
-    status := .openConstruction
+    status := .blockedByCounterexample
     checkedName := "RealM4OfficialPNPBridgeData"
-    note := "The internal UpperLowerClash still needs a separate Cook-style endpoint bridge before it can be read as an official P-vs-NP separation statement."
+    note := "The raw clash-to-not-P bridge is too weak as a real Cook target because it can be inhabited from an arbitrary NP-language witness by ex falso."
   },
   {
     item := "officialPNPBridgeExFalsoOnly"
     status := .blockedByCounterexample
     checkedName := "realM4_officialBridgeData_of_npWitness_exFalso"
     note := "The raw bridge adapter can be inhabited from any NP-language witness by ex falso from UpperLowerClash.noConsistentBounds, so this adapter alone is not the real Cook-style bridge."
+  },
+  {
+    item := "officialPNPUpperBridgeData"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToUpperBridgeData"
+    note := "The nondegenerate Cook bridge target must derive the explicit self-reduction upper discharge from P-membership of the named NP language."
+  },
+  {
+    item := "officialPNPUpperBridgeAdapter"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge"
+    note := "Given the strict upper bridge, the real endgame data plus StarSW and the three analytic fields imply the Cook-style existential endpoint without taking a free P=NP decider family as a theorem hypothesis."
   },
   {
     item := "officialPNPBridgeAdapter"
@@ -8297,8 +8439,10 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
-        RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.blockedByCounterexample,
+        RealM4LiftStatus.blockedByCounterexample,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
@@ -8316,7 +8460,7 @@ def realM4OpenConstructionItems : List String := [
   "admissibleHistories",
   "cnfVariableNatCoding",
   "realCompressionLowerMachineData",
-  "officialPNPBridgeData"
+  "officialPNPUpperBridgeData"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -8328,7 +8472,7 @@ theorem realM4OpenConstructionItems_exact :
         "admissibleHistories",
         "cnfVariableNatCoding",
         "realCompressionLowerMachineData",
-        "officialPNPBridgeData" ] := by
+        "officialPNPUpperBridgeData" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
