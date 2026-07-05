@@ -6739,6 +6739,23 @@ theorem
   (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSingleMessageSATSpine
     i₀).singleMessage
 
+/-- Structural `singleMessage` transferred directly to the concrete
+no-target-rows Appendix-I CNF world carrier: the target bit is fixed by the
+public instance, independent of which satisfying assignment is carried. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_singleMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∀ omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀),
+      omega₀.publicInstance = omega₁.publicInstance →
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+            omega₀ =
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+            omega₁ := by
+  intro omega₀ omega₁ hPublic
+  simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget,
+    realM4CNFMessageOfPublic, hPublic]
+
 /-- Neutral skeleton for no-target-rows Appendix-I CNF worlds: keep the base
 no-target-rows map skeleton and ignore the satisfying assignment. -/
 noncomputable def
