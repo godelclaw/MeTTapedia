@@ -2041,6 +2041,109 @@ theorem lemma52NormalFormExistenceObligation_of_s7SplitCAP5FreeExistence
 
 end CAP5Tightness
 
+section RealizedCutEdgeSides
+
+variable {G : SimpleGraph V}
+
+/-- Every graph edge, as an `edgeSet` element, has at least one endpoint. -/
+theorem edgeSet_exists_endpoint (e : G.edgeSet) :
+    ∃ v : V, v ∈ (e : Sym2 V) := by
+  rcases e with ⟨e, _he⟩
+  induction e using Sym2.ind with
+  | h u _v =>
+      exact ⟨u, by simp⟩
+
+namespace CyclicEdgeCutRealization
+
+variable {edgeCut : Finset G.edgeSet}
+
+/-- An edge touches the selected side of a realized cut when at least one endpoint lies on that
+side. -/
+def edgeTouchesSide (realization : CyclicEdgeCutRealization G edgeCut)
+    (e : G.edgeSet) : Prop :=
+  ∃ v : V, v ∈ (e : Sym2 V) ∧ realization.side v
+
+/-- The non-cut edge-side predicate used by coloring glue: select exactly the non-boundary
+edges touching the chosen side of the realized cut. -/
+def nonCutEdgeSide (realization : CyclicEdgeCutRealization G edgeCut)
+    (e : G.edgeSet) : Prop :=
+  e ∉ edgeCut ∧ realization.edgeTouchesSide e
+
+/-- A non-cut edge has all endpoints on the same side of a realized cut. -/
+theorem side_iff_of_not_mem_edgeCut
+    (realization : CyclicEdgeCutRealization G edgeCut) {e : G.edgeSet}
+    (hnot : e ∉ edgeCut) {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V)) :
+    realization.side u ↔ realization.side v := by
+  have hnotCross : ¬ EdgeCrossesVertexSide G realization.side e := by
+    intro hcross
+    exact hnot ((realization.hcut_eq e).2 hcross)
+  exact (not_edgeCrossesVertexSide_iff_forall_side_iff G realization.side e).1
+    hnotCross u v hu hv
+
+/-- For a non-cut edge, touching the selected side is equivalent to every endpoint lying on that
+side. -/
+theorem edgeTouchesSide_iff_forall_mem_side_of_not_mem_edgeCut
+    (realization : CyclicEdgeCutRealization G edgeCut) {e : G.edgeSet}
+    (hnot : e ∉ edgeCut) :
+    realization.edgeTouchesSide e ↔
+      ∀ v : V, v ∈ (e : Sym2 V) → realization.side v := by
+  constructor
+  · rintro ⟨u, hu, hside⟩ v hv
+    exact ((realization.side_iff_of_not_mem_edgeCut hnot hu hv).1 hside)
+  · intro hall
+    rcases edgeSet_exists_endpoint (G := G) e with ⟨v, hv⟩
+    exact ⟨v, hv, hall v hv⟩
+
+/-- Not touching the selected side means every endpoint lies outside it. -/
+theorem not_edgeTouchesSide_iff_forall_mem_not_side
+    (realization : CyclicEdgeCutRealization G edgeCut) (e : G.edgeSet) :
+    ¬ realization.edgeTouchesSide e ↔
+      ∀ v : V, v ∈ (e : Sym2 V) → ¬ realization.side v := by
+  constructor
+  · intro hnot v hv hside
+    exact hnot ⟨v, hv, hside⟩
+  · rintro hall ⟨v, hv, hside⟩
+    exact hall v hv hside
+
+/-- Adjacent non-cut edges in the line graph lie on the same side of a realized cut. -/
+theorem edgeTouchesSide_iff_of_not_mem_edgeCut_of_lineGraph_adj
+    (realization : CyclicEdgeCutRealization G edgeCut) {e f : G.edgeSet}
+    (hecut : e ∉ edgeCut) (hfcut : f ∉ edgeCut)
+    (hadj : G.lineGraph.Adj e f) :
+    realization.edgeTouchesSide e ↔ realization.edgeTouchesSide f := by
+  rcases SimpleGraph.lineGraph_adj_iff_exists.1 hadj with ⟨_hne, v, hve, hvf⟩
+  constructor
+  · intro he
+    have hvside :
+        realization.side v :=
+      (realization.edgeTouchesSide_iff_forall_mem_side_of_not_mem_edgeCut hecut).1 he v hve
+    exact ⟨v, hvf, hvside⟩
+  · intro hf
+    have hvside :
+        realization.side v :=
+      (realization.edgeTouchesSide_iff_forall_mem_side_of_not_mem_edgeCut hfcut).1 hf v hvf
+    exact ⟨v, hve, hvside⟩
+
+/-- The non-cut edge-side predicate is preserved by line-graph adjacency away from the cut
+support. -/
+theorem nonCutEdgeSide_iff_of_not_mem_edgeCut_of_lineGraph_adj
+    (realization : CyclicEdgeCutRealization G edgeCut) {e f : G.edgeSet}
+    (hecut : e ∉ edgeCut) (hfcut : f ∉ edgeCut)
+    (hadj : G.lineGraph.Adj e f) :
+    realization.nonCutEdgeSide e ↔ realization.nonCutEdgeSide f := by
+  have htouch :=
+    realization.edgeTouchesSide_iff_of_not_mem_edgeCut_of_lineGraph_adj hecut hfcut hadj
+  constructor
+  · intro he
+    exact ⟨hfcut, htouch.1 he.2⟩
+  · intro hf
+    exact ⟨hecut, htouch.2 hf.2⟩
+
+end CyclicEdgeCutRealization
+
+end RealizedCutEdgeSides
+
 section EdgeColoringGlue
 
 variable [DecidableEq V]
@@ -2121,6 +2224,16 @@ def SideGlueEdgeCompatible
     sideGlueEdgeColor edgeSide inside outside e ≠
       sideGlueEdgeColor edgeSide inside outside f
 
+/-- Boundary-only compatibility for gluing along a realized cyclic cut.  Away from the cut
+support, line-graph adjacencies preserve the non-cut edge-side predicate automatically; only
+adjacencies incident to a cut edge require explicit checks. -/
+def RealizedCutBoundaryGlueCompatible
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (inside outside : G.EdgeColoring α) : Prop :=
+  ∀ {e f : G.edgeSet}, G.lineGraph.Adj e f → (e ∈ edgeCut ∨ f ∈ edgeCut) →
+    sideGlueEdgeColor realization.nonCutEdgeSide inside outside e ≠
+      sideGlueEdgeColor realization.nonCutEdgeSide inside outside f
+
 /-- Build an edge coloring from edge-side glue compatibility. -/
 noncomputable def sideGlueEdgeColoring
     (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α)
@@ -2143,6 +2256,31 @@ theorem sideGlueEdgeCompatible_of_side_preserving_adjacencies
       intro hf
       exact he ((hpreserve hef).2 hf)
     simpa [sideGlueEdgeColor, he, hf] using outside.valid hef
+
+/-- For a realized cyclic cut, checking glued edge-coloring compatibility only on line-graph
+adjacencies incident to the cut support is enough.  All non-cut adjacent pairs lie on the same
+edge side by the realized-cut endpoint classification. -/
+theorem sideGlueEdgeCompatible_of_realizedCutBoundaryGlueCompatible
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (inside outside : G.EdgeColoring α)
+    (hboundary : RealizedCutBoundaryGlueCompatible realization inside outside) :
+    SideGlueEdgeCompatible G realization.nonCutEdgeSide inside outside := by
+  classical
+  intro e f hef
+  by_cases hecut : e ∈ edgeCut
+  · exact hboundary hef (Or.inl hecut)
+  · by_cases hfcut : f ∈ edgeCut
+    · exact hboundary hef (Or.inr hfcut)
+    · have hsame :
+        realization.nonCutEdgeSide e ↔ realization.nonCutEdgeSide f :=
+        realization.nonCutEdgeSide_iff_of_not_mem_edgeCut_of_lineGraph_adj hecut hfcut hef
+      by_cases he : realization.nonCutEdgeSide e
+      · have hf : realization.nonCutEdgeSide f := hsame.1 he
+        simpa [sideGlueEdgeColor, he, hf] using inside.valid hef
+      · have hf : ¬ realization.nonCutEdgeSide f := by
+          intro hf
+          exact he (hsame.2 hf)
+        simpa [sideGlueEdgeColor, he, hf] using outside.valid hef
 
 /-- Cross-adjacency compatibility for edge-coloring glue.  Properness inside each side is already
 provided by the two edge colorings; only adjacent edge pairs on opposite sides need mixed checks. -/
