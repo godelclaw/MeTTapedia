@@ -15030,7 +15030,7 @@ theorem
       (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
         ∃ separatedLanguage : C.Language,
           C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
-  realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsNamedLanguageLargeTargetConstructionData_realFrontier
+  realM4_directStrictNamedRealLockInEndpoints_from_noTargetRowsNamedLanguageLargeTargetConstructionData_realFrontier
     i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
     boundaryMixing
 
@@ -21327,7 +21327,7 @@ theorem realM4StrictNamedRealLockInEndpointHypothesisAudit_exact :
   rfl
 
 def realM4StrictNamedRealLockInStatement : String :=
-  "The strict named-language large-target route is the preferred real lock-in audit surface: its construction obligations are exactly the fields of the no-target-rows named-language large-target construction object, and after that construction object is supplied, the endpoint theorem has exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The equality-indexed lock-in route is obtained mechanically from this strict route by specialization at a candidate P=NP witness."
+  "The strict named-language large-target route is the preferred real lock-in audit surface: its construction obligations are exactly the fields of the no-target-rows named-language large-target construction object, and after that construction object is supplied, the preferred endpoint theorem uses the direct strict named clash chain with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The equality-indexed lock-in route is retained as a supplemental specialization at a candidate P=NP witness."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
@@ -21414,6 +21414,46 @@ theorem realM4StrictNamedDirectClashHypothesisAudit_exact :
 
 def realM4StrictNamedDirectClashStatement : String :=
   "The direct strict named-language route constructs endgame mechanical data, the v13 ParameterRecord, and the internal UpperLowerClash directly from the named-language construction surface and P-membership of the named NP language; this proves the named language outside P and then yields the Cook-style class inequality, official separation proposition, and existential NP-not-P endpoint.  The theorem boundary is one construction-data object plus exactly StarSW hardness and safeQSSM / boundedGaugeIncidence / boundaryMixing, while the self-reduction upper side is discharged inside the proof."
+
+def realM4StrictNamedPreferredEndpointChainItems : List String := [
+  "strictNamedConstructionData",
+  "directEndgameMechanicalData",
+  "pMembershipToSelfReductionUpper",
+  "directParameterRecord",
+  "directUpperLowerClash",
+  "namedLanguageNotInP",
+  "cookStyleClassInequality",
+  "officialSeparation",
+  "existentialNPNotP"
+]
+
+theorem realM4StrictNamedPreferredEndpointChainItems_exact :
+    realM4StrictNamedPreferredEndpointChainItems =
+      [ "strictNamedConstructionData",
+        "directEndgameMechanicalData",
+        "pMembershipToSelfReductionUpper",
+        "directParameterRecord",
+        "directUpperLowerClash",
+        "namedLanguageNotInP",
+        "cookStyleClassInequality",
+        "officialSeparation",
+        "existentialNPNotP" ] := by
+  rfl
+
+def realM4StrictNamedPreferredEndpointHypothesisAudit : List String :=
+  realM4StrictNamedDirectClashHypothesisAudit
+
+theorem realM4StrictNamedPreferredEndpointHypothesisAudit_exact :
+    realM4StrictNamedPreferredEndpointHypothesisAudit =
+      [ "noTargetRowsNamedLanguageLargeTargetOfficialConstructionData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4StrictNamedPreferredEndpointStatement : String :=
+  "The preferred strict named-language endpoint theorem is wired to the direct strict named clash chain: the construction-data object supplies the structural and self-reduction-upper machinery, and the only remaining theorem inputs are StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  The older K-poly split and equality-indexed endpoints remain supplemental audits rather than the preferred endpoint path."
 
 def realM4NamedLanguageLargeTargetKpolySplitBundleStatement : String :=
   "The large-target K-poly split bundle packages named-language NP membership and non-membership, Cook-style class inequality, the official separation proposition, and the existential NP-not-P endpoint from the same explicit construction surface.  Its mathematical frontier inputs remain exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; the P-membership-indexed eta, K-poly, floor, and target-block facts are construction obligations for locking the real route."
