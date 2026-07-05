@@ -2827,17 +2827,28 @@ def ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization : Prop :=
     ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G → False
 
 /--
+Extraction datum tying a concrete embedded-collar certificate back to the
+specific normal-form annulus being refuted.
+-/
+structure ClosedCollarWindingFreedomEmbeddedCollarNormalFormExtraction
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  embedded : ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G
+  normalForm_eq : embedded.normalForm = normalForm
+
+/--
 Global extraction obligation from arbitrary normal-form annuli to the concrete
-embedded-collar certificate.  This is the serious geometric theorem still
-needed to turn the certified embedded obstruction into full normal-form
-nonrealizability.
+embedded-collar certificate for that same annulus.  This is the serious
+geometric theorem still needed to turn the certified embedded obstruction into
+full normal-form nonrealizability.
 -/
 def ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
     (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
       Nonempty
-        (ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G)
+        (ClosedCollarWindingFreedomEmbeddedCollarNormalFormExtraction
+          normalForm)
 
 theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_suppliesRadialFaceData
     (hdata :
@@ -2848,8 +2859,10 @@ theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of
     ⟨radialFaceData⟩
   exact
     ⟨{
-      normalForm := normalForm
-      radialFaceData := radialFaceData
+      embedded :=
+        { normalForm := normalForm
+          radialFaceData := radialFaceData }
+      normalForm_eq := rfl
     }⟩
 
 theorem closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
@@ -2908,8 +2921,8 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExt
     ClosedCollarWindingFreedomNonrealizableInNormalForm := by
   intro V G normalForm
   classical
-  rcases hextract normalForm with ⟨embedded⟩
-  exact hno embedded
+  rcases hextract normalForm with ⟨extraction⟩
+  exact hno extraction.embedded
 
 /--
 Embedded-collar extraction repaired target: once every honest normal-form
