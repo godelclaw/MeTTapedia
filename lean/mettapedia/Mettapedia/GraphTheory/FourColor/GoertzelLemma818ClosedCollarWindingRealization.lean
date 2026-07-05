@@ -9711,6 +9711,70 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
       hcoherentRepresentation
 
 /--
+Local row-semantic form of the finite-row obstruction.  The per-witness
+previous-boundary radial-face n6 extraction is impossible once the row
+cardinality and row histogram-entry semantics are accepted for the audited
+archive.
+-/
+theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (extraction :
+      ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
+        normalForm)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    False :=
+  closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutHistogramCoverage
+    extraction
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab_of_maxCutHistogramSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+      (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+        ⟨hrowCard, hrowHist⟩))
+
+/--
+Previous-boundary extraction route with the finite side expressed as the two
+row-level semantic obligations: audited row cardinality and positive histogram
+entry semantics.
+-/
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  classical
+  intro V G normalForm
+  rcases hextract normalForm with ⟨extraction⟩
+  exact
+    closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
+      extraction hrowCard hrowHist
+
+/--
+Repaired Section 9.2 Step 4 target with the previous-boundary extraction bridge
+and the finite archive side split into row cardinality and row histogram-entry
+semantics.
+-/
+def Section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndRadialFaceRowSemanticSoundnessTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndRadialFaceRowSemanticSoundnessTarget :
+    Section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndRadialFaceRowSemanticSoundnessTarget := by
+  intro hextract hrowCard hrowHist
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
+      hextract hrowCard hrowHist
+
+/--
 Concrete previous-boundary normal-form realization of the winding-freedom
 witness along the current serious repair route.  It packages, for one witness,
 ordinary embedded collar geometry, the previous-boundary witness upgrade, the
