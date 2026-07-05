@@ -1324,6 +1324,65 @@ structure RealM4ExplicitPNPDeciderFamily
   satDecider_programLength_le :
     ∀ Y : Public, (satDecider Y).programLength ≤ programLengthBound
 
+/-- Construction-side finite variable-family data for the real Appendix I CNF
+instances.  Once the real M4 variables are supplied as finite types, the
+uniform bit-fixing support package uses the canonical enumeration of all
+variables, so no separate hand-written variable cover is needed. -/
+structure RealM4FiniteCNFVariableFamilyData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (_D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  varDecidable : (Y : Public) -> DecidableEq (Var Y)
+  varFintype : (Y : Public) -> Fintype (Var Y)
+
+namespace RealM4FiniteCNFVariableFamilyData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+/-- Canonical support data from finite real CNF variable families. -/
+noncomputable def uniformSupport
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFUniformSupportData D where
+  varDecidable := V.varDecidable
+  varOrder := fun Y =>
+    letI := V.varDecidable Y
+    letI := V.varFintype Y
+    (Finset.univ : Finset (Var Y)).toList
+  varOrder_nodup := by
+    intro Y
+    letI := V.varDecidable Y
+    letI := V.varFintype Y
+    exact Finset.nodup_toList _
+  formulaUsesOnly := by
+    intro Y hY clause hclause lit hlit
+    letI := V.varDecidable Y
+    letI := V.varFintype Y
+    simp
+
+end RealM4FiniteCNFVariableFamilyData
+
+/-- Top-level alias: finite real CNF variables canonically supply the uniform
+support data needed by bit-fixing. -/
+noncomputable def realM4_uniformCNFSupport_of_finiteVariables
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFUniformSupportData D :=
+  V.uniformSupport
+
 namespace RealM4CNFUniformSupportData
 
 variable {PublicLock : Type u} {Quotient : Type v}
@@ -2140,6 +2199,17 @@ theorem realM4LockedMessageRigidityDataConstructionInputs_exact :
     realM4LockedMessageRigidityDataConstructionInputs =
       [ "publicMessageOfLock",
         "lockedCompletionMessageEq" ] := by
+  rfl
+
+def realM4FiniteCNFVariableFamilyDataConstructionInputs : List String := [
+  "varDecidable",
+  "varFintype"
+]
+
+theorem realM4FiniteCNFVariableFamilyDataConstructionInputs_exact :
+    realM4FiniteCNFVariableFamilyDataConstructionInputs =
+      [ "varDecidable",
+        "varFintype" ] := by
   rfl
 
 def realM4CompressionLowerMachineDataConstructionInputs : List String := [
@@ -2996,6 +3066,68 @@ theorem realM4_conditionalClash_from_lowerMachine_coverageDataAndLockedMessageDa
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
 /--
+Finite-variable version of the real-ensemble conditional endgame staging
+theorem.  The uniform CNF support package is built by enumerating all variables
+from explicit finite variable-family data; the P=NP decider remains a visible
+conditional input to the upper-side self-reduction.
+-/
+theorem realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndLockedMessageData_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * M.phaseA.telescoping.derivativeSum ≤ fixedGapBudget)
+    (epsSmall : M.epsMix < (1 / 2 : Rat))
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.target M.pivotSummary M.epsMix) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
+          M fixedGapBudget phaseABudget epsSmall
+          lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
+          M fixedGapBudget phaseABudget epsSmall
+          lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
+          (D := D) (F := lowerMachine.lowerFramework)
+          coverageData lockedMessageData
+          finiteVariables.uniformSupport pnpDeciderFamily
+          constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  realM4_conditionalClash_from_lowerMachine_coverageDataAndLockedMessageData_explicitPNP
+    M fixedGapBudget phaseABudget epsSmall lowerMachine
+    coverageData lockedMessageData finiteVariables.uniformSupport
+    pnpDeciderFamily constantDecoderRegime
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
 Component-level covered-locks staging theorem.  This removes the
 `RealM4EndgameMechanicalData` package from the theorem hypotheses by building
 it from the explicit construction components: the mechanical interface data,
@@ -3478,6 +3610,56 @@ theorem realM4LowerMachineCoverageAndLockedMessageDataEndgameHypothesisAuditExpl
 def realM4LowerMachineCoverageAndLockedMessageDataEndgameStatementExplicitPNP : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the real lower machine, public-lock representative data, locked-message public-message data, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family."
 
+def realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "realM4MechanicalInterfaceData",
+  "phaseABudget",
+  "epsSmall",
+  "realCompressionLowerMachineData",
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "finiteCNFVariableFamilyData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP_exact :
+    realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP_exact :
+    realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameHypothesisAuditExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4LowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataEndgameStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the real lower machine, public-lock representative data, locked-message public-message data, finite CNF variable-family data, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family."
+
 def realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP :
     List String := [
   "law",
@@ -3648,10 +3830,16 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Given a public-message invariant, a finite variable cover, and an explicit SAT decider, CNF bit-fixing produces a satisfying assignment whose projection is the public message."
   },
   {
+    item := "finiteCNFVariableFamilyData"
+    status := .openConstruction
+    checkedName := "RealM4FiniteCNFVariableFamilyData"
+    note := "The real M4 Appendix I construction must expose each public instance's CNF variable family as a finite type with decidable equality."
+  },
+  {
     item := "uniformCNFSupportData"
     status := .partialConstructionTransferred
-    checkedName := "RealM4CNFUniformSupportData.withPNPDecider"
-    note := "The construction-side family adapter is split from the P=NP decider family; with that conditional decider it reconstructs the uniform bit-fixing package."
+    checkedName := "RealM4FiniteCNFVariableFamilyData.uniformSupport"
+    note := "Once finite variable-family data is constructed, the uniform support package is the canonical enumeration of all variables; with the conditional decider it reconstructs the bit-fixing package."
   },
   {
     item := "constantDecoderUpperInequality"
@@ -3816,6 +4004,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Builds the endgame wrapper from explicit lower-machine data, then invokes the covered-lock and locked-message-data clash staging theorem."
   },
   {
+    item := "realLowerMachineFiniteCNFVariablesCoverageAndLockedMessageDataConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndLockedMessageData_explicitPNP"
+    note := "Builds uniform CNF support from finite variable-family data before invoking the lower-machine, covered-lock, and locked-message-data clash staging theorem."
+  },
+  {
     item := "realComponentCoveredLocksConditionalClashStaging"
     status := .partialConstructionTransferred
     checkedName := "realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP"
@@ -3866,6 +4060,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -3896,6 +4091,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
         RealM4LiftStatus.irreducibleInput,
@@ -3909,7 +4105,7 @@ def realM4OpenConstructionItems : List String := [
   "noPublicTargetTags",
   "hiddenGaugeProduct",
   "admissibleHistories",
-  "uniformCNFSupportData",
+  "finiteCNFVariableFamilyData",
   "realCompressionLowerMachineData",
   "phaseABudget",
   "epsSmall"
@@ -3922,7 +4118,7 @@ theorem realM4OpenConstructionItems_exact :
         "noPublicTargetTags",
         "hiddenGaugeProduct",
         "admissibleHistories",
-        "uniformCNFSupportData",
+        "finiteCNFVariableFamilyData",
         "realCompressionLowerMachineData",
         "phaseABudget",
         "epsSmall" ] := by
