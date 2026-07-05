@@ -339,6 +339,228 @@ theorem
         (v13RealLinearCNFReadoutData_singleMessagePromise i₀)
         (v13RealLinearCNFReadoutData_supportedSatisfiable i₀)
 
+/-! ## Gauge-buffered real linear CNF -/
+
+/-- Gauge-buffered real linear CNF variables: `some j` is a locked witness
+coordinate, and `none` is one free hidden gauge coordinate. -/
+abbrev V13RealLinearGaugeCNFVar (m : Nat) :=
+  Option (Fin m)
+
+/-- Gauge-buffered real linear CNF witnesses are assignments to locked witness
+coordinates plus one free hidden gauge coordinate. -/
+abbrev V13RealLinearGaugeCNFWitness (m : Nat) :=
+  ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m)
+
+/-- The gauge-buffered CNF formula locks the real witness coordinates exactly
+as before, and deliberately leaves the hidden gauge coordinate unconstrained. -/
+def v13RealLinearGaugeCNFFormula {m : Nat}
+    (Y : V13RealLinearPublic m) :
+    ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) :=
+  List.ofFn fun j : Fin m =>
+    ConcreteCNF.unitClause (some j) (v13RealLinearCNFDecodedAssignment Y j)
+
+/-- Canonical satisfying gauge-buffered assignment with an arbitrary hidden
+gauge bit. -/
+def v13RealLinearGaugeCNFAssignment {m : Nat}
+    (Y : V13RealLinearPublic m) (gauge : Bool) :
+    V13RealLinearGaugeCNFWitness m
+  | some j => v13RealLinearCNFDecodedAssignment Y j
+  | none => gauge
+
+/-- Semantic verifier for the gauge-buffered real linear CNF. -/
+def v13RealLinearGaugeCNFVerifier {m : Nat}
+    (Y : V13RealLinearPublic m)
+    (W : V13RealLinearGaugeCNFWitness m) : Prop :=
+  ConcreteCNF.IsSatFormula (v13RealLinearGaugeCNFFormula Y) W
+
+/-- Fixed readout for the gauge-buffered CNF reads the selected locked witness
+coordinate, not the free hidden gauge coordinate. -/
+def v13RealLinearGaugeCNFReadout {m : Nat}
+    (i₀ : Fin m) (W : V13RealLinearGaugeCNFWitness m) : Bool :=
+  W (some i₀)
+
+/-- Read the free hidden gauge coordinate. -/
+def v13RealLinearGaugeCNFHiddenGauge {m : Nat}
+    (W : V13RealLinearGaugeCNFWitness m) : Bool :=
+  W none
+
+/-- The canonical gauge-buffered assignment satisfies the CNF for either
+hidden gauge bit. -/
+theorem v13RealLinearGaugeCNFFormula_satisfied_assignment {m : Nat}
+    (Y : V13RealLinearPublic m) (gauge : Bool) :
+    v13RealLinearGaugeCNFVerifier Y
+      (v13RealLinearGaugeCNFAssignment Y gauge) := by
+  intro clause hclause
+  rcases List.mem_ofFn.mp hclause with ⟨j, rfl⟩
+  exact
+    (ConcreteCNF.isSatClause_unitClause_iff
+      (v13RealLinearGaugeCNFAssignment Y gauge)
+      (some j)
+      (v13RealLinearCNFDecodedAssignment Y j)).mpr rfl
+
+/-- Every satisfying gauge-buffered assignment agrees with the full public
+decoder on every locked witness coordinate. -/
+theorem v13RealLinearGaugeCNFFormula_forces_decodedBit {m : Nat}
+    {Y : V13RealLinearPublic m}
+    {W : V13RealLinearGaugeCNFWitness m}
+    (hW : v13RealLinearGaugeCNFVerifier Y W)
+    (j : Fin m) :
+    W (some j) = v13RealLinearCNFDecodedAssignment Y j := by
+  have hclause :
+      ConcreteCNF.unitClause
+          (some j) (v13RealLinearCNFDecodedAssignment Y j) ∈
+        v13RealLinearGaugeCNFFormula Y := by
+    exact List.mem_ofFn.mpr ⟨j, rfl⟩
+  exact
+    (ConcreteCNF.isSatClause_unitClause_iff
+      W (some j) (v13RealLinearCNFDecodedAssignment Y j)).mp
+      (hW _ hclause)
+
+/-- Satisfaction of the gauge-buffered real linear CNF is exactly agreement
+with the decoded public assignment on all locked witness coordinates. -/
+theorem v13RealLinearGaugeCNFFormula_sat_iff_lockedAssignment {m : Nat}
+    {Y : V13RealLinearPublic m}
+    {W : V13RealLinearGaugeCNFWitness m} :
+    v13RealLinearGaugeCNFVerifier Y W ↔
+      ∀ j : Fin m, W (some j) = v13RealLinearCNFDecodedAssignment Y j := by
+  constructor
+  · intro hW j
+    exact v13RealLinearGaugeCNFFormula_forces_decodedBit hW j
+  · intro hEq clause hclause
+    rcases List.mem_ofFn.mp hclause with ⟨j, rfl⟩
+    exact
+      (ConcreteCNF.isSatClause_unitClause_iff
+        W (some j) (v13RealLinearCNFDecodedAssignment Y j)).mpr
+        (hEq j)
+
+/-- Executable verifier for the gauge-buffered real linear CNF: check the
+locked witness coordinates and ignore the free hidden gauge coordinate. -/
+def v13RealLinearGaugeCNFVerifierDecision {m : Nat}
+    (Y : V13RealLinearPublic m)
+    (W : V13RealLinearGaugeCNFWitness m) : Bool :=
+  decide (∀ j : Fin m, W (some j) = v13RealLinearCNFDecodedAssignment Y j)
+
+/-- The executable gauge-buffered verifier decides the semantic CNF verifier. -/
+theorem v13RealLinearGaugeCNFVerifierDecision_correct {m : Nat}
+    {Y : V13RealLinearPublic m}
+    {W : V13RealLinearGaugeCNFWitness m} :
+    v13RealLinearGaugeCNFVerifierDecision Y W = true ↔
+      v13RealLinearGaugeCNFVerifier Y W := by
+  rw [v13RealLinearGaugeCNFVerifierDecision, decide_eq_true_iff]
+  exact
+    (v13RealLinearGaugeCNFFormula_sat_iff_lockedAssignment
+      (Y := Y) (W := W)).symm
+
+/-- Every verifier-valid gauge-buffered assignment reads the fixed public
+message. -/
+theorem v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid
+    {m : Nat} (i₀ : Fin m) {Y : V13RealLinearPublic m}
+    {W : V13RealLinearGaugeCNFWitness m}
+    (hW : v13RealLinearGaugeCNFVerifier Y W) :
+    v13RealLinearGaugeCNFReadout i₀ W =
+      v13RealLinearMessageOfPublic i₀ Y := by
+  exact v13RealLinearGaugeCNFFormula_forces_decodedBit hW i₀
+
+/-- Flip the free hidden gauge coordinate when `gamma = true`; leave every
+locked witness coordinate unchanged. -/
+def v13RealLinearGaugeCNFGaugeAction {m : Nat}
+    (gamma : Bool) (W : V13RealLinearGaugeCNFWitness m) :
+    V13RealLinearGaugeCNFWitness m
+  | some j => W (some j)
+  | none => if gamma then !W none else W none
+
+@[simp] theorem v13RealLinearGaugeCNFGaugeAction_locked {m : Nat}
+    (gamma : Bool) (W : V13RealLinearGaugeCNFWitness m) (j : Fin m) :
+    v13RealLinearGaugeCNFGaugeAction gamma W (some j) = W (some j) :=
+  rfl
+
+@[simp] theorem v13RealLinearGaugeCNFGaugeAction_false {m : Nat}
+    (W : V13RealLinearGaugeCNFWitness m) :
+    v13RealLinearGaugeCNFGaugeAction false W = W := by
+  funext v
+  cases v with
+  | some j => rfl
+  | none => rfl
+
+/-- The hidden gauge action preserves verifier validity because the formula
+does not mention the hidden gauge coordinate. -/
+theorem v13RealLinearGaugeCNFGaugeAction_preserves_verifier {m : Nat}
+    (gamma : Bool) {Y : V13RealLinearPublic m}
+    {W : V13RealLinearGaugeCNFWitness m}
+    (hW : v13RealLinearGaugeCNFVerifier Y W) :
+    v13RealLinearGaugeCNFVerifier Y
+      (v13RealLinearGaugeCNFGaugeAction gamma W) := by
+  intro clause hclause
+  rcases List.mem_ofFn.mp hclause with ⟨j, rfl⟩
+  have hbit := v13RealLinearGaugeCNFFormula_forces_decodedBit hW j
+  exact
+    (ConcreteCNF.isSatClause_unitClause_iff
+      (v13RealLinearGaugeCNFGaugeAction gamma W)
+      (some j)
+      (v13RealLinearCNFDecodedAssignment Y j)).mpr hbit
+
+/-- The hidden gauge action preserves the message readout. -/
+theorem v13RealLinearGaugeCNFGaugeAction_preserves_readout {m : Nat}
+    (gamma : Bool) (i₀ : Fin m) (W : V13RealLinearGaugeCNFWitness m) :
+    v13RealLinearGaugeCNFReadout i₀
+        (v13RealLinearGaugeCNFGaugeAction gamma W) =
+      v13RealLinearGaugeCNFReadout i₀ W :=
+  rfl
+
+/-- The hidden gauge action is nontrivial on satisfying assignments for every
+public instance. -/
+theorem v13RealLinearGaugeCNFGaugeAction_nontrivial {m : Nat}
+    (Y : V13RealLinearPublic m) :
+    ∃ W : V13RealLinearGaugeCNFWitness m,
+      v13RealLinearGaugeCNFVerifier Y W ∧
+        v13RealLinearGaugeCNFGaugeAction true W ≠ W := by
+  let W := v13RealLinearGaugeCNFAssignment Y false
+  refine
+    ⟨W, v13RealLinearGaugeCNFFormula_satisfied_assignment Y false, ?_⟩
+  intro hfixed
+  have hcoord := congrFun hfixed none
+  simp [W, v13RealLinearGaugeCNFGaugeAction,
+    v13RealLinearGaugeCNFAssignment] at hcoord
+
+/-- A SAT world for the gauge-buffered real linear CNF ensemble. -/
+structure V13RealLinearGaugeCNFWorld (m : Nat) where
+  publicInput : V13RealLinearPublic m
+  assignment : V13RealLinearGaugeCNFWitness m
+  sat : v13RealLinearGaugeCNFVerifier publicInput assignment
+
+/-- The gauge-buffered real linear CNF as a concrete single-message SAT
+spine. -/
+def v13RealLinearGaugeCNFSingleMessageSATSpine {m : Nat} (i₀ : Fin m) :
+    RealSingleMessageSATSpine
+      (V13RealLinearGaugeCNFWorld m)
+      (V13RealLinearPublic m)
+      (V13RealLinearGaugeCNFWitness m) where
+  publicInput := fun omega => omega.publicInput
+  witnessOfWorld := fun omega => omega.assignment
+  verifier := v13RealLinearGaugeCNFVerifier
+  messageOfPublic := v13RealLinearMessageOfPublic i₀
+  witnessReadout := v13RealLinearGaugeCNFReadout i₀
+  target := fun omega => v13RealLinearGaugeCNFReadout i₀ omega.assignment
+  worldWitnessValid := by
+    intro omega
+    exact omega.sat
+  readout_eq_message_of_valid := by
+    intro Y W hW
+    exact v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW
+  target_eq_message := by
+    intro omega
+    exact v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ omega.sat
+
+/-- Structural `singleMessage` for the gauge-buffered real linear CNF/SAT
+spine. -/
+theorem v13RealLinearGaugeCNFSingleMessageSATSpine_singleMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∀ w0 w1 : V13RealLinearGaugeCNFWorld m,
+      w0.publicInput = w1.publicInput →
+        v13RealLinearGaugeCNFReadout i₀ w0.assignment =
+          v13RealLinearGaugeCNFReadout i₀ w1.assignment :=
+  (v13RealLinearGaugeCNFSingleMessageSATSpine i₀).singleMessage
+
 /-! ## No-target-rows CNF structural transfer -/
 
 /-- CNF world over the adjusted no-target-rows real linear surface: a base
@@ -779,5 +1001,134 @@ theorem v13RealLinearNoTargetRowsCNF_noPublicTargetTags {m : Nat}
         (@v13RealLinearNoTargetRowsCNFNeutralSkeleton m i₀)
         (@v13RealLinearNoTargetRowsCNFTarget m i₀)
         hPair hOpp⟩
+
+/-! ## No-target-rows gauge-buffered CNF construction -/
+
+/-- Gauge-buffered CNF world over the adjusted no-target-rows real linear
+surface.  The locked witness coordinates satisfy the public instance, while
+one extra hidden gauge coordinate remains free. -/
+structure V13RealLinearNoTargetRowsGaugeCNFWorld
+    (m : Nat) (i₀ : Fin m) where
+  base : V13RealLinearNoTargetRowsWorld m i₀
+  assignment : V13RealLinearGaugeCNFWitness m
+  sat :
+    v13RealLinearGaugeCNFVerifier
+      (v13RealLinearNoTargetRowsPublicInput base) assignment
+
+/-- Canonical no-target-rows gauge-buffered CNF world with a chosen hidden
+gauge bit. -/
+def v13RealLinearNoTargetRowsGaugeCNFWorldOfBase {m : Nat}
+    {i₀ : Fin m} (omega : V13RealLinearNoTargetRowsWorld m i₀)
+    (gauge : Bool) :
+    V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ where
+  base := omega
+  assignment :=
+    v13RealLinearGaugeCNFAssignment
+      (v13RealLinearNoTargetRowsPublicInput omega) gauge
+  sat :=
+    v13RealLinearGaugeCNFFormula_satisfied_assignment
+      (v13RealLinearNoTargetRowsPublicInput omega) gauge
+
+/-- Target readout for the no-target-rows gauge-buffered CNF world. -/
+def v13RealLinearNoTargetRowsGaugeCNFTarget {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) : Bool :=
+  v13RealLinearGaugeCNFReadout i₀ omega.assignment
+
+/-- Hidden-gauge readout for the no-target-rows gauge-buffered CNF world. -/
+def v13RealLinearNoTargetRowsGaugeCNFHiddenGauge {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) : Bool :=
+  v13RealLinearGaugeCNFHiddenGauge omega.assignment
+
+/-- The no-target-rows gauge-buffered CNF target readout is the fixed public
+message of its concrete public instance. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFTarget omega =
+      v13RealLinearMessageOfPublic i₀
+        (v13RealLinearNoTargetRowsPublicInput omega.base) :=
+  v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ omega.sat
+
+/-- Structural `singleMessage` transfer for the no-target-rows
+gauge-buffered CNF world. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_singleMessage {m : Nat}
+    (i₀ : Fin m) :
+    ∀ omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+      v13RealLinearNoTargetRowsPublicInput omega₀.base =
+        v13RealLinearNoTargetRowsPublicInput omega₁.base ->
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega₀ =
+        v13RealLinearNoTargetRowsGaugeCNFTarget omega₁ := by
+  intro omega₀ omega₁ hPublic
+  calc
+    v13RealLinearNoTargetRowsGaugeCNFTarget omega₀ =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega₀.base) :=
+      v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage omega₀
+    _ =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega₁.base) := by
+      rw [hPublic]
+    _ = v13RealLinearNoTargetRowsGaugeCNFTarget omega₁ :=
+      (v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage
+        omega₁).symm
+
+/-- Flip the hidden gauge coordinate of a no-target-rows gauge-buffered CNF
+world, preserving the base public instance and verifier validity. -/
+def v13RealLinearNoTargetRowsGaugeCNFGaugeAction {m : Nat}
+    {i₀ : Fin m} (gamma : Bool)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ where
+  base := omega.base
+  assignment := v13RealLinearGaugeCNFGaugeAction gamma omega.assignment
+  sat :=
+    v13RealLinearGaugeCNFGaugeAction_preserves_verifier gamma omega.sat
+
+@[simp] theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_public
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    (v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega).base =
+      omega.base :=
+  rfl
+
+/-- The no-target-rows gauge action preserves the target readout. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_preserves_target
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega) =
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega :=
+  v13RealLinearGaugeCNFGaugeAction_preserves_readout
+    gamma i₀ omega.assignment
+
+/-- The no-target-rows gauge action flips the hidden gauge coordinate when
+`gamma = true`. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_hidden_true
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFGaugeAction true omega) =
+      !v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega :=
+  rfl
+
+/-- The no-target-rows gauge action is nontrivial over every base world:
+choosing hidden gauge `false` and acting by `true` changes the satisfying
+assignment while preserving the public instance. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_nontrivial
+    {m : Nat} {i₀ : Fin m}
+    (base : V13RealLinearNoTargetRowsWorld m i₀) :
+    ∃ omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction true omega ≠ omega := by
+  let omega :=
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase base false
+  refine ⟨omega, ?_⟩
+  intro hfixed
+  have hcoord := congrFun (congrArg
+    (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+      omega.assignment) hfixed) none
+  simp [omega,
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase,
+    v13RealLinearGaugeCNFAssignment,
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
+    v13RealLinearGaugeCNFGaugeAction] at hcoord
 
 end Mettapedia.Computability.PNP
