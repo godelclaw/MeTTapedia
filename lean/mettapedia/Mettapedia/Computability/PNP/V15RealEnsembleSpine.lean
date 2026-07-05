@@ -12288,15 +12288,15 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "lockedMessageRigidityData"
-    status := .partialConstructionTransferred
+    status := .openConstruction
     checkedName := "realM4_lockedMessageData_of_coverageDataAndRigidity"
-    note := "No longer a primitive open input on the sharp route: public-lock coverage supplies D.7 and D.8 rigidity constructs the public-message data."
+    note := "Primitive sharp-route readout construction item: the real M4 locked core must supply an explicit public-message function and prove every accepted completion over a supported lock reads that message."
   },
   {
     item := "lockedMessageRigidity"
-    status := .openConstruction
-    checkedName := "AppendixDLockedCore.LockedMessageRigidity"
-    note := "The real M4 locked core must prove Appendix D.8: every accepted completion over a supported public lock carries the same message."
+    status := .partialConstructionTransferred
+    checkedName := "realM4_lockedMessageRigidity_of_lockedMessageData"
+    note := "The old Appendix D.8 proposition follows from explicit locked-message public-message data; it is not primitive on the sharp locked-message route."
   },
   {
     item := "noPublicTargetTags"
@@ -12628,8 +12628,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
-        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
@@ -12685,7 +12685,7 @@ theorem realM4LiftLedger_statuses_exact :
 
 def realM4OpenConstructionItems : List String := [
   "publicLockCoverageData",
-  "lockedMessageRigidity",
+  "lockedMessageRigidityData",
   "noPublicTargetTags",
   "hiddenGaugeProduct",
   "admissibleHistories",
@@ -12700,7 +12700,7 @@ def realM4OpenConstructionItems : List String := [
 theorem realM4OpenConstructionItems_exact :
     realM4OpenConstructionItems =
       [ "publicLockCoverageData",
-        "lockedMessageRigidity",
+        "lockedMessageRigidityData",
         "noPublicTargetTags",
         "hiddenGaugeProduct",
         "admissibleHistories",
