@@ -468,6 +468,74 @@ theorem section92Step4RadialFaceSlice1000000GeometryDataObstructionTarget_audit 
     Section92Step4RadialFaceSlice1000000GeometryDataObstructionTarget :=
   section92Step4RadialFaceSlice1000000GeometryDataObstructionTarget
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302_noRadialFaceRotationCandidate_audit
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRotationCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302_noRadialFaceRotationCandidate
+    candidate
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302NoRadialFaceCoherentRepresentation_audit :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302NoRadialFaceCoherentRepresentation :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302NoRadialFaceCoherentRepresentation
+
+theorem closedCollarWindingFreedomSimplePatchN6NormalFormSlice1000302ForcesRadialFace_of_embeddedCollarExtraction_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization) :
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormSlice1000302ForcesRadialFace :=
+  closedCollarWindingFreedomSimplePatchN6NormalFormSlice1000302ForcesRadialFace_of_embeddedCollarExtraction
+    hextract
+
+theorem closedCollarWindingFreedomSimplePatchN6NormalFormSlice1000302ForcesRadialFace_of_embeddedGeometryExtraction_of_radialFace_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction) :
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormSlice1000302ForcesRadialFace :=
+  closedCollarWindingFreedomSimplePatchN6NormalFormSlice1000302ForcesRadialFace_of_embeddedGeometryExtraction_of_radialFace
+    hextract hradial
+
+theorem section92Step4RadialFaceSlice1000302NormalFormObstructionTarget_audit :
+    Section92Step4RadialFaceSlice1000302NormalFormObstructionTarget :=
+  section92Step4RadialFaceSlice1000302NormalFormObstructionTarget
+
+theorem section92Step4RadialFaceSlice1000302EmbeddedGeometryObstructionTarget_audit :
+    Section92Step4RadialFaceSlice1000302EmbeddedGeometryObstructionTarget :=
+  section92Step4RadialFaceSlice1000302EmbeddedGeometryObstructionTarget
+
+theorem section92Step4RadialFaceSlice1000302GeometryDataObstructionTarget_audit :
+    Section92Step4RadialFaceSlice1000302GeometryDataObstructionTarget :=
+  section92Step4RadialFaceSlice1000302GeometryDataObstructionTarget
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slice1000302_audit
+    (hsample :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab)
+    (hslice :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCoveredByLab)
+    {V : Type} {G : SimpleGraph V}
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G)
+    (hcase :
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases)
+    (hradial :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        representation.annular) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slice1000302
+    hsample hslice representation hcase hradial
+
+theorem section92Step4RadialFaceArchiveFactoredCoverageNormalFormObstructionTarget_audit :
+    Section92Step4RadialFaceArchiveFactoredCoverageNormalFormObstructionTarget :=
+  section92Step4RadialFaceArchiveFactoredCoverageNormalFormObstructionTarget
+
+theorem section92Step4RadialFaceArchiveFactoredCoverageEmbeddedGeometryObstructionTarget_audit :
+    Section92Step4RadialFaceArchiveFactoredCoverageEmbeddedGeometryObstructionTarget :=
+  section92Step4RadialFaceArchiveFactoredCoverageEmbeddedGeometryObstructionTarget
+
+theorem section92Step4RadialFaceArchiveFactoredCoverageGeometryDataObstructionTarget_audit :
+    Section92Step4RadialFaceArchiveFactoredCoverageGeometryDataObstructionTarget :=
+  section92Step4RadialFaceArchiveFactoredCoverageGeometryDataObstructionTarget
+
 theorem closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence :=
   closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence
