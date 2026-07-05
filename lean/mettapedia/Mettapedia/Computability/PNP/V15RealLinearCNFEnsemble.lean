@@ -5102,6 +5102,23 @@ theorem
       D Y)
     hW
 
+/-- The Appendix-I CNF self-reduction witness exposes the same canonical
+hidden-gauge representative as the raw gauge-CNF decoder: the free `none`
+coordinate is `false`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_hiddenGauge_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearGaugeCNFHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+          D Y).assignment =
+      false := by
+  simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness]
+    using
+      v13RealLinearGaugeCNFSelfReductionAssignment_hiddenGauge_false
+        D (v13RealLinearNoTargetRowsPublicInput Y)
+
 /-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
 variable order is the concrete formula-syntax cover, and the explicit SAT
 decider is the P=NP-side hypothesis object. -/
@@ -5146,6 +5163,23 @@ theorem
       v13RealLinearGaugeCNFSelfReductionAssignment D
         (v13RealLinearNoTargetRowsPublicInput Y) := by
   rfl
+
+/-- Uniform bit-fixing also selects the canonical `false` representative of
+the free hidden-gauge fiber. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixing_hiddenGauge_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearGaugeCNFHiddenGauge
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+          i₀ D).bitFixingAssignment Y) =
+      false := by
+  rw [
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingAssignment_eq_selfReduction]
+  exact
+    v13RealLinearGaugeCNFSelfReductionAssignment_hiddenGauge_false
+      D (v13RealLinearNoTargetRowsPublicInput Y)
 
 /-- Uniform P=NP-side bit-fixing for the Appendix-I CNF spine reads the fixed
 base target bit. -/
@@ -5265,6 +5299,40 @@ theorem
           omega gauge) =
       v13RealLinearNoTargetRowsTargetBit omega := by
   rfl
+
+/-- The Appendix-I CNF self-reduction witness uses exactly the canonical
+`false` hidden-gauge assignment over the same no-target-rows public instance.
+-/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_assignment_eq_base_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+        D Y).assignment =
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+        Y false).assignment := by
+  simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase] using
+    v13RealLinearGaugeCNFSelfReductionAssignment_eq_canonical_false
+      D (v13RealLinearNoTargetRowsPublicInput Y)
+
+/-- Uniform bit-fixing returns the same assignment as the canonical
+Appendix-I CNF world with hidden gauge `false`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixing_assignment_eq_base_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+        i₀ D).bitFixingAssignment Y =
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+        Y false).assignment := by
+  rw [
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingAssignment_eq_selfReduction]
+  simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase] using
+    v13RealLinearGaugeCNFSelfReductionAssignment_eq_canonical_false
+      D (v13RealLinearNoTargetRowsPublicInput Y)
 
 /-- Pair-neutrality transfers to the no-target-rows Appendix-I CNF world. -/
 theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_pairNeutral
