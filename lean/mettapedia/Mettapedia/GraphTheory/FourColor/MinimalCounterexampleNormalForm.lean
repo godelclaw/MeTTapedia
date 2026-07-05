@@ -51,6 +51,90 @@ structure MinimalTaitCounterexample (G : SimpleGraph V) [DecidableRel G.Adj] : P
           AdmitsPlanarBoundaryClosedWalkEmbeddingData H →
             TaitEdgeUncolorable H → False
 
+universe uMin uSurgery
+
+namespace MinimalTaitCounterexample
+
+/-- A minimal Tait counterexample is, by definition, not Tait edge-colorable. -/
+theorem not_taitEdgeColorable
+    {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+    {G : SimpleGraph V0} [DecidableRel G.Adj]
+    (minimal : MinimalTaitCounterexample.{uMin, uSurgery} G) :
+    ¬ TaitEdgeColorable G :=
+  minimal.uncolorable
+
+/-- Any smaller cubic bridgeless planar graph is Tait edge-colorable; otherwise it would be a
+smaller counterexample. -/
+theorem smaller_taitEdgeColorable
+    {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+    {G : SimpleGraph V0} [DecidableRel G.Adj]
+    (minimal : MinimalTaitCounterexample.{uMin, uSurgery} G)
+    {U : Type uSurgery} [DecidableEq U] [Fintype U]
+    {H : SimpleGraph U} [DecidableRel H.Adj]
+    (hcard : Fintype.card U < Fintype.card V0)
+    (hcubic : CubicGraph H) (hbridgeless : BridgelessGraph H)
+    (hplanar : AdmitsPlanarBoundaryClosedWalkEmbeddingData H) :
+    TaitEdgeColorable H := by
+  classical
+  by_contra huncolorable
+  exact MinimalTaitCounterexample.vertex_minimal (G := G) (U := U) (H := H)
+    minimal hcard hcubic hbridgeless hplanar huncolorable
+
+/-- Generic Birkhoff-surgery contradiction.  If a surgery produces a smaller cubic bridgeless
+planar graph whose Tait coloring would lift back to the original graph, then the original graph
+was not a minimal Tait counterexample. -/
+theorem false_of_smaller_color_lift
+    {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+    {G : SimpleGraph V0} [DecidableRel G.Adj]
+    (minimal : MinimalTaitCounterexample.{uMin, uSurgery} G)
+    {U : Type uSurgery} [DecidableEq U] [Fintype U]
+    {H : SimpleGraph U} [DecidableRel H.Adj]
+    (hcard : Fintype.card U < Fintype.card V0)
+    (hcubic : CubicGraph H) (hbridgeless : BridgelessGraph H)
+    (hplanar : AdmitsPlanarBoundaryClosedWalkEmbeddingData H)
+    (hlift : TaitEdgeColorable H → TaitEdgeColorable G) :
+    False :=
+  minimal.uncolorable
+    (hlift (minimal.smaller_taitEdgeColorable hcard hcubic hbridgeless hplanar))
+
+end MinimalTaitCounterexample
+
+/-- Bundled smaller-surgery target for the Birkhoff moves: a smaller cubic bridgeless planar
+graph together with a lift from any Tait coloring of that target back to the original graph. -/
+structure SmallerTaitSurgeryReduction
+    {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+    {G : SimpleGraph V0} [DecidableRel G.Adj]
+    (minimal : MinimalTaitCounterexample.{uMin, uSurgery} G)
+    {U : Type uSurgery} [DecidableEq U] [Fintype U]
+    (H : SimpleGraph U) [DecidableRel H.Adj] : Prop where
+  smaller : Fintype.card U < Fintype.card V0
+  cubic : CubicGraph H
+  bridgeless : BridgelessGraph H
+  planar : AdmitsPlanarBoundaryClosedWalkEmbeddingData H
+  color_lift : TaitEdgeColorable H → TaitEdgeColorable G
+
+namespace SmallerTaitSurgeryReduction
+
+variable {V0 : Type uMin} [DecidableEq V0] [Fintype V0]
+variable {G : SimpleGraph V0} [DecidableRel G.Adj]
+variable {minimal : MinimalTaitCounterexample.{uMin, uSurgery} G}
+variable {U : Type uSurgery} [DecidableEq U] [Fintype U]
+variable {H : SimpleGraph U} [DecidableRel H.Adj]
+
+/-- Minimality colors the smaller surgery target. -/
+theorem target_taitEdgeColorable
+    (reduction : SmallerTaitSurgeryReduction minimal H) :
+    TaitEdgeColorable H :=
+  minimal.smaller_taitEdgeColorable reduction.smaller reduction.cubic reduction.bridgeless
+    reduction.planar
+
+/-- Any bundled smaller-surgery reduction contradicts minimality. -/
+theorem false (reduction : SmallerTaitSurgeryReduction minimal H) : False :=
+  minimal.false_of_smaller_color_lift reduction.smaller reduction.cubic reduction.bridgeless
+    reduction.planar reduction.color_lift
+
+end SmallerTaitSurgeryReduction
+
 end BasicPredicates
 
 section PlaneDuality
