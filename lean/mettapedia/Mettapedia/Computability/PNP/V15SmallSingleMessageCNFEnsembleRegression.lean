@@ -1,0 +1,23 @@
+import Mettapedia.Computability.PNP.V15SmallSingleMessageCNFEnsemble
+
+/-!
+# PNP v15: small concrete single-message CNF ensemble regression
+-/
+
+namespace Mettapedia.Computability.PNP
+
+#check smallSingleMessageFormula
+#check smallSingleMessageVerifierDecision
+#check smallSingleMessageCNFReadoutData
+
+#print axioms smallSingleMessageVerifierDecision_correct
+#print axioms smallSingleMessageFormula_satisfied_messageAssignment
+#print axioms smallSingleMessageFormula_forces_message
+#print axioms smallSingleMessageProjection_eq_M_of_sat
+#print axioms smallSingleMessageCNFReadoutData
+#print axioms smallSingleMessageCNFReadoutData_singleMessagePromise
+#print axioms smallSingleMessageCNFReadoutData_supportedSatisfiable
+#print axioms smallSingleMessageCNFReadoutData_projection_eq_M
+#print axioms smallSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+
+end Mettapedia.Computability.PNP
