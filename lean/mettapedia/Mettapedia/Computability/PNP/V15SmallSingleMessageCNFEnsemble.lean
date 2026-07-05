@@ -1664,6 +1664,146 @@ theorem xorGaugeSingleMessage_hiddenGaugeProduct :
   intro gamma omega
   trivial
 
+/-! ## Gauge-buffered XOR CNF Appendix-D/I readout lift -/
+
+/-- Appendix-D locked core for the concrete gauge-buffered CNF anchor.  The
+public lock is the public XOR instance; the quotient stores the hidden gauge
+bit; the read predicate forces the message to the public readout `M(Y)`. -/
+def xorGaugeSingleMessageAppendixDLockedCore :
+    AppendixDLockedCore XorGaugeSingleMessagePublic Bool Unit Bool where
+  publicLockFinite := inferInstance
+  quotientFinite := inferInstance
+  lockAuxFinite := inferInstance
+  messageFinite := inferInstance
+  support := fun _ => True
+  lockPredicate := fun _ _ _ _ => True
+  readPredicate := fun Y _ _ M => M = xorGaugeSingleMessageM Y
+
+/-- Convert any valid concrete witness into the Appendix-D locked completion:
+the hidden gauge coordinate is the quotient and the message is the forced
+public readout. -/
+def xorGaugeSingleMessageLockedCompletionOfWitness
+    {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y)
+    (_hW : xorGaugeSingleMessageVerifier Y W) :
+    xorGaugeSingleMessageAppendixDLockedCore.LockedCompletion Y where
+  quotient := W 1
+  lockAux := ()
+  message := xorGaugeSingleMessageM Y
+  lock_ok := trivial
+  read_ok := rfl
+
+/-- The concrete locked core has a public-message invariant: every accepted
+completion over public lock `Y` reads exactly `M(Y)`. -/
+theorem xorGaugeSingleMessageAppendixD_publicMessageInvariant :
+    xorGaugeSingleMessageAppendixDLockedCore.PublicMessageInvariant
+      xorGaugeSingleMessageM := by
+  intro Y _hY L
+  simpa [xorGaugeSingleMessageAppendixDLockedCore] using L.read_ok
+
+/-- Hence the concrete locked core satisfies Appendix-D locked-message
+rigidity.  The proof uses the read predicate forcing `M(Y)`, not a separate
+assumption. -/
+theorem xorGaugeSingleMessageAppendixD_lockedMessageRigidity :
+    xorGaugeSingleMessageAppendixDLockedCore.LockedMessageRigidity :=
+  AppendixDLockedCore.lockedMessageRigidity_of_publicMessageInvariant
+    xorGaugeSingleMessageAppendixDLockedCore
+    xorGaugeSingleMessageAppendixD_publicMessageInvariant
+
+/-- The concrete gauge-buffered CNF anchor inhabits the stronger Appendix-I
+readout interface over its real Appendix-D locked core. -/
+def xorGaugeSingleMessageAppendixICNFReadoutData :
+    AppendixICNFReadoutData
+      XorGaugeSingleMessagePublic
+      Bool
+      Unit
+      Bool
+      XorGaugeSingleMessagePublic
+      XorGaugeSingleMessageVar
+      XorGaugeSingleMessageWitness where
+  core := xorGaugeSingleMessageAppendixDLockedCore
+  support := xorGaugeSingleMessageSupport
+  publicLock := fun Y => Y
+  validWitness := xorGaugeSingleMessageVerifier
+  witnessMessage := xorGaugeSingleMessageWitnessMessage
+  witnessCompletion := by
+    intro Y W hW
+    exact xorGaugeSingleMessageLockedCompletionOfWitness W hW
+  support_publicLock := by
+    intro Y hY
+    trivial
+  witnessMessage_eq_completionMessage := by
+    intro Y W hW
+    simp [xorGaugeSingleMessageWitnessMessage,
+      xorGaugeSingleMessageLockedCompletionOfWitness,
+      xorGaugeSingleMessageWitness_message_eq_M hW]
+  formula := xorGaugeSingleMessageFormula
+  extract := xorGaugeSingleMessageExtract
+  projection := xorGaugeSingleMessageProjection
+  cnfSound := by
+    intro Y W hW
+    exact hW
+  projection_eq_witnessMessage := by
+    intro Y W hW
+    rfl
+  satOnSupport := by
+    intro Y hY
+    exact
+      ⟨xorGaugeSingleMessageAssignment Y false,
+        xorGaugeSingleMessageFormula_satisfied_assignment Y false⟩
+
+/-- Appendix-I semantic readout items for the concrete gauge-buffered CNF:
+supported instances are satisfiable, satisfying assignments extract to valid
+witnesses, and the fixed projection has single-message readout. -/
+theorem xorGaugeSingleMessageAppendixI_semantic_i26_items
+    (Y : XorGaugeSingleMessagePublic) :
+    (∃ α : ConcreteCNF.Assignment (XorGaugeSingleMessageVar Y),
+      ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y) α) ∧
+    (∀ α : ConcreteCNF.Assignment (XorGaugeSingleMessageVar Y),
+      ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y) α →
+        xorGaugeSingleMessageVerifier Y
+          (xorGaugeSingleMessageExtract Y α)) ∧
+    SingleMessageReadout
+      (ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y))
+      (xorGaugeSingleMessageProjection Y) := by
+  simpa [xorGaugeSingleMessageAppendixICNFReadoutData]
+    using
+      (xorGaugeSingleMessageAppendixICNFReadoutData
+        |>.semantic_i26_items_of_lockedMessageRigidity
+          xorGaugeSingleMessageAppendixD_lockedMessageRigidity
+          (Y := Y)
+          trivial)
+
+/-- The Appendix-I CNF assignments for the concrete gauge-buffered anchor form
+the real single-message SAT spine. -/
+def xorGaugeSingleMessageAppendixICNFSingleMessageSATSpine :
+    RealSingleMessageSATSpine
+      (RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData)
+      XorGaugeSingleMessagePublic
+      (RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData) :=
+  realM4CNFSingleMessageSATSpine
+    xorGaugeSingleMessageAppendixICNFReadoutData
+    xorGaugeSingleMessageM
+    (fun bit => bit)
+    xorGaugeSingleMessageAppendixD_publicMessageInvariant
+
+/-- Structural `singleMessage` for the concrete Appendix-I CNF SAT spine. -/
+theorem xorGaugeSingleMessageAppendixICNFSingleMessageSATSpine_singleMessage :
+    ∀ w0 w1 :
+      RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData,
+      w0.publicInstance = w1.publicInstance →
+        realM4CNFMessageOfPublic
+            xorGaugeSingleMessageAppendixICNFReadoutData
+            xorGaugeSingleMessageM
+            (fun bit => bit)
+            w0.publicInstance =
+          realM4CNFMessageOfPublic
+            xorGaugeSingleMessageAppendixICNFReadoutData
+            xorGaugeSingleMessageM
+            (fun bit => bit)
+            w1.publicInstance :=
+  xorGaugeSingleMessageAppendixICNFSingleMessageSATSpine.singleMessage
+
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
 
 /-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered
