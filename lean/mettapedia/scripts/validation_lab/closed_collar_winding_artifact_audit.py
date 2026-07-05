@@ -1276,6 +1276,7 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
     profile_failure_kind_histogram: Counter[str] = Counter()
     first_blocking_state_index_histogram: Counter[str] = Counter()
     wrong_profile_proper_extension_count_histogram: Counter[str] = Counter()
+    wrong_profile_landed_profile_histogram: Counter[str] = Counter()
     for index, verdict in enumerate(stratified_case_verdicts):
         patch_index = verdict.get("patch_index")
         radial_order_index = verdict.get("radial_order_index")
@@ -1341,6 +1342,23 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
             raise ValueError(
                 f"n8 stratified case verdict {index}: invalid profile variant count"
             )
+        desired_profile_key = verdict.get("desired_profile_key")
+        if not isinstance(desired_profile_key, str) or not desired_profile_key:
+            raise ValueError(
+                f"n8 stratified case verdict {index}: invalid desired profile key"
+            )
+        profile_histogram = verdict.get("proper_tait_extension_profile_histogram")
+        if not isinstance(profile_histogram, dict):
+            raise ValueError(
+                f"n8 stratified case verdict {index}: invalid profile histogram"
+            )
+        parsed_profile_histogram: dict[str, int] = {}
+        for profile_key, count in profile_histogram.items():
+            if not isinstance(profile_key, str) or not isinstance(count, int) or count <= 0:
+                raise ValueError(
+                    f"n8 stratified case verdict {index}: bad profile histogram entry"
+                )
+            parsed_profile_histogram[profile_key] = count
         conflicts = verdict.get("terminal_precolor_conflict_vertices")
         if not isinstance(conflicts, list) or not all(
             isinstance(vertex, str) for vertex in conflicts
@@ -1353,17 +1371,39 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
                 raise AssertionError(
                     f"n8 stratified case verdict {index}: bad terminal conflict"
                 )
+            if parsed_profile_histogram:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: terminal profile histogram"
+                )
         elif failure_kind == "no_proper_tait_extension":
             if conflicts or proper_count != 0 or variant_count != 0:
                 raise AssertionError(
                     f"n8 stratified case verdict {index}: bad no-proper case"
+                )
+            if parsed_profile_histogram:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: no-proper profile histogram"
                 )
         else:
             if conflicts or proper_count <= 0 or variant_count <= 0:
                 raise AssertionError(
                     f"n8 stratified case verdict {index}: bad wrong-profile case"
                 )
+            if sum(parsed_profile_histogram.values()) != proper_count:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: profile histogram sum"
+                )
+            if len(parsed_profile_histogram) != variant_count:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: profile variant count"
+                )
+            if desired_profile_key in parsed_profile_histogram:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: desired profile realized"
+                )
             wrong_profile_proper_extension_count_histogram[str(proper_count)] += 1
+            for profile_key, count in parsed_profile_histogram.items():
+                wrong_profile_landed_profile_histogram[profile_key] += count
     assert_equal("n8 stratified case verdict pairs", seen_case_pairs, expected_case_pairs)
     profile_failure_kind_histogram_dict = dict(
         sorted(profile_failure_kind_histogram.items())
@@ -1373,6 +1413,9 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
     )
     wrong_profile_proper_extension_count_histogram_dict = dict(
         sorted(wrong_profile_proper_extension_count_histogram.items())
+    )
+    wrong_profile_landed_profile_histogram_dict = dict(
+        sorted(wrong_profile_landed_profile_histogram.items())
     )
     assert_equal(
         "n8 stratified profile failure kind histogram",
@@ -1400,6 +1443,15 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
             "wrong_profile_proper_extension_count_histogram",
         ),
         wrong_profile_proper_extension_count_histogram_dict,
+    )
+    assert_equal(
+        "n8 stratified wrong-profile landed-profile histogram",
+        dict_field(
+            stratified_summary,
+            N8_STRATIFIED_SAMPLE_FILE,
+            "wrong_profile_landed_profile_histogram",
+        ),
+        wrong_profile_landed_profile_histogram_dict,
     )
 
     return {
@@ -1438,6 +1490,8 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
                 first_blocking_state_index_histogram_dict,
             "wrong_profile_proper_extension_count_histogram":
                 wrong_profile_proper_extension_count_histogram_dict,
+            "wrong_profile_landed_profile_histogram":
+                wrong_profile_landed_profile_histogram_dict,
             "normal_form_after_template_exclusion_passing_count": int_field(
                 stratified_summary,
                 N8_STRATIFIED_SAMPLE_FILE,
