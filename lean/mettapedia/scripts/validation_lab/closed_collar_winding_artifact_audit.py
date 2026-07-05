@@ -8,6 +8,7 @@ from pathlib import Path
 import argparse
 import json
 import os
+import re
 
 
 N6_EXACT_PATCH_TOPOLOGY_COUNT = 1_858_980
@@ -67,6 +68,13 @@ N8_STRATIFIED_SAMPLE_FILE = (
 REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+LEAN_REALIZATION_SOURCE = (
+    PACKAGE_ROOT
+    / "Mettapedia"
+    / "GraphTheory"
+    / "FourColor"
+    / "GoertzelLemma818ClosedCollarWindingRealization.lean"
+)
 DEFAULT_TAXONOMY_RESULTS_DIR = PACKAGE_ROOT / "results" / "fourcolor"
 DEFAULT_RADIAL_FACE_RESULTS_DIR = REPO_ROOT / "results" / "fourcolor"
 DEFAULT_TAXONOMY_OUTPUT = (
@@ -146,6 +154,143 @@ def bool_field(data: dict[str, object], name: str, field: str) -> bool:
 def assert_equal(label: str, actual: object, expected: object) -> None:
     if actual != expected:
         raise AssertionError(f"{label}: expected {expected!r}, got {actual!r}")
+
+
+def parse_lean_string_field(record: str, field: str) -> str:
+    match = re.search(rf"{field}\s*:=\s*\"([^\"]+)\"", record)
+    if match is None:
+        raise ValueError(f"Lean radial-face row certificate missing string field {field}")
+    return match.group(1)
+
+
+def parse_lean_nat_field(record: str, field: str) -> int:
+    match = re.search(rf"{field}\s*:=\s*([0-9]+)", record)
+    if match is None:
+        raise ValueError(f"Lean radial-face row certificate missing Nat field {field}")
+    return int(match.group(1))
+
+
+def parse_lean_bool_field(record: str, field: str) -> bool:
+    match = re.search(rf"{field}\s*:=\s*(true|false)", record)
+    if match is None:
+        raise ValueError(f"Lean radial-face row certificate missing Bool field {field}")
+    return match.group(1) == "true"
+
+
+def parse_lean_histogram_field(record: str, field: str) -> list[tuple[int, int]]:
+    match = re.search(rf"{field}\s*:=\s*\[\(([0-9]+),\s*([0-9]+)\)\]", record)
+    if match is None:
+        raise ValueError(f"Lean radial-face row certificate missing histogram field {field}")
+    return [(int(match.group(1)), int(match.group(2)))]
+
+
+def lean_row_certificate_def_body(source: str, def_name: str) -> str:
+    marker = f"def {def_name}"
+    start = source.find(marker)
+    if start == -1:
+        raise ValueError(f"Lean radial-face row certificate definition {def_name} not found")
+    assignment = source.find(":=", start)
+    if assignment == -1:
+        raise ValueError(f"Lean radial-face row certificate definition {def_name} has no :=")
+    end = source.find("\ndef ", assignment + 2)
+    if end == -1:
+        raise ValueError(f"Lean radial-face row certificate definition {def_name} has no end")
+    return source[assignment + 2 : end]
+
+
+def parse_lean_radial_face_row_certificates(source: str, def_name: str) -> list[dict[str, object]]:
+    body = lean_row_certificate_def_body(source, def_name)
+    records = re.findall(r"\{([^{}]+)\}", body, flags=re.MULTILINE | re.DOTALL)
+    if not records:
+        raise ValueError(f"Lean radial-face row certificate definition {def_name} has no records")
+    return [
+        {
+            "archive_family": parse_lean_string_field(record, "archiveFamily"),
+            "source_file": parse_lean_string_field(record, "sourceFile"),
+            "patch_topology_index": parse_lean_nat_field(record, "patchTopologyIndex"),
+            "radial_order_index": parse_lean_nat_field(record, "radialOrderIndex"),
+            "total_rotation_system_count": parse_lean_nat_field(
+                record, "totalRotationSystemCount"
+            ),
+            "rotation_system_enumeration_exhausted": parse_lean_bool_field(
+                record, "rotationSystemEnumerationExhausted"
+            ),
+            "enumerated_rotation_system_count": parse_lean_nat_field(
+                record, "enumeratedRotationSystemCount"
+            ),
+            "radial_cut_edge_count": parse_lean_nat_field(record, "radialCutEdgeCount"),
+            "max_radial_cut_edges_on_single_face": parse_lean_nat_field(
+                record, "maxRadialCutEdgesOnSingleFace"
+            ),
+            "max_radial_cut_edges_on_single_face_histogram": parse_lean_histogram_field(
+                record, "maxRadialCutEdgesOnSingleFaceHistogram"
+            ),
+            "planar_rotation_system_count": parse_lean_nat_field(
+                record, "planarRotationSystemCount"
+            ),
+            "radial_face_coherent_rotation_count": parse_lean_nat_field(
+                record, "radialFaceCoherentRotationCount"
+            ),
+            "template_exclusion_blocker": parse_lean_string_field(
+                record, "templateExclusionBlocker"
+            ),
+            "verdict": parse_lean_string_field(record, "verdict"),
+        }
+        for record in records
+    ]
+
+
+def lean_radial_face_row_certificates() -> list[dict[str, object]]:
+    source = LEAN_REALIZATION_SOURCE.read_text()
+    return (
+        parse_lean_radial_face_row_certificates(
+            source,
+            "closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates",
+        )
+        + parse_lean_radial_face_row_certificates(
+            source,
+            "closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates",
+        )
+        + parse_lean_radial_face_row_certificates(
+            source,
+            "closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificates",
+        )
+    )
+
+
+def radial_face_certificate_lean_projection(
+    certificate: dict[str, object],
+) -> dict[str, object]:
+    histogram = certificate.get("max_radial_cut_edges_on_single_face_histogram")
+    if not isinstance(histogram, dict):
+        raise ValueError("radial-face row certificate histogram is not an object")
+    return {
+        "archive_family": certificate["archive_family"],
+        "source_file": certificate["source_file"],
+        "patch_topology_index": certificate["patch_index"],
+        "radial_order_index": certificate["radial_order_index"],
+        "total_rotation_system_count": certificate["total_rotation_system_count"],
+        "rotation_system_enumeration_exhausted": certificate[
+            "rotation_system_enumeration_exhausted"
+        ],
+        "enumerated_rotation_system_count": certificate[
+            "enumerated_rotation_system_count"
+        ],
+        "radial_cut_edge_count": certificate["radial_cut_edge_count"],
+        "max_radial_cut_edges_on_single_face": certificate[
+            "max_radial_cut_edges_on_single_face"
+        ],
+        "max_radial_cut_edges_on_single_face_histogram": [
+            (int(key), value)
+            for key, value in sorted(histogram.items(), key=lambda item: int(item[0]))
+        ],
+        "planar_rotation_system_count": certificate["planar_rotation_system_count"],
+        "radial_face_coherent_rotation_count": certificate[
+            "radial_face_coherent_rotation_count"
+        ],
+        "template_exclusion_blocker": certificate["template_exclusion_blocker"],
+        "verdict": certificate["verdict"],
+    }
 
 
 def prefix_slice_names() -> list[str]:
@@ -516,6 +661,11 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         row_coverage_sample_certificates + row_coverage_slice_certificates,
         key=lambda certificate: tuple(certificate["case"]),
     )
+    row_coverage_lean_projection = [
+        radial_face_certificate_lean_projection(certificate)
+        for certificate in row_coverage_certificates
+    ]
+    lean_row_coverage_certificates = lean_radial_face_row_certificates()
     unique_patch_indices = sample_patch_indices | slice_patch_indices
     rows_with_overlap = len(sample_cases) + len(slice_cases)
     planar_rows_with_overlap = sample_planar_rotations + slice_planar_rotations
@@ -582,6 +732,11 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     assert_equal("slice template blockers", slice_template_blockers, 6)
     assert_equal("slice template histogram", dict(slice_template_hist), {REVERSE_TEMPLATE_KEY: 6})
     assert_equal("max radial-cut histogram", dict(max_radial_cut_hist), {"2": 96})
+    assert_equal(
+        "Lean radial-face row certificate projection",
+        row_coverage_lean_projection,
+        lean_row_coverage_certificates,
+    )
 
     return {
         "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n6-radial-face-archive-audit-v1",
@@ -605,6 +760,9 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
         "row_coverage_slice1000302_cases": sorted(row_coverage_slice1000302_cases),
         "row_coverage_slice1001289_cases": sorted(row_coverage_slice1001289_cases),
         "row_coverage_certificates": row_coverage_certificates,
+        "row_coverage_lean_projection": row_coverage_lean_projection,
+        "lean_row_coverage_certificate_count": len(lean_row_coverage_certificates),
+        "lean_row_coverage_projection_match": True,
         "row_coverage_certificate_count": len(row_coverage_certificates),
         "row_coverage_verdict": "radial_face_row_coverage_all_planar_rotations_incoherent",
         "sample_archive_radial_order_case_count": len(sample_cases),
