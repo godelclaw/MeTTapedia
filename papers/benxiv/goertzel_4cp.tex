@@ -83,54 +83,62 @@
 \newcommand{\LKR}{\mathrm{LKR}_{\mathrm{in}}}
 \newcommand{\colorset}{\{r,b,p\}}
 
-\title{A Machine-Checked Audit of the Keystone Finite Local Check\\
-(Lemma~8.14) in the Spencer--Brown/Kauffman Route\\
-to the Four-Color Theorem}
+\title{A Machine-Checked Companion to Goertzel's\\
+Spencer--Brown/Kauffman Route to the Four-Color Theorem:\\
+\large Keystone, Pillars, and the Composition Ladder}
 \author{The MeTTapedia formalization effort}
-\date{June 2026}
+\date{July 2026}
 
 \begin{document}
 \maketitle
 \sloppy
 
 \begin{abstract}
-Ben Goertzel's manuscript \emph{A Human-Readable, Spencer--Brown/Kauffman-Style
-Proof of the Four-Color Theorem} (v23) organizes a candidate proof of the
-Four-Color Theorem (4CT) around three interacting pillars: (A) an algebraic
-\emph{spanning} statement for an annular zero-boundary difference space
-$\Wz(H)$ (Theorem~4.9); (B) a CAP5-free normal form with radius-1 collar
-locality; and (C) an \emph{executability} layer that, refusing a false
-``additivity'' of Kempe switches, moves to an operator model in the
-Penrose--Kauffman coloring state space and reduces between-region Kempe
+This is a living formalization companion to Ben Goertzel's manuscript \emph{A
+Human-Readable, Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}
+(v23), which organizes a candidate human-readable proof of the Four-Color Theorem
+(4CT) around three interacting pillars: (A) an annular difference-\emph{spanning}
+statement for a zero-boundary space $\Wz(H)$ (Theorem~4.9); (B) a CAP5-free
+normal form with radius-1 collar locality; and (C) an \emph{executability} layer
+that, refusing a false additivity of Kempe switches, reduces between-region Kempe
 connectivity to a single \emph{Local Kempe Reachability with fixed input}
-($\LKR$) property for one canonical three-cell collar gadget $\tau$
-(Lemma~8.14), then composes it along the collar chain (Lemmas~8.15, 8.18 and
-Corollary~8.19) and assembles collar-by-collar (\S9.2). The manuscript singles
-out the $\tau$-gadget audit as ``the only finite verification 4CT requires.''
-We report that the MeTTapedia formalization effort has \emph{machine-checked
-that keystone}: Lemma~8.14, previously unformalized, is encoded and proved in
-Lean (module \texttt{Mettapedia.GraphTheory.FourColor.GoertzelLemma814}) with
-no \texttt{sorry} and no added axioms. The module fixes the proper
-3-edge-coloring state space of the canonical gadget (192 states), models Kempe
-steps as switches on two-color components disjoint from the input stubs, and
-exhibits an explicit indexed-path certificate proving that every fixed-input
-fiber is Kempe-connected; the main theorem
-\texttt{lemma814\_tau\_lkrIn\_audit} reduces to a finite \texttt{decide}/\allowbreak\texttt{simp}
-check, a coherence audit confirms input-fiber well-definedness, and a mirror
-check matches the reflected gadget. Separately, our Lean independently exhibits
-a \emph{proper-subspace obstruction} to Pillar~A: on every closed-walk exact
-shell the Theorem-4.9 boundary-zero target is a \emph{strict} subspace of the
-full boundary-zero chain space (theorem
-\texttt{theorem49BoundaryZeroKirchhoffSubspace\_lt\_planar\-Boundary\-Zero\-Submodule\dots}),
-so the spanning claim over-reaches as stated, and four proposed uniform
-geometric repairs are refuted. We state the scope exactly. The keystone finite
-check of Lemma~8.14 is now machine-checked; the remaining local-to-global lift
-of Pillar~C (transparency~8.15, transparent composition~8.18/8.19, and the
-\S9 collar/annulus assembly) is \emph{not} yet formalized, and Pillar~A is not
-established as written. We do \emph{not} claim the Four-Color Theorem: as a
-proof route, the v23 argument remains open, now with its keystone finite audit
-in place and the local-to-global lift outstanding.
+($\LKR$) property for one canonical three-cell collar gadget $\tau$ (Lemma~8.14),
+composes it along the collar chain (Lemmas~8.15, 8.18, Cor.~8.19), and assembles
+the wide annulus collar-by-collar (\S9.2). We record what the MeTTapedia
+formalization has machine-checked of this route, with an honest ledger separating
+what holds outright, what holds modulo one named remainder, and what is open, and
+we foreground the places where the formalization \emph{refutes} a step rather than
+discharging it.
+
+Machine-checked outright (no \texttt{sorry}; axioms $\subseteq
+\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$): the keystone
+$\LKR$ audit of the canonical gadget (Lemma~8.14) and its two-color
+\emph{transparency} (Lemma~8.15); the \emph{need-based repair} of Pillar~A --- the
+manuscript's spanning \emph{equality} is refuted in exactly the direction the
+synthesis never uses (a proper-subspace obstruction on closed-walk shells, with
+four uniform repairs refuted), while the \emph{inclusion} the route actually
+consumes is proved from the manuscript's own peeling witnesses, Kempe-switch steps
+are proved to preserve the detector subspace, and route discrepancy classes are
+proved to lie in it; and the closed-collar \emph{S2 bridge} (\S9.2 Step~3),
+certifying that all length-2/3 re-glued collar fibers are Kempe-connected. The
+Gate-2 composition (Lemmas~8.18/8.19) is \emph{reduced} --- the manuscript's own
+pointwise Step-1 preparation is refuted and replaced by a frontier-automaton /
+fibration architecture --- to a single named structural remainder.
+
+The formalization also produced a decisive negative. \S9.2 Step~4 --- the
+manuscript's reinterpretation of collar Kempe words as words of the ambient
+annulus --- is refuted by an explicit two-layer counterexample: a certified,
+collar-input-avoiding switch whose ambient component escapes the inner boundary,
+re-enters, and changes the collar restriction. This is a defect in the composition
+\emph{seam} as written, not a refutation of 4CT; its salvage (a normal-form
+confinement argument, or a face-collar redesign) is open. We make no claim about
+the Four-Color Theorem --- which is of course a theorem, via the Appel--Haken and
+Robertson--Sanders--Seymour--Thomas computer-assisted proofs. The human-readable
+v23 route remains \emph{open}, now with its foundational layer machine-checked and
+its most dangerous assembly seam pinned down as broken.
 \end{abstract}
+
+\tableofcontents
 
 \section{The problem and Ben Goertzel's three-pillar route}
 \label{sec:problem}
@@ -250,16 +258,16 @@ verification required is a small by-hand audit of a single three-cell gadget''
 (v23, Abstract and \S1). In the three-pillar architecture, every other step is
 either an explicit local lemma or a structural reduction; the one place where a
 finite, exhaustive check is genuinely unavoidable is the $\LKR$ property of the
-canonical gadget $\tau$ (Figure~1 of v23 depicts this as the resolution of a
-``traffic-light'' cross-pair conflict: when an interface edge is forced to a
-color that would block one operator, $\LKR$ guarantees an alternative internal
-route). Formalizing Lemma~8.14 therefore certifies exactly the finite core that
-the manuscript isolates as load-bearing. The remainder of this report describes
-that formalization (\S\ref{sec:lkr}), records an independent proper-subspace
-finding about Pillar~A (\S\ref{sec:pillarA}), and states precisely what is and
-is not thereby established (\S\ref{sec:status}).
+canonical gadget $\tau$. Formalizing Lemma~8.14 therefore certifies exactly the
+finite core that the manuscript isolates as load-bearing. The remainder of this
+companion describes that formalization (\S\ref{sec:lkr}), the resolution of the
+Pillar~A spanning question into a need-based repair (\S\ref{sec:pillarA}), the
+Pillar~C composition ladder --- what is proved, what is reduced to one pin, and
+where a decisive counterexample was found (\S\ref{sec:pillarC}) --- and a precise
+status ledger (\S\ref{sec:status}). Superseded routes are recorded in
+appendices.
 
-\section{Formalizing the Pillar-C keystone: Lemma~8.14}
+\section{The Pillar-C keystone, machine-checked: Lemma~8.14 and transparency 8.15}
 \label{sec:lkr}
 
 We restate the manuscript's keystone in its own notation and then describe the
@@ -288,206 +296,86 @@ fiber; this is a strictly more direct realization of the same $\LKR$ claim, and
 it does not rely on the $\sigma_{\mathrm{L}},\sigma_{\mathrm{R}}$ split or on
 the composition Lemma~8.18.
 
-\subsection{The canonical gadget as a finite object}
+\subsection{The canonical gadget and its 192-state coloring space}
 
 The Lean module fixes the colors and the gadget incidence exactly as in
-Lemma~\ref{lem:814}. The three nonzero colors are an inductive type, and the
+Lemma~\ref{lem:814}: the three nonzero colors are an inductive type, and the
 gadget's edges (five internal edges plus the eight boundary stubs) and internal
-vertices are inductive types with an explicit incidence map; the input stubs
-are $B_0,\dots,B_3$.
+vertices are inductive types with an explicit incidence map.
 
 \begin{lstlisting}[language={}]
-/-- The three nonzero edge colors used in the local gadget. -/
 inductive LColor | r | b | p
   deriving DecidableEq, BEq, Repr, Inhabited
 
-/-- Edges of the canonical three-cell gadget. Stub names denote the edge
-incident to that boundary stub. -/
 inductive TauEdge
   | F1F0 | F0F2 | F2F3 | F2F4 | F4F5
   | B0 | B1 | B2 | B3 | B4 | B5 | B6 | B7
   deriving DecidableEq, BEq, Repr, Inhabited
 
-inductive TauVertex | F0 | F1 | F2 | F3 | F4 | F5
-  deriving DecidableEq, BEq, Repr, Inhabited
-
-def incidentEdges : TauVertex → List TauEdge
-  | TauVertex.F0 => [TauEdge.B0, TauEdge.F1F0, TauEdge.F0F2]
-  | TauVertex.F1 => [TauEdge.B1, TauEdge.B2, TauEdge.F1F0]
-  | TauVertex.F2 => [TauEdge.F0F2, TauEdge.F2F3, TauEdge.F2F4]
-  | TauVertex.F3 => [TauEdge.B3, TauEdge.B4, TauEdge.F2F3]
-  | TauVertex.F4 => [TauEdge.F2F4, TauEdge.F4F5, TauEdge.B7]
-  | TauVertex.F5 => [TauEdge.F4F5, TauEdge.B5, TauEdge.B6]
-
-/-- The fixed input stubs. -/
-def tauInputEdges : List TauEdge :=
-  [TauEdge.B0, TauEdge.B1, TauEdge.B2, TauEdge.B3]
+def tauInputEdges : List TauEdge := [TauEdge.B0, TauEdge.B1, TauEdge.B2, TauEdge.B3]
 \end{lstlisting}
-
-\subsection{The proper-coloring state space (192 states)}
 
 A proper 3-edge-coloring of $\tau$ is represented by the finite choices left
 after properness is imposed at every cubic vertex: an ordered color triple at
-the central vertex $F_2$, then one binary choice for the forced edge $F_1F_0$
-and one ordered-pair (swap) bit at each remaining boundary fork. This yields
-$6\times 2^{5}=192$ states.
+the central vertex $F_2$, one binary choice for the forced edge $F_1F_0$, and one
+ordered-pair (swap) bit at each remaining boundary fork --- $6\times2^{5}=192$
+states. That this enumeration is exactly the proper-coloring state space is a
+checked fact ($192$ entries, no duplicates, proper at every vertex).
 
-\begin{lstlisting}[language={}]
-structure TauState where
-  f2 : F2Triple
-  e10UsesE23 : Bool
-  b1b2Swap : Bool
-  b3b4Swap : Bool
-  f4Swap : Bool
-  b5b6Swap : Bool
-  deriving DecidableEq, BEq, Repr, Inhabited
+\subsection{The Kempe audit and the machine-checked theorems}
 
-def allTauStates : List TauState :=
-  bindList f2Triples fun f2 =>
-  bindList bools fun e10UsesE23 =>
-  bindList bools fun b1b2Swap =>
-  bindList bools fun b3b4Swap =>
-  bindList bools fun f4Swap =>
-  bools.map fun b5b6Swap => { f2, e10UsesE23, b1b2Swap, b3b4Swap, f4Swap, b5b6Swap }
-
-/-- The concrete edge-colors read off a state. -/
-def TauState.color (s : TauState) : TauEdge → LColor
-  | TauEdge.F1F0 => s.e10
-  | TauEdge.F0F2 => s.f2.e02
-  | TauEdge.F2F3 => s.f2.e23
-  | TauEdge.F2F4 => s.f2.e24
-  -- (...) boundary stubs read off the forced/ordered-pair choices
-\end{lstlisting}
-
-That this enumeration is exactly the proper-coloring state space is itself a
-checked fact: it has 192 entries, no duplicates, and every entry is proper at
-every vertex.
-
-\begin{lstlisting}[language={}]
-def tauStateSpaceAudit : Bool :=
-  allTauStates.length == 192 &&
-    allTauStates.eraseDups.length == allTauStates.length &&
-    allTauStates.all tauProperState
-\end{lstlisting}
-
-\subsection{Kempe steps and the \texorpdfstring{$\LKR$}{LKR} audit}
-
-A Kempe step switches a two-color component that is \emph{disjoint from the
-input stubs} (matching Definition~\ref{def:lkr}'s ``supported away from the
-input stubs''). Components are computed by closing under shared internal
-vertices; a step is admissible only when its component avoids the input edges.
-
-\begin{lstlisting}[language={}]
-def componentAvoidsInputs (component : List TauEdge) : Bool :=
-  !component.any (fun e => tauInputEdges.contains e)
-
-def specifiedKempeStep (s t : TauState) (move : KempeMove) : Bool :=
-  let component := tauComponent s move.a move.c move.seed
-  !component.isEmpty &&
-    componentAvoidsInputs component &&
-    agreesWithSwitch s t component move.a move.c
-\end{lstlisting}
-
-The $\LKR$ property is witnessed by an explicit \emph{indexed-path certificate}:
-for each of the 192 states it records the representative of that state's
-fixed-input fiber together with a path of at most two input-disjoint Kempe
-switches reaching it, and a coherence audit verifies that any two states with
-the same input edges are assigned the same representative (so the fibers are
-well defined). Connectivity of each fiber to a single representative is exactly
-connectivity of $\mathsf{K}_\tau(c)$.
-
-\begin{lstlisting}[language={}]
-def representativeCoherenceAudit : Bool :=
-  (List.range 192).all fun i =>
-    (List.range 192).all fun j =>
-      !sameInput (stateAt i) (stateAt j) || representativeAt i == representativeAt j
-
-def lemma814PathCertificateAudit : Bool :=
-  lemma814PathCertificate.length == 192 &&
-    validIndexedRowsFrom 0 lemma814PathCertificate &&
-    representativeCoherenceAudit
-
-/-- Finite `LKR_in` certificate: each state has a verified path of at most two
-input-disjoint Kempe switches to its fixed-input representative. -/
-def tauLKRInAudit : Bool := lemma814PathCertificateAudit
-
-/-- The exact predicate that must reduce to `true`. -/
-def lemma814_tau_lkrIn_finiteCheck : Bool :=
-  tauStateSpaceAudit && tauLKRInAudit
-\end{lstlisting}
-
-\subsection{The machine-checked theorems}
-
-The three finite audits --- the state-space audit, the path-rows audit, and the
-representative-coherence audit --- each reduce to \texttt{true} by the kernel's
-decision procedure, and the keystone theorem assembles them. The proofs use no
-\texttt{sorry}, no \texttt{opaque}, and no \texttt{native\_decide}; their only
-axiom dependency is \texttt{propext}.
+A Kempe step switches a two-color component \emph{disjoint from the input stubs}
+(Definition~\ref{def:lkr}). The $\LKR$ property is witnessed by an explicit
+indexed-path certificate: for each of the 192 states it records the
+representative of that state's fixed-input fiber and a path of at most two
+input-disjoint Kempe switches reaching it, plus a coherence audit that any two
+states with the same input edges share a representative (so fibers are well
+defined). The three finite audits each reduce to \texttt{true} by the kernel's
+decision procedure; the only axiom dependency is \texttt{propext}.
 
 \begin{lstlisting}[language={}]
 theorem tauStateSpaceAudit_ok : tauStateSpaceAudit = true := by decide
-
 theorem lemma814PathCertificate_rows_ok :
     validIndexedRowsFrom 0 lemma814PathCertificate = true := by decide
-
-theorem representativeCoherenceAudit_ok :
-    representativeCoherenceAudit = true := by decide
+theorem representativeCoherenceAudit_ok : representativeCoherenceAudit = true := by decide
 
 /-- Lemma 8.14, closed by the finite state-space and indexed path certificate. -/
-theorem lemma814_tau_lkrIn_audit :
-    lemma814_tau_lkrIn_finiteCheck = true := by
+theorem lemma814_tau_lkrIn_audit : lemma814_tau_lkrIn_finiteCheck = true := by
   simp [lemma814_tau_lkrIn_finiteCheck, tauStateSpaceAudit_ok, tauLKRInAudit,
     lemma814PathCertificateAudit_ok]
 \end{lstlisting}
 
-Finally, the mirror clause of Lemma~\ref{lem:814} (``the same holds for the
-mirror gadget'') is discharged structurally: reflection changes only the planar
-order of an isomorphic incidence tree, so the mirror audit is definitionally
-the same finite check.
+The mirror clause holds definitionally (reflection changes only the planar order
+of an isomorphic incidence tree). Thus Lemma~8.14 --- the ``only finite
+verification 4CT requires'' --- is machine-checked in module
+\texttt{GoertzelLemma814}.
 
-\begin{lstlisting}[language={}]
-/-- The mirror gadget has the same incidence tree; reflection changes only the
-planar order. -/
-def mirrorTauLKRInAudit : Bool := tauLKRInAudit
-
-theorem lemma814_mirror_lkrIn_same_check :
-    mirrorTauLKRInAudit = tauLKRInAudit := rfl
-\end{lstlisting}
-
-Thus Lemma~8.14 --- the finite $\LKR$ audit of the canonical three-cell gadget,
-the single ``only finite verification'' the manuscript singles out --- is
-machine-checked in the module
-\texttt{Mettapedia.GraphTheory.FourColor.Goertzel\-Lemma814}.
-
-\begin{remark}[Transparency~8.15 is scaffolded but not yet discharged]
+\begin{remark}[Transparency~8.15, now machine-checked]
 \label{rem:815}
-The same module also defines the finite predicate corresponding to Lemma~8.15
-(two-color transparency): for each of the 192 colorings, every nonempty
-two-color component is required to be a boundary-to-boundary tree path
-(\texttt{transparentComponent}), aggregated as \texttt{tauTreeTransparencyAudit}
-and exposed as \texttt{lemma815\_tau\_tree\_transparency\_finiteCheck}. We note
-honestly that this predicate is \emph{defined} but its discharging theorem is
-\emph{not} asserted in the module: unlike Lemma~8.14, transparency is not yet a
-proved theorem here. It is part of the outstanding Pillar-C lift
-(\S\ref{sec:status}).
+The same module formalizes Lemma~8.15 (two-color transparency): for each of the
+192 colorings, every nonempty two-color component is a boundary-to-boundary tree
+path (\texttt{transparentComponent}), aggregated as
+\texttt{tauTreeTransparencyAudit}. That audit is now \emph{proved} ---
+\texttt{lemma815\_tau\_tree\_transparency\_audit} reduces to \texttt{true} by a
+range decomposition of the finite check, axiom-clean. Transparency is what
+licenses the composition step (\S\ref{sec:pillarC}); with Lemma~8.14 it is the
+sealed local core of Pillar~C.
 \end{remark}
 
-\section{An independent proper-subspace obstruction in Pillar~A}
+\section{Pillar~A: a proper-subspace obstruction, and its need-based repair}
 \label{sec:pillarA}
 
-The keystone of \S\ref{sec:lkr} concerns Pillar~C. Independently, our Lean
-development records a finding about Pillar~A (the spanning Theorem~\ref{thm:49})
-that we report neutrally because it bears directly on whether the route is
-complete as written.
+Pillar~A (the spanning Theorem~\ref{thm:49}) is where the formalization first
+found --- and then routed around --- a real gap. We give both halves, because
+together they are a clean example of what a companion of this kind is for.
+
+\subsection{The obstruction: the spanning \emph{equality} over-reaches}
 
 On every \emph{closed-walk exact shell} --- a concrete annular configuration
 carrying the boundary-source and interior-endpoint witness data that
 Theorem~\ref{thm:49} is meant to cover --- the boundary-zero target that the
-Kempe-closure detector actually pins down is a \emph{strict} subspace of the
-full boundary-zero chain space. Equivalently, the cancellation detector used to
-certify spanning is strictly stronger than the manuscript's stated target on
-every shell-bearing embedding, so the spanning claim, in the form
-$\Wz(H)=\mathrm{span}_{\FF}(\mathcal{G})$, over-reaches as stated.
+Kempe-closure detector actually pins down is a \emph{strict} subspace of the full
+boundary-zero chain space.
 
 \begin{lstlisting}[language={}]
 /-- On every closed-walk exact shell, the Theorem-4.9 boundary-zero target is a
@@ -497,118 +385,308 @@ theorem theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of
     (shell : ClosedWalkExactShell emb) :
     theorem49BoundaryZeroKirchhoffSubspace emb
         (selectedBoundaryInteriorEdgeEndpointVertices emb) <
-      planarBoundaryZeroSubmodule emb :=
-  theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_hasUnblockedInteriorEndpoint
-    shell.endpoint
+      planarBoundaryZeroSubmodule emb
 \end{lstlisting}
 
-The strict inequality \texttt{<} is the load-bearing content: it is a proved
-\emph{proper}-subspace inclusion, not a heuristic. The same module supplies the
-structural reason --- every closed-walk shell forces two distinct
-interior-support edges onto a single face boundary
-(\texttt{exists\_two\_distinct\_interiorEdges\_of\_closedWalkExactShell}) ---
-which in turn refutes the natural ``one-collar'' repairs that would close the
-gap (the canonical witness choice, the one-collar collar geometry, and the
-previous-boundary witness geometry are each shown impossible on such a shell).
-
-This is reinforced by an audit, in a companion module, that the four proposed
-\emph{uniform geometric oracles} that would each suffice to close
+The strict inequality \texttt{<} is the load-bearing content: a proved
+\emph{proper}-subspace inclusion, not a heuristic. The structural reason (every
+closed-walk shell forces two distinct interior-support edges onto one face
+boundary) refutes the natural one-collar repairs, and a companion audit shows the
+four proposed \emph{uniform geometric oracles} that would each close
 Theorem~\ref{thm:49}'s synthesis are all false:
-
 \begin{lstlisting}[language={}]
-theorem not_interiorDualPeelOracle        : ¬ InteriorDualPeelOracle
-theorem not_wellFoundedPeelOracle         : ¬ WellFoundedPeelOracle
+theorem not_interiorDualPeelOracle         : ¬ InteriorDualPeelOracle
+theorem not_wellFoundedPeelOracle          : ¬ WellFoundedPeelOracle
 theorem not_previousBoundaryGeometryOracle : ¬ PreviousBoundaryGeometryOracle
 theorem not_residualBoundaryGeometryOracle : ¬ ResidualBoundaryGeometryOracle
 \end{lstlisting}
+So the spanning claim, in the form $\Wz(H)=\mathrm{span}_{\FF}(\mathcal{G})$,
+does not hold as stated, and the obvious uniform routes to bridge the strict gap
+do not exist.
 
-We are careful about what this does and does not say. It does \emph{not} refute
-the abstract possibility of a spanning theorem for $\Wz(H)$; the manuscript's
-generator family and its purification step (Lemma~4.4) remain meaningful. What
-the Lean exhibits is that, on the shell configurations in scope, the precise
-boundary-zero object the route relies upon is strictly smaller than the full
-boundary-zero space, and the obvious uniform geometric routes to bridge that
-strict gap do not exist. As stated, then, Pillar~A is not established, and this
-is an open gap of the v23 route rather than a settled refutation of 4CT.
+\subsection{The repair: the route never needs the full space}
 
-\begin{remark}[On a disavowed ``additivity'' reconstruction]
-For completeness we flag a methodological point. An earlier exploratory
-reconstruction we considered tried to \emph{execute} the Pillar-A decomposition
-$\Delta=\sum v_{f,g}$ as an $\FF$-additive sum of Kempe switches. This is
-\emph{not} Ben Goertzel's route, and the manuscript itself disavows it: Pillar~C
-is titled ``executability without false additivity,'' and \S8.1--8.3 explain
-that mixed color-pair switches on shared support do not commute, so additivity
-is invalid. We record the additivity reading only to set it aside; the faithful
-route is the operator/$\LKR$ execution of \S\ref{sec:lkr}.
-\end{remark}
+The resolution is that the synthesis does not \emph{use} the full boundary-zero
+space; it uses only the discrepancy classes of boundary-compatible coloring
+pairs, and those lie in the detector subspace the manuscript's own peeling
+witnesses span. Formally, the requirement actually consumed downstream is
+\emph{need-based}: it suffices that (1) the detector subspace is contained in the
+projected Kempe-closure generator span, (2) each execution step preserves that
+subspace, and (3) every route-used discrepancy class lies in it. All three are
+machine-checked in the route's natural cubic setting (module
+\texttt{PillarASmallerSpace}):
+\begin{lstlisting}[language={}]
+-- (3) discrepancy classes lie in the detector subspace (cubic setting):
+theorem routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples ...
+-- (2) a Kempe-switch execution step preserves detector membership:
+theorem routeKempeSwitchExecutionStep_preserves_detectorSubspace ...
+-- assembled sufficiency (inclusion form), discharging the requirement:
+theorem needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies ...
+\end{lstlisting}
+Proposition~(3) has a two-idea proof one can state aloud: a Tait coloring is a
+Klein-four flow at each cubic vertex, so two colorings agreeing on the selected
+boundary differ by a \emph{boundary-zero flow}, which is exactly what the
+Kirchhoff detector certifies. The manuscript's Theorem~4.9 \emph{equality} was
+mis-stated in the direction the route never uses; its \emph{inclusion} ---
+detector $\subseteq$ span, proved from the manuscript's own peeling witnesses ---
+is the direction it does use. What remains a genuine per-embedding obligation is
+the \emph{supply} of a peeling witness for the synthesis's actual embedding
+class; that is a composition-stage task, not a spanning gap.
 
-\section{Status and scope: machine-checked versus open}
+\section{Pillar~C: the composition ladder}
+\label{sec:pillarC}
+
+Between the local keystone (\S\ref{sec:lkr}) and 4CT, v23's own argument climbs a
+ladder: single-gadget $\LKR$ $\to$ transparent composition to a whole collar
+chain (Gate-2) $\to$ closed re-glued collars (\S9.2 Step~3) $\to$ execution in the
+ambient annulus (\S9.2 Step~4) $\to$ the wide-annulus peel. This companion has
+now walked a substantial part of that ladder, with one step proved-modulo-a-pin
+and one step \emph{refuted}.
+
+\subsection{Gate-2: transparent composition, reduced to one pin}
+
+Corollary~8.19 lifts $\LKR$ from the single gadget to a whole cut-open radius-1
+collar chain across a transparent interface. The manuscript's own Step-1 proof of
+Lemma~8.18 (a pointwise preparation via Lemma~8.16) does \emph{not} go through ---
+the formalization refutes it directly:
+\begin{lstlisting}[language={}]
+theorem lemma818_pointwise_lift_preparation_obstruction : ...   -- axiom-clean
+\end{lstlisting}
+In its place the development builds a frontier-automaton / fibration architecture:
+a finite frontier state over the chain transcript, generated parent-row
+certificates, and a fibered-connectivity decomposition (base connected + fibers
+connected + lifts). The executable chain test \texttt{chainLKRInAudit} passes on
+all words up to length seven (real-fiber labs, all input fibers connected, zero
+failures), and Gate-2 is reduced to a \emph{single} named structural remainder,
+\begin{lstlisting}[language={}]
+concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed
+\end{lstlisting}
+carried as a hypothesis through the semantic bridge. (A separate refuted route,
+\texttt{not\_concreteChainFiberAppendPrefixFibrationClosed}, records a shortcut
+that provably fails and is kept dead.)
+
+\subsection{S2: the closed-collar bridge, proved}
+
+Gate-2 certifies $\LKR$ with the \emph{first} gadget's input stubs fixed;
+\S9.2 Step~3 needs the \emph{cyclically re-glued} collar with all outer-side stubs
+fixed --- different fibers, no bridging lemma in the manuscript. On the finite
+length-2/3 tau/mirror class this is now \emph{proved}: after a lab found all 972
+closed-collar fibers connected-or-empty (216 nonempty, 756 empty, zero
+disconnected), the target was discharged with zero pins.
+\begin{lstlisting}[language={}]
+theorem closedCollarS2BridgeTarget_proved : closedCollarS2BridgeTarget
+theorem section92S2BridgeLemmaTarget_proved : section92S2BridgeLemmaTarget
+\end{lstlisting}
+The route survey had rated S2 the sharpest mismatch in the manuscript --- a
+statement never written down in v23 and not implied by Gate-2 --- so proving it on
+the finite class is a real advance.
+
+\subsection{S4: execution in the ambient annulus, refuted}
+
+\S9.2 Step~4 reinterprets a collar Kempe word as a word of the \emph{ambient}
+annulus, and confines the switched components with a face-only locality lemma
+(7.9). The formalization tested this on the smallest honest geometry --- a collar
+plus one deeper radial ring sharing the interface --- and found a decisive
+counterexample.
+\begin{lstlisting}[language={}]
+/-- A collar-certified, collar-input-avoiding Kempe switch whose ambient
+two-layer component leaves through the inner side, hits the fixed outer input,
+and does NOT restrict to the certified collar move. -/
+theorem section92Step4TwoLayerCounterexampleClass :
+    Section92Step4TwoLayerCounterexampleClass         -- axioms [propext]
+\end{lstlisting}
+Concretely (outer word $\tau\tau$, inner word $\tau$, input key $r,r,b,r$): a
+switch that is input-avoiding \emph{in the collar alone} balloons, in the
+two-layer object, into a component that crosses the shared inner boundary into the
+deeper ring, returns, meets the fixed outer input edge, and lands the collar on a
+\emph{different} coloring than the certified move. This refutes the reinterpretation
+as a regime-free, purely-local principle: the ambient switch is a \emph{different}
+move on the collar than the one Gate-2/S2 certified.
+
+We are precise about what this does and does not say. It is a defect in the
+manuscript's assembly \emph{seam} as argued (Step~4 invokes 7.9, a lemma proved
+for single-face collars, as if it were a global confinement), not a refutation of
+4CT.
+
+The cheapest repair has also been tested, and \emph{refuted}. Strengthening the
+certification so that switches avoid the entire outer interface --- both input
+\emph{and} output stubs, not only the inputs --- does eliminate the escape (a
+two-layer companion run finds zero escapes under full-interface avoidance), but at
+a fatal cost: on the same finite class, two colorings with the same fixed input
+are connected \emph{only} by a switch whose component touches the output stubs, so
+forbidding output touches disconnects the fibers (module
+\texttt{GoertzelLemma818TwoSidedAvoidance}: $432$ open and $216$ closed nonempty
+fibers disconnect). The escape channel is therefore \emph{load-bearing for
+connectivity}: the very moves that let a component escape the collar are the moves
+the fibers need to remain connected. Confinement and connectivity are in direct
+tension, so any repair must confine the escaping components \emph{without}
+severing collar connectivity --- a needle the simplest fix cannot thread.
+
+What remains is a genuinely regime-level salvage: a proof that the
+minimal-counterexample \emph{regime} (CAP5-free normal form) excludes the
+disconnecting/escaping configurations, or a \S9 redesign that only ever peels
+\emph{face} collars where 7.9 applies as stated. Neither is established; both need
+planar-normal-form infrastructure the development does not yet have; and the
+abstract gadget lab cannot decide them, since the tension may or may not dissolve
+in the actual normal form. As of this writing the seam is open, with both the
+escape and the failure of the cheapest repair pinned down as checked theorems.
+
+\subsection{Sharpening the open salvage: a winding invariant and a cyclic 2-cut reduction}
+
+Since the escape was pinned down, the formalization has \emph{sharpened} --- though
+not closed --- the open salvage, by asking a Spencer--Brown/Kauffman-native
+question: which two-color components can escape? On the closed annular collar a
+two-color component carries a well-defined mod-2 \emph{winding class} around the
+annulus generator --- the parity of its crossing count with a fixed radial cut ---
+a Parity-Lemma-style invariant, well defined per component and tracked across Kempe
+switches. In this language the escape is exactly a \emph{winding} move: the
+components that leave through the inner side and return are those of nonzero winding
+class. The precise form of the S4 freedom is then a homological statement,
+machine-checked on the witness class: \emph{winding is not boundary-determined} --- a
+fixed-boundary fiber can carry components of different total winding class, so the
+escaping (winding-1) moves are not forced by the boundary data alone.
+
+This localizes the difficulty to one geometric question: can a winding-freedom
+escape be \emph{realized on a genuinely simple planar collar}? The formalization
+reduces it to a classical connectivity fact. Any simple planar realization that
+preserves the winding profile must replace the escape's parallel endpoint bundle by
+a simple two-pole side; a tree-rank (handshaking) count ---
+$2\,|\text{side edges}| = 3\,|\text{internal}| + 4$ forces
+$|\text{internal}|+1 < |\text{side edges}|$, hence a cycle --- turns that side into
+a \emph{cyclic 2-cut} of the collar. A collar admitting no realized cyclic 2-cut
+therefore admits no escape realization:
+\begin{lstlisting}[language={}]
+-- every simple planar winding-escape realization forces a cyclic two-cut:
+theorem ...Escape_forces_cyclicTwoCut_allSizes : ...
+-- so a collar forbidding cyclic two-cuts (e.g. cyclically 5-edge-connected)
+-- admits no escape realization:
+theorem ...Escape_not_simplyRealizable_allSizes
+    (h : ...ForbidsCyclicTwoCut G) : ¬ ...SimplePlanarEscapeRealization G
+\end{lstlisting}
+
+We are precise about what this buys. It is a \emph{reduction of the open salvage to
+one named residual}, not a repair: the theorem is conditional on the collar
+forbidding cyclic 2-cuts, and the current realization datum carries the
+separating-pair structure as an obligation rather than deriving it from the collar's
+embedding. What it does is convert the vague ``the minimal-counterexample regime
+should exclude the escape'' into a concrete checkable target --- \emph{the escape
+collar carries no cyclic 2-cut}, i.e.\ it is cyclically sufficiently edge-connected,
+which is exactly the kind of property the minimal-counterexample normal form is
+expected to supply. And this residual is not an un-formalizable abstraction: the
+development already proves cyclic-five-edge-connectivity for concrete graphs (and
+refutes it for others), so discharging or refuting it \emph{for the escape collar}
+is a reachable next question --- the honest current frontier of the S4 salvage.
+
+\section{Status and scope: machine-checked, reduced, and open}
 \label{sec:status}
 
-We state the scope of this report exactly, distinguishing what is
-machine-checked from what is numeric, prose, or open.
+We state the scope exactly. The full route is a ladder $S0,\dots,S9$ (Gate-2, then
+v23 \S9 and \S3); the table records each step's manuscript reference and current
+Lean status.
 
-\paragraph{What is machine-checked.} Lemma~8.14 of v23 --- the $\LKR$ property
-of the canonical three-cell collar gadget $\tau$, including the mirror gadget
---- is formalized and proved in Lean with no \texttt{sorry}, no \texttt{opaque},
-and no added axioms beyond \texttt{propext}, in the module
-\texttt{Mettapedia.GraphTheory.FourColor.GoertzelLemma814}. Concretely: the
-proper-coloring state space of $\tau$ is the checked 192-element enumeration
-(\texttt{tauStateSpaceAudit\_ok}); each state has a verified path of at most two
-input-disjoint Kempe switches to the representative of its fixed-input fiber,
-and fibers are well defined (\texttt{lemma814PathCertificate\_rows\_ok},
-\texttt{representativeCoherenceAudit\_ok}); the assembled keystone
-\texttt{lemma814\_tau\_lkrIn\_audit} reduces to \texttt{true}; and the mirror
-clause holds definitionally (\texttt{lemma814\_mirror\_lkrIn\_same\_check}).
-This is precisely the finite verification the manuscript identifies as the only
-one 4CT requires.
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Step & Content & v23 ref & Lean status \\
+\midrule
+--- & single-gadget $\LKR$ (keystone)     & Lem.~8.14        & \textbf{proved} \\
+--- & two-color transparency              & Lem.~8.15        & \textbf{proved} \\
+--- & Pillar~A, need-based                 & Thm.~4.9 (repaired) & \textbf{proved} (inclusion); equality \emph{refuted} \\
+S0  & Gate-2 chain $\LKR$                  & Lem.~8.18/8.19   & one named remainder pin \\
+S2  & closed-collar bridge (finite class)  & \S9.2 Step~3     & \textbf{proved} (972 fibers, 0 pins) \\
+S4  & ambient execution                    & \S9.2 Step~4     & \textbf{refuted} (two-layer witness) \\
+S1  & collar $\Rightarrow\tau$/mirror chain & Lem.~8.5--8.6   & open (structural) \\
+S3  & annulus peeling well-definedness     & \S9.2 Step~2     & open (structural) \\
+S5  & interface to Kauffman Thm.~3.1       & \S9.2 / \S3      & open (statement-level) \\
+S6  & Kauffman parity/primality internals  & \S3.2--3.3       & open (structural) \\
+S7  & minimal-counterexample normal form   & Lem.~5.2--5.3    & open (structural) \\
+S8  & CAP5 reducibility                    & \S6              & partial \\
+S9  & minimality wrap ($+$ Tait)           & Def.~5.1 / Thm.~2.3 & open (structural) \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-\paragraph{Independently established (Pillar~A finding).} On every closed-walk
-exact shell, the Theorem-4.9 boundary-zero target is a machine-checked
-\emph{strict} subspace of the full boundary-zero chain space
-(\texttt{theorem49BoundaryZeroKirchhoffSubspace\_lt\_planar\-Boundary\-Zero\-Submodule\dots}),
-and four proposed uniform geometric repairs for the synthesis endpoint are
-refuted (\S\ref{sec:pillarA}). Hence the spanning claim of Pillar~A is not
-established as written.
+\paragraph{Machine-checked outright.} The keystone Lemma~8.14 and transparency
+Lemma~8.15; the need-based repair of Pillar~A (the equality refuted on shells with
+four uniform repairs refuted; the inclusion, step-preservation, and
+discrepancy-membership proved); and the closed-collar S2 bridge on the finite
+length-2/3 class. All with no \texttt{sorry} and axioms
+$\subseteq\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$.
 
-\paragraph{What remains open (the Pillar-C local-to-global lift).} The keystone
-of \S\ref{sec:lkr} is a \emph{local} statement about a single gadget. The
-manuscript's route from this local check to a global contradiction is not yet
-formalized:
-\begin{itemize}
-  \item \emph{Transparency} (Lemma~8.15): scaffolded as a finite predicate but
-        not proved (Remark~\ref{rem:815}).
-  \item \emph{Transparent composition} (Lemma~8.18, Corollary~8.19): the proof
-        that $\LKR$ composes across a transparent interface, lifting $\LKR$ from
-        the single gadget $\tau$ to a whole cut-open radius-1 collar tangle
-        $\widehat{A}=G_m\circ\cdots\circ G_1$, is not formalized.
-  \item \emph{Collar/annulus assembly} (\S9.2): the outside-to-inside,
-        collar-by-collar peeling that turns collar $\LKR$ into between-region
-        Kempe connectivity for the whole annulus $H$ --- the place where the
-        argument genuinely passes from finite, local data to the global,
-        non-finite conclusion --- is not formalized.
-\end{itemize}
-These three steps are the non-finite heart of Pillar~C: the local-to-global
-lift. Their formalization, together with closing the Pillar-A spanning gap,
-is what a machine-checked v23 proof of 4CT would still require.
+\paragraph{Reduced to one pin.} Gate-2 (Lemmas~8.18/8.19): the manuscript's
+pointwise Step-1 preparation is refuted and replaced by the frontier-automaton /
+fibration architecture, whose real-fiber labs pass to length seven; the whole
+composition rests on a single named structural remainder.
+
+\paragraph{Refuted (a confirmed defect, not a claim).} \S9.2 Step~4's
+collar-word-to-ambient-word reinterpretation, by an explicit two-layer escape
+counterexample. This lowers the odds that the v23 route completes \emph{as
+written}; its salvage is open.
+
+\paragraph{Open (the non-finite heart).} Steps S1, S3, S5--S9: the realization of
+abstract chains as actual collars, the wide-annulus peeling, the interface to
+Kauffman's reduction, and the Kauffman/normal-form/CAP5 internals. Their common
+cost is one shared planar-embedding/duality/Jordan infrastructure the development
+does not yet have; most carry a known proof shape, so their risk is
+formalization cost rather than mathematical doubt --- with the exception of the S4
+salvage, which is genuinely open.
 
 \paragraph{What is not claimed.} We do \emph{not} claim the Four-Color Theorem,
-and we do not claim that v23 proves it. The 4CT itself is, of course, a theorem
-(via the Appel--Haken and Robertson--Sanders--Seymour--Thomas computer-assisted
-proofs); what is at issue here is solely the viability of the v23
-human-readable route. As a proof route, v23 remains genuinely \emph{open}: its
-keystone finite check (Lemma~8.14) is now machine-checked, while its Pillar-A
-spanning step is not established as written and its Pillar-C local-to-global
-lift is outstanding.
+and we do not claim that v23 proves it. The 4CT is a theorem via the
+computer-assisted proofs; what is at issue is solely the viability of the v23
+human-readable route, which remains \emph{open} --- its foundational layer now
+machine-checked, its most dangerous assembly seam pinned down as broken.
 
 \section*{Provenance}
+\addcontentsline{toc}{section}{Provenance}
 The manuscript discussed is Ben Goertzel, \emph{A Human-Readable,
-Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}, version~v23.
-The formalization is work of the MeTTapedia formalization effort; the keystone
-development is the Lean module
-\texttt{Mettapedia.GraphTheory.FourColor.GoertzelLemma814}, and the Pillar-A
-proper-subspace finding and oracle refutations live in the modules
-\texttt{Mettapedia.GraphTheory.FourColor.FrontierGeometric} and
-\texttt{Mettapedia.GraphTheory.FourColor.GoalAudit}.
+Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}, version~v23. The
+formalization is work of the MeTTapedia formalization effort. The keystone and
+transparency are module \texttt{GoertzelLemma814}; the Pillar-A obstruction and
+its need-based repair are \texttt{FrontierGeometric}, \texttt{GoalAudit}, and
+\texttt{PillarASmallerSpace}; the Gate-2 architecture is
+\texttt{GoertzelLemma818SemanticBridge} and the frontier-automaton modules; the
+S2 bridge is \texttt{GoertzelLemma818ClosedCollarS2Bridge}; the S4 counterexample
+and the refuted two-sided-avoidance repair are
+\texttt{GoertzelLemma818TwoLayerEscape} and
+\texttt{GoertzelLemma818TwoSidedAvoidance}. Lean listings are ASCII
+transliterations of the source declarations (the sources are normative); every
+headline was checked with \texttt{\#print axioms}. Per-declaration source links
+are omitted pending publication of the development tree.
+
+\appendix
+
+\section{A graveyard of superseded sub-routes}
+\label{app:graveyard}
+
+Each entry is a route or reading that was tried and set aside; several are
+themselves machine-checked theorems that a stated step \emph{fails}.
+
+\begin{description}
+  \item[The spanning \emph{equality} $\Wz(H)=\mathrm{span}(\mathcal{G})$.] Refuted
+        on every closed-walk exact shell (\S\ref{sec:pillarA}); superseded by the
+        need-based inclusion, which is what the synthesis actually consumes.
+  \item[The four uniform geometric peel oracles.] Each would have closed
+        Theorem~4.9's synthesis uniformly; all four are machine-checked false.
+        The route uses the manuscript's own per-embedding peeling witnesses
+        instead.
+  \item[The pointwise Step-1 preparation of Lemma~8.18.] The manuscript's own
+        pointwise lift (via Lemma~8.16) is refuted
+        (\texttt{lemma818\_pointwise\_lift\_preparation\_obstruction}); replaced by
+        the frontier-automaton / fibration composition.
+  \item[The prefix-fibration shortcut for Gate-2.] A tempting closed-form
+        shortcut, machine-checked to fail
+        (\texttt{not\_concreteChainFiberAppendPrefixFibrationClosed}); kept dead.
+  \item[The false ``additivity'' of Kempe switches.] An $\FF$-additive execution
+        of the Pillar-A decomposition $\Delta=\sum v_{f,g}$. This is \emph{not}
+        the manuscript's route --- Pillar~C is titled ``executability without
+        false additivity,'' and v23 \S8.1--8.3 show mixed color-pair switches on
+        shared support do not commute. Recorded only to set aside; the faithful
+        route is the operator/$\LKR$ execution of \S\ref{sec:lkr}.
+  \item[An $\FF$-additivity / evader reconstruction (disavowed).] An early
+        exploratory reconstruction outside the manuscript's route, which v23
+        explicitly disavows (additivity invalid for mixed color-pairs; Rmk.~8.10).
+        Not part of this companion's formalized content.
+\end{description}
 
 \end{document}
