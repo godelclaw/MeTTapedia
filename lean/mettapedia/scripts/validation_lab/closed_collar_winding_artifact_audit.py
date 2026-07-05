@@ -177,6 +177,21 @@ def parse_lean_bool_field(record: str, field: str) -> bool:
     return match.group(1) == "true"
 
 
+def parse_lean_option_string_field(record: str, field: str) -> str | None:
+    none_match = re.search(rf"{field}\s*:=\s*none", record)
+    if none_match is not None:
+        return None
+    direct_match = re.search(rf'{field}\s*:=\s*some\s+"([^"]+)"', record)
+    if direct_match is not None:
+        return direct_match.group(1)
+    reverse_key = (
+        "some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey"
+    )
+    if re.search(rf"{field}\s*:=\s*{re.escape(reverse_key)}", record):
+        return REVERSE_TEMPLATE_KEY
+    raise ValueError(f"Lean radial-face row certificate missing Option String field {field}")
+
+
 def parse_lean_histogram_field(record: str, field: str) -> list[tuple[int, int]]:
     match = re.search(rf"{field}\s*:=\s*\[\(([0-9]+),\s*([0-9]+)\)\]", record)
     if match is None:
@@ -234,6 +249,9 @@ def parse_lean_radial_face_row_certificates(source: str, def_name: str) -> list[
             "template_exclusion_blocker": parse_lean_string_field(
                 record, "templateExclusionBlocker"
             ),
+            "exact_template_key": parse_lean_option_string_field(
+                record, "exactTemplateKey"
+            ),
             "verdict": parse_lean_string_field(record, "verdict"),
         }
         for record in records
@@ -289,6 +307,7 @@ def radial_face_certificate_lean_projection(
             "radial_face_coherent_rotation_count"
         ],
         "template_exclusion_blocker": certificate["template_exclusion_blocker"],
+        "exact_template_key": certificate.get("exact_template_key"),
         "verdict": certificate["verdict"],
     }
 
@@ -731,6 +750,11 @@ def audit_radial_face_archive(results_dir: Path) -> dict[str, object]:
     assert_equal("sample template blockers", sample_template_blockers, 6)
     assert_equal("slice template blockers", slice_template_blockers, 6)
     assert_equal("slice template histogram", dict(slice_template_hist), {REVERSE_TEMPLATE_KEY: 6})
+    assert_equal(
+        "row coverage exact template keys",
+        [certificate.get("exact_template_key") for certificate in row_coverage_certificates],
+        [None] * 6 + [REVERSE_TEMPLATE_KEY] * 4,
+    )
     assert_equal("max radial-cut histogram", dict(max_radial_cut_hist), {"2": 96})
     assert_equal(
         "Lean radial-face row certificate projection",
