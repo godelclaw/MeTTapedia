@@ -667,6 +667,35 @@ theorem section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesT
     Section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget :=
   section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget
 
+theorem closedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation_of_radialFaceN6_of_archiveMembership_audit
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hmembership :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive) :
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation :=
+  closedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation_of_radialFaceN6_of_archiveMembership
+    hn6 hmembership
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6ArchiveMembership_of_rowCertificates_audit
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hmembership :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationInArchive)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
+    (hsliceSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6ArchiveMembership_of_rowCertificates
+    hradial hn6 hmembership hartifact hsampleSound hsliceSound
+
+theorem section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget_audit :
+    Section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget :=
+  section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows_audit
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab) :
