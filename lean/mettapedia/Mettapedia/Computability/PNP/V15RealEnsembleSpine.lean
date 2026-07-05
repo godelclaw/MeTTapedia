@@ -3669,6 +3669,155 @@ def withRealAnalyticFrontier
 
 end RealM4MechanicalInterfaceData
 
+/--
+Gauge action data for a manuscript-facing M4 ensemble.
+
+The current v13 mechanical interface only needs gauge predicates and the
+hidden-gauge product.  This records the additional manuscript-facing action
+surface explicitly: each gauge element acts on worlds, preserves the public
+instance and target bit, and is compatible with the gauge predicate.  It is
+not a group-action theorem; any algebraic action laws for the eventual M4
+gauge family remain construction obligations outside this minimal bridge.
+-/
+structure RealM4GaugeActionData
+    (Omega : Type u) (Public : Type v)
+    (Neutral : Type w) (Safe : Type x) (Gauge : Type y)
+    (target : Omega -> Bool) (publicInput : Omega -> Public)
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge) where
+  act : Gauge -> Omega -> Omega
+  publicInvariant :
+    ∀ gamma omega, publicInput (act gamma omega) = publicInput omega
+  targetInvariant :
+    ∀ gamma omega, target (act gamma omega) = target omega
+  gaugeSatisfied :
+    ∀ gamma omega, semantics.gaugeSat gamma omega
+
+namespace RealM4GaugeActionData
+
+variable {Omega : Type u} {Public : Type v}
+variable {Neutral : Type w} {Safe : Type x} {Gauge : Type y}
+variable {target : Omega -> Bool} {publicInput : Omega -> Public}
+variable {semantics : EvidenceSemantics Omega Neutral Safe Gauge}
+
+/-- The hidden-gauge product required by the mechanical interface is the
+predicate-compatibility projection of the explicit gauge-action data. -/
+theorem hiddenGaugeProduct
+    (G :
+      RealM4GaugeActionData Omega Public Neutral Safe Gauge target
+        publicInput semantics) :
+    ∀ gamma omega, semantics.gaugeSat gamma omega :=
+  G.gaugeSatisfied
+
+end RealM4GaugeActionData
+
+/--
+Manuscript-facing M4 single-message SAT ensemble bridge.
+
+This is the first interface where the SAT readout spine and the v13 mechanical
+clash interface are tied together: the public instance `Y`, hidden witness
+`W`, verifier, fixed public readout, gauge-action data, and admissible
+histories all live in one object.  It is a bridge/gate only; this module does
+not construct the real manuscript M4 ensemble or the algebraic gauge family.
+-/
+structure RealM4ManuscriptSingleMessageSATEnsembleInterface
+    (Omega : Type u) [Fintype Omega] [Nonempty Omega]
+    (Public : Type v) (Witness : Type l)
+    (Neutral : Type w) (Safe : Type x) (Gauge : Type y)
+    (Transcript : Type z) [DecidableEq Transcript]
+    (Pair : Type a) [Fintype Pair]
+    (Stage : Type b) (Branch : Type c)
+    (HistoryAtom : Type d) (Pivot : Type e)
+    (Observer : Type f) (Output : Type f) (Skeleton : Type w) where
+  satSpine : RealSingleMessageSATSpine Omega Public Witness
+  mechanical :
+    RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge Transcript
+      Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton
+  publicInput_eq : mechanical.publicInput = satSpine.publicInput
+  target_eq : mechanical.target = satSpine.target
+  gaugeAction :
+    RealM4GaugeActionData Omega Public Neutral Safe Gauge mechanical.target
+      mechanical.publicInput mechanical.semantics
+
+namespace RealM4ManuscriptSingleMessageSATEnsembleInterface
+
+variable {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+variable {Public : Type v} {Witness : Type l}
+variable {Neutral : Type w} {Safe : Type x} {Gauge : Type y}
+variable {Transcript : Type z} [DecidableEq Transcript]
+variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
+variable {HistoryAtom : Type d} {Pivot : Type e}
+variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+
+/-- The mechanical single-message field follows from the SAT spine through the
+declared public/target identification. -/
+theorem singleMessage_from_satSpine
+    (E :
+      RealM4ManuscriptSingleMessageSATEnsembleInterface
+        Omega Public Witness Neutral Safe Gauge Transcript Pair Stage Branch
+        HistoryAtom Pivot Observer Output Skeleton) :
+    ∀ w0 w1, E.mechanical.publicInput w0 = E.mechanical.publicInput w1 ->
+      E.mechanical.target w0 = E.mechanical.target w1 := by
+  intro w0 w1 hPublic
+  have hPublicSat :
+      E.satSpine.publicInput w0 = E.satSpine.publicInput w1 := by
+    simpa [E.publicInput_eq] using hPublic
+  have hTargetSat :
+      E.satSpine.target w0 = E.satSpine.target w1 :=
+    E.satSpine.singleMessage w0 w1 hPublicSat
+  simpa [E.target_eq] using hTargetSat
+
+/-- The canonical hidden witness attached to a world reads the mechanical
+target bit. -/
+theorem worldWitness_readout_eq_mechanicalTarget
+    (E :
+      RealM4ManuscriptSingleMessageSATEnsembleInterface
+        Omega Public Witness Neutral Safe Gauge Transcript Pair Stage Branch
+        HistoryAtom Pivot Observer Output Skeleton)
+    (omega : Omega) :
+    E.satSpine.witnessReadout (E.satSpine.witnessOfWorld omega) =
+      E.mechanical.target omega := by
+  calc
+    E.satSpine.witnessReadout (E.satSpine.witnessOfWorld omega) =
+        E.satSpine.target omega :=
+      E.satSpine.worldWitness_readout_eq_target omega
+    _ = E.mechanical.target omega :=
+      (congrFun E.target_eq omega).symm
+
+/-- Any verifier-valid hidden witness reads the fixed public message. -/
+theorem readout_eq_publicMessage_of_valid
+    (E :
+      RealM4ManuscriptSingleMessageSATEnsembleInterface
+        Omega Public Witness Neutral Safe Gauge Transcript Pair Stage Branch
+        HistoryAtom Pivot Observer Output Skeleton)
+    {Y : Public} {W : Witness}
+    (hW : E.satSpine.verifier Y W) :
+    E.satSpine.witnessReadout W = E.satSpine.messageOfPublic Y :=
+  E.satSpine.readout_eq_message_of_valid hW
+
+/-- The hidden-gauge product required by the mechanical interface is projected
+from the explicit gauge-action data. -/
+theorem hiddenGaugeProduct_from_gaugeAction
+    (E :
+      RealM4ManuscriptSingleMessageSATEnsembleInterface
+        Omega Public Witness Neutral Safe Gauge Transcript Pair Stage Branch
+        HistoryAtom Pivot Observer Output Skeleton) :
+    ∀ gamma omega, E.mechanical.semantics.gaugeSat gamma omega :=
+  E.gaugeAction.hiddenGaugeProduct
+
+/-- The admissible-history field remains a mechanical construction theorem
+carried by the interface; it is not a theorem-level frontier hypothesis. -/
+theorem admissibleHistories_from_mechanical
+    (E :
+      RealM4ManuscriptSingleMessageSATEnsembleInterface
+        Omega Public Witness Neutral Safe Gauge Transcript Pair Stage Branch
+        HistoryAtom Pivot Observer Output Skeleton) :
+    BalancedBit E.mechanical.target ∧
+      BalancedConditioning (Omega := Omega) E.mechanical.historyField
+        E.mechanical.target :=
+  E.mechanical.admissibleHistories
+
+end RealM4ManuscriptSingleMessageSATEnsembleInterface
+
 /-- Mechanical data needed to assemble the real conditional endgame once the
 three analytic fields and the P=NP-side self-reduction package are supplied.
 This still does not construct the real M4 ensemble; it names the construction
@@ -23732,6 +23881,43 @@ theorem
 
 def realM4ManuscriptSingleMessageSATRealizationComponentStatement : String :=
   "The transparent manuscript-M4 component gate expands the one-field realization object into the exact strict named construction obligations: the no-target-rows public surface data, hidden-gauge product, real lower machine, public-lock coverage, locked-message rigidity, CNF address syntax, official language/P-to-decider data, and P-membership-indexed eta/K-poly/target-block facts.  Supplying these components packages back into the existing realization gate and the preferred endpoint still has exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  This does not inhabit the real M4 ensemble and is not an unconditional proof of P != NP."
+
+def realM4ManuscriptSingleMessageSATEnsembleInterfaceItems :
+    List String := [
+  "publicInstanceY",
+  "hiddenWitnessW",
+  "verifier",
+  "fixedPublicMessageReadout",
+  "witnessReadout",
+  "worldWitnessValidity",
+  "readoutInvarianceForValidWitnesses",
+  "mechanicalPublicTargetIdentification",
+  "gaugeActionData",
+  "gaugeActionPublicInvariant",
+  "gaugeActionTargetInvariant",
+  "hiddenGaugeProductFromGaugeAction",
+  "admissibleHistoriesFromMechanicalInterface"
+]
+
+theorem realM4ManuscriptSingleMessageSATEnsembleInterfaceItems_exact :
+    realM4ManuscriptSingleMessageSATEnsembleInterfaceItems =
+      [ "publicInstanceY",
+        "hiddenWitnessW",
+        "verifier",
+        "fixedPublicMessageReadout",
+        "witnessReadout",
+        "worldWitnessValidity",
+        "readoutInvarianceForValidWitnesses",
+        "mechanicalPublicTargetIdentification",
+        "gaugeActionData",
+        "gaugeActionPublicInvariant",
+        "gaugeActionTargetInvariant",
+        "hiddenGaugeProductFromGaugeAction",
+        "admissibleHistoriesFromMechanicalInterface" ] := by
+  rfl
+
+def realM4ManuscriptSingleMessageSATEnsembleInterfaceStatement : String :=
+  "The manuscript-M4 single-message SAT ensemble interface now names the real public instance Y, hidden witness W, verifier, fixed public readout, witness readout, mechanical public/target identification, explicit gauge-action data, and admissible histories in one bridge object.  The bridge proves the SAT spine gives singleMessage and readout correctness for the mechanical target, and projects hiddenGaugeProduct from the gauge-action data and admissibleHistories from the mechanical interface.  It is still an interface gate, not an inhabited M4 construction and not an unconditional proof of P != NP."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
