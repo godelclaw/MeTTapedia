@@ -2316,6 +2316,38 @@ theorem isTaitEdgeColoring_sideGlueEdgeColoring
   · simpa [sideGlueEdgeColor, he] using hinside e
   · simpa [sideGlueEdgeColor, he] using houtside e
 
+/-- Gluing two Tait edge colorings along a realized cyclic cut remains Tait once the explicit
+boundary-adjacency checks have been supplied. -/
+theorem isTaitEdgeColoring_sideGlueEdgeColoring_of_realizedCutBoundaryGlueCompatible
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (inside outside : G.EdgeColoring Color)
+    (hinside : IsTaitEdgeColoring G inside) (houtside : IsTaitEdgeColoring G outside)
+    (hboundary : RealizedCutBoundaryGlueCompatible realization inside outside) :
+    IsTaitEdgeColoring G
+      (sideGlueEdgeColoring realization.nonCutEdgeSide inside outside
+        (sideGlueEdgeCompatible_of_realizedCutBoundaryGlueCompatible
+          realization inside outside hboundary)) :=
+  isTaitEdgeColoring_sideGlueEdgeColoring realization.nonCutEdgeSide inside outside
+    hinside houtside
+    (sideGlueEdgeCompatible_of_realizedCutBoundaryGlueCompatible
+      realization inside outside hboundary)
+
+/-- Realized-cut boundary compatibility is enough to build a Tait edge coloring by gluing two
+Tait edge colorings. -/
+theorem taitEdgeColorable_of_realizedCutBoundaryGlueCompatible
+    [Fintype V]
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (inside outside : G.EdgeColoring Color)
+    (hinside : IsTaitEdgeColoring G inside) (houtside : IsTaitEdgeColoring G outside)
+    (hboundary : RealizedCutBoundaryGlueCompatible realization inside outside) :
+    TaitEdgeColorable G := by
+  refine ⟨
+    sideGlueEdgeColoring realization.nonCutEdgeSide inside outside
+      (sideGlueEdgeCompatible_of_realizedCutBoundaryGlueCompatible
+        realization inside outside hboundary), ?_⟩
+  exact isTaitEdgeColoring_sideGlueEdgeColoring_of_realizedCutBoundaryGlueCompatible
+    realization inside outside hinside houtside hboundary
+
 /-- Relabel one side of a separator and glue the two Tait edge colorings.  This is the reusable
 coloring endpoint needed by Birkhoff cut-and-paste surgeries. -/
 theorem taitEdgeColorable_of_relabel_sideGlueEdgeCompatible
@@ -2334,6 +2366,25 @@ theorem taitEdgeColorable_of_relabel_sideGlueEdgeCompatible
     (edgeColoringMapOfInjective outside σ hσ) hinside
     (isTaitEdgeColoring_edgeColoringMapOfInjective outside houtside σ hσ hσ_nonzero)
     hcompat
+
+/-- Relabel one side of a realized cyclic cut and glue the two Tait edge colorings.  Future
+Birkhoff separator surgeries only need to prove the boundary-adjacency checks against the
+realized cut support. -/
+theorem taitEdgeColorable_of_relabel_realizedCutBoundaryGlueCompatible
+    [Fintype V]
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (inside outside : G.EdgeColoring Color)
+    (hinside : IsTaitEdgeColoring G inside) (houtside : IsTaitEdgeColoring G outside)
+    (σ : Color → Color) (hσ : Function.Injective σ)
+    (hσ_nonzero : ∀ {c : Color}, c ≠ 0 → σ c ≠ 0)
+    (hboundary :
+      RealizedCutBoundaryGlueCompatible realization inside
+        (edgeColoringMapOfInjective outside σ hσ)) :
+    TaitEdgeColorable G :=
+  taitEdgeColorable_of_relabel_sideGlueEdgeCompatible realization.nonCutEdgeSide inside outside
+    hinside houtside σ hσ hσ_nonzero
+    (sideGlueEdgeCompatible_of_realizedCutBoundaryGlueCompatible
+      realization inside (edgeColoringMapOfInjective outside σ hσ) hboundary)
 
 end EdgeColoringGlue
 
