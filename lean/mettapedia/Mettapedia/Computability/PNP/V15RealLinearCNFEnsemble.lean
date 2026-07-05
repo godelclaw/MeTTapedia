@@ -3092,6 +3092,30 @@ theorem v13RealLinearSmallGaugeCNFSATWorld_noPublicTargetTags :
         v13RealLinearSmallGaugeCNFSATWorldTarget
         hPair hOpp⟩
 
+/-- Readout-level `noPublicReadoutTags` transfer for global SAT worlds:
+no function of the target-blind hidden-gauge skeleton can predict the fixed
+readout of every verifier-valid witness. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_noPublicReadoutTags :
+    ¬ ∃ f : Bool -> Bool,
+      ∀ {msg : Bool} {W : V13RealLinearSmallGaugeCNFWitness},
+        v13RealLinearSmallGaugeCNFVerifier msg W →
+          v13RealLinearSmallGaugeCNFReadout W =
+            f (W none) := by
+  intro htag
+  rcases htag with ⟨f, hf⟩
+  have hNoTarget :
+      ¬ ∃ f : Bool -> Bool,
+        ∀ omega : V13RealLinearSmallGaugeCNFSATWorld,
+          v13RealLinearSmallGaugeCNFSATWorldTarget omega =
+            f
+              (v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton omega) :=
+    (v13RealLinearSmallGaugeCNFSATWorld_noPublicTargetTags).2.2
+  exact hNoTarget
+    ⟨f, by
+      intro omega
+      exact
+        hf (msg := omega.msg) (W := omega.assignment) omega.sat⟩
+
 /-- Canonical SAT world with a chosen public message and hidden gauge bit. -/
 def v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge
     (msg gauge : Bool) : V13RealLinearSmallGaugeCNFSATWorld where
@@ -4069,6 +4093,30 @@ theorem v13RealLinearSmallGaugeCNFEnsemble_noPublicTargetTags :
         v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton
         v13RealLinearSmallGaugeCNFEnsembleTarget
         hPair hOpp⟩
+
+/-- Readout-level `noPublicReadoutTags` transfer for the global small
+real-linear gauge-CNF ensemble: no function of the target-blind hidden-gauge
+skeleton can predict the represented satisfying assignment's readout in every
+global world. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_noPublicReadoutTags :
+    ¬ ∃ f : Bool -> Bool,
+      ∀ omega : V13RealLinearSmallGaugeCNFEnsembleWorld,
+        v13RealLinearSmallGaugeCNFReadout
+            (v13RealLinearSmallGaugeCNFEnsembleAssignment omega) =
+          f (v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton omega) := by
+  intro htag
+  rcases htag with ⟨f, hf⟩
+  have hNoTarget :
+      ¬ ∃ f : Bool -> Bool,
+        ∀ omega : V13RealLinearSmallGaugeCNFEnsembleWorld,
+          v13RealLinearSmallGaugeCNFEnsembleTarget omega =
+            f (v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton omega) :=
+    (v13RealLinearSmallGaugeCNFEnsemble_noPublicTargetTags).2.2
+  exact hNoTarget
+    ⟨f, by
+      intro omega
+      simpa [v13RealLinearSmallGaugeCNFEnsembleTarget]
+        using hf omega⟩
 
 /-! ## Gauge-buffered real linear CNF self-reduction -/
 
