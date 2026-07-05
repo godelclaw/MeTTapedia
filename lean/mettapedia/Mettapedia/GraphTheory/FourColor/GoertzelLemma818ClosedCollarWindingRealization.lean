@@ -4202,6 +4202,10 @@ def closedCollarSimplePatchN6AnnularEmbeddingSliceArchiveFiles :
   ["results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
     "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json"]
 
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveAuditFile :
+    String :=
+  "results/fourcolor/section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json"
+
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts :
     ClosedCollarSimplePatchAnnularEmbeddingRadialFaceArchiveCounts where
   sampleArchiveJsonFileCount := 3
@@ -4230,6 +4234,8 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvid
     Prop :=
   ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence ∧
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveAuditFile =
+      "results/fourcolor/section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json" ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleArchiveFiles.length =
       closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sampleArchiveJsonFileCount ∧
     closedCollarSimplePatchN6AnnularEmbeddingSliceArchiveFiles.length =
@@ -4276,7 +4282,7 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
   refine
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence,
       closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
 /-- Lab-side candidate for a radial-face coherent rotation in the slice. -/
