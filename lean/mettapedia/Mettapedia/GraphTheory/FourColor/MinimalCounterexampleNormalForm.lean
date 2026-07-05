@@ -519,6 +519,164 @@ theorem lemma53_cap5Pinch_of_tightnessObligation
 
 end CAP5Tightness
 
+section EdgeColoringGlue
+
+variable [DecidableEq V]
+variable {β : Type*} {G : SimpleGraph V}
+
+/-- Recolor an edge-coloring through an injective color map.  Injectivity preserves properness on
+the line graph. -/
+def edgeColoringMapOfInjective
+    (C : G.EdgeColoring α) (σ : α → β) (hσ : Function.Injective σ) :
+    G.EdgeColoring β :=
+  SimpleGraph.Coloring.mk (fun e => σ (C e)) (by
+    intro e₁ e₂ hAdj hsame
+    exact C.valid hAdj (hσ hsame))
+
+@[simp]
+theorem edgeColoringMapOfInjective_apply
+    (C : G.EdgeColoring α) (σ : α → β) (hσ : Function.Injective σ)
+    (e : G.edgeSet) :
+    edgeColoringMapOfInjective C σ hσ e = σ (C e) :=
+  rfl
+
+/-- A color equivalence fixing zero preserves nonzero colors. -/
+theorem colorEquiv_apply_ne_zero_of_map_zero
+    (σ : Color ≃ Color) (hzero : σ 0 = 0) {c : Color} (hc : c ≠ 0) :
+    σ c ≠ 0 := by
+  intro hσc
+  apply hc
+  exact σ.injective (by simpa [hzero] using hσc)
+
+/-- Relabeling a Tait edge-coloring by an injective nonzero-preserving map gives another Tait
+edge-coloring. -/
+theorem isTaitEdgeColoring_edgeColoringMapOfInjective
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (σ : Color → Color) (hσ : Function.Injective σ)
+    (hσ_nonzero : ∀ {c : Color}, c ≠ 0 → σ c ≠ 0) :
+    IsTaitEdgeColoring G (edgeColoringMapOfInjective C σ hσ) := by
+  intro e
+  exact hσ_nonzero (hC e)
+
+/-- Relabeling a Tait edge-coloring by a color equivalence fixing zero gives another Tait
+edge-coloring. -/
+theorem isTaitEdgeColoring_edgeColoringMapEquiv_of_map_zero
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (σ : Color ≃ Color) (hzero : σ 0 = 0) :
+    IsTaitEdgeColoring G (edgeColoringMapOfInjective C σ σ.injective) :=
+  isTaitEdgeColoring_edgeColoringMapOfInjective C hC σ σ.injective
+    (fun hc => colorEquiv_apply_ne_zero_of_map_zero σ hzero hc)
+
+/-- Glue two edge colorings by taking the inside coloring on one edge-side predicate and the
+outside coloring on the complement.  This is the edge-coloring analogue of the vertex-coloring
+glue helper below. -/
+noncomputable def sideGlueEdgeColor
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α) :
+    G.edgeSet → α := by
+  classical
+  exact fun e => if edgeSide e then inside e else outside e
+
+@[simp]
+theorem sideGlueEdgeColor_of_side
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α)
+    {e : G.edgeSet} (he : edgeSide e) :
+    sideGlueEdgeColor edgeSide inside outside e = inside e := by
+  simp [sideGlueEdgeColor, he]
+
+@[simp]
+theorem sideGlueEdgeColor_of_not_side
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α)
+    {e : G.edgeSet} (he : ¬ edgeSide e) :
+    sideGlueEdgeColor edgeSide inside outside e = outside e := by
+  simp [sideGlueEdgeColor, he]
+
+/-- Compatibility condition saying the edge-side glued color function is proper on the line
+graph. -/
+def SideGlueEdgeCompatible
+    (G : SimpleGraph V) (edgeSide : G.edgeSet → Prop)
+    (inside outside : G.EdgeColoring α) : Prop :=
+  ∀ {e f : G.edgeSet}, G.lineGraph.Adj e f →
+    sideGlueEdgeColor edgeSide inside outside e ≠
+      sideGlueEdgeColor edgeSide inside outside f
+
+/-- Build an edge coloring from edge-side glue compatibility. -/
+noncomputable def sideGlueEdgeColoring
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α)
+    (hcompat : SideGlueEdgeCompatible G edgeSide inside outside) :
+    G.EdgeColoring α :=
+  SimpleGraph.Coloring.mk (sideGlueEdgeColor edgeSide inside outside) hcompat
+
+/-- If every line-graph adjacency preserves the selected edge side, two edge colorings glue
+without mixed boundary checks. -/
+theorem sideGlueEdgeCompatible_of_side_preserving_adjacencies
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α)
+    (hpreserve : ∀ {e f : G.edgeSet}, G.lineGraph.Adj e f → (edgeSide e ↔ edgeSide f)) :
+    SideGlueEdgeCompatible G edgeSide inside outside := by
+  classical
+  intro e f hef
+  by_cases he : edgeSide e
+  · have hf : edgeSide f := (hpreserve hef).1 he
+    simpa [sideGlueEdgeColor, he, hf] using inside.valid hef
+  · have hf : ¬ edgeSide f := by
+      intro hf
+      exact he ((hpreserve hef).2 hf)
+    simpa [sideGlueEdgeColor, he, hf] using outside.valid hef
+
+/-- Cross-adjacency compatibility for edge-coloring glue.  Properness inside each side is already
+provided by the two edge colorings; only adjacent edge pairs on opposite sides need mixed checks. -/
+def SideGlueEdgeCrossCompatible
+    (G : SimpleGraph V) (edgeSide : G.edgeSet → Prop)
+    (inside outside : G.EdgeColoring α) : Prop :=
+  ∀ {e f : G.edgeSet}, G.lineGraph.Adj e f →
+    (edgeSide e → ¬ edgeSide f → inside e ≠ outside f) ∧
+      (¬ edgeSide e → edgeSide f → outside e ≠ inside f)
+
+/-- Mixed checks on crossing line-graph adjacencies are sufficient for edge-coloring glue. -/
+theorem sideGlueEdgeCompatible_of_cross_compatible
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring α)
+    (hcross : SideGlueEdgeCrossCompatible G edgeSide inside outside) :
+    SideGlueEdgeCompatible G edgeSide inside outside := by
+  classical
+  intro e f hef
+  by_cases he : edgeSide e <;> by_cases hf : edgeSide f
+  · simpa [sideGlueEdgeColor, he, hf] using inside.valid hef
+  · simpa [sideGlueEdgeColor, he, hf] using (hcross hef).1 he hf
+  · simpa [sideGlueEdgeColor, he, hf] using (hcross hef).2 he hf
+  · simpa [sideGlueEdgeColor, he, hf] using outside.valid hef
+
+/-- Gluing two Tait edge colorings along a compatible edge-side split remains Tait. -/
+theorem isTaitEdgeColoring_sideGlueEdgeColoring
+    (edgeSide : G.edgeSet → Prop) (inside outside : G.EdgeColoring Color)
+    (hinside : IsTaitEdgeColoring G inside) (houtside : IsTaitEdgeColoring G outside)
+    (hcompat : SideGlueEdgeCompatible G edgeSide inside outside) :
+    IsTaitEdgeColoring G (sideGlueEdgeColoring edgeSide inside outside hcompat) := by
+  intro e
+  change sideGlueEdgeColor edgeSide inside outside e ≠ 0
+  by_cases he : edgeSide e
+  · simpa [sideGlueEdgeColor, he] using hinside e
+  · simpa [sideGlueEdgeColor, he] using houtside e
+
+/-- Relabel one side of a separator and glue the two Tait edge colorings.  This is the reusable
+coloring endpoint needed by Birkhoff cut-and-paste surgeries. -/
+theorem taitEdgeColorable_of_relabel_sideGlueEdgeCompatible
+    [Fintype V]
+    (edgeSide : G.edgeSet → Prop)
+    (inside outside : G.EdgeColoring Color)
+    (hinside : IsTaitEdgeColoring G inside) (houtside : IsTaitEdgeColoring G outside)
+    (σ : Color → Color) (hσ : Function.Injective σ)
+    (hσ_nonzero : ∀ {c : Color}, c ≠ 0 → σ c ≠ 0)
+    (hcompat :
+      SideGlueEdgeCompatible G edgeSide inside (edgeColoringMapOfInjective outside σ hσ)) :
+    TaitEdgeColorable G := by
+  refine ⟨sideGlueEdgeColoring edgeSide inside (edgeColoringMapOfInjective outside σ hσ)
+    hcompat, ?_⟩
+  exact isTaitEdgeColoring_sideGlueEdgeColoring edgeSide inside
+    (edgeColoringMapOfInjective outside σ hσ) hinside
+    (isTaitEdgeColoring_edgeColoringMapOfInjective outside houtside σ hσ hσ_nonzero)
+    hcompat
+
+end EdgeColoringGlue
+
 section ColoringGlue
 
 variable [DecidableEq V]
