@@ -1271,6 +1271,36 @@ theorem lemma53_CAP5PinchObligation_of_tightnessObligation
   intro cycle
   exact lemma53_cap5Pinch_of_tightnessObligation h cycle
 
+/-- CAP5-free normal form rules out separating dual 5-cycles once Lemma 5.3 supplies the
+graph-facing CAP5 pinch for every such cycle. -/
+theorem noSeparatingDualFiveCycle_of_CAP5Free_of_lemma53CAP5PinchObligation
+    {normal : MinimalCounterexampleNormalForm G T}
+    (hcap5 : CAP5Free G)
+    (h53 : Lemma53SeparatingDualFiveCycleCAP5PinchObligation normal) :
+    NoSeparatingDualCycleOfLength normal.duality 5 := by
+  rintro ⟨cycle⟩
+  rcases h53 cycle with ⟨pinch, _same_cut⟩
+  exact hcap5 ⟨pinch⟩
+
+/-- Bundled CAP5-free normal form has no separating dual 5-cycle once the graph-facing Lemma
+5.3 endpoint is available. -/
+theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualFiveCycle
+    (cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T)
+    (h53 : Lemma53SeparatingDualFiveCycleCAP5PinchObligation cap5Normal.normal) :
+    NoSeparatingDualCycleOfLength cap5Normal.normal.duality 5 :=
+  noSeparatingDualFiveCycle_of_CAP5Free_of_lemma53CAP5PinchObligation
+    cap5Normal.cap5_free h53
+
+/-- The disk-to-primal translation formulation of Lemma 5.3 also gives the no-separating-dual-
+5-cycle conclusion in CAP5-free normal form. -/
+theorem MinimalCounterexampleCAP5FreeNormalForm.noSeparatingDualFiveCycle_of_diskToPrimalCAP5
+    (cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T)
+    (htranslation : Lemma53DiskToPrimalCAP5TranslationObligation cap5Normal.normal) :
+    NoSeparatingDualCycleOfLength cap5Normal.normal.duality 5 :=
+  cap5Normal.noSeparatingDualFiveCycle
+    (lemma53_CAP5PinchObligation_of_tightnessObligation
+      (lemma53_tightnessObligation_of_diskToPrimalCAP5Translations htranslation))
+
 /-- CAP5 elimination obligation for the post-Lemma-5.3 regime: once the graph is in normal
 form, the CAP5 reducibility package must rule out realized CAP5 pinches. -/
 def CAP5EliminationObligation
