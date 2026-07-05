@@ -286,4 +286,285 @@ theorem smallSingleMessage_noPublicReadoutTags_obstruction :
     ⟨coord, f, hf⟩
   exact hNoTags coord ⟨f, hf⟩
 
+/-! ## Two-coordinate XOR public surface -/
+
+/-- Public instances for the XOR anchor: two public bits.  The whole public
+instance fixes the message, but neither single coordinate does. -/
+abbrev XorSingleMessagePublic :=
+  Bool × Bool
+
+/-- One Boolean CNF variable for each XOR public instance. -/
+abbrev XorSingleMessageVar (_Y : XorSingleMessagePublic) :=
+  Fin 1
+
+/-- The hidden witness type is singleton-valued for each XOR public instance. -/
+abbrev XorSingleMessageWitness (_Y : XorSingleMessagePublic) :=
+  Unit
+
+/-- The fixed public message readout `M(Y)`: XOR of the two public bits. -/
+def xorSingleMessageM : XorSingleMessagePublic -> Bool
+  | (false, false) => false
+  | (false, true) => true
+  | (true, false) => true
+  | (true, true) => false
+
+/-- The concrete CNF `F_Y`: a single unit clause locking the assignment bit to
+`M(Y)`. -/
+def xorSingleMessageFormula
+    (Y : XorSingleMessagePublic) :
+    ConcreteCNF.Formula (XorSingleMessageVar Y) :=
+  if xorSingleMessageM Y then
+    [[ConcreteCNF.Literal.pos (0 : Fin 1)]]
+  else
+    [[ConcreteCNF.Literal.neg (0 : Fin 1)]]
+
+/-- Every XOR public instance is in support for this finite ensemble. -/
+def xorSingleMessageSupport (_Y : XorSingleMessagePublic) : Prop :=
+  True
+
+/-- Semantic verifier relation for the unique XOR hidden witness. -/
+def xorSingleMessageVerifier
+    (_Y : XorSingleMessagePublic)
+    (_W : XorSingleMessageWitness _Y) : Prop :=
+  True
+
+/-- Executable verifier program for the XOR anchor. -/
+def xorSingleMessageVerifierDecision
+    (Y : XorSingleMessagePublic)
+    (_W : XorSingleMessageWitness Y) : Bool :=
+  true
+
+/-- The executable verifier decides the semantic verifier relation. -/
+theorem xorSingleMessageVerifierDecision_correct
+    {Y : XorSingleMessagePublic}
+    {_W : XorSingleMessageWitness Y} :
+    xorSingleMessageVerifierDecision Y _W = true ↔
+      xorSingleMessageVerifier Y _W := by
+  simp [xorSingleMessageVerifierDecision, xorSingleMessageVerifier]
+
+/-- The satisfying assignment selected by the XOR construction. -/
+def xorSingleMessageAssignment
+    (Y : XorSingleMessagePublic) :
+    ConcreteCNF.Assignment (XorSingleMessageVar Y) :=
+  fun _ => xorSingleMessageM Y
+
+/-- Extract the unique semantic witness from any XOR CNF assignment. -/
+def xorSingleMessageExtract
+    (Y : XorSingleMessagePublic)
+    (_α : ConcreteCNF.Assignment (XorSingleMessageVar Y)) :
+    XorSingleMessageWitness Y :=
+  ()
+
+/-- Semantic message carried by the unique XOR witness. -/
+def xorSingleMessageWitnessMessage
+    (Y : XorSingleMessagePublic)
+    (_W : XorSingleMessageWitness Y) : Bool :=
+  xorSingleMessageM Y
+
+/-- CNF-level XOR message readout: read the single assignment bit. -/
+def xorSingleMessageProjection
+    (Y : XorSingleMessagePublic)
+    (α : ConcreteCNF.Assignment (XorSingleMessageVar Y)) : Bool :=
+  α 0
+
+/-- The construction's assignment satisfies the concrete XOR CNF. -/
+theorem xorSingleMessageFormula_satisfied_messageAssignment
+    (Y : XorSingleMessagePublic) :
+    ConcreteCNF.IsSatFormula
+      (xorSingleMessageFormula Y)
+      (xorSingleMessageAssignment Y) := by
+  intro clause hclause
+  unfold xorSingleMessageFormula at hclause
+  by_cases hM : xorSingleMessageM Y
+  · simp [hM] at hclause
+    rw [hclause]
+    exact
+      ⟨ConcreteCNF.Literal.pos (0 : Fin 1), by simp,
+        by simp [ConcreteCNF.Literal.eval, xorSingleMessageAssignment,
+          hM]⟩
+  · simp [hM] at hclause
+    rw [hclause]
+    exact
+      ⟨ConcreteCNF.Literal.neg (0 : Fin 1), by simp,
+        by simp [ConcreteCNF.Literal.eval, xorSingleMessageAssignment,
+          hM]⟩
+
+/-- Any satisfying XOR assignment has its single variable locked to `M(Y)`. -/
+theorem xorSingleMessageFormula_forces_message
+    {Y : XorSingleMessagePublic}
+    {α : ConcreteCNF.Assignment (XorSingleMessageVar Y)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        (xorSingleMessageFormula Y) α) :
+    α 0 = xorSingleMessageM Y := by
+  by_cases hM : xorSingleMessageM Y
+  · have hclause :
+        ConcreteCNF.IsSatClause
+          [ConcreteCNF.Literal.pos (0 : Fin 1)] α := by
+      exact hα [ConcreteCNF.Literal.pos (0 : Fin 1)]
+        (by simp [xorSingleMessageFormula, hM])
+    rcases hclause with ⟨lit, hlit, heval⟩
+    simp only [List.mem_singleton] at hlit
+    subst lit
+    simpa [ConcreteCNF.Literal.eval, hM] using heval
+  · have hclause :
+        ConcreteCNF.IsSatClause
+          [ConcreteCNF.Literal.neg (0 : Fin 1)] α := by
+      exact hα [ConcreteCNF.Literal.neg (0 : Fin 1)]
+        (by simp [xorSingleMessageFormula, hM])
+    rcases hclause with ⟨lit, hlit, heval⟩
+    simp only [List.mem_singleton] at hlit
+    subst lit
+    cases hbit : α 0 <;>
+      simp [ConcreteCNF.Literal.eval, hbit, hM] at heval ⊢
+
+/-- The XOR CNF readout on any satisfying assignment returns the fixed message
+`M(Y)`. -/
+theorem xorSingleMessageProjection_eq_M_of_sat
+    {Y : XorSingleMessagePublic}
+    {α : ConcreteCNF.Assignment (XorSingleMessageVar Y)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        (xorSingleMessageFormula Y) α) :
+    xorSingleMessageProjection Y α = xorSingleMessageM Y := by
+  exact xorSingleMessageFormula_forces_message hα
+
+/-- The concrete XOR anchor instantiated in the manuscript CNF readout
+interface. -/
+def xorSingleMessageCNFReadoutData :
+    ManuscriptCNFReadoutData
+      XorSingleMessagePublic
+      XorSingleMessageVar
+      XorSingleMessageWitness
+      Bool where
+  support := xorSingleMessageSupport
+  formula := xorSingleMessageFormula
+  validWitness := xorSingleMessageVerifier
+  extract := xorSingleMessageExtract
+  witnessMessage := xorSingleMessageWitnessMessage
+  projection := xorSingleMessageProjection
+  cnfSound := by
+    intro Y α hα
+    trivial
+  projection_eq_witnessMessage := by
+    intro Y α hα
+    exact xorSingleMessageProjection_eq_M_of_sat hα
+
+/-- The concrete XOR anchor has the semantic single-message promise. -/
+theorem xorSingleMessageCNFReadoutData_singleMessagePromise :
+    xorSingleMessageCNFReadoutData.SingleMessagePromise := by
+  intro Y W W' hY hW hW'
+  rfl
+
+/-- Every supported XOR public instance has a satisfying CNF assignment. -/
+theorem xorSingleMessageCNFReadoutData_supportedSatisfiable :
+    xorSingleMessageCNFReadoutData.SupportedCNFSatisfiable := by
+  intro Y hY
+  exact
+    ⟨xorSingleMessageAssignment Y,
+      xorSingleMessageFormula_satisfied_messageAssignment Y⟩
+
+/-- Every satisfying XOR SAT-search output reads out the fixed message `M(Y)`. -/
+theorem xorSingleMessageCNFReadoutData_projection_eq_M
+    {Y : XorSingleMessagePublic}
+    (_hY : xorSingleMessageCNFReadoutData.support Y)
+    {α : ConcreteCNF.Assignment (XorSingleMessageVar Y)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        (xorSingleMessageCNFReadoutData.formula Y) α) :
+    xorSingleMessageCNFReadoutData.projection Y α =
+      xorSingleMessageM Y := by
+  exact xorSingleMessageProjection_eq_M_of_sat hα
+
+/-- The arbitrary-output SAT-search readout obligation holds for the concrete
+XOR anchor. -/
+theorem xorSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrect :
+    xorSingleMessageCNFReadoutData.SupportedArbitraryOutputSATSearchCorrect := by
+  exact
+    xorSingleMessageCNFReadoutData.supportedArbitraryOutputSATSearchCorrect_of_singleMessagePromise
+      xorSingleMessageCNFReadoutData_singleMessagePromise
+      xorSingleMessageCNFReadoutData_supportedSatisfiable
+
+/-- The two single public coordinates of the XOR anchor. -/
+inductive XorSingleMessagePublicCoordinate where
+  | left
+  | right
+  deriving DecidableEq
+
+/-- Read one public coordinate of the XOR anchor. -/
+def xorSingleMessagePublicCoordinateValue :
+    XorSingleMessagePublicCoordinate -> XorSingleMessagePublic -> Bool
+  | .left, Y => Y.1
+  | .right, Y => Y.2
+
+/-- No single public coordinate should determine the fixed XOR message. -/
+def XorSingleMessageNoPublicCoordinateTargetTags : Prop :=
+  ∀ coord : XorSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool -> Bool,
+      ∀ Y : XorSingleMessagePublic,
+        xorSingleMessageM Y =
+          f (xorSingleMessagePublicCoordinateValue coord Y)
+
+/-- Every single public coordinate has two equal-coordinate public instances
+with opposite XOR messages. -/
+theorem xorSingleMessage_publicCoordinate_has_oppositeMessages
+    (coord : XorSingleMessagePublicCoordinate) :
+    ∃ Y₀ Y₁ : XorSingleMessagePublic,
+      xorSingleMessagePublicCoordinateValue coord Y₀ =
+        xorSingleMessagePublicCoordinateValue coord Y₁ ∧
+        xorSingleMessageM Y₀ ≠ xorSingleMessageM Y₁ := by
+  cases coord
+  · exact ⟨(false, false), (false, true), rfl, by simp [xorSingleMessageM]⟩
+  · exact ⟨(false, false), (true, false), rfl, by simp [xorSingleMessageM]⟩
+
+/-- Structural field for the XOR anchor: neither single public coordinate
+determines the fixed message. -/
+theorem xorSingleMessage_noPublicTargetTags :
+    XorSingleMessageNoPublicCoordinateTargetTags := by
+  intro coord htag
+  rcases htag with ⟨f, hf⟩
+  rcases xorSingleMessage_publicCoordinate_has_oppositeMessages coord with
+    ⟨Y₀, Y₁, hcoord, hmsg⟩
+  have hsame : xorSingleMessageM Y₀ = xorSingleMessageM Y₁ := by
+    calc
+      xorSingleMessageM Y₀ =
+          f (xorSingleMessagePublicCoordinateValue coord Y₀) :=
+        hf Y₀
+      _ = f (xorSingleMessagePublicCoordinateValue coord Y₁) := by
+        rw [hcoord]
+      _ = xorSingleMessageM Y₁ :=
+        (hf Y₁).symm
+  exact hmsg hsame
+
+/-- No single public coordinate should determine the CNF-level XOR readout on
+every satisfying SAT-search output. -/
+def XorSingleMessageNoPublicCoordinateReadoutTags : Prop :=
+  ∀ coord : XorSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool -> Bool,
+      ∀ {Y : XorSingleMessagePublic}
+        {α : ConcreteCNF.Assignment (XorSingleMessageVar Y)},
+          ConcreteCNF.IsSatFormula (xorSingleMessageFormula Y) α ->
+            xorSingleMessageProjection Y α =
+              f (xorSingleMessagePublicCoordinateValue coord Y)
+
+/-- Structural field for the XOR anchor: neither single public coordinate
+determines the CNF-level readout over satisfying assignments. -/
+theorem xorSingleMessage_noPublicReadoutTags :
+    XorSingleMessageNoPublicCoordinateReadoutTags := by
+  intro coord htag
+  exact xorSingleMessage_noPublicTargetTags coord
+    (by
+      rcases htag with ⟨f, hf⟩
+      refine ⟨f, ?_⟩
+      intro Y
+      have hsat :
+          ConcreteCNF.IsSatFormula
+            (xorSingleMessageFormula Y)
+            (xorSingleMessageAssignment Y) :=
+        xorSingleMessageFormula_satisfied_messageAssignment Y
+      have hreadout :=
+        hf (Y := Y) (α := xorSingleMessageAssignment Y) hsat
+      simpa [xorSingleMessageProjection, xorSingleMessageAssignment] using
+        hreadout)
+
 end Mettapedia.Computability.PNP
