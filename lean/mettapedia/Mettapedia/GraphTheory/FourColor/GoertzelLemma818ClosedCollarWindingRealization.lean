@@ -2452,6 +2452,78 @@ theorem section92Step4N6PlanarityTemplateTaxonomyObstructionTarget :
       exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass pass
 
 /--
+Coverage datum for the global normal-form repair path: an arbitrary honest
+normal-form annular realization of the winding-freedom witness is represented
+by one of the exhaustive n6 simple-patch cases and receives a detailed taxonomy
+outcome from the archived lab.
+-/
+structure ClosedCollarWindingFreedomNormalFormN6DetailedTaxonomyCoverage
+    {V : Type} {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G
+  normalForm_eq : data.normalForm = normalForm
+  outcome : ClosedCollarWindingFreedomSimplePatchN6TaxonomyLabOutcome data
+
+/--
+The exact remaining geometric bridge for the n6 repair route: every honest
+normal-form annular realization of the winding-freedom witness is covered by
+the exhaustive n6 detailed taxonomy.
+-/
+def ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomNormalFormN6DetailedTaxonomyCoverage normalForm)
+
+/--
+Global repair-side consequence of the n6 detailed taxonomy bridge.  Once every
+honest normal-form realization is shown to fall into the exhaustive n6
+taxonomy, the structural branch is a planarity-prefix failure, the exact
+template branch is excluded by cyclic five-edge-connectivity, and the residual
+post-template-exclusion branch is empty.
+-/
+def ClosedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence →
+    ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy →
+      ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem closedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy :
+    ClosedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy := by
+  intro _htaxonomy hcovered V G normalForm
+  rcases hcovered normalForm with ⟨coverage⟩
+  cases coverage.outcome with
+  | structural blockerCase hrealizes =>
+      exact
+        closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_not_realizesAgainstNormalForm
+          coverage.data blockerCase hrealizes
+  | exactTemplate candidate hrealizes =>
+      exact
+        closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+          coverage.data.normalForm candidate hrealizes
+  | residualPass pass =>
+      exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass pass
+
+/--
+Repaired Section 9.2 Step 4 target exposed by the n6 realization audit:
+residual per-component winding freedom is killed by the normal-form regime if
+the geometric coverage theorem reduces every honest normal-form annulus to the
+exhaustive n6 detailed taxonomy.
+-/
+def Section92Step4RepairedByN6DetailedTaxonomyTarget : Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy →
+    ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByN6DetailedTaxonomyTarget :
+    Section92Step4RepairedByN6DetailedTaxonomyTarget := by
+  intro hcovered
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy
+      closedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence
+      hcovered
+
+/--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
 normal-form blocker after planarity has been passed.
