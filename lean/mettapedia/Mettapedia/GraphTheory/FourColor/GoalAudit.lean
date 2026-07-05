@@ -506,6 +506,29 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut
 
+theorem closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCertificate_exists_of_archiveCase_audit
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    {caseKey : Nat × Nat}
+    (hcase :
+      caseKey ∈ closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases) :
+    ∃ certificate,
+      certificate ∈ closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates ∧
+        ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+          certificate =
+          caseKey :=
+  closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCertificate_exists_of_archiveCase
+    hartifact hcase
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
+    hmaxcut hsound
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive_noRadialFaceRotationCandidate_audit
     (candidate :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate) :
@@ -2014,6 +2037,49 @@ theorem section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutCoverageExactCri
 theorem section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria_audit :
     Section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria :=
   section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutSoundness_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutSoundness
+    hbridge hsound
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutSoundness_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutSoundness
+    hbridge hsound
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutSoundness_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutSoundness
+    hbridge hsound
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion :=
+  section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion :=
+  section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion :=
+  section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria_audit :
+    Section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria :=
+  section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria
 
 theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=

@@ -6896,6 +6896,108 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
     closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate
       hmaxcut candidate
 
+/--
+Finite row lookup for the audited radial-face archive: every audited archive
+case key has a matching row certificate in the row-coverage certificate list.
+-/
+theorem closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCertificate_exists_of_archiveCase
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    {caseKey : Nat × Nat}
+    (hcase :
+      caseKey ∈ closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases) :
+    ∃ certificate,
+      certificate ∈ closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates ∧
+        ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+          certificate =
+          caseKey := by
+  have hmem :
+      caseKey ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey := by
+    simpa [hartifact.2.1] using hcase
+  rcases List.mem_map.mp hmem with ⟨certificate, hcertificate, hkey⟩
+  exact ⟨certificate, hcertificate, hkey⟩
+
+/--
+Semantic cardinality obligation for the max-cut route: audited n6 archive
+representations of the winding-freedom witness have exactly four radial-cut
+edges.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+        representation.annular.radialCut.card = 4
+
+/--
+Semantic single-face count obligation for the max-cut route: when a matching
+audited row represents a genuinely cut-open radial face, the row certificate's
+`maxRadialCutEdgesOnSingleFace` value counts the whole radial cut.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxSingleFaceCountSound :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (certificate : ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate) →
+        certificate ∈
+            closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates →
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+              certificate =
+            (representation.patchTopologyIndex, representation.radialOrderIndex.1) →
+            ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+              representation.annular →
+              certificate.maxRadialCutEdgesOnSingleFace =
+                representation.annular.radialCut.card
+
+/--
+Factored semantic soundness package for the max-cut route.  The finite archive
+already supplies the matching certificate and the max-two obstruction; these
+two fields are the remaining graph-facing meanings of the radial-cut data.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound ∧
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxSingleFaceCountSound
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab := by
+  intro V G representation hcase hradial
+  rcases
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCertificate_exists_of_archiveCase
+      hmaxcut.1 hcase with
+    ⟨certificate, hcertificate, hkey⟩
+  have hradialCutCountMem :
+      certificate.radialCutEdgeCount ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+          (fun certificate => certificate.radialCutEdgeCount) :=
+    List.mem_map_of_mem
+      (f := fun certificate => certificate.radialCutEdgeCount)
+      hcertificate
+  have hradialCutEdgeCount :
+      certificate.radialCutEdgeCount = 4 := by
+    simpa [hmaxcut.2.2.2.1] using hradialCutCountMem
+  have hcutCard :
+      representation.annular.radialCut.card = 4 :=
+    hsound.1 representation hcase
+  have hmaxCount :
+      certificate.maxRadialCutEdgesOnSingleFace = 4 :=
+    (hsound.2 representation certificate hcertificate hkey hradial).trans
+      hcutCard
+  exact
+    ⟨{
+      certificate := certificate
+      certificate_mem := hcertificate
+      radialCutEdgeCount_eq := hradialCutEdgeCount
+      radialCutEdges_on_single_face := hmaxCount
+    }⟩
+
 /-- Lab-side candidate for a radial-face coherent rotation in the archive. -/
 structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate where
   hrotationCountPositive :
@@ -12146,6 +12248,136 @@ theorem section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria :
   ⟨section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutCoverageExactCriterion,
     section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutCoverageExactCriterion,
     section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutCoverageExactCriterion⟩
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutCoverage
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence
+      hsound)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutCoverage
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence
+      hsound)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutCoverage
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence
+      hsound)
+
+/--
+Factored-bridge exact criterion for the split max-cut soundness package.  Once
+the geometric bridge is available, the finite side reduces to two concrete
+semantic obligations: four radial-cut edges and faithful single-face max-count
+extraction.
+-/
+def Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness)
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutSoundness,
+      ?_⟩
+  intro hbridge hnot hsound
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutSoundness
+        hbridge hsound)
+
+/--
+Current-boundary exact criterion for the split max-cut soundness package.
+-/
+def Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness)
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutSoundness,
+      ?_⟩
+  intro hbridge hnot hsound
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutSoundness
+        hbridge hsound)
+
+/--
+One-collar exact criterion for the split max-cut soundness package.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSoundness)
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutSoundness,
+      ?_⟩
+  intro hbridge hnot hsound
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutSoundness
+        hbridge hsound)
+
+/--
+Bundled current-frontier exact criteria for the split max-cut soundness
+package.
+-/
+def Section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion ∧
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion ∧
+      Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria :
+    Section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria :=
+  ⟨section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion,
+    section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion,
+    section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion⟩
 
 /--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
