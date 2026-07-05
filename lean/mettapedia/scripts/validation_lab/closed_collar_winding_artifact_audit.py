@@ -44,6 +44,18 @@ RADIAL_FACE_SLICE_FILES = (
 )
 
 REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_TAXONOMY_RESULTS_DIR = PACKAGE_ROOT / "results" / "fourcolor"
+DEFAULT_RADIAL_FACE_RESULTS_DIR = REPO_ROOT / "results" / "fourcolor"
+DEFAULT_TAXONOMY_OUTPUT = (
+    DEFAULT_TAXONOMY_RESULTS_DIR
+    / "section92_closed_collar_winding_simple_patch_n6_detailed_taxonomy_audit.json"
+)
+DEFAULT_RADIAL_FACE_OUTPUT = (
+    DEFAULT_RADIAL_FACE_RESULTS_DIR
+    / "section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json"
+)
 
 
 def read_json(path: Path) -> dict[str, object]:
@@ -571,25 +583,25 @@ def main() -> None:
     parser.add_argument(
         "--results-dir",
         type=Path,
-        default=Path("results/fourcolor"),
-        help="directory containing archived verdict JSON files",
+        default=DEFAULT_TAXONOMY_RESULTS_DIR,
+        help="directory containing archived taxonomy verdict JSON files",
+    )
+    parser.add_argument(
+        "--radial-face-results-dir",
+        type=Path,
+        default=DEFAULT_RADIAL_FACE_RESULTS_DIR,
+        help="directory containing archived radial-face verdict JSON files",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(
-            "results/fourcolor/"
-            "section92_closed_collar_winding_simple_patch_n6_detailed_taxonomy_audit.json"
-        ),
+        default=DEFAULT_TAXONOMY_OUTPUT,
         help="write the audited taxonomy JSON",
     )
     parser.add_argument(
         "--radial-face-output",
         type=Path,
-        default=Path(
-            "results/fourcolor/"
-            "section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json"
-        ),
+        default=DEFAULT_RADIAL_FACE_OUTPUT,
         help="write the audited radial-face archive JSON",
     )
     parser.add_argument("--check-only", action="store_true", help="skip writing output")
@@ -602,7 +614,7 @@ def main() -> None:
         if not args.check_only:
             write_json(args.output, taxonomy_report)
     if args.mode in ("radial-face", "all"):
-        radial_face_report = audit_radial_face_archive(args.results_dir)
+        radial_face_report = audit_radial_face_archive(args.radial_face_results_dir)
         reports["radial_face_archive"] = radial_face_report
         if not args.check_only:
             write_json(args.radial_face_output, radial_face_report)
