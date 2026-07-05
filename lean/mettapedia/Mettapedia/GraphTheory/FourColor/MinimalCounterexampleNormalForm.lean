@@ -1829,6 +1829,47 @@ theorem noSeparatingDualFiveCycle_of_s7CAP5FreeObligations
     NoSeparatingDualCycleOfLength dual 5 :=
   noSeparatingDualCycleOfLength_of_s7CAP5FreeObligations obligations (k := 5) (by decide)
 
+/-- Split S7 obligations supply the graph-side cyclic five-edge connectivity expected by existing
+CAP5 consumers. -/
+theorem cyclicallyFiveEdgeConnected_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    CyclicallyFiveEdgeConnected G :=
+  cyclicallyFiveEdgeConnected_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
+
+/-- Split S7 obligations supply the dual minimum-degree lower bound. -/
+theorem minimumDegreeAtLeast_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    MinimumDegreeAtLeast T 5 :=
+  minimumDegreeAtLeast_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
+
+/-- Split S7 obligations supply graph-side CAP5-freeness. -/
+theorem cap5Free_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    CAP5Free G :=
+  cap5Free_of_s7CAP5FreeObligations obligations.toS7CAP5FreeObligations
+
+/-- Split S7 obligations rule out separating dual cycles of any supplied length at most five. -/
+theorem noSeparatingDualCycleOfLength_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual)
+    {k : Nat} (hk : k ≤ 5) :
+    NoSeparatingDualCycleOfLength dual k :=
+  noSeparatingDualCycleOfLength_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations hk
+
+/-- Split S7 obligations rule out separating dual 5-cycles. -/
+theorem noSeparatingDualFiveCycle_of_s7SplitCAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    NoSeparatingDualCycleOfLength dual 5 :=
+  noSeparatingDualFiveCycle_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
+
 universe uS7
 
 /-- Prop-level S7 existence endpoint: some finite dual package carries the S7 CAP5-free
@@ -1843,6 +1884,19 @@ def MinimalCounterexampleS7CAP5FreeExistenceObligation
       letI := hT
       ∃ dual : PlaneCubicDualData G Tdual,
         MinimalCounterexampleS7CAP5FreeObligations minimal dual
+
+/-- Prop-level split S7 existence endpoint: some finite dual package carries the split S7
+CAP5-free obligation bundle.  This preserves the disk-local/charged-translation boundary at
+the existential interface. -/
+def MinimalCounterexampleS7SplitCAP5FreeExistenceObligation
+    (minimal : MinimalTaitCounterexample G) : Prop :=
+  ∃ U : Type uS7, ∃ hU : DecidableEq U, ∃ fU : Fintype U,
+    letI := hU
+    letI := fU
+    ∃ Tdual : SimpleGraph U, ∃ hT : DecidableRel Tdual.Adj,
+      letI := hT
+      ∃ dual : PlaneCubicDualData G Tdual,
+        MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual
 
 /-- Prop-level S7 regime endpoint: some finite dual package is in the downstream-facing S7
 normal-form regime. -/
@@ -1865,6 +1919,26 @@ theorem minimalCounterexampleS7CAP5FreeExistenceObligation_of_s7CAP5FreeObligati
     MinimalCounterexampleS7CAP5FreeExistenceObligation.{uS7} minimal :=
   ⟨U, inferInstance, inferInstance, Tdual, inferInstance, dual, obligations⟩
 
+/-- Fixed-dual split S7 obligations supply the Prop-level split S7 CAP5-free existence endpoint. -/
+theorem minimalCounterexampleS7SplitCAP5FreeExistenceObligation_of_s7SplitCAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7SplitCAP5FreeExistenceObligation.{uS7} minimal :=
+  ⟨U, inferInstance, inferInstance, Tdual, inferInstance, dual, obligations⟩
+
+/-- Fixed-dual split S7 obligations also supply the monolithic Prop-level S7 CAP5-free
+existence endpoint. -/
+theorem minimalCounterexampleS7CAP5FreeExistenceObligation_of_s7SplitCAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7CAP5FreeExistenceObligation.{uS7} minimal :=
+  minimalCounterexampleS7CAP5FreeExistenceObligation_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
+
 /-- Fixed-dual S7 CAP5-free obligations also supply the Prop-level S7 regime existence endpoint. -/
 theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeObligations
     {U : Type uS7} [DecidableEq U] [Fintype U]
@@ -1874,6 +1948,16 @@ theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5Free
     MinimalCounterexampleS7NormalFormRegimeExistenceObligation.{uS7} minimal :=
   ⟨U, inferInstance, inferInstance, Tdual, inferInstance, dual,
     minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations⟩
+
+/-- Fixed-dual split S7 obligations supply the Prop-level S7 regime existence endpoint. -/
+theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7SplitCAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    MinimalCounterexampleS7NormalFormRegimeExistenceObligation.{uS7} minimal :=
+  minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeObligations
+    obligations.toS7CAP5FreeObligations
 
 /-- Prop-level S7 CAP5-free existence supplies Prop-level S7 regime existence. -/
 theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeExistence
@@ -1886,6 +1970,26 @@ theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5Free
   letI := hT
   exact ⟨U, hU, fU, Tdual, hT, dual,
     minimalCounterexampleS7NormalFormRegime_of_s7CAP5FreeObligations obligations⟩
+
+/-- Prop-level split S7 CAP5-free existence supplies the monolithic Prop-level S7 CAP5-free
+existence endpoint. -/
+theorem minimalCounterexampleS7CAP5FreeExistenceObligation_of_s7SplitCAP5FreeExistence
+    {minimal : MinimalTaitCounterexample G}
+    (h : MinimalCounterexampleS7SplitCAP5FreeExistenceObligation.{uS7} minimal) :
+    MinimalCounterexampleS7CAP5FreeExistenceObligation.{uS7} minimal := by
+  rcases h with ⟨U, hU, fU, Tdual, hT, dual, obligations⟩
+  letI := hU
+  letI := fU
+  letI := hT
+  exact ⟨U, hU, fU, Tdual, hT, dual, obligations.toS7CAP5FreeObligations⟩
+
+/-- Prop-level split S7 CAP5-free existence supplies Prop-level S7 regime existence. -/
+theorem minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7SplitCAP5FreeExistence
+    {minimal : MinimalTaitCounterexample G}
+    (h : MinimalCounterexampleS7SplitCAP5FreeExistenceObligation.{uS7} minimal) :
+    MinimalCounterexampleS7NormalFormRegimeExistenceObligation.{uS7} minimal :=
+  minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeExistence
+    (minimalCounterexampleS7CAP5FreeExistenceObligation_of_s7SplitCAP5FreeExistence h)
 
 /-- Prop-level S7 regime existence implies the Lemma 5.2 normal-form existence endpoint. -/
 theorem lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
