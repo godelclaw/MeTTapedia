@@ -839,6 +839,160 @@ theorem v13RealLinearSmallGaugeCNF_singleMessage
     _ = v13RealLinearSmallGaugeCNFReadout W' :=
       (v13RealLinearSmallGaugeCNFReadout_eq_message_of_valid hW').symm
 
+/-- Hidden gauge readout for the explicit small real-linear gauge-CNF
+instance. -/
+def v13RealLinearSmallGaugeCNFHiddenGauge
+    (W : V13RealLinearSmallGaugeCNFWitness) : Bool :=
+  W none
+
+/-- The explicit small instance uses the same hidden-gauge flip as the general
+real-linear gauge-CNF family. -/
+def v13RealLinearSmallGaugeCNFGaugeAction
+    (gamma : Bool) (W : V13RealLinearSmallGaugeCNFWitness) :
+    V13RealLinearSmallGaugeCNFWitness :=
+  v13RealLinearGaugeCNFGaugeAction gamma W
+
+/-- The hidden-gauge action preserves the two locked clauses of the explicit
+small CNF. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_preserves_verifier
+    (gamma : Bool) {msg : Bool} {W : V13RealLinearSmallGaugeCNFWitness}
+    (hW : v13RealLinearSmallGaugeCNFVerifier msg W) :
+    v13RealLinearSmallGaugeCNFVerifier msg
+      (v13RealLinearSmallGaugeCNFGaugeAction gamma W) := by
+  rcases v13RealLinearSmallGaugeCNFFormula_sat_iff.mp hW with
+    ⟨hmsg, hspare⟩
+  exact v13RealLinearSmallGaugeCNFFormula_sat_iff.mpr
+    ⟨by
+      simpa [v13RealLinearSmallGaugeCNFGaugeAction] using hmsg,
+     by
+      simpa [v13RealLinearSmallGaugeCNFGaugeAction] using hspare⟩
+
+/-- The hidden-gauge action preserves the fixed message readout. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_preserves_readout
+    (gamma : Bool) (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFReadout
+        (v13RealLinearSmallGaugeCNFGaugeAction gamma W) =
+      v13RealLinearSmallGaugeCNFReadout W :=
+  rfl
+
+/-- Acting by `true` flips the hidden gauge coordinate. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_hidden_true
+    (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFHiddenGauge
+        (v13RealLinearSmallGaugeCNFGaugeAction true W) =
+      !v13RealLinearSmallGaugeCNFHiddenGauge W :=
+  rfl
+
+/-- The hidden-gauge action is nontrivial on satisfying witnesses for either
+public message bit. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_nontrivial
+    (msg : Bool) :
+    ∃ W : V13RealLinearSmallGaugeCNFWitness,
+      v13RealLinearSmallGaugeCNFVerifier msg W ∧
+        v13RealLinearSmallGaugeCNFGaugeAction true W ≠ W := by
+  let W := v13RealLinearSmallGaugeCNFAssignment msg false
+  refine
+    ⟨W, v13RealLinearSmallGaugeCNFFormula_satisfied_assignment msg false,
+      ?_⟩
+  intro hfixed
+  have hcoord := congrFun hfixed none
+  simp [W, v13RealLinearSmallGaugeCNFGaugeAction,
+    v13RealLinearGaugeCNFGaugeAction] at hcoord
+
+/-- A valid world for the explicit small real-linear gauge-CNF instance is a
+satisfying assignment for the chosen public message bit. -/
+structure V13RealLinearSmallGaugeCNFWorld (msg : Bool) where
+  assignment : V13RealLinearSmallGaugeCNFWitness
+  sat : v13RealLinearSmallGaugeCNFVerifier msg assignment
+
+/-- Canonical valid world with a chosen hidden gauge bit. -/
+def v13RealLinearSmallGaugeCNFWorldOfGauge
+    (msg gauge : Bool) : V13RealLinearSmallGaugeCNFWorld msg where
+  assignment := v13RealLinearSmallGaugeCNFAssignment msg gauge
+  sat := v13RealLinearSmallGaugeCNFFormula_satisfied_assignment msg gauge
+
+/-- Target readout on valid small gauge-CNF worlds. -/
+def v13RealLinearSmallGaugeCNFTarget {msg : Bool}
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) : Bool :=
+  v13RealLinearSmallGaugeCNFReadout omega.assignment
+
+/-- Hidden gauge readout on valid small gauge-CNF worlds. -/
+def v13RealLinearSmallGaugeCNFWorldHiddenGauge {msg : Bool}
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) : Bool :=
+  v13RealLinearSmallGaugeCNFHiddenGauge omega.assignment
+
+/-- Hidden-gauge action on valid small gauge-CNF worlds. -/
+def v13RealLinearSmallGaugeCNFWorldGaugeAction {msg : Bool}
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    V13RealLinearSmallGaugeCNFWorld msg where
+  assignment := v13RealLinearSmallGaugeCNFGaugeAction gamma omega.assignment
+  sat := v13RealLinearSmallGaugeCNFGaugeAction_preserves_verifier
+    gamma omega.sat
+
+/-- The world-level hidden-gauge action preserves target readout. -/
+theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_preserves_target
+    {msg : Bool} (gamma : Bool)
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFTarget
+        (v13RealLinearSmallGaugeCNFWorldGaugeAction gamma omega) =
+      v13RealLinearSmallGaugeCNFTarget omega :=
+  v13RealLinearSmallGaugeCNFGaugeAction_preserves_readout
+    gamma omega.assignment
+
+/-- Acting by `true` flips the world-level hidden gauge coordinate. -/
+theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_hidden_true
+    {msg : Bool} (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFWorldHiddenGauge
+        (v13RealLinearSmallGaugeCNFWorldGaugeAction true omega) =
+      !v13RealLinearSmallGaugeCNFWorldHiddenGauge omega :=
+  rfl
+
+/-- Neutral evidence atoms for the explicit small gauge-CNF surface. -/
+abbrev V13RealLinearSmallGaugeCNFNeutral :=
+  Unit
+
+/-- Safe evidence atoms for the explicit small gauge-CNF surface. -/
+abbrev V13RealLinearSmallGaugeCNFSafe :=
+  Unit
+
+/-- The concrete gauge family is the Boolean hidden-gauge flip. -/
+abbrev V13RealLinearSmallGaugeCNFGauge :=
+  Bool
+
+/-- Gauge satisfaction for the explicit small surface is target preservation
+under the concrete hidden-gauge action. -/
+def v13RealLinearSmallGaugeCNFGaugeSat
+    (msg : Bool) (gamma : V13RealLinearSmallGaugeCNFGauge)
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) : Prop :=
+  v13RealLinearSmallGaugeCNFTarget
+      (v13RealLinearSmallGaugeCNFWorldGaugeAction gamma omega) =
+    v13RealLinearSmallGaugeCNFTarget omega
+
+/-- Evidence semantics for the explicit small gauge-CNF surface. -/
+def v13RealLinearSmallGaugeCNFSemantics
+    (msg : Bool) :
+    EvidenceSemantics
+      (V13RealLinearSmallGaugeCNFWorld msg)
+      V13RealLinearSmallGaugeCNFNeutral
+      V13RealLinearSmallGaugeCNFSafe
+      V13RealLinearSmallGaugeCNFGauge where
+  neutralSat := fun _ _ => True
+  safeSat := fun _ _ => True
+  gaugeSat := v13RealLinearSmallGaugeCNFGaugeSat msg
+
+/-- Structural `hiddenGaugeProduct` transfer for the explicit small
+real-linear gauge-CNF instance: every Boolean gauge action is satisfied at
+every verifier-valid world because it only flips the hidden gauge coordinate
+and preserves the locked message readout. -/
+theorem v13RealLinearSmallGaugeCNF_hiddenGaugeProduct
+    (msg : Bool) :
+    ∀ gamma omega,
+      (v13RealLinearSmallGaugeCNFSemantics msg).gaugeSat gamma omega := by
+  intro gamma omega
+  exact
+    v13RealLinearSmallGaugeCNFWorldGaugeAction_preserves_target
+      gamma omega
+
 /-! ## Gauge-buffered real linear CNF self-reduction -/
 
 /-- Explicit P=NP-side SAT decider object for the gauge-buffered real linear
