@@ -1173,6 +1173,438 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_noPublicTargetTags
         (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀)
         hPair hOpp⟩
 
+/-- A gauge-buffered no-target-rows CNF world is exactly a base no-target-rows
+world together with the free hidden gauge bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
+    {m : Nat} {i₀ : Fin m} :
+    V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ ≃
+      V13RealLinearNoTargetRowsWorld m i₀ × Bool where
+  toFun := fun omega =>
+    (omega.base, v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega)
+  invFun := fun data =>
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase data.1 data.2
+  left_inv := by
+    intro omega
+    cases omega with
+    | mk base assignment sat =>
+        let publicInput := v13RealLinearNoTargetRowsPublicInput base
+        let gauge := v13RealLinearGaugeCNFHiddenGauge assignment
+        let canonical := v13RealLinearGaugeCNFAssignment publicInput gauge
+        have hassign :
+            assignment = canonical := by
+          funext v
+          cases v with
+          | some j =>
+              exact v13RealLinearGaugeCNFFormula_forces_decodedBit sat j
+          | none => rfl
+        change
+          v13RealLinearNoTargetRowsGaugeCNFWorldOfBase base gauge =
+            { base := base, assignment := assignment, sat := sat }
+        exact
+          Eq.ndrec
+            (motive := fun assignment' =>
+              ∀ sat' : v13RealLinearGaugeCNFVerifier publicInput
+                  assignment',
+                v13RealLinearNoTargetRowsGaugeCNFWorldOfBase base gauge =
+                  { base := base, assignment := assignment', sat := sat' })
+            (by
+              intro sat'
+              have hs :
+                  v13RealLinearGaugeCNFFormula_satisfied_assignment
+                      publicInput gauge =
+                    sat' := Subsingleton.elim _ _
+              cases hs
+              rfl)
+            hassign.symm sat
+  right_inv := by
+    intro data
+    cases data with
+    | mk base gauge => rfl
+
+noncomputable instance v13RealLinearNoTargetRowsGaugeCNFWorldFintype
+    {m : Nat} {i₀ : Fin m} :
+    Fintype (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :=
+  Fintype.ofEquiv (V13RealLinearNoTargetRowsWorld m i₀ × Bool)
+    v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.symm
+
+/-- Public-coordinate history field lifted to the gauge-buffered CNF world. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFPublicCoordinateField
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    FiniteSigmaField (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) where
+  Atom := ZMod 2
+  atomDecidable := inferInstance
+  atom := fun omega =>
+    v13RealLinearCoordinateValue coordinate
+      (v13RealLinearNoTargetRowsPublicInput omega.base)
+
+/-- Target-true worlds in the gauge-buffered CNF world are target-true base
+worlds with an arbitrary hidden gauge bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFTargetTrueEquivBaseProd
+    {m : Nat} {i₀ : Fin m} :
+    {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} ≃
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        v13RealLinearNoTargetRowsTargetBit omega = true} × Bool where
+  toFun := fun omega =>
+    (⟨omega.val.base, by
+      have htarget :=
+        v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit omega.val
+      exact htarget ▸ omega.property⟩,
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega.val)
+  invFun := fun data =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFWorldOfBase data.1.val data.2, by
+      rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+      exact data.1.property⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.left_inv
+      omega.val
+  right_inv := by
+    intro data
+    cases data with
+    | mk omega gauge =>
+        apply Prod.ext
+        · apply Subtype.ext
+          rfl
+        · rfl
+
+/-- Target-false worlds in the gauge-buffered CNF world are target-false base
+worlds with an arbitrary hidden gauge bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFTargetFalseEquivBaseProd
+    {m : Nat} {i₀ : Fin m} :
+    {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega = false} ≃
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        v13RealLinearNoTargetRowsTargetBit omega = false} × Bool where
+  toFun := fun omega =>
+    (⟨omega.val.base, by
+      have htarget :=
+        v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit omega.val
+      exact htarget ▸ omega.property⟩,
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega.val)
+  invFun := fun data =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFWorldOfBase data.1.val data.2, by
+      rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+      exact data.1.property⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.left_inv
+      omega.val
+  right_inv := by
+    intro data
+    cases data with
+    | mk omega gauge =>
+        apply Prod.ext
+        · apply Subtype.ext
+          rfl
+        · rfl
+
+theorem v13RealLinearNoTargetRowsGaugeCNFTarget_false_card_eq_true
+    {m : Nat} {i₀ : Fin m} :
+    Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = false} =
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} := by
+  calc
+    Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = false} =
+        Fintype.card
+          ({omega : V13RealLinearNoTargetRowsWorld m i₀ //
+            v13RealLinearNoTargetRowsTargetBit omega = false} × Bool) :=
+      Fintype.card_congr
+        v13RealLinearNoTargetRowsGaugeCNFTargetFalseEquivBaseProd
+    _ =
+        Fintype.card
+          ({omega : V13RealLinearNoTargetRowsWorld m i₀ //
+            v13RealLinearNoTargetRowsTargetBit omega = true} × Bool) := by
+      rw [Fintype.card_prod, Fintype.card_prod,
+        v13RealLinearNoTargetRowsTarget_false_card_eq_true]
+    _ =
+        Fintype.card
+          {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+            v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} :=
+      (Fintype.card_congr
+        v13RealLinearNoTargetRowsGaugeCNFTargetTrueEquivBaseProd).symm
+
+theorem
+    v13RealLinearNoTargetRowsGaugeCNF_constantTrue_correct_card_eq_true
+    {m : Nat} {i₀ : Fin m} :
+    Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          (fun _ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+            true) omega =
+            v13RealLinearNoTargetRowsGaugeCNFTarget omega} =
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} := by
+  let e :
+      {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+        (fun _ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          true) omega =
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega} ≃
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} :=
+    { toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      left_inv := by
+        intro omega
+        cases omega
+        rfl
+      right_inv := by
+        intro omega
+        cases omega
+        rfl }
+  exact Fintype.card_congr e
+
+theorem
+    v13RealLinearNoTargetRowsGaugeCNF_world_card_eq_two_mul_target_true
+    {m : Nat} (i₀ : Fin m) :
+    Fintype.card (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) =
+      2 * Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} := by
+  set a : Nat :=
+    Fintype.card
+      {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+        v13RealLinearNoTargetRowsGaugeCNFTarget omega = true}
+  have hcomp :
+      Fintype.card
+          {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+            v13RealLinearNoTargetRowsGaugeCNFTarget omega = false} =
+        Fintype.card (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) -
+          a := by
+    simpa [a] using
+      (Fintype.card_subtype_compl
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true))
+  have heq :
+      a =
+        Fintype.card
+          {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+            v13RealLinearNoTargetRowsGaugeCNFTarget omega = false} := by
+    simpa [a] using
+      (@v13RealLinearNoTargetRowsGaugeCNFTarget_false_card_eq_true
+        m i₀).symm
+  have hsub :
+      Fintype.card (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) -
+          a =
+        a := by
+    simpa [heq] using hcomp.symm
+  have hle :
+      a ≤
+        Fintype.card (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) := by
+    simpa [a] using
+      Fintype.card_subtype_le
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true)
+  have hsum :
+      Fintype.card (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) =
+        a + a :=
+    Nat.eq_add_of_sub_eq hle hsub
+  simpa [a, two_mul, Nat.add_comm] using hsum
+
+theorem v13RealLinearNoTargetRowsGaugeCNFTarget_true_card_pos
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    0 <
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega = true} := by
+  rcases Fintype.card_pos_iff.mp
+      (v13RealLinearNoTargetRowsTarget_true_card_pos i₀ hm) with
+    ⟨omega⟩
+  apply Fintype.card_pos_iff.mpr
+  exact
+    ⟨⟨v13RealLinearNoTargetRowsGaugeCNFWorldOfBase omega.val false, by
+      rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+      exact omega.property⟩⟩
+
+/-- Global target balance transfers to the gauge-buffered CNF world. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_target_balanced
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [v13RealLinearNoTargetRowsGaugeCNF_constantTrue_correct_card_eq_true]
+  rw [v13RealLinearNoTargetRowsGaugeCNF_world_card_eq_two_mul_target_true
+    i₀]
+  set a : Nat :=
+    Fintype.card
+      {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+        v13RealLinearNoTargetRowsGaugeCNFTarget omega = true}
+  have hpos : 0 < a := by
+    simpa [a] using
+      v13RealLinearNoTargetRowsGaugeCNFTarget_true_card_pos i₀ hm
+  have hne : (a : Rat) ≠ 0 := by
+    exact_mod_cast (Nat.ne_of_gt hpos)
+  rw [Nat.cast_mul]
+  field_simp [hne]
+  norm_num
+
+/-- Target-true public-coordinate fibers in the gauge-buffered CNF world are
+base target-true fibers times the hidden gauge bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFFiberTrueEquivBaseProd
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    FiberTrue
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value ≃
+      FiberTrue
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega))
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) value × Bool where
+  toFun := fun omega =>
+    (⟨omega.val.base, by
+      exact ⟨omega.property.1, by
+        have htarget :=
+          v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit
+            omega.val
+        exact htarget ▸ omega.property.2⟩⟩,
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega.val)
+  invFun := fun data =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFWorldOfBase data.1.val data.2, by
+      constructor
+      · exact data.1.property.1
+      · rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+        exact data.1.property.2⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.left_inv
+      omega.val
+  right_inv := by
+    intro data
+    cases data with
+    | mk omega gauge =>
+        apply Prod.ext
+        · apply Subtype.ext
+          rfl
+        · rfl
+
+/-- Target-false public-coordinate fibers in the gauge-buffered CNF world are
+base target-false fibers times the hidden gauge bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFFiberFalseEquivBaseProd
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    FiberFalse
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value ≃
+      FiberFalse
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega))
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) value × Bool where
+  toFun := fun omega =>
+    (⟨omega.val.base, by
+      exact ⟨omega.property.1, by
+        have htarget :=
+          v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit
+            omega.val
+        exact htarget ▸ omega.property.2⟩⟩,
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega.val)
+  invFun := fun data =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFWorldOfBase data.1.val data.2, by
+      constructor
+      · exact data.1.property.1
+      · rw [v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit]
+        exact data.1.property.2⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.left_inv
+      omega.val
+  right_inv := by
+    intro data
+    cases data with
+    | mk omega gauge =>
+        apply Prod.ext
+        · apply Subtype.ext
+          rfl
+        · rfl
+
+/-- Public-coordinate conditioning balance transfers to the gauge-buffered
+CNF world. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNF_publicCoordinate_balancedConditioning
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    BalancedConditioning
+      (v13RealLinearNoTargetRowsGaugeCNFPublicCoordinateField
+        (i₀ := i₀) coordinate)
+      (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) := by
+  classical
+  change Neutral
+    (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+      v13RealLinearCoordinateValue coordinate
+        (v13RealLinearNoTargetRowsPublicInput omega.base))
+    (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀)
+  intro value
+  calc
+    Fintype.card
+        (FiberTrue
+          (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+            v13RealLinearCoordinateValue coordinate
+              (v13RealLinearNoTargetRowsPublicInput omega.base))
+          (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value) =
+        Fintype.card
+          (FiberTrue
+            (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega))
+            (@v13RealLinearNoTargetRowsTargetBit m i₀) value × Bool) :=
+      Fintype.card_congr
+        (v13RealLinearNoTargetRowsGaugeCNFFiberTrueEquivBaseProd
+          coordinate value)
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega))
+            (@v13RealLinearNoTargetRowsTargetBit m i₀) value × Bool) := by
+      have h :=
+        v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
+          i₀ coordinate
+      change Neutral
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega))
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) at h
+      rw [Fintype.card_prod, Fintype.card_prod, h value]
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega.base))
+            (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value) :=
+      (Fintype.card_congr
+        (v13RealLinearNoTargetRowsGaugeCNFFiberFalseEquivBaseProd
+          coordinate value)).symm
+
+/-- Structural `admissibleHistories` transfer for the gauge-buffered
+no-target-rows CNF world using a public-coordinate history field. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_admissibleHistories
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) ∧
+      BalancedConditioning
+        (v13RealLinearNoTargetRowsGaugeCNFPublicCoordinateField
+          (i₀ := i₀) coordinate)
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) :=
+  ⟨v13RealLinearNoTargetRowsGaugeCNF_target_balanced i₀ hm,
+    v13RealLinearNoTargetRowsGaugeCNF_publicCoordinate_balancedConditioning
+      i₀ coordinate⟩
+
 /-- Flip the hidden gauge coordinate of a no-target-rows gauge-buffered CNF
 world, preserving the base public instance and verifier validity. -/
 def v13RealLinearNoTargetRowsGaugeCNFGaugeAction {m : Nat}
