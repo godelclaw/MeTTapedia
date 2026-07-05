@@ -954,6 +954,11 @@ def ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1000000 :
   | forward => 216
   | reverse => 200
 
+def ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1200000 :
+    ClosedCollarDiagonalTwoPoleTemplateId → Nat
+  | forward => 432
+  | reverse => 400
+
 /--
 Graph-facing carrier for one of the exact diagonal collar two-pole templates.
 The string labels pin the lab template, while `separator` is the reusable
@@ -1016,6 +1021,150 @@ theorem closedCollarWindingFreedomExactTemplatesBlockedByCyclicallyFiveNormalFor
     ClosedCollarWindingFreedomExactTemplatesBlockedByCyclicallyFiveNormalForm := by
   exact
     ⟨closedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTwoPoleTemplateEvidence,
+      section92WindingExactTemplateNormalFormExclusion⟩
+
+/--
+Template-blocker counts for a resumable simple-patch slice after applying the
+normal-form exclusion of the two exact diagonal collar two-poles.  Structural
+first blockers are the ordinary connected/cubic/bridgeless/planar/simple
+prefix tests; exact-template blockers are cyclic-cut blockers whose explicit
+two-pole template is excluded by cyclic five-edge-connectivity.
+-/
+structure ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount : Nat
+  patchStartIndex : Nat
+  patchTopologyLimit : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  structuralFirstBlockerCount : Nat
+  exactTemplateBlockerCount : Nat
+  diagonalForwardTemplateCount : Nat
+  diagonalReverseTemplateCount : Nat
+  nonTemplateCyclicCutBlockerCount : Nat
+  cap5LikeBlockerCount : Nat
+  normalFormAfterTemplateExclusionPassingCount : Nat
+
+def closedCollarSimplePatchN6Slices800000_1000000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 800000
+  patchTopologyLimit := 200000
+  processedPatchTopologyCount := 200000
+  radialOrderCaseCount := 400000
+  profilePreservingCaseCount := 2150
+  structuralFirstBlockerCount := 1734
+  exactTemplateBlockerCount := 416
+  diagonalForwardTemplateCount := 216
+  diagonalReverseTemplateCount := 200
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6Slices1000000_1200000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 1000000
+  patchTopologyLimit := 200000
+  processedPatchTopologyCount := 200000
+  radialOrderCaseCount := 400000
+  profilePreservingCaseCount := 2084
+  structuralFirstBlockerCount := 1668
+  exactTemplateBlockerCount := 416
+  diagonalForwardTemplateCount := 216
+  diagonalReverseTemplateCount := 200
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 800000
+  patchTopologyLimit := 400000
+  processedPatchTopologyCount := 400000
+  radialOrderCaseCount := 800000
+  profilePreservingCaseCount := 4234
+  structuralFirstBlockerCount := 3402
+  exactTemplateBlockerCount := 832
+  diagonalForwardTemplateCount := 432
+  diagonalReverseTemplateCount := 400
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+/--
+Template-exclusion evidence through the 800000-1200000 six-internal
+simple-patch window.  After direct search for the two exact diagonal templates,
+every profile-preserving case is blocked either structurally or by one of the
+two templates already excluded by cyclic five-edge-connectivity; no residual
+non-template small cyclic cut, CAP5-like blocker, or template-exclusion pass is
+seen in these slices.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedByStructuralOrExcludedTemplateEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.internalVertexCount =
+      6 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.patchStartIndex =
+      800000 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.patchTopologyLimit =
+      400000 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.processedPatchTopologyCount =
+      400000 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.radialOrderCaseCount =
+      800000 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.profilePreservingCaseCount =
+      4234 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.structuralFirstBlockerCount =
+      3402 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.exactTemplateBlockerCount =
+      832 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.diagonalForwardTemplateCount =
+      432 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.diagonalReverseTemplateCount =
+      400 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.diagonalForwardTemplateCount =
+      ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1200000
+        ClosedCollarDiagonalTwoPoleTemplateId.forward ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.diagonalReverseTemplateCount =
+      ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1200000
+        ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.diagonalForwardTemplateCount +
+        closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.diagonalReverseTemplateCount =
+      closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.exactTemplateBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.structuralFirstBlockerCount +
+        closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.exactTemplateBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedByStructuralOrExcludedTemplateEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedByStructuralOrExcludedTemplateEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Combined current fork statement for the six-internal realization lab: in the
+400000-case 800000-1200000 window, all profile-preserving candidates are
+blocked structurally or by exact diagonal templates, and the exact templates
+are excluded by cyclic five-edge-connectivity.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedAfterCyclicallyFiveTemplateExclusion :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedByStructuralOrExcludedTemplateEvidence ∧
+    Section92WindingExactTemplateNormalFormExclusion
+
+theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedAfterCyclicallyFiveTemplateExclusion :
+    ClosedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedAfterCyclicallyFiveTemplateExclusion := by
+  exact
+    ⟨closedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedByStructuralOrExcludedTemplateEvidence,
       section92WindingExactTemplateNormalFormExclusion⟩
 
 /--
