@@ -4168,6 +4168,117 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_100
       ?_, ?_, ?_, ?_⟩ <;>
     decide
 
+/--
+Archive manifest for the radial-face annular embedding JSON verdicts.  The
+indexed sample archive is split across one four-case file plus two single-case
+files; the resumable slice archive has two two-case files and intentionally
+overlaps the indexed archive on the `1000301` radial-order cases.
+-/
+structure ClosedCollarSimplePatchAnnularEmbeddingRadialFaceArchiveCounts where
+  sampleArchiveJsonFileCount : Nat
+  sliceArchiveJsonFileCount : Nat
+  totalArchiveJsonFileCount : Nat
+  sampleArchiveRadialOrderCaseCount : Nat
+  sliceArchiveRadialOrderCaseCount : Nat
+  archiveRadialOrderRowsWithOverlap : Nat
+  overlappingRadialOrderCaseCount : Nat
+  uniqueAuditedRadialOrderCaseCount : Nat
+  uniqueAuditedPatchTopologyCount : Nat
+  samplePlanarRotationSystemCount : Nat
+  slicePlanarRotationSystemCount : Nat
+  planarRotationSystemRowsWithOverlap : Nat
+  uniquePlanarRotationSystemCount : Nat
+  archiveRadialFaceCoherentRotationCount : Nat
+  sliceExactTemplateBlockerCount : Nat
+
+def closedCollarSimplePatchN6AnnularEmbeddingSampleArchiveFiles :
+    List String :=
+  ["results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json",
+    "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r0.json",
+    "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r1.json"]
+
+def closedCollarSimplePatchN6AnnularEmbeddingSliceArchiveFiles :
+    List String :=
+  ["results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
+    "results/fourcolor/section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json"]
+
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts :
+    ClosedCollarSimplePatchAnnularEmbeddingRadialFaceArchiveCounts where
+  sampleArchiveJsonFileCount := 3
+  sliceArchiveJsonFileCount := 2
+  totalArchiveJsonFileCount := 5
+  sampleArchiveRadialOrderCaseCount := 6
+  sliceArchiveRadialOrderCaseCount := 4
+  archiveRadialOrderRowsWithOverlap := 10
+  overlappingRadialOrderCaseCount := 2
+  uniqueAuditedRadialOrderCaseCount := 8
+  uniqueAuditedPatchTopologyCount := 4
+  samplePlanarRotationSystemCount := 48
+  slicePlanarRotationSystemCount := 32
+  planarRotationSystemRowsWithOverlap := 80
+  uniquePlanarRotationSystemCount := 64
+  archiveRadialFaceCoherentRotationCount := 0
+  sliceExactTemplateBlockerCount := 4
+
+/--
+Tracked archive manifest for the radial-face annular embedding verdict JSONs.
+It records the five files behind the sampled and resumable-slice radial-face
+audits, the deliberate two-case overlap, and the zero coherent-rotation
+aggregate used by the radial-face obstruction targets.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence ∧
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleArchiveFiles.length =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sampleArchiveJsonFileCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSliceArchiveFiles.length =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sliceArchiveJsonFileCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.totalArchiveJsonFileCount =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sampleArchiveJsonFileCount +
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sliceArchiveJsonFileCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sampleArchiveRadialOrderCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialOrderCaseCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sliceArchiveRadialOrderCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.embeddingAuditedCaseCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.embeddingAuditedCaseCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialOrderRowsWithOverlap =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sampleArchiveRadialOrderCaseCount +
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sliceArchiveRadialOrderCaseCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.uniqueAuditedRadialOrderCaseCount +
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.overlappingRadialOrderCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialOrderRowsWithOverlap ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.uniqueAuditedPatchTopologyCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.samplePlanarRotationSystemCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarRotationSystemCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.slicePlanarRotationSystemCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.planarRotationSystemCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.planarRotationSystemCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.planarRotationSystemRowsWithOverlap =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.samplePlanarRotationSystemCount +
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.slicePlanarRotationSystemCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.uniquePlanarRotationSystemCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.planarRotationSystemCount =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.planarRotationSystemRowsWithOverlap ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialFaceCoherentRotationCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentRotationCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentRotationCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.radialFaceCoherentRotationCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialFaceCoherentRotationCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.sliceExactTemplateBlockerCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactDiagonalTwoPoleTemplateBlockerCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.exactDiagonalTwoPoleTemplateBlockerCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
 /-- Lab-side candidate for a radial-face coherent rotation in the slice. -/
 structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceRotationCandidate where
   hrotationCountPositive :
