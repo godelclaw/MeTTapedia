@@ -1074,6 +1074,263 @@ theorem v13RealLinearSmallGaugeCNF_hiddenGaugeProduct
     v13RealLinearSmallGaugeCNFWorldGaugeAction_preserves_target
       gamma omega
 
+/-! ## Global two-message small real-linear gauge-CNF ensemble -/
+
+/-- Global valid worlds for the explicit small real-linear gauge-CNF ensemble:
+the public message bit varies, and the hidden gauge bit remains free.  The CNF
+assignment attached below is the canonical satisfying assignment for this
+public message and gauge bit. -/
+structure V13RealLinearSmallGaugeCNFEnsembleWorld where
+  msg : Bool
+  gauge : Bool
+deriving DecidableEq, Fintype
+
+/-- The satisfying CNF assignment represented by a global small-ensemble
+world. -/
+def v13RealLinearSmallGaugeCNFEnsembleAssignment
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    V13RealLinearSmallGaugeCNFWitness :=
+  v13RealLinearSmallGaugeCNFAssignment omega.msg omega.gauge
+
+/-- Each global small-ensemble world carries a real satisfying assignment for
+the corresponding concrete public message. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleAssignment_valid
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFVerifier omega.msg
+      (v13RealLinearSmallGaugeCNFEnsembleAssignment omega) :=
+  v13RealLinearSmallGaugeCNFFormula_satisfied_assignment
+    omega.msg omega.gauge
+
+/-- Target readout for the global small-ensemble world. -/
+def v13RealLinearSmallGaugeCNFEnsembleTarget
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) : Bool :=
+  v13RealLinearSmallGaugeCNFReadout
+    (v13RealLinearSmallGaugeCNFEnsembleAssignment omega)
+
+/-- The global target readout is the public message bit of the represented
+small CNF instance. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleTarget_eq_message
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleTarget omega =
+      v13RealLinearSmallGaugeCNFMessage omega.msg := by
+  cases omega
+  simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+    v13RealLinearSmallGaugeCNFEnsembleAssignment,
+    v13RealLinearSmallGaugeCNFReadout,
+    v13RealLinearSmallGaugeCNFMessage]
+
+/-- History field for the global small ensemble: observe only the hidden gauge
+bit, not the public message bit. -/
+def v13RealLinearSmallGaugeCNFEnsembleHistoryField :
+    FiniteSigmaField V13RealLinearSmallGaugeCNFEnsembleWorld where
+  Atom := Bool
+  atomDecidable := inferInstance
+  atom := fun omega => omega.gauge
+
+/-- The global small-ensemble world is exactly a public message bit together
+with a hidden gauge bit. -/
+def v13RealLinearSmallGaugeCNFEnsembleWorldEquivBoolProd :
+    V13RealLinearSmallGaugeCNFEnsembleWorld ≃ Bool × Bool where
+  toFun := fun omega => (omega.msg, omega.gauge)
+  invFun := fun data => { msg := data.1, gauge := data.2 }
+  left_inv := by
+    intro omega
+    cases omega
+    rfl
+  right_inv := by
+    intro data
+    cases data
+    rfl
+
+/-- The global small-ensemble world has four states. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleWorld_card :
+    Fintype.card V13RealLinearSmallGaugeCNFEnsembleWorld = 4 := by
+  calc
+    Fintype.card V13RealLinearSmallGaugeCNFEnsembleWorld =
+        Fintype.card (Bool × Bool) :=
+      Fintype.card_congr
+        v13RealLinearSmallGaugeCNFEnsembleWorldEquivBoolProd
+    _ = 4 := by
+      norm_num
+
+/-- Target-true global small-ensemble worlds are exactly the two choices of
+hidden gauge bit over the true public message. -/
+def v13RealLinearSmallGaugeCNFEnsembleTargetTrueEquivGauge :
+    {omega : V13RealLinearSmallGaugeCNFEnsembleWorld //
+      v13RealLinearSmallGaugeCNFEnsembleTarget omega = true} ≃ Bool where
+  toFun := fun omega => omega.val.gauge
+  invFun := fun gauge =>
+    ⟨{ msg := true, gauge := gauge }, by
+      simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+        v13RealLinearSmallGaugeCNFEnsembleAssignment,
+        v13RealLinearSmallGaugeCNFReadout]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    cases omega with
+    | mk omega htarget =>
+        cases omega with
+        | mk msg gauge =>
+            cases msg
+            · simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+                v13RealLinearSmallGaugeCNFEnsembleAssignment,
+                v13RealLinearSmallGaugeCNFReadout] at htarget
+            · rfl
+  right_inv := by
+    intro gauge
+    rfl
+
+/-- Correct worlds for the constant-true decoder are the target-true worlds. -/
+def v13RealLinearSmallGaugeCNFEnsembleCorrectTrueEquivTargetTrue :
+    {omega : V13RealLinearSmallGaugeCNFEnsembleWorld //
+      (fun _ : V13RealLinearSmallGaugeCNFEnsembleWorld => true) omega =
+        v13RealLinearSmallGaugeCNFEnsembleTarget omega} ≃
+      {omega : V13RealLinearSmallGaugeCNFEnsembleWorld //
+        v13RealLinearSmallGaugeCNFEnsembleTarget omega = true} where
+  toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+  invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+  left_inv := by
+    intro omega
+    cases omega
+    rfl
+  right_inv := by
+    intro omega
+    cases omega
+    rfl
+
+/-- There are two target-true global small-ensemble worlds. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleTarget_true_card :
+    Fintype.card
+        {omega : V13RealLinearSmallGaugeCNFEnsembleWorld //
+          v13RealLinearSmallGaugeCNFEnsembleTarget omega = true} = 2 := by
+  calc
+    Fintype.card
+        {omega : V13RealLinearSmallGaugeCNFEnsembleWorld //
+          v13RealLinearSmallGaugeCNFEnsembleTarget omega = true} =
+        Fintype.card Bool :=
+      Fintype.card_congr
+        v13RealLinearSmallGaugeCNFEnsembleTargetTrueEquivGauge
+    _ = 2 := by
+      norm_num
+
+/-- The global small real-linear gauge-CNF target is balanced across the two
+public messages and the two hidden gauge states. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_target_balanced :
+    BalancedBit v13RealLinearSmallGaugeCNFEnsembleTarget := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [Fintype.card_congr
+    v13RealLinearSmallGaugeCNFEnsembleCorrectTrueEquivTargetTrue,
+    v13RealLinearSmallGaugeCNFEnsembleTarget_true_card,
+    v13RealLinearSmallGaugeCNFEnsembleWorld_card]
+  norm_num
+
+/-- In a fixed hidden-gauge fiber, the target-true global world is unique. -/
+def v13RealLinearSmallGaugeCNFEnsembleFiberTrueEquivUnit
+    (gauge : Bool) :
+    FiberTrue
+        (fun omega : V13RealLinearSmallGaugeCNFEnsembleWorld =>
+          omega.gauge)
+        v13RealLinearSmallGaugeCNFEnsembleTarget gauge ≃ Unit where
+  toFun := fun _ => ()
+  invFun := fun _ =>
+    ⟨{ msg := true, gauge := gauge }, by
+      simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+        v13RealLinearSmallGaugeCNFEnsembleAssignment,
+        v13RealLinearSmallGaugeCNFReadout]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    cases omega with
+    | mk omega hprops =>
+        cases omega with
+        | mk msg gauge' =>
+            rcases hprops with ⟨hgauge, htarget⟩
+            cases msg
+            · simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+                v13RealLinearSmallGaugeCNFEnsembleAssignment,
+                v13RealLinearSmallGaugeCNFReadout] at htarget
+            · cases hgauge
+              rfl
+  right_inv := by
+    intro unitValue
+    cases unitValue
+    rfl
+
+/-- In a fixed hidden-gauge fiber, the target-false global world is unique. -/
+def v13RealLinearSmallGaugeCNFEnsembleFiberFalseEquivUnit
+    (gauge : Bool) :
+    FiberFalse
+        (fun omega : V13RealLinearSmallGaugeCNFEnsembleWorld =>
+          omega.gauge)
+        v13RealLinearSmallGaugeCNFEnsembleTarget gauge ≃ Unit where
+  toFun := fun _ => ()
+  invFun := fun _ =>
+    ⟨{ msg := false, gauge := gauge }, by
+      simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+        v13RealLinearSmallGaugeCNFEnsembleAssignment,
+        v13RealLinearSmallGaugeCNFReadout]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    cases omega with
+    | mk omega hprops =>
+        cases omega with
+        | mk msg gauge' =>
+            rcases hprops with ⟨hgauge, htarget⟩
+            cases msg
+            · cases hgauge
+              rfl
+            · simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+                v13RealLinearSmallGaugeCNFEnsembleAssignment,
+                v13RealLinearSmallGaugeCNFReadout] at htarget
+  right_inv := by
+    intro unitValue
+    cases unitValue
+    rfl
+
+/-- The hidden-gauge history field is balanced: conditioning on either hidden
+gauge value leaves one false-message and one true-message world. -/
+theorem
+    v13RealLinearSmallGaugeCNFEnsemble_historyField_balancedConditioning :
+    BalancedConditioning
+      v13RealLinearSmallGaugeCNFEnsembleHistoryField
+      v13RealLinearSmallGaugeCNFEnsembleTarget := by
+  change Neutral
+    (fun omega : V13RealLinearSmallGaugeCNFEnsembleWorld =>
+      omega.gauge)
+    v13RealLinearSmallGaugeCNFEnsembleTarget
+  intro gauge
+  calc
+    Fintype.card
+        (FiberTrue
+          (fun omega : V13RealLinearSmallGaugeCNFEnsembleWorld =>
+            omega.gauge)
+          v13RealLinearSmallGaugeCNFEnsembleTarget gauge) =
+        Fintype.card Unit :=
+      Fintype.card_congr
+        (v13RealLinearSmallGaugeCNFEnsembleFiberTrueEquivUnit gauge)
+    _ = Fintype.card Unit := rfl
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega : V13RealLinearSmallGaugeCNFEnsembleWorld =>
+              omega.gauge)
+            v13RealLinearSmallGaugeCNFEnsembleTarget gauge) :=
+      (Fintype.card_congr
+        (v13RealLinearSmallGaugeCNFEnsembleFiberFalseEquivUnit gauge)).symm
+
+/-- Structural `admissibleHistories` transfer for the global two-message
+small real-linear gauge-CNF ensemble.  The fixed-message slices are constant,
+but the ensemble over both public message bits is balanced, and the hidden
+gauge history field is target-neutral. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_admissibleHistories :
+    BalancedBit v13RealLinearSmallGaugeCNFEnsembleTarget ∧
+      BalancedConditioning
+        v13RealLinearSmallGaugeCNFEnsembleHistoryField
+        v13RealLinearSmallGaugeCNFEnsembleTarget :=
+  ⟨v13RealLinearSmallGaugeCNFEnsemble_target_balanced,
+    v13RealLinearSmallGaugeCNFEnsemble_historyField_balancedConditioning⟩
+
 /-! ## Gauge-buffered real linear CNF self-reduction -/
 
 /-- Explicit P=NP-side SAT decider object for the gauge-buffered real linear
