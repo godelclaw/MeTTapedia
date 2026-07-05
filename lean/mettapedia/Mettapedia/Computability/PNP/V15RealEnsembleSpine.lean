@@ -12209,6 +12209,71 @@ theorem realM4_exists_np_not_p_from_noTargetRowsEqualityIndexedConstructionData_
       i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
 
+/--
+Bundled real lock-in endpoint for the strongest current equality-indexed
+large-target route.  Once the real construction-data surface is supplied, the
+same four frontier inputs yield the Cook-style class inequality, the official
+separation proposition, and the explicit existential NP-not-P endpoint.
+
+This packages already checked endpoint wrappers; it does not complete the
+manuscript M4 construction and does not prove P != NP without the construction
+surface or the four named frontier inputs.
+-/
+theorem
+    realM4_realLockInEndpoints_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+      ∃ separatedLanguage : C.Language,
+        C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  ⟨realM4_not_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing,
+    realM4_officialSeparation_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing,
+    realM4_exists_np_not_p_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing⟩
+
 def realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields :
     List String := [
   "noTargetRowsPublicSurface",
@@ -18015,6 +18080,21 @@ theorem realM4RealLockInCompletionAudit_exact :
 
 def realM4RealLockInCompletionStatement : String :=
   "The real v15/M4 lock-in route is the equality-indexed large-target route: first inhabit the real no-target-rows construction surface, the locked readout data, CNF address syntax, real lower machine, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block facts.  Once those construction obligations are discharged, the endpoint chain uses the already checked structural projections, the P=NP-conditional self-reduction upper branch, the internal UpperLowerClash, and the Cook-style class interface.  The remaining irreducible inputs are exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  The v14 toy endpoint, the raw official bridge adapter, a free unconditional SAT decider, and hidden structural hypotheses are not part of this lock-in route."
+
+def realM4RealLockInEndpointHypothesisAudit : List String :=
+  realM4NoTargetRowsEqualityIndexedOfficialEndpointHypothesisAudit
+
+theorem realM4RealLockInEndpointHypothesisAudit_exact :
+    realM4RealLockInEndpointHypothesisAudit =
+      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4RealLockInEndpointStatement : String :=
+  "The bundled real v15/M4 lock-in endpoint theorem packages the class inequality, official separation proposition, and Cook-style existential NP-not-P statement from one equality-indexed construction-data surface plus exactly StarSW hardness and the three analytic frontier inputs.  The theorem does not make the construction surface disappear: inhabiting the real no-target-rows M4 data, official language/P-to-decider data, and P=NP-indexed K-poly target facts remains the construction problem."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
