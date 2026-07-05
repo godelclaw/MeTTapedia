@@ -1704,6 +1704,21 @@ def v13RealLinearNoTargetRowsGaugeCNFSemantics {m : Nat}
   safeSat := fun _ _ => True
   gaugeSat := v13RealLinearNoTargetRowsGaugeCNFGaugeSat
 
+/-- Structural `atomCompleteness` for the gauge-buffered CNF surface: CD-ENF
+normalization preserves the concrete evidence semantics. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_atomCompleteness
+    {m : Nat} (i₀ : Fin m) :
+    ∀ E :
+      RawEvidence
+        V13RealLinearNoTargetRowsGaugeCNFNeutral
+        V13RealLinearNoTargetRowsGaugeCNFSafe
+        V13RealLinearNoTargetRowsGaugeCNFGauge,
+      (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).SatNormal
+          (CDENF E) =
+        (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).SatRaw E := by
+  intro E
+  exact CDENF_semantics (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀) E
+
 /-- Structural `gaugeFaithfulness` for the gauge-buffered CNF surface: a raw
 gauge atom normalizes to exactly the concrete hidden-gauge predicate. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_gaugeFaithfulness
