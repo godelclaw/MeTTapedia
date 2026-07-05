@@ -2518,6 +2518,32 @@ def ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :
         (ClosedCollarWindingFreedomNormalFormRadialFaceExtraction normalForm)
 
 /--
+Actual-collar source for radial-face existence: the normal-form field
+`actualCollarEmbeddingConstraints` is the intended geometric datum from which
+the cut-open collar face must be extracted.
+-/
+def ClosedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      normalForm.actualCollarEmbeddingConstraints →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          normalForm.annular
+
+theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_actualCollarEmbeddingForcesRadialFace
+    (hactual : ClosedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace) :
+    ClosedCollarWindingFreedomEveryNormalFormHasRadialFace := by
+  intro V G normalForm
+  rcases hactual normalForm normalForm.hactualCollarEmbeddingConstraints with
+    ⟨radialFace⟩
+  exact
+    ⟨⟨
+      { normalForm := normalForm
+        radialFace := radialFace },
+      rfl
+    ⟩⟩
+
+/--
 Every cut-open radial-face normal-form annulus is represented by an n6
 simple-patch case.
 -/
@@ -2663,6 +2689,27 @@ theorem section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget :
       (closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_radialFace_of_radialFaceN6
         hradial hn6)
       hclassified
+
+/--
+Actual-collar factored repaired target: prove the embedded collar constraints
+force the radial-face datum, prove n6 representation for radial-face
+normal-form annuli, then classify the extracted n6 representations by the
+detailed taxonomy.
+-/
+def Section92Step4RepairedByActualCollarEmbeddingN6TaxonomyTarget : Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByActualCollarEmbeddingN6TaxonomyTarget :
+    Section92Step4RepairedByActualCollarEmbeddingN6TaxonomyTarget := by
+  intro hactual hn6 hclassified
+  exact
+    section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget
+      (closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_actualCollarEmbeddingForcesRadialFace
+        hactual)
+      hn6 hclassified
 
 /--
 Representative planar profile-preserving samples from the six-internal
