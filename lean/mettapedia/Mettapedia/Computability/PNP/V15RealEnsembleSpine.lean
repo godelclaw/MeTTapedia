@@ -1498,6 +1498,55 @@ def variableNatCoding
 
 end RealM4CNFVariableEncodableSyntaxData
 
+/--
+Address-syntax presentation for real Appendix I CNF variables.  This is the
+sharper construction boundary for the manuscript M4 route: the real variable
+family should be parsed from tagged/address-style syntax, and that address
+syntax should itself have an encoder/decoder roundtrip.  The derived
+`RealM4CNFVariableEncodableSyntaxData` below is then mechanical.
+-/
+structure RealM4CNFVariableAddressSyntaxData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Address : Public -> Type a}
+    {Var : Public -> Type y} {Witness : Public -> Type y}
+    (_D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  addressEncode : (Y : Public) -> Address Y -> Nat
+  addressDecode : (Y : Public) -> Nat -> Option (Address Y)
+  addressDecode_addressEncode :
+    ∀ (Y : Public) (addr : Address Y),
+      addressDecode Y (addressEncode Y addr) = some addr
+  varAddress : (Y : Public) -> Var Y -> Address Y
+  varDecodeAddress : (Y : Public) -> Address Y -> Option (Var Y)
+  varDecodeAddress_varAddress :
+    ∀ (Y : Public) (v : Var Y),
+      varDecodeAddress Y (varAddress Y v) = some v
+
+namespace RealM4CNFVariableAddressSyntaxData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Address : Public -> Type a}
+variable {Var : Public -> Type y} {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+def encodableSyntax
+    (A : RealM4CNFVariableAddressSyntaxData (Address := Address) D) :
+    RealM4CNFVariableEncodableSyntaxData D where
+  varEncode := fun Y v => A.addressEncode Y (A.varAddress Y v)
+  varDecode := fun Y n =>
+    match A.addressDecode Y n with
+    | some addr => A.varDecodeAddress Y addr
+    | none => none
+  varDecode_varEncode := by
+    intro Y v
+    simp [A.addressDecode_addressEncode, A.varDecodeAddress_varAddress]
+
+end RealM4CNFVariableAddressSyntaxData
+
 /-- Top-level alias: injective natural coding of real CNF variables supplies
 the decidable equality needed by formula-syntax CNF support. -/
 def realM4_varDecidable_of_variableNatCoding
@@ -1662,6 +1711,32 @@ def realM4_variableNatCoding_of_encodableSyntax
     RealM4CNFVariableNatCodingData D :=
   E.variableNatCoding
 
+/-- Top-level alias: real variable address syntax supplies the local
+encode/decode package used by the formula-syntax CNF support route. -/
+def realM4_variableEncodableSyntax_of_addressSyntax
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Address : Public -> Type a}
+    {Var : Public -> Type y} {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (A : RealM4CNFVariableAddressSyntaxData (Address := Address) D) :
+    RealM4CNFVariableEncodableSyntaxData D :=
+  A.encodableSyntax
+
+/-- Top-level alias: real variable address syntax supplies the Nat-coded
+variable package through the local encode/decode layer. -/
+def realM4_variableNatCoding_of_addressSyntax
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Address : Public -> Type a}
+    {Var : Public -> Type y} {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (A : RealM4CNFVariableAddressSyntaxData (Address := Address) D) :
+    RealM4CNFVariableNatCodingData D :=
+  (realM4_variableEncodableSyntax_of_addressSyntax A).variableNatCoding
+
 /-- Top-level alias: locally encodable real variable syntax supplies
 formula-syntax CNF support, deriving decidable equality from the roundtrip
 encoder/decoder rather than assuming a raw equality procedure. -/
@@ -1675,6 +1750,19 @@ def realM4_formulaSyntaxCNFSupport_of_encodableSyntax
     (E : RealM4CNFVariableEncodableSyntaxData D) :
     RealM4CNFUniformSupportData D :=
   E.formulaSyntaxSupport
+
+/-- Top-level alias: real variable address syntax supplies formula-syntax CNF
+support through the local encode/decode and Nat-coded routes. -/
+def realM4_formulaSyntaxCNFSupport_of_addressSyntax
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Address : Public -> Type a}
+    {Var : Public -> Type y} {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (A : RealM4CNFVariableAddressSyntaxData (Address := Address) D) :
+    RealM4CNFUniformSupportData D :=
+  (realM4_variableEncodableSyntax_of_addressSyntax A).formulaSyntaxSupport
 
 /-- Construction-side finite variable-type data.  This is weaker than the
 older finite variable-family package because it asks only for finite variable
@@ -2718,6 +2806,35 @@ theorem realM4VariableEncodableSyntaxConstructionInputs_exact :
         "varDecodeEncodeRoundtrip" ] := by
   rfl
 
+def realM4VariableAddressSyntaxConstructionInputs : List String := [
+  "addressEncode",
+  "addressDecode",
+  "addressDecodeEncodeRoundtrip",
+  "varAddress",
+  "varDecodeAddress",
+  "varDecodeAddressRoundtrip"
+]
+
+theorem realM4VariableAddressSyntaxConstructionInputs_exact :
+    realM4VariableAddressSyntaxConstructionInputs =
+      [ "addressEncode",
+        "addressDecode",
+        "addressDecodeEncodeRoundtrip",
+        "varAddress",
+        "varDecodeAddress",
+        "varDecodeAddressRoundtrip" ] := by
+  rfl
+
+def realM4VariableEncodableSyntaxFromAddressSyntaxConstructionInputs :
+    List String := [
+  "cnfVariableAddressSyntax"
+]
+
+theorem realM4VariableEncodableSyntaxFromAddressSyntaxConstructionInputs_exact :
+    realM4VariableEncodableSyntaxFromAddressSyntaxConstructionInputs =
+      [ "cnfVariableAddressSyntax" ] := by
+  rfl
+
 def realM4VariableNatCodingFromEncodableSyntaxConstructionInputs :
     List String := [
   "cnfVariableEncodableSyntax"
@@ -2726,6 +2843,16 @@ def realM4VariableNatCodingFromEncodableSyntaxConstructionInputs :
 theorem realM4VariableNatCodingFromEncodableSyntaxConstructionInputs_exact :
     realM4VariableNatCodingFromEncodableSyntaxConstructionInputs =
       [ "cnfVariableEncodableSyntax" ] := by
+  rfl
+
+def realM4VariableNatCodingFromAddressSyntaxConstructionInputs :
+    List String := [
+  "cnfVariableAddressSyntax"
+]
+
+theorem realM4VariableNatCodingFromAddressSyntaxConstructionInputs_exact :
+    realM4VariableNatCodingFromAddressSyntaxConstructionInputs =
+      [ "cnfVariableAddressSyntax" ] := by
   rfl
 
 def realM4FormulaSyntaxCNFSupportFromNatCodingConstructionInputs :
@@ -2746,6 +2873,16 @@ def realM4FormulaSyntaxCNFSupportFromEncodableSyntaxConstructionInputs :
 theorem realM4FormulaSyntaxCNFSupportFromEncodableSyntaxConstructionInputs_exact :
     realM4FormulaSyntaxCNFSupportFromEncodableSyntaxConstructionInputs =
       [ "cnfVariableEncodableSyntax" ] := by
+  rfl
+
+def realM4FormulaSyntaxCNFSupportFromAddressSyntaxConstructionInputs :
+    List String := [
+  "cnfVariableAddressSyntax"
+]
+
+theorem realM4FormulaSyntaxCNFSupportFromAddressSyntaxConstructionInputs_exact :
+    realM4FormulaSyntaxCNFSupportFromAddressSyntaxConstructionInputs =
+      [ "cnfVariableAddressSyntax" ] := by
   rfl
 
 def realM4CompressionLowerMachineDataConstructionInputs : List String := [
@@ -4792,6 +4929,20 @@ def ofCoverageRigidityAndEncodableSyntax
   ofCoverageRigidityAndVariableNatCoding defaultMessage coverageData
     lockedMessageRigidity
     (realM4_variableNatCoding_of_encodableSyntax variableSyntax)
+
+/-- Package construction-side official upper support from real variable
+address syntax. -/
+def ofCoverageRigidityAndAddressSyntax
+    {Address : CNFPublic -> Type a}
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D) :
+    RealM4OfficialPToDeciderUpperSupportData D :=
+  ofCoverageRigidityAndEncodableSyntax defaultMessage coverageData
+    lockedMessageRigidity
+    (realM4_variableEncodableSyntax_of_addressSyntax variableAddressSyntax)
 
 end RealM4OfficialPToDeciderUpperSupportData
 
@@ -7402,6 +7553,22 @@ theorem realM4OfficialPToDeciderUpperSupportFromEncodableSyntaxConstructionInput
         "cnfVariableEncodableSyntax" ] := by
   rfl
 
+def realM4OfficialPToDeciderUpperSupportFromAddressSyntaxConstructionInputs :
+    List String := [
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "cnfVariableAddressSyntax"
+]
+
+theorem realM4OfficialPToDeciderUpperSupportFromAddressSyntaxConstructionInputs_exact :
+    realM4OfficialPToDeciderUpperSupportFromAddressSyntaxConstructionInputs =
+      [ "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "cnfVariableAddressSyntax" ] := by
+  rfl
+
 def realM4OfficialPToDeciderLanguageConstructionInputs : List String := [
   "cookStylePNPClassInterface",
   "separatedLanguage",
@@ -9396,10 +9563,16 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Decidable equality for real CNF variables follows from injective natural coding of the variable syntax; the remaining construction obligation is the code and its injectivity proof."
   },
   {
-    item := "cnfVariableEncodableSyntax"
+    item := "cnfVariableAddressSyntax"
     status := .openConstruction
-    checkedName := "RealM4CNFVariableEncodableSyntaxData"
-    note := "The real M4 variable syntax must supply an encoder, decoder, and decode-after-encode roundtrip, e.g. by structural recursion on the manuscript's address syntax."
+    checkedName := "RealM4CNFVariableAddressSyntaxData"
+    note := "The real M4 variable syntax must supply tagged/address-style syntax, a syntax encoder/decoder roundtrip, and a parser back to variables."
+  },
+  {
+    item := "cnfVariableEncodableSyntaxFromAddressSyntax"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_variableEncodableSyntax_of_addressSyntax"
+    note := "Real variable address syntax mechanically supplies the local encode/decode package used by the CNF support route."
   },
   {
     item := "cnfVariableNatCodingFromEncodableSyntax"
@@ -9718,6 +9891,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
@@ -9771,7 +9945,7 @@ def realM4OpenConstructionItems : List String := [
   "noPublicTargetTags",
   "hiddenGaugeProduct",
   "admissibleHistories",
-  "cnfVariableEncodableSyntax",
+  "cnfVariableAddressSyntax",
   "realCompressionLowerMachineData",
   "officialPToDeciderLanguageData"
 ]
@@ -9783,7 +9957,7 @@ theorem realM4OpenConstructionItems_exact :
         "noPublicTargetTags",
         "hiddenGaugeProduct",
         "admissibleHistories",
-        "cnfVariableEncodableSyntax",
+        "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
         "officialPToDeciderLanguageData" ] := by
   rfl
