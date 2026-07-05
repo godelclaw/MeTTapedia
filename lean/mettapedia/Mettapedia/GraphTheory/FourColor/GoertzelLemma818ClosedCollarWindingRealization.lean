@@ -13450,6 +13450,161 @@ theorem section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFo
     closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness
       hbridge hrowCard hrowHist
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_radialFaceRowSemanticSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramSoundness
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+      ⟨hrowCard, hrowHist⟩)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_radialFaceRowSemanticSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_radialFaceRowSemanticSoundness
+    (closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge
+      hbridge)
+    hrowCard hrowHist
+
+/--
+Factored-bridge exact criterion for the split row-semantic package.  Under the
+factored normal-form bridge, failure of nonrealizability is exactly a failure
+of row cardinality semantics or row histogram-entry semantics.
+-/
+def Section92Step4CurrentFiniteFrontierFactoredBridgeRadialFaceRowSemanticExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+          ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∨
+            ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound)
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeRadialFaceRowSemanticExactCriterion :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeRadialFaceRowSemanticExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness,
+      ?_⟩
+  intro hbridge hnot
+  classical
+  by_cases hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound
+  · by_cases hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+    · exact
+        False.elim
+          (hnot
+            (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness
+              hbridge hrowCard hrowHist))
+    · exact Or.inr hrowHist
+  · exact Or.inl hrowCard
+
+/--
+Current-boundary exact criterion for the split row-semantic package.  Under the
+current-boundary witness-placement bridge, any surviving normal-form
+realization must refute row cardinality semantics or row histogram-entry
+semantics.
+-/
+def Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeRadialFaceRowSemanticExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+          ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∨
+            ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound)
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeRadialFaceRowSemanticExactCriterion :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeRadialFaceRowSemanticExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_radialFaceRowSemanticSoundness,
+      ?_⟩
+  intro hbridge hnot
+  classical
+  by_cases hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound
+  · by_cases hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+    · exact
+        False.elim
+          (hnot
+            (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_radialFaceRowSemanticSoundness
+              hbridge hrowCard hrowHist))
+    · exact Or.inr hrowHist
+  · exact Or.inl hrowCard
+
+/--
+One-collar exact criterion for the split row-semantic package.  If the stronger
+one-collar bridge supplies current-boundary witness placement, the finite side
+again reduces exactly to the two row-semantic obligations.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarBridgeRadialFaceRowSemanticExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+          ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∨
+            ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound)
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeRadialFaceRowSemanticExactCriterion :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeRadialFaceRowSemanticExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_radialFaceRowSemanticSoundness,
+      ?_⟩
+  intro hbridge hnot
+  classical
+  by_cases hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound
+  · by_cases hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+    · exact
+        False.elim
+          (hnot
+            (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_radialFaceRowSemanticSoundness
+              hbridge hrowCard hrowHist))
+    · exact Or.inr hrowHist
+  · exact Or.inl hrowCard
+
+/--
+Bundled current-frontier exact criteria for the split row-semantic package.
+For the factored, current-boundary, and one-collar bridge surfaces, the finite
+side is precisely row cardinality semantics plus row histogram-entry semantics.
+-/
+def Section92Step4CurrentFiniteFrontierRadialFaceRowSemanticExactCriteria :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierFactoredBridgeRadialFaceRowSemanticExactCriterion ∧
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeRadialFaceRowSemanticExactCriterion ∧
+      Section92Step4CurrentFiniteFrontierOneCollarBridgeRadialFaceRowSemanticExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierRadialFaceRowSemanticExactCriteria :
+    Section92Step4CurrentFiniteFrontierRadialFaceRowSemanticExactCriteria :=
+  ⟨section92Step4CurrentFiniteFrontierFactoredBridgeRadialFaceRowSemanticExactCriterion,
+    section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeRadialFaceRowSemanticExactCriterion,
+    section92Step4CurrentFiniteFrontierOneCollarBridgeRadialFaceRowSemanticExactCriterion⟩
+
 /--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
 finite evidence is on record; if the five factored normal-form obligations are
