@@ -6691,6 +6691,43 @@ theorem
         (v13RealLinearNoTargetRowsPublicInput Y) := by
   rfl
 
+/-- The uniform P=NP-side bit-fixing assignment satisfies the actual concrete
+Appendix-I CNF formula for the same no-target-rows public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingAssignment_satisfies
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    ConcreteCNF.IsSatFormula
+      ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+        i₀).formula Y)
+      ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+        i₀ D).bitFixingAssignment Y) :=
+  realM4_uniformBitFixingAssignment_satisfies
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+      i₀ D)
+    trivial
+
+/-- Concrete Appendix-I CNF world produced by uniform P=NP-side bit-fixing:
+the public instance is unchanged, and the carried assignment is the satisfying
+assignment returned by the uniform self-reduction decoder. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfUniformBitFixing
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    RealM4CNFWorld
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := Y
+  support := trivial
+  assignment :=
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+      i₀ D).bitFixingAssignment Y
+  sat :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingAssignment_satisfies
+      D Y
+
 /-- Uniform bit-fixing also selects the canonical `false` representative of
 the free hidden-gauge fiber. -/
 theorem
