@@ -24,6 +24,9 @@ STRUCTURAL_NAMES = (
     "simple_endpoint_realization",
 )
 
+FORWARD_TEMPLATE_KEY = "edges:g0:F1F0,g1:F4F5|sideCollar:g0:F1,g1:F5"
+REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
+
 TEMPLATE_BLOCKER_FILES = (
     "section92_closed_collar_winding_simple_patch_template_blockers_n6_800000_1000000.json",
     "section92_closed_collar_winding_simple_patch_template_blockers_n6_1000000_1200000.json",
@@ -73,8 +76,6 @@ N8_TEMPLATE_BLOCKER_FILES = (
 N8_STRATIFIED_SAMPLE_FILE = (
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_65.json"
 )
-
-REVERSE_TEMPLATE_KEY = "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 LEAN_REALIZATION_SOURCE = (
@@ -179,6 +180,23 @@ def parse_lean_nat_field(record: str, field: str) -> int:
     return int(match.group(1))
 
 
+def parse_lean_nat_or_const_field(
+    record: str,
+    field: str,
+    constants: dict[str, int],
+    label: str,
+) -> int:
+    match = re.search(rf"{field}\s*:=\s*([^\n]+)", record)
+    if match is None:
+        raise ValueError(f"Lean {label} missing Nat field {field}")
+    expression = match.group(1).strip()
+    if re.fullmatch(r"[0-9]+", expression):
+        return int(expression)
+    if expression in constants:
+        return constants[expression]
+    raise ValueError(f"Lean {label} field {field} has unresolved expression {expression!r}")
+
+
 def parse_lean_bool_field(record: str, field: str) -> bool:
     match = re.search(rf"{field}\s*:=\s*(true|false)", record)
     if match is None:
@@ -249,14 +267,28 @@ def lean_row_certificate_def_body(source: str, def_name: str) -> str:
     return source[assignment + 2 : end]
 
 
-def lean_template_case_def_body(source: str, def_name: str) -> str:
+def lean_nat_def_value(source: str, def_name: str) -> int:
     marker = f"def {def_name}"
     start = source.find(marker)
     if start == -1:
-        raise ValueError(f"Lean exact-template case definition {def_name} not found")
+        raise ValueError(f"Lean Nat definition {def_name} not found")
+    assignment = source.find(":=", start)
+    if assignment == -1:
+        raise ValueError(f"Lean Nat definition {def_name} has no :=")
+    match = re.search(r":=\s*([0-9]+)", source[assignment:])
+    if match is None:
+        raise ValueError(f"Lean Nat definition {def_name} has no literal value")
+    return int(match.group(1))
+
+
+def lean_where_record_def_body(source: str, def_name: str, label: str) -> str:
+    marker = f"def {def_name}"
+    start = source.find(marker)
+    if start == -1:
+        raise ValueError(f"Lean {label} definition {def_name} not found")
     where = source.find("where", start)
     if where == -1:
-        raise ValueError(f"Lean exact-template case definition {def_name} has no where")
+        raise ValueError(f"Lean {label} definition {def_name} has no where")
     candidates = [
         index
         for index in (
@@ -267,8 +299,71 @@ def lean_template_case_def_body(source: str, def_name: str) -> str:
         if index != -1
     ]
     if not candidates:
-        raise ValueError(f"Lean exact-template case definition {def_name} has no end")
+        raise ValueError(f"Lean {label} definition {def_name} has no end")
     return source[where : min(candidates)]
+
+
+def lean_template_case_def_body(source: str, def_name: str) -> str:
+    return lean_where_record_def_body(source, def_name, "exact-template case")
+
+
+def parse_lean_detailed_taxonomy_counts(source: str) -> dict[str, object]:
+    body = lean_where_record_def_body(
+        source,
+        "closedCollarSimplePatchN6DetailedTaxonomyCounts",
+        "detailed taxonomy count",
+    )
+    constants = {
+        "closedCollarSimplePatchN6ExactPatchTopologyCount": lean_nat_def_value(
+            source, "closedCollarSimplePatchN6ExactPatchTopologyCount"
+        )
+    }
+
+    def nat(field: str) -> int:
+        return parse_lean_nat_or_const_field(
+            body,
+            field,
+            constants,
+            "detailed taxonomy count",
+        )
+
+    return {
+        "internal_vertex_count": nat("internalVertexCount"),
+        "exact_patch_topology_count": nat("exactPatchTopologyCount"),
+        "structural_prefix_slice_file_count": nat("structuralPrefixSliceFileCount"),
+        "template_blocker_slice_file_count": nat("templateBlockerSliceFileCount"),
+        "structural_prefix_end_index": nat("structuralPrefixEndIndex"),
+        "processed_patch_topology_count": nat("processedPatchTopologyCount"),
+        "radial_order_case_count": nat("radialOrderCaseCount"),
+        "profile_preserving_case_count": nat("profilePreservingCaseCount"),
+        "structural_blocker_histogram": {
+            "connected_multigraph": nat("connectedStructuralBlockerCount"),
+            "cubic_multigraph": nat("cubicStructuralBlockerCount"),
+            "bridgeless_multigraph": nat("bridgelessStructuralBlockerCount"),
+            "planar_multigraph": nat("planarStructuralBlockerCount"),
+            "simple_endpoint_realization": nat("simpleEndpointStructuralBlockerCount"),
+        },
+        "exact_template_blocker_count": nat("exactTemplateBlockerCount"),
+        "diagonal_forward_template_count": nat("diagonalForwardTemplateCount"),
+        "diagonal_reverse_template_count": nat("diagonalReverseTemplateCount"),
+        "exact_template_histogram": {
+            FORWARD_TEMPLATE_KEY: nat("diagonalForwardTemplateCount"),
+            REVERSE_TEMPLATE_KEY: nat("diagonalReverseTemplateCount"),
+        },
+        "non_template_cyclic_cut_blocker_count": nat("nonTemplateCyclicCutBlockerCount"),
+        "cap5_like_blocker_count": nat("cap5LikeBlockerCount"),
+        "normal_form_after_template_exclusion_passing_count": nat(
+            "normalFormAfterTemplateExclusionPassingCount"
+        ),
+        "residual_after_structural_and_exact_template_count": nat(
+            "residualAfterStructuralAndExactTemplateCount"
+        ),
+        "verdict": "n6_exhaustive_detailed_taxonomy_all_profile_cases_blocked",
+    }
+
+
+def lean_detailed_taxonomy_counts() -> dict[str, object]:
+    return parse_lean_detailed_taxonomy_counts(LEAN_REALIZATION_SOURCE.read_text())
 
 
 def parse_lean_radial_face_row_certificates(source: str, def_name: str) -> list[dict[str, object]]:
@@ -533,6 +628,36 @@ def audit(results_dir: Path) -> dict[str, object]:
 
     structural_histogram = {name: 0 for name in STRUCTURAL_NAMES}
     structural_histogram["planar_multigraph"] = total_structural
+    detailed_taxonomy_artifact_projection = {
+        "internal_vertex_count": 6,
+        "exact_patch_topology_count": N6_EXACT_PATCH_TOPOLOGY_COUNT,
+        "structural_prefix_slice_file_count": len(prefix_files),
+        "template_blocker_slice_file_count": len(TEMPLATE_BLOCKER_FILES),
+        "structural_prefix_end_index": FIRST_PREFIX_END,
+        "processed_patch_topology_count": total_processed,
+        "radial_order_case_count": total_radial,
+        "profile_preserving_case_count": total_profile,
+        "structural_blocker_histogram": structural_histogram,
+        "exact_template_blocker_count": total_exact,
+        "diagonal_forward_template_count": template_exact_hist[FORWARD_TEMPLATE_KEY],
+        "diagonal_reverse_template_count": template_exact_hist[REVERSE_TEMPLATE_KEY],
+        "exact_template_histogram": dict(template_exact_hist),
+        "non_template_cyclic_cut_blocker_count": template_totals[
+            "non_template_cyclic_cut_blocker_count"
+        ],
+        "cap5_like_blocker_count": template_totals["cap5_like_blocker_count"],
+        "normal_form_after_template_exclusion_passing_count": template_totals[
+            "normal_form_after_template_exclusion_passing_count"
+        ],
+        "residual_after_structural_and_exact_template_count": total_residual,
+        "verdict": "n6_exhaustive_detailed_taxonomy_all_profile_cases_blocked",
+    }
+    lean_detailed_taxonomy_projection = lean_detailed_taxonomy_counts()
+    assert_equal(
+        "Lean detailed taxonomy projection",
+        detailed_taxonomy_artifact_projection,
+        lean_detailed_taxonomy_projection,
+    )
 
     return {
         "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n6-detailed-taxonomy-audit-v1",
@@ -574,6 +699,8 @@ def audit(results_dir: Path) -> dict[str, object]:
             "residual_after_structural_and_exact_template_count": total_residual,
             "verdict": "n6_exhaustive_detailed_taxonomy_all_profile_cases_blocked",
         },
+        "detailed_taxonomy_lean_projection": lean_detailed_taxonomy_projection,
+        "detailed_taxonomy_lean_projection_match": True,
     }
 
 
