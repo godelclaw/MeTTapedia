@@ -6948,6 +6948,22 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCover
             ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCandidate
 
 /--
+Histogram-level max-cut semantic coverage obligation for the radial-face
+archive: a genuine cut-open radial face must induce a positive-count planar
+rotation row whose maximum single-face radial-cut count is four.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          representation.annular →
+          Nonempty
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCandidate
+
+/--
 Archive-level obstruction using the max-cut row certificate directly.  This
 is the semantic bridge behind the strengthened radial-face evidence: real
 radial-face coherence must induce the forbidden four-on-one-face certificate.
@@ -6971,6 +6987,31 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
   exact
     closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate
       hmaxcut candidate
+
+/--
+Archive-level obstruction using the histogram row certificate directly.  This
+matches the lab condition that all four radial-cut edges occur on one face in
+a positive-count planar rotation row.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCutHistogram :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+          (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+              closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+            ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+              representation.annular →
+              False
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCutHistogram :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCutHistogram := by
+  intro hhist hcovered V G representation hcase hradial
+  rcases hcovered representation hcase hradial with ⟨candidate⟩
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutHistogramCandidate
+      hhist candidate
 
 /--
 Finite row lookup for the audited radial-face archive: every audited archive
@@ -7029,6 +7070,28 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxSingleFa
                 representation.annular.radialCut.card
 
 /--
+Semantic histogram obligation for the max-cut route: a genuinely cut-open
+radial face is represented in the matching audited row by a positive-count
+histogram entry at the radial-cut cardinality.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (certificate : ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate) →
+        certificate ∈
+            closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates →
+          ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate.caseKey
+              certificate =
+            (representation.patchTopologyIndex, representation.radialOrderIndex.1) →
+            ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+              representation.annular →
+              ∃ count : Nat,
+                (representation.annular.radialCut.card, count) ∈
+                    certificate.maxRadialCutEdgesOnSingleFaceHistogram ∧
+                  0 < count
+
+/--
 Factored semantic soundness package for the max-cut route.  The finite archive
 already supplies the matching certificate and the max-two obstruction; these
 two fields are the remaining graph-facing meanings of the radial-cut data.
@@ -7037,6 +7100,16 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutSound
     Prop :=
   ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound ∧
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxSingleFaceCountSound
+
+/--
+Histogram-level semantic soundness package for the max-cut route.  It replaces
+the scalar max-count equation by the stronger positive histogram-entry
+condition that mirrors the finite lab output.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound ∧
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound
 
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness
     (hmaxcut :
@@ -7072,6 +7145,34 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutC
       certificate_mem := hcertificate
       radialCutEdgeCount_eq := hradialCutEdgeCount
       radialCutEdges_on_single_face := hmaxCount
+    }⟩
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab_of_maxCutHistogramSoundness
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab := by
+  intro V G representation hcase hradial
+  rcases
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCertificate_exists_of_archiveCase
+      hhist.1.1 hcase with
+    ⟨certificate, hcertificate, hkey⟩
+  have hcutCard :
+      representation.annular.radialCut.card = 4 :=
+    hsound.1 representation hcase
+  rcases hsound.2 representation certificate hcertificate hkey hradial with
+    ⟨count, hcountMem, hcountPos⟩
+  have hfourMem :
+      (4, count) ∈ certificate.maxRadialCutEdgesOnSingleFaceHistogram := by
+    simpa [hcutCard] using hcountMem
+  exact
+    ⟨{
+      certificate := certificate
+      certificate_mem := hcertificate
+      fourOnSingleFaceRotationCount := count
+      fourOnSingleFace_mem := hfourMem
+      fourOnSingleFaceRotationCount_pos := hcountPos
     }⟩
 
 /-- Lab-side candidate for a radial-face coherent rotation in the archive. -/
@@ -9363,6 +9464,38 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
       hcoherentRepresentation
 
 /--
+Histogram-level max-cut form of the finite-row obstruction.  This is the same
+previous-boundary radial-face n6 extraction, but the finite contradiction is
+the positive histogram entry for four radial-cut edges on one face.
+-/
+theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutHistogramCoverage
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (extraction :
+      ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
+        normalForm)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    False := by
+  have hcoherentNormal :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        extraction.n6.data.normalFormRadialFace.normalForm.annular :=
+    ⟨extraction.n6.data.normalFormRadialFace.radialFace⟩
+  have hcoherentRepresentation :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        extraction.n6.data.representation.annular := by
+    simpa [extraction.n6.data.annular_eq] using hcoherentNormal
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCutHistogram
+      hhist hcovered
+      extraction.n6.data.representation
+      (closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum_mem
+        extraction.auditedKey)
+      hcoherentRepresentation
+
+/--
 Concrete previous-boundary normal-form realization of the winding-freedom
 witness along the current serious repair route.  It packages, for one witness,
 ordinary embedded collar geometry, the previous-boundary witness upgrade, the
@@ -9544,6 +9677,40 @@ theorem closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_f
     False :=
   closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_maxCutCoverage
     data.toPreviousBoundaryRealization hmaxcut hcovered
+
+/--
+Concrete previous-boundary obstruction using histogram-level max-cut semantic
+coverage instead of scalar max-count coverage.
+-/
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_maxCutHistogramCoverage
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutHistogramCoverage
+    data.previousBoundaryRadialFaceN6AuditedArchiveExtraction hhist hcovered
+
+/--
+Current-boundary concrete obstruction using histogram-level max-cut semantic
+coverage.
+-/
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_maxCutHistogramCoverage
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization
+        G)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_maxCutHistogramCoverage
+    data.toPreviousBoundaryRealization hhist hcovered
 
 /--
 Concrete previous-boundary nonrealizability statement: the fully assembled
@@ -9836,6 +10003,38 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBo
     closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_maxCutCoverage
       extraction.concrete hmaxcut hcovered
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_maxCutHistogramCoverage
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  classical
+  intro V G normalForm
+  letI : DecidableEq V := Classical.decEq V
+  rcases hextract normalForm with ⟨extraction⟩
+  exact
+    closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_maxCutHistogramCoverage
+      extraction.concrete hhist hcovered
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_maxCutHistogramCoverage
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  classical
+  intro V G normalForm
+  letI : DecidableEq V := Classical.decEq V
+  rcases hextract normalForm with ⟨extraction⟩
+  exact
+    closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_maxCutHistogramCoverage
+      extraction.concrete hhist hcovered
+
 /--
 Route-facing repaired target at the exact concrete bridge level.  The finite
 side is the audited radial-face rows; the remaining mathematical side is the
@@ -9897,6 +10096,38 @@ def Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCu
 theorem section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutCoverageTarget :
     Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutCoverageTarget :=
   closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_maxCutCoverage
+
+/--
+Route-facing repaired target at the exact concrete bridge level using the
+histogram-level row certificates.  The finite side is the semantic coverage
+theorem that real cut-open radial faces induce a positive histogram entry for
+four radial-cut edges on one face.
+-/
+def Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndMaxCutHistogramCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndMaxCutHistogramCoverageTarget :
+    Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndMaxCutHistogramCoverageTarget :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_maxCutHistogramCoverage
+
+/--
+Current-boundary repaired target using the same histogram-level semantic
+coverage obligation after witness placement supplies the concrete package.
+-/
+def Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutHistogramCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutHistogramCoverageTarget :
+    Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutHistogramCoverageTarget :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_maxCutHistogramCoverage
 
 /--
 The exact remaining bridge failure forced by the current fork: if the audited
@@ -12454,6 +12685,266 @@ theorem section92Step4CurrentFiniteFrontierMaxCutSoundnessExactCriteria :
   ⟨section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutSoundnessExactCriterion,
     section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutSoundnessExactCriterion,
     section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutSoundnessExactCriterion⟩
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramCoverage
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_maxCutHistogramCoverage
+    (closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge
+      hbridge)
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+    hcovered
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramCoverage
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_maxCutHistogramCoverage
+    (closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingCurrentBoundaryBridge
+      hbridge)
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+    hcovered
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramCoverage
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramCoverage
+    (closedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge_of_oneCollarBridge
+      hbridge)
+    hcovered
+
+/--
+Factored-bridge exact criterion for the histogram-level max-cut finite side.
+The row certificates forbid a positive histogram entry with all four radial-cut
+edges on one face; the remaining semantic obligation is that a real cut-open
+radial face induces exactly that forbidden histogram entry.
+-/
+def Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramCoverageExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab)
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramCoverageExactCriterion :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramCoverageExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramCoverage,
+      ?_⟩
+  intro hbridge hnot hcovered
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramCoverage
+        hbridge hcovered)
+
+/--
+Current-boundary exact criterion for the histogram-level max-cut semantic
+coverage link.
+-/
+def Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramCoverageExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab)
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramCoverageExactCriterion :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramCoverageExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramCoverage,
+      ?_⟩
+  intro hbridge hnot hcovered
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramCoverage
+        hbridge hcovered)
+
+/--
+One-collar exact criterion for the histogram-level max-cut semantic coverage
+link.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramCoverageExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab)
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramCoverageExactCriterion :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramCoverageExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramCoverage,
+      ?_⟩
+  intro hbridge hnot hcovered
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramCoverage
+        hbridge hcovered)
+
+/--
+Bundled current-frontier histogram max-cut exact criteria for the factored,
+current-boundary, and one-collar bridges.
+-/
+def Section92Step4CurrentFiniteFrontierMaxCutHistogramCoverageExactCriteria :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramCoverageExactCriterion ∧
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramCoverageExactCriterion ∧
+      Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramCoverageExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierMaxCutHistogramCoverageExactCriteria :
+    Section92Step4CurrentFiniteFrontierMaxCutHistogramCoverageExactCriteria :=
+  ⟨section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramCoverageExactCriterion,
+    section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramCoverageExactCriterion,
+    section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramCoverageExactCriterion⟩
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramCoverage
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab_of_maxCutHistogramSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+      hsound)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramCoverage
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab_of_maxCutHistogramSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+      hsound)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramCoverage
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCoveredByLab_of_maxCutHistogramSoundness
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+      hsound)
+
+/--
+Factored-bridge exact criterion for the histogram-level soundness package.
+Once the geometric bridge is available, the finite side reduces to the
+radial-cut cardinality and positive histogram-entry semantics.
+-/
+def Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramSoundnessExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness)
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramSoundnessExactCriterion :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramSoundnessExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness,
+      ?_⟩
+  intro hbridge hnot hsound
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness
+        hbridge hsound)
+
+/--
+Current-boundary exact criterion for the histogram-level soundness package.
+-/
+def Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramSoundnessExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness)
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramSoundnessExactCriterion :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramSoundnessExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramSoundness,
+      ?_⟩
+  intro hbridge hnot hsound
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutHistogramSoundness
+        hbridge hsound)
+
+/--
+One-collar exact criterion for the histogram-level soundness package.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramSoundnessExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness)
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramSoundnessExactCriterion :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramSoundnessExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramSoundness,
+      ?_⟩
+  intro hbridge hnot hsound
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutHistogramSoundness
+        hbridge hsound)
+
+/--
+Bundled current-frontier exact criteria for the histogram-level max-cut
+soundness package.
+-/
+def Section92Step4CurrentFiniteFrontierMaxCutHistogramSoundnessExactCriteria :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramSoundnessExactCriterion ∧
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramSoundnessExactCriterion ∧
+      Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramSoundnessExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierMaxCutHistogramSoundnessExactCriteria :
+    Section92Step4CurrentFiniteFrontierMaxCutHistogramSoundnessExactCriteria :=
+  ⟨section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutHistogramSoundnessExactCriterion,
+    section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutHistogramSoundnessExactCriterion,
+    section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramSoundnessExactCriterion⟩
 
 /--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
