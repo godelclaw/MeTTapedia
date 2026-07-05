@@ -157,7 +157,10 @@ set_option autoImplicit false
 #check realM4SelfReductionUpperExplicitPNPConstructionInputs_exact
 #check realM4SelfReductionUpperExplicitPNPConditionalInputs
 #check realM4SelfReductionUpperExplicitPNPConditionalInputs_exact
+#check realM4_atomCompleteness_of_CDENF
+#check realM4_gaugeFaithfulness_of_CDENF
 #check RealM4MechanicalInterfaceData
+#check RealM4MechanicalInterfaceData.ofCDENFComponents
 #check RealM4MechanicalInterfaceData.withAnalyticFrontier
 #check RealM4EndgameMechanicalData
 #check RealM4EndgameMechanicalData.ofComponents
@@ -350,7 +353,10 @@ set_option autoImplicit false
 #print axioms realM4SelfReductionUpperExplicitPNPConstructionInputs_exact
 #print axioms realM4SelfReductionUpperExplicitPNPConditionalInputs
 #print axioms realM4SelfReductionUpperExplicitPNPConditionalInputs_exact
+#print axioms realM4_atomCompleteness_of_CDENF
+#print axioms realM4_gaugeFaithfulness_of_CDENF
 #print axioms RealM4MechanicalInterfaceData
+#print axioms RealM4MechanicalInterfaceData.ofCDENFComponents
 #print axioms RealM4MechanicalInterfaceData.withAnalyticFrontier
 #print axioms RealM4EndgameMechanicalData
 #print axioms RealM4EndgameMechanicalData.ofComponents

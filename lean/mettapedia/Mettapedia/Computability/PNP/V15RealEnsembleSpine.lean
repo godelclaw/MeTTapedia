@@ -1915,6 +1915,30 @@ theorem realM4SelfReductionUpperExplicitPNPConditionalInputs_exact :
 
 /-! ## Real-M4 endgame staging without toy parameters -/
 
+/-- CD-ENF atom completeness is already a generic theorem of the evidence
+semantics.  It is not a separate real-M4 mathematical input. -/
+theorem realM4_atomCompleteness_of_CDENF
+    {Omega : Type u} {Neutral : Type v} {Safe : Type w}
+    {Gauge : Type x}
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge) :
+    ∀ E : RawEvidence Neutral Safe Gauge,
+      semantics.SatNormal (CDENF E) = semantics.SatRaw E := by
+  intro E
+  exact CDENF_semantics semantics E
+
+/-- Gauge faithfulness for a single gauge leaf is the gauge case of CD-ENF
+semantics.  The real construction must still build the gauge predicate and
+product law, but not a separate normalizer-correctness proof. -/
+theorem realM4_gaugeFaithfulness_of_CDENF
+    {Omega : Type u} {Neutral : Type v} {Safe : Type w}
+    {Gauge : Type x}
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge) :
+    ∀ gamma : Gauge,
+      semantics.SatNormal (CDENF (.gauge gamma)) =
+        semantics.gaugeSat gamma := by
+  intro gamma
+  rfl
+
 /-- Mechanical real-interface data for the v13 clash interface, deliberately
 excluding the three analytic frontier fields.  Constructing this data for the
 real M4 ensemble is a construction obligation; it is not an irreducible
@@ -1973,6 +1997,68 @@ variable {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
 variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
 variable {HistoryAtom : Type d} {Pivot : Type e}
 variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+
+/-- Build real mechanical interface data while deriving the CD-ENF structural
+fields from the generic normalizer semantics.  The remaining arguments are the
+actual real construction obligations; `atomCompleteness` and
+`gaugeFaithfulness` are filled by `CDENF_semantics`. -/
+def ofCDENFComponents
+    (law : FiniteRationalLaw Omega)
+    (target : Omega -> Bool)
+    (publicInput : Omega -> Public)
+    (neutralSkeleton : Omega -> Skeleton)
+    (oppositeSupport : Omega -> Omega -> Prop)
+    (transcript : Omega -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law target transcript observerBit Pair Stage Branch)
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface Omega Public Observer Output Neutral Safe Gauge)
+    (historyField : FiniteSigmaField.{u, d} Omega)
+    (pivotSummary : Omega -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (singleMessage :
+      ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (noPublicTargetTags :
+      PairNeutral oppositeSupport neutralSkeleton ∧
+        HasMessageOppositePair oppositeSupport target ∧
+          ¬ ∃ f : Skeleton -> Bool,
+            ∀ omega, target omega = f (neutralSkeleton omega))
+    (admissibleHistories :
+      BalancedBit target ∧
+        BalancedConditioning (Omega := Omega) historyField target) :
+    RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge Transcript
+      Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton where
+  law := law
+  target := target
+  publicInput := publicInput
+  neutralSkeleton := neutralSkeleton
+  oppositeSupport := oppositeSupport
+  transcript := transcript
+  observerBit := observerBit
+  phaseA := phaseA
+  semantics := semantics
+  observerEvidence := observerEvidence
+  historyField := historyField
+  pivotSummary := pivotSummary
+  epsMix := epsMix
+  safeCost := safeCost
+  safeBudget := safeBudget
+  gaugeIncidence := gaugeIncidence
+  gaugeBound := gaugeBound
+  singleMessage := singleMessage
+  hiddenGaugeProduct := hiddenGaugeProduct
+  noPublicTargetTags := noPublicTargetTags
+  atomCompleteness := realM4_atomCompleteness_of_CDENF semantics
+  gaugeFaithfulness := realM4_gaugeFaithfulness_of_CDENF semantics
+  admissibleHistories := admissibleHistories
 
 /-- Fill the real mechanical interface with the three analytic frontier
 fields.  This is the exact point where safe-QSSM, bounded gauge incidence, and
@@ -2655,15 +2741,15 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "atomCompleteness"
-    status := .openConstruction
-    checkedName := "GaugeBufferedLockedInterface.atomCompleteness"
-    note := "The M4 raw evidence atoms still need a concrete CD-ENF completeness proof."
+    status := .constructionTransferred
+    checkedName := "realM4_atomCompleteness_of_CDENF"
+    note := "The generic CD-ENF semantics theorem supplies atom completeness for any real evidence semantics."
   },
   {
     item := "gaugeFaithfulness"
-    status := .openConstruction
-    checkedName := "GaugeBufferedLockedInterface.gaugeFaithfulness"
-    note := "The M4 hidden-gauge leaves still need a concrete faithfulness proof."
+    status := .constructionTransferred
+    checkedName := "realM4_gaugeFaithfulness_of_CDENF"
+    note := "Gauge-leaf faithfulness is the gauge case of CD-ENF semantics; the separate real obligation is the hidden-gauge product law."
   },
   {
     item := "hiddenGaugeProduct"
@@ -2785,8 +2871,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
-        RealM4LiftStatus.openConstruction,
-        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
@@ -2810,8 +2896,6 @@ def realM4OpenConstructionItems : List String := [
   "publicLockSupportCoverage",
   "lockedMessageRigidity",
   "noPublicTargetTags",
-  "atomCompleteness",
-  "gaugeFaithfulness",
   "hiddenGaugeProduct",
   "admissibleHistories",
   "uniformCNFSupportData",
@@ -2826,8 +2910,6 @@ theorem realM4OpenConstructionItems_exact :
       [ "publicLockSupportCoverage",
         "lockedMessageRigidity",
         "noPublicTargetTags",
-        "atomCompleteness",
-        "gaugeFaithfulness",
         "hiddenGaugeProduct",
         "admissibleHistories",
         "uniformCNFSupportData",
