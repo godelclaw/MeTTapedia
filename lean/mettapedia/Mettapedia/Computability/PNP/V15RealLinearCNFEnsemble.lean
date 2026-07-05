@@ -4152,6 +4152,144 @@ theorem
   (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSingleMessageSATSpine
     i₀).singleMessage
 
+/-- Neutral skeleton for no-target-rows Appendix-I CNF worlds: keep the base
+no-target-rows map skeleton and ignore the satisfying assignment. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    V13RealLinearNoTargetRowsMap m i₀ :=
+  v13RealLinearNoTargetRowsNeutralSkeleton omega.publicInstance
+
+/-- Opposite support for no-target-rows Appendix-I CNF worlds is inherited
+from the base no-target-rows public surface. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+    {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    Prop :=
+  v13RealLinearNoTargetRowsOppositeSupport omega₀.publicInstance
+    omega₁.publicInstance
+
+/-- Build a no-target-rows Appendix-I CNF world from a base public instance
+and the free hidden gauge bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) (gauge : Bool) :
+    RealM4CNFWorld
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := omega
+  support := trivial
+  assignment :=
+    v13RealLinearGaugeCNFAssignment
+      (v13RealLinearNoTargetRowsPublicInput omega) gauge
+  sat :=
+    v13RealLinearGaugeCNFFormula_satisfied_assignment
+      (v13RealLinearNoTargetRowsPublicInput omega) gauge
+
+/-- The target of the canonical Appendix-I CNF world is the base
+no-target-rows target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase_target
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) (gauge : Bool) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+          omega gauge) =
+      v13RealLinearNoTargetRowsTargetBit omega := by
+  rfl
+
+/-- Pair-neutrality transfers to the no-target-rows Appendix-I CNF world. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_pairNeutral
+    {m : Nat} {i₀ : Fin m} :
+    PairNeutral
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+        m i₀)
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+        m i₀) := by
+  intro omega₀ omega₁ hSupport
+  exact
+    v13RealLinearNoTargetRows_pairNeutral omega₀.publicInstance
+      omega₁.publicInstance hSupport
+
+/-- Opposite-message pairs transfer to the no-target-rows Appendix-I CNF
+world by using canonical satisfying assignments with a fixed hidden gauge
+bit. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hasMessageOppositePair
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    HasMessageOppositePair
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+        m i₀)
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+        m i₀) := by
+  rcases v13RealLinearNoTargetRows_hasMessageOppositePair i₀ hm with
+    ⟨omega₀, omega₁, hSupport, h0, h1⟩
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+        omega₀ false,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+        omega₁ false,
+      hSupport, ?_, ?_⟩
+  · rw [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase_target]
+    exact h0
+  · rw [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase_target]
+    exact h1
+
+/-- Structural `noPublicTargetTags` transferred to the no-target-rows
+Appendix-I CNF world.  The neutral skeleton is the manuscript-shaped
+no-target-rows public map skeleton; the CNF assignment and hidden gauge bit do
+not become public target tags. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_noPublicTargetTags
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    PairNeutral
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+          m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+          m i₀) ∧
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+          m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+          m i₀) ∧
+        ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+          ∀ omega :
+            RealM4CNFWorld
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀),
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+                omega =
+              f
+                (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+                  omega) := by
+  have hPair :
+      PairNeutral
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+          m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+          m i₀) :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+          m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+          m i₀) :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hasMessageOppositePair
+      i₀ hm
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFOppositeSupport
+          m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+          m i₀)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+          m i₀)
+        hPair hOpp⟩
+
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
