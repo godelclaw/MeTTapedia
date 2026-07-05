@@ -35,6 +35,7 @@ set_option autoImplicit false
 #check v13RealLinearCNFReadoutData
 #check v13RealLinearCNFReadoutData_singleMessagePromise
 #check v13RealLinearCNFReadoutData_supportedSatisfiable
+#check v13RealLinearCNFReadoutData_cnfExtractionComplete
 #check v13RealLinearCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
 #check V13RealLinearGaugeCNFVar
 #check V13RealLinearGaugeCNFWitness
@@ -66,6 +67,7 @@ set_option autoImplicit false
 #check v13RealLinearGaugeCNFReadoutData
 #check v13RealLinearGaugeCNFReadoutData_singleMessagePromise
 #check v13RealLinearGaugeCNFReadoutData_supportedSatisfiable
+#check v13RealLinearGaugeCNFReadoutData_cnfExtractionComplete
 #check v13RealLinearGaugeCNFReadoutData_projection_eq_publicMessage
 #check v13RealLinearGaugeCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
 #check v13RealLinearSmallGaugeCNFMessageIndex
@@ -284,6 +286,7 @@ set_option autoImplicit false
 #print axioms v13RealLinearCNFReadoutData
 #print axioms v13RealLinearCNFReadoutData_singleMessagePromise
 #print axioms v13RealLinearCNFReadoutData_supportedSatisfiable
+#print axioms v13RealLinearCNFReadoutData_cnfExtractionComplete
 #print axioms v13RealLinearCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
 #print axioms V13RealLinearGaugeCNFVar
 #print axioms V13RealLinearGaugeCNFWitness
@@ -315,6 +318,7 @@ set_option autoImplicit false
 #print axioms v13RealLinearGaugeCNFReadoutData
 #print axioms v13RealLinearGaugeCNFReadoutData_singleMessagePromise
 #print axioms v13RealLinearGaugeCNFReadoutData_supportedSatisfiable
+#print axioms v13RealLinearGaugeCNFReadoutData_cnfExtractionComplete
 #print axioms v13RealLinearGaugeCNFReadoutData_projection_eq_publicMessage
 #print axioms v13RealLinearGaugeCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
 #print axioms v13RealLinearSmallGaugeCNFMessageIndex
