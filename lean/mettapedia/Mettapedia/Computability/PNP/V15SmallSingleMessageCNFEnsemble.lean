@@ -2344,6 +2344,17 @@ theorem xorGaugeSingleMessageAppendixICNF_gaugeFaithfulness :
   intro gamma
   rfl
 
+/-- Structural `hiddenGaugeProduct` transferred to the Appendix-I CNF world
+carrier: every transported hidden-gauge predicate is satisfied on every
+concrete CNF world. -/
+theorem xorGaugeSingleMessageAppendixICNF_hiddenGaugeProduct :
+    ∀ gamma omega,
+      xorGaugeSingleMessageAppendixICNFSemantics.gaugeSat gamma omega := by
+  intro gamma omega
+  simpa [xorGaugeSingleMessageAppendixICNFSemantics] using
+    (xorGaugeSingleMessage_hiddenGaugeProduct gamma
+      (xorGaugeSingleMessageAppendixICNFWorldAsSATWorld omega))
+
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
 
 /-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered

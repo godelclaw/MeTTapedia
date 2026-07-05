@@ -75,6 +75,7 @@ namespace Mettapedia.Computability.PNP
 #check xorGaugeSingleMessageAppendixICNFSemantics
 #check xorGaugeSingleMessageAppendixICNF_atomCompleteness
 #check xorGaugeSingleMessageAppendixICNF_gaugeFaithfulness
+#check xorGaugeSingleMessageAppendixICNF_hiddenGaugeProduct
 #check XorGaugeSingleMessagePNPSATDecider
 #check xorGaugeSingleMessageVarOrder
 #check xorGaugeSingleMessageFormula_usesOnly
@@ -175,6 +176,7 @@ namespace Mettapedia.Computability.PNP
 #print axioms xorGaugeSingleMessageAppendixICNFSemantics
 #print axioms xorGaugeSingleMessageAppendixICNF_atomCompleteness
 #print axioms xorGaugeSingleMessageAppendixICNF_gaugeFaithfulness
+#print axioms xorGaugeSingleMessageAppendixICNF_hiddenGaugeProduct
 #print axioms xorGaugeSingleMessageVarOrder_nodup
 #print axioms xorGaugeSingleMessageFormula_usesOnly
 #print axioms xorGaugeSingleMessageFormula_satisfiable
