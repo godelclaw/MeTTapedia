@@ -877,4 +877,371 @@ theorem xorSingleMessage_admissibleHistories
   ⟨xorSingleMessage_target_balanced,
     xorSingleMessage_historyField_balancedConditioning coord⟩
 
+/-! ## Two-variable XOR gauge CNF anchor -/
+
+/-- Public instances for the gauge-buffered XOR anchor reuse the two-coordinate
+XOR public surface. -/
+abbrev XorGaugeSingleMessagePublic :=
+  XorSingleMessagePublic
+
+/-- The two CNF variables are the message bit and a free hidden gauge bit. -/
+abbrev XorGaugeSingleMessageVar (_Y : XorGaugeSingleMessagePublic) :=
+  Fin 2
+
+/-- Hidden SAT witnesses are concrete assignments to the two CNF variables. -/
+abbrev XorGaugeSingleMessageWitness (_Y : XorGaugeSingleMessagePublic) :=
+  ConcreteCNF.Assignment (Fin 2)
+
+/-- Variable `0` is the fixed message/readout coordinate. -/
+def xorGaugeSingleMessageMessageVar
+    (Y : XorGaugeSingleMessagePublic) :
+    XorGaugeSingleMessageVar Y :=
+  0
+
+/-- Variable `1` is a free hidden gauge coordinate. -/
+def xorGaugeSingleMessageGaugeVar
+    (Y : XorGaugeSingleMessagePublic) :
+    XorGaugeSingleMessageVar Y :=
+  1
+
+/-- The fixed public message readout for the gauge-buffered anchor. -/
+def xorGaugeSingleMessageM (Y : XorGaugeSingleMessagePublic) : Bool :=
+  xorSingleMessageM Y
+
+/-- The concrete CNF locks only the message variable to `M(Y)`; the second
+variable is deliberately unconstrained hidden gauge state. -/
+def xorGaugeSingleMessageFormula
+    (Y : XorGaugeSingleMessagePublic) :
+    ConcreteCNF.Formula (XorGaugeSingleMessageVar Y) :=
+  [ConcreteCNF.unitClause (0 : Fin 2) (xorGaugeSingleMessageM Y)]
+
+/-- Every public instance is in support for the gauge-buffered anchor. -/
+def xorGaugeSingleMessageSupport
+    (_Y : XorGaugeSingleMessagePublic) : Prop :=
+  True
+
+/-- The semantic verifier is ordinary CNF satisfaction. -/
+def xorGaugeSingleMessageVerifier
+    (Y : XorGaugeSingleMessagePublic)
+    (W : XorGaugeSingleMessageWitness Y) : Prop :=
+  ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y) W
+
+/-- Executable verifier: check the forced message bit. -/
+def xorGaugeSingleMessageVerifierDecision
+    (Y : XorGaugeSingleMessagePublic)
+    (W : XorGaugeSingleMessageWitness Y) : Bool :=
+  decide (W 0 = xorGaugeSingleMessageM Y)
+
+/-- The one-clause formula is satisfied exactly when the message coordinate is
+locked to the public XOR message. -/
+theorem xorGaugeSingleMessageFormula_sat_iff
+    {Y : XorGaugeSingleMessagePublic}
+    {W : XorGaugeSingleMessageWitness Y} :
+    ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y) W ↔
+      W 0 = xorGaugeSingleMessageM Y := by
+  constructor
+  · intro hW
+    have hclause :
+        ConcreteCNF.IsSatClause
+          (ConcreteCNF.unitClause (0 : Fin 2)
+            (xorGaugeSingleMessageM Y)) W := by
+      exact hW _ (by simp [xorGaugeSingleMessageFormula])
+    exact
+      (ConcreteCNF.isSatClause_unitClause_iff W (0 : Fin 2)
+        (xorGaugeSingleMessageM Y)).mp hclause
+  · intro hmsg clause hclause
+    simp [xorGaugeSingleMessageFormula] at hclause
+    rw [hclause]
+    exact
+      (ConcreteCNF.isSatClause_unitClause_iff W (0 : Fin 2)
+        (xorGaugeSingleMessageM Y)).mpr hmsg
+
+/-- The executable verifier decides the semantic verifier relation. -/
+theorem xorGaugeSingleMessageVerifierDecision_correct
+    {Y : XorGaugeSingleMessagePublic}
+    {W : XorGaugeSingleMessageWitness Y} :
+    xorGaugeSingleMessageVerifierDecision Y W = true ↔
+      xorGaugeSingleMessageVerifier Y W := by
+  simp [xorGaugeSingleMessageVerifierDecision,
+    xorGaugeSingleMessageVerifier,
+    xorGaugeSingleMessageFormula_sat_iff]
+
+/-- A satisfying assignment with a chosen hidden gauge bit. -/
+def xorGaugeSingleMessageAssignment
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    XorGaugeSingleMessageWitness Y :=
+  fun i => if i = (0 : Fin 2) then xorGaugeSingleMessageM Y else gauge
+
+@[simp] theorem xorGaugeSingleMessageAssignment_message
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    xorGaugeSingleMessageAssignment Y gauge 0 =
+      xorGaugeSingleMessageM Y := by
+  simp [xorGaugeSingleMessageAssignment]
+
+@[simp] theorem xorGaugeSingleMessageAssignment_gauge
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    xorGaugeSingleMessageAssignment Y gauge 1 = gauge := by
+  simp [xorGaugeSingleMessageAssignment]
+
+/-- The selected assignment satisfies the CNF for either hidden gauge bit. -/
+theorem xorGaugeSingleMessageFormula_satisfied_assignment
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    ConcreteCNF.IsSatFormula
+      (xorGaugeSingleMessageFormula Y)
+      (xorGaugeSingleMessageAssignment Y gauge) := by
+  exact xorGaugeSingleMessageFormula_sat_iff.mpr
+    (xorGaugeSingleMessageAssignment_message Y gauge)
+
+/-- Any satisfying witness reads out the fixed public message. -/
+theorem xorGaugeSingleMessageWitness_message_eq_M
+    {Y : XorGaugeSingleMessagePublic}
+    {W : XorGaugeSingleMessageWitness Y}
+    (hW : xorGaugeSingleMessageVerifier Y W) :
+    W 0 = xorGaugeSingleMessageM Y := by
+  exact xorGaugeSingleMessageFormula_sat_iff.mp hW
+
+/-- The extraction map is identity: SAT assignments are the hidden witnesses. -/
+def xorGaugeSingleMessageExtract
+    (Y : XorGaugeSingleMessagePublic)
+    (W : ConcreteCNF.Assignment (XorGaugeSingleMessageVar Y)) :
+    XorGaugeSingleMessageWitness Y :=
+  W
+
+/-- The witness-level message is the forced message variable. -/
+def xorGaugeSingleMessageWitnessMessage
+    (Y : XorGaugeSingleMessagePublic)
+    (W : XorGaugeSingleMessageWitness Y) : Bool :=
+  W 0
+
+/-- The CNF-level message projection reads the forced message variable. -/
+def xorGaugeSingleMessageProjection
+    (Y : XorGaugeSingleMessagePublic)
+    (W : ConcreteCNF.Assignment (XorGaugeSingleMessageVar Y)) : Bool :=
+  W 0
+
+/-- The gauge-buffered anchor instantiated in the manuscript CNF readout
+interface. -/
+def xorGaugeSingleMessageCNFReadoutData :
+    ManuscriptCNFReadoutData
+      XorGaugeSingleMessagePublic
+      XorGaugeSingleMessageVar
+      XorGaugeSingleMessageWitness
+      Bool where
+  support := xorGaugeSingleMessageSupport
+  formula := xorGaugeSingleMessageFormula
+  validWitness := xorGaugeSingleMessageVerifier
+  extract := xorGaugeSingleMessageExtract
+  witnessMessage := xorGaugeSingleMessageWitnessMessage
+  projection := xorGaugeSingleMessageProjection
+  cnfSound := by
+    intro Y W hW
+    exact hW
+  projection_eq_witnessMessage := by
+    intro Y W hW
+    rfl
+
+/-- The gauge-buffered anchor has the semantic single-message promise:
+the hidden gauge bit may vary, but the message bit is forced. -/
+theorem xorGaugeSingleMessageCNFReadoutData_singleMessagePromise :
+    xorGaugeSingleMessageCNFReadoutData.SingleMessagePromise := by
+  intro Y W W' hY hW hW'
+  have hmsg := xorGaugeSingleMessageWitness_message_eq_M hW
+  have hmsg' := xorGaugeSingleMessageWitness_message_eq_M hW'
+  simp [xorGaugeSingleMessageCNFReadoutData,
+    xorGaugeSingleMessageWitnessMessage, hmsg, hmsg']
+
+/-- Every supported public instance has satisfying assignments, one for each
+choice of hidden gauge bit. -/
+theorem xorGaugeSingleMessageCNFReadoutData_supportedSatisfiable :
+    xorGaugeSingleMessageCNFReadoutData.SupportedCNFSatisfiable := by
+  intro Y hY
+  exact
+    ⟨xorGaugeSingleMessageAssignment Y false,
+      xorGaugeSingleMessageFormula_satisfied_assignment Y false⟩
+
+/-- Any satisfying SAT-search output reads the fixed public message. -/
+theorem xorGaugeSingleMessageCNFReadoutData_projection_eq_M
+    {Y : XorGaugeSingleMessagePublic}
+    (_hY : xorGaugeSingleMessageCNFReadoutData.support Y)
+    {W : ConcreteCNF.Assignment (XorGaugeSingleMessageVar Y)}
+    (hW :
+      ConcreteCNF.IsSatFormula
+        (xorGaugeSingleMessageCNFReadoutData.formula Y) W) :
+    xorGaugeSingleMessageCNFReadoutData.projection Y W =
+      xorGaugeSingleMessageM Y := by
+  exact xorGaugeSingleMessageFormula_sat_iff.mp hW
+
+/-- The arbitrary-output SAT-search readout obligation holds although the
+hidden gauge bit is unconstrained. -/
+theorem xorGaugeSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrect :
+    xorGaugeSingleMessageCNFReadoutData.SupportedArbitraryOutputSATSearchCorrect := by
+  exact
+    xorGaugeSingleMessageCNFReadoutData.supportedArbitraryOutputSATSearchCorrect_of_singleMessagePromise
+      xorGaugeSingleMessageCNFReadoutData_singleMessagePromise
+      xorGaugeSingleMessageCNFReadoutData_supportedSatisfiable
+
+/-- Flip the hidden gauge coordinate when `gamma = true`; leave the message
+coordinate unchanged. -/
+def xorGaugeSingleMessageGaugeAction
+    (gamma : Bool) {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    XorGaugeSingleMessageWitness Y :=
+  fun i => if i = (1 : Fin 2) then (if gamma then !W i else W i) else W i
+
+@[simp] theorem xorGaugeSingleMessageGaugeAction_message
+    (gamma : Bool) {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    xorGaugeSingleMessageGaugeAction gamma W 0 = W 0 := by
+  simp [xorGaugeSingleMessageGaugeAction]
+
+@[simp] theorem xorGaugeSingleMessageGaugeAction_gauge_false
+    {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    xorGaugeSingleMessageGaugeAction false W = W := by
+  funext i
+  by_cases hi : i = (1 : Fin 2) <;>
+    simp [xorGaugeSingleMessageGaugeAction, hi]
+
+/-- The hidden gauge action preserves verifier validity because the CNF only
+mentions the message variable. -/
+theorem xorGaugeSingleMessageGaugeAction_preserves_verifier
+    (gamma : Bool) {Y : XorGaugeSingleMessagePublic}
+    {W : XorGaugeSingleMessageWitness Y}
+    (hW : xorGaugeSingleMessageVerifier Y W) :
+    xorGaugeSingleMessageVerifier Y
+      (xorGaugeSingleMessageGaugeAction gamma W) := by
+  exact xorGaugeSingleMessageFormula_sat_iff.mpr
+    (by
+      simpa using
+        (xorGaugeSingleMessageFormula_sat_iff.mp hW))
+
+/-- The hidden gauge action preserves the message readout. -/
+theorem xorGaugeSingleMessageGaugeAction_preserves_readout
+    (gamma : Bool) {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    xorGaugeSingleMessageWitnessMessage Y
+        (xorGaugeSingleMessageGaugeAction gamma W) =
+      xorGaugeSingleMessageWitnessMessage Y W := by
+  simp [xorGaugeSingleMessageWitnessMessage]
+
+/-- The hidden gauge action is nontrivial on satisfying witnesses: flipping
+the hidden coordinate changes the `gauge = false` witness. -/
+theorem xorGaugeSingleMessageGaugeAction_nontrivial :
+    ∃ Y : XorGaugeSingleMessagePublic,
+      ∃ W : XorGaugeSingleMessageWitness Y,
+        xorGaugeSingleMessageVerifier Y W ∧
+          xorGaugeSingleMessageGaugeAction true W ≠ W := by
+  let Y : XorGaugeSingleMessagePublic := (false, false)
+  let W : XorGaugeSingleMessageWitness Y :=
+    xorGaugeSingleMessageAssignment Y false
+  refine
+    ⟨Y, W,
+      xorGaugeSingleMessageFormula_satisfied_assignment Y false, ?_⟩
+  intro hfixed
+  have hcoord := congrFun hfixed (1 : Fin 2)
+  simp [W, xorGaugeSingleMessageGaugeAction] at hcoord
+
+/-- A world of the gauge-buffered XOR SAT spine is a public instance together
+with a satisfying two-variable assignment. -/
+structure XorGaugeSingleMessageSATWorld where
+  publicInput : XorGaugeSingleMessagePublic
+  assignment : XorGaugeSingleMessageWitness publicInput
+  sat : xorGaugeSingleMessageVerifier publicInput assignment
+
+/-- SAT-spine readout for the gauge-buffered anchor. -/
+def xorGaugeSingleMessageSATReadout
+    {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) : Bool :=
+  W 0
+
+/-- Every verifier-valid gauge-buffered witness reads the public message. -/
+theorem xorGaugeSingleMessageSATReadout_eq_M_of_valid
+    {Y : XorGaugeSingleMessagePublic}
+    {W : XorGaugeSingleMessageWitness Y}
+    (hW : xorGaugeSingleMessageVerifier Y W) :
+    xorGaugeSingleMessageSATReadout W = xorGaugeSingleMessageM Y := by
+  exact xorGaugeSingleMessageWitness_message_eq_M hW
+
+/-- The gauge-buffered anchor inhabits the real single-message SAT spine
+interface; the hidden gauge coordinate is irrelevant to the readout. -/
+def xorGaugeSingleMessageRealSingleMessageSATSpine :
+    RealSingleMessageSATSpine
+      XorGaugeSingleMessageSATWorld
+      XorGaugeSingleMessagePublic
+      (ConcreteCNF.Assignment (Fin 2)) where
+  publicInput := fun omega => omega.publicInput
+  witnessOfWorld := fun omega => omega.assignment
+  verifier := xorGaugeSingleMessageVerifier
+  messageOfPublic := xorGaugeSingleMessageM
+  witnessReadout := fun W => W 0
+  target := fun omega => xorGaugeSingleMessageM omega.publicInput
+  worldWitnessValid := by
+    intro omega
+    exact omega.sat
+  readout_eq_message_of_valid := by
+    intro Y W hW
+    exact xorGaugeSingleMessageSATReadout_eq_M_of_valid hW
+  target_eq_message := by
+    intro omega
+    rfl
+
+/-- Structural `singleMessage` field for the gauge-buffered XOR CNF SAT spine. -/
+theorem xorGaugeSingleMessageRealSingleMessageSATSpine_singleMessage :
+    ∀ w0 w1 : XorGaugeSingleMessageSATWorld,
+      w0.publicInput = w1.publicInput ->
+        xorGaugeSingleMessageM w0.publicInput =
+          xorGaugeSingleMessageM w1.publicInput :=
+  xorGaugeSingleMessageRealSingleMessageSATSpine.singleMessage
+
+/-- CD-ENF neutral evidence for the gauge-buffered anchor. -/
+abbrev XorGaugeSingleMessageNeutral :=
+  Unit
+
+/-- CD-ENF safe evidence for the gauge-buffered anchor. -/
+abbrev XorGaugeSingleMessageSafe :=
+  Unit
+
+/-- The evidence-level hidden gauge coordinate is Boolean. -/
+abbrev XorGaugeSingleMessageGauge :=
+  Bool
+
+/-- Evidence semantics for the gauge-buffered anchor.  Gauge leaves are hidden
+and universally satisfied; the nontrivial SAT-level gauge action above records
+the concrete hidden degree of freedom. -/
+def xorGaugeSingleMessageSemantics :
+    EvidenceSemantics
+      XorGaugeSingleMessageSATWorld
+      XorGaugeSingleMessageNeutral
+      XorGaugeSingleMessageSafe
+      XorGaugeSingleMessageGauge where
+  neutralSat := fun _ _ => True
+  safeSat := fun _ _ => True
+  gaugeSat := fun _ _ => True
+
+/-- Structural `atomCompleteness` field for the gauge-buffered anchor. -/
+theorem xorGaugeSingleMessage_atomCompleteness :
+    ∀ E : RawEvidence
+      XorGaugeSingleMessageNeutral
+      XorGaugeSingleMessageSafe
+      XorGaugeSingleMessageGauge,
+      xorGaugeSingleMessageSemantics.SatNormal (CDENF E) =
+        xorGaugeSingleMessageSemantics.SatRaw E := by
+  intro E
+  exact CDENF_semantics xorGaugeSingleMessageSemantics E
+
+/-- Structural `gaugeFaithfulness` field for the gauge-buffered anchor. -/
+theorem xorGaugeSingleMessage_gaugeFaithfulness :
+    ∀ gamma : XorGaugeSingleMessageGauge,
+      xorGaugeSingleMessageSemantics.SatNormal (CDENF (.gauge gamma)) =
+        xorGaugeSingleMessageSemantics.gaugeSat gamma := by
+  intro gamma
+  rfl
+
+/-- Structural `hiddenGaugeProduct` field for the gauge-buffered anchor. -/
+theorem xorGaugeSingleMessage_hiddenGaugeProduct :
+    ∀ gamma omega,
+      xorGaugeSingleMessageSemantics.gaugeSat gamma omega := by
+  intro gamma omega
+  trivial
+
 end Mettapedia.Computability.PNP
