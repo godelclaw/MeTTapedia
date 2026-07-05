@@ -4080,6 +4080,78 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixI_semantic_i26_items
         i₀)
       trivial
 
+/-- The no-target-rows Appendix-I CNF assignments form the concrete real
+single-message SAT spine: public instances are adjusted no-target-row worlds,
+hidden witnesses are satisfying gauge-CNF assignments, and the public message
+is the base target bit. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSingleMessageSATSpine
+    {m : Nat} (i₀ : Fin m) :
+    RealSingleMessageSATSpine
+      (RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+      (V13RealLinearNoTargetRowsWorld m i₀)
+      (RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :=
+  realM4CNFSingleMessageSATSpine
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    (@v13RealLinearNoTargetRowsTargetBit m i₀)
+    (fun bit => bit)
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixD_publicMessageInvariant
+      i₀)
+
+/-- Target bit on the no-target-rows Appendix-I CNF world spine. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    Bool :=
+  realM4CNFMessageOfPublic
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    (@v13RealLinearNoTargetRowsTargetBit m i₀)
+    (fun bit => bit)
+    omega.publicInstance
+
+/-- Every verifier-valid witness in the no-target-rows Appendix-I CNF spine
+reads the fixed base target bit of its public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+    {m : Nat} (i₀ : Fin m)
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)}
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    realM4CNFWitnessReadout (fun bit => bit) W =
+      v13RealLinearNoTargetRowsTargetBit Y :=
+  realM4CNFWitness_readout_eq_publicMessage
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    (@v13RealLinearNoTargetRowsTargetBit m i₀)
+    (fun bit => bit)
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixD_publicMessageInvariant
+      i₀)
+    hW
+
+/-- Structural `singleMessage` transferred to the concrete no-target-rows
+Appendix-I CNF SAT spine. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSingleMessageSATSpine_singleMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∀ omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀),
+      omega₀.publicInstance = omega₁.publicInstance →
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+            omega₀ =
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+            omega₁ :=
+  (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSingleMessageSATSpine
+    i₀).singleMessage
+
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
