@@ -1,7 +1,5 @@
 {
-  "evidence_gaps": [
-    "stratified_sample: stratified source has aggregate counts but no per-sample payloads"
-  ],
+  "evidence_gaps": [],
   "failures": [],
   "frontier_verdict": "n8_frontier_no_profile_preserving_cases_in_checked_prefix_or_stratified_sample",
   "input_archive": "section92_closed_collar_winding_simple_patch_n8_frontier_audit.json",
@@ -17,13 +15,16 @@
   "stratified_sample": {
     "radial_order_case_count": 130,
     "sampled_patch_topology_count": 65,
+    "source_case_verdict_count": 130,
     "source_file": "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_65.json",
     "source_file_present": true,
     "source_summary": {
       "cap5_like_blocker_count": 0,
+      "case_verdict_count": 130,
       "exact_template_blocker_count": 0,
       "exact_template_histogram": {},
       "first_failed_after_template_exclusion_histogram": {},
+      "no_profile_preserving_case_count": 130,
       "non_template_cyclic_cut_blocker_count": 0,
       "non_template_minimum_small_cyclic_cut_size_histogram": {},
       "normal_form_after_template_exclusion_passing_count": 0,
@@ -34,5 +35,5 @@
       "verdict": "template_exclusion_index_sample_found_no_profile_preserving_patch"
     }
   },
-  "verdict": "n8_frontier_partially_verified_with_evidence_gaps"
+  "verdict": "n8_frontier_archive_fully_verified_from_sources"
 }

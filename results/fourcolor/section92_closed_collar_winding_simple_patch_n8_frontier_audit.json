@@ -97,6 +97,8 @@
   "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-frontier-audit-v1",
   "source": "Artifact audit for n8 closed-collar winding simple-patch frontier verdicts",
   "stratified_sample": {
+    "case_verdict_count": 130,
+    "no_profile_preserving_case_count": 130,
     "normal_form_after_template_exclusion_passing_count": 0,
     "profile_preserving_case_count": 0,
     "radial_order_case_count": 130,

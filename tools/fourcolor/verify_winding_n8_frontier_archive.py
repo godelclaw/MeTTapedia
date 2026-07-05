@@ -37,6 +37,7 @@ EXPECTED_FRONTIER_VERDICT = (
 EXPECTED_PREFIX_VERDICT = "n8_first_6000000_found_no_profile_preserving_patch"
 EXPECTED_SAMPLE_VERDICT = "n8_stratified_65_found_no_profile_preserving_patch"
 EXPECTED_SAMPLE_FILE_VERDICT = "template_exclusion_index_sample_found_no_profile_preserving_patch"
+EXPECTED_CASE_VERDICT = "no_profile_preserving_extension"
 OUTPUT_SCHEMA = "fourcolor-section-9-2-winding-realizability-n8-frontier-verdict-v1"
 
 
@@ -90,6 +91,69 @@ def require_zero_counts(counts: dict[str, Any], names: list[str], failures: list
     for name in names:
         if int(counts.get(name, -1)) != 0:
             fail(failures, label, f"{name} is nonzero")
+
+
+def verify_no_profile_case_verdicts(
+    case_verdicts: Any,
+    sampled_indices: list[int],
+    radial_cases: int,
+    failures: list[str],
+    gaps: list[str],
+    label: str,
+) -> int | None:
+    if case_verdicts is None:
+        gap(gaps, label, "stratified source has no per-case verdict payloads")
+        return None
+    if not isinstance(case_verdicts, list):
+        fail(failures, label, "case_verdicts is not a list")
+        return None
+    if len(case_verdicts) != radial_cases:
+        fail(failures, label, "case verdict count does not match radial cases")
+
+    sampled_index_set = set(sampled_indices)
+    expected_pairs = {
+        (patch_index, radial_order_index)
+        for patch_index in sampled_indices
+        for radial_order_index in (0, 1)
+    }
+    seen_pairs: set[tuple[int, int]] = set()
+    for index, item in enumerate(case_verdicts):
+        if not isinstance(item, dict):
+            fail(failures, label, f"case_verdicts[{index}] is not an object")
+            continue
+        patch_index = item.get("patch_index")
+        radial_order_index = item.get("radial_order_index")
+        if not isinstance(patch_index, int) or not isinstance(radial_order_index, int):
+            fail(failures, label, f"case_verdicts[{index}] has non-integer index")
+            continue
+        pair = (patch_index, radial_order_index)
+        if pair in seen_pairs:
+            fail(failures, label, f"duplicate case verdict for {pair}")
+        seen_pairs.add(pair)
+        if patch_index not in sampled_index_set:
+            fail(failures, label, f"case verdict patch index {patch_index} not sampled")
+        if radial_order_index not in (0, 1):
+            fail(failures, label, f"invalid radial order index {radial_order_index}")
+        radial_order = item.get("radial_order")
+        if (
+            not isinstance(radial_order, list)
+            or len(radial_order) != 2
+            or not all(isinstance(edge, str) for edge in radial_order)
+        ):
+            fail(failures, label, f"case_verdicts[{index}] has invalid radial_order")
+        if item.get("profile_preserving") is not False:
+            fail(failures, label, f"case_verdicts[{index}] is profile-preserving")
+        if item.get("verdict") != EXPECTED_CASE_VERDICT:
+            fail(failures, label, f"case_verdicts[{index}] has unexpected verdict")
+
+    if seen_pairs != expected_pairs:
+        missing = expected_pairs - seen_pairs
+        extra = seen_pairs - expected_pairs
+        if missing:
+            fail(failures, label, f"missing {len(missing)} sampled radial-order verdicts")
+        if extra:
+            fail(failures, label, f"found {len(extra)} unexpected radial-order verdicts")
+    return len(case_verdicts)
 
 
 def verify_prefix(frontier: dict[str, Any], results_dir: Path, failures: list[str], gaps: list[str]) -> dict[str, Any]:
@@ -204,6 +268,7 @@ def verify_stratified_sample(
 
     sample_payload_present = False
     sample_payload_summary: dict[str, Any] | None = None
+    sample_case_verdict_count: int | None = None
     if not isinstance(sample_file_name, str):
         fail(failures, label, "missing stratified_sample_file")
     elif not (results_dir / sample_file_name).exists():
@@ -230,10 +295,18 @@ def verify_stratified_sample(
             fail(failures, label, "sampled indices mismatch source file")
         if search.get("exact_patch_topology_count") != exact_total:
             fail(failures, label, "exact topology count mismatch source file")
+        if summary.get("case_verdict_count") != radial_cases:
+            fail(failures, label, "sample case verdict count mismatch")
         if samples != []:
             fail(failures, label, "expected empty per-sample payload list")
-        else:
-            gap(gaps, label, "stratified source has aggregate counts but no per-sample payloads")
+        sample_case_verdict_count = verify_no_profile_case_verdicts(
+            payload.get("case_verdicts"),
+            sampled_indices,
+            radial_cases,
+            failures,
+            gaps,
+            label,
+        )
         sample_payload_summary = summary
 
     return {
@@ -242,6 +315,7 @@ def verify_stratified_sample(
         "source_file": sample_file_name,
         "source_file_present": sample_payload_present,
         "source_summary": sample_payload_summary,
+        "source_case_verdict_count": sample_case_verdict_count,
     }
 
 
