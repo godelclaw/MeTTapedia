@@ -1248,6 +1248,135 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_noPublicTargetTags :
         v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
         hPair hOpp⟩
 
+/-- Hidden gauge readout for the concrete no-target-row CNF. -/
+def v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) : Bool :=
+  W none
+
+/-- Hidden-gauge action for the concrete no-target-row CNF: flip only the
+free hidden coordinate and leave both row-equation coordinates unchanged. -/
+def v13RealLinearSmallNoTargetRowsCNFGaugeAction
+    (gamma : Bool) (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    V13RealLinearSmallNoTargetRowsCNFWitness :=
+  v13RealLinearGaugeCNFGaugeAction gamma W
+
+/-- The hidden-gauge action preserves the concrete no-target-row CNF
+verifier. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_verifier
+    (gamma : Bool) {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W) :
+    v13RealLinearSmallNoTargetRowsCNFVerifier Y
+      (v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W) := by
+  rcases v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mp hW with
+    ⟨hspare, hxor⟩
+  exact v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mpr
+    ⟨by
+      simpa [v13RealLinearSmallNoTargetRowsCNFGaugeAction] using hspare,
+     by
+      simpa [v13RealLinearSmallNoTargetRowsCNFGaugeAction] using hxor⟩
+
+/-- The hidden-gauge action preserves the fixed message readout. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_readout
+    (gamma : Bool) (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    v13RealLinearSmallNoTargetRowsCNFReadout
+        (v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W) =
+      v13RealLinearSmallNoTargetRowsCNFReadout W :=
+  rfl
+
+/-- Acting by `true` flips the hidden gauge coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_hidden_true
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+        (v13RealLinearSmallNoTargetRowsCNFGaugeAction true W) =
+      !v13RealLinearSmallNoTargetRowsCNFHiddenGauge W :=
+  rfl
+
+/-- Neutral evidence atoms for the concrete no-target-row SAT-world
+surface. -/
+abbrev V13RealLinearSmallNoTargetRowsCNFNeutral :=
+  Unit
+
+/-- Safe evidence atoms for the concrete no-target-row SAT-world surface. -/
+abbrev V13RealLinearSmallNoTargetRowsCNFSafe :=
+  Unit
+
+/-- The concrete hidden-gauge family is the Boolean flip. -/
+abbrev V13RealLinearSmallNoTargetRowsCNFGauge :=
+  Bool
+
+/-- Hidden-gauge action on concrete no-target-row SAT worlds: preserve the
+public CNF instance and flip only the free hidden coordinate of the satisfying
+witness. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    V13RealLinearSmallNoTargetRowsCNFSATWorld where
+  publicInput := omega.publicInput
+  assignment :=
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma omega.assignment
+  sat :=
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_verifier
+      gamma omega.sat
+
+/-- The SAT-world hidden-gauge action preserves the public no-target-row CNF
+instance. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_publicInput
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega) =
+      v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput omega :=
+  rfl
+
+/-- The SAT-world hidden-gauge action preserves the message readout. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_preserves_target
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega) =
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega :=
+  v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_readout
+    gamma omega.assignment
+
+/-- Gauge satisfaction for the concrete no-target-row SAT-world surface:
+the action preserves both the public CNF instance and the fixed message
+readout. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeSat
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) : Prop :=
+  v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput
+      (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega) =
+    v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput omega ∧
+  v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+      (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega) =
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega
+
+/-- Evidence semantics for the concrete no-target-row SAT-world surface. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics :
+    EvidenceSemantics
+      V13RealLinearSmallNoTargetRowsCNFSATWorld
+      V13RealLinearSmallNoTargetRowsCNFNeutral
+      V13RealLinearSmallNoTargetRowsCNFSafe
+      V13RealLinearSmallNoTargetRowsCNFGauge where
+  neutralSat := fun _ _ => True
+  safeSat := fun _ _ => True
+  gaugeSat := v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeSat
+
+/-- Structural `hiddenGaugeProduct` transfer for the concrete no-target-row
+SAT-world surface.  Every hidden-gauge action is satisfied because it
+preserves verifier validity, public input, and fixed message readout. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_hiddenGaugeProduct :
+    ∀ gamma omega,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics.gaugeSat
+        gamma omega := by
+  intro gamma omega
+  exact
+    ⟨v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_publicInput
+        gamma omega,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_preserves_target
+        gamma omega⟩
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
