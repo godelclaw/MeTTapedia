@@ -11648,6 +11648,65 @@ theorem realM4_officialSeparation_from_noTargetRowsEqualityIndexedConstructionDa
       i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
 
+/--
+Cook-style existential endpoint from the bundled equality-indexed construction
+surface.  This is the same official endpoint as
+`realM4_officialSeparation_from_noTargetRowsEqualityIndexedConstructionData_realFrontier`,
+but exposed in the official `∃ L, L ∈ NP ∧ L ∉ P` shape recorded by the class
+interface.
+
+The theorem adds no hidden bridge object: after the construction bundle is
+supplied, the theorem boundary remains exactly StarSW hardness plus the three
+analytic frontiers.
+-/
+theorem realM4_exists_np_not_p_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    ∃ separatedLanguage : C.Language,
+      C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  C.officialSeparation_iff_exists_np_not_p.mp
+    (realM4_officialSeparation_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing)
+
 def realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields :
     List String := [
   "noTargetRowsPublicSurface",
@@ -11878,6 +11937,28 @@ theorem
 
 def realM4NoTargetRowsEqualityIndexedOfficialEndpointStatement : String :=
   "For the real v15/M4 no-target-rows equality-indexed staging route, Cook-style official separation follows from one explicit construction-data surface plus exactly StarSW hardness and the three analytic frontiers safeQSSM / boundedGaugeIncidence / boundaryMixing.  The construction surface records the public surface, lower machine, locked readout data, address syntax, official NP-language/P-to-decider bridge data, and P=NP-indexed large-target K-poly compatibility facts.  This is conditional real-spine staging, not a proof of P != NP and not yet a completed M4 construction."
+
+def realM4NoTargetRowsEqualityIndexedExistentialEndpointHypothesisAudit :
+    List String := [
+  "noTargetRowsEqualityIndexedOfficialConstructionData",
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedExistentialEndpointHypothesisAudit_exact :
+    realM4NoTargetRowsEqualityIndexedExistentialEndpointHypothesisAudit =
+      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedExistentialEndpointStatement : String :=
+  "For the real v15/M4 no-target-rows equality-indexed staging route, the Cook-style existential endpoint exists L, inNP L and not inP L follows from one explicit construction-data surface plus exactly StarSW hardness and the three analytic frontiers safeQSSM / boundedGaugeIncidence / boundaryMixing.  This is the official separation proposition unfolded through the class interface, not a new hidden bridge and not an unconditional proof of P != NP."
 
 /--
 Cook-style official endpoint wrapper for the no-target-rows canonical-gap
@@ -16678,6 +16759,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "Bundles the strongest current no-target-rows official construction surface so the theorem boundary exposes only StarSW hardness and the three analytic frontiers."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataExistentialEndpoint"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_exists_np_not_p_from_noTargetRowsEqualityIndexedConstructionData_realFrontier"
+    note := "Unfolds the equality-indexed official endpoint to the Cook-style existential shape ∃ L, inNP L and not inP L without adding hypotheses beyond the construction bundle and four frontier inputs."
+  },
+  {
     item := "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityContradiction"
     status := .partialConstructionTransferred
     checkedName := "realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality"
@@ -16703,6 +16790,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge",
         "realNoTargetRowsEqualityIndexedConstructionDataClassInequality",
         "realNoTargetRowsEqualityIndexedConstructionDataOfficialEndpoint",
+        "realNoTargetRowsEqualityIndexedConstructionDataExistentialEndpoint",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityContradiction" ] := by
   rfl
 
@@ -16711,6 +16799,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
