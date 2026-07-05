@@ -4206,6 +4206,11 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveAuditFile :
     String :=
   "results/fourcolor/section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json"
 
+def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases :
+    List (Nat × Nat) :=
+  [(821205, 0), (821205, 1), (852969, 0), (852969, 1),
+    (1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)]
+
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts :
     ClosedCollarSimplePatchAnnularEmbeddingRadialFaceArchiveCounts where
   sampleArchiveJsonFileCount := 3
@@ -4284,6 +4289,202 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
       closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
+
+/--
+Case-list witness for the audited radial-face archive.  The list is the
+overlap-corrected union of the indexed sample cases and the two bounded slice
+cases.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases =
+      [(821205, 0), (821205, 1), (852969, 0), (852969, 1),
+        (1000301, 0), (1000301, 1), (1000788, 0), (1000788, 1)] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases.length =
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.uniqueAuditedRadialOrderCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveEvidence,
+      ?_, ?_⟩ <;>
+    decide
+
+/-- Lab-side candidate for a radial-face coherent rotation in the archive. -/
+structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate where
+  hrotationCountPositive :
+    0 <
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialFaceCoherentRotationCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive_noRadialFaceRotationCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialFaceCoherentRotationCount =
+        0 := rfl
+  have hpos := candidate.hrotationCountPositive
+  omega
+
+/--
+Archive-level coverage obligation: if an audited six-internal representation
+carries a genuine cut-open radial face, then the radial-face archive would
+count a coherent planar rotation.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCoveredByLab :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          representation.annular →
+          Nonempty
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate
+
+/--
+Archive-level obstruction for radial-face coherent annular realizations.  The
+finite lab coverage map remains explicit; the theorem packages the audited
+zero coherent-rotation count into the graph-facing obstruction.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCoveredByLab →
+    ∀ {V : Type} {G : SimpleGraph V},
+      (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
+        (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+            closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+          ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+            representation.annular →
+            False
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation := by
+  intro hcovered V G representation hcase hradial
+  rcases hcovered representation hcase hradial with ⟨candidate⟩
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive_noRadialFaceRotationCandidate
+      candidate
+
+/--
+Missing geometric reduction for using the full radial-face archive against the
+normal-form regime: every audited normal-form representation must provide a
+radial-face coherent cut-open annulus.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          data.representation.annular
+
+theorem closedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace_of_embeddedCollarExtraction
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization) :
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace := by
+  classical
+  intro V G data _hcase
+  rcases hextract data.normalForm with ⟨extraction⟩
+  rcases extraction with ⟨embedded, hnormalForm⟩
+  have hradial :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        embedded.normalForm.annular :=
+    ⟨embedded.toNormalFormRadialFaceRealization.radialFace⟩
+  have hnormalRadial :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        data.normalForm.annular := by
+    simpa [hnormalForm] using hradial
+  simpa [data.annular_eq] using hnormalRadial
+
+theorem closedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace_of_embeddedGeometryExtraction_of_radialFace
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction) :
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace :=
+  closedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace_of_embeddedCollarExtraction
+    (closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_geometryExtraction_of_radialFace
+      hextract hradial)
+
+/--
+Radial-face archive obstruction target for audited six-internal normal-form
+representations.  This is the archive-level version of the sampled and
+bounded-slice obstruction targets.
+-/
+def Section92Step4RadialFaceArchiveNormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCoveredByLab →
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace →
+        ∀ {V : Type} {G : SimpleGraph V},
+          (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+            (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+              False
+
+theorem section92Step4RadialFaceArchiveNormalFormObstructionTarget :
+    Section92Step4RadialFaceArchiveNormalFormObstructionTarget := by
+  intro _hevidence hcovered hforces V G data hcase
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation
+      hcovered data.representation hcase (hforces data hcase)
+
+/--
+Archive obstruction using the embedded-geometry extraction chain directly.
+Only the archive finite-lab coverage map remains as an external input.
+-/
+def Section92Step4RadialFaceArchiveEmbeddedGeometryObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence →
+    ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCoveredByLab →
+          ∀ {V : Type} {G : SimpleGraph V},
+            (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+              (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                  closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+                False
+
+theorem section92Step4RadialFaceArchiveEmbeddedGeometryObstructionTarget :
+    Section92Step4RadialFaceArchiveEmbeddedGeometryObstructionTarget := by
+  intro hevidence hextract hradial hcovered V G data hcase
+  exact
+    section92Step4RadialFaceArchiveNormalFormObstructionTarget
+      hevidence
+      hcovered
+      (closedCollarWindingFreedomSimplePatchN6NormalFormArchiveForcesRadialFace_of_embeddedGeometryExtraction_of_radialFace
+        hextract hradial)
+      data hcase
+
+/--
+Archive obstruction from actual-collar geometry data.  This is the strongest
+current finite-archive statement: actual collar geometry plus cut-open
+radial-face extraction reduces audited archive cases to the zero coherent
+rotation verdict.
+-/
+def Section92Step4RadialFaceArchiveGeometryDataObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence →
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCoveredByLab →
+          ∀ {V : Type} {G : SimpleGraph V},
+            (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+              (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+                  closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases →
+                False
+
+theorem section92Step4RadialFaceArchiveGeometryDataObstructionTarget :
+    Section92Step4RadialFaceArchiveGeometryDataObstructionTarget := by
+  intro hevidence hgeometry hradial hcovered V G data hcase
+  exact
+    section92Step4RadialFaceArchiveEmbeddedGeometryObstructionTarget
+      hevidence
+      (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+        hgeometry)
+      hradial hcovered data hcase
 
 /-- Lab-side candidate for a radial-face coherent rotation in the slice. -/
 structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceRotationCandidate where
