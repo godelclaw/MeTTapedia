@@ -219,6 +219,22 @@ theorem primalCutOfDualSupport_card (dual : PlaneCubicDualData G T)
     (dual.primalCutOfDualSupport support).card = support.card := by
   simp [primalCutOfDualSupport]
 
+/-- Membership in a translated dual-edge support is membership of the corresponding dual edge
+in the original support. -/
+@[simp]
+theorem mem_primalCutOfDualSupport_iff (dual : PlaneCubicDualData G T)
+    (support : Finset T.edgeSet) (e : G.edgeSet) :
+    e ∈ dual.primalCutOfDualSupport support ↔ dual.dualEdgeEquiv e ∈ support := by
+  simp [primalCutOfDualSupport, primalEdgeOfDualEdge]
+
+/-- A dual edge belongs to the original support exactly when its primal mate belongs to the
+translated primal cut. -/
+@[simp]
+theorem primalEdgeOfDualEdge_mem_primalCutOfDualSupport_iff
+    (dual : PlaneCubicDualData G T) (support : Finset T.edgeSet) (e : T.edgeSet) :
+    dual.primalEdgeOfDualEdge e ∈ dual.primalCutOfDualSupport support ↔ e ∈ support := by
+  simp [primalCutOfDualSupport, primalEdgeOfDualEdge]
+
 end PlaneCubicDualData
 
 /-- Prop-level normal-form ingredient: the cubic graph has a planar dual whose dual side is a
@@ -245,6 +261,23 @@ namespace SeparatingDualCycleData
 variable [DecidableRel G.Adj] [DecidableRel T.Adj]
 variable {dual : PlaneCubicDualData G T} {k : Nat}
 
+/-- Construct separating dual-cycle data from a dual-edge support once the translated primal
+support has been realized as a cyclic edge cut.  This is the constructor future Jordan/duality
+code should target. -/
+def ofDualSupport
+    (dual : PlaneCubicDualData G T) (dualEdgeSupport : Finset T.edgeSet)
+    (dual_card : dualEdgeSupport.card = k)
+    (realization : CyclicEdgeCutRealization G
+      (dual.primalCutOfDualSupport dualEdgeSupport)) :
+    SeparatingDualCycleData dual k where
+  dualEdgeSupport := dualEdgeSupport
+  primalCut := dual.primalCutOfDualSupport dualEdgeSupport
+  dual_card := dual_card
+  primal_card := by
+    simpa [PlaneCubicDualData.primalCutOfDualSupport] using dual_card
+  primalCut_eq_dualEdgeSupport := rfl
+  realization := realization
+
 @[simp]
 theorem primalCut_card (cycle : SeparatingDualCycleData dual k) :
     cycle.primalCut.card = k :=
@@ -255,12 +288,49 @@ theorem dualEdgeSupport_card (cycle : SeparatingDualCycleData dual k) :
     cycle.dualEdgeSupport.card = k :=
   cycle.dual_card
 
+/-- A primal edge lies in the support induced by a separating dual cycle exactly when its dual
+mate lies in the cycle's dual-edge support. -/
+theorem primalCut_mem_iff_dualEdgeSupport
+    (cycle : SeparatingDualCycleData dual k) (e : G.edgeSet) :
+    e ∈ cycle.primalCut ↔ dual.dualEdgeEquiv e ∈ cycle.dualEdgeSupport := by
+  rw [cycle.primalCut_eq_dualEdgeSupport]
+  simp [PlaneCubicDualData.primalCutOfDualSupport,
+    PlaneCubicDualData.primalEdgeOfDualEdge]
+
+/-- A dual edge lies in the separating dual cycle's support exactly when its primal mate lies in
+the translated primal cut. -/
+theorem dualEdgeSupport_mem_iff_primalEdge_mem
+    (cycle : SeparatingDualCycleData dual k) (e : T.edgeSet) :
+    e ∈ cycle.dualEdgeSupport ↔ dual.primalEdgeOfDualEdge e ∈ cycle.primalCut := by
+  rw [cycle.primalCut_eq_dualEdgeSupport]
+  simp [PlaneCubicDualData.primalCutOfDualSupport,
+    PlaneCubicDualData.primalEdgeOfDualEdge]
+
 /-- Membership in the primal support of a separating dual cycle is exactly crossing the induced
 Jordan side. -/
 theorem primalCut_mem_iff_crosses
     (cycle : SeparatingDualCycleData dual k) (e : G.edgeSet) :
     e ∈ cycle.primalCut ↔ EdgeCrossesVertexSide G cycle.realization.side e :=
   cycle.realization.hcut_eq e
+
+/-- Membership in a separating dual cycle's dual-edge support is exactly crossing of the mapped
+primal edge through the induced Jordan side. -/
+theorem dualEdgeSupport_mem_iff_crosses_primalEdge
+    (cycle : SeparatingDualCycleData dual k) (e : T.edgeSet) :
+    e ∈ cycle.dualEdgeSupport ↔
+      EdgeCrossesVertexSide G cycle.realization.side (dual.primalEdgeOfDualEdge e) := by
+  rw [← cycle.primalCut_mem_iff_crosses (dual.primalEdgeOfDualEdge e)]
+  rw [cycle.primalCut_eq_dualEdgeSupport]
+  simp [PlaneCubicDualData.primalCutOfDualSupport,
+    PlaneCubicDualData.primalEdgeOfDualEdge]
+
+/-- Reindex the cyclic-cut realization of a separating dual cycle onto the canonical primal
+support obtained by translating its dual-edge support. -/
+def realizationOnPrimalCutOfDualSupport
+    (cycle : SeparatingDualCycleData dual k) :
+    CyclicEdgeCutRealization G (dual.primalCutOfDualSupport cycle.dualEdgeSupport) := by
+  rw [← cycle.primalCut_eq_dualEdgeSupport]
+  exact cycle.realization
 
 /-- A separating dual cycle of length at most four induces a bundled graph-side small cyclic
 edge cut. -/
