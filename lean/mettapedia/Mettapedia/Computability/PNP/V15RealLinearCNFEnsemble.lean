@@ -5408,4 +5408,17 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_atomCompleteness
     CDENF_semantics
       (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics i₀) E
 
+/-- Structural `gaugeFaithfulness` transferred to the no-target-rows Appendix-I
+CNF world carrier: a normalized hidden-gauge leaf denotes the transported
+hidden-gauge predicate. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_gaugeFaithfulness
+    {m : Nat} (i₀ : Fin m) :
+    ∀ gamma : V13RealLinearNoTargetRowsGaugeCNFGauge,
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+          i₀).SatNormal (CDENF (.gauge gamma)) =
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+          i₀).gaugeSat gamma := by
+  intro gamma
+  rfl
+
 end Mettapedia.Computability.PNP
