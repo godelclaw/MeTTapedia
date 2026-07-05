@@ -1300,6 +1300,40 @@ def toTightSeparatingDualFiveCycle
 
 end FiveCycleDiskPrimalCAP5TranslationData
 
+/-- Charged-disk translation data after the Lemma 5.3 local count has produced a common apex.
+The remaining planar-duality step is to turn that one-apex disk into the primal CAP5 pinch. -/
+structure FiveCycleCommonApexPrimalCAP5TranslationData
+    {dual : PlaneCubicDualData G T} (cycle : SeparatingDualCycleData dual 5)
+    (diskData : FiveCycleDiskChargeLocalData T) where
+  apex : W
+  apex_interior : diskData.localData.interior apex
+  apex_adj_boundary : ∀ i : FiveBoundaryIndex, T.Adj (diskData.localData.boundary i) apex
+  pinch : CAP5Pinch G
+  same_cut : pinch.edgeCut = cycle.primalCut
+
+namespace FiveCycleCommonApexPrimalCAP5TranslationData
+
+variable {dual : PlaneCubicDualData G T}
+variable {cycle : SeparatingDualCycleData dual 5}
+variable {diskData : FiveCycleDiskChargeLocalData T}
+
+/-- The charged-disk translation package retains the common-apex witness on the dual side. -/
+theorem exists_common_boundary_apex
+    (translation : FiveCycleCommonApexPrimalCAP5TranslationData cycle diskData) :
+    ∃ x : W, diskData.localData.interior x ∧
+      ∀ i : FiveBoundaryIndex, T.Adj (diskData.localData.boundary i) x :=
+  ⟨translation.apex, translation.apex_interior, translation.apex_adj_boundary⟩
+
+/-- Forget the explicit common-apex witness once the primal CAP5 pinch has been constructed. -/
+def toFiveCycleDiskPrimalCAP5TranslationData
+    (translation : FiveCycleCommonApexPrimalCAP5TranslationData cycle diskData) :
+    FiveCycleDiskPrimalCAP5TranslationData cycle where
+  diskData := diskData
+  pinch := translation.pinch
+  same_cut := translation.same_cut
+
+end FiveCycleCommonApexPrimalCAP5TranslationData
+
 /-- Lemma 5.3 as the exact remaining disk-triangulation obligation: in normal form, every
 separating dual 5-cycle is tight, i.e. yields CAP5 pinch data on the primal side. -/
 def Lemma53DiskTriangulationTightnessObligation
@@ -1314,6 +1348,33 @@ def Lemma53DiskToPrimalCAP5TranslationObligation
   ∀ cycle : SeparatingDualCycleData normal.duality 5,
     Nonempty (FiveCycleDiskPrimalCAP5TranslationData cycle)
 
+/-- Lemma 5.3 disk-local obligation: construct the charged local disk data for every separating
+dual 5-cycle in normal form. -/
+def Lemma53DiskChargeLocalDataObligation
+    (normal : MinimalCounterexampleNormalForm G T) : Prop :=
+  ∀ _cycle : SeparatingDualCycleData normal.duality 5,
+    Nonempty (FiveCycleDiskChargeLocalData T)
+
+/-- Lemma 5.3 charged-disk translation obligation: after the charge/local disk facts have
+produced a common-apex disk, construct the primal CAP5 pinch with the translated cut. -/
+def Lemma53ChargedDiskToPrimalCAP5TranslationObligation
+    (normal : MinimalCounterexampleNormalForm G T) : Prop :=
+  ∀ cycle : SeparatingDualCycleData normal.duality 5,
+    ∀ diskData : FiveCycleDiskChargeLocalData T,
+      Nonempty (FiveCycleCommonApexPrimalCAP5TranslationData cycle diskData)
+
+/-- The disk-local obligation plus the charged-disk CAP5 translation obligation discharge the
+disk-to-primal formulation of Lemma 5.3. -/
+theorem lemma53_diskToPrimalCAP5Translations_of_diskChargeLocalData_of_chargedDiskTranslations
+    {normal : MinimalCounterexampleNormalForm G T}
+    (hdisk : Lemma53DiskChargeLocalDataObligation normal)
+    (htranslation : Lemma53ChargedDiskToPrimalCAP5TranslationObligation normal) :
+    Lemma53DiskToPrimalCAP5TranslationObligation normal := by
+  intro cycle
+  rcases hdisk cycle with ⟨diskData⟩
+  rcases htranslation cycle diskData with ⟨translation⟩
+  exact ⟨translation.toFiveCycleDiskPrimalCAP5TranslationData⟩
+
 /-- Disk-to-primal translation data discharge the tightness formulation of Lemma 5.3. -/
 theorem lemma53_tightnessObligation_of_diskToPrimalCAP5Translations
     {normal : MinimalCounterexampleNormalForm G T}
@@ -1322,6 +1383,16 @@ theorem lemma53_tightnessObligation_of_diskToPrimalCAP5Translations
   intro cycle
   rcases h cycle with ⟨translation⟩
   exact ⟨translation.toTightSeparatingDualFiveCycle⟩
+
+/-- The split Lemma 5.3 disk-local and charged-disk translation obligations imply tightness. -/
+theorem lemma53_tightnessObligation_of_diskChargeLocalData_of_chargedDiskTranslations
+    {normal : MinimalCounterexampleNormalForm G T}
+    (hdisk : Lemma53DiskChargeLocalDataObligation normal)
+    (htranslation : Lemma53ChargedDiskToPrimalCAP5TranslationObligation normal) :
+    Lemma53DiskTriangulationTightnessObligation normal :=
+  lemma53_tightnessObligation_of_diskToPrimalCAP5Translations
+    (lemma53_diskToPrimalCAP5Translations_of_diskChargeLocalData_of_chargedDiskTranslations
+      hdisk htranslation)
 
 /-- Lemma 5.3 stated in the graph-facing form consumed downstream: every separating dual
 5-cycle in normal form yields a CAP5 pinch on the primal side with the same primal cut. -/
@@ -1365,6 +1436,17 @@ theorem lemma53_CAP5PinchObligation_of_tightnessObligation
     Lemma53SeparatingDualFiveCycleCAP5PinchObligation normal := by
   intro cycle
   exact lemma53_cap5Pinch_of_tightnessObligation h cycle
+
+/-- The split Lemma 5.3 disk-local and charged-disk translation obligations imply the
+graph-facing CAP5-pinch endpoint. -/
+theorem lemma53_CAP5PinchObligation_of_diskChargeLocalData_of_chargedDiskTranslations
+    {normal : MinimalCounterexampleNormalForm G T}
+    (hdisk : Lemma53DiskChargeLocalDataObligation normal)
+    (htranslation : Lemma53ChargedDiskToPrimalCAP5TranslationObligation normal) :
+    Lemma53SeparatingDualFiveCycleCAP5PinchObligation normal :=
+  lemma53_CAP5PinchObligation_of_tightnessObligation
+    (lemma53_tightnessObligation_of_diskChargeLocalData_of_chargedDiskTranslations
+      hdisk htranslation)
 
 /-- CAP5-free normal form rules out separating dual 5-cycles once Lemma 5.3 supplies the
 graph-facing CAP5 pinch for every such cycle. -/
