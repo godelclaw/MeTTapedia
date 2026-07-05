@@ -116,6 +116,7 @@ set_option autoImplicit false
 #check V13RealLinearNoTargetRowsGaugeCNFGauge
 #check v13RealLinearNoTargetRowsGaugeCNFGaugeSat
 #check v13RealLinearNoTargetRowsGaugeCNFSemantics
+#check v13RealLinearNoTargetRowsGaugeCNF_atomCompleteness
 #check v13RealLinearNoTargetRowsGaugeCNF_gaugeFaithfulness
 #check v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct
 #check v13RealLinearNoTargetRowsGaugeCNFGaugeActionData
@@ -227,6 +228,7 @@ set_option autoImplicit false
 #print axioms V13RealLinearNoTargetRowsGaugeCNFGauge
 #print axioms v13RealLinearNoTargetRowsGaugeCNFGaugeSat
 #print axioms v13RealLinearNoTargetRowsGaugeCNFSemantics
+#print axioms v13RealLinearNoTargetRowsGaugeCNF_atomCompleteness
 #print axioms v13RealLinearNoTargetRowsGaugeCNF_gaugeFaithfulness
 #print axioms v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct
 #print axioms v13RealLinearNoTargetRowsGaugeCNFGaugeActionData
