@@ -16,6 +16,12 @@ namespace Mettapedia.Computability.PNP
 #check xorSingleMessageCNFReadoutData
 #check XorSingleMessageNoPublicCoordinateTargetTags
 #check XorSingleMessageNoPublicCoordinateReadoutTags
+#check XorSingleMessageSATWorld
+#check xorSingleMessageSATVerifier
+#check xorSingleMessageRealSingleMessageSATSpine
+#check xorSingleMessageRealSingleMessageSATSpine_singleMessage
+#check xorSingleMessageSATReadout_eq_of_valid
+#check xorSingleMessageSATWorld_readout_eq_target
 
 #print axioms smallSingleMessageVerifierDecision_correct
 #print axioms smallSingleMessageFormula_satisfied_messageAssignment
@@ -39,6 +45,12 @@ namespace Mettapedia.Computability.PNP
 #print axioms xorSingleMessageCNFReadoutData_supportedSatisfiable
 #print axioms xorSingleMessageCNFReadoutData_projection_eq_M
 #print axioms xorSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+#print axioms XorSingleMessageSATWorld
+#print axioms xorSingleMessageSATReadout_eq_M_of_valid
+#print axioms xorSingleMessageRealSingleMessageSATSpine
+#print axioms xorSingleMessageRealSingleMessageSATSpine_singleMessage
+#print axioms xorSingleMessageSATReadout_eq_of_valid
+#print axioms xorSingleMessageSATWorld_readout_eq_target
 #print axioms xorSingleMessage_publicCoordinate_has_oppositeMessages
 #print axioms xorSingleMessage_noPublicTargetTags
 #print axioms xorSingleMessage_noPublicReadoutTags
