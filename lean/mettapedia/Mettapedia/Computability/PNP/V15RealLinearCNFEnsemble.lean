@@ -1664,4 +1664,94 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_nontrivial
     v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
     v13RealLinearGaugeCNFGaugeAction] at hcoord
 
+/-! ## Gauge-buffered CNF evidence semantics -/
+
+/-- Neutral evidence atoms for the gauge-buffered real linear CNF surface. -/
+abbrev V13RealLinearNoTargetRowsGaugeCNFNeutral :=
+  Unit
+
+/-- Safe evidence atoms for the gauge-buffered real linear CNF surface. -/
+abbrev V13RealLinearNoTargetRowsGaugeCNFSafe :=
+  Unit
+
+/-- The concrete gauge family is the Boolean hidden-gauge flip. -/
+abbrev V13RealLinearNoTargetRowsGaugeCNFGauge :=
+  Bool
+
+/-- Gauge satisfaction says the explicit gauge action preserves the public
+instance and the target readout. -/
+def v13RealLinearNoTargetRowsGaugeCNFGaugeSat {m : Nat}
+    {i₀ : Fin m}
+    (gamma : V13RealLinearNoTargetRowsGaugeCNFGauge)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) : Prop :=
+  v13RealLinearNoTargetRowsPublicInput
+      (v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega).base =
+    v13RealLinearNoTargetRowsPublicInput omega.base ∧
+    v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega) =
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega
+
+/-- Evidence semantics for the gauge-buffered CNF surface.  The gauge atom is
+interpreted by the concrete hidden-gauge action invariants. -/
+def v13RealLinearNoTargetRowsGaugeCNFSemantics {m : Nat}
+    (i₀ : Fin m) :
+    EvidenceSemantics
+      (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀)
+      V13RealLinearNoTargetRowsGaugeCNFNeutral
+      V13RealLinearNoTargetRowsGaugeCNFSafe
+      V13RealLinearNoTargetRowsGaugeCNFGauge where
+  neutralSat := fun _ _ => True
+  safeSat := fun _ _ => True
+  gaugeSat := v13RealLinearNoTargetRowsGaugeCNFGaugeSat
+
+/-- The concrete hidden-gauge action satisfies the gauge predicate at every
+world.  This is the `hiddenGaugeProduct` structural field for the
+gauge-buffered no-target-rows CNF surface. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct
+    {m : Nat} (i₀ : Fin m) :
+    ∀ gamma omega,
+      (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).gaugeSat
+        gamma omega := by
+  intro gamma omega
+  exact
+    ⟨rfl,
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction_preserves_target
+        gamma omega⟩
+
+/-- Explicit manuscript-facing gauge-action data for the gauge-buffered CNF
+surface. -/
+def v13RealLinearNoTargetRowsGaugeCNFGaugeActionData {m : Nat}
+    (i₀ : Fin m) :
+    RealM4GaugeActionData
+      (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀)
+      (V13RealLinearPublic m)
+      V13RealLinearNoTargetRowsGaugeCNFNeutral
+      V13RealLinearNoTargetRowsGaugeCNFSafe
+      V13RealLinearNoTargetRowsGaugeCNFGauge
+      (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀)
+      (fun omega =>
+        v13RealLinearNoTargetRowsPublicInput omega.base)
+      (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀) where
+  act := v13RealLinearNoTargetRowsGaugeCNFGaugeAction
+  publicInvariant := by
+    intro gamma omega
+    simp [v13RealLinearNoTargetRowsGaugeCNFGaugeAction]
+  targetInvariant := by
+    intro gamma omega
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction_preserves_target
+        gamma omega
+  gaugeSatisfied :=
+    v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct i₀
+
+/-- The action-data projection recovers the same concrete
+`hiddenGaugeProduct` field. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct_fromActionData
+    {m : Nat} (i₀ : Fin m) :
+    ∀ gamma omega,
+      (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).gaugeSat
+        gamma omega :=
+  RealM4GaugeActionData.hiddenGaugeProduct
+    (v13RealLinearNoTargetRowsGaugeCNFGaugeActionData i₀)
+
 end Mettapedia.Computability.PNP
