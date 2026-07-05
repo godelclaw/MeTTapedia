@@ -5270,6 +5270,161 @@ theorem
   simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge]
     at hhidden
 
+/-- Exact orbit characterization for verifier-valid Appendix-I CNF witnesses
+over a fixed public instance: acting by `gamma` reaches `W'` exactly when
+the hidden-gauge coordinate is xor-shifted by `gamma`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {W W' :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)}
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W)
+    (hW' :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W') :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        gamma W = W' ↔
+      (gamma ^^
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+            W) =
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W' := by
+  constructor
+  · intro hAction
+    have hHidden :=
+      congrArg
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          m i₀) hAction
+    simpa
+      [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge]
+      using hHidden
+  · intro hGauge
+    rcases W with ⟨YW, α⟩
+    rcases W' with ⟨YW', β⟩
+    change True ∧
+      ∃ hPublic : YW = Y,
+        ConcreteCNF.IsSatFormula
+          ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula YW) α at hW
+    change True ∧
+      ∃ hPublic : YW' = Y,
+        ConcreteCNF.IsSatFormula
+          ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula YW') β at hW'
+    rcases hW with ⟨_hSupport, ⟨hPublic, hα⟩⟩
+    rcases hW' with ⟨_hSupport', ⟨hPublic', hβ⟩⟩
+    subst YW
+    subst YW'
+    have hαVerifier :
+        v13RealLinearGaugeCNFVerifier
+          (v13RealLinearNoTargetRowsPublicInput Y) α := by
+      simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+        v13RealLinearGaugeCNFVerifier] using hα
+    have hActionSat :
+        ConcreteCNF.IsSatFormula
+          ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula Y)
+          (v13RealLinearGaugeCNFGaugeAction gamma α) := by
+      simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+        v13RealLinearGaugeCNFVerifier] using
+        v13RealLinearGaugeCNFGaugeAction_preserves_verifier
+          gamma hαVerifier
+    have hHidden :
+        v13RealLinearGaugeCNFHiddenGauge
+            (v13RealLinearGaugeCNFGaugeAction gamma α) =
+          v13RealLinearGaugeCNFHiddenGauge β := by
+      simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge,
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction]
+        using hGauge
+    have hAssignment :
+        v13RealLinearGaugeCNFGaugeAction gamma α = β :=
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignment_eq_iff_hiddenGauge_eq
+        hActionSat hβ).mpr hHidden
+    simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction,
+      hAssignment]
+
+/-- Over a fixed public instance, verifier-valid Appendix-I CNF witnesses are
+transitive under the witness-level hidden-gauge action. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_transitive_of_valid
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W W' :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W)
+    (hW' :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W') :
+    ∃ gamma : Bool,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W =
+        W' := by
+  let gamma :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W ^^
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W'
+  refine ⟨gamma, ?_⟩
+  rw [
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+      gamma hW hW']
+  dsimp [gamma]
+  cases h₀ :
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        W <;>
+    cases h₁ :
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        W' <;>
+    simp
+
+/-- A verifier-valid Appendix-I CNF witness has a nontrivial hidden-gauge
+fiber over the same public instance: flipping the free coordinate preserves
+validity and readout while changing the witness. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitness_nontrivialHiddenGaugeFiber
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    ∃ W' :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀),
+      realM4CNFVerifier
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          Y W' ∧
+        W'.publicInstance = W.publicInstance ∧
+        realM4CNFWitnessReadout (fun bit => bit) W' =
+          realM4CNFWitnessReadout (fun bit => bit) W ∧
+        W' ≠ W := by
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        true W,
+      ?_, ?_, ?_, ?_⟩
+  · exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_preserves_verifier
+        true hW
+  · rfl
+  · exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_preserves_readout
+        true W
+  · exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_true_ne
+        W
+
 /-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
 variable order is the concrete formula-syntax cover, and the explicit SAT
 decider is the P=NP-side hypothesis object. -/
