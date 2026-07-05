@@ -28,6 +28,7 @@ import Mettapedia.Computability.PNP.V13RealRungTwoBitJuntaRegression
 import Mettapedia.Computability.PNP.V14ToyEndgameRegression
 import Mettapedia.Computability.PNP.V14PublicReadToyRegression
 import Mettapedia.Computability.PNP.V15RealEnsembleSpineRegression
+import Mettapedia.Computability.PNP.V15SmallSingleMessageCNFEnsembleRegression
 import Mettapedia.Computability.PNP.WeaknessCalculusRegression
 import Mettapedia.Computability.PNP.Barriers.Regression
 
