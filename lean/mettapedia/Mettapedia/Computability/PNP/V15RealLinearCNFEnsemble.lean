@@ -339,4 +339,129 @@ theorem
         (v13RealLinearCNFReadoutData_singleMessagePromise i₀)
         (v13RealLinearCNFReadoutData_supportedSatisfiable i₀)
 
+/-! ## No-target-rows CNF structural transfer -/
+
+/-- CNF world over the adjusted no-target-rows real linear surface: a base
+no-target-rows world together with a satisfying assignment for its concrete
+CNF public instance. -/
+structure V13RealLinearNoTargetRowsCNFWorld (m : Nat) (i₀ : Fin m) where
+  base : V13RealLinearNoTargetRowsWorld m i₀
+  assignment : V13RealLinearCNFWitness m
+  sat :
+    v13RealLinearCNFVerifier
+      (v13RealLinearNoTargetRowsPublicInput base) assignment
+
+/-- Canonical satisfying CNF world over a no-target-rows base world. -/
+def v13RealLinearNoTargetRowsCNFWorldOfBase {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    V13RealLinearNoTargetRowsCNFWorld m i₀ where
+  base := omega
+  assignment :=
+    v13RealLinearCNFDecodedAssignment
+      (v13RealLinearNoTargetRowsPublicInput omega)
+  sat :=
+    v13RealLinearCNFFormula_satisfied_decodedAssignment
+      (v13RealLinearNoTargetRowsPublicInput omega)
+
+/-- The neutral skeleton of a no-target-rows CNF world is the same map
+skeleton as the base public-surface world.  It deliberately does not include
+the full formula syntax, whose target-unit leak is recorded separately. -/
+def v13RealLinearNoTargetRowsCNFNeutralSkeleton {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsCNFWorld m i₀) :
+    V13RealLinearNoTargetRowsMap m i₀ :=
+  v13RealLinearNoTargetRowsNeutralSkeleton omega.base
+
+/-- Opposite support for the no-target-rows CNF world is inherited from the
+base public-surface opposite support. -/
+def v13RealLinearNoTargetRowsCNFOppositeSupport {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ : V13RealLinearNoTargetRowsCNFWorld m i₀) : Prop :=
+  v13RealLinearNoTargetRowsOppositeSupport omega₀.base omega₁.base
+
+/-- CNF-world target: read the selected coordinate from the satisfying CNF
+assignment. -/
+def v13RealLinearNoTargetRowsCNFTarget {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsCNFWorld m i₀) : Bool :=
+  v13RealLinearCNFReadout i₀ omega.assignment
+
+/-- The CNF readout target agrees with the base no-target-rows target bit. -/
+theorem v13RealLinearNoTargetRowsCNFReadout_eq_targetBit {m : Nat}
+    {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsCNFTarget omega =
+      v13RealLinearNoTargetRowsTargetBit omega.base := by
+  calc
+    v13RealLinearNoTargetRowsCNFTarget omega =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega.base) :=
+      v13RealLinearCNFReadout_eq_publicMessage_of_valid i₀ omega.sat
+    _ = v13RealLinearNoTargetRowsTargetBit omega.base := by
+      have hdecode :=
+        v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega.base
+      simpa [v13RealLinearMessageOfPublic,
+        v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
+        using congrArg v13RealLinearBit hdecode
+
+/-- Pair-neutrality transfers from the no-target-rows public surface to the
+CNF world when the neutral skeleton is the base no-target-rows map skeleton. -/
+theorem v13RealLinearNoTargetRowsCNF_pairNeutral {m : Nat}
+    {i₀ : Fin m} :
+    PairNeutral
+      (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+      (@v13RealLinearNoTargetRowsCNFNeutralSkeleton m i₀) := by
+  intro omega₀ omega₁ hSupport
+  exact
+    v13RealLinearNoTargetRows_pairNeutral omega₀.base omega₁.base hSupport
+
+/-- The opposite-message pair transfers through canonical satisfying CNF
+assignments. -/
+theorem v13RealLinearNoTargetRowsCNF_hasMessageOppositePair {m : Nat}
+    (i₀ : Fin m) (hm : 1 < m) :
+    HasMessageOppositePair
+      (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+      (@v13RealLinearNoTargetRowsCNFTarget m i₀) := by
+  rcases v13RealLinearNoTargetRows_hasMessageOppositePair i₀ hm with
+    ⟨omega₀, omega₁, hSupport, h0, h1⟩
+  refine
+    ⟨v13RealLinearNoTargetRowsCNFWorldOfBase omega₀,
+      v13RealLinearNoTargetRowsCNFWorldOfBase omega₁,
+      hSupport, ?_, ?_⟩
+  · rw [v13RealLinearNoTargetRowsCNFReadout_eq_targetBit]
+    exact h0
+  · rw [v13RealLinearNoTargetRowsCNFReadout_eq_targetBit]
+    exact h1
+
+/-- Structural `noPublicTargetTags` transfer for the concrete real linear CNF
+world over the adjusted no-target-rows surface.  This transfers the
+manuscript-shaped neutral-skeleton field; it does not erase the separate fact
+that the full all-bits-locking formula syntax exposes the target-unit tag. -/
+theorem v13RealLinearNoTargetRowsCNF_noPublicTargetTags {m : Nat}
+    (i₀ : Fin m) (hm : 1 < m) :
+    PairNeutral
+        (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsCNFNeutralSkeleton m i₀) ∧
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsCNFTarget m i₀) ∧
+        ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+          ∀ omega : V13RealLinearNoTargetRowsCNFWorld m i₀,
+            v13RealLinearNoTargetRowsCNFTarget omega =
+              f (v13RealLinearNoTargetRowsCNFNeutralSkeleton omega) := by
+  have hPair :
+      PairNeutral
+        (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsCNFNeutralSkeleton m i₀) :=
+    v13RealLinearNoTargetRowsCNF_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsCNFTarget m i₀) :=
+    v13RealLinearNoTargetRowsCNF_hasMessageOppositePair i₀ hm
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        (@v13RealLinearNoTargetRowsCNFOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsCNFNeutralSkeleton m i₀)
+        (@v13RealLinearNoTargetRowsCNFTarget m i₀)
+        hPair hOpp⟩
+
 end Mettapedia.Computability.PNP
