@@ -5956,6 +5956,37 @@ theorem
         simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
           v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge]
 
+/-- Over a fixed public instance, the Appendix-I CNF hidden-gauge action is
+transitive: any two satisfying worlds with the same public instance differ by
+one Boolean gauge element. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_transitive_of_publicInstance_eq
+    {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hPublic : omega₀.publicInstance = omega₁.publicInstance) :
+    ∃ gamma : Bool,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega₀ =
+        omega₁ := by
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega₀ ^^
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega₁,
+      ?_⟩
+  apply
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+      |>.injective
+  rw [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_action,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_apply]
+  cases h₀ :
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+        omega₀ <;>
+    cases h₁ :
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+        omega₁ <;>
+    simp [hPublic]
+
 /-- Acting by the nontrivial gauge element flips the free hidden-gauge
 coordinate in the Appendix-I CNF world. -/
 theorem
