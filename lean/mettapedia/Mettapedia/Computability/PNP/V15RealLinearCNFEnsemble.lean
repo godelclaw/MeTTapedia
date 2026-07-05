@@ -937,6 +937,89 @@ theorem v13RealLinearSmallGaugeCNFSATWorld_singleMessage :
     v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message omega₁]
   exact congrArg v13RealLinearSmallGaugeCNFMessage hPublic
 
+/-- Target-blind neutral skeleton for global SAT worlds: retain the hidden
+gauge bit carried by the satisfying witness and omit the public message. -/
+def v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) : Bool :=
+  omega.assignment none
+
+/-- Opposite support for SAT worlds pairs verifier-valid worlds with opposite
+public messages but the same hidden gauge bit. -/
+def v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+    (omega₀ omega₁ : V13RealLinearSmallGaugeCNFSATWorld) : Prop :=
+  v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton omega₀ =
+      v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton omega₁ ∧
+    omega₀.msg = false ∧ omega₁.msg = true
+
+/-- The hidden-gauge neutral skeleton is pair-neutral across supported
+opposite-message SAT-world pairs. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_pairNeutral :
+    PairNeutral
+      v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+      v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton := by
+  intro omega₀ omega₁ hSupport
+  exact hSupport.1
+
+/-- The SAT-world surface has an explicit opposite-message pair in the same
+hidden-gauge fiber. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_hasMessageOppositePair :
+    HasMessageOppositePair
+      v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+      v13RealLinearSmallGaugeCNFSATWorldTarget := by
+  let omegaFalse : V13RealLinearSmallGaugeCNFSATWorld :=
+    { msg := false
+      assignment := v13RealLinearSmallGaugeCNFAssignment false false
+      sat := v13RealLinearSmallGaugeCNFFormula_satisfied_assignment
+        false false }
+  let omegaTrue : V13RealLinearSmallGaugeCNFSATWorld :=
+    { msg := true
+      assignment := v13RealLinearSmallGaugeCNFAssignment true false
+      sat := v13RealLinearSmallGaugeCNFFormula_satisfied_assignment
+        true false }
+  refine ⟨omegaFalse, omegaTrue, ?_, ?_, ?_⟩
+  · simp [omegaFalse, omegaTrue,
+      v13RealLinearSmallGaugeCNFSATWorldOppositeSupport,
+      v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton,
+      v13RealLinearSmallGaugeCNFAssignment]
+  · simp [omegaFalse, v13RealLinearSmallGaugeCNFSATWorldTarget,
+      v13RealLinearSmallGaugeCNFReadout,
+      v13RealLinearSmallGaugeCNFAssignment]
+  · simp [omegaTrue, v13RealLinearSmallGaugeCNFSATWorldTarget,
+      v13RealLinearSmallGaugeCNFReadout,
+      v13RealLinearSmallGaugeCNFAssignment]
+
+/-- Structural `noPublicTargetTags` transfer for global SAT worlds: the hidden
+gauge skeleton is target-blind, yet the surface contains same-skeleton worlds
+with opposite fixed message readouts. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_noPublicTargetTags :
+    PairNeutral
+        v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton ∧
+      HasMessageOppositePair
+        v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+        v13RealLinearSmallGaugeCNFSATWorldTarget ∧
+        ¬ ∃ f : Bool -> Bool,
+          ∀ omega : V13RealLinearSmallGaugeCNFSATWorld,
+            v13RealLinearSmallGaugeCNFSATWorldTarget omega =
+              f (v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton omega) := by
+  have hPair :
+      PairNeutral
+        v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton :=
+    v13RealLinearSmallGaugeCNFSATWorld_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+        v13RealLinearSmallGaugeCNFSATWorldTarget :=
+    v13RealLinearSmallGaugeCNFSATWorld_hasMessageOppositePair
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        v13RealLinearSmallGaugeCNFSATWorldOppositeSupport
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+        v13RealLinearSmallGaugeCNFSATWorldTarget
+        hPair hOpp⟩
+
 /-- Hidden gauge readout for the explicit small real-linear gauge-CNF
 instance. -/
 def v13RealLinearSmallGaugeCNFHiddenGauge
