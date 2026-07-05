@@ -2603,6 +2603,47 @@ def withAnalyticFrontier
   boundaryMixing := boundaryMixing
   admissibleHistories := M.admissibleHistories
 
+/-- Real safe-qSSM analytic frontier field over explicit mechanical data. -/
+structure SafeQSSMFrontier
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) :
+    Prop where
+  safeQSSM :
+    ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget
+
+/-- Real bounded-gauge-incidence analytic frontier field over explicit
+mechanical data. -/
+structure BoundedGaugeIncidenceFrontier
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) :
+    Prop where
+  boundedGaugeIncidence :
+    ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound
+
+/-- Real boundary-mixing analytic frontier field.  The strict smallness bound
+is part of the boundary-mixing frontier, not a separate construction theorem. -/
+structure BoundaryMixingFrontier
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) :
+    Prop where
+  boundaryMixing : BoundaryMixingBound M.target M.pivotSummary M.epsMix
+  epsSmall : M.epsMix < (1 / 2 : Rat)
+
+/-- Fill the real mechanical interface from the three named analytic frontier
+fields. -/
+def withRealAnalyticFrontier
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (safeQSSM : SafeQSSMFrontier M)
+    (boundedGaugeIncidence : BoundedGaugeIncidenceFrontier M)
+    (boundaryMixing : BoundaryMixingFrontier M) :
+    GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
+      Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton :=
+  M.withAnalyticFrontier
+    safeQSSM.safeQSSM
+    boundedGaugeIncidence.boundedGaugeIncidence
+    boundaryMixing.boundaryMixing
+
 end RealM4MechanicalInterfaceData
 
 /-- Mechanical data needed to assemble the real conditional endgame once the
@@ -3476,6 +3517,66 @@ theorem realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDat
       safeQSSM boundedGaugeIncidence boundaryMixing)
 
 /--
+Real-frontier version of the canonical-gap lower-machine staging theorem.  The
+three analytic fields are supplied as explicit frontier objects over the real
+mechanical interface.  In particular, the strict `epsSmall` proof is carried
+by the boundary-mixing frontier rather than exposed as a separate construction
+input.
+-/
+theorem realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM : RealM4MechanicalInterfaceData.SafeQSSMFrontier M)
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier M)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier M) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          M boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          M boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+          (D := D) (F := lowerMachine.lowerFramework)
+          defaultMessage coverageData lockedMessageRigidity
+          finiteVariables.uniformSupport pnpDeciderFamily
+          constantDecoderRegime)
+        starSWHardness safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing) :=
+  realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_explicitPNP
+    M boundaryMixing.epsSmall lowerMachine defaultMessage coverageData
+    lockedMessageRigidity finiteVariables pnpDeciderFamily
+    constantDecoderRegime starSWHardness safeQSSM.safeQSSM
+    boundedGaugeIncidence.boundedGaugeIncidence boundaryMixing.boundaryMixing
+
+/--
 Component-level covered-locks staging theorem.  This removes the
 `RealM4EndgameMechanicalData` package from the theorem hypotheses by building
 it from the explicit construction components: the mechanical interface data,
@@ -4107,6 +4208,69 @@ theorem realM4_officialSeparation_from_lowerMachine_finiteCNFVariables_coverageD
       lockedMessageRigidity finiteVariables pnpDeciderFamily
       constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
+
+/--
+Official-endpoint staging for the real-frontier canonical-gap route.  The
+three analytic fields are frontier objects, with boundary mixing carrying the
+strict smallness witness needed by the v13 clash.  The Cook-style bridge
+remains a separate visible construction obligation.
+-/
+theorem realM4_officialSeparation_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM : RealM4MechanicalInterfaceData.SafeQSSMFrontier M)
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier M)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier M)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPNPBridgeData
+        ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+            M boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
+          safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+          boundaryMixing.boundaryMixing)
+        ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+            M boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
+          (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+            (D := D) (F := lowerMachine.lowerFramework)
+            defaultMessage coverageData lockedMessageRigidity
+            finiteVariables.uniformSupport pnpDeciderFamily
+            constantDecoderRegime)
+          starSWHardness safeQSSM.safeQSSM
+          boundedGaugeIncidence.boundedGaugeIncidence
+          boundaryMixing.boundaryMixing)
+        C) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_internalClash_bridge bridge
+    (realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+      M lowerMachine defaultMessage coverageData lockedMessageRigidity
+      finiteVariables pnpDeciderFamily constantDecoderRegime starSWHardness
+      safeQSSM boundedGaugeIncidence boundaryMixing)
 
 /--
 Official-endpoint staging theorem for the sharpest current real component
@@ -5812,6 +5976,102 @@ theorem realM4NoTargetRowsCanonicalGapOfficialEndpointHypothesisAuditExplicitPNP
 def realM4NoTargetRowsCanonicalGapOfficialEndpointStatementExplicitPNP : String :=
   "For the adjusted real no-target-rows public surface, a Cook-style official separation follows from the no-target-rows canonical-gap component assembly, D.8 locked-message rigidity, StarSW hardness, the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge.  The route derives singleMessage, noPublicTargetTags, admissibleHistories, and phaseABudget; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
+def realM4CanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "realM4MechanicalInterfaceData",
+  "realCompressionLowerMachineData",
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "finiteCNFVariableFamilyData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4CanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP_exact :
+    realM4CanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4CanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4CanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4CanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP_exact :
+    realM4CanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4CanonicalGapRealFrontierEndgameStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows from explicit mechanical data, canonical Phase-A fixed-gap choice, the real lower machine, public-lock representative data, D.8 locked-message rigidity, finite CNF variable-family data, and the constant decoder regime, then exactly StarSW hardness and the three analytic frontier fields safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family.  The boundaryMixing frontier carries the strict epsMix < 1/2 witness; epsSmall is not a separate construction input on this route."
+
+def realM4CanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP :
+    List String :=
+  realM4CanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP ++
+    realM4OfficialPNPBridgeConstructionInputs
+
+theorem realM4CanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP_exact :
+    realM4CanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP" ] := by
+  rfl
+
+def realM4CanonicalGapRealFrontierOfficialEndpointHypothesisAuditExplicitPNP :
+    List String :=
+  realM4CanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4CanonicalGapRealFrontierOfficialEndpointHypothesisAuditExplicitPNP_exact :
+    realM4CanonicalGapRealFrontierOfficialEndpointHypothesisAuditExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4CanonicalGapRealFrontierOfficialEndpointStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, a Cook-style official separation follows from the canonical-gap real-frontier assembly, D.8 locked-message rigidity, exactly StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge.  BoundaryMixing includes epsSmall; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
 def realM4OfficialEndpointConstructionInputsExplicitPNP : List String :=
   realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgameConstructionInputsExplicitPNP ++
     realM4OfficialPNPBridgeConstructionInputs
@@ -6074,9 +6334,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "epsSmall"
-    status := .openConstruction
-    checkedName := "RealM4EndgameMechanicalData.epsSmall"
-    note := "The real M4 construction must prove the strict boundary-mixing smallness bound."
+    status := .partialConstructionTransferred
+    checkedName := "RealM4MechanicalInterfaceData.BoundaryMixingFrontier.epsSmall"
+    note := "On the real-frontier route, the strict epsMix < 1/2 witness is carried by the boundaryMixing analytic frontier rather than exposed as a separate construction input."
   },
   {
     item := "kernelNeutrality"
@@ -6232,7 +6492,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.constructionTransferred,
-        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -6264,7 +6524,6 @@ def realM4OpenConstructionItems : List String := [
   "admissibleHistories",
   "finiteCNFVariableFamilyData",
   "realCompressionLowerMachineData",
-  "epsSmall",
   "officialPNPBridgeData"
 ]
 
@@ -6277,7 +6536,6 @@ theorem realM4OpenConstructionItems_exact :
         "admissibleHistories",
         "finiteCNFVariableFamilyData",
         "realCompressionLowerMachineData",
-        "epsSmall",
         "officialPNPBridgeData" ] := by
   rfl
 
