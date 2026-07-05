@@ -15,6 +15,20 @@ namespace Mettapedia.Computability.PNP
 
 set_option autoImplicit false
 
+universe u
+
+namespace ConcreteCNF
+
+/-- Unit-clause equality is exactly equality of the addressed variable and
+the forced Boolean value. -/
+theorem unitClause_eq_unitClause_iff {Var : Type u} {v v' : Var}
+    {value value' : Bool} :
+    unitClause v value = unitClause v' value' ↔
+      v = v' ∧ value = value' := by
+  cases value <;> cases value' <;> simp [unitClause, unitLiteral]
+
+end ConcreteCNF
+
 /-- CNF variables for the real linear public instance are the witness
 coordinates. -/
 abbrev V13RealLinearCNFVar (m : Nat) :=
@@ -125,6 +139,110 @@ theorem v13RealLinearCNFReadout_eq_publicMessage_of_valid {m : Nat}
     v13RealLinearCNFReadout i₀ W =
       v13RealLinearMessageOfPublic i₀ Y := by
   exact v13RealLinearCNFFormula_forces_decodedBit hW i₀
+
+/-- Public formula-syntax tag: whether the concrete CNF contains the positive
+unit clause for the selected target coordinate. -/
+def v13RealLinearCNFFormulaPositiveTargetTag {m : Nat}
+    (i₀ : Fin m)
+    (formula : ConcreteCNF.Formula (V13RealLinearCNFVar m)) : Bool :=
+  decide (ConcreteCNF.unitClause i₀ true ∈ formula)
+
+/-- In the all-bits-locking real linear CNF, the public target-unit tag is
+exactly the fixed public message. -/
+theorem v13RealLinearCNFFormulaPositiveTargetTag_eq_publicMessage {m : Nat}
+    (i₀ : Fin m) (Y : V13RealLinearPublic m) :
+    v13RealLinearCNFFormulaPositiveTargetTag i₀
+        (v13RealLinearCNFFormula Y) =
+      v13RealLinearMessageOfPublic i₀ Y := by
+  by_cases hmsg : v13RealLinearMessageOfPublic i₀ Y = true
+  · have hmem :
+        ConcreteCNF.unitClause i₀ true ∈ v13RealLinearCNFFormula Y := by
+      refine List.mem_ofFn.mpr ⟨i₀, ?_⟩
+      simp [v13RealLinearCNFDecodedAssignment, hmsg]
+    simp [v13RealLinearCNFFormulaPositiveTargetTag, hmem, hmsg]
+  · have hfalse : v13RealLinearMessageOfPublic i₀ Y = false :=
+      Bool.eq_false_iff.mpr hmsg
+    have hnot :
+        ConcreteCNF.unitClause i₀ true ∉ v13RealLinearCNFFormula Y := by
+      intro hmem
+      rcases List.mem_ofFn.mp hmem with ⟨j, hEq⟩
+      have hparts := ConcreteCNF.unitClause_eq_unitClause_iff.mp hEq
+      have hj : j = i₀ := hparts.1
+      have hval : v13RealLinearCNFDecodedAssignment Y j = true := hparts.2
+      subst i₀
+      simp [v13RealLinearCNFDecodedAssignment, hfalse] at hval
+    simp [v13RealLinearCNFFormulaPositiveTargetTag, hnot, hfalse]
+
+/-- Formula-syntax-only message determination for the all-bits-locking real
+linear CNF. -/
+theorem v13RealLinearCNFFormula_publicSyntaxDeterminesMessage {m : Nat}
+    (i₀ : Fin m) :
+    ∃ f : ConcreteCNF.Formula (V13RealLinearCNFVar m) -> Bool,
+      ∀ Y : V13RealLinearPublic m,
+        v13RealLinearMessageOfPublic i₀ Y =
+          f (v13RealLinearCNFFormula Y) := by
+  exact
+    ⟨v13RealLinearCNFFormulaPositiveTargetTag i₀,
+      fun Y =>
+        (v13RealLinearCNFFormulaPositiveTargetTag_eq_publicMessage
+          i₀ Y).symm⟩
+
+/-- No-public-target-tags shape for the formula syntax viewed as the public
+skeleton: the public CNF formula alone should not determine the message. -/
+def V13RealLinearCNFFormulaNoPublicTargetTags {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula (V13RealLinearCNFVar m) -> Bool,
+      ∀ Y : V13RealLinearPublic m,
+        v13RealLinearMessageOfPublic i₀ Y =
+          f (v13RealLinearCNFFormula Y)
+
+/-- Named obstruction: the all-bits-locking real linear CNF exposes the target
+message through the public target-coordinate unit clause, so this encoding
+cannot supply `noPublicTargetTags` with formula syntax as the public skeleton. -/
+theorem v13RealLinearCNFFormula_noPublicTargetTags_obstruction {m : Nat}
+    (i₀ : Fin m) :
+    ¬ V13RealLinearCNFFormulaNoPublicTargetTags i₀ := by
+  intro hNoTags
+  exact hNoTags (v13RealLinearCNFFormula_publicSyntaxDeterminesMessage i₀)
+
+/-- No-public-readout-tags shape for verifier-valid CNF witnesses: the public
+CNF formula alone should not determine every valid witness readout. -/
+def V13RealLinearCNFFormulaNoPublicReadoutTags {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula (V13RealLinearCNFVar m) -> Bool,
+      ∀ {Y : V13RealLinearPublic m} {W : V13RealLinearCNFWitness m},
+        v13RealLinearCNFVerifier Y W ->
+          v13RealLinearCNFReadout i₀ W =
+            f (v13RealLinearCNFFormula Y)
+
+/-- The public formula syntax determines the readout of every verifier-valid
+witness in the all-bits-locking real linear CNF. -/
+theorem v13RealLinearCNFFormula_publicSyntaxDeterminesReadout {m : Nat}
+    (i₀ : Fin m) :
+    ∃ f : ConcreteCNF.Formula (V13RealLinearCNFVar m) -> Bool,
+      ∀ {Y : V13RealLinearPublic m} {W : V13RealLinearCNFWitness m},
+        v13RealLinearCNFVerifier Y W ->
+          v13RealLinearCNFReadout i₀ W =
+            f (v13RealLinearCNFFormula Y) := by
+  refine ⟨v13RealLinearCNFFormulaPositiveTargetTag i₀, ?_⟩
+  intro Y W hW
+  calc
+    v13RealLinearCNFReadout i₀ W =
+        v13RealLinearMessageOfPublic i₀ Y :=
+      v13RealLinearCNFReadout_eq_publicMessage_of_valid i₀ hW
+    _ =
+        v13RealLinearCNFFormulaPositiveTargetTag i₀
+          (v13RealLinearCNFFormula Y) :=
+      (v13RealLinearCNFFormulaPositiveTargetTag_eq_publicMessage
+        i₀ Y).symm
+
+/-- Named CNF-readout obstruction: every satisfying readout is fixed, but the
+fixing is visible in the public formula syntax through the target unit clause. -/
+theorem v13RealLinearCNFFormula_noPublicReadoutTags_obstruction {m : Nat}
+    (i₀ : Fin m) :
+    ¬ V13RealLinearCNFFormulaNoPublicReadoutTags i₀ := by
+  intro hNoTags
+  exact hNoTags (v13RealLinearCNFFormula_publicSyntaxDeterminesReadout i₀)
 
 /-- A SAT world for the real linear CNF ensemble is a public instance together
 with a satisfying CNF assignment. -/
