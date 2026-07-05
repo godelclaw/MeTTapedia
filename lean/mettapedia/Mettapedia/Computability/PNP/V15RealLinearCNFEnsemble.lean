@@ -7619,6 +7619,52 @@ hidden-gauge coordinate. -/
       v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W :=
   rfl
 
+/-- Reifying the `toWitness` projection of a satisfying Appendix-I CNF world
+recovers the original world. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness_toWitnessWorld
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+        omega.toWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitness_verifier
+          omega) =
+      omega := by
+  cases omega with
+  | mk Y support assignment sat =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness,
+        RealM4CNFWorld.toWitness]
+
+/-- Reifying a witness after the witness-level hidden-gauge action agrees
+with acting on the reified Appendix-I CNF world. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness_gaugeAction
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (gamma : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W)
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_preserves_verifier
+          gamma hW) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction gamma
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+          W hW) := by
+  cases W with
+  | mk publicInstance assignment =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness,
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction,
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction]
+
 /-- Projecting the world-level Appendix-I CNF hidden-gauge action to a witness
 is exactly the witness-level hidden-gauge action. -/
 @[simp] theorem
