@@ -1534,6 +1534,26 @@ theorem section92Step4CurrentFiniteFrontierAndConcreteFork_audit :
     Section92Step4CurrentFiniteFrontierAndConcreteFork :=
   section92Step4CurrentFiniteFrontierAndConcreteFork
 
+theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge
+    hbridge
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows
+    hbridge hrows
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
+  section92Step4CurrentFiniteFrontierFactoredBridgeFork
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
