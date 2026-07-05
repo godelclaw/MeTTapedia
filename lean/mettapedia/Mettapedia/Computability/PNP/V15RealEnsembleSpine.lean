@@ -11315,6 +11315,145 @@ theorem
           K.variableAddressSyntax).formulaUsesOnly hY)⟩
 
 /--
+Official NP-language witness projected from the equality-indexed construction
+surface.  This is the Cook-style language side of the real bridge, separated
+from the construction-side locked-message support and from the analytic
+frontier.
+-/
+def
+    realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4OfficialLanguageNPData C :=
+  K.languageNPData
+
+/--
+Official P-membership-to-SAT-decider data projected from the equality-indexed
+construction surface, over the named projected NP-language witness.
+-/
+def
+    realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4OfficialPToDeciderFamilyData D C
+      (realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData
+        i₀ coordinate K) :=
+  K.pToDeciderFamilyData
+
+/--
+Field audit for the official bridge content projected from the equality-indexed
+construction bundle.  It exposes the named NP language, its NP membership, and
+the fact that P-membership of that language supplies real Appendix-I SAT
+decider families with correctness, program-length bounds, and positive clock
+exponents.
+-/
+theorem
+    realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderBridge_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let N :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData
+        i₀ coordinate K
+    let P :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData
+        i₀ coordinate K
+    C.inNP N.separatedLanguage ∧
+      (∀ (hP : C.inP N.separatedLanguage) (Y : CNFPublic)
+        (formula : ConcreteCNF.Formula (Var Y)),
+        ((P.pnpDeciderFamily_of_inP hP).satDecider Y).decideSat formula =
+            true ↔
+          ∃ σ : ConcreteCNF.Assignment (Var Y),
+            ConcreteCNF.IsSatFormula formula σ) ∧
+        (∀ (hP : C.inP N.separatedLanguage) (Y : CNFPublic),
+          ((P.pnpDeciderFamily_of_inP hP).satDecider Y).programLength ≤
+            (P.pnpDeciderFamily_of_inP hP).programLengthBound) ∧
+          (∀ (hP : C.inP N.separatedLanguage) (Y : CNFPublic),
+            0 < ((P.pnpDeciderFamily_of_inP hP).satDecider Y).clockExponent) := by
+  dsimp
+  exact
+    ⟨K.languageNPData.separatedLanguage_inNP,
+      (fun hP Y formula =>
+        ((K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP).satDecider Y).decidesSat
+          formula),
+      (fun hP Y =>
+        (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP).satDecider_programLength_le
+          Y),
+      (fun hP Y =>
+        ((K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP).satDecider Y).clockExponent_pos)⟩
+
+/--
 Uniform bit-fixing data extracted from the bundled equality-indexed
 construction surface at a candidate `P = NP` witness.  The equality witness
 puts the named NP language in `P`; the official P-to-decider data then supplies
@@ -11351,12 +11490,17 @@ def
         i₀ coordinate D C)
     (hEq : C.pEqualsNP) :
     RealM4CNFUniformBitFixingData D :=
-  let hP : C.inP K.languageNPData.separatedLanguage :=
-    hEq K.languageNPData.separatedLanguage
-      K.languageNPData.separatedLanguage_inNP
+  let N :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData
+      i₀ coordinate K
+  let P :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData
+      i₀ coordinate K
+  let hP : C.inP N.separatedLanguage :=
+    hEq N.separatedLanguage N.separatedLanguage_inNP
   (realM4_formulaSyntaxCNFSupport_of_addressSyntax
     K.variableAddressSyntax).withPNPDecider
-      (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)
+      (P.pnpDeciderFamily_of_inP hP)
 
 /--
 Field audit for the equality-indexed `P = NP` branch.  It exposes the exact
@@ -11424,6 +11568,8 @@ theorem
         realM4UniformConstantDecoderKpolyAt U := by
     simpa [U,
       realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+      realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData,
+      realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData,
       hP] using K.kpolyAt_eq_of_pEqualsNP hEq
   have hFloor :
       realM4UniformSelfReductionDecoderCost U <
@@ -11436,6 +11582,8 @@ theorem
         (by
           simpa [U,
             realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+            realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData,
+            realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData,
             hP] using K.targetBlocks_gt_decoder_of_pEqualsNP hEq)
   exact
     ⟨hP,
@@ -11496,11 +11644,15 @@ def
       (by
         simpa [U,
           realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+          realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData,
+          realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData,
           hP] using K.kpolyAt_eq_of_pEqualsNP hEq)
       (K.etaTimes_eq_of_pEqualsNP hEq)
       (by
         simpa [U,
           realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+          realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData,
+          realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData,
           hP] using K.targetBlocks_gt_decoder_of_pEqualsNP hEq)
 
 /--
@@ -11612,13 +11764,15 @@ def realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructio
   let uniformSupport :=
     realM4_formulaSyntaxCNFSupport_of_addressSyntax K.variableAddressSyntax
   let pnpDeciderFamily :=
-    K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP
+    (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)
   exact
     RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageData
       K.lockedMessageData uniformSupport pnpDeciderFamily
       (by
         simpa [uniformSupport, pnpDeciderFamily,
           realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+          realM4_noTargetRowsEqualityIndexedConstructionData_officialLanguageNPData,
+          realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderFamilyData,
           hP] using
           realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP
             i₀ coordinate K hEq)
@@ -12180,6 +12334,31 @@ theorem
 def realM4NoTargetRowsEqualityIndexedLockedMessageUpperSupportStatement :
     String :=
   "For the real v15/M4 no-target-rows equality-indexed construction surface, public-lock coverage, D.7 lock satisfiability, explicit public-message invariance, D.8 locked-message rigidity, and formula-syntax uniform CNF support are projected from the construction bundle.  The uniform support is derived mechanically from real CNF address syntax; no StarSW, analytic, or official-language hypothesis is used."
+
+def realM4NoTargetRowsEqualityIndexedOfficialPToDeciderBridgeItems :
+    List String := [
+  "separatedLanguage",
+  "separatedLanguageInNP",
+  "pMembershipToSATDeciderFamily",
+  "satDeciderCorrectness",
+  "satDeciderProgramLengthBound",
+  "satDeciderPositiveClock"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedOfficialPToDeciderBridgeItems_exact :
+    realM4NoTargetRowsEqualityIndexedOfficialPToDeciderBridgeItems =
+      [ "separatedLanguage",
+        "separatedLanguageInNP",
+        "pMembershipToSATDeciderFamily",
+        "satDeciderCorrectness",
+        "satDeciderProgramLengthBound",
+        "satDeciderPositiveClock" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedOfficialPToDeciderBridgeStatement :
+    String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, the official NP-language witness and the P-membership-to-SAT-decider family are projected as named construction data.  The bridge exposes NP membership, SAT-decider correctness, program-length bounds, and positive clock exponents before the P=NP branch consumes the decider family; it uses no StarSW or analytic frontier hypothesis and is not an unconditional SAT algorithm."
 
 def realM4NoTargetRowsEqualityIndexedPEqualsNPBranchItems :
     List String := [
@@ -17152,6 +17331,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The bundled equality-indexed surface now projects public-lock coverage, D.7 satisfiability, explicit public-message invariance, D.8 rigidity, and address-derived uniform CNF support without theorem-level frontier hypotheses."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataOfficialPToDeciderBridge"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_officialPToDeciderBridge_fields"
+    note := "The equality-indexed surface now projects the official NP-language witness and P-membership-to-SAT-decider family, with decider correctness and program metadata exposed before the P=NP branch uses them."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataPEqualsNPBranch"
     status := .partialConstructionTransferred
     checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP_fields"
@@ -17226,6 +17411,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsEqualityIndexedConstructionDataMechanicalInterface",
         "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData",
         "realNoTargetRowsEqualityIndexedConstructionDataLockedMessageUpperSupport",
+        "realNoTargetRowsEqualityIndexedConstructionDataOfficialPToDeciderBridge",
         "realNoTargetRowsEqualityIndexedConstructionDataPEqualsNPBranch",
         "realNoTargetRowsEqualityIndexedConstructionDataConstantDecoderRegime",
         "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP",
@@ -17243,6 +17429,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
