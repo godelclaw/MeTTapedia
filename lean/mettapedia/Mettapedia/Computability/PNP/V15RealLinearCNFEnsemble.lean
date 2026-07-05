@@ -5119,6 +5119,157 @@ theorem
       v13RealLinearGaugeCNFSelfReductionAssignment_hiddenGauge_false
         D (v13RealLinearNoTargetRowsPublicInput Y)
 
+/-- Witness-level hidden-gauge action for the no-target-rows Appendix-I CNF
+spine: keep the public instance fixed and flip only the free `none`
+coordinate of the CNF assignment. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    RealM4CNFWitness
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := W.publicInstance
+  assignment := v13RealLinearGaugeCNFGaugeAction gamma W.assignment
+
+/-- Hidden-gauge coordinate of an Appendix-I CNF witness assignment. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+    {m : Nat} {i₀ : Fin m}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    Bool :=
+  v13RealLinearGaugeCNFHiddenGauge W.assignment
+
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_publicInstance
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        gamma W).publicInstance =
+      W.publicInstance :=
+  rfl
+
+/-- The witness-level hidden-gauge action preserves Appendix-I CNF verifier
+validity. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_preserves_verifier
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)}
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W) := by
+  rcases hW with ⟨hSupport, hSat⟩
+  rcases hSat with ⟨hPublic, hFormula⟩
+  refine ⟨hSupport, ⟨hPublic, ?_⟩⟩
+  have hVerifier :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput W.publicInstance)
+        W.assignment := by
+    simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+      v13RealLinearGaugeCNFVerifier] using hFormula
+  have hAction :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput W.publicInstance)
+        (v13RealLinearGaugeCNFGaugeAction gamma W.assignment) :=
+    v13RealLinearGaugeCNFGaugeAction_preserves_verifier gamma hVerifier
+  simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+    v13RealLinearGaugeCNFVerifier] using hAction
+
+/-- The witness-level hidden-gauge action preserves the fixed Appendix-I CNF
+witness readout. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_preserves_readout
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    realM4CNFWitnessReadout (fun bit => bit)
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W) =
+      realM4CNFWitnessReadout (fun bit => bit) W := by
+  simpa [realM4CNFWitnessReadout,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData]
+    using v13RealLinearGaugeCNFGaugeAction_preserves_readout
+      gamma i₀ W.assignment
+
+/-- The witness-level hidden-gauge action changes the free coordinate by xor
+with the Boolean gauge element. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W) =
+      (gamma ^^
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W) := by
+  simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction,
+    v13RealLinearGaugeCNFGaugeAction_hiddenGauge]
+
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_false
+    {m : Nat} {i₀ : Fin m}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        false W =
+      W := by
+  cases W with
+  | mk publicInstance assignment =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction]
+
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_xor
+    {m : Nat} {i₀ : Fin m} (gamma delta : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction gamma
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          delta W) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        (gamma ^^ delta) W := by
+  cases W with
+  | mk publicInstance assignment =>
+      simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction]
+
+/-- The nontrivial witness-level gauge element changes every Appendix-I CNF
+witness by flipping its free hidden-gauge coordinate. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_true_ne
+    {m : Nat} {i₀ : Fin m}
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction true W ≠
+      W := by
+  intro hfixed
+  have hhidden :=
+    congrArg
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        m i₀) hfixed
+  simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge]
+    at hhidden
+
 /-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
 variable order is the concrete formula-syntax cover, and the explicit SAT
 decider is the P=NP-side hypothesis object. -/
