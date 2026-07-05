@@ -959,6 +959,11 @@ def ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1200000 :
   | forward => 432
   | reverse => 400
 
+def ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1858980 :
+    ClosedCollarDiagonalTwoPoleTemplateId → Nat
+  | forward => 1080
+  | reverse => 1080
+
 /--
 Graph-facing carrier for one of the exact diagonal collar two-pole templates.
 The string labels pin the lab template, while `separator` is the reusable
@@ -1045,6 +1050,25 @@ structure ClosedCollarSimplePatchTemplateBlockerSliceCounts where
   cap5LikeBlockerCount : Nat
   normalFormAfterTemplateExclusionPassingCount : Nat
 
+def closedCollarSimplePatchN6ExactPatchTopologyCount : Nat :=
+  1858980
+
+def closedCollarSimplePatchN6First800000StructuralCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 0
+  patchTopologyLimit := 800000
+  processedPatchTopologyCount := 800000
+  radialOrderCaseCount := 1600000
+  profilePreservingCaseCount := 18720
+  structuralFirstBlockerCount := 18720
+  exactTemplateBlockerCount := 0
+  diagonalForwardTemplateCount := 0
+  diagonalReverseTemplateCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
 def closedCollarSimplePatchN6Slices800000_1000000TemplateBlockerCounts :
     ClosedCollarSimplePatchTemplateBlockerSliceCounts where
   internalVertexCount := 6
@@ -1089,6 +1113,86 @@ def closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts :
   exactTemplateBlockerCount := 832
   diagonalForwardTemplateCount := 432
   diagonalReverseTemplateCount := 400
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6Slices1200000_1400000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 1200000
+  patchTopologyLimit := 200000
+  processedPatchTopologyCount := 200000
+  radialOrderCaseCount := 400000
+  profilePreservingCaseCount := 1832
+  structuralFirstBlockerCount := 1498
+  exactTemplateBlockerCount := 334
+  diagonalForwardTemplateCount := 144
+  diagonalReverseTemplateCount := 190
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6Slices1400000_1600000TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 1400000
+  patchTopologyLimit := 200000
+  processedPatchTopologyCount := 200000
+  radialOrderCaseCount := 400000
+  profilePreservingCaseCount := 2118
+  structuralFirstBlockerCount := 1700
+  exactTemplateBlockerCount := 418
+  diagonalForwardTemplateCount := 216
+  diagonalReverseTemplateCount := 202
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6Slices1600000_1858980TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 1600000
+  patchTopologyLimit := 400000
+  processedPatchTopologyCount := 258980
+  radialOrderCaseCount := 517960
+  profilePreservingCaseCount := 2976
+  structuralFirstBlockerCount := 2400
+  exactTemplateBlockerCount := 576
+  diagonalForwardTemplateCount := 288
+  diagonalReverseTemplateCount := 288
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 800000
+  patchTopologyLimit := 1058980
+  processedPatchTopologyCount := 1058980
+  radialOrderCaseCount := 2117960
+  profilePreservingCaseCount := 11160
+  structuralFirstBlockerCount := 9000
+  exactTemplateBlockerCount := 2160
+  diagonalForwardTemplateCount := 1080
+  diagonalReverseTemplateCount := 1080
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN6AllTemplateBlockerCounts :
+    ClosedCollarSimplePatchTemplateBlockerSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 0
+  patchTopologyLimit := 1858980
+  processedPatchTopologyCount := 1858980
+  radialOrderCaseCount := 3717960
+  profilePreservingCaseCount := 29880
+  structuralFirstBlockerCount := 27720
+  exactTemplateBlockerCount := 2160
+  diagonalForwardTemplateCount := 1080
+  diagonalReverseTemplateCount := 1080
   nonTemplateCyclicCutBlockerCount := 0
   cap5LikeBlockerCount := 0
   normalFormAfterTemplateExclusionPassingCount := 0
@@ -1165,6 +1269,97 @@ theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedAfterC
     ClosedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedAfterCyclicallyFiveTemplateExclusion := by
   exact
     ⟨closedCollarWindingFreedomSimplePatchN6Slices800000_1200000BlockedByStructuralOrExcludedTemplateEvidence,
+      section92WindingExactTemplateNormalFormExclusion⟩
+
+/--
+Exhaustive six-internal simple-patch evidence.  The lab enumerated all
+1858980 simple cubic four-terminal patch topologies, tested both radial
+orders, required preservation of the full closed-collar winding profile, and
+then classified every profile-preserving candidate.  All such candidates are
+accounted for by structural normal-form blockers or by one of the two exact
+diagonal collar two-pole templates; no residual non-template small cyclic cut,
+literal CAP5 blocker, or post-template-exclusion pass remains.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedByStructuralOrExcludedTemplateEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6ExactPatchTopologyCount = 1858980 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.internalVertexCount = 6 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.patchStartIndex = 0 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.patchTopologyLimit =
+      closedCollarSimplePatchN6ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.radialOrderCaseCount =
+      2 * closedCollarSimplePatchN6ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.profilePreservingCaseCount =
+      29880 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.structuralFirstBlockerCount =
+      27720 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.exactTemplateBlockerCount =
+      2160 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalForwardTemplateCount =
+      1080 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalReverseTemplateCount =
+      1080 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalForwardTemplateCount =
+      ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1858980
+        ClosedCollarDiagonalTwoPoleTemplateId.forward ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalReverseTemplateCount =
+      ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1858980
+        ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalForwardTemplateCount +
+        closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalReverseTemplateCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.exactTemplateBlockerCount ∧
+    closedCollarSimplePatchN6AllTemplateBlockerCounts.structuralFirstBlockerCount +
+        closedCollarSimplePatchN6AllTemplateBlockerCounts.exactTemplateBlockerCount +
+          closedCollarSimplePatchN6AllTemplateBlockerCounts.nonTemplateCyclicCutBlockerCount +
+            closedCollarSimplePatchN6AllTemplateBlockerCounts.cap5LikeBlockerCount +
+              closedCollarSimplePatchN6AllTemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6First800000StructuralCounts.processedPatchTopologyCount +
+        closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN6First800000StructuralCounts.profilePreservingCaseCount +
+        closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.processedPatchTopologyCount +
+        closedCollarSimplePatchN6Slices1200000_1400000TemplateBlockerCounts.processedPatchTopologyCount +
+          closedCollarSimplePatchN6Slices1400000_1600000TemplateBlockerCounts.processedPatchTopologyCount +
+            closedCollarSimplePatchN6Slices1600000_1858980TemplateBlockerCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN6Slices800000_1200000TemplateBlockerCounts.exactTemplateBlockerCount +
+        closedCollarSimplePatchN6Slices1200000_1400000TemplateBlockerCounts.exactTemplateBlockerCount +
+          closedCollarSimplePatchN6Slices1400000_1600000TemplateBlockerCounts.exactTemplateBlockerCount +
+            closedCollarSimplePatchN6Slices1600000_1858980TemplateBlockerCounts.exactTemplateBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1858980TemplateBlockerCounts.exactTemplateBlockerCount
+
+theorem closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedByStructuralOrExcludedTemplateEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedByStructuralOrExcludedTemplateEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/--
+Exhaustive current fork statement for the six-internal realization lab.  Every
+profile-preserving simple-patch candidate is structurally blocked or realizes
+one of the exact diagonal templates, and cyclic five-edge-connectivity excludes
+those templates from the intended normal-form regime.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedByStructuralOrExcludedTemplateEvidence ∧
+    Section92WindingExactTemplateNormalFormExclusion
+
+theorem closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion :
+    ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion := by
+  exact
+    ⟨closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedByStructuralOrExcludedTemplateEvidence,
       section92WindingExactTemplateNormalFormExclusion⟩
 
 /--
