@@ -17505,6 +17505,93 @@ theorem realM4ConcreteEnsembleConstructionItems_exact :
         "cnfVariableAddressSyntax" ] := by
   rfl
 
+def realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems :
+    List String := [
+  "noTargetRowsPublicSurface",
+  "law",
+  "transcript",
+  "observerBit",
+  "phaseA",
+  "semantics",
+  "observerEvidence",
+  "pivotSummary",
+  "epsMix",
+  "safeCost",
+  "safeBudget",
+  "gaugeIncidence",
+  "gaugeBound"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems_exact :
+    realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedConcreteConstructionItems :
+    List String :=
+  realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems ++
+    [ "hiddenGaugeProduct",
+      "publicLockCoverageData",
+      "lockedMessageRigidityData",
+      "cnfVariableAddressSyntax" ]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedConcreteConstructionItems_exact :
+    realM4NoTargetRowsEqualityIndexedConcreteConstructionItems =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedDerivedStructuralItems :
+    List String := [
+  "singleMessage",
+  "noPublicTargetTags",
+  "atomCompleteness",
+  "gaugeFaithfulness",
+  "admissibleHistories"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedDerivedStructuralItems_exact :
+    realM4NoTargetRowsEqualityIndexedDerivedStructuralItems =
+      [ "singleMessage",
+        "noPublicTargetTags",
+        "atomCompleteness",
+        "gaugeFaithfulness",
+        "admissibleHistories" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedOpenSurfaceStatement : String :=
+  "For the no-target-rows equality-indexed route, the public surface plus CD-ENF already derives singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories.  The concrete construction surface therefore keeps the actual no-target-rows public fields, hiddenGaugeProduct, public-lock coverage, locked-message data, and CNF address syntax as construction obligations, rather than listing those derived structural fields as theorem-level inputs."
+
 def realM4LowerMachineConstructionItems : List String := [
   "realCompressionLowerMachineData",
   "realConstantDecoderRegime"
@@ -17620,18 +17707,29 @@ theorem realM4LargeTargetOpenConstructionItems_decomposes :
   rfl
 
 def realM4EqualityIndexedLargeTargetOpenConstructionItems : List String :=
-  realM4ConcreteEnsembleConstructionItems ++
+  realM4NoTargetRowsEqualityIndexedConcreteConstructionItems ++
     realM4LargeTargetLowerMachineConstructionItems ++
       realM4OfficialBridgeConstructionItems ++
         realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems
 
 theorem realM4EqualityIndexedLargeTargetOpenConstructionItems_exact :
     realM4EqualityIndexedLargeTargetOpenConstructionItems =
-      [ "publicLockCoverageData",
-        "lockedMessageRigidityData",
-        "noPublicTargetTags",
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
         "hiddenGaugeProduct",
-        "admissibleHistories",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
         "officialLanguageNPData",
@@ -17644,7 +17742,7 @@ theorem realM4EqualityIndexedLargeTargetOpenConstructionItems_exact :
 
 theorem realM4EqualityIndexedLargeTargetOpenConstructionItems_decomposes :
     realM4EqualityIndexedLargeTargetOpenConstructionItems =
-      realM4ConcreteEnsembleConstructionItems ++
+      realM4NoTargetRowsEqualityIndexedConcreteConstructionItems ++
         realM4LargeTargetLowerMachineConstructionItems ++
           realM4OfficialBridgeConstructionItems ++
             realM4EqualityIndexedLargeTargetKpolyCompatibilityConstructionItems := by
@@ -17745,11 +17843,22 @@ def realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit :
 
 theorem realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit_exact :
     realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit =
-      [ "publicLockCoverageData",
-        "lockedMessageRigidityData",
-        "noPublicTargetTags",
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
         "hiddenGaugeProduct",
-        "admissibleHistories",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
         "officialLanguageNPData",
@@ -17765,7 +17874,7 @@ theorem realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit_exact 
   rfl
 
 def realM4EqualityIndexedLargeTargetCompletionFrontierStatement : String :=
-  "The equality-indexed large-target real v15/M4 completion frontier records the strongest current official endpoint route.  The P=NP side appears only through construction obligations indexed by a candidate equality witness: eta positivity, K-poly identification with the extracted fixed self-reduction decoder, etaTimes identification with the linear floor, and the target-block count exceeding that fixed decoder cost.  No separate P=NP witness or hidden Cook bridge object is a theorem hypothesis at this official layer.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
+  "The equality-indexed large-target real v15/M4 completion frontier records the strongest current official endpoint route.  Its open construction surface is the no-target-rows public surface, hiddenGaugeProduct, public-lock coverage, locked-message data, CNF address syntax, real lower-machine data, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block obligations.  The no-target-rows public surface and CD-ENF already derive singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories, so those structural fields are not repeated as open items on this route.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
