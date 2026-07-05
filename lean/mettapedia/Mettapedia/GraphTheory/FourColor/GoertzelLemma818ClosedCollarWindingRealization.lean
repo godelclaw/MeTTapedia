@@ -1472,6 +1472,74 @@ theorem closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyF
       section92WindingExactTemplateNormalFormExclusion⟩
 
 /--
+Graph-facing hook for the finite six-internal simple-patch subclass tested by
+the realization lab.  The index fields identify the enumerated patch topology
+and one of the two radial orders; the annular realization supplies the actual
+geometric data being represented.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6Representation
+    (G : SimpleGraph V) where
+  annular : ClosedCollarWindingFreedomAnnularRealization G
+  patchTopologyIndex : Nat
+  hpatchTopologyIndex_lt :
+    patchTopologyIndex < closedCollarSimplePatchN6ExactPatchTopologyCount
+  radialOrderIndex : Fin 2
+
+/--
+A normal-form realization that survives the exhausted six-internal
+simple-patch lab as a post-template-exclusion pass.  The final field is the
+finite lab certificate that such a pass was counted.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass
+    (G : SimpleGraph V) where
+  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  representation : ClosedCollarWindingFreedomSimplePatchN6Representation G
+  hpassCountPositive :
+    0 <
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount
+
+/--
+Coverage obligation for the finite n6 subclass: if an honest normal-form
+annular realization is represented by one of the enumerated six-internal
+simple patches, then the lab's profile-preservation and normal-form-prefix
+checks count it as a surviving pass.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6CoveredByLab : Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    ClosedCollarWindingFreedomNormalFormRealization G →
+      ClosedCollarWindingFreedomSimplePatchN6Representation G →
+        Nonempty (ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G)
+
+theorem closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass
+    {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.normalFormAfterTemplateExclusionPassingCount =
+        0 := rfl
+  have hpos := data.hpassCountPositive
+  omega
+
+/--
+Finite subclass nonrealizability: once the lab-coverage obligation is supplied,
+no honest normal-form realization represented by an enumerated six-internal
+simple patch can exist.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6CoveredByLab →
+    ∀ {V : Type} {G : SimpleGraph V},
+      ClosedCollarWindingFreedomNormalFormRealization G →
+        ClosedCollarWindingFreedomSimplePatchN6Representation G → False
+
+theorem closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm :
+    ClosedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm := by
+  intro hcovered V G normalForm representation
+  rcases hcovered normalForm representation with ⟨labPass⟩
+  exact
+    closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass
+      labPass
+
+/--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
 normal-form blocker after planarity has been passed.
