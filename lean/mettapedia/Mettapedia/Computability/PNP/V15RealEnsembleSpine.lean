@@ -10993,6 +10993,198 @@ structure RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
         lowerMachine.lowerFramework.targetBlocks
 
 /--
+Extract the explicit-P=NP self-reduction upper discharge from the bundled
+equality-indexed construction surface at a candidate `P = NP` witness.  The
+SAT decider family is obtained from the named official NP language's
+P-membership under that equality witness; the constant decoder regime is then
+built from the indexed eta/K-poly/target-block fields.
+-/
+def realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructionData_pEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge
+      D K.lowerMachine.lowerFramework := by
+  let hP : C.inP K.languageNPData.separatedLanguage :=
+    hEq K.languageNPData.separatedLanguage
+      K.languageNPData.separatedLanguage_inNP
+  let uniformSupport :=
+    realM4_formulaSyntaxCNFSupport_of_addressSyntax K.variableAddressSyntax
+  let pnpDeciderFamily :=
+    K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP
+  exact
+    RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageDataAndLargeTargetKpolyCompatibility
+      K.lockedMessageData uniformSupport pnpDeciderFamily
+      (K.eta_of_pEqualsNP hEq) (K.eta_pos_of_pEqualsNP hEq)
+      (by
+        simpa [hP, uniformSupport, pnpDeciderFamily] using
+          K.kpolyAt_eq_of_pEqualsNP hEq)
+      (K.etaTimes_eq_of_pEqualsNP hEq)
+      (by
+        simpa [hP, uniformSupport, pnpDeciderFamily] using
+          K.targetBlocks_gt_decoder_of_pEqualsNP hEq)
+
+/--
+Checked output of the equality-indexed construction surface's P=NP upper
+side: at a candidate equality witness, bit-fixing produces satisfying CNF
+assignments, the locked readout returns the fixed public message, instance
+decoder costs are bounded by the uniform constant decoder, and the v13
+`SelfReductionUpperHypothesis` follows for the real lower framework.
+-/
+theorem
+    realM4_noTargetRowsEqualityIndexedConstructionData_selfReduction_outputs_givenPEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    let S :=
+      realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructionData_pEqualsNP
+        i₀ coordinate K hEq
+    (∀ {Y : CNFPublic}, D.support Y ->
+      ConcreteCNF.IsSatFormula (D.formula Y)
+        (S.uniformBitFixing.bitFixingAssignment Y)) ∧
+    (∀ {Y : CNFPublic}, D.support Y ->
+      D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+        S.publicMessage (D.publicLock Y)) ∧
+    (∀ Y : CNFPublic,
+      realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+        realM4UniformSelfReductionDecoderCost S.uniformBitFixing) ∧
+    SelfReductionUpperHypothesis K.lowerMachine.lowerFramework := by
+  dsimp
+  exact
+    realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper
+      (S :=
+        realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructionData_pEqualsNP
+          i₀ coordinate K hEq)
+
+/--
+Cook-style class-inequality endpoint from the bundled equality-indexed
+construction surface.  Once the construction bundle is supplied, the theorem
+boundary contains exactly the four irreducible mathematical inputs:
+StarSW hardness and the three analytic frontiers.
+-/
+theorem realM4_not_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+          (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+          (Branch := Branch) (HistoryAtom := HistoryAtom)
+          (Pivot := Pivot) (Observer := Observer) (Output := Output)
+          i₀ coordinate K.law K.transcript K.observerBit K.phaseA
+          K.semantics K.observerEvidence K.pivotSummary K.epsMix
+          K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
+          K.hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+          (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+          (Branch := Branch) (HistoryAtom := HistoryAtom)
+          (Pivot := Pivot) (Observer := Observer) (Output := Output)
+          i₀ coordinate K.law K.transcript K.observerBit K.phaseA
+          K.semantics K.observerEvidence K.pivotSummary K.epsMix
+          K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
+          K.hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+          (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+          (Branch := Branch) (HistoryAtom := HistoryAtom)
+          (Pivot := Pivot) (Observer := Observer) (Output := Output)
+          i₀ coordinate K.law K.transcript K.observerBit K.phaseA
+          K.semantics K.observerEvidence K.pivotSummary K.epsMix
+          K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
+          K.hiddenGaugeProduct)) :
+    ¬ C.pEqualsNP :=
+  realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality
+    i₀ coordinate K.law K.transcript K.observerBit K.phaseA
+    K.semantics K.observerEvidence K.pivotSummary K.epsMix K.safeCost
+    K.safeBudget K.gaugeIncidence K.gaugeBound K.hiddenGaugeProduct
+    K.lowerMachine starSWHardness safeQSSM boundedGaugeIncidence
+    boundaryMixing K.coverageData K.lockedMessageData
+    K.variableAddressSyntax K.languageNPData K.pToDeciderFamilyData
+    K.eta_of_pEqualsNP K.eta_pos_of_pEqualsNP
+    K.kpolyAt_eq_of_pEqualsNP K.etaTimes_eq_of_pEqualsNP
+    K.targetBlocks_gt_decoder_of_pEqualsNP
+
+/--
 Real official endpoint from the equality-indexed construction surface.  Once
 the construction data is supplied, the theorem-level mathematical hypotheses
 are exactly StarSW hardness plus safeQSSM, boundedGaugeIncidence, and
@@ -11066,16 +11258,10 @@ theorem realM4_officialSeparation_from_noTargetRowsEqualityIndexedConstructionDa
           K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
           K.hiddenGaugeProduct)) :
     C.officialSeparation :=
-  realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality
-    i₀ coordinate K.law K.transcript K.observerBit K.phaseA
-    K.semantics K.observerEvidence K.pivotSummary K.epsMix K.safeCost
-    K.safeBudget K.gaugeIncidence K.gaugeBound K.hiddenGaugeProduct
-    K.lowerMachine starSWHardness safeQSSM boundedGaugeIncidence
-    boundaryMixing K.coverageData K.lockedMessageData
-    K.variableAddressSyntax K.languageNPData K.pToDeciderFamilyData
-    K.eta_of_pEqualsNP K.eta_pos_of_pEqualsNP
-    K.kpolyAt_eq_of_pEqualsNP K.etaTimes_eq_of_pEqualsNP
-    K.targetBlocks_gt_decoder_of_pEqualsNP
+  C.officialSeparation_of_not_pEqualsNP
+    (realM4_not_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate K starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing)
 
 def realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields :
     List String := [
@@ -11132,6 +11318,43 @@ theorem realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields_exact :
         "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
         "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost" ] := by
   rfl
+
+def realM4NoTargetRowsEqualityIndexedPNPUpperHypothesisAudit :
+    List String := [
+  "noTargetRowsEqualityIndexedOfficialConstructionData",
+  "pEqualsNPWitness"
+]
+
+theorem realM4NoTargetRowsEqualityIndexedPNPUpperHypothesisAudit_exact :
+    realM4NoTargetRowsEqualityIndexedPNPUpperHypothesisAudit =
+      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+        "pEqualsNPWitness" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedPNPUpperStatement : String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, a candidate P=NP witness supplies the P-membership proof of the named NP language, hence the extracted SAT decider family used by bit-fixing self-reduction.  The indexed eta/K-poly/target-block fields then construct the explicit upper package and the SelfReductionUpperHypothesis for the real lower framework."
+
+def realM4NoTargetRowsEqualityIndexedClassInequalityHypothesisAudit :
+    List String := [
+  "noTargetRowsEqualityIndexedOfficialConstructionData",
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedClassInequalityHypothesisAudit_exact :
+    realM4NoTargetRowsEqualityIndexedClassInequalityHypothesisAudit =
+      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedClassInequalityStatement : String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, the Cook-style class inequality not P=NP follows from exactly StarSW hardness and the three analytic frontiers safeQSSM / boundedGaugeIncidence / boundaryMixing.  The P=NP side is used only internally to extract the decider family indexed by a candidate equality witness."
 
 def realM4NoTargetRowsEqualityIndexedOfficialEndpointHypothesisAudit :
     List String := [
@@ -15906,6 +16129,18 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The equality-indexed large-target class inequality now transports to the Cook-style official separation proposition without adding a separate bridge object."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_selfReduction_outputs_givenPEqualsNP"
+    note := "At a candidate P=NP witness, the bundled construction surface extracts the SAT decider family and constructs the explicit real self-reduction upper package, including readout and the upper inequality."
+  },
+  {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataClassInequality"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_not_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier"
+    note := "The bundled construction surface now has a direct Cook-style class-inequality wrapper whose theorem boundary exposes only StarSW hardness and the three analytic frontiers."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataOfficialEndpoint"
     status := .partialConstructionTransferred
     checkedName := "realM4_officialSeparation_from_noTargetRowsEqualityIndexedConstructionData_realFrontier"
@@ -15929,6 +16164,8 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityOfficialClassInequality",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityClassInequality",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityOfficialEndpoint",
+        "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge",
+        "realNoTargetRowsEqualityIndexedConstructionDataClassInequality",
         "realNoTargetRowsEqualityIndexedConstructionDataOfficialEndpoint",
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityContradiction" ] := by
   rfl
@@ -15938,6 +16175,8 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
