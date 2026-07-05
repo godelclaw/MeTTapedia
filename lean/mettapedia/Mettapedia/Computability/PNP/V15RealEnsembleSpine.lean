@@ -2043,6 +2043,13 @@ theorem realCNFConstantDecoderKpolyAt_eq
       realCNFSelfReductionDecoderCost D :=
   rfl
 
+theorem realCNFConstantDecoderKpolyAt_const
+    {Var : Type u} (D : RealCNFPNPSATDecider Var)
+    (targetBlocks targetBlocks' : Nat) :
+    realCNFConstantDecoderKpolyAt D targetBlocks =
+      realCNFConstantDecoderKpolyAt D targetBlocks' :=
+  rfl
+
 def realM4UniformSelfReductionDecoderCost
     {PublicLock : Type u} {Quotient : Type v}
     {LockAux : Type w} {Message : Type z}
@@ -2099,6 +2106,19 @@ theorem realM4UniformConstantDecoderKpolyAt_eq
       realM4UniformSelfReductionDecoderCost U :=
   rfl
 
+theorem realM4UniformConstantDecoderKpolyAt_const
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (U : RealM4CNFUniformBitFixingData D)
+    (targetBlocks targetBlocks' : Nat) :
+    realM4UniformConstantDecoderKpolyAt U targetBlocks =
+      realM4UniformConstantDecoderKpolyAt U targetBlocks' :=
+  rfl
+
 structure RealCNFConstantDecoderRegime
     {Var : Type u} (F : CompressionLowerFramework)
     (D : RealCNFPNPSATDecider Var) where
@@ -2153,6 +2173,31 @@ theorem realM4_uniformSelfReductionUpperHypothesis_givenPNP
   upperStrictlyBelowCompressionFloor := by
     rw [R.kpolyAt_eq, R.etaTimes_eq]
     exact R.floor_dominates_decoder
+
+/-- Named constructor for the real constant-decoder regime from the explicit
+K-poly compatibility facts.  The fixed program model is already the constant
+function `realM4UniformConstantDecoderKpolyAt`; what remains for the real M4
+lower framework is to identify its `kpolyAt` and `etaTimes` with this model
+and prove the numeric floor inequality. -/
+def realM4_uniformConstantDecoderRegime_of_kpolyCompatibility
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (U : RealM4CNFUniformBitFixingData D)
+    (eta : Nat)
+    (kpolyAt_eq : F.kpolyAt = realM4UniformConstantDecoderKpolyAt U)
+    (etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta)
+    (floor_dominates_decoder :
+      realM4UniformSelfReductionDecoderCost U < eta * F.targetBlocks) :
+    RealM4UniformConstantDecoderRegime F U where
+  eta := eta
+  kpolyAt_eq := kpolyAt_eq
+  etaTimes_eq := etaTimes_eq
+  floor_dominates_decoder := floor_dominates_decoder
 
 /-! ## Real-M4 lower machine as construction data -/
 
@@ -2949,6 +2994,24 @@ theorem realM4ConstantDecoderRegimeExplicitPNPConstructionInputs_exact :
         "etaTimesLinearFloorIdentification",
         "constantDecoderBelowLinearFloor" ] := by
   rfl
+
+def realM4ConstantDecoderProgramModelConstructionInputs : List String := [
+  "explicitPNPDeciderProgramLengthBound",
+  "fixedRestrictedFormulaCompilerProgram",
+  "fixedBitFixingDriverProgram",
+  "fixedReadoutProgram"
+]
+
+theorem realM4ConstantDecoderProgramModelConstructionInputs_exact :
+    realM4ConstantDecoderProgramModelConstructionInputs =
+      [ "explicitPNPDeciderProgramLengthBound",
+        "fixedRestrictedFormulaCompilerProgram",
+        "fixedBitFixingDriverProgram",
+        "fixedReadoutProgram" ] := by
+  rfl
+
+def realM4ConstantDecoderProgramModelStatement : String :=
+  "The real v15/M4 upper-side K-poly model has a target-block-constant decoder cost: a uniform P=NP SAT-decider program-length bound plus the fixed restricted-formula compiler, bit-fixing driver, and readout program.  The remaining real constant-decoder-regime obligation is lower-framework compatibility: identify kpolyAt with this constant program, identify etaTimes with the linear floor, and prove the constant sits below that floor."
 
 def realM4LockSatisfiableConstructionInputs : List String := [
   "publicLockCoverageData",
@@ -13026,6 +13089,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "The real lower framework must identify kpolyAt with the fixed uniform self-reduction decoder, identify etaTimes with the linear floor, and prove that this constant decoder sits below the target-block floor.  This is K-poly compatibility for the real construction, not a new analytic input."
   },
   {
+    item := "realConstantDecoderProgramModel"
+    status := .constructionTransferred
+    checkedName := "realM4UniformConstantDecoderKpolyAt_const"
+    note := "The upper-side program model is target-block constant: the uniform P=NP decider program-length bound is combined with fixed compiler, bit-fixing-driver, and readout program lengths.  The open part is lower-framework compatibility with this fixed program."
+  },
+  {
     item := "constantDecoderUpperInequality"
     status := .partialConstructionTransferred
     checkedName := "realM4_uniformSelfReductionUpperHypothesis_givenPNP"
@@ -13414,6 +13483,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
