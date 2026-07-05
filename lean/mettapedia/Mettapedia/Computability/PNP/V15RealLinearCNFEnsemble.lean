@@ -1759,6 +1759,190 @@ theorem v13RealLinearSmallNoTargetRowsCNFWitnessFiber_exists_hiddenGauge
       gamma
   exact ⟨W.val, W.property, hHidden⟩
 
+/-- The concrete witness-level hidden-gauge action changes the free
+coordinate by xor with the acting Boolean gauge element. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_hiddenGauge
+    (gamma : Bool) (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+        (v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W) =
+      (gamma ^^ v13RealLinearSmallNoTargetRowsCNFHiddenGauge W) := by
+  cases gamma <;>
+    simp [v13RealLinearSmallNoTargetRowsCNFHiddenGauge,
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction,
+      v13RealLinearGaugeCNFGaugeAction]
+
+@[simp] theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_false
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction false W = W := by
+  simp [v13RealLinearSmallNoTargetRowsCNFGaugeAction]
+
+/-- Concrete witness-level hidden-gauge actions compose by xor. -/
+@[simp] theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_xor
+    (gamma delta : Bool) (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma
+        (v13RealLinearSmallNoTargetRowsCNFGaugeAction delta W) =
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction
+        (gamma ^^ delta) W := by
+  simp [v13RealLinearSmallNoTargetRowsCNFGaugeAction]
+
+/-- The nontrivial witness-level gauge element changes every concrete small
+no-target-row witness by flipping its free hidden coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_true_ne
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) :
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction true W ≠ W := by
+  intro hfixed
+  have hhidden :=
+    congrArg v13RealLinearSmallNoTargetRowsCNFHiddenGauge hfixed
+  rw [v13RealLinearSmallNoTargetRowsCNFGaugeAction_hiddenGauge] at hhidden
+  cases h : v13RealLinearSmallNoTargetRowsCNFHiddenGauge W <;>
+    simp [h] at hhidden
+
+/-- Exact orbit characterization for verifier-valid concrete small
+no-target-row witnesses over a fixed public instance: acting by `gamma`
+reaches `W'` exactly when the hidden-gauge coordinate is xor-shifted by
+`gamma`. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_eq_iff_of_valid
+    (gamma : Bool)
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W W' : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W)
+    (hW' : v13RealLinearSmallNoTargetRowsCNFVerifier Y W') :
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W = W' ↔
+      (gamma ^^ v13RealLinearSmallNoTargetRowsCNFHiddenGauge W) =
+        v13RealLinearSmallNoTargetRowsCNFHiddenGauge W' := by
+  constructor
+  · intro hAction
+    have hHidden :=
+      congrArg v13RealLinearSmallNoTargetRowsCNFHiddenGauge hAction
+    simpa [v13RealLinearSmallNoTargetRowsCNFGaugeAction_hiddenGauge]
+      using hHidden
+  · intro hGauge
+    have hActionValid :
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y
+          (v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W) :=
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_verifier
+        gamma hW
+    calc
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W =
+          v13RealLinearSmallNoTargetRowsCNFAssignment Y
+            (v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+              (v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W)) :=
+        v13RealLinearSmallNoTargetRowsCNFValidWitness_eq_assignment
+          hActionValid
+      _ = v13RealLinearSmallNoTargetRowsCNFAssignment Y
+            (v13RealLinearSmallNoTargetRowsCNFHiddenGauge W') := by
+        rw [v13RealLinearSmallNoTargetRowsCNFGaugeAction_hiddenGauge,
+          hGauge]
+      _ = W' :=
+        (v13RealLinearSmallNoTargetRowsCNFValidWitness_eq_assignment
+          hW').symm
+
+/-- Under the exact valid-witness fiber equivalence, the concrete
+witness-level hidden-gauge action is the Boolean xor action. -/
+theorem v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool_action
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic)
+    (gamma : Bool)
+    (W :
+      {W : V13RealLinearSmallNoTargetRowsCNFWitness //
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y W}) :
+    v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool
+        Y
+        ⟨v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W.val,
+          v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_verifier
+            gamma W.property⟩ =
+      (gamma ^^
+        v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool Y W) := by
+  change
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+        (v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W.val) =
+      (gamma ^^ v13RealLinearSmallNoTargetRowsCNFHiddenGauge W.val)
+  exact v13RealLinearSmallNoTargetRowsCNFGaugeAction_hiddenGauge
+    gamma W.val
+
+/-- Over a fixed public instance, verifier-valid concrete small
+no-target-row witnesses are transitive under the witness-level hidden-gauge
+action. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_transitive_of_valid
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    (W W' : V13RealLinearSmallNoTargetRowsCNFWitness)
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W)
+    (hW' : v13RealLinearSmallNoTargetRowsCNFVerifier Y W') :
+    ∃ gamma : Bool,
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W = W' := by
+  let gamma :=
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge W ^^
+      v13RealLinearSmallNoTargetRowsCNFHiddenGauge W'
+  refine ⟨gamma, ?_⟩
+  exact
+    (v13RealLinearSmallNoTargetRowsCNFGaugeAction_eq_iff_of_valid
+      gamma hW hW').mpr
+      (by
+        dsimp [gamma]
+        cases h₀ : v13RealLinearSmallNoTargetRowsCNFHiddenGauge W <;>
+          cases h₁ :
+            v13RealLinearSmallNoTargetRowsCNFHiddenGauge W' <;>
+          simp)
+
+/-- The witness-level hidden-gauge action is simply transitive on the
+verifier-valid concrete small no-target-row witness fiber over a fixed public
+instance: there is a unique Boolean gauge element sending one valid witness
+to another. -/
+theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_unique_of_valid
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    (W W' : V13RealLinearSmallNoTargetRowsCNFWitness)
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W)
+    (hW' : v13RealLinearSmallNoTargetRowsCNFVerifier Y W') :
+    ∃! gamma : Bool,
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction gamma W = W' := by
+  let gamma :=
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge W ^^
+      v13RealLinearSmallNoTargetRowsCNFHiddenGauge W'
+  refine ⟨gamma, ?_, ?_⟩
+  · exact
+      (v13RealLinearSmallNoTargetRowsCNFGaugeAction_eq_iff_of_valid
+        gamma hW hW').mpr
+        (by
+          dsimp [gamma]
+          cases h₀ : v13RealLinearSmallNoTargetRowsCNFHiddenGauge W <;>
+            cases h₁ :
+              v13RealLinearSmallNoTargetRowsCNFHiddenGauge W' <;>
+            simp)
+  · intro delta hdelta
+    have hHidden :
+        (delta ^^ v13RealLinearSmallNoTargetRowsCNFHiddenGauge W) =
+          v13RealLinearSmallNoTargetRowsCNFHiddenGauge W' :=
+      (v13RealLinearSmallNoTargetRowsCNFGaugeAction_eq_iff_of_valid
+        delta hW hW').mp hdelta
+    dsimp [gamma]
+    cases h₀ : v13RealLinearSmallNoTargetRowsCNFHiddenGauge W <;>
+      cases h₁ : v13RealLinearSmallNoTargetRowsCNFHiddenGauge W' <;>
+      cases delta <;>
+      simp [h₀, h₁] at hHidden ⊢
+
+/-- A verifier-valid concrete small no-target-row witness has a nontrivial
+hidden-gauge fiber over the same public instance: flipping the free
+coordinate preserves verifier validity and readout while changing the
+witness. -/
+theorem v13RealLinearSmallNoTargetRowsCNF_nontrivialHiddenGaugeFiber
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness)
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W) :
+    ∃ W' : V13RealLinearSmallNoTargetRowsCNFWitness,
+      v13RealLinearSmallNoTargetRowsCNFVerifier Y W' ∧
+        v13RealLinearSmallNoTargetRowsCNFReadout W' =
+          v13RealLinearSmallNoTargetRowsCNFReadout W ∧
+        W' ≠ W := by
+  refine
+    ⟨v13RealLinearSmallNoTargetRowsCNFGaugeAction true W,
+      ?_, ?_, ?_⟩
+  · exact
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_verifier
+        true hW
+  · exact
+      v13RealLinearSmallNoTargetRowsCNFGaugeAction_preserves_readout
+        true W
+  · exact v13RealLinearSmallNoTargetRowsCNFGaugeAction_true_ne W
+
 /-- Neutral evidence atoms for the concrete no-target-row SAT-world
 surface. -/
 abbrev V13RealLinearSmallNoTargetRowsCNFNeutral :=
