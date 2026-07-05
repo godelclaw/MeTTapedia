@@ -493,6 +493,19 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxC
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate
+    hmaxcut candidate
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut_audit :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive_noRadialFaceRotationCandidate_audit
     (candidate :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveRotationCandidate) :
@@ -1386,6 +1399,20 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
   closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows
     extraction hrows
 
+theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutCoverage_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (extraction :
+      ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
+        normalForm)
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutCoverage
+    extraction hmaxcut hcovered
+
 theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (data :
@@ -1408,6 +1435,32 @@ theorem closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_f
   closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_auditedRows
     data hrows
 
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_maxCutCoverage_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G)
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_maxCutCoverage
+    data hmaxcut hcovered
+
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_maxCutCoverage_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization
+        G)
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_maxCutCoverage
+    data hmaxcut hcovered
+
 theorem closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows_audit
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
@@ -1421,6 +1474,24 @@ theorem closedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalFo
     ClosedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm :=
   closedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm_of_auditedRows
     hrows
+
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_maxCutCoverage_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_maxCutCoverage
+    hmaxcut hcovered
+
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm_of_maxCutCoverage_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm :=
+  closedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm_of_maxCutCoverage
+    hmaxcut hcovered
 
 theorem section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget_audit :
     Section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :=
@@ -1478,6 +1549,28 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBo
   closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_auditedRows
     hextract hrows
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_maxCutCoverage_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization)
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_maxCutCoverage
+    hextract hmaxcut hcovered
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_maxCutCoverage_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization)
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_maxCutCoverage
+    hextract hmaxcut hcovered
+
 theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget_audit :
     Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget :=
   section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget
@@ -1485,6 +1578,14 @@ theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAnd
 theorem section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndAuditedRowsTarget_audit :
     Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndAuditedRowsTarget :=
   section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndAuditedRowsTarget
+
+theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndMaxCutCoverageTarget_audit :
+    Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndMaxCutCoverageTarget :=
+  section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndMaxCutCoverageTarget
+
+theorem section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutCoverageTarget_audit :
+    Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutCoverageTarget :=
+  section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndMaxCutCoverageTarget
 
 theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable_audit
     (hrows :
@@ -1870,6 +1971,49 @@ theorem section92Step4CurrentFiniteFrontierOneCollarBridgeAuditedRowCoverageExac
 theorem section92Step4CurrentFiniteFrontierAuditedRowCoverageExactCriteria_audit :
     Section92Step4CurrentFiniteFrontierAuditedRowCoverageExactCriteria :=
   section92Step4CurrentFiniteFrontierAuditedRowCoverageExactCriteria
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutCoverage_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutCoverage
+    hbridge hcovered
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutCoverage_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_maxCutCoverage
+    hbridge hcovered
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutCoverage_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge)
+    (hcovered :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_maxCutCoverage
+    hbridge hcovered
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutCoverageExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutCoverageExactCriterion :=
+  section92Step4CurrentFiniteFrontierFactoredBridgeMaxCutCoverageExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutCoverageExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutCoverageExactCriterion :=
+  section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeMaxCutCoverageExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutCoverageExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutCoverageExactCriterion :=
+  section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutCoverageExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria_audit :
+    Section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria :=
+  section92Step4CurrentFiniteFrontierMaxCutCoverageExactCriteria
 
 theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
