@@ -1812,6 +1812,35 @@ noncomputable def formulaSyntaxSupport
     RealM4CNFUniformSupportData D :=
   (V.variableNatCoding).formulaSyntaxSupport
 
+/--
+Finite variable types also supply a minimal address-syntax presentation by
+using variables themselves as addresses and encoding them through the canonical
+finite equivalence.  This is a finite-type supplier for the address-syntax
+route; it is not the sharper tagged manuscript syntax when the real variable
+family is not globally finite.
+-/
+noncomputable def addressSyntax
+    (V : RealM4FiniteCNFVariableTypeData D) :
+    RealM4CNFVariableAddressSyntaxData (Address := Var) D where
+  addressEncode := fun Y addr =>
+    letI := V.varFintype Y
+    (Fintype.equivFin (Var Y) addr).val
+  addressDecode := fun Y n =>
+    letI := V.varFintype Y
+    if h : n < Fintype.card (Var Y) then
+      some ((Fintype.equivFin (Var Y)).symm ⟨n, h⟩)
+    else
+      none
+  addressDecode_addressEncode := by
+    intro Y addr
+    letI := V.varFintype Y
+    simp
+  varAddress := fun _ v => v
+  varDecodeAddress := fun _ addr => some addr
+  varDecodeAddress_varAddress := by
+    intro Y v
+    rfl
+
 end RealM4FiniteCNFVariableTypeData
 
 /-- Top-level alias: finite real CNF variable types supply the Nat-coded
@@ -1840,6 +1869,19 @@ noncomputable def realM4_formulaSyntaxCNFSupport_of_finiteVariableTypes
     RealM4CNFUniformSupportData D :=
   V.formulaSyntaxSupport
 
+/-- Top-level alias: finite real CNF variable types supply a minimal
+address-syntax presentation whose addresses are the variables themselves. -/
+noncomputable def realM4_addressSyntax_of_finiteVariableTypes
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableTypeData D) :
+    RealM4CNFVariableAddressSyntaxData (Address := Var) D :=
+  V.addressSyntax
+
 namespace RealM4FiniteCNFVariableFamilyData
 
 variable {PublicLock : Type u} {Quotient : Type v}
@@ -1864,6 +1906,11 @@ noncomputable def formulaSyntaxSupportViaNatCoding
     (V : RealM4FiniteCNFVariableFamilyData D) :
     RealM4CNFUniformSupportData D :=
   V.finiteTypeData.formulaSyntaxSupport
+
+noncomputable def addressSyntax
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFVariableAddressSyntaxData (Address := Var) D :=
+  V.finiteTypeData.addressSyntax
 
 end RealM4FiniteCNFVariableFamilyData
 
@@ -1892,6 +1939,19 @@ noncomputable def realM4_formulaSyntaxCNFSupport_of_finiteVariablesNatCoding
     (V : RealM4FiniteCNFVariableFamilyData D) :
     RealM4CNFUniformSupportData D :=
   V.formulaSyntaxSupportViaNatCoding
+
+/-- Backward-compatible alias: the older finite variable-family package also
+supplies the finite-type address-syntax presentation. -/
+noncomputable def realM4_addressSyntax_of_finiteVariables
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFVariableAddressSyntaxData (Address := Var) D :=
+  V.addressSyntax
 
 namespace RealM4CNFUniformSupportData
 
@@ -2971,6 +3031,19 @@ theorem realM4VariableNatCodingFromFiniteTypeConstructionInputs_exact :
     realM4VariableNatCodingFromFiniteTypeConstructionInputs =
       [ "cnfVariableFintype" ] := by
   rfl
+
+def realM4VariableAddressSyntaxFromFiniteTypeConstructionInputs :
+    List String := [
+  "cnfVariableFintype"
+]
+
+theorem realM4VariableAddressSyntaxFromFiniteTypeConstructionInputs_exact :
+    realM4VariableAddressSyntaxFromFiniteTypeConstructionInputs =
+      [ "cnfVariableFintype" ] := by
+  rfl
+
+def realM4VariableAddressSyntaxFromFiniteTypeStatement : String :=
+  "Finite real CNF variable types supply a minimal address-syntax presentation by using variables themselves as addresses and the canonical finite code as the address encoder.  This is a mechanical supplier for the address-syntax route when finite variable types are available; it is not a claim that the sharper tagged manuscript variable syntax has been constructed."
 
 def realM4FormulaSyntaxCNFSupportConstructionInputs : List String := [
   "varDecidable"
@@ -19595,6 +19668,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Finite real CNF variable types mechanically supply an injective Nat code through their canonical finite equivalence.  This is a supplier for the Nat-coded route, not a substitute for explicit syntactic coding when the real variable family is infinite."
   },
   {
+    item := "cnfVariableAddressSyntaxFromFiniteTypes"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_addressSyntax_of_finiteVariableTypes"
+    note := "Finite real CNF variable types mechanically supply an identity address-syntax presentation, allowing the address-syntax route to be used when finite variable types are available.  The sharper tagged manuscript address syntax remains a separate construction obligation."
+  },
+  {
     item := "uniformCNFSupportData"
     status := .partialConstructionTransferred
     checkedName := "RealM4FiniteCNFVariableFamilyData.uniformSupport"
@@ -20032,6 +20111,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
