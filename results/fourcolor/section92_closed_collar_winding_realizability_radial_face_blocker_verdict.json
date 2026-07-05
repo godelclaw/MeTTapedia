@@ -1,0 +1,135 @@
+{
+  "archive_histogram": {
+    "2": 96
+  },
+  "archive_radial_face_coherent_rotation_count": 0,
+  "decisive_condition": "max_radial_cut_edges_on_single_face < radial_cut_edge_count",
+  "failures": [],
+  "input_archive": "section92_closed_collar_winding_simple_patch_n6_radial_face_archive_audit.json",
+  "schema": "fourcolor-section-9-2-winding-realizability-radial-face-blocker-verdict-v1",
+  "validated_row_count": 10,
+  "validated_rows": [
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        821205,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        821205,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        852969,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        852969,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_samples.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        1000301,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r0.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        1000301,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_case_1000301_r1.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        1000788,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        1000788,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        1001293,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json"
+    },
+    {
+      "blocker": "no_face_contains_all_radial_cut_edges",
+      "case": [
+        1001293,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "max_radial_cut_edges_on_single_face": 2,
+      "planar_rotation_system_count": 8,
+      "radial_cut_edge_count": 4,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json"
+    }
+  ],
+  "validated_source_file_count": 5,
+  "verdict": "blocked_at_radial_face_coherence"
+}
