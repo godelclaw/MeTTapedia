@@ -160,6 +160,7 @@ set_option autoImplicit false
 #check RealM4MechanicalInterfaceData
 #check RealM4MechanicalInterfaceData.withAnalyticFrontier
 #check RealM4EndgameMechanicalData
+#check RealM4EndgameMechanicalData.ofComponents
 #check RealM4EndgameMechanicalData.interfaceWithAnalyticFrontier
 #check RealM4EndgameMechanicalData.parameterRecordWithUpper
 #check RealM4EndgameMechanicalData.parameterRecord
@@ -167,6 +168,7 @@ set_option autoImplicit false
 #check realM4_conditionalClash_from_endgameMechanicalData
 #check realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
 #check realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
+#check realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP
 #check realM4EndgameStagingConstructionInputs
 #check realM4EndgameStagingConstructionInputs_exact
 #check realM4EndgameStagingIrreducibleInputs
@@ -351,6 +353,7 @@ set_option autoImplicit false
 #print axioms RealM4MechanicalInterfaceData
 #print axioms RealM4MechanicalInterfaceData.withAnalyticFrontier
 #print axioms RealM4EndgameMechanicalData
+#print axioms RealM4EndgameMechanicalData.ofComponents
 #print axioms RealM4EndgameMechanicalData.interfaceWithAnalyticFrontier
 #print axioms RealM4EndgameMechanicalData.parameterRecordWithUpper
 #print axioms RealM4EndgameMechanicalData.parameterRecord
@@ -358,6 +361,7 @@ set_option autoImplicit false
 #print axioms realM4_conditionalClash_from_endgameMechanicalData
 #print axioms realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
 #print axioms realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
+#print axioms realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicitPNP
 #print axioms realM4EndgameStagingConstructionInputs
 #print axioms realM4EndgameStagingConstructionInputs_exact
 #print axioms realM4EndgameStagingIrreducibleInputs
