@@ -11479,6 +11479,64 @@ theorem
       boundaryMixing.boundaryMixing
 
 /--
+Concrete contradiction form of the equality-indexed internal clash.  A
+candidate `P = NP` witness supplies the self-reduction upper side; the
+construction bundle and the four real frontier inputs then produce an
+`UpperLowerClash`, whose `noConsistentBounds` field is the contradiction.
+
+This is the local contradiction used by the Cook-style class-inequality
+wrapper below; it is conditional real-spine staging, not an unconditional PNP
+separation.
+-/
+theorem
+    realM4_false_of_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    False :=
+  (realM4_noTargetRowsEqualityIndexedConstructionData_upperLowerClash_givenPEqualsNP
+    i₀ coordinate K hEq starSWHardness safeQSSM boundedGaugeIncidence
+    boundaryMixing).noConsistentBounds
+
+/--
 Cook-style class-inequality endpoint from the bundled equality-indexed
 construction surface.  Once the construction bundle is supplied, the theorem
 boundary contains exactly the four irreducible mathematical inputs:
@@ -11525,29 +11583,12 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_re
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
           i₀ coordinate K)) :
-    ¬ C.pEqualsNP :=
-  realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality
-    i₀ coordinate K.law K.transcript K.observerBit K.phaseA
-    K.semantics K.observerEvidence K.pivotSummary K.epsMix K.safeCost
-    K.safeBudget K.gaugeIncidence K.gaugeBound K.hiddenGaugeProduct
-    K.lowerMachine starSWHardness
-    (by
-      simpa
-        [realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface]
-        using safeQSSM)
-    (by
-      simpa
-        [realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface]
-        using boundedGaugeIncidence)
-    (by
-      simpa
-        [realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface]
-        using boundaryMixing)
-    K.coverageData K.lockedMessageData
-    K.variableAddressSyntax K.languageNPData K.pToDeciderFamilyData
-    K.eta_of_pEqualsNP K.eta_pos_of_pEqualsNP
-    K.kpolyAt_eq_of_pEqualsNP K.etaTimes_eq_of_pEqualsNP
-    K.targetBlocks_gt_decoder_of_pEqualsNP
+    ¬ C.pEqualsNP := by
+  intro hEq
+  exact
+    realM4_false_of_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier
+      i₀ coordinate K hEq starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing
 
 /--
 Real official endpoint from the equality-indexed construction surface.  Once
@@ -11755,6 +11796,29 @@ theorem realM4NoTargetRowsEqualityIndexedInternalClashHypothesisAudit_exact :
 
 def realM4NoTargetRowsEqualityIndexedInternalClashStatement : String :=
   "For the real v15/M4 no-target-rows equality-indexed construction surface, the internal UpperLowerClash follows at a concrete P=NP witness from the construction bundle, exactly StarSW hardness, and the three analytic frontiers safeQSSM / boundedGaugeIncidence / boundaryMixing.  The bundle projects the structural interface, lower framework, kernel neutrality, locked readout, address syntax, official P-to-decider bridge, and indexed constant-decoder facts; this is conditional real-spine staging, not an unconditional PNP separation."
+
+def realM4NoTargetRowsEqualityIndexedContradictionHypothesisAudit :
+    List String := [
+  "noTargetRowsEqualityIndexedOfficialConstructionData",
+  "pEqualsNPWitness",
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem realM4NoTargetRowsEqualityIndexedContradictionHypothesisAudit_exact :
+    realM4NoTargetRowsEqualityIndexedContradictionHypothesisAudit =
+      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+        "pEqualsNPWitness",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedContradictionStatement : String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, a concrete P=NP witness contradicts the construction bundle plus exactly StarSW hardness and the three analytic frontiers safeQSSM / boundedGaugeIncidence / boundaryMixing.  The contradiction is the noConsistentBounds field of the internally produced UpperLowerClash; the class inequality is obtained by abstracting over the equality witness."
 
 def realM4NoTargetRowsEqualityIndexedPNPUpperHypothesisAudit :
     List String := [
@@ -16590,6 +16654,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "At a concrete P=NP witness, the bundled equality-indexed construction surface, StarSW, and the three analytic frontiers now produce the internal v13 UpperLowerClash directly before the Cook-style class wrapper."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataContradictionAtPEqualsNP"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_false_of_pEqualsNP_from_noTargetRowsEqualityIndexedConstructionData_realFrontier"
+    note := "The equality-indexed construction surface now derives the concrete contradiction from the internally produced UpperLowerClash, then the class-inequality wrapper abstracts over the P=NP witness."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge"
     status := .partialConstructionTransferred
     checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_selfReduction_outputs_givenPEqualsNP"
@@ -16629,6 +16699,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData",
         "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataInternalClashAtPEqualsNP",
+        "realNoTargetRowsEqualityIndexedConstructionDataContradictionAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataUpperDischarge",
         "realNoTargetRowsEqualityIndexedConstructionDataClassInequality",
         "realNoTargetRowsEqualityIndexedConstructionDataOfficialEndpoint",
@@ -16640,6 +16711,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
