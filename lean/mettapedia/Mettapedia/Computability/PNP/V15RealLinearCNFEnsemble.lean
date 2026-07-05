@@ -1678,6 +1678,87 @@ theorem v13RealLinearSmallNoTargetRowsCNFGaugeAction_hidden_true
       !v13RealLinearSmallNoTargetRowsCNFHiddenGauge W :=
   rfl
 
+/-- Every verifier-valid concrete small no-target-row witness is the
+canonical assignment for its public input and its hidden-gauge bit. -/
+theorem v13RealLinearSmallNoTargetRowsCNFValidWitness_eq_assignment
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W) :
+    W =
+      v13RealLinearSmallNoTargetRowsCNFAssignment Y
+        (v13RealLinearSmallNoTargetRowsCNFHiddenGauge W) := by
+  funext v
+  cases v with
+  | none =>
+      rfl
+  | some j =>
+      fin_cases j
+      · exact
+          v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW
+      · rcases v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mp hW with
+          ⟨hspare, _hxor⟩
+        exact hspare
+
+/-- For a fixed concrete small no-target-row public instance, verifier-valid
+witnesses are exactly the two choices of the free hidden-gauge bit. -/
+noncomputable def v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness //
+      v13RealLinearSmallNoTargetRowsCNFVerifier Y W} ≃ Bool where
+  toFun := fun W =>
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge W.val
+  invFun := fun gamma =>
+    ⟨v13RealLinearSmallNoTargetRowsCNFAssignment Y gamma,
+      v13RealLinearSmallNoTargetRowsCNFFormula_satisfied_assignment Y
+        gamma⟩
+  left_inv := by
+    intro W
+    apply Subtype.ext
+    exact
+      (v13RealLinearSmallNoTargetRowsCNFValidWitness_eq_assignment
+        W.property).symm
+  right_inv := by
+    intro gamma
+    rfl
+
+/-- Finite witness-fiber instance induced by the hidden-gauge coordinate. -/
+noncomputable instance v13RealLinearSmallNoTargetRowsCNFWitnessFiberFintype
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    Fintype
+      {W : V13RealLinearSmallNoTargetRowsCNFWitness //
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y W} :=
+  Fintype.ofEquiv Bool
+    (v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool Y).symm
+
+/-- The verifier-valid concrete small no-target-row witness fiber over a
+fixed public instance has cardinality exactly two. -/
+theorem v13RealLinearSmallNoTargetRowsCNFWitnessFiber_card_eq_two
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    Fintype.card
+      {W : V13RealLinearSmallNoTargetRowsCNFWitness //
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y W} = 2 := by
+  have hCard :=
+    Fintype.card_congr
+      (v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool Y)
+  simpa using hCard
+
+/-- Both hidden-gauge values occur among verifier-valid concrete small
+no-target-row witnesses over any fixed public instance. -/
+theorem v13RealLinearSmallNoTargetRowsCNFWitnessFiber_exists_hiddenGauge
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic)
+    (gamma : Bool) :
+    ∃ W : V13RealLinearSmallNoTargetRowsCNFWitness,
+      v13RealLinearSmallNoTargetRowsCNFVerifier Y W ∧
+        v13RealLinearSmallNoTargetRowsCNFHiddenGauge W = gamma := by
+  let W :=
+    (v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool Y).symm
+      gamma
+  have hHidden :
+      v13RealLinearSmallNoTargetRowsCNFHiddenGauge W.val = gamma :=
+    (v13RealLinearSmallNoTargetRowsCNFWitnessFiberEquivBool Y).right_inv
+      gamma
+  exact ⟨W.val, W.property, hHidden⟩
+
 /-- Neutral evidence atoms for the concrete no-target-row SAT-world
 surface. -/
 abbrev V13RealLinearSmallNoTargetRowsCNFNeutral :=
