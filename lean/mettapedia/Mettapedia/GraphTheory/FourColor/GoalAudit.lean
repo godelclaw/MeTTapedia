@@ -220,6 +220,13 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of
   closedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData_of_geometry_of_radialFace
     hgeometry hradial
 
+theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData) :
+    ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+    hgeometry
+
 theorem section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget_audit :
     Section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget :=
   section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget
@@ -255,6 +262,15 @@ theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of
   closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_suppliesRadialFaceData
     hdata
 
+theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_geometryExtraction_of_radialFace_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction) :
+    ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_geometryExtraction_of_radialFace
+    hextract hradial
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExtraction_of_noEmbeddedCollar_audit
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization)
@@ -267,6 +283,10 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedCollarExt
 theorem section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget_audit :
     Section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget :=
   section92Step4RepairedByEmbeddedCollarExtractionN6TaxonomyTarget
+
+theorem section92Step4RepairedByEmbeddedGeometryExtractionRadialFaceN6TaxonomyTarget_audit :
+    Section92Step4RepairedByEmbeddedGeometryExtractionRadialFaceN6TaxonomyTarget :=
+  section92Step4RepairedByEmbeddedGeometryExtractionRadialFaceN6TaxonomyTarget
 
 theorem section92Step4RepairedByGeometryRadialFaceExtractionN6TaxonomyTarget_audit :
     Section92Step4RepairedByGeometryRadialFaceExtractionN6TaxonomyTarget :=
