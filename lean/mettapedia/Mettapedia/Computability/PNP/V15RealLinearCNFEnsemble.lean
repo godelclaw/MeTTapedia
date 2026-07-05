@@ -413,6 +413,38 @@ def v13RealLinearNoTargetRowsCNFTarget {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsCNFWorld m i₀) : Bool :=
   v13RealLinearCNFReadout i₀ omega.assignment
 
+/-- The CNF target readout over a no-target-rows world is the fixed public
+message of its concrete public instance. -/
+theorem v13RealLinearNoTargetRowsCNFReadout_eq_publicMessage {m : Nat}
+    {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsCNFTarget omega =
+      v13RealLinearMessageOfPublic i₀
+        (v13RealLinearNoTargetRowsPublicInput omega.base) :=
+  v13RealLinearCNFReadout_eq_publicMessage_of_valid i₀ omega.sat
+
+/-- Structural `singleMessage` transfer for the concrete real linear CNF
+world over the adjusted no-target-rows public surface. -/
+theorem v13RealLinearNoTargetRowsCNF_singleMessage {m : Nat}
+    (i₀ : Fin m) :
+    ∀ omega₀ omega₁ : V13RealLinearNoTargetRowsCNFWorld m i₀,
+      v13RealLinearNoTargetRowsPublicInput omega₀.base =
+        v13RealLinearNoTargetRowsPublicInput omega₁.base ->
+      v13RealLinearNoTargetRowsCNFTarget omega₀ =
+        v13RealLinearNoTargetRowsCNFTarget omega₁ := by
+  intro omega₀ omega₁ hPublic
+  calc
+    v13RealLinearNoTargetRowsCNFTarget omega₀ =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega₀.base) :=
+      v13RealLinearNoTargetRowsCNFReadout_eq_publicMessage omega₀
+    _ =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput omega₁.base) := by
+      rw [hPublic]
+    _ = v13RealLinearNoTargetRowsCNFTarget omega₁ :=
+      (v13RealLinearNoTargetRowsCNFReadout_eq_publicMessage omega₁).symm
+
 /-- Public-coordinate history field lifted from the base no-target-rows
 surface to the concrete CNF world. -/
 noncomputable def v13RealLinearNoTargetRowsCNFPublicCoordinateField

@@ -43,6 +43,8 @@ set_option autoImplicit false
 #check v13RealLinearNoTargetRowsCNFNeutralSkeleton
 #check v13RealLinearNoTargetRowsCNFOppositeSupport
 #check v13RealLinearNoTargetRowsCNFTarget
+#check v13RealLinearNoTargetRowsCNFReadout_eq_publicMessage
+#check v13RealLinearNoTargetRowsCNF_singleMessage
 #check v13RealLinearNoTargetRowsCNFPublicCoordinateField
 #check v13RealLinearNoTargetRowsCNFReadout_eq_targetBit
 #check v13RealLinearNoTargetRowsCNFFiberTrueEquivBase
@@ -88,6 +90,8 @@ set_option autoImplicit false
 #print axioms v13RealLinearNoTargetRowsCNFNeutralSkeleton
 #print axioms v13RealLinearNoTargetRowsCNFOppositeSupport
 #print axioms v13RealLinearNoTargetRowsCNFTarget
+#print axioms v13RealLinearNoTargetRowsCNFReadout_eq_publicMessage
+#print axioms v13RealLinearNoTargetRowsCNF_singleMessage
 #print axioms v13RealLinearNoTargetRowsCNFPublicCoordinateField
 #print axioms v13RealLinearNoTargetRowsCNFReadout_eq_targetBit
 #print axioms v13RealLinearNoTargetRowsCNFFiberTrueEquivBase
