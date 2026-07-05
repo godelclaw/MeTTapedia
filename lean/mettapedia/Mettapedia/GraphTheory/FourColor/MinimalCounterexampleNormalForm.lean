@@ -221,6 +221,12 @@ theorem primalCutOfDualSupport_card (dual : PlaneCubicDualData G T)
 
 end PlaneCubicDualData
 
+/-- Prop-level normal-form ingredient: the cubic graph has a planar dual whose dual side is a
+triangulation in the available embedding API. -/
+def CubicDualIsTriangulation (G : SimpleGraph V) [DecidableRel G.Adj]
+    (T : SimpleGraph W) [DecidableRel T.Adj] : Prop :=
+  Nonempty (PlaneCubicDualData G T)
+
 /-- A separating cycle on the dual side, represented by the primal cyclic cut it induces.  The
 Jordan burden is exactly the `CyclicEdgeCutRealization`: it supplies the two sides and proves the
 listed primal edges are precisely the side-crossing edges. -/
@@ -386,6 +392,12 @@ def minimalCounterexampleNormalForm
   no_small_cyclic_edge_cut := hcut
   no_small_separating_dual_cycles :=
     noSeparatingDualCyclesOfLengthThreeAndFour_of_noCyclicEdgeCutOfSizeAtMostFour dual hcut
+
+/-- Lemma 5.2 stated as an obligation against the current infrastructure boundary: a minimal
+Tait counterexample equipped with cubic-dual triangulation data must lie in normal form. -/
+def Lemma52MinimalCounterexampleNormalFormObligation
+    (_minimal : MinimalTaitCounterexample G) (dual : PlaneCubicDualData G T) : Prop :=
+  ∃ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual
 
 /-- The single named Birkhoff-surgery obligation left by Lemma 5.2 at this layer: from true
 minimality plus the plane duality data, prove minimum dual degree at least five and no cyclic
@@ -690,6 +702,18 @@ theorem boundaryEdge_crosses (pinch : CAP5Pinch G) (i : Fin 5) :
 
 end CAP5Pinch
 
+/-- CAP5-free graph-side normal form: no cyclic five-edge cut whose small side is a literal
+5-cycle has been realized. -/
+def CAP5Free (G : SimpleGraph V) : Prop :=
+  ¬ Nonempty (CAP5Pinch G)
+
+/-- Normal form after CAP5 elimination: the Lemma 5.2 normal-form package plus absence of CAP5
+pinches. -/
+structure MinimalCounterexampleCAP5FreeNormalForm (G : SimpleGraph V) [DecidableRel G.Adj]
+    (T : SimpleGraph W) [DecidableRel T.Adj] where
+  normal : MinimalCounterexampleNormalForm G T
+  cap5_free : CAP5Free G
+
 /-- Tightness data for a separating dual 5-cycle: its translated primal cut is a CAP5 pinch. -/
 structure TightSeparatingDualFiveCycle
     {dual : PlaneCubicDualData G T} (cycle : SeparatingDualCycleData dual 5) where
@@ -878,12 +902,167 @@ theorem exists_adjacent_charges_eq_one
 
 end FiveBoundaryChargeProfile
 
+/-- Local disk-triangulation facts around a chordless separating dual 5-cycle, after the charge
+count has identified unit-charge boundary vertices.  Each boundary edge has an interior triangular
+face apex; a unit-charge boundary vertex has at most one interior neighbor in the disk. -/
+structure FiveCycleDiskTriangulationLocalData
+    (T : SimpleGraph W) (profile : FiveBoundaryChargeProfile) where
+  boundary : FiveBoundaryIndex → W
+  interior : W → Prop
+  edgeApex : FiveBoundaryIndex → W
+  edgeApex_interior : ∀ i : FiveBoundaryIndex, interior (edgeApex i)
+  edgeApex_adj_left : ∀ i : FiveBoundaryIndex, T.Adj (boundary i) (edgeApex i)
+  edgeApex_adj_right :
+    ∀ i : FiveBoundaryIndex, T.Adj (boundary (FiveBoundaryIndex.next i)) (edgeApex i)
+  unit_unique_interior_neighbor :
+    ∀ i : FiveBoundaryIndex, profile.charge i = 1 →
+      ∀ x y : W, interior x → interior y →
+        T.Adj (boundary i) x → T.Adj (boundary i) y → x = y
+
+namespace FiveCycleDiskTriangulationLocalData
+
+variable {profile : FiveBoundaryChargeProfile}
+variable {T : SimpleGraph W}
+
+/-- Adjacent boundary-edge apices agree across a unit-charge boundary vertex. -/
+theorem edgeApex_eq_next_of_unit
+    (disk : FiveCycleDiskTriangulationLocalData T profile)
+    {i : FiveBoundaryIndex} (hunit : profile.charge (FiveBoundaryIndex.next i) = 1) :
+    disk.edgeApex i = disk.edgeApex (FiveBoundaryIndex.next i) :=
+  disk.unit_unique_interior_neighbor (FiveBoundaryIndex.next i) hunit
+    (disk.edgeApex i) (disk.edgeApex (FiveBoundaryIndex.next i))
+    (disk.edgeApex_interior i) (disk.edgeApex_interior (FiveBoundaryIndex.next i))
+    (disk.edgeApex_adj_right i) (disk.edgeApex_adj_left (FiveBoundaryIndex.next i))
+
+/-- The local disk facts plus the five-cycle charge count force all five boundary-edge apices
+to be the same vertex. -/
+theorem edgeApex_eq_edgeApex_b0
+    (disk : FiveCycleDiskTriangulationLocalData T profile) :
+    ∀ i : FiveBoundaryIndex, disk.edgeApex i = disk.edgeApex .b0 := by
+  rcases profile.exists_exception_charge_eq_one_of_ne with ⟨exception, hunit⟩
+  cases exception
+  · have h01 : disk.edgeApex .b0 = disk.edgeApex .b1 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b1 (by decide))
+    have h12 : disk.edgeApex .b1 = disk.edgeApex .b2 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b2 (by decide))
+    have h23 : disk.edgeApex .b2 = disk.edgeApex .b3 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b3 (by decide))
+    have h34 : disk.edgeApex .b3 = disk.edgeApex .b4 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b4 (by decide))
+    intro i
+    cases i
+    · rfl
+    · exact h01.symm
+    · exact (h01.trans h12).symm
+    · exact ((h01.trans h12).trans h23).symm
+    · exact (((h01.trans h12).trans h23).trans h34).symm
+  · have h12 : disk.edgeApex .b1 = disk.edgeApex .b2 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b2 (by decide))
+    have h23 : disk.edgeApex .b2 = disk.edgeApex .b3 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b3 (by decide))
+    have h34 : disk.edgeApex .b3 = disk.edgeApex .b4 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b4 (by decide))
+    have h40 : disk.edgeApex .b4 = disk.edgeApex .b0 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b0 (by decide))
+    intro i
+    cases i
+    · rfl
+    · exact (((h12.trans h23).trans h34).trans h40)
+    · exact ((h23.trans h34).trans h40)
+    · exact (h34.trans h40)
+    · exact h40
+  · have h01 : disk.edgeApex .b0 = disk.edgeApex .b1 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b1 (by decide))
+    have h23 : disk.edgeApex .b2 = disk.edgeApex .b3 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b3 (by decide))
+    have h34 : disk.edgeApex .b3 = disk.edgeApex .b4 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b4 (by decide))
+    have h40 : disk.edgeApex .b4 = disk.edgeApex .b0 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b0 (by decide))
+    intro i
+    cases i
+    · rfl
+    · exact h01.symm
+    · exact ((h23.trans h34).trans h40)
+    · exact (h34.trans h40)
+    · exact h40
+  · have h01 : disk.edgeApex .b0 = disk.edgeApex .b1 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b1 (by decide))
+    have h12 : disk.edgeApex .b1 = disk.edgeApex .b2 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b2 (by decide))
+    have h34 : disk.edgeApex .b3 = disk.edgeApex .b4 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b4 (by decide))
+    have h40 : disk.edgeApex .b4 = disk.edgeApex .b0 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b0 (by decide))
+    intro i
+    cases i
+    · rfl
+    · exact h01.symm
+    · exact (h01.trans h12).symm
+    · exact (h34.trans h40)
+    · exact h40
+  · have h01 : disk.edgeApex .b0 = disk.edgeApex .b1 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b1 (by decide))
+    have h12 : disk.edgeApex .b1 = disk.edgeApex .b2 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b2 (by decide))
+    have h23 : disk.edgeApex .b2 = disk.edgeApex .b3 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b3 (by decide))
+    have h40 : disk.edgeApex .b4 = disk.edgeApex .b0 :=
+      disk.edgeApex_eq_next_of_unit
+        (by simpa [FiveBoundaryIndex.next] using hunit .b0 (by decide))
+    intro i
+    cases i
+    · rfl
+    · exact h01.symm
+    · exact (h01.trans h12).symm
+    · exact ((h01.trans h12).trans h23).symm
+    · exact h40
+
+/-- The local disk facts plus the charge count force one interior apex adjacent to all five
+boundary vertices. -/
+theorem exists_common_boundary_apex
+    (disk : FiveCycleDiskTriangulationLocalData T profile) :
+    ∃ x : W, disk.interior x ∧
+      ∀ i : FiveBoundaryIndex, T.Adj (disk.boundary i) x := by
+  refine ⟨disk.edgeApex .b0, disk.edgeApex_interior .b0, ?_⟩
+  intro i
+  have hEq := disk.edgeApex_eq_edgeApex_b0 i
+  simpa [hEq] using disk.edgeApex_adj_left i
+
+end FiveCycleDiskTriangulationLocalData
+
 /-- Lemma 5.3 as the exact remaining disk-triangulation obligation: in normal form, every
 separating dual 5-cycle is tight, i.e. yields CAP5 pinch data on the primal side. -/
 def Lemma53DiskTriangulationTightnessObligation
     (normal : MinimalCounterexampleNormalForm G T) : Prop :=
   ∀ cycle : SeparatingDualCycleData normal.duality 5,
     Nonempty (TightSeparatingDualFiveCycle cycle)
+
+/-- Lemma 5.3 stated in the graph-facing form consumed downstream: every separating dual
+5-cycle in normal form yields a CAP5 pinch on the primal side with the same primal cut. -/
+def Lemma53SeparatingDualFiveCycleCAP5PinchObligation
+    (normal : MinimalCounterexampleNormalForm G T) : Prop :=
+  ∀ cycle : SeparatingDualCycleData normal.duality 5,
+    ∃ pinch : CAP5Pinch G, pinch.edgeCut = cycle.primalCut
 
 /-- A charge-count certificate for the disk bounded by a separating dual 5-cycle.  The arithmetic
 and Jordan side of Lemma 5.3 should construct this certificate; its payload is the tight CAP5
@@ -912,6 +1091,14 @@ theorem lemma53_cap5Pinch_of_tightnessObligation
     ∃ pinch : CAP5Pinch G, pinch.edgeCut = cycle.primalCut := by
   rcases h cycle with ⟨tight⟩
   exact ⟨tight.pinch, tight.same_cut⟩
+
+/-- The tight-cycle formulation of Lemma 5.3 implies the graph-facing CAP5-pinch obligation. -/
+theorem lemma53_CAP5PinchObligation_of_tightnessObligation
+    {normal : MinimalCounterexampleNormalForm G T}
+    (h : Lemma53DiskTriangulationTightnessObligation normal) :
+    Lemma53SeparatingDualFiveCycleCAP5PinchObligation normal := by
+  intro cycle
+  exact lemma53_cap5Pinch_of_tightnessObligation h cycle
 
 end CAP5Tightness
 
