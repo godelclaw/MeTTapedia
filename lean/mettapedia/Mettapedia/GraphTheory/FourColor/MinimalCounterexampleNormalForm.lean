@@ -737,6 +737,27 @@ inductive FiveBoundaryIndex where
   | b4
   deriving DecidableEq
 
+namespace FiveBoundaryIndex
+
+/-- Cyclic successor around the five boundary positions. -/
+def next : FiveBoundaryIndex → FiveBoundaryIndex
+  | .b0 => .b1
+  | .b1 => .b2
+  | .b2 => .b3
+  | .b3 => .b4
+  | .b4 => .b0
+
+/-- Two boundary positions are cyclically adjacent when one is the successor of the other. -/
+def CyclicAdjacent (i j : FiveBoundaryIndex) : Prop :=
+  next i = j ∨ next j = i
+
+/-- Every boundary position is cyclically adjacent to its successor. -/
+theorem cyclicAdjacent_next (i : FiveBoundaryIndex) :
+    CyclicAdjacent i (next i) :=
+  Or.inl rfl
+
+end FiveBoundaryIndex
+
 /-- Boundary-charge arithmetic profile for the five vertices on a separating 5-cycle.  The
 geometric disk-counting part of Lemma 5.3 supplies the hypotheses: each boundary charge is at
 most one, and the total boundary charge is at least four. -/
@@ -812,6 +833,48 @@ theorem exists_exception_charge_eq_one_of_ne
     rcases hall with ⟨exception, hexception⟩
     exact ⟨exception, fun i hne =>
       profile.charge_eq_one_of_ne_of_charge_ne_one hne hexception⟩
+
+/-- The five-cycle charge count supplies three consecutive unit boundary charges.  This is the
+finite combinatorial shape used by the next Lemma 5.3 step, where consecutive degree-three
+boundary vertices force a common interior apex. -/
+theorem exists_three_consecutive_charges_eq_one
+    (profile : FiveBoundaryChargeProfile) :
+    ∃ i : FiveBoundaryIndex,
+      profile.charge i = 1 ∧
+        profile.charge (FiveBoundaryIndex.next i) = 1 ∧
+          profile.charge (FiveBoundaryIndex.next (FiveBoundaryIndex.next i)) = 1 := by
+  rcases profile.exists_exception_charge_eq_one_of_ne with ⟨exception, hunit⟩
+  cases exception
+  · exact ⟨.b1,
+      hunit .b1 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b2 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b3 (by decide)⟩
+  · exact ⟨.b2,
+      hunit .b2 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b3 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b4 (by decide)⟩
+  · exact ⟨.b3,
+      hunit .b3 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b4 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b0 (by decide)⟩
+  · exact ⟨.b4,
+      hunit .b4 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b0 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b1 (by decide)⟩
+  · exact ⟨.b0,
+      hunit .b0 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b1 (by decide),
+      by simpa [FiveBoundaryIndex.next] using hunit .b2 (by decide)⟩
+
+/-- In particular, the five-cycle charge count supplies an adjacent pair of unit boundary
+charges. -/
+theorem exists_adjacent_charges_eq_one
+    (profile : FiveBoundaryChargeProfile) :
+    ∃ i j : FiveBoundaryIndex,
+      FiveBoundaryIndex.CyclicAdjacent i j ∧
+        profile.charge i = 1 ∧ profile.charge j = 1 := by
+  rcases profile.exists_three_consecutive_charges_eq_one with ⟨i, hi, hnext, _⟩
+  exact ⟨i, FiveBoundaryIndex.next i, FiveBoundaryIndex.cyclicAdjacent_next i, hi, hnext⟩
 
 end FiveBoundaryChargeProfile
 
