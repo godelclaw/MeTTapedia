@@ -2126,6 +2126,154 @@ def closedCollarSimplePatchN6StructuralBlockerIds :
     .planarMultigraph, .simpleEndpointRealization]
 
 /--
+Detailed taxonomy counts from the exhaustive n6 artifact audit.  The first
+800000 topologies are supplied by the structural-prefix slices; the remaining
+1058980 topologies are supplied by the template-blocker slices.
+-/
+structure ClosedCollarSimplePatchN6DetailedTaxonomyCounts where
+  internalVertexCount : Nat
+  exactPatchTopologyCount : Nat
+  structuralPrefixSliceFileCount : Nat
+  templateBlockerSliceFileCount : Nat
+  structuralPrefixEndIndex : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  connectedStructuralBlockerCount : Nat
+  cubicStructuralBlockerCount : Nat
+  bridgelessStructuralBlockerCount : Nat
+  planarStructuralBlockerCount : Nat
+  simpleEndpointStructuralBlockerCount : Nat
+  exactTemplateBlockerCount : Nat
+  diagonalForwardTemplateCount : Nat
+  diagonalReverseTemplateCount : Nat
+  nonTemplateCyclicCutBlockerCount : Nat
+  cap5LikeBlockerCount : Nat
+  normalFormAfterTemplateExclusionPassingCount : Nat
+  residualAfterStructuralAndExactTemplateCount : Nat
+
+def closedCollarSimplePatchN6DetailedTaxonomyCounts :
+    ClosedCollarSimplePatchN6DetailedTaxonomyCounts where
+  internalVertexCount := 6
+  exactPatchTopologyCount := closedCollarSimplePatchN6ExactPatchTopologyCount
+  structuralPrefixSliceFileCount := 16
+  templateBlockerSliceFileCount := 5
+  structuralPrefixEndIndex := 800000
+  processedPatchTopologyCount := 1858980
+  radialOrderCaseCount := 3717960
+  profilePreservingCaseCount := 29880
+  connectedStructuralBlockerCount := 0
+  cubicStructuralBlockerCount := 0
+  bridgelessStructuralBlockerCount := 0
+  planarStructuralBlockerCount := 27720
+  simpleEndpointStructuralBlockerCount := 0
+  exactTemplateBlockerCount := 2160
+  diagonalForwardTemplateCount := 1080
+  diagonalReverseTemplateCount := 1080
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+  residualAfterStructuralAndExactTemplateCount := 0
+
+def ClosedCollarSimplePatchN6StructuralBlockerId.countInDetailedTaxonomy :
+    ClosedCollarSimplePatchN6StructuralBlockerId → Nat
+  | .connectedMultigraph =>
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.connectedStructuralBlockerCount
+  | .cubicMultigraph =>
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.cubicStructuralBlockerCount
+  | .bridgelessMultigraph =>
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.bridgelessStructuralBlockerCount
+  | .planarMultigraph =>
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.planarStructuralBlockerCount
+  | .simpleEndpointRealization =>
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.simpleEndpointStructuralBlockerCount
+
+/--
+Artifact-backed detailed taxonomy for the exhaustive n6 simple-patch run:
+every structural blocker counted by the archived verdicts is the
+`planar_multigraph` prefix failure; all remaining profile-preserving cases are
+the two exact diagonal templates, and no residual post-template-exclusion pass
+remains.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.internalVertexCount = 6 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.exactPatchTopologyCount =
+      closedCollarSimplePatchN6ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.structuralPrefixSliceFileCount =
+      16 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.templateBlockerSliceFileCount =
+      closedCollarSimplePatchN6TemplateBlockerArchiveCounts.archivedSliceFileCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.structuralPrefixEndIndex =
+      closedCollarSimplePatchN6First800000StructuralCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.processedPatchTopologyCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.radialOrderCaseCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.radialOrderCaseCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.profilePreservingCaseCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.connectedStructuralBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.cubicStructuralBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.bridgelessStructuralBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.planarStructuralBlockerCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.structuralFirstBlockerCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.simpleEndpointStructuralBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.exactTemplateBlockerCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.exactTemplateBlockerCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.diagonalForwardTemplateCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalForwardTemplateCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.diagonalReverseTemplateCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.diagonalReverseTemplateCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.residualAfterStructuralAndExactTemplateCount =
+      0 ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.connectedStructuralBlockerCount +
+        closedCollarSimplePatchN6DetailedTaxonomyCounts.cubicStructuralBlockerCount +
+          closedCollarSimplePatchN6DetailedTaxonomyCounts.bridgelessStructuralBlockerCount +
+            closedCollarSimplePatchN6DetailedTaxonomyCounts.planarStructuralBlockerCount +
+              closedCollarSimplePatchN6DetailedTaxonomyCounts.simpleEndpointStructuralBlockerCount =
+      closedCollarSimplePatchN6AllTemplateBlockerCounts.structuralFirstBlockerCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.diagonalForwardTemplateCount +
+        closedCollarSimplePatchN6DetailedTaxonomyCounts.diagonalReverseTemplateCount =
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.exactTemplateBlockerCount ∧
+    closedCollarSimplePatchN6DetailedTaxonomyCounts.planarStructuralBlockerCount +
+        closedCollarSimplePatchN6DetailedTaxonomyCounts.exactTemplateBlockerCount +
+          closedCollarSimplePatchN6DetailedTaxonomyCounts.residualAfterStructuralAndExactTemplateCount =
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6First800000StructuralCounts.processedPatchTopologyCount +
+        closedCollarSimplePatchN6TemplateBlockerArchiveCounts.processedPatchTopologyCount =
+      closedCollarSimplePatchN6DetailedTaxonomyCounts.processedPatchTopologyCount
+
+theorem closedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/-- A positive structural-blocker case in the detailed n6 taxonomy. -/
+structure ClosedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase where
+  blocker : ClosedCollarSimplePatchN6StructuralBlockerId
+  hpositive : 0 < blocker.countInDetailedTaxonomy
+
+theorem closedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase_planar
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6DetailedStructuralBlockerCase) :
+    candidate.blocker = ClosedCollarSimplePatchN6StructuralBlockerId.planarMultigraph := by
+  rcases candidate with ⟨blocker, hpositive⟩
+  cases blocker <;>
+    simp [ClosedCollarSimplePatchN6StructuralBlockerId.countInDetailedTaxonomy,
+      closedCollarSimplePatchN6DetailedTaxonomyCounts] at hpositive ⊢
+
+/--
 Normal-form field whose failure would explain a lab structural blocker.  This
 is the explicit bridge obligation from graph-facing normal form to the lab's
 prefix tests.
