@@ -1236,6 +1236,43 @@ theorem lemma53_CAP5PinchObligation_of_tightnessObligation
   intro cycle
   exact lemma53_cap5Pinch_of_tightnessObligation h cycle
 
+/-- CAP5 elimination obligation for the post-Lemma-5.3 regime: once the graph is in normal
+form, the CAP5 reducibility package must rule out realized CAP5 pinches. -/
+def CAP5EliminationObligation
+    (_minimal : MinimalTaitCounterexample G) (_normal : MinimalCounterexampleNormalForm G T) :
+    Prop :=
+  CAP5Free G
+
+/-- Downstream S7 obligation bundle: Lemma 5.2 supplies the normal form, Lemma 5.3 supplies the
+disk-to-primal CAP5 translation surface, and CAP5 elimination supplies the CAP5-free conclusion. -/
+structure MinimalCounterexampleS7CAP5FreeObligations
+    (minimal : MinimalTaitCounterexample G) (dual : PlaneCubicDualData G T) : Prop where
+  lemma52 : Lemma52MinimalCounterexampleNormalFormObligation minimal dual
+  lemma53_translation :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      Lemma53DiskToPrimalCAP5TranslationObligation normal
+  cap5_elimination :
+    ∀ normal : MinimalCounterexampleNormalForm G T, normal.duality = dual →
+      CAP5EliminationObligation minimal normal
+
+/-- The S7 obligation bundle yields the exact CAP5-free normal-form package and preserves the
+Lemma 5.3 translation/CAP5-pinch endpoints for downstream consumers. -/
+theorem minimalCounterexampleCAP5FreeNormalForm_of_s7CAP5FreeObligations
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    ∃ cap5Normal : MinimalCounterexampleCAP5FreeNormalForm G T,
+      cap5Normal.normal.duality = dual ∧
+        Lemma53DiskToPrimalCAP5TranslationObligation cap5Normal.normal ∧
+          Lemma53SeparatingDualFiveCycleCAP5PinchObligation cap5Normal.normal := by
+  rcases obligations.lemma52 with ⟨normal, hduality⟩
+  have htranslation := obligations.lemma53_translation normal hduality
+  refine ⟨
+    { normal := normal
+      cap5_free := obligations.cap5_elimination normal hduality },
+    hduality, htranslation, ?_⟩
+  exact lemma53_CAP5PinchObligation_of_tightnessObligation
+    (lemma53_tightnessObligation_of_diskToPrimalCAP5Translations htranslation)
+
 end CAP5Tightness
 
 section EdgeColoringGlue
