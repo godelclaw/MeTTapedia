@@ -4797,6 +4797,244 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
           boundaryMixing))
 
 /--
+Canonical-gap no-target-rows staging with the three analytic inputs packaged
+as real frontier objects over the constructed no-target-rows mechanical
+interface.  Boundary mixing carries the strict `epsSmall` witness, so
+`epsSmall` is not a separate hypothesis of this route.
+
+This remains conditional real-spine staging: the no-target-rows constructor
+derives `singleMessage`, `noPublicTargetTags`, `admissibleHistories`, and the
+canonical Phase-A budget, but full M4 must still identify its public surface
+and discharge the remaining construction inputs.
+-/
+theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            i₀ coordinate law transcript observerBit phaseA semantics
+            observerEvidence pivotSummary epsMix safeCost safeBudget
+            gaugeIncidence gaugeBound hiddenGaugeProduct)
+          boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+          (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+            (HistoryAtom := HistoryAtom) (Observer := Observer)
+            (Output := Output)
+            i₀ coordinate law transcript observerBit phaseA semantics
+            observerEvidence pivotSummary epsMix safeCost safeBudget
+            gaugeIncidence gaugeBound hiddenGaugeProduct)
+          boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+          (D := D) (F := lowerMachine.lowerFramework)
+          defaultMessage coverageData lockedMessageRigidity
+          finiteVariables.uniformSupport pnpDeciderFamily
+          constantDecoderRegime)
+        starSWHardness safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing) :=
+  realM4_conditionalClash_from_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+    (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+      (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
+      i₀ coordinate law transcript observerBit phaseA semantics
+      observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+      gaugeBound hiddenGaugeProduct)
+    lowerMachine defaultMessage coverageData lockedMessageRigidity
+    finiteVariables pnpDeciderFamily constantDecoderRegime starSWHardness
+    safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
+Cook-style official endpoint wrapper for the no-target-rows canonical-gap
+real-frontier route.  The internal clash uses exactly the three analytic
+frontier objects plus StarSW and the explicit P=NP decider; the Cook bridge
+remains a separate visible construction obligation.
+-/
+theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerMachine.lowerFramework
+        (finiteVariables.uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPNPBridgeData
+        ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+            (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+              (HistoryAtom := HistoryAtom) (Observer := Observer)
+              (Output := Output)
+              i₀ coordinate law transcript observerBit phaseA semantics
+              observerEvidence pivotSummary epsMix safeCost safeBudget
+              gaugeIncidence gaugeBound hiddenGaugeProduct)
+            boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
+          safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
+          boundaryMixing.boundaryMixing)
+        ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+            (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+              (HistoryAtom := HistoryAtom) (Observer := Observer)
+              (Output := Output)
+              i₀ coordinate law transcript observerBit phaseA semantics
+              observerEvidence pivotSummary epsMix safeCost safeBudget
+              gaugeIncidence gaugeBound hiddenGaugeProduct)
+            boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
+          (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
+            (D := D) (F := lowerMachine.lowerFramework)
+            defaultMessage coverageData lockedMessageRigidity
+            finiteVariables.uniformSupport pnpDeciderFamily
+            constantDecoderRegime)
+          starSWHardness safeQSSM.safeQSSM
+          boundedGaugeIncidence.boundedGaugeIncidence
+          boundaryMixing.boundaryMixing)
+        C) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_internalClash_bridge bridge
+    (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
+      i₀ coordinate law transcript observerBit phaseA semantics
+      observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+      gaugeBound hiddenGaugeProduct lowerMachine defaultMessage coverageData
+      lockedMessageRigidity finiteVariables pnpDeciderFamily
+      constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing)
+
+/--
 Cook-style official endpoint staging for the adjusted real no-target-rows
 public surface.  The theorem uses the no-target-rows mechanical constructor,
 so `singleMessage`, `noPublicTargetTags`, and `admissibleHistories` are not
@@ -5975,6 +6213,177 @@ theorem realM4NoTargetRowsCanonicalGapOfficialEndpointHypothesisAuditExplicitPNP
 
 def realM4NoTargetRowsCanonicalGapOfficialEndpointStatementExplicitPNP : String :=
   "For the adjusted real no-target-rows public surface, a Cook-style official separation follows from the no-target-rows canonical-gap component assembly, D.8 locked-message rigidity, StarSW hardness, the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge.  The route derives singleMessage, noPublicTargetTags, admissibleHistories, and phaseABudget; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
+def realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "targetCoordinate",
+  "dimensionNontrivial",
+  "publicCoordinateHistory",
+  "law",
+  "transcript",
+  "observerBit",
+  "phaseA",
+  "semantics",
+  "observerEvidence",
+  "pivotSummary",
+  "epsMix",
+  "safeCost",
+  "safeBudget",
+  "gaugeIncidence",
+  "gaugeBound",
+  "hiddenGaugeProduct",
+  "realCompressionLowerMachineData",
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "finiteCNFVariableFamilyData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4NoTargetRowsCanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapRealFrontierEndgameHypothesisAuditExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapRealFrontierEndgameStatementExplicitPNP : String :=
+  "For the adjusted real no-target-rows public surface, UpperLowerClash follows from the no-target-rows CD-ENF mechanical constructor, canonical Phase-A fixed-gap choice, the real lower machine, public-lock representative data, D.8 locked-message rigidity, finite CNF variable-family data, and the constant decoder regime, then exactly StarSW hardness and the three real analytic frontier objects safeQSSM / boundedGaugeIncidence / boundaryMixing with the explicit P=NP decider family.  The route derives singleMessage, noPublicTargetTags, admissibleHistories, and phaseABudget by construction; boundaryMixing carries epsSmall, so epsSmall is not a separate construction input."
+
+def realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP :
+    List String :=
+  realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP ++
+    realM4OfficialPNPBridgeConstructionInputs
+
+theorem realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointHypothesisAuditExplicitPNP :
+    List String :=
+  realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointHypothesisAuditExplicitPNP_exact :
+    realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointHypothesisAuditExplicitPNP =
+      [ "targetCoordinate",
+        "dimensionNontrivial",
+        "publicCoordinateHistory",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData",
+        "realConstantDecoderRegime",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "internalClashNotInP",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointStatementExplicitPNP : String :=
+  "For the adjusted real no-target-rows public surface, a Cook-style official separation follows from the no-target-rows canonical-gap real-frontier assembly, D.8 locked-message rigidity, exactly StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, the explicit P=NP decider family used by the upper side, and a separate Cook-style bridge.  The route derives singleMessage, noPublicTargetTags, admissibleHistories, and phaseABudget; boundaryMixing includes epsSmall.  This is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
 def realM4CanonicalGapRealFrontierEndgameConstructionInputsExplicitPNP :
     List String := [
