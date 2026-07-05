@@ -5987,6 +5987,59 @@ theorem
         omega₁ <;>
     simp [hPublic]
 
+/-- Exact orbit characterization for the Appendix-I CNF hidden-gauge action:
+acting by `gamma` sends `omega₀` to `omega₁` exactly when the public instance
+is unchanged and the hidden-gauge coordinate is xor-shifted by `gamma`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_eq_iff
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+        gamma omega₀ =
+      omega₁ ↔
+      omega₀.publicInstance = omega₁.publicInstance ∧
+        (gamma ^^
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega₀) =
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega₁ := by
+  constructor
+  · intro hAction
+    have hEquiv :=
+      congrArg
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+        hAction
+    rw [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_action,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_apply]
+      at hEquiv
+    exact ⟨congrArg Prod.fst hEquiv, congrArg Prod.snd hEquiv⟩
+  · rintro ⟨hPublic, hGauge⟩
+    apply
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+        |>.injective
+    calc
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+            gamma omega₀) =
+        (omega₀.publicInstance,
+          gamma ^^
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+              omega₀) :=
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_action
+          gamma omega₀
+      _ =
+        (omega₁.publicInstance,
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+            omega₁) := by
+        rw [hPublic, hGauge]
+      _ =
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv
+          omega₁ :=
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldBaseGaugeEquiv_apply
+          omega₁).symm
+
 /-- Acting by the nontrivial gauge element flips the free hidden-gauge
 coordinate in the Appendix-I CNF world. -/
 theorem
@@ -6052,6 +6105,26 @@ theorem
           omega.assignment) hfixed) none
   simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
     v13RealLinearGaugeCNFGaugeAction] at hcoord
+
+/-- The Appendix-I CNF hidden-gauge action is free: the only gauge element
+fixing a concrete world is `false`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_eq_self_iff
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction gamma omega =
+      omega ↔ gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_true_ne
+          omega hfixed)
+    · intro hfalse
+      cases hfalse
 
 /-! ## Appendix-I CNF CD-ENF structural fields -/
 
