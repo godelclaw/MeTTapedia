@@ -296,6 +296,19 @@ def CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :
     CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget
 
 /--
+The public CAP5-free foundation index supplies the selected-source small-cut
+lift public index for the mapped-cut route.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_foundationTargetIndex
+    (hindex : CAP5FreePeeledCollarFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.cap5FreeSmallCutLiftFoundationTarget_of_faceSourceFoundationTarget
+      hindex.2.2⟩
+
+/--
 The reduced realized-candidate lift index supplies the earlier
 obstruction-to-realized-candidate index.
 -/
@@ -504,6 +517,21 @@ theorem
       hindex.2.2⟩
 
 /--
+The public CAP5-free foundation index supplies the mapped-cut selected-source
+small-cut route indices.
+-/
+theorem
+    cap5FreePeeledCollarFoundationTargetIndex_mappedCutClosedWalkSmallCutLiftRouteIndexTargets
+    (hindex : CAP5FreePeeledCollarFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget :=
+  cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_routeIndexTargets
+    (cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_foundationTargetIndex
+      hindex)
+
+/--
 Closed-walk S4 salvage target for the obstruction-to-realized-candidate
 foundation route.  This is the downstream statement with cyclic
 five-edge-connectivity supplied by the regime route, not assumed.
@@ -633,5 +661,17 @@ theorem
     Section92Step4ClosedWalkCAP5FreeMappedCutSmallCutLiftRegimeDischargedS4SalvageTarget :=
   section92Step4ClosedWalkCAP5FreeMappedCutSmallCutLiftRegimeDischargedS4SalvageTarget_of_closedWalkSmallCutLift
     hindex.2.2
+
+/--
+The public CAP5-free foundation index supplies the explicit closed-walk S4
+salvage target through the selected-source small-cut lift route.
+-/
+theorem
+    cap5FreePeeledCollarFoundationTargetIndex_mappedCutClosedWalkSmallCutLiftRegimeDischargedS4SalvageTarget
+    (hindex : CAP5FreePeeledCollarFoundationTargetIndex) :
+    Section92Step4ClosedWalkCAP5FreeMappedCutSmallCutLiftRegimeDischargedS4SalvageTarget :=
+  cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_regimeDischargedS4SalvageTarget
+    (cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_foundationTargetIndex
+      hindex)
 
 end Mettapedia.GraphTheory.FourColor
