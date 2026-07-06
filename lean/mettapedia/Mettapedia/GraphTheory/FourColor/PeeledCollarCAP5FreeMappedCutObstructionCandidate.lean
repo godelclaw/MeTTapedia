@@ -183,4 +183,52 @@ theorem
       hcandidateRoutes.1,
       hcandidateRoutes.2⟩
 
+/--
+Closed-walk S4 salvage target for the obstruction-to-realized-candidate
+foundation route.  This is the downstream statement with cyclic
+five-edge-connectivity supplied by the regime route, not assumed.
+-/
+def Section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+The obstruction-to-realized-candidate target and realized-candidate lift
+foundation supply the closed-walk regime-discharged S4 salvage statement.
+-/
+theorem
+    section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget
+    (hobstructionCandidate :
+      CAP5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget)
+    (hlift :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb source regime
+  have hroute :
+      Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget :=
+    section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget_of_obstructionRealizedCandidateFoundationTargets
+      hobstructionCandidate hlift
+  exact (hroute source regime).2.2.2.2.2.2.2
+
+/--
+The public obstruction-to-realized-candidate index supplies the same explicit
+closed-walk S4 salvage target.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_regimeDischargedS4SalvageTarget
+    (hindex :
+      CAP5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex) :
+    Section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget :=
+  section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget
+    hindex.2.2.1 hindex.2.2.2
+
 end Mettapedia.GraphTheory.FourColor
