@@ -255,6 +255,41 @@ theorem
   cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_attachmentCarrierConnectivityFoundationTargetIndex
     hindex
 
+/--
+Stronger planar-normal-form theorem target in cut-avoiding shared-endpoint
+language: the closed-walk foundation proves that attachments of each
+off-carrier component can be joined by shared-endpoint reachability avoiding
+the small carrier cut.
+-/
+def CAP5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex :
+    Prop :=
+  CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+
+/--
+The cut-avoiding shared-endpoint planar-normal-form target supplies the
+attachment-carrier target.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormAttachmentCarrierConnectivityCutLiftFoundationTargetIndex_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormAttachmentCarrierConnectivityCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+    hindex
+
+/--
+The cut-avoiding shared-endpoint planar-normal-form target supplies the
+smaller cut-lift target.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_attachmentCarrierConnectivityCutLiftFoundationTargetIndex
+    (cap5FreePeeledCollarPlanarNormalFormAttachmentCarrierConnectivityCutLiftFoundationTargetIndex_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+      hindex)
+
 /-- The stronger face-placement index supplies the smaller cut-lift target. -/
 theorem
     cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_facePlacementFoundationTargetIndex
@@ -462,6 +497,44 @@ theorem
       hindex
   have hroutes :=
     cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_routeIndexTargets
+      hindex
+  exact
+    ⟨hroutes.1,
+      hroutes.2.1,
+      hroutes.2.2.1,
+      hroutes.2.2.2.1,
+      section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+        hcut⟩
+
+/--
+Expanded cut-avoiding shared-endpoint route target reached from the stronger
+planar-normal-form target: both annulus separation routes, the closed-walk
+cut-avoiding route, the attachment-carrier route, and the regime-discharged
+S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormCutAvoidingSharedEndpointCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierAttachmentCarrierConnectivityFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The cut-avoiding shared-endpoint planar-normal-form target supplies the
+expanded route index and therefore the existing regime-discharged S4 target.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormCutAvoidingSharedEndpointCutLiftRouteIndexTarget_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormCutAvoidingSharedEndpointCutLiftRouteIndexTarget := by
+  have hcut :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_routeIndexTargets
       hindex
   exact
     ⟨hroutes.1,
