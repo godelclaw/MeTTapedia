@@ -86,6 +86,23 @@ def toCutSideExtension
 
 end PeeledCollarCutAmbientSideOffBoundaryNoCrossing
 
+namespace PeeledCollarCutAmbientSideBoundarySupport
+
+/-- Boundary-support data give the equivalent off-boundary no-crossing datum. -/
+def toOffBoundaryNoCrossing
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    {cut : SmallCyclicEdgeCut H}
+    (support : PeeledCollarCutAmbientSideBoundarySupport φ cut) :
+    PeeledCollarCutAmbientSideOffBoundaryNoCrossing φ cut where
+  side := support.side
+  side_comp_embedding := support.side_comp_embedding
+  nonBoundaryEndpoint_not_crossing := by
+    intro e hoffSupport hcross
+    rcases hoffSupport with ⟨v, hv, hvNotSupport⟩
+    exact hvNotSupport (support.crossingEdge_endpointSupport e hcross v hv)
+
+end PeeledCollarCutAmbientSideBoundarySupport
+
 /--
 Off-boundary foundation target: every small cyclic cut in the peeled collar has
 an ambient side such that no ambient side-crossing edge is incident to any
@@ -96,6 +113,15 @@ def PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient
   ∀ cut : SmallCyclicEdgeCut H,
     Nonempty (PeeledCollarCutAmbientSideOffBoundaryNoCrossing φ cut)
 
+/-- Boundary-support data imply off-boundary no-crossing data. -/
+theorem peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_ambientSideBoundarySupports
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hsupport : PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ) :
+    PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient φ := by
+  intro cut
+  rcases hsupport cut with ⟨support⟩
+  exact ⟨support.toOffBoundaryNoCrossing⟩
+
 /-- Off-boundary no-crossing data imply boundary-support data. -/
 theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideOffBoundaryNoCrossings
     {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
@@ -104,6 +130,17 @@ theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideOffBou
   intro cut
   rcases hoffBoundary cut with ⟨offBoundary⟩
   exact ⟨offBoundary.toAmbientSideBoundarySupport⟩
+
+/--
+Boundary-support and off-boundary no-crossing are equivalent foundation targets
+for the peeled-collar lift.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_iff_offBoundaryNoCrossings
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G} :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ ↔
+      PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient φ :=
+  ⟨peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_ambientSideBoundarySupports,
+    peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideOffBoundaryNoCrossings⟩
 
 /-- Off-boundary no-crossing data imply endpoint-range data. -/
 theorem peeledCollarCutAmbientSideEndpointRangesToAmbient_of_ambientSideOffBoundaryNoCrossings
