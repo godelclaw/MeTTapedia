@@ -175,6 +175,60 @@ def boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
       SimpleGraph.Walk.nil
 
 /--
+Every carrier edge used by the canonical endpoint walk for one selected
+ambient edge maps back to that selected ambient edge.
+-/
+theorem boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints_mapEdgeSet
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (he : e ∈ edges) {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V))
+    (eH : (BoundaryEdgeSetInducedGraph (G := G) edges).edgeSet)
+    (heH :
+      (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∈
+        (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+          (G := G) (edges := edges) he hu hv).edges) :
+    (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet eH = e := by
+  by_cases hne : u = v
+  · subst hne
+    simp [boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints] at heH
+  · have hcarrier :
+        (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) =
+          s(boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+              (G := G) (edges := edges) he hu,
+            boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+              (G := G) (edges := edges) he hv) := by
+      simpa [boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints, hne,
+        SimpleGraph.Walk.edges_cons] using heH
+    have hambient : (e : Sym2 V) = s(u, v) :=
+      sym2_eq_mk_of_mem_of_mem_of_ne hu hv hne
+    apply Subtype.ext
+    simp [SimpleGraph.Embedding.mapEdgeSet, SimpleGraph.Hom.mapEdgeSet,
+      hcarrier, hambient]
+
+/--
+If a selected ambient edge is outside a carrier cut's mapped edge set, then
+the canonical endpoint walk for that edge avoids the carrier cut.
+-/
+theorem boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints_avoids_cut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (he : e ∈ edges) {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V))
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges))
+    (heAvoid :
+      e ∉ cut.edgeCut.map
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet) :
+    ∀ eH : (BoundaryEdgeSetInducedGraph (G := G) edges).edgeSet,
+      eH ∈ cut.edgeCut →
+        (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∉
+          (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+            (G := G) (edges := edges) he hu hv).edges := by
+  intro eH hcut hmem
+  exact heAvoid (Finset.mem_map.2
+    ⟨eH, hcut,
+      boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints_mapEdgeSet
+        (G := G) (edges := edges) he hu hv eH hmem⟩)
+
+/--
 If two selected ambient edges share an endpoint, then the corresponding
 endpoint-support carrier vertices are connected through that shared endpoint.
 This is the graph-level bridge from the selected-boundary shared-endpoint graph
@@ -204,6 +258,59 @@ def boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
         (G := G) (edges := edges) hf hxF hv)
 
 /--
+Every carrier edge used by the canonical shared-endpoint step maps back to one
+of the two selected ambient edges that form that step.
+-/
+theorem boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint_mapEdgeSet
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e f : G.edgeSet}
+    (he : e ∈ edges) (hf : f ∈ edges) {u v x : V}
+    (hu : u ∈ (e : Sym2 V)) (hxE : x ∈ (e : Sym2 V))
+    (hxF : x ∈ (f : Sym2 V)) (hv : v ∈ (f : Sym2 V))
+    (eH : (BoundaryEdgeSetInducedGraph (G := G) edges).edgeSet)
+    (heH :
+      (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∈
+        (boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
+          (G := G) (edges := edges) he hf hu hxE hxF hv).edges) :
+    (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet eH = e ∨
+      (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet eH = f := by
+  rw [boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint,
+    SimpleGraph.Walk.edges_append] at heH
+  rcases List.mem_append.1 heH with heLeft | heRight
+  · exact Or.inl
+      (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints_mapEdgeSet
+        (G := G) (edges := edges) he hu hxE eH heLeft)
+  · exact Or.inr
+      (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints_mapEdgeSet
+        (G := G) (edges := edges) hf hxF hv eH heRight)
+
+/--
+If both selected ambient edges in a shared-endpoint step are outside a carrier
+cut's mapped edge set, then the generated carrier walk avoids the carrier cut.
+-/
+theorem boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint_avoids_cut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e f : G.edgeSet}
+    (he : e ∈ edges) (hf : f ∈ edges) {u v x : V}
+    (hu : u ∈ (e : Sym2 V)) (hxE : x ∈ (e : Sym2 V))
+    (hxF : x ∈ (f : Sym2 V)) (hv : v ∈ (f : Sym2 V))
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges))
+    (heAvoid :
+      e ∉ cut.edgeCut.map
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet)
+    (hfAvoid :
+      f ∉ cut.edgeCut.map
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet) :
+    ∀ eH : (BoundaryEdgeSetInducedGraph (G := G) edges).edgeSet,
+      eH ∈ cut.edgeCut →
+        (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∉
+          (boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
+            (G := G) (edges := edges) he hf hu hxE hxF hv).edges := by
+  intro eH hcut hmem
+  rcases boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint_mapEdgeSet
+      (G := G) (edges := edges) he hf hu hxE hxF hv eH hmem with hmap | hmap
+  · exact heAvoid (Finset.mem_map.2 ⟨eH, hcut, hmap⟩)
+  · exact hfAvoid (Finset.mem_map.2 ⟨eH, hcut, hmap⟩)
+
+/--
 A shared-endpoint walk of selected boundary edges induces a walk in the
 canonical endpoint-support carrier between any chosen endpoint of the first
 edge and any chosen endpoint of the last edge.
@@ -230,6 +337,112 @@ theorem exists_boundaryEdgeSetInducedGraph_walk_of_sharedEndpointGraph_walk
           (G := G) (edges := edges) e₀.2 e₁.2 hu hx₀ hx₁ hx₁).append
           tail,
         trivial⟩
+
+/--
+A shared-endpoint walk of selected boundary edges whose visited edges avoid a
+mapped carrier cut induces a carrier walk avoiding that carrier cut.
+-/
+theorem
+    exists_boundaryEdgeSetInducedGraph_walk_avoids_cut_of_sharedEndpointGraph_walk
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {e f : BoundaryEdgeSetEdgeVertex (G := G) edges}
+    (p : (BoundaryEdgeSetSharedEndpointGraph (G := G) edges).Walk e f)
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges))
+    (hAvoid :
+      ∀ g : BoundaryEdgeSetEdgeVertex (G := G) edges,
+        g ∈ p.support →
+          g.1 ∉ cut.edgeCut.map
+            (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet)
+    {u v : V} (hu : u ∈ (e.1 : Sym2 V)) (hv : v ∈ (f.1 : Sym2 V)) :
+    ∃ q : (BoundaryEdgeSetInducedGraph (G := G) edges).Walk
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) e.2 hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) f.2 hv),
+        ∀ eH : (BoundaryEdgeSetInducedGraph (G := G) edges).edgeSet,
+          eH ∈ cut.edgeCut →
+            (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∉
+              q.edges := by
+  induction p generalizing u v with
+  | @nil g =>
+      exact ⟨boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+          (G := G) (edges := edges) g.2 hu hv,
+        boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints_avoids_cut
+          (G := G) (edges := edges) g.2 hu hv cut
+          (hAvoid g (by simp))⟩
+  | @cons e₀ e₁ e₂ hadj p ih =>
+      rcases hadj with ⟨_hne, x, hx₀, hx₁⟩
+      have he₀Avoid :
+          e₀.1 ∉ cut.edgeCut.map
+            (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet :=
+        hAvoid e₀ (by simp [SimpleGraph.Walk.support_cons])
+      have he₁Avoid :
+          e₁.1 ∉ cut.edgeCut.map
+            (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet :=
+        hAvoid e₁ (by simp [SimpleGraph.Walk.support_cons])
+      have htailAvoid :
+          ∀ g : BoundaryEdgeSetEdgeVertex (G := G) edges,
+            g ∈ p.support →
+              g.1 ∉ cut.edgeCut.map
+                (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet := by
+        intro g hg
+        exact hAvoid g (by simp [SimpleGraph.Walk.support_cons, hg])
+      rcases ih htailAvoid hx₁ hv with ⟨tail, htail⟩
+      refine ⟨
+        (boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
+          (G := G) (edges := edges) e₀.2 e₁.2 hu hx₀ hx₁ hx₁).append
+          tail,
+        ?_⟩
+      intro eH hcut hmem
+      rw [SimpleGraph.Walk.edges_append] at hmem
+      rcases List.mem_append.1 hmem with hfirst | htailMem
+      · exact
+          boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint_avoids_cut
+            (G := G) (edges := edges) e₀.2 e₁.2 hu hx₀ hx₁ hx₁
+            cut he₀Avoid he₁Avoid eH hcut hfirst
+      · exact htail eH hcut htailMem
+
+/--
+Cut-avoiding reachability in the shared-endpoint graph of selected boundary
+edges: there is a shared-endpoint walk whose visited selected ambient edges all
+avoid the mapped carrier cut.
+-/
+def BoundaryEdgeSetSharedEndpointMappedCutAvoidingReachable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges))
+    (e f : BoundaryEdgeSetEdgeVertex (G := G) edges) : Prop :=
+  ∃ p : (BoundaryEdgeSetSharedEndpointGraph (G := G) edges).Walk e f,
+    ∀ g : BoundaryEdgeSetEdgeVertex (G := G) edges,
+      g ∈ p.support →
+        g.1 ∉ cut.edgeCut.map
+          (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet
+
+/--
+The named cut-avoiding shared-endpoint reachability target supplies a carrier
+walk avoiding the carrier cut.
+-/
+theorem
+    exists_boundaryEdgeSetInducedGraph_walk_avoids_cut_of_sharedEndpointGraph_cutAvoidingReachable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    {e f : BoundaryEdgeSetEdgeVertex (G := G) edges}
+    (hreachable :
+      BoundaryEdgeSetSharedEndpointMappedCutAvoidingReachable
+        (G := G) (edges := edges) cut e f)
+    {u v : V} (hu : u ∈ (e.1 : Sym2 V)) (hv : v ∈ (f.1 : Sym2 V)) :
+    ∃ q : (BoundaryEdgeSetInducedGraph (G := G) edges).Walk
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) e.2 hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) f.2 hv),
+        ∀ eH : (BoundaryEdgeSetInducedGraph (G := G) edges).edgeSet,
+          eH ∈ cut.edgeCut →
+            (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∉
+              q.edges := by
+  rcases hreachable with ⟨p, hAvoid⟩
+  exact
+    exists_boundaryEdgeSetInducedGraph_walk_avoids_cut_of_sharedEndpointGraph_walk
+      (G := G) (edges := edges) p cut hAvoid hu hv
 
 /--
 Reachability in the shared-endpoint graph of selected boundary edges induces a
