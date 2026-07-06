@@ -113,6 +113,20 @@ theorem cap5FreePeeledCollarPlanarNormalFormFoundationTargetIndex_of_regimeRoute
     hindex
 
 /--
+The full planar-normal-form target supplies the selected-boundary-arc source
+public index through the mapped-cut, face-source, and source-data interfaces.
+-/
+theorem
+    cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarPlanarNormalFormFoundationTargetIndex) :
+    CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex :=
+  cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_sourceDataFoundationTargetIndex
+    ((cap5FreePeeledCollarFoundationTargetIndex_iff_sourceDataFoundationTargetIndex).1
+      (cap5FreePeeledCollarFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+        (cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+          hindex)))
+
+/--
 Smaller planar-normal-form theorem target for the cyclic-connectivity bridge.
 
 This records the precise cut-lift obligation needed upstream of the S4
@@ -386,6 +400,40 @@ theorem section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFo
   section92Step4CAP5FreeRegimeRouteIndexTarget_of_regimeRouteFoundationTargetIndex
     (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
       hindex)
+
+/--
+Selected-boundary-arc route target reached from the full planar-normal-form
+foundation: the aligned closed-walk, canonical, and repaired selected-source
+routes plus the compact regime route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormSelectedBoundaryArcSourceRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The full planar-normal-form foundation target supplies the selected-boundary
+route index and the compact regime-dispatched S4 route index.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormSelectedBoundaryArcSourceRouteIndexTarget_of_planarNormalFormFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarPlanarNormalFormFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormSelectedBoundaryArcSourceRouteIndexTarget := by
+  have hselected :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex :=
+    cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_alignedRouteIndexTargets
+      hselected
+  exact
+    ⟨hroutes.1,
+      hroutes.2.1,
+      hroutes.2.2,
+      section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormFoundationTargetIndex
+        hindex⟩
 
 /--
 Expanded route target reached from the full planar-normal-form foundation:
