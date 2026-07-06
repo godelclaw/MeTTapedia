@@ -179,6 +179,35 @@ theorem
   cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierRouteInputsFoundationTargetIndex.1
     hindex
 
+/--
+The smaller planar-normal-form cut-lift target can equivalently be supplied as
+the closed-walk off-carrier component-attachment public index.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierComponentAttachmentFoundationTargetIndex :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierWalkConsistencyFoundationTargetIndex.trans
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_iff_offCarrierWalkConsistencyFoundationTargetIndex.symm
+
+/-- The component-attachment public index supplies the smaller target. -/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_closedWalkOffCarrierComponentAttachmentFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierComponentAttachmentFoundationTargetIndex.2
+    hindex
+
+/-- The smaller target supplies the component-attachment public index. -/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierComponentAttachmentFoundationTargetIndex.1
+    hindex
+
 /-- The stronger face-placement index supplies the smaller cut-lift target. -/
 theorem
     cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_facePlacementFoundationTargetIndex
@@ -326,5 +355,35 @@ theorem
     cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_routeIndexTargets
       hrouteInputsIndex
   exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2.2.2.2⟩
+
+/--
+Expanded component-attachment route target reached from the smaller
+planar-normal-form cut-lift foundation: both annulus separation routes, the
+closed-walk component-attachment route, and the regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormOffCarrierComponentAttachmentCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The smaller planar-normal-form cut-lift target supplies the expanded
+component-attachment route index as well.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormOffCarrierComponentAttachmentCutLiftRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormOffCarrierComponentAttachmentCutLiftRouteIndexTarget := by
+  have hcomponentIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_routeIndexTargets
+      hcomponentIndex
+  exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2.2⟩
 
 end Mettapedia.GraphTheory.FourColor
