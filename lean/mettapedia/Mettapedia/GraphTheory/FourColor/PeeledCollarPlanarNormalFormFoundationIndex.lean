@@ -575,6 +575,42 @@ theorem
   exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2.2.2.2⟩
 
 /--
+Expanded checker-facing route-input route target reached from the smaller
+planar-normal-form cut-lift foundation: both annulus separation routes, the
+closed-walk route-input target for the selected collar, and the
+regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormClosedWalkRouteInputsCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The smaller planar-normal-form cut-lift target supplies the expanded
+checker-facing closed-walk route-input route index as well.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormClosedWalkRouteInputsCutLiftRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormClosedWalkRouteInputsCutLiftRouteIndexTarget := by
+  have hsmall :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+    cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
+      hindex.2.2
+  exact
+    ⟨section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget
+        hindex.1,
+      section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget
+        hindex.2.1,
+      section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget
+        hsmall,
+      section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+        hindex⟩
+
+/--
 Expanded component-attachment route target reached from the smaller
 planar-normal-form cut-lift foundation: both annulus separation routes, the
 closed-walk component-attachment route, and the regime-discharged S4 route.
