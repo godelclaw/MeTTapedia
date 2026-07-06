@@ -9,12 +9,12 @@ open GoertzelLemma818ClosedCollarWindingRealization
 /-!
 Realized-candidate interface for mapped-cut face-route obstructions.
 
-The remaining planar-normal-form proof should turn any mapped-cut face-route
-obstruction into a realized finite separator candidate in the induced peeled
-collar.  This module names that target and proves the reusable composition:
-the obstruction-to-candidate target, together with the realized-candidate lift,
-rules out mapped-cut face-route obstructions and therefore supplies the
-existing mapped-cut route index.
+Every mapped-cut face-route obstruction already contains the bundled small
+cyclic cut whose promoted finite separator candidate realizes in the induced
+peeled collar.  This module exposes that direct candidate bridge and proves
+the reusable composition: the realized-candidate lift alone is the remaining
+graph-facing foundation needed to rule out mapped-cut face-route obstructions
+and feed the existing mapped-cut route index.
 -/
 
 variable {V : Type} [DecidableEq V]
@@ -34,6 +34,18 @@ def OffCarrierAttachmentMappedCutAvoidingFaceRouteObstructionRealizedCandidateTa
       CyclicSeparatorCandidate
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph,
       candidate.Realizes
+
+/--
+Every mapped-cut face-route obstruction already carries the bundled small
+cyclic cut whose promoted finite separator candidate realizes.
+-/
+theorem offCarrierAttachmentMappedCutAvoidingFaceRouteObstructionRealizedCandidateTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb) :
+    source.OffCarrierAttachmentMappedCutAvoidingFaceRouteObstructionRealizedCandidateTarget := by
+  intro hobs
+  rcases hobs with ⟨cut, _hcutObs⟩
+  exact ⟨cut.toCyclicSeparatorCandidate, cut.toCyclicSeparatorCandidate_realizes⟩
 
 /--
 Under the CAP5-free regime, an obstruction-produced realized candidate is
@@ -79,6 +91,17 @@ def CAP5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidate
       source.OffCarrierAttachmentMappedCutAvoidingFaceRouteObstructionRealizedCandidateTarget
 
 /--
+The obstruction-to-realized-candidate foundation target is discharged directly
+from the bundled small cyclic cut carried by each mapped-cut obstruction.
+-/
+theorem
+    cap5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget :
+    CAP5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget := by
+  intro V _ G emb source _regime
+  exact
+    source.offCarrierAttachmentMappedCutAvoidingFaceRouteObstructionRealizedCandidateTarget
+
+/--
 The obstruction-to-realized-candidate foundation, plus realized-candidate
 lifting, supplies the no-obstruction foundation.
 -/
@@ -95,6 +118,19 @@ theorem
       regime (hobstructionCandidate source regime) (hlift regime)
 
 /--
+Since obstruction-to-candidate is direct, the realized-candidate lift foundation
+alone supplies the no-obstruction foundation.
+-/
+theorem
+    cap5FreeClosedWalkNoMappedCutFaceRouteObstructionFoundationTarget_of_realizedCandidateLift
+    (hlift :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarNoMappedCutFaceRouteObstructionFoundationTarget :=
+  cap5FreeClosedWalkNoMappedCutFaceRouteObstructionFoundationTarget_of_obstructionRealizedCandidateFoundationTarget_of_realizedCandidateLift
+    cap5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget
+    hlift
+
+/--
 The same inputs supply the mapped-cut avoiding face-route foundation consumed
 by the existing route index.
 -/
@@ -108,6 +144,19 @@ theorem
   cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_noMappedCutFaceRouteObstructionFoundationTarget
     (cap5FreeClosedWalkNoMappedCutFaceRouteObstructionFoundationTarget_of_obstructionRealizedCandidateFoundationTarget_of_realizedCandidateLift
       hobstructionCandidate hlift)
+
+/--
+The realized-candidate lift foundation alone supplies the mapped-cut avoiding
+face-route foundation.
+-/
+theorem
+    cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_realizedCandidateLift
+    (hlift :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarMappedCutAvoidingFaceRouteFoundationTarget :=
+  cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_obstructionRealizedCandidateFoundationTarget_of_realizedCandidateLift
+    cap5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget
+    hlift
 
 /--
 Public foundation index for the obstruction-to-realized-candidate route.  The
@@ -138,6 +187,43 @@ theorem
       hindex.2.2.1 hindex.2.2.2⟩
 
 /--
+Public foundation index after discharging obstruction-to-candidate: the only
+closed-walk graph-facing input remaining here is realized-candidate lifting.
+-/
+def CAP5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget
+
+/--
+The reduced realized-candidate lift index supplies the earlier
+obstruction-to-realized-candidate index.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_of_realizedCandidateLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget,
+    hindex.2.2⟩
+
+/--
+The reduced realized-candidate lift index supplies the mapped-cut foundation
+index consumed by downstream route interfaces.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_realizedCandidateLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
+  cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_obstructionRealizedCandidateFoundationTargetIndex
+    (cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_of_realizedCandidateLiftFoundationTargetIndex
+      hindex)
+
+/--
 Closed-walk route-index theorem for the obstruction-to-realized-candidate
 foundation package.
 -/
@@ -151,6 +237,18 @@ theorem
   section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget
     (cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_obstructionRealizedCandidateFoundationTarget_of_realizedCandidateLift
       hobstructionCandidate hlift)
+
+/--
+Closed-walk route-index theorem after discharging obstruction-to-candidate.
+-/
+theorem
+    section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget_of_realizedCandidateLift
+    (hlift :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget :=
+  section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget_of_obstructionRealizedCandidateFoundationTargets
+    cap5FreeClosedWalkPeeledCollarMappedCutFaceRouteObstructionRealizedCandidateFoundationTarget
+    hlift
 
 /--
 The obstruction-to-realized-candidate public index supplies the mapped-cut
@@ -182,6 +280,24 @@ theorem
       hmappedRoutes.2.2,
       hcandidateRoutes.1,
       hcandidateRoutes.2⟩
+
+/--
+The reduced realized-candidate lift index supplies the mapped-cut route
+indices, plus the graph-facing realized-candidate lift and counterexample
+route indices.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRealizedCandidateLiftFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRealizedCandidateCounterexampleFoundationRouteIndexTarget :=
+  cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_routeIndexTargets
+    (cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_of_realizedCandidateLiftFoundationTargetIndex
+      hindex)
 
 /--
 Closed-walk S4 salvage target for the obstruction-to-realized-candidate
@@ -230,5 +346,18 @@ theorem
     Section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget :=
   section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget
     hindex.2.2.1 hindex.2.2.2
+
+/--
+The reduced realized-candidate lift index supplies the explicit closed-walk S4
+salvage target.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex_regimeDischargedS4SalvageTarget
+    (hindex :
+      CAP5FreePeeledCollarMappedCutRealizedCandidateLiftFoundationTargetIndex) :
+    Section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeDischargedS4SalvageTarget :=
+  cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_regimeDischargedS4SalvageTarget
+    (cap5FreePeeledCollarMappedCutObstructionRealizedCandidateFoundationTargetIndex_of_realizedCandidateLiftFoundationTargetIndex
+      hindex)
 
 end Mettapedia.GraphTheory.FourColor
