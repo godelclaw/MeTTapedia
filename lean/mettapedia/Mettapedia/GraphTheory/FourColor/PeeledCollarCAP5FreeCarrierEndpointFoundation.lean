@@ -48,6 +48,65 @@ def CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget :
       source.toPlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierWalkConsistencyTarget
 
 /--
+Closed-walk off-carrier route-input foundation target for the selected
+induced peeled collar embedding.  This is equivalent to the off-carrier
+walk-consistency target, but exposes the exact regime-route input record
+consumed by the downstream cyclic-connectivity and S4 APIs.
+-/
+def CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      Nonempty
+        (MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs G
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+
+/--
+Off-carrier walk consistency supplies the closed-walk route-input foundation
+target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierRouteInputsFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget := by
+  intro V _ G emb source regime
+  exact ⟨
+    { regime := regime
+      offCarrierWalkConsistencies := hfoundation source regime }⟩
+
+/--
+The closed-walk route-input foundation target supplies off-carrier walk
+consistency.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_offCarrierRouteInputsFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget := by
+  intro V _ G emb source regime
+  rcases hfoundation source regime with ⟨inputs⟩
+  exact inputs.offCarrierWalkConsistencies
+
+/--
+The route-input and off-carrier walk-consistency closed-walk foundation
+targets are equivalent presentations of the same planar-normal-form
+obligation.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierRouteInputsFoundationTarget_iff_offCarrierWalkConsistencyFoundationTarget :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget ↔
+      CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget :=
+  ⟨cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_offCarrierRouteInputsFoundationTarget,
+    cap5FreeClosedWalkOffCarrierRouteInputsFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget⟩
+
+/--
 Off-carrier walk consistency supplies the closed-walk carrier-endpoint
 foundation target.
 -/
@@ -178,6 +237,55 @@ def CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex
   CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
     CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
     CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget
+
+/--
+Public index with the closed-walk off-carrier route-input target as the
+closed-walk foundation field.
+-/
+def CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget
+
+/--
+The off-carrier public index supplies the off-carrier route-input public
+index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_of_offCarrierWalkConsistencyFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierRouteInputsFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
+      hindex.2.2⟩
+
+/--
+The off-carrier route-input public index supplies the off-carrier public
+index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_offCarrierRouteInputsFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_offCarrierRouteInputsFoundationTarget
+      hindex.2.2⟩
+
+/--
+The off-carrier and route-input public indices are equivalent presentations of
+the same closed-walk foundation checklist.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_iff_offCarrierWalkConsistencyFoundationTargetIndex :
+    CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_offCarrierRouteInputsFoundationTargetIndex,
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_of_offCarrierWalkConsistencyFoundationTargetIndex⟩
 
 /--
 The off-carrier public index supplies the carrier-endpoint public index.
@@ -348,6 +456,47 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteInde
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Closed-walk off-carrier route-input route target: the planar target returns
+the exact route-input record, and that record supplies cyclic
+five-edge-connectivity, no cyclic two-cut, and S4 no-escape.
+-/
+def Section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      Nonempty
+          (MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs G
+            source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet) ∧
+        CyclicallyFiveEdgeConnected
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ClosedCollarForbidsCyclicTwoCut
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Route-index theorem for the closed-walk off-carrier route-input foundation
+target.
+-/
+theorem section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTarget := by
+  intro V _ G emb source regime
+  rcases hfoundation source regime with ⟨inputs⟩
+  exact
+    ⟨⟨inputs⟩,
+      inputs.cyclicallyFiveEdgeConnected,
+      inputs.closedCollarForbidsCyclicTwoCut,
+      inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
 
 /--
 Route-index theorem for the closed-walk off-carrier foundation target.
@@ -537,5 +686,44 @@ theorem
       hcarrierRoutes.2.2.1,
       hoffRoutes.2.2.1,
       hoffRoutes.2.2.2⟩
+
+/--
+The off-carrier route-input public index supplies the route-input target, the
+off-carrier route target, the carrier-endpoint route target, the off-boundary
+route target, and the compact regime route index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeCarrierEndpointSupportFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRegimeRouteIndexTarget := by
+  have hoffIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_offCarrierRouteInputsFoundationTargetIndex
+      hindex
+  have hoffRoutes :
+      Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+        Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeCarrierEndpointSupportFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarget ∧
+        Section92Step4CAP5FreeRegimeRouteIndexTarget :=
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_routeIndexTargets
+      hoffIndex
+  exact
+    ⟨hoffRoutes.1,
+      hoffRoutes.2.1,
+      section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTarget
+        hindex.2.2,
+      hoffRoutes.2.2.1,
+      hoffRoutes.2.2.2.1,
+      hoffRoutes.2.2.2.2.1,
+      hoffRoutes.2.2.2.2.2⟩
 
 end Mettapedia.GraphTheory.FourColor
