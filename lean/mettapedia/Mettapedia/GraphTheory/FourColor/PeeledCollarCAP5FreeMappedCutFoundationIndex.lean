@@ -51,6 +51,41 @@ theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_iff_foundationTargetI
     cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_foundationTargetIndex⟩
 
 /--
+The mapped-cut public index supplies the selected-boundary-arc source public
+index through the face-source and source-data public equivalences.
+-/
+theorem cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarMappedCutFoundationTargetIndex) :
+    CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex :=
+  cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_sourceDataFoundationTargetIndex
+    ((cap5FreePeeledCollarFoundationTargetIndex_iff_sourceDataFoundationTargetIndex).1
+      (cap5FreePeeledCollarFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+        hindex))
+
+/--
+The selected-boundary-arc source public index supplies the mapped-cut public
+index through the source-data and face-source public equivalences.
+-/
+theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
+  cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_foundationTargetIndex
+    ((cap5FreePeeledCollarFoundationTargetIndex_iff_sourceDataFoundationTargetIndex).2
+      (cap5FreePeeledCollarSourceDataFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex
+        hindex))
+
+/--
+The mapped-cut public foundation index and the selected-boundary-arc source
+public index are equivalent interfaces.
+-/
+theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_iff_selectedBoundaryArcSourceFoundationTargetIndex :
+    CAP5FreePeeledCollarMappedCutFoundationTargetIndex ↔
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_mappedCutFoundationTargetIndex,
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex⟩
+
+/--
 Closed-walk CAP5-free mapped-cut route index: once the mapped-cut foundation
 target is proved, the face-source equivalents, small-cut lifting, cyclic
 five-edge-connectivity, no cyclic two-cut, and S4 no-escape consequences are
@@ -141,5 +176,18 @@ theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_alignedFaceSourceRout
         hface,
       section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget
         hface⟩
+
+/--
+The mapped-cut public foundation index also supplies the aligned
+selected-boundary-arc source route indices.
+-/
+theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_alignedSelectedBoundaryArcSourceRouteIndexTargets
+    (hindex : CAP5FreePeeledCollarMappedCutFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget :=
+  cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_alignedRouteIndexTargets
+    (cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+      hindex)
 
 end Mettapedia.GraphTheory.FourColor
