@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.PeeledCollarAnnulusExtraction
 import Mettapedia.GraphTheory.FourColor.PeeledCollarBoundarySupportExtraction
+import Mettapedia.GraphTheory.FourColor.PeeledCollarBoundaryCarrierEndpointRange
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -443,6 +444,77 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs
 
 /--
+Boundary-carrier endpoint-support index of the regime route inputs: the
+peeled collar carrier is the canonical graph induced by a finite ambient edge
+set, and the remaining planar-normal-form obligation is only that ambient
+side-crossing edges stay inside that carrier endpoint support.
+-/
+structure MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+    (G : SimpleGraph V) (edges : Finset G.edgeSet) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) edges)
+      (BoundaryEdgeSetInducedGraph (G := G) edges)
+  ambientSideCarrierEndpointSupports :
+    BoundaryEdgeSetInducedCutAmbientSideEndpointSupportsToAmbient (G := G) edges
+
+namespace MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+
+/-- Boundary-carrier endpoint route inputs supply the endpoint-range route
+input record. -/
+def toEndpointRangeRouteInputs
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+        G edges) :
+    MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G
+      (BoundaryEdgeSetInducedGraph (G := G) edges) where
+  regime := inputs.regime
+  embedding := boundaryEdgeSetInducedGraphEmbedding (G := G) edges
+  ambientSideEndpointRanges :=
+    peeledCollarCutAmbientSideEndpointRangesToAmbient_of_boundaryCarrierEndpointSupports
+      inputs.ambientSideCarrierEndpointSupports
+
+/-- The boundary-carrier endpoint route inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+        G edges) :
+    CyclicallyFiveEdgeConnected
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toEndpointRangeRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The boundary-carrier endpoint route inputs supply the no-cyclic-two-cut
+fact consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+        G edges) :
+    ClosedCollarForbidsCyclicTwoCut
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toEndpointRangeRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Boundary-carrier endpoint S4 winding salvage: cyclic five-edge-connectivity is
+obtained from the minimal-counterexample normal form plus the planar-facing
+fact that ambient side-crossing edges stay inside the canonical carrier
+endpoint support.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+        G edges) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toEndpointRangeRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+
+/--
 Off-boundary index of the regime route inputs: the remaining planar
 normal-form obligation is stated locally, as no ambient side-crossing edge
 being incident to a vertex outside the mapped collar-cut endpoint support.
@@ -734,6 +806,25 @@ def Section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget : Prop :
 /-- Verbatim end-to-end boundary-edge-set induced S4 salvage statement. -/
 theorem section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget :
     Section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget := by
+  intro V _ G edges inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the boundary-carrier endpoint-support route
+interface.
+-/
+def Section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {edges : Finset G.edgeSet},
+      MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+        G edges →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          (BoundaryEdgeSetInducedGraph (G := G) edges)
+
+/-- Verbatim end-to-end boundary-carrier endpoint-support S4 salvage statement. -/
+theorem section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget :
+    Section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget := by
   intro V _ G edges inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
