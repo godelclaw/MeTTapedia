@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.PeeledCollarAnnulusExtraction
+import Mettapedia.GraphTheory.FourColor.PeeledCollarBoundarySupportExtraction
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -378,6 +379,70 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs
 
 /--
+Boundary-edge-set induced index of the regime route inputs: the peeled collar
+carrier is the canonical graph induced by the endpoint support of a finite
+ambient boundary edge set, with its natural embedding into the ambient graph.
+-/
+structure MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs
+    (G : SimpleGraph V) (edges : Finset G.edgeSet) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) edges)
+      (BoundaryEdgeSetInducedGraph (G := G) edges)
+  ambientSideBoundarySupports :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient
+      (boundaryEdgeSetInducedGraphEmbedding (G := G) edges)
+
+namespace MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs
+
+/-- Boundary-edge-set induced route inputs supply the boundary-support route
+input record. -/
+def toBoundarySupportRouteInputs
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges) :
+    MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs G
+      (BoundaryEdgeSetInducedGraph (G := G) edges) where
+  regime := inputs.regime
+  embedding := boundaryEdgeSetInducedGraphEmbedding (G := G) edges
+  ambientSideBoundarySupports := inputs.ambientSideBoundarySupports
+
+/-- The boundary-edge-set induced route inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges) :
+    CyclicallyFiveEdgeConnected
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toBoundarySupportRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The boundary-edge-set induced route inputs supply the no-cyclic-two-cut
+fact consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges) :
+    ClosedCollarForbidsCyclicTwoCut
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toBoundarySupportRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Boundary-edge-set induced S4 winding salvage: cyclic five-edge-connectivity is
+obtained from the minimal-counterexample normal form plus boundary-support
+transport for the canonical endpoint-support induced collar graph.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toBoundarySupportRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs
+
+/--
 Off-boundary index of the regime route inputs: the remaining planar
 normal-form obligation is stated locally, as no ambient side-crossing edge
 being incident to a vertex outside the mapped collar-cut endpoint support.
@@ -653,6 +718,23 @@ def Section92Step4BoundarySupportRegimeDischargedS4SalvageTarget : Prop :=
 theorem section92Step4BoundarySupportRegimeDischargedS4SalvageTarget :
     Section92Step4BoundarySupportRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the boundary-edge-set induced route
+interface.
+-/
+def Section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {edges : Finset G.edgeSet},
+      MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          (BoundaryEdgeSetInducedGraph (G := G) edges)
+
+/-- Verbatim end-to-end boundary-edge-set induced S4 salvage statement. -/
+theorem section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget :
+    Section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget := by
+  intro V _ G edges inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 /--
