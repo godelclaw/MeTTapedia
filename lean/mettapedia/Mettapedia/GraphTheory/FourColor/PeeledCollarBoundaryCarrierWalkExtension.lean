@@ -1454,6 +1454,76 @@ def PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
   BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnectivitiesToAmbient
     (G := G) data.ambientBoundaryEdgeSet
 
+/--
+Face-local route target for one carrier cut: each pair of attachments of one
+off-carrier component is witnessed by selected boundary edges on a face whose
+selected boundary edges do not cross a side compatible with the carrier cut.
+-/
+def CutOffCarrierAttachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    (cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)) :
+    Prop :=
+  ∃ side : V → Prop,
+    (∀ w : BoundaryEdgeSetEndpointVertex
+        (G := G) data.ambientBoundaryEdgeSet,
+      side (data.inducedBoundaryEmbedding w) ↔ cut.side w) ∧
+      ∀ root : V,
+        ∀ a b : BoundaryEdgeSetEndpointVertex
+            (G := G) data.ambientBoundaryEdgeSet,
+          BoundaryEdgeSetInducedOffCarrierComponentAttachesToCarrierVertex
+            (G := G) data.ambientBoundaryEdgeSet root a →
+          BoundaryEdgeSetInducedOffCarrierComponentAttachesToCarrierVertex
+            (G := G) data.ambientBoundaryEdgeSet root b →
+            ∃ f : AmbientFace emb.faces,
+            ∃ e₁ e₂ : G.edgeSet,
+            ∃ _ : e₁ ∈ emb.faceBoundary f.1,
+            ∃ _ : e₂ ∈ emb.faceBoundary f.1,
+            ∃ _ : e₁ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
+            ∃ _ : e₂ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
+              (a : V) ∈ (e₁ : Sym2 V) ∧
+                (b : V) ∈ (e₂ : Sym2 V) ∧
+                  BoundaryComponentWalkOnFace (emb := emb) f ∧
+                    data.FaceSelectedBoundaryEdgesDoNotCrossSide side f
+
+/--
+Annulus-boundary face-local noncrossing route target: every small cyclic cut
+admits the face witnesses needed to connect off-carrier component attachments
+after deleting the mapped cut.
+-/
+def PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb) : Prop :=
+  ∀ cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet),
+    data.CutOffCarrierAttachmentFaceNoncrossingRouteTarget cut
+
+/--
+Face-local noncrossing route witnesses supply the mapped-cut-deleted
+shared-endpoint connectivity target for off-carrier component attachments.
+-/
+theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget) :
+    data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget := by
+  intro cut
+  rcases h cut with ⟨side, hside, hroute⟩
+  intro root a b hrootA hrootB
+  rcases hroute root a b hrootA hrootB with
+    ⟨f, e₁, e₂, he₁Face, he₂Face, he₁, he₂, ha, hb, hwalk, hnoncross⟩
+  rcases
+    data.exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_boundaryComponentWalkOnFace_of_faceSelectedBoundaryEdgesDoNotCrossSide
+      (cut := cut) hside hwalk hnoncross he₁Face he₂Face he₁ he₂ with
+    ⟨ea, eb, hea, heb, hreachable⟩
+  refine ⟨ea, eb, ?_, ?_, hreachable⟩
+  · simpa [hea] using ha
+  · simpa [heb] using hb
+
 /-- No-opposite-side off-carrier components supply annulus-boundary
 off-carrier walk consistency. -/
 theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
