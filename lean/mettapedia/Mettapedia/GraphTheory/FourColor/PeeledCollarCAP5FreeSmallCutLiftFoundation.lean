@@ -176,6 +176,20 @@ theorem routeIndexConsequences_of_cap5FreeRealizedCandidateLiftFoundationTarget
       inputs.closedCollarForbidsCyclicTwoCut,
       inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
 
+/--
+A checker-facing realized-candidate lift foundation supplies the first-class
+realized-candidate route-input record for a selected peeled collar.
+-/
+def realizedCandidateRouteInputs_of_cap5FreeRealizedCandidateLiftFoundationTarget
+    (hfoundation :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget)
+    {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (regime : MinimalCounterexamplePeeledCollarRegime G W H) :
+    MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H where
+  regime := regime
+  realizedCandidateLift := hfoundation regime
+
 end MinimalCounterexamplePeeledCollarRegime
 
 namespace PlanarBoundaryAnnulusCollarGeometry
@@ -386,6 +400,59 @@ theorem section92Step4CAP5FreeRealizedCandidateLiftFoundationRouteIndexTarget
   exact
     regime.routeIndexConsequences_of_cap5FreeRealizedCandidateLiftFoundationTarget
       hfoundation
+
+/--
+Checker-facing realized-candidate route-input index.  This exposes the
+route-input record itself, together with its immediate no-realization,
+cyclic-connectivity, two-cut, and S4 consequences.
+-/
+def Section92Step4CAP5FreeRealizedCandidateRouteInputsFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (regime : MinimalCounterexamplePeeledCollarRegime G W H),
+      ∃ inputs :
+          MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H,
+        inputs.regime = regime ∧
+          (∀ candidate : CyclicSeparatorCandidate H, ¬ candidate.Realizes) ∧
+          CyclicallyFiveEdgeConnected H ∧
+          ClosedCollarForbidsCyclicTwoCut H ∧
+          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+
+/--
+Route-index theorem for the checker-facing realized-candidate route-input
+target.
+-/
+theorem section92Step4CAP5FreeRealizedCandidateRouteInputsFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget) :
+    Section92Step4CAP5FreeRealizedCandidateRouteInputsFoundationRouteIndexTarget := by
+  intro V W _ _ G H regime
+  let inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H :=
+    { regime := regime
+      realizedCandidateLift := hfoundation regime }
+  exact
+    ⟨inputs,
+      rfl,
+      fun candidate => inputs.not_realizes candidate,
+      inputs.cyclicallyFiveEdgeConnected,
+      inputs.closedCollarForbidsCyclicTwoCut,
+      inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
+
+/--
+The realized-candidate lift foundation supplies both the raw consequence route
+index and the first-class route-input route index.
+-/
+theorem cap5FreePeeledCollarRealizedCandidateLiftFoundationTarget_routeInputRouteIndexTargets
+    (hfoundation :
+      CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget) :
+    Section92Step4CAP5FreeRealizedCandidateLiftFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRealizedCandidateRouteInputsFoundationRouteIndexTarget :=
+  ⟨section92Step4CAP5FreeRealizedCandidateLiftFoundationRouteIndexTarget
+      hfoundation,
+    section92Step4CAP5FreeRealizedCandidateRouteInputsFoundationRouteIndexTarget
+      hfoundation⟩
 
 /--
 Canonical annulus CAP5-free small-cut lift route index.
