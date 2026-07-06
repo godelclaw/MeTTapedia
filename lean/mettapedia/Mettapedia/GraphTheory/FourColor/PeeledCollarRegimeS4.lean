@@ -949,6 +949,26 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
     regime hOuter hInner hCross hseparate)
       |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
+/--
+Canonical-annulus S4 winding salvage from the off-carrier walk-consistency
+target.  This is the direct entry point when the planar normal-form layer
+proves that off-carrier walks cannot connect opposite sides of a small cyclic
+carrier cut.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  (MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs.mk
+    regime h)
+      |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
@@ -1123,6 +1143,26 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
       data.inducedBoundaryGraph :=
   (of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
     regime hOuter hInner hCross hseparate)
+      |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+Repaired-annulus S4 winding salvage from the off-carrier walk-consistency
+target.  This is the direct entry point when the planar normal-form layer
+proves that off-carrier walks cannot connect opposite sides of a small cyclic
+carrier cut.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  (MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs.mk
+    regime h)
       |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
@@ -1386,6 +1426,31 @@ theorem section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget 
         regime hOuter hInner hCross hseparate
 
 /--
+End-to-end S4 salvage target using the canonical annulus route with the
+annulus obligation stated as off-carrier walk consistency.
+-/
+def Section92Step4CanonicalAnnulusOffCarrierRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      data.PeeledCollarOffCarrierWalkConsistencyTarget →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end canonical-annulus off-carrier S4 salvage statement. -/
+theorem section92Step4CanonicalAnnulusOffCarrierRegimeDischargedS4SalvageTarget :
+    Section92Step4CanonicalAnnulusOffCarrierRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
+      regime h
+
+/--
 End-to-end S4 salvage target using the repaired annulus route interface.
 -/
 def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
@@ -1432,5 +1497,30 @@ theorem section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget :
   exact
     MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents_of_separation
         regime hOuter hInner hCross hseparate
+
+/--
+End-to-end S4 salvage target using the repaired annulus route with the
+annulus obligation stated as off-carrier walk consistency.
+-/
+def Section92Step4RepairedAnnulusOffCarrierRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      data.PeeledCollarOffCarrierWalkConsistencyTarget →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end repaired-annulus off-carrier S4 salvage statement. -/
+theorem section92Step4RepairedAnnulusOffCarrierRegimeDischargedS4SalvageTarget :
+    Section92Step4RepairedAnnulusOffCarrierRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
+      regime h
 
 end Mettapedia.GraphTheory.FourColor
