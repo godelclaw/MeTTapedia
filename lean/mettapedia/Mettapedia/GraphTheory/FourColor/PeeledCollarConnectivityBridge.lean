@@ -71,6 +71,29 @@ theorem peeledCollarSmallCyclicCutLiftsToAmbient_of_realizedCandidateLift
   simpa using
     hlift cut.toCyclicSeparatorCandidate cut.toCyclicSeparatorCandidate_realizes
 
+/-- The bundled-cut lift target implies the candidate-facing lift target. -/
+theorem peeledCollarRealizedCandidateLiftsToAmbientSmallCut_of_smallCutLift
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (hlift : PeeledCollarSmallCyclicCutLiftsToAmbient G H) :
+    PeeledCollarRealizedCandidateLiftsToAmbientSmallCut G H := by
+  intro candidate hrealizes
+  let cut : SmallCyclicEdgeCut H :=
+    (candidate.toCyclicEdgeCutRealization hrealizes).toSmallCyclicEdgeCut
+      candidate.hcard_le_four
+  rcases hlift cut with ⟨ambientCut, hcard⟩
+  exact ⟨ambientCut, by simpa [cut] using hcard⟩
+
+/--
+Bundled-cut lifting and realized-candidate lifting are equivalent graph-facing
+foundation targets.
+-/
+theorem peeledCollarRealizedCandidateLiftsToAmbientSmallCut_iff_smallCutLift
+    {G : SimpleGraph V} {H : SimpleGraph W} :
+    PeeledCollarRealizedCandidateLiftsToAmbientSmallCut G H ↔
+      PeeledCollarSmallCyclicCutLiftsToAmbient G H :=
+  ⟨peeledCollarSmallCyclicCutLiftsToAmbient_of_realizedCandidateLift,
+    peeledCollarRealizedCandidateLiftsToAmbientSmallCut_of_smallCutLift⟩
+
 /--
 If the ambient graph has no small cyclic edge cut and every small collar cut
 lifts to the ambient graph without increasing size, then the peeled collar has
