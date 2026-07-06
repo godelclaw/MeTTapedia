@@ -106,6 +106,34 @@ theorem
         (hfoundation source regime)
 
 /--
+Closed-walk off-boundary no-crossing also supplies off-carrier walk
+consistency, via the no-avoiding-walk separation bridge for the induced
+boundary carrier.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffBoundaryNoCrossingFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.offCarrierWalkConsistencyTarget_of_ambientSideSeparations
+        (peeledCollarCutAmbientSideSeparationsToAmbient_of_ambientSideOffBoundaryNoCrossings
+          (hfoundation source regime))
+
+/--
+Closed-walk off-carrier walk consistency and off-boundary no-crossing are
+equivalent public foundation targets.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_iff_offBoundaryNoCrossingFoundationTarget :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget ↔
+      CAP5FreeClosedWalkPeeledCollarOffBoundaryNoCrossingFoundationTarget :=
+  ⟨cap5FreeClosedWalkOffBoundaryNoCrossingFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget,
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_offBoundaryNoCrossingFoundationTarget⟩
+
+/--
 Carrier-endpoint support supplies the selected-source small-cut lift
 foundation target.
 -/
@@ -201,6 +229,30 @@ theorem
     hindex.2.1,
     cap5FreeClosedWalkOffBoundaryNoCrossingFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
       hindex.2.2⟩
+
+/--
+The off-boundary public index supplies the off-carrier public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_offBoundaryNoCrossingFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
+      hindex.2.2⟩
+
+/--
+The off-carrier and off-boundary public indices are equivalent presentations
+of the same closed-walk cut-lift foundation checklist.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_iff_offBoundaryNoCrossingFoundationTargetIndex :
+    CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex_of_offCarrierWalkConsistencyFoundationTargetIndex,
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_offBoundaryNoCrossingFoundationTargetIndex⟩
 
 /--
 Closed-walk carrier-endpoint route target: carrier endpoint support supplies
