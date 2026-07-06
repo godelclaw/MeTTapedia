@@ -150,6 +150,35 @@ theorem
   cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierWalkConsistencyFoundationTargetIndex.1
     hindex
 
+/--
+The smaller planar-normal-form cut-lift target can also be supplied as the
+closed-walk off-carrier route-input public index.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierRouteInputsFoundationTargetIndex :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierWalkConsistencyFoundationTargetIndex.trans
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_iff_offCarrierWalkConsistencyFoundationTargetIndex.symm
+
+/-- The off-carrier route-input public index supplies the smaller target. -/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_closedWalkOffCarrierRouteInputsFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierRouteInputsFoundationTargetIndex.2
+    hindex
+
+/-- The smaller target supplies the off-carrier route-input public index. -/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffCarrierRouteInputsFoundationTargetIndex.1
+    hindex
+
 /-- The stronger face-placement index supplies the smaller cut-lift target. -/
 theorem
     cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_facePlacementFoundationTargetIndex
@@ -267,5 +296,35 @@ theorem
     cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_routeIndexTargets
       hoffCarrierIndex
   exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2.2.2⟩
+
+/--
+Expanded route-input route target reached from the smaller planar-normal-form
+cut-lift foundation: both annulus separation routes, the closed-walk
+off-carrier route-input route, and the regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormOffCarrierRouteInputsCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The smaller planar-normal-form cut-lift target supplies the expanded
+off-carrier route-input route index as well.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormOffCarrierRouteInputsCutLiftRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormOffCarrierRouteInputsCutLiftRouteIndexTarget := by
+  have hrouteInputsIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_routeIndexTargets
+      hrouteInputsIndex
+  exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2.2.2.2⟩
 
 end Mettapedia.GraphTheory.FourColor
