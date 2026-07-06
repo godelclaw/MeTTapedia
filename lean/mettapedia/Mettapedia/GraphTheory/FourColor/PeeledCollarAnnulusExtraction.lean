@@ -111,31 +111,29 @@ theorem planarBoundaryAnnulusPeeledCollarSeparationTarget_of_offCarrierWalkConsi
 
 /--
 The named separation-form extraction target supplies canonical annulus
-off-carrier walk consistency when the selected boundary carrier is induced.
+off-carrier walk consistency.
 -/
 theorem planarBoundaryAnnulusPeeledCollarOffCarrierWalkConsistencyTarget_of_separationTarget
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusCollarGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
     (h :
       PlanarBoundaryAnnulusPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
-  data.offCarrierWalkConsistencyTarget_of_ambientSideSeparations hInduced h
+  data.offCarrierWalkConsistencyTarget_of_ambientSideSeparations h
 
 /--
-With an induced selected boundary carrier, the named canonical annulus
-separation target is equivalent to off-carrier walk consistency.
+The named canonical annulus separation target is equivalent to off-carrier
+walk consistency.
 -/
 theorem
     planarBoundaryAnnulusPeeledCollarOffCarrierWalkConsistencyTarget_iff_separationTarget
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
-    {data : PlanarBoundaryAnnulusCollarGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet) :
+    {data : PlanarBoundaryAnnulusCollarGeometry emb} :
     data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
       PlanarBoundaryAnnulusPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding :=
-  data.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations hInduced
+  data.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
 
 /-- The previous-boundary annulus-extraction target is exactly the local-constancy bridge input. -/
 theorem
@@ -199,33 +197,30 @@ theorem
 
 /--
 The named previous-boundary separation-form extraction target supplies
-repaired annulus off-carrier walk consistency when the selected boundary
-carrier is induced.
+repaired annulus off-carrier walk consistency.
 -/
 theorem
     planarBoundaryPreviousBoundaryPeeledCollarOffCarrierWalkConsistencyTarget_of_separationTarget
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
-  data.offCarrierWalkConsistencyTarget_of_ambientSideSeparations hInduced h
+  data.offCarrierWalkConsistencyTarget_of_ambientSideSeparations h
 
 /--
-With an induced selected boundary carrier, the named repaired annulus
-separation target is equivalent to off-carrier walk consistency.
+The named repaired annulus separation target is equivalent to off-carrier walk
+consistency.
 -/
 theorem
     planarBoundaryPreviousBoundaryPeeledCollarOffCarrierWalkConsistencyTarget_iff_separationTarget
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
-    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet) :
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb} :
     data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
       PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding :=
-  data.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations hInduced
+  data.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
 
 /-- Annulus extraction supplies the graph-facing small-cut lift. -/
 theorem peeledCollarSmallCyclicCutLiftsToAmbient_of_annulusExtractionTarget

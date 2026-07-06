@@ -55,6 +55,16 @@ theorem trans {G : SimpleGraph V} {support : Finset V} {u v w : V}
   · exact hp e heP
   · exact hq e heQ
 
+omit [DecidableEq V] in
+/-- Off-carrier reachability is symmetric. -/
+theorem symm {G : SimpleGraph V} {support : Finset V} {u v : V}
+    (huv : OffCarrierReachable G support u v) :
+    OffCarrierReachable G support v u := by
+  rcases huv with ⟨p, hp⟩
+  refine ⟨p.reverse, ?_⟩
+  intro e he
+  exact hp e (by simpa [SimpleGraph.Walk.edges_reverse] using he)
+
 /--
 One ambient edge whose endpoint leaves the support gives off-carrier
 reachability between any two listed endpoints of that edge.
@@ -279,6 +289,73 @@ theorem of_localConstancy
   exact (localData.side_comp_embedding a).symm.trans
     (hside.trans (localData.side_comp_embedding b))
 
+/--
+A mapped cut edge of the endpoint-support induced carrier cannot touch the
+outside of the full carrier endpoint support.
+-/
+theorem not_edgeTouchesOutsideVertexSupport_of_mem_boundaryEdgeSetInduced_mappedCut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    {e : G.edgeSet}
+    (he :
+      e ∈ cut.edgeCut.map
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet) :
+    ¬ EdgeTouchesOutsideVertexSupport
+      (boundaryEdgeSetEndpointSupport edges) (e : Sym2 V) := by
+  intro htouch
+  rcases htouch with ⟨v, hv, hvOutside⟩
+  rcases Finset.mem_map.1 he with ⟨eH, _heH, heq⟩
+  rw [← heq] at hv
+  have hpreimage :
+      ∃ w : BoundaryEdgeSetEndpointVertex (G := G) edges,
+        w ∈ (eH : Sym2 (BoundaryEdgeSetEndpointVertex (G := G) edges)) ∧
+          boundaryEdgeSetInducedGraphEmbedding (G := G) edges w = v := by
+    simpa [SimpleGraph.Embedding.mapEdgeSet, SimpleGraph.Hom.mapEdgeSet,
+      Sym2.mem_map] using hv
+  rcases hpreimage with ⟨w, _hw, hw⟩
+  exact hvOutside (by
+    rw [← hw]
+    exact boundaryEdgeSetEndpointVertex_mem w)
+
+/--
+No-avoiding-walk side separation implies off-carrier walk consistency for the
+canonical endpoint-support carrier.  No inducedness hypothesis is needed:
+off-carrier edges touch the outside of the full endpoint support, whereas
+mapped carrier-cut edges have both endpoints inside that support.
+-/
+theorem of_ambientSideSeparation
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    (separation :
+      PeeledCollarCutAmbientSideSeparation
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges) cut) :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistent (G := G) edges cut := by
+  intro a b hab
+  have hforward :
+      ∀ x y : BoundaryEdgeSetEndpointVertex (G := G) edges,
+        OffCarrierReachable G (boundaryEdgeSetEndpointSupport edges) x y →
+          cut.side x → cut.side y := by
+    intro x y hxy hx
+    rcases hxy with ⟨p, hp⟩
+    by_contra hy
+    have hsx : separation.side (x : V) := by
+      simpa [boundaryEdgeSetInducedGraphEmbedding] using
+        (separation.side_comp_embedding x).2 hx
+    have hsy : ¬ separation.side (y : V) := by
+      intro hsideY
+      exact hy ((separation.side_comp_embedding y).1 (by
+        simpa [boundaryEdgeSetInducedGraphEmbedding] using hsideY))
+    exact separation.noWalkAvoiding_mappedCut
+      ⟨x, y, p, hsx, hsy, by
+        intro e heCut heEdges
+        exact
+          not_edgeTouchesOutsideVertexSupport_of_mem_boundaryEdgeSetInduced_mappedCut
+            (G := G) (edges := edges) (cut := cut) heCut
+            (hp (e : Sym2 V) heEdges)⟩
+  constructor
+  · exact hforward a b hab
+  · exact hforward b a hab.symm
+
 end BoundaryEdgeSetInducedCutOffCarrierWalkConsistent
 
 /--
@@ -336,36 +413,33 @@ theorem boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_localCo
     (G := G) (edges := edges) hInduced localData
 
 /--
-No-avoiding-walk side separation implies off-carrier walk consistency when the
-selected finite carrier edge set is induced.
+No-avoiding-walk side separation implies off-carrier walk consistency for the
+canonical endpoint-support carrier.
 -/
 theorem boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_ambientSideSeparations
     {G : SimpleGraph V} {edges : Finset G.edgeSet}
-    (hInduced : BoundaryEdgeSetInducedSubgraph edges)
     (hseparate :
       PeeledCollarCutAmbientSideSeparationsToAmbient
         (boundaryEdgeSetInducedGraphEmbedding (G := G) edges)) :
     BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
-      (G := G) edges :=
-  boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_localConstancies
-    (G := G) (edges := edges) hInduced
-    (peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideSeparations
-      hseparate)
+      (G := G) edges := by
+  intro cut
+  rcases hseparate cut with ⟨separation⟩
+  exact BoundaryEdgeSetInducedCutOffCarrierWalkConsistent.of_ambientSideSeparation
+    (G := G) (edges := edges) separation
 
 /--
-With an induced selected carrier, off-carrier walk consistency and
-no-avoiding-walk side separation are equivalent foundation targets.
+Off-carrier walk consistency and no-avoiding-walk side separation are
+equivalent foundation targets for the canonical endpoint-support carrier.
 -/
 theorem boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_iff_ambientSideSeparations
-    {G : SimpleGraph V} {edges : Finset G.edgeSet}
-    (hInduced : BoundaryEdgeSetInducedSubgraph edges) :
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} :
     BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
         (G := G) edges ↔
       PeeledCollarCutAmbientSideSeparationsToAmbient
         (boundaryEdgeSetInducedGraphEmbedding (G := G) edges) :=
   ⟨peeledCollarCutAmbientSideSeparationsToAmbient_of_offCarrierWalkConsistencies,
-    boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_ambientSideSeparations
-      hInduced⟩
+    boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_ambientSideSeparations⟩
 
 /--
 Off-carrier walk consistency implies endpoint-range data for the canonical
@@ -440,32 +514,30 @@ theorem offCarrierWalkConsistencyTarget_of_localConstancies
 
 /--
 Canonical annulus-boundary side separation implies off-carrier walk
-consistency when the selected annulus boundary edge set is induced.
+consistency.
 -/
 theorem offCarrierWalkConsistencyTarget_of_ambientSideSeparations
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusBoundaryData emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
     (hseparate :
       PeeledCollarCutAmbientSideSeparationsToAmbient
         data.inducedBoundaryEmbedding) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
   boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_ambientSideSeparations
-    (G := G) (edges := data.ambientBoundaryEdgeSet) hInduced hseparate
+    (G := G) (edges := data.ambientBoundaryEdgeSet) hseparate
 
 /--
-With an induced selected boundary, annulus-boundary off-carrier walk
-consistency and no-avoiding-walk side separation are equivalent.
+Annulus-boundary off-carrier walk consistency and no-avoiding-walk side
+separation are equivalent.
 -/
 theorem offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
-    {data : PlanarBoundaryAnnulusBoundaryData emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet) :
+    {data : PlanarBoundaryAnnulusBoundaryData emb} :
     data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
       PeeledCollarCutAmbientSideSeparationsToAmbient
         data.inducedBoundaryEmbedding :=
   boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_iff_ambientSideSeparations
-    (G := G) (edges := data.ambientBoundaryEdgeSet) hInduced
+    (G := G) (edges := data.ambientBoundaryEdgeSet)
 
 /--
 Selected-boundary inducedness plus canonical annulus-boundary local constancy
@@ -571,32 +643,29 @@ theorem offCarrierWalkConsistencyTarget_of_localConstancies
 
 /--
 Canonical annulus-geometry side separation implies off-carrier walk
-consistency when the selected annulus boundary edge set is induced.
+consistency.
 -/
 theorem offCarrierWalkConsistencyTarget_of_ambientSideSeparations
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusCollarGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
     (hseparate :
       PeeledCollarCutAmbientSideSeparationsToAmbient
         data.inducedBoundaryEmbedding) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
   data.boundaryData.offCarrierWalkConsistencyTarget_of_ambientSideSeparations
-    hInduced hseparate
+    hseparate
 
 /--
-With an induced selected boundary, canonical annulus-geometry off-carrier walk
-consistency and no-avoiding-walk side separation are equivalent.
+Canonical annulus-geometry off-carrier walk consistency and no-avoiding-walk
+side separation are equivalent.
 -/
 theorem offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
-    {data : PlanarBoundaryAnnulusCollarGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet) :
+    {data : PlanarBoundaryAnnulusCollarGeometry emb} :
     data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
       PeeledCollarCutAmbientSideSeparationsToAmbient
         data.inducedBoundaryEmbedding :=
   data.boundaryData.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
-    hInduced
 
 /--
 The annulus-geometry off-carrier walk consistency target gives
@@ -673,34 +742,31 @@ theorem offCarrierWalkConsistencyTarget_of_localConstancies
     |>.offCarrierWalkConsistencyTarget_of_localConstancies hInduced hlocal
 
 /--
-Repaired annulus-geometry side separation implies off-carrier walk consistency
-when the selected annulus boundary edge set is induced.
+Repaired annulus-geometry side separation implies off-carrier walk consistency.
 -/
 theorem offCarrierWalkConsistencyTarget_of_ambientSideSeparations
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
     (hseparate :
       PeeledCollarCutAmbientSideSeparationsToAmbient
         data.inducedBoundaryEmbedding) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
   data.toPlanarBoundaryAnnulusCollarGeometry
     |>.offCarrierWalkConsistencyTarget_of_ambientSideSeparations
-      hInduced hseparate
+      hseparate
 
 /--
-With an induced selected boundary, repaired annulus-geometry off-carrier walk
-consistency and no-avoiding-walk side separation are equivalent.
+Repaired annulus-geometry off-carrier walk consistency and no-avoiding-walk
+side separation are equivalent.
 -/
 theorem offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
-    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
-    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet) :
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb} :
     data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
       PeeledCollarCutAmbientSideSeparationsToAmbient
         data.inducedBoundaryEmbedding :=
   data.toPlanarBoundaryAnnulusCollarGeometry
-    |>.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations hInduced
+    |>.offCarrierWalkConsistencyTarget_iff_ambientSideSeparations
 
 /--
 The repaired annulus-geometry off-carrier walk consistency target gives
