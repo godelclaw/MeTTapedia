@@ -383,6 +383,33 @@ theorem
     hindex
 
 /--
+The smaller planar-normal-form cut-lift target supplies the mapped-cut
+selected-source small-cut lift public index.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
+      hindex.2.2⟩
+
+/--
+The smaller planar-normal-form cut-lift target also supplies the mapped-cut
+foundation index consumed by face-route and carrier-endpoint interfaces.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
+  cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_closedWalkSmallCutLiftFoundationTargetIndex
+    (cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+      hindex)
+
+/--
 Route target reached once the planar-normal-form foundation target is proved.
 This is the reusable end-to-end CAP5-free/S4 index with cyclic
 five-edge-connectivity supplied by the regime route rather than assumed.
@@ -664,6 +691,44 @@ theorem
     cap5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex_routeIndexTargets
       hindex
   exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2⟩
+
+/--
+Expanded mapped-cut route target reached from the smaller planar-normal-form
+cut-lift foundation: both annulus separation routes, the closed-walk
+mapped-cut route, the closed-walk small-cut lift route, and the
+regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormMappedCutClosedWalkSmallCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The smaller planar-normal-form cut-lift target supplies the expanded
+mapped-cut selected-source small-cut route index as well.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormMappedCutClosedWalkSmallCutLiftRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormMappedCutClosedWalkSmallCutLiftRouteIndexTarget := by
+  have hmapped :
+      CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :=
+    cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_routeIndexTargets
+      hmapped
+  exact
+    ⟨hroutes.1,
+      hroutes.2.1,
+      hroutes.2.2.1,
+      hroutes.2.2.2,
+      section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+        hindex⟩
 
 /--
 Expanded off-carrier route target reached from the smaller planar-normal-form
