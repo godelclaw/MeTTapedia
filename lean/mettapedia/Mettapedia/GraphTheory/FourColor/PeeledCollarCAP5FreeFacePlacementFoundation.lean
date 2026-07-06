@@ -125,6 +125,67 @@ theorem cap5FreePeeledCollarFoundationTargetIndex_iff_facePlacementFoundationTar
     cap5FreePeeledCollarFoundationTargetIndex_of_facePlacementFoundationTargetIndex⟩
 
 /--
+The face-placement public index and the mapped-cut public index are
+equivalent presentations of the same CAP5-free foundation checklist.
+-/
+theorem cap5FreePeeledCollarFacePlacementFoundationTargetIndex_iff_mappedCutFoundationTargetIndex :
+    CAP5FreePeeledCollarFacePlacementFoundationTargetIndex ↔
+      CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
+  cap5FreePeeledCollarFoundationTargetIndex_iff_facePlacementFoundationTargetIndex.symm.trans
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_iff_foundationTargetIndex.symm
+
+/--
+The mapped-cut public index supplies the face-placement public index.
+-/
+theorem cap5FreePeeledCollarFacePlacementFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarMappedCutFoundationTargetIndex) :
+    CAP5FreePeeledCollarFacePlacementFoundationTargetIndex :=
+  cap5FreePeeledCollarFacePlacementFoundationTargetIndex_of_foundationTargetIndex
+    (cap5FreePeeledCollarFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+      hindex)
+
+/--
+The face-placement public index supplies the mapped-cut public index.
+-/
+theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_facePlacementFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarFacePlacementFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
+  cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_foundationTargetIndex
+    (cap5FreePeeledCollarFoundationTargetIndex_of_facePlacementFoundationTargetIndex
+      hindex)
+
+/--
+The compact selected-source regime route index and the face-placement public
+index are equivalent foundation interfaces.
+-/
+theorem cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_iff_facePlacementFoundationTargetIndex :
+    CAP5FreePeeledCollarRegimeRouteFoundationTargetIndex ↔
+      CAP5FreePeeledCollarFacePlacementFoundationTargetIndex :=
+  cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_iff_mappedCutFoundationTargetIndex.trans
+    cap5FreePeeledCollarFacePlacementFoundationTargetIndex_iff_mappedCutFoundationTargetIndex.symm
+
+/--
+The compact selected-source regime route index supplies the face-placement
+public index.
+-/
+theorem cap5FreePeeledCollarFacePlacementFoundationTargetIndex_of_regimeRouteFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarRegimeRouteFoundationTargetIndex) :
+    CAP5FreePeeledCollarFacePlacementFoundationTargetIndex :=
+  cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_iff_facePlacementFoundationTargetIndex.1
+    hindex
+
+/--
+The face-placement public index supplies the compact selected-source regime
+route index.
+-/
+theorem
+    cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_facePlacementFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarFacePlacementFoundationTargetIndex) :
+    CAP5FreePeeledCollarRegimeRouteFoundationTargetIndex :=
+  cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_iff_facePlacementFoundationTargetIndex.2
+    hindex
+
+/--
 The face-placement public index supplies the off-boundary public index.
 -/
 theorem
@@ -135,18 +196,6 @@ theorem
     hindex.2.1,
     cap5FreeClosedWalkOffBoundaryNoCrossingFoundationTarget_of_facePlacementFoundationTarget
       hindex.2.2⟩
-
-/--
-The face-placement public index supplies the selected-source small-cut route
-foundation index.
--/
-theorem
-    cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_facePlacementFoundationTargetIndex
-    (hindex : CAP5FreePeeledCollarFacePlacementFoundationTargetIndex) :
-    CAP5FreePeeledCollarRegimeRouteFoundationTargetIndex :=
-  cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_foundationTargetIndex
-    (cap5FreePeeledCollarFoundationTargetIndex_of_facePlacementFoundationTargetIndex
-      hindex)
 
 /--
 Closed-walk CAP5-free face-placement route target: the face-placement
