@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.PeeledCollarCAP5FreeFacePlacementFoundation
 import Mettapedia.GraphTheory.FourColor.PeeledCollarCAP5FreeCarrierEndpointFoundation
+import Mettapedia.GraphTheory.FourColor.PeeledCollarCAP5FreeMappedCutCarrierEndpointRoute
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -66,6 +67,19 @@ theorem cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_planarNormalFormFo
     CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
   cap5FreePeeledCollarPlanarNormalFormFoundationTargetIndex_iff_mappedCutFoundationTargetIndex.1
     hindex
+
+/--
+The planar-normal-form target supplies the off-carrier mapped-cut-deleted
+shared-endpoint public index through the mapped-cut face-route foundation
+interface.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarPlanarNormalFormFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationTargetIndex :=
+  cap5FreePeeledCollarClosedWalkOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+    (cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+      hindex)
 
 /-- The mapped-cut public index supplies the planar-normal-form target. -/
 theorem cap5FreePeeledCollarPlanarNormalFormFoundationTargetIndex_of_mappedCutFoundationTargetIndex
@@ -372,6 +386,45 @@ theorem section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFo
   section92Step4CAP5FreeRegimeRouteIndexTarget_of_regimeRouteFoundationTargetIndex
     (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
       hindex)
+
+/--
+Expanded route target reached from the full planar-normal-form foundation:
+both annulus separation routes, the mapped-cut face-route route, the
+off-carrier mapped-cut-deleted shared-endpoint route, the off-carrier route,
+and the regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormMappedCutFaceRouteConnectivityRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The full planar-normal-form foundation target supplies the expanded mapped-cut
+face-route/off-carrier mapped-cut connectivity route index.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormMappedCutFaceRouteConnectivityRouteIndexTarget_of_planarNormalFormFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarPlanarNormalFormFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormMappedCutFaceRouteConnectivityRouteIndexTarget := by
+  have hmapped :
+      CAP5FreePeeledCollarMappedCutFoundationTargetIndex :=
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_mappedCutConnectivityCarrierEndpointRouteIndexTargets
+      hmapped
+  exact
+    ⟨hroutes.1,
+      hroutes.2.1,
+      hroutes.2.2.1,
+      hroutes.2.2.2.1,
+      hroutes.2.2.2.2.1,
+      section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormFoundationTargetIndex
+        hindex⟩
 
 /--
 The smaller planar-normal-form cut-lift target also supplies the full
