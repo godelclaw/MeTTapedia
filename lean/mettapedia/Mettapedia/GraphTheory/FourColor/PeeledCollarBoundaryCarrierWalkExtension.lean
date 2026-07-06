@@ -1190,6 +1190,55 @@ theorem
 namespace PlanarBoundaryAnnulusBoundaryData
 
 /--
+Face-side noncrossing target: selected boundary edges on one ambient face do
+not cross a supplied filled-side predicate.
+
+This is the face-local planar-normal-form input needed to turn annulus
+geometry into mapped-cut-deleted boundary routes.
+-/
+def FaceSelectedBoundaryEdgesDoNotCrossSide
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (_data : PlanarBoundaryAnnulusBoundaryData emb)
+    (side : V → Prop) (f : AmbientFace emb.faces) : Prop :=
+  ∀ g : PlanarBoundaryEdgeVertex emb,
+    g.1 ∈ emb.faceBoundary f.1 →
+      ¬ EdgeCrossesVertexSide G side g.1
+
+/--
+If the ambient side agrees with the carrier cut side, face-local noncrossing
+of selected boundary edges gives the mapped-cut avoidance premise on that
+face.
+-/
+theorem mappedCutAvoidanceOnFace_of_faceSelectedBoundaryEdgesDoNotCrossSide
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    {cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)}
+    {side : V → Prop}
+    (hside :
+      ∀ w : BoundaryEdgeSetEndpointVertex
+          (G := G) data.ambientBoundaryEdgeSet,
+        side (data.inducedBoundaryEmbedding w) ↔ cut.side w)
+    {f : AmbientFace emb.faces}
+    (hnoncross :
+      data.FaceSelectedBoundaryEdgesDoNotCrossSide side f) :
+    ∀ g : PlanarBoundaryEdgeVertex emb,
+      g.1 ∈ emb.faceBoundary f.1 →
+        (data.toBoundaryEdgeSetEdgeVertex g).1 ∉
+          cut.edgeCut.map
+            (boundaryEdgeSetInducedGraphEmbedding
+              (G := G) data.ambientBoundaryEdgeSet).mapEdgeSet := by
+  intro g hg hmem
+  have hcross :
+      EdgeCrossesVertexSide G side
+        (data.toBoundaryEdgeSetEdgeVertex g).1 :=
+    SmallCyclicEdgeCut.mappedCut_crosses_of_side_comp_embedding
+      data.inducedBoundaryEmbedding hside
+      (data.toBoundaryEdgeSetEdgeVertex g).1 hmem
+  exact hnoncross g hg (by simpa using hcross)
+
+/--
 A selected-boundary support walk whose visited edges avoid the mapped carrier
 cut becomes reachability in the shared-endpoint graph after deleting that cut.
 -/
@@ -1298,6 +1347,46 @@ theorem
     data.exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_planarBoundarySupportEndpointAdjGraph_walk
       p
       (fun g hg => hfaceAvoid g (hpFace g hg))
+
+/--
+Face-local selected-boundary walks give cut-deleted shared-endpoint
+reachability from a side-compatible carrier cut and a face-local noncrossing
+target.
+-/
+theorem
+    exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_boundaryComponentWalkOnFace_of_faceSelectedBoundaryEdgesDoNotCrossSide
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    {cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)}
+    {side : V → Prop}
+    (hside :
+      ∀ w : BoundaryEdgeSetEndpointVertex
+          (G := G) data.ambientBoundaryEdgeSet,
+        side (data.inducedBoundaryEmbedding w) ↔ cut.side w)
+    {f : AmbientFace emb.faces}
+    (hwalk : BoundaryComponentWalkOnFace (emb := emb) f)
+    (hnoncross :
+      data.FaceSelectedBoundaryEdgesDoNotCrossSide side f)
+    {e₁ e₂ : G.edgeSet}
+    (he₁Face : e₁ ∈ emb.faceBoundary f.1)
+    (he₂Face : e₂ ∈ emb.faceBoundary f.1)
+    (he₁ : e₁ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+    (he₂ : e₂ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) :
+    ∃ ea eb :
+        BoundaryEdgeSetMappedCutAvoidingEdgeVertex
+          (G := G) data.ambientBoundaryEdgeSet cut,
+      ea.1 = data.toBoundaryEdgeSetEdgeVertex ⟨e₁, he₁⟩ ∧
+        eb.1 = data.toBoundaryEdgeSetEdgeVertex ⟨e₂, he₂⟩ ∧
+          (BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+            (G := G) data.ambientBoundaryEdgeSet cut).Reachable ea eb := by
+  exact
+    data.exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_boundaryComponentWalkOnFace
+      hwalk
+      (data.mappedCutAvoidanceOnFace_of_faceSelectedBoundaryEdgesDoNotCrossSide
+        hside hnoncross)
+      he₁Face he₂Face he₁ he₂
 
 /--
 Annulus-boundary off-carrier walk consistency target for the canonical induced
