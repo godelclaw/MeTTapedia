@@ -774,6 +774,33 @@ structure MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 namespace MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
+/--
+Build canonical annulus route inputs from induced outer/inner boundary
+components plus cross-component chord-freeness.
+-/
+def of_inducedBoundaryComponents_of_crossComponentChordFree
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hlocal :
+      PlanarBoundaryAnnulusPeeledCollarLocalConstancyTarget
+        data data.inducedBoundaryEmbedding) :
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data where
+  regime := regime
+  selectedBoundaryInduced :=
+    data.boundaryData
+      |>.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
+        hOuter hInner hCross
+  annulusExtractionLocalConstancy := hlocal
+
 /-- Canonical annulus route inputs supply the off-carrier walk-consistency
 route input record. -/
 def toOffCarrierWalkConsistentRouteInputs
@@ -825,6 +852,32 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
+/--
+Component-induced canonical-annulus S4 winding salvage: selected-boundary
+inducedness is supplied by induced outer/inner boundary components and
+cross-component chord-freeness.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hlocal :
+      PlanarBoundaryAnnulusPeeledCollarLocalConstancyTarget
+        data data.inducedBoundaryEmbedding) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  (of_inducedBoundaryComponents_of_crossComponentChordFree
+    regime hOuter hInner hCross hlocal)
+      |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
@@ -846,6 +899,33 @@ structure MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
       data data.inducedBoundaryEmbedding
 
 namespace MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
+
+/--
+Build repaired annulus route inputs from induced outer/inner boundary
+components plus cross-component chord-freeness.
+-/
+def of_inducedBoundaryComponents_of_crossComponentChordFree
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hlocal :
+      PlanarBoundaryPreviousBoundaryPeeledCollarLocalConstancyTarget
+        data data.inducedBoundaryEmbedding) :
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data where
+  regime := regime
+  selectedBoundaryInduced :=
+    data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData
+      |>.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
+        hOuter hInner hCross
+  previousBoundaryAnnulusExtractionLocalConstancy := hlocal
 
 /-- Repaired annulus route inputs supply the off-carrier walk-consistency route
 input record. -/
@@ -897,6 +977,32 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
       data.inducedBoundaryGraph :=
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+Component-induced repaired-annulus S4 winding salvage: selected-boundary
+inducedness is supplied by induced outer/inner boundary components and
+cross-component chord-freeness.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hlocal :
+      PlanarBoundaryPreviousBoundaryPeeledCollarLocalConstancyTarget
+        data data.inducedBoundaryEmbedding) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  (of_inducedBoundaryComponents_of_crossComponentChordFree
+    regime hOuter hInner hCross hlocal)
+      |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
 
