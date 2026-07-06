@@ -76,6 +76,28 @@ theorem cap5FreePeeledCollarSmallCutLiftFoundationTarget_of_realizedCandidateLif
     peeledCollarSmallCyclicCutLiftsToAmbient_of_realizedCandidateLift
       (hfoundation regime)
 
+/--
+Small-cut lift foundations also supply candidate-lift foundations.
+-/
+theorem cap5FreePeeledCollarRealizedCandidateLiftFoundationTarget_of_smallCutLift
+    (hfoundation :
+      CAP5FreePeeledCollarSmallCutLiftFoundationTarget) :
+    CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget := by
+  intro V W _ _ G H regime
+  exact
+    peeledCollarRealizedCandidateLiftsToAmbientSmallCut_of_smallCutLift
+      (hfoundation regime)
+
+/--
+The graph-facing small-cut lift and realized-candidate lift CAP5-free
+foundation targets are equivalent.
+-/
+theorem cap5FreePeeledCollarRealizedCandidateLiftFoundationTarget_iff_smallCutLift :
+    CAP5FreePeeledCollarRealizedCandidateLiftFoundationTarget ↔
+      CAP5FreePeeledCollarSmallCutLiftFoundationTarget :=
+  ⟨cap5FreePeeledCollarSmallCutLiftFoundationTarget_of_realizedCandidateLift,
+    cap5FreePeeledCollarRealizedCandidateLiftFoundationTarget_of_smallCutLift⟩
+
 namespace MinimalCounterexamplePeeledCollarRegime
 
 /--
