@@ -731,6 +731,77 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
 
 /--
+Cut-avoiding shared-endpoint boundary-route index of the regime route inputs:
+the remaining planar-normal-form obligation is that attachments of one
+off-carrier component can be joined by a shared-endpoint selected-boundary
+route avoiding the mapped carrier cut.
+-/
+structure MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+    (G : SimpleGraph V) (edges : Finset G.edgeSet) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) edges)
+      (BoundaryEdgeSetInducedGraph (G := G) edges)
+  offCarrierCutAvoidingSharedEndpointReachabilities :
+    BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachabilitiesToAmbient
+      (G := G) edges
+
+namespace MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+
+/-- Cut-avoiding shared-endpoint route inputs supply the
+attachment-carrier-connectivity route input record. -/
+def toAttachmentCarrierConnectedRouteInputs
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+        G edges) :
+    MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+      G edges where
+  regime := inputs.regime
+  offCarrierAttachmentCarrierConnectivities :=
+    boundaryEdgeSetInducedCutOffCarrierComponentAttachmentCarrierConnectivitiesToAmbient_of_cutAvoidingSharedEndpointReachabilities
+      inputs.offCarrierCutAvoidingSharedEndpointReachabilities
+
+/-- Cut-avoiding shared-endpoint route inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+        G edges) :
+    CyclicallyFiveEdgeConnected
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toAttachmentCarrierConnectedRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- Cut-avoiding shared-endpoint route inputs supply the no-cyclic-two-cut
+fact consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+        G edges) :
+    ClosedCollarForbidsCyclicTwoCut
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toAttachmentCarrierConnectedRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Cut-avoiding shared-endpoint S4 winding salvage: cyclic five-edge-connectivity
+is obtained from the minimal-counterexample normal form plus cut-avoiding
+shared-endpoint boundary routes for off-carrier attachments.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+        G edges) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toAttachmentCarrierConnectedRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+
+/--
 Off-boundary index of the regime route inputs: the remaining planar
 normal-form obligation is stated locally, as no ambient side-crossing edge
 being incident to a vertex outside the mapped collar-cut endpoint support.
@@ -1199,6 +1270,27 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarri
     (planarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
       h)
 
+/--
+Canonical-annulus S4 winding salvage from the cut-avoiding shared-endpoint
+boundary-route target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
+    regime
+    (planarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+      h)
+
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
@@ -1556,6 +1648,27 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarri
     (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
       h)
 
+/--
+Repaired-annulus S4 winding salvage from the cut-avoiding shared-endpoint
+boundary-route target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
+    regime
+    (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+      h)
+
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
 
 /--
@@ -1838,6 +1951,27 @@ theorem
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 /--
+End-to-end S4 salvage target using the off-carrier cut-avoiding
+shared-endpoint boundary-route interface.
+-/
+def
+    Section92Step4OffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {edges : Finset G.edgeSet},
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+        G edges →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          (BoundaryEdgeSetInducedGraph (G := G) edges)
+
+/-- Verbatim end-to-end cut-avoiding shared-endpoint S4 salvage statement. -/
+theorem
+    section92Step4OffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget :
+    Section92Step4OffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget := by
+  intro V _ G edges inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
 End-to-end S4 salvage target using the off-boundary route interface.
 -/
 def Section92Step4OffBoundaryRegimeDischargedS4SalvageTarget : Prop :=
@@ -2036,6 +2170,34 @@ theorem
       regime h
 
 /--
+End-to-end S4 salvage target using the canonical annulus route with the
+annulus obligation stated as cut-avoiding shared-endpoint boundary reachability.
+-/
+def
+    Section92Step4CanonicalAnnulusOffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end canonical-annulus cut-avoiding shared-endpoint S4 salvage statement. -/
+theorem
+    section92Step4CanonicalAnnulusOffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget :
+    Section92Step4CanonicalAnnulusOffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingSharedEndpointReachabilityTarget
+      regime h
+
+/--
 End-to-end S4 salvage target using the repaired annulus route interface.
 -/
 def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
@@ -2187,6 +2349,34 @@ theorem
   intro V _ G emb data regime h
   exact
     MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
+      regime h
+
+/--
+End-to-end S4 salvage target using the repaired annulus route with the
+annulus obligation stated as cut-avoiding shared-endpoint boundary reachability.
+-/
+def
+    Section92Step4RepairedAnnulusOffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end repaired-annulus cut-avoiding shared-endpoint S4 salvage statement. -/
+theorem
+    section92Step4RepairedAnnulusOffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget :
+    Section92Step4RepairedAnnulusOffCarrierCutAvoidingSharedEndpointRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingSharedEndpointReachabilityTarget
       regime h
 
 end Mettapedia.GraphTheory.FourColor
