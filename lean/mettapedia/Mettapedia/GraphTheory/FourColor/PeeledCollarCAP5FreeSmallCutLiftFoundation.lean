@@ -340,6 +340,29 @@ theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
       inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
 
 /--
+A closed-walk source small-cut lift foundation supplies the checker-facing
+realized-candidate route-input record for the selected induced peeled collar.
+-/
+def realizedCandidateRouteInputs_of_cap5FreeSmallCutLiftFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph where
+  regime := regime
+  realizedCandidateLift :=
+    peeledCollarRealizedCandidateLiftsToAmbientSmallCut_of_smallCutLift
+      (hfoundation source regime)
+
+/--
 The existing closed-walk face-source foundation supplies the selected-source
 small-cut lift foundation.
 -/
@@ -541,6 +564,66 @@ theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget
       hfoundation regime
 
 /--
+Closed-walk source route-input index for a small-cut lift foundation.  This is
+the selected-collar form of the checker-facing route-input record.
+-/
+def Section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph),
+      ∃ inputs :
+          MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G
+            source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph,
+        inputs.regime = regime ∧
+          PeeledCollarSmallCyclicCutLiftsToAmbient G
+            source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+          (∀ candidate :
+              CyclicSeparatorCandidate
+                source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph,
+              ¬ candidate.Realizes) ∧
+          CyclicallyFiveEdgeConnected
+            source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+          ClosedCollarForbidsCyclicTwoCut
+            source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+            source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Route-index theorem for the closed-walk checker-facing route-input target.
+-/
+theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget := by
+  intro V _ G emb source regime
+  have hlift :
+      PeeledCollarSmallCyclicCutLiftsToAmbient G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+    hfoundation source regime
+  let inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+    { regime := regime
+      realizedCandidateLift :=
+        peeledCollarRealizedCandidateLiftsToAmbientSmallCut_of_smallCutLift
+          hlift }
+  exact
+    ⟨inputs,
+      rfl,
+      hlift,
+      fun candidate => inputs.not_realizes candidate,
+      inputs.cyclicallyFiveEdgeConnected,
+      inputs.closedCollarForbidsCyclicTwoCut,
+      inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
+
+/--
 The closed-walk face-source foundation supplies the corresponding small-cut
 lift route index.
 -/
@@ -549,6 +632,18 @@ theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget_o
       CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
     Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget :=
   section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget
+    (PlanarBoundaryClosedWalkAnnulusBoundarySource.cap5FreeSmallCutLiftFoundationTarget_of_faceSourceFoundationTarget
+      hfoundation)
+
+/--
+The closed-walk face-source foundation also supplies the checker-facing
+route-input route index for the selected induced collar.
+-/
+theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget_of_faceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget :=
+  section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget
     (PlanarBoundaryClosedWalkAnnulusBoundarySource.cap5FreeSmallCutLiftFoundationTarget_of_faceSourceFoundationTarget
       hfoundation)
 
