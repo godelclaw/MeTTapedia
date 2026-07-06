@@ -93,6 +93,66 @@ def of_facePlacementNoncrossingTarget
   mappedCutAvoidingFaceRoute :=
     source.mappedCutAvoidingFaceRouteTarget_of_facePlacementNoncrossingTarget h
 
+/--
+Build the route index from chosen source-side attachment-face data.  This is
+the source-data form most directly exposed by the planar normal-form route.
+-/
+def of_attachmentFaceSourceDataTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    ClosedWalkMappedCutAvoidingFaceRouteInputs source where
+  regime := regime
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_attachmentFaceSourceDataTarget h
+
+/-- Build the route index from the noncrossing face-source target. -/
+def of_noncrossingFaceSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    ClosedWalkMappedCutAvoidingFaceRouteInputs source where
+  regime := regime
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_noncrossingFaceSourceTarget h
+
+/--
+Build the route index from the selected-boundary-arc source target after
+forgetting the explicit selected-arc witness.
+-/
+def of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
+    (h :
+      source.toPlanarBoundaryAnnulusBoundaryData
+        |>.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    ClosedWalkMappedCutAvoidingFaceRouteInputs source where
+  regime := regime
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget h
+
 end ClosedWalkMappedCutAvoidingFaceRouteInputs
 
 /--
@@ -193,6 +253,69 @@ def of_facePlacementNoncrossingTarget
   boundaryData_eq_source := hboundary
   mappedCutAvoidingFaceRoute :=
     source.mappedCutAvoidingFaceRouteTarget_of_facePlacementNoncrossingTarget h
+
+/-- Build canonical route inputs from chosen source-side attachment-face data. -/
+def of_attachmentFaceSourceDataTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (h :
+      PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    CanonicalAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data where
+  regime := regime
+  source := source
+  boundaryData_eq_source := hboundary
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_attachmentFaceSourceDataTarget h
+
+/-- Build canonical route inputs from the noncrossing face-source target. -/
+def of_noncrossingFaceSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (h :
+      PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    CanonicalAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data where
+  regime := regime
+  source := source
+  boundaryData_eq_source := hboundary
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_noncrossingFaceSourceTarget h
+
+/-- Build canonical route inputs from the selected-boundary-arc source target. -/
+def of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (h :
+      source.toPlanarBoundaryAnnulusBoundaryData
+        |>.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    CanonicalAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data where
+  regime := regime
+  source := source
+  boundaryData_eq_source := hboundary
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget h
 
 end CanonicalAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs
 
@@ -296,6 +419,72 @@ def of_facePlacementNoncrossingTarget
   boundaryData_eq_source := hboundary
   mappedCutAvoidingFaceRoute :=
     source.mappedCutAvoidingFaceRouteTarget_of_facePlacementNoncrossingTarget h
+
+/-- Build repaired route inputs from chosen source-side attachment-face data. -/
+def of_attachmentFaceSourceDataTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (h :
+      PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    RepairedAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data where
+  regime := regime
+  source := source
+  boundaryData_eq_source := hboundary
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_attachmentFaceSourceDataTarget h
+
+/-- Build repaired route inputs from the noncrossing face-source target. -/
+def of_noncrossingFaceSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (h :
+      PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    RepairedAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data where
+  regime := regime
+  source := source
+  boundaryData_eq_source := hboundary
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_noncrossingFaceSourceTarget h
+
+/-- Build repaired route inputs from the selected-boundary-arc source target. -/
+def of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (h :
+      source.toPlanarBoundaryAnnulusBoundaryData
+        |>.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    RepairedAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data where
+  regime := regime
+  source := source
+  boundaryData_eq_source := hboundary
+  mappedCutAvoidingFaceRoute :=
+    source.mappedCutAvoidingFaceRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget h
 
 end RepairedAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs
 
