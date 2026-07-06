@@ -236,6 +236,33 @@ theorem
       hlift)
 
 /--
+Mapped-cut avoiding face routes supply the selected-source small-cut lift
+foundation.
+-/
+theorem
+    cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_mappedCutAvoidingFaceRouteFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarMappedCutAvoidingFaceRouteFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget := by
+  intro V _ G emb source regime
+  let inputs : ClosedWalkMappedCutAvoidingFaceRouteInputs source := {
+    regime := regime
+    mappedCutAvoidingFaceRoute := hfoundation source regime
+  }
+  exact inputs.peeledCollarSmallCyclicCutLiftsToAmbient
+
+/--
+At the selected closed-walk source level, mapped-cut avoiding face routes and
+small-cut lifting are equivalent foundation targets.
+-/
+theorem
+    cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_iff_closedWalkSmallCutLift :
+    CAP5FreeClosedWalkPeeledCollarMappedCutAvoidingFaceRouteFoundationTarget ↔
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+  ⟨cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_mappedCutAvoidingFaceRouteFoundationTarget,
+    cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_closedWalkSmallCutLift⟩
+
+/--
 Public foundation index for the obstruction-to-realized-candidate route.  The
 first two fields are the existing annulus separation targets; the last two
 fields are the closed-walk obstruction-to-candidate target and the graph-facing
@@ -375,6 +402,31 @@ theorem
     hindex.2.1,
     cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_closedWalkSmallCutLift
       hindex.2.2⟩
+
+/--
+The mapped-cut foundation index supplies the selected-source small-cut lift
+index.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_mappedCutFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarMappedCutFoundationTargetIndex) :
+    CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_mappedCutAvoidingFaceRouteFoundationTarget
+      hindex.2.2⟩
+
+/--
+The mapped-cut public foundation index and the selected-source small-cut lift
+public index are equivalent.
+-/
+theorem
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_iff_closedWalkSmallCutLiftFoundationTargetIndex :
+    CAP5FreePeeledCollarMappedCutFoundationTargetIndex ↔
+      CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex_of_mappedCutFoundationTargetIndex,
+    cap5FreePeeledCollarMappedCutFoundationTargetIndex_of_closedWalkSmallCutLiftFoundationTargetIndex⟩
 
 /--
 Closed-walk route-index theorem for the obstruction-to-realized-candidate
