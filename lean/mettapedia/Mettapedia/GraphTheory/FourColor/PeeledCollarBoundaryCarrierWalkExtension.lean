@@ -1190,6 +1190,116 @@ theorem
 namespace PlanarBoundaryAnnulusBoundaryData
 
 /--
+A selected-boundary support walk whose visited edges avoid the mapped carrier
+cut becomes reachability in the shared-endpoint graph after deleting that cut.
+-/
+theorem
+    exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_planarBoundarySupportEndpointAdjGraph_walk
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    {cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)}
+    {e f : PlanarBoundaryEdgeVertex emb}
+    (p : (planarBoundarySupportEndpointAdjGraph emb).Walk e f)
+    (hAvoid :
+      ∀ g : PlanarBoundaryEdgeVertex emb,
+        g ∈ p.support →
+          (data.toBoundaryEdgeSetEdgeVertex g).1 ∉
+            cut.edgeCut.map
+              (boundaryEdgeSetInducedGraphEmbedding
+                (G := G) data.ambientBoundaryEdgeSet).mapEdgeSet) :
+    ∃ ea eb :
+        BoundaryEdgeSetMappedCutAvoidingEdgeVertex
+          (G := G) data.ambientBoundaryEdgeSet cut,
+      ea.1 = data.toBoundaryEdgeSetEdgeVertex e ∧
+        eb.1 = data.toBoundaryEdgeSetEdgeVertex f ∧
+          (BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+            (G := G) data.ambientBoundaryEdgeSet cut).Reachable ea eb := by
+  induction p with
+  | @nil g =>
+      let g' :
+          BoundaryEdgeSetMappedCutAvoidingEdgeVertex
+            (G := G) data.ambientBoundaryEdgeSet cut :=
+        ⟨data.toBoundaryEdgeSetEdgeVertex g, hAvoid g (by simp)⟩
+      exact ⟨g', g', rfl, rfl, SimpleGraph.Reachable.refl g'⟩
+  | @cons e₀ e₁ e₂ hadj p ih =>
+      have he₀Avoid :
+          (data.toBoundaryEdgeSetEdgeVertex e₀).1 ∉
+            cut.edgeCut.map
+              (boundaryEdgeSetInducedGraphEmbedding
+                (G := G) data.ambientBoundaryEdgeSet).mapEdgeSet :=
+        hAvoid e₀ (by simp [SimpleGraph.Walk.support_cons])
+      have htailAvoid :
+          ∀ g : PlanarBoundaryEdgeVertex emb,
+            g ∈ p.support →
+              (data.toBoundaryEdgeSetEdgeVertex g).1 ∉
+                cut.edgeCut.map
+                  (boundaryEdgeSetInducedGraphEmbedding
+                    (G := G) data.ambientBoundaryEdgeSet).mapEdgeSet := by
+        intro g hg
+        exact hAvoid g (by simp [SimpleGraph.Walk.support_cons, hg])
+      rcases ih htailAvoid with ⟨e₁', e₂', he₁', he₂', htailReach⟩
+      let e₀' :
+          BoundaryEdgeSetMappedCutAvoidingEdgeVertex
+            (G := G) data.ambientBoundaryEdgeSet cut :=
+        ⟨data.toBoundaryEdgeSetEdgeVertex e₀, he₀Avoid⟩
+      have hAdj :
+          (BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+            (G := G) data.ambientBoundaryEdgeSet cut).Adj e₀' e₁' := by
+        change
+          (BoundaryEdgeSetSharedEndpointGraph
+            (G := G) data.ambientBoundaryEdgeSet).Adj
+            (data.toBoundaryEdgeSetEdgeVertex e₀) e₁'.1
+        rw [he₁']
+        exact
+          data.boundaryEdgeSetSharedEndpointGraph_adj_of_planarBoundarySupportEndpointAdjGraph_adj
+            hadj
+      rcases htailReach with ⟨q⟩
+      exact
+        ⟨e₀', e₂', rfl, he₂',
+          ⟨SimpleGraph.Walk.cons hAdj q⟩⟩
+
+/--
+Face-local selected-boundary walks give cut-deleted shared-endpoint
+reachability when every selected boundary edge on that face avoids the mapped
+carrier cut.
+-/
+theorem
+    exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_boundaryComponentWalkOnFace
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    {cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)}
+    {f : AmbientFace emb.faces}
+    (hwalk : BoundaryComponentWalkOnFace (emb := emb) f)
+    (hfaceAvoid :
+      ∀ g : PlanarBoundaryEdgeVertex emb,
+        g.1 ∈ emb.faceBoundary f.1 →
+          (data.toBoundaryEdgeSetEdgeVertex g).1 ∉
+            cut.edgeCut.map
+              (boundaryEdgeSetInducedGraphEmbedding
+                (G := G) data.ambientBoundaryEdgeSet).mapEdgeSet)
+    {e₁ e₂ : G.edgeSet}
+    (he₁Face : e₁ ∈ emb.faceBoundary f.1)
+    (he₂Face : e₂ ∈ emb.faceBoundary f.1)
+    (he₁ : e₁ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+    (he₂ : e₂ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) :
+    ∃ ea eb :
+        BoundaryEdgeSetMappedCutAvoidingEdgeVertex
+          (G := G) data.ambientBoundaryEdgeSet cut,
+      ea.1 = data.toBoundaryEdgeSetEdgeVertex ⟨e₁, he₁⟩ ∧
+        eb.1 = data.toBoundaryEdgeSetEdgeVertex ⟨e₂, he₂⟩ ∧
+          (BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+            (G := G) data.ambientBoundaryEdgeSet cut).Reachable ea eb := by
+  rcases hwalk he₁Face he₂Face he₁ he₂ with ⟨p, hpFace⟩
+  exact
+    data.exists_mappedCutAvoidingSharedEndpointGraph_reachable_of_planarBoundarySupportEndpointAdjGraph_walk
+      p
+      (fun g hg => hfaceAvoid g (hpFace g hg))
+
+/--
 Annulus-boundary off-carrier walk consistency target for the canonical induced
 boundary graph selected by the ambient annulus boundary split.
 -/
