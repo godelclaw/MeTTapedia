@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.PeeledCollarAnnulusExtraction
 import Mettapedia.GraphTheory.FourColor.PeeledCollarBoundarySupportExtraction
 import Mettapedia.GraphTheory.FourColor.PeeledCollarBoundaryCarrierEndpointRange
+import Mettapedia.GraphTheory.FourColor.PeeledCollarBoundaryCarrierWalkExtension
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -515,6 +516,77 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
 
 /--
+Off-carrier walk-consistency index of the regime route inputs: the peeled
+collar carrier is the canonical graph induced by a finite ambient edge set,
+and the remaining planar-normal-form obligation is that any off-carrier walk
+between carrier vertices preserves each small cyclic carrier-cut side.
+-/
+structure MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+    (G : SimpleGraph V) (edges : Finset G.edgeSet) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) edges)
+      (BoundaryEdgeSetInducedGraph (G := G) edges)
+  offCarrierWalkConsistencies :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient (G := G) edges
+
+namespace MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+
+/-- Off-carrier walk-consistency route inputs supply the boundary-carrier
+endpoint-support route input record. -/
+def toBoundaryCarrierEndpointSupportRouteInputs
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+        G edges) :
+    MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
+      G edges where
+  regime := inputs.regime
+  ambientSideCarrierEndpointSupports :=
+    boundaryCarrierEndpointSupports_of_offCarrierWalkConsistencies
+      inputs.offCarrierWalkConsistencies
+
+/-- The off-carrier walk-consistency route inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+        G edges) :
+    CyclicallyFiveEdgeConnected
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toBoundaryCarrierEndpointSupportRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The off-carrier walk-consistency route inputs supply the no-cyclic-two-cut
+fact consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+        G edges) :
+    ClosedCollarForbidsCyclicTwoCut
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toBoundaryCarrierEndpointSupportRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Off-carrier walk-consistency S4 winding salvage: cyclic five-edge-connectivity
+is obtained from the minimal-counterexample normal form plus the planar-facing
+fact that off-carrier walks cannot join opposite sides of a small cyclic
+carrier cut.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+        G edges) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toBoundaryCarrierEndpointSupportRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+
+/--
 Off-boundary index of the regime route inputs: the remaining planar
 normal-form obligation is stated locally, as no ambient side-crossing edge
 being incident to a vertex outside the mapped collar-cut endpoint support.
@@ -825,6 +897,25 @@ def Section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget 
 /-- Verbatim end-to-end boundary-carrier endpoint-support S4 salvage statement. -/
 theorem section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget :
     Section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget := by
+  intro V _ G edges inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the off-carrier walk-consistency route
+interface.
+-/
+def Section92Step4OffCarrierWalkConsistentRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {edges : Finset G.edgeSet},
+      MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
+        G edges →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          (BoundaryEdgeSetInducedGraph (G := G) edges)
+
+/-- Verbatim end-to-end off-carrier walk-consistency S4 salvage statement. -/
+theorem section92Step4OffCarrierWalkConsistentRegimeDischargedS4SalvageTarget :
+    Section92Step4OffCarrierWalkConsistentRegimeDischargedS4SalvageTarget := by
   intro V _ G edges inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
