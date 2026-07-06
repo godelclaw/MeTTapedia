@@ -99,6 +99,25 @@ def toCutSideExtension
 
 end PeeledCollarCutAmbientSideBoundarySupport
 
+namespace PeeledCollarCutAmbientSideBarrier
+
+/-- Edge-barrier data give mapped-cut endpoint-support data. -/
+def toAmbientSideBoundarySupport
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    {cut : SmallCyclicEdgeCut H}
+    (barrier : PeeledCollarCutAmbientSideBarrier φ cut) :
+    PeeledCollarCutAmbientSideBoundarySupport φ cut where
+  side := barrier.side
+  side_comp_embedding := barrier.side_comp_embedding
+  crossingEdge_endpointSupport := by
+    intro e hcross v hv
+    exact
+      (mem_boundaryEdgeSetEndpointSupport_iff
+        (cut.edgeCut.map φ.mapEdgeSet)).2
+        ⟨e, barrier.crossingEdge_mem_mappedCut e hcross, hv⟩
+
+end PeeledCollarCutAmbientSideBarrier
+
 /--
 Boundary-support foundation target: every small cyclic cut in the peeled collar
 has an ambient side such that every endpoint of every ambient side-crossing edge
@@ -135,6 +154,66 @@ theorem peeledCollarCutAmbientSideBarriersToAmbient_of_ambientSideBoundarySuppor
   peeledCollarCutAmbientSideBarriersToAmbient_of_ambientSideEndpointRanges
     (peeledCollarCutAmbientSideEndpointRangesToAmbient_of_ambientSideBoundarySupports
       hsupport)
+
+/-- Edge barriers imply boundary-support data. -/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideBarriers
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hbarrier : PeeledCollarCutAmbientSideBarriersToAmbient φ) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ := by
+  intro cut
+  rcases hbarrier cut with ⟨barrier⟩
+  exact ⟨barrier.toAmbientSideBoundarySupport⟩
+
+/--
+Boundary-support and edge-barrier data are equivalent foundation targets for
+the peeled-collar lift.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_iff_ambientSideBarriers
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G} :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ ↔
+      PeeledCollarCutAmbientSideBarriersToAmbient φ :=
+  ⟨peeledCollarCutAmbientSideBarriersToAmbient_of_ambientSideBoundarySupports,
+    peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideBarriers⟩
+
+/-- Endpoint-range data imply boundary-support data. -/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideEndpointRanges
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hrange : PeeledCollarCutAmbientSideEndpointRangesToAmbient φ) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ :=
+  peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideBarriers
+    (peeledCollarCutAmbientSideBarriersToAmbient_of_ambientSideEndpointRanges
+      hrange)
+
+/--
+Boundary-support and endpoint-range data are equivalent foundation targets for
+the peeled-collar lift.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_iff_ambientSideEndpointRanges
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G} :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ ↔
+      PeeledCollarCutAmbientSideEndpointRangesToAmbient φ :=
+  ⟨peeledCollarCutAmbientSideEndpointRangesToAmbient_of_ambientSideBoundarySupports,
+    peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideEndpointRanges⟩
+
+/-- Preimage data imply boundary-support data. -/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSidePreimages
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hpreimage : PeeledCollarCutAmbientSidePreimagesToAmbient φ) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ :=
+  peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideBarriers
+    (peeledCollarCutAmbientSideBarriersToAmbient_of_ambientSidePreimages
+      hpreimage)
+
+/--
+Boundary-support and preimage data are equivalent foundation targets for the
+peeled-collar lift.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_iff_ambientSidePreimages
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G} :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient φ ↔
+      PeeledCollarCutAmbientSidePreimagesToAmbient φ :=
+  ⟨peeledCollarCutAmbientSidePreimagesToAmbient_of_ambientSideBoundarySupports,
+    peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSidePreimages⟩
 
 /-- Boundary-support data imply no-avoiding-walk side separations. -/
 theorem peeledCollarCutAmbientSideSeparationsToAmbient_of_ambientSideBoundarySupports
