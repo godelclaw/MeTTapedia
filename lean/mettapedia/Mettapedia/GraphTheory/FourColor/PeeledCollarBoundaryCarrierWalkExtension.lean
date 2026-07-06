@@ -156,6 +156,65 @@ def BoundaryEdgeSetInducedCutOffCarrierWalkConsistent
     OffCarrierReachable G (boundaryEdgeSetEndpointSupport edges) a b →
       (cut.side a ↔ cut.side b)
 
+/--
+No off-carrier component joins opposite sides of a cut of the canonical
+endpoint-support induced boundary graph.  This is the direct topological shape
+expected from the annulus/Jordan layer.
+-/
+def BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected
+    {G : SimpleGraph V} (edges : Finset G.edgeSet)
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)) :
+    Prop :=
+  ¬ ∃ a b : BoundaryEdgeSetEndpointVertex (G := G) edges,
+    cut.side a ∧ ¬ cut.side b ∧
+      OffCarrierReachable G (boundaryEdgeSetEndpointSupport edges) a b
+
+namespace BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected
+
+/-- Off-carrier walk consistency rules out off-carrier reachability between
+opposite carrier sides. -/
+theorem of_walkConsistent
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    (hconsistent :
+      BoundaryEdgeSetInducedCutOffCarrierWalkConsistent (G := G) edges cut) :
+    BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected
+      (G := G) edges cut := by
+  rintro ⟨a, b, ha, hb, hab⟩
+  exact hb ((hconsistent a b hab).1 ha)
+
+/-- If no off-carrier component joins opposite carrier sides, then off-carrier
+walks preserve the carrier-side predicate. -/
+theorem to_walkConsistent
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    (hdisconnected :
+      BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected
+        (G := G) edges cut) :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistent (G := G) edges cut := by
+  intro a b hab
+  constructor
+  · intro ha
+    by_contra hb
+    exact hdisconnected ⟨a, b, ha, hb, hab⟩
+  · intro hb
+    by_contra ha
+    exact hdisconnected ⟨b, a, hb, ha, hab.symm⟩
+
+end BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected
+
+/-- For one carrier cut, off-carrier walk consistency is equivalent to saying
+that off-carrier reachability never connects opposite carrier sides. -/
+theorem
+    boundaryEdgeSetInducedCutOffCarrierWalkConsistent_iff_oppositeSideDisconnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)} :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistent (G := G) edges cut ↔
+      BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected
+        (G := G) edges cut :=
+  ⟨BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected.of_walkConsistent,
+    BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected.to_walkConsistent⟩
+
 namespace BoundaryEdgeSetInducedCutOffCarrierWalkConsistent
 
 /--
@@ -370,6 +429,59 @@ def BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
     BoundaryEdgeSetInducedCutOffCarrierWalkConsistent (G := G) edges cut
 
 /--
+No off-carrier component joins opposite sides for any small cyclic cut in the
+canonical induced boundary graph.  This is the exact graph-facing target that a
+planar annulus separation proof can discharge directly.
+-/
+def BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient
+    {G : SimpleGraph V} (edges : Finset G.edgeSet) : Prop :=
+  ∀ cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges),
+    BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected (G := G)
+      edges cut
+
+/-- Off-carrier walk consistency implies the no-opposite-side off-carrier
+component target. -/
+theorem
+    boundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient_of_offCarrierWalkConsistencies
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (hconsistent :
+      BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
+        (G := G) edges) :
+    BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient
+      (G := G) edges := by
+  intro cut
+  exact
+    BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected.of_walkConsistent
+      (hconsistent cut)
+
+/-- No-opposite-side off-carrier components imply off-carrier walk
+consistency. -/
+theorem
+    boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_oppositeSideDisconnections
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (hdisconnected :
+      BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient
+        (G := G) edges) :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
+      (G := G) edges := by
+  intro cut
+  exact
+    BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnected.to_walkConsistent
+      (hdisconnected cut)
+
+/-- The off-carrier target can equivalently be stated as side preservation
+along off-carrier walks or as disconnection of opposite carrier sides. -/
+theorem
+    boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_iff_oppositeSideDisconnections
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
+        (G := G) edges ↔
+      BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient
+        (G := G) edges :=
+  ⟨boundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient_of_offCarrierWalkConsistencies,
+    boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_oppositeSideDisconnections⟩
+
+/--
 Off-carrier walk consistency implies the carrier-endpoint support target for
 the canonical induced boundary graph.
 -/
@@ -496,6 +608,46 @@ def PeeledCollarOffCarrierWalkConsistencyTarget
     (data : PlanarBoundaryAnnulusBoundaryData emb) : Prop :=
   BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
     (G := G) data.ambientBoundaryEdgeSet
+
+/--
+Annulus-boundary no-opposite-side off-carrier target for the canonical
+induced boundary graph selected by the ambient annulus boundary split.
+-/
+def PeeledCollarOffCarrierOppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb) : Prop :=
+  BoundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient
+    (G := G) data.ambientBoundaryEdgeSet
+
+/-- No-opposite-side off-carrier components supply annulus-boundary
+off-carrier walk consistency. -/
+theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h : data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_oppositeSideDisconnections
+    (G := G) (edges := data.ambientBoundaryEdgeSet) h
+
+/-- Annulus-boundary off-carrier walk consistency supplies the
+no-opposite-side off-carrier component target. -/
+theorem oppositeSideDisconnectionTarget_of_offCarrierWalkConsistencyTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
+    data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget :=
+  boundaryEdgeSetInducedCutOffCarrierOppositeSideDisconnectionsToAmbient_of_offCarrierWalkConsistencies
+    (G := G) (edges := data.ambientBoundaryEdgeSet) h
+
+/-- The annulus-boundary off-carrier target can be stated either as walk
+consistency or as no opposite-side off-carrier component. -/
+theorem offCarrierWalkConsistencyTarget_iff_oppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb} :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
+      data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget :=
+  boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_iff_oppositeSideDisconnections
+    (G := G) (edges := data.ambientBoundaryEdgeSet)
 
 /--
 Canonical annulus-boundary local constancy implies off-carrier walk
@@ -627,6 +779,44 @@ def PeeledCollarOffCarrierWalkConsistencyTarget
   data.boundaryData.PeeledCollarOffCarrierWalkConsistencyTarget
 
 /--
+Annulus-geometry no-opposite-side off-carrier target for the canonical induced
+boundary graph selected by the geometry's ambient annulus boundary split.
+-/
+def PeeledCollarOffCarrierOppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.boundaryData.PeeledCollarOffCarrierOppositeSideDisconnectionTarget
+
+/-- No-opposite-side off-carrier components supply annulus-geometry
+off-carrier walk consistency. -/
+theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h : data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.boundaryData
+    |>.offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget h
+
+/-- Annulus-geometry off-carrier walk consistency supplies the
+no-opposite-side off-carrier component target. -/
+theorem oppositeSideDisconnectionTarget_of_offCarrierWalkConsistencyTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
+    data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget :=
+  data.boundaryData
+    |>.oppositeSideDisconnectionTarget_of_offCarrierWalkConsistencyTarget h
+
+/-- The annulus-geometry off-carrier target can be stated either as walk
+consistency or as no opposite-side off-carrier component. -/
+theorem offCarrierWalkConsistencyTarget_iff_oppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb} :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
+      data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget :=
+  data.boundaryData.offCarrierWalkConsistencyTarget_iff_oppositeSideDisconnectionTarget
+
+/--
 Canonical annulus-geometry local constancy implies off-carrier walk
 consistency when the selected annulus boundary edge set is induced.
 -/
@@ -725,6 +915,47 @@ def PeeledCollarOffCarrierWalkConsistencyTarget
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
   data.toPlanarBoundaryAnnulusCollarGeometry.PeeledCollarOffCarrierWalkConsistencyTarget
+
+/--
+Repaired annulus-geometry no-opposite-side off-carrier target for the
+canonical induced boundary graph selected by the geometry's ambient annulus
+boundary split.
+-/
+def PeeledCollarOffCarrierOppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.PeeledCollarOffCarrierOppositeSideDisconnectionTarget
+
+/-- No-opposite-side off-carrier components supply repaired annulus-geometry
+off-carrier walk consistency. -/
+theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h : data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget h
+
+/-- Repaired annulus-geometry off-carrier walk consistency supplies the
+no-opposite-side off-carrier component target. -/
+theorem oppositeSideDisconnectionTarget_of_offCarrierWalkConsistencyTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
+    data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.oppositeSideDisconnectionTarget_of_offCarrierWalkConsistencyTarget h
+
+/-- The repaired annulus-geometry off-carrier target can be stated either as
+walk consistency or as no opposite-side off-carrier component. -/
+theorem offCarrierWalkConsistencyTarget_iff_oppositeSideDisconnectionTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb} :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget ↔
+      data.PeeledCollarOffCarrierOppositeSideDisconnectionTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.offCarrierWalkConsistencyTarget_iff_oppositeSideDisconnectionTarget
 
 /--
 Canonical repaired-annulus local constancy implies off-carrier walk
