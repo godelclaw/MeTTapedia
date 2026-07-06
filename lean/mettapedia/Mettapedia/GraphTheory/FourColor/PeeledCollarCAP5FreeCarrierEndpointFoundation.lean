@@ -68,6 +68,120 @@ def CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
 
 /--
+Closed-walk off-carrier component-attachment foundation target for the
+selected induced peeled collar embedding: every off-carrier component attaches
+on only one side of every small cyclic carrier cut.
+-/
+def CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierComponentOneSidedAttachmentTarget
+
+/--
+Closed-walk off-carrier component-attachment route-input foundation target.
+This exposes the exact route-input record below off-carrier walk consistency.
+-/
+def CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentRouteInputsFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      Nonempty
+        (MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs G
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+
+/--
+Off-carrier walk consistency supplies the component-attachment foundation
+target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.offCarrierWalkConsistencyTarget_iff_componentOneSidedAttachmentTarget.1
+        (hfoundation source regime)
+
+/--
+The component-attachment foundation target supplies off-carrier walk
+consistency.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_componentAttachmentFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.offCarrierWalkConsistencyTarget_iff_componentOneSidedAttachmentTarget.2
+        (hfoundation source regime)
+
+/--
+The component-attachment and off-carrier walk-consistency closed-walk
+foundation targets are equivalent presentations of the same obstruction.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_iff_offCarrierWalkConsistencyFoundationTarget :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget ↔
+      CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget :=
+  ⟨cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_componentAttachmentFoundationTarget,
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget⟩
+
+/--
+The component-attachment foundation target supplies the component-attachment
+route-input foundation target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTarget_of_componentAttachmentFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentRouteInputsFoundationTarget := by
+  intro V _ G emb source regime
+  exact ⟨
+    { regime := regime
+      offCarrierComponentOneSidedAttachments := hfoundation source regime }⟩
+
+/--
+The component-attachment route-input foundation target supplies the
+component-attachment foundation target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_componentAttachmentRouteInputsFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentRouteInputsFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget := by
+  intro V _ G emb source regime
+  rcases hfoundation source regime with ⟨inputs⟩
+  exact inputs.offCarrierComponentOneSidedAttachments
+
+/--
+Component-attachment route inputs and component-attachment targets are
+equivalent closed-walk foundation presentations.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTarget_iff_componentAttachmentFoundationTarget :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentRouteInputsFoundationTarget ↔
+      CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget :=
+  ⟨cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_componentAttachmentRouteInputsFoundationTarget,
+    cap5FreeClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTarget_of_componentAttachmentFoundationTarget⟩
+
+/--
 Off-carrier walk consistency supplies the closed-walk route-input foundation
 target.
 -/
@@ -249,6 +363,26 @@ def CAP5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex :
     CAP5FreeClosedWalkPeeledCollarOffCarrierRouteInputsFoundationTarget
 
 /--
+Public index with the closed-walk off-carrier component-attachment target as
+the closed-walk foundation field.
+-/
+def CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget
+
+/--
+Public index with the closed-walk off-carrier component-attachment route-input
+target as the closed-walk foundation field.
+-/
+def CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentRouteInputsFoundationTarget
+
+/--
 The off-carrier public index supplies the off-carrier route-input public
 index.
 -/
@@ -286,6 +420,82 @@ theorem
       CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
   ⟨cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_offCarrierRouteInputsFoundationTargetIndex,
     cap5FreePeeledCollarClosedWalkOffCarrierRouteInputsFoundationTargetIndex_of_offCarrierWalkConsistencyFoundationTargetIndex⟩
+
+/--
+The off-carrier public index supplies the component-attachment public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_offCarrierWalkConsistencyFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
+      hindex.2.2⟩
+
+/--
+The component-attachment public index supplies the off-carrier public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_componentAttachmentFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_componentAttachmentFoundationTarget
+      hindex.2.2⟩
+
+/--
+The component-attachment and off-carrier public indices are equivalent
+presentations of the same closed-walk foundation checklist.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_iff_offCarrierWalkConsistencyFoundationTargetIndex :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_componentAttachmentFoundationTargetIndex,
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_offCarrierWalkConsistencyFoundationTargetIndex⟩
+
+/--
+The component-attachment public index supplies the component-attachment
+route-input public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex_of_componentAttachmentFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTarget_of_componentAttachmentFoundationTarget
+      hindex.2.2⟩
+
+/--
+The component-attachment route-input public index supplies the
+component-attachment public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_componentAttachmentRouteInputsFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_componentAttachmentRouteInputsFoundationTarget
+      hindex.2.2⟩
+
+/--
+The component-attachment route-input and component-attachment public indices
+are equivalent.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex_iff_componentAttachmentFoundationTargetIndex :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_componentAttachmentRouteInputsFoundationTargetIndex,
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex_of_componentAttachmentFoundationTargetIndex⟩
 
 /--
 The off-carrier public index supplies the carrier-endpoint public index.
@@ -481,6 +691,59 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTar
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Closed-walk off-carrier component-attachment route target: the planar target
+states that off-carrier components attach on one side of each small cyclic
+carrier cut, and this supplies cyclic five-edge-connectivity, no cyclic
+two-cut, and S4 no-escape.
+-/
+def Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierComponentOneSidedAttachmentTarget ∧
+        Nonempty
+          (MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs G
+            source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet) ∧
+        CyclicallyFiveEdgeConnected
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ClosedCollarForbidsCyclicTwoCut
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Route-index theorem for the closed-walk off-carrier component-attachment
+foundation target.
+-/
+theorem
+    section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget := by
+  intro V _ G emb source regime
+  have hcomponent :
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierComponentOneSidedAttachmentTarget :=
+    hfoundation source regime
+  let inputs :
+      MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs G
+        source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet := {
+    regime := regime
+    offCarrierComponentOneSidedAttachments := hcomponent
+  }
+  exact
+    ⟨hcomponent,
+      ⟨inputs⟩,
+      inputs.cyclicallyFiveEdgeConnected,
+      inputs.closedCollarForbidsCyclicTwoCut,
+      inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
 
 /--
 Route-index theorem for the closed-walk off-carrier route-input foundation
@@ -725,5 +988,61 @@ theorem
       hoffRoutes.2.2.2.1,
       hoffRoutes.2.2.2.2.1,
       hoffRoutes.2.2.2.2.2⟩
+
+/--
+The component-attachment public index supplies the component-attachment route
+target, the off-carrier route target, and the compact regime route index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRegimeRouteIndexTarget := by
+  have hoffIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_componentAttachmentFoundationTargetIndex
+      hindex
+  have hoffRoutes :
+      Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+        Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeCarrierEndpointSupportFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarget ∧
+        Section92Step4CAP5FreeRegimeRouteIndexTarget :=
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_routeIndexTargets
+      hoffIndex
+  exact
+    ⟨hoffRoutes.1,
+      hoffRoutes.2.1,
+      section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget
+        hindex.2.2,
+      hoffRoutes.2.2.1,
+      hoffRoutes.2.2.2.2.2⟩
+
+/--
+The component-attachment route-input public index supplies the
+component-attachment route target, the off-carrier route target, and the
+compact regime route index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentRouteInputsFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRegimeRouteIndexTarget := by
+  have hcomponentIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_componentAttachmentRouteInputsFoundationTargetIndex
+      hindex
+  exact
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_routeIndexTargets
+      hcomponentIndex
 
 end Mettapedia.GraphTheory.FourColor
