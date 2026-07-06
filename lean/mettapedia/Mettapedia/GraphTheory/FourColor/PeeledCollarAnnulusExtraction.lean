@@ -350,6 +350,36 @@ theorem
     h
 
 /--
+The canonical annulus cut-avoiding shared-endpoint target supplies
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data) :
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+      data :=
+  data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    h
+
+/--
+The canonical annulus cut-avoiding shared-endpoint and mapped-cut-deleted
+shared-endpoint targets are equivalent.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget_iff_mappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb} :
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data ↔
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+        data :=
+  data.cutAvoidingSharedEndpointReachabilityTarget_iff_mappedCutAvoidingSharedEndpointConnectivityTarget
+
+/--
 The canonical annulus off-carrier target can be stated either as walk
 consistency or as no opposite-side off-carrier component.
 -/
@@ -700,6 +730,36 @@ theorem
       data :=
   data.cutAvoidingSharedEndpointReachabilityTarget_of_mappedCutAvoidingSharedEndpointConnectivityTarget
     h
+
+/--
+The repaired annulus cut-avoiding shared-endpoint target supplies
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data) :
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+      data :=
+  data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    h
+
+/--
+The repaired annulus cut-avoiding shared-endpoint and mapped-cut-deleted
+shared-endpoint targets are equivalent.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget_iff_mappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb} :
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data ↔
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+        data :=
+  data.cutAvoidingSharedEndpointReachabilityTarget_iff_mappedCutAvoidingSharedEndpointConnectivityTarget
 
 /--
 The repaired annulus off-carrier target can be stated either as walk
