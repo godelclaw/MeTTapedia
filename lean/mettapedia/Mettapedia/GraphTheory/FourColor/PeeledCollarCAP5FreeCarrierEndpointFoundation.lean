@@ -139,6 +139,130 @@ def CAP5FreeClosedWalkPeeledCollarOffCarrierAttachmentCarrierConnectivityRouteIn
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
 
 /--
+Closed-walk off-carrier cut-avoiding shared-endpoint foundation target for
+the selected induced peeled collar embedding: attachments of one off-carrier
+component can be joined through shared endpoints while avoiding the small
+carrier cut.
+-/
+def CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+
+/--
+Closed-walk off-carrier cut-avoiding shared-endpoint route-input foundation
+target.  This exposes the exact route-input record one step below
+attachment-carrier connectivity.
+-/
+def CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      Nonempty
+        (MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs G
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+
+/--
+Cut-avoiding shared-endpoint reachability supplies the attachment-carrier
+connectivity foundation target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierAttachmentCarrierConnectivityFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+        (hfoundation source regime)
+
+/--
+Cut-avoiding shared-endpoint reachability supplies the component-attachment
+foundation target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierComponentAttachmentFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierComponentAttachmentFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.componentOneSidedAttachmentTarget_of_attachmentCarrierConnectivityTarget
+        (source.toPlanarBoundaryAnnulusBoundaryData
+          |>.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+            (hfoundation source regime))
+
+/--
+Cut-avoiding shared-endpoint reachability supplies off-carrier walk
+consistency.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierWalkConsistencyFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.offCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget
+        (source.toPlanarBoundaryAnnulusBoundaryData
+          |>.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+            (hfoundation source regime))
+
+/--
+The cut-avoiding shared-endpoint foundation target supplies its exact
+route-input foundation target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget := by
+  intro V _ G emb source regime
+  exact ⟨
+    { regime := regime
+      offCarrierCutAvoidingSharedEndpointReachabilities := hfoundation source regime }⟩
+
+/--
+The cut-avoiding shared-endpoint route-input target supplies the
+cut-avoiding shared-endpoint foundation target.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget_of_cutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget := by
+  intro V _ G emb source regime
+  rcases hfoundation source regime with ⟨inputs⟩
+  exact inputs.offCarrierCutAvoidingSharedEndpointReachabilities
+
+/--
+Cut-avoiding shared-endpoint route inputs and cut-avoiding shared-endpoint
+targets are equivalent closed-walk foundation presentations.
+-/
+theorem
+    cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget_iff_cutAvoidingSharedEndpointReachabilityFoundationTarget :
+    CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget ↔
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget :=
+  ⟨cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget_of_cutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget,
+    cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget⟩
+
+/--
 Attachment-carrier connectivity supplies the component-attachment foundation
 target.
 -/
@@ -506,6 +630,26 @@ def CAP5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityRouteIn
     CAP5FreeClosedWalkPeeledCollarOffCarrierAttachmentCarrierConnectivityRouteInputsFoundationTarget
 
 /--
+Public index with the closed-walk off-carrier cut-avoiding shared-endpoint
+target as the closed-walk foundation field.
+-/
+def CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget
+
+/--
+Public index with the closed-walk off-carrier cut-avoiding shared-endpoint
+route-input target as the closed-walk foundation field.
+-/
+def CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget
+
+/--
 The off-carrier public index supplies the off-carrier route-input public
 index.
 -/
@@ -686,6 +830,85 @@ theorem
       CAP5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex :=
   ⟨cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_of_attachmentCarrierConnectivityRouteInputsFoundationTargetIndex,
     cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityRouteInputsFoundationTargetIndex_of_attachmentCarrierConnectivityFoundationTargetIndex⟩
+
+/--
+The cut-avoiding shared-endpoint public index supplies the
+attachment-carrier connectivity public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget
+      hindex.2.2⟩
+
+/--
+The cut-avoiding shared-endpoint public index supplies the
+component-attachment public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex :=
+  cap5FreePeeledCollarClosedWalkOffCarrierComponentAttachmentFoundationTargetIndex_of_attachmentCarrierConnectivityFoundationTargetIndex
+    (cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+      hindex)
+
+/--
+The cut-avoiding shared-endpoint public index supplies the off-carrier
+walk-consistency public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex :=
+  cap5FreePeeledCollarClosedWalkOffCarrierWalkConsistencyFoundationTargetIndex_of_attachmentCarrierConnectivityFoundationTargetIndex
+    (cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+      hindex)
+
+/--
+The cut-avoiding shared-endpoint public index supplies its route-input public
+index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget_of_cutAvoidingSharedEndpointReachabilityFoundationTarget
+      hindex.2.2⟩
+
+/--
+The cut-avoiding shared-endpoint route-input public index supplies the
+cut-avoiding shared-endpoint public index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex) :
+    CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget_of_cutAvoidingSharedEndpointReachabilityRouteInputsFoundationTarget
+      hindex.2.2⟩
+
+/--
+The cut-avoiding shared-endpoint route-input and cut-avoiding shared-endpoint
+public indices are equivalent.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex_iff_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex :
+    CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex,
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex⟩
 
 /--
 The off-carrier public index supplies the carrier-endpoint public index.
@@ -936,6 +1159,67 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierAttachmentCarrierConnectivityFound
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Closed-walk off-carrier cut-avoiding shared-endpoint route target: the planar
+target states that same-component off-carrier attachments have cut-avoiding
+shared-endpoint reachability, and this supplies attachment-carrier
+connectivity, cyclic five-edge-connectivity, no cyclic two-cut, and S4
+no-escape.
+-/
+def Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget ∧
+        (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget ∧
+        Nonempty
+          (MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs G
+            source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet) ∧
+        CyclicallyFiveEdgeConnected
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ClosedCollarForbidsCyclicTwoCut
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
+Route-index theorem for the closed-walk off-carrier cut-avoiding
+shared-endpoint foundation target.
+-/
+theorem
+    section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget := by
+  intro V _ G emb source regime
+  have hreach :
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget :=
+    hfoundation source regime
+  have hconnectivity :
+      (source.toPlanarBoundaryAnnulusBoundaryData).PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget :=
+    source.toPlanarBoundaryAnnulusBoundaryData
+      |>.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+        hreach
+  let inputs :
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs G
+        source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet := {
+    regime := regime
+    offCarrierCutAvoidingSharedEndpointReachabilities := hreach
+  }
+  exact
+    ⟨hreach,
+      hconnectivity,
+      ⟨inputs⟩,
+      inputs.cyclicallyFiveEdgeConnected,
+      inputs.closedCollarForbidsCyclicTwoCut,
+      inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
 
 /--
 Route-index theorem for the closed-walk off-carrier attachment-carrier
@@ -1353,5 +1637,69 @@ theorem
   exact
     cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_routeIndexTargets
       hconnectivityIndex
+
+/--
+The cut-avoiding shared-endpoint public index supplies the cut-avoiding route
+target, the attachment-carrier route target, the component-attachment route
+target, the off-carrier route target, and the compact regime route index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierAttachmentCarrierConnectivityFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRegimeRouteIndexTarget := by
+  have hconnectivityIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityFoundationTargetIndex
+      hindex
+  have hconnectivityRoutes :
+      Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+        Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffCarrierAttachmentCarrierConnectivityFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget ∧
+        Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+        Section92Step4CAP5FreeRegimeRouteIndexTarget :=
+    cap5FreePeeledCollarClosedWalkOffCarrierAttachmentCarrierConnectivityFoundationTargetIndex_routeIndexTargets
+      hconnectivityIndex
+  exact
+    ⟨hconnectivityRoutes.1,
+      hconnectivityRoutes.2.1,
+      section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget
+        hindex.2.2,
+      hconnectivityRoutes.2.2.1,
+      hconnectivityRoutes.2.2.2.1,
+      hconnectivityRoutes.2.2.2.2.1,
+      hconnectivityRoutes.2.2.2.2.2⟩
+
+/--
+The cut-avoiding shared-endpoint route-input public index supplies the
+cut-avoiding route target, the attachment-carrier route target, the
+component-attachment route target, the off-carrier route target, and the
+compact regime route index.
+-/
+theorem
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierAttachmentCarrierConnectivityFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteIndexTarget ∧
+      Section92Step4CAP5FreeRegimeRouteIndexTarget := by
+  have hreachIndex :
+      CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex :=
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_of_cutAvoidingSharedEndpointReachabilityRouteInputsFoundationTargetIndex
+      hindex
+  exact
+    cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_routeIndexTargets
+      hreachIndex
 
 end Mettapedia.GraphTheory.FourColor
