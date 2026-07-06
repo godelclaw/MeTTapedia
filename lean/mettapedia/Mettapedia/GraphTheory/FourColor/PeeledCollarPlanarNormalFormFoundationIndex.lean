@@ -523,6 +523,56 @@ theorem routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
       hsmall regime
 
 /--
+The smaller planar-normal-form cut-lift target builds the first-class
+checker-facing realized-candidate route-input record for the selected
+closed-walk peeled collar.
+-/
+def realizedCandidateRouteInputs_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
+  have hsmall :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+    cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
+      hindex.2.2
+  exact
+    source.realizedCandidateRouteInputs_of_cap5FreeSmallCutLiftFoundationTarget
+      hsmall regime
+
+/--
+Every realized-candidate checker entry is rejected under the
+planar-normal-form cut-lift target and the selected collar regime.
+-/
+theorem not_realizes_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
+    (candidate :
+      CyclicSeparatorCandidate
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    ¬ candidate.Realizes :=
+  (realizedCandidateRouteInputs_of_planarNormalFormCutLiftFoundationTargetIndex
+    hindex source regime).not_realizes candidate
+
+/--
 The load-bearing connectivity consequence: the planar-normal-form cut-lift
 target supplies cyclic five-edge-connectivity for the selected closed-walk
 peeled collar.
