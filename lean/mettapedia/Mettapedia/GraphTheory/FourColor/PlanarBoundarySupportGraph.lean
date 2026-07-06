@@ -304,6 +304,42 @@ private theorem nonempty_walk_from_head_of_isChain_mem
           ⟨p⟩
         exact ⟨SimpleGraph.Walk.cons hab p⟩
 
+private theorem exists_walk_from_head_of_isChain_mem_support_subset
+    {α : Type*} {G : SimpleGraph α} :
+    ∀ {a : α} {tail : List α} {x : α},
+      List.IsChain G.Adj (a :: tail) →
+      x ∈ a :: tail →
+      ∃ p : G.Walk a x, ∀ y : α, y ∈ p.support → y ∈ a :: tail
+  | a, [], x, _, hx => by
+      simp at hx
+      subst hx
+      refine ⟨SimpleGraph.Walk.nil, ?_⟩
+      intro y hy
+      simpa using hy
+  | a, b :: tl, x, hchain, hx => by
+      simp at hx
+      rcases hx with rfl | hxTail
+      · refine ⟨SimpleGraph.Walk.nil, ?_⟩
+        intro y hy
+        have hyx : y = x := by
+          simpa using hy
+        subst y
+        simp
+      · have hab : G.Adj a b := by
+          simpa using (List.isChain_cons_cons.mp hchain).1
+        have htail : List.IsChain G.Adj (b :: tl) := by
+          simpa using (List.isChain_cons_cons.mp hchain).2
+        rcases
+          exists_walk_from_head_of_isChain_mem_support_subset
+            (a := b) (tail := tl) htail (by simpa using hxTail) with
+          ⟨p, hp⟩
+        refine ⟨SimpleGraph.Walk.cons hab p, ?_⟩
+        intro y hy
+        simp [SimpleGraph.Walk.support_cons] at hy ⊢
+        rcases hy with rfl | hy
+        · simp
+        · exact Or.inr (by simpa using hp y hy)
+
 /-- A source-facing face-local boundary-run witness: any two selected-boundary edges on the same
 ambient face occur as the endpoints of an ordered chain of ambient selected-boundary edges lying on
 that same face. This records the run as a list rather than as an already-built graph walk. -/
@@ -489,6 +525,38 @@ theorem boundaryComponentReachableOnFace_of_boundarySelectedBoundaryRunOnFace
         exact ⟨p⟩
       exact hw₁.symm.trans hw₂
 
+theorem boundaryComponentWalkOnFace_of_boundarySelectedBoundaryRunOnFace
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {f : AmbientFace emb.faces}
+    (hrun : BoundarySelectedBoundaryRunOnFace (emb := emb) f) :
+    BoundaryComponentWalkOnFace (emb := emb) f := by
+  intro e₁ e₂ he₁Face he₂Face he₁ he₂
+  let x₁ : PlanarBoundaryEdgeVertex emb := ⟨e₁, he₁⟩
+  let x₂ : PlanarBoundaryEdgeVertex emb := ⟨e₂, he₂⟩
+  rcases hrun with ⟨run, hchain, hmem⟩
+  have hx₁ : x₁ ∈ run := (hmem x₁).2 ⟨he₁Face, he₁⟩
+  have hx₂ : x₂ ∈ run := (hmem x₂).2 ⟨he₂Face, he₂⟩
+  cases run with
+  | nil =>
+      cases hx₁
+  | cons a tail =>
+      rcases
+        exists_walk_from_head_of_isChain_mem_support_subset
+          (a := a) (tail := tail) hchain hx₁ with
+        ⟨p₁, hp₁⟩
+      rcases
+        exists_walk_from_head_of_isChain_mem_support_subset
+          (a := a) (tail := tail) hchain hx₂ with
+        ⟨p₂, hp₂⟩
+      refine ⟨p₁.reverse.append p₂, ?_⟩
+      intro x hx
+      rw [SimpleGraph.Walk.mem_support_append_iff] at hx
+      rcases hx with hx | hx
+      · have hx₁Support : x ∈ p₁.support := by
+          simpa [SimpleGraph.Walk.support_reverse] using hx
+        exact (hmem x).1 (hp₁ x hx₁Support) |>.1
+      · exact (hmem x).1 (hp₂ x hx) |>.1
+
 theorem boundaryComponentReachableOnFace_of_boundarySelectedBoundaryArcOnFace
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {f : AmbientFace emb.faces}
@@ -496,6 +564,15 @@ theorem boundaryComponentReachableOnFace_of_boundarySelectedBoundaryArcOnFace
     BoundaryComponentReachableOnFace (emb := emb) f := by
   exact
     boundaryComponentReachableOnFace_of_boundarySelectedBoundaryRunOnFace
+      (boundarySelectedBoundaryRunOnFace_of_boundarySelectedBoundaryArcOnFace harc)
+
+theorem boundaryComponentWalkOnFace_of_boundarySelectedBoundaryArcOnFace
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {f : AmbientFace emb.faces}
+    (harc : BoundarySelectedBoundaryArcOnFace (emb := emb) f) :
+    BoundaryComponentWalkOnFace (emb := emb) f := by
+  exact
+    boundaryComponentWalkOnFace_of_boundarySelectedBoundaryRunOnFace
       (boundarySelectedBoundaryRunOnFace_of_boundarySelectedBoundaryArcOnFace harc)
 
 theorem PlanarBoundarySelectedBoundaryArcGeometry.boundaryComponentReachableOnFace
@@ -507,6 +584,15 @@ theorem PlanarBoundarySelectedBoundaryArcGeometry.boundaryComponentReachableOnFa
     boundaryComponentReachableOnFace_of_boundarySelectedBoundaryRunOnFace
       (geom.boundarySelectedBoundaryRunOnFace f)
 
+theorem PlanarBoundarySelectedBoundaryArcGeometry.boundaryComponentWalkOnFace
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (geom : PlanarBoundarySelectedBoundaryArcGeometry emb) :
+    ∀ f : AmbientFace emb.faces, BoundaryComponentWalkOnFace (emb := emb) f := by
+  intro f
+  exact
+    boundaryComponentWalkOnFace_of_boundarySelectedBoundaryRunOnFace
+      (geom.boundarySelectedBoundaryRunOnFace f)
+
 theorem PlanarBoundaryFaceBoundaryRunGeometry.boundaryComponentReachableOnFace
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (geom : PlanarBoundaryFaceBoundaryRunGeometry emb)
@@ -515,6 +601,16 @@ theorem PlanarBoundaryFaceBoundaryRunGeometry.boundaryComponentReachableOnFace
   intro f
   exact
     boundaryComponentReachableOnFace_of_boundarySelectedBoundaryRunOnFace
+      (geom.boundarySelectedBoundaryRunOnFace harc f)
+
+theorem PlanarBoundaryFaceBoundaryRunGeometry.boundaryComponentWalkOnFace
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (geom : PlanarBoundaryFaceBoundaryRunGeometry emb)
+    (harc : ∀ f : AmbientFace emb.faces, geom.SelectedBoundaryArcOnFace f) :
+    ∀ f : AmbientFace emb.faces, BoundaryComponentWalkOnFace (emb := emb) f := by
+  intro f
+  exact
+    boundaryComponentWalkOnFace_of_boundarySelectedBoundaryRunOnFace
       (geom.boundarySelectedBoundaryRunOnFace harc f)
 
 theorem boundaryComponentWalkOnFace_of_boundaryEdgesShareEndpointOnFace
