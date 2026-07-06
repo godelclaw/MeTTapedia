@@ -111,6 +111,17 @@ def
   data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
 
 /--
+Canonical annulus attachment-face noncrossing route target.  This is the
+face-local normal-form obligation that supplies mapped-cut-deleted
+shared-endpoint connectivity for off-carrier component attachments.
+-/
+def
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+
+/--
 Repaired previous-boundary annulus variant of the no-opposite-side off-carrier
 component target.
 -/
@@ -157,6 +168,16 @@ def
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
   data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+
+/--
+Repaired previous-boundary annulus variant of the attachment-face noncrossing
+route target.
+-/
+def
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
 
 /-- The annulus-extraction target is exactly the local-constancy bridge input. -/
 theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_annulusExtractionTarget
@@ -363,6 +384,22 @@ theorem
     PlanarBoundaryAnnulusPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
       data :=
   data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    h
+
+/--
+The canonical annulus attachment-face noncrossing route target supplies
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+        data) :
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+      data :=
+  data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
     h
 
 /--
@@ -745,6 +782,22 @@ theorem
     PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
       data :=
   data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    h
+
+/--
+The repaired annulus attachment-face noncrossing route target supplies
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+        data) :
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+      data :=
+  data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
     h
 
 /--
