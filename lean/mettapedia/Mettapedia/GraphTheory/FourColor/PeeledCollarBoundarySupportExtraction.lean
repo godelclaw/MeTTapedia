@@ -24,6 +24,30 @@ abbrev BoundaryEdgeSetInducedGraph {G : SimpleGraph V}
   G.induce {v : V | v ∈ boundaryEdgeSetEndpointSupport edges}
 
 /--
+The finite edge carrier itself, restricted to a chosen boundary edge set.
+-/
+abbrev BoundaryEdgeSetEdgeVertex {G : SimpleGraph V}
+    (edges : Finset G.edgeSet) : Type _ :=
+  {e : G.edgeSet // e ∈ edges}
+
+/--
+The shared-endpoint graph on a finite selected boundary edge set.
+
+This is the edge-level carrier used to turn boundary-edge connectivity into
+walks in the endpoint-support induced graph.
+-/
+def BoundaryEdgeSetSharedEndpointGraph {G : SimpleGraph V}
+    (edges : Finset G.edgeSet) :
+    SimpleGraph (BoundaryEdgeSetEdgeVertex (G := G) edges) where
+  Adj e f := e ≠ f ∧ ∃ v : V, v ∈ (e.1 : Sym2 V) ∧ v ∈ (f.1 : Sym2 V)
+  symm := ⟨by
+    intro e f h
+    rcases h with ⟨hne, v, hvE, hvF⟩
+    exact ⟨hne.symm, v, hvF, hvE⟩
+  ⟩
+  loopless := ⟨fun e h => h.1 rfl⟩
+
+/--
 The natural embedding of the endpoint-support induced graph into the ambient
 graph.
 -/
@@ -178,6 +202,53 @@ def boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
       (G := G) (edges := edges) he hu hxE).append
       (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
         (G := G) (edges := edges) hf hxF hv)
+
+/--
+A shared-endpoint walk of selected boundary edges induces a walk in the
+canonical endpoint-support carrier between any chosen endpoint of the first
+edge and any chosen endpoint of the last edge.
+-/
+theorem exists_boundaryEdgeSetInducedGraph_walk_of_sharedEndpointGraph_walk
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {e f : BoundaryEdgeSetEdgeVertex (G := G) edges}
+    (p : (BoundaryEdgeSetSharedEndpointGraph (G := G) edges).Walk e f)
+    {u v : V} (hu : u ∈ (e.1 : Sym2 V)) (hv : v ∈ (f.1 : Sym2 V)) :
+    ∃ _ : (BoundaryEdgeSetInducedGraph (G := G) edges).Walk
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) e.2 hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) f.2 hv), True := by
+  induction p generalizing u v with
+  | @nil g =>
+      exact ⟨boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+        (G := G) (edges := edges) g.2 hu hv, trivial⟩
+  | @cons e₀ e₁ e₂ hadj p ih =>
+      rcases hadj with ⟨_hne, x, hx₀, hx₁⟩
+      rcases ih hx₁ hv with ⟨tail, _⟩
+      exact ⟨
+        (boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
+          (G := G) (edges := edges) e₀.2 e₁.2 hu hx₀ hx₁ hx₁).append
+          tail,
+        trivial⟩
+
+/--
+Reachability in the shared-endpoint graph of selected boundary edges induces a
+carrier walk between any chosen endpoint of the first edge and any chosen
+endpoint of the last edge.
+-/
+theorem exists_boundaryEdgeSetInducedGraph_walk_of_sharedEndpointGraph_reachable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {e f : BoundaryEdgeSetEdgeVertex (G := G) edges}
+    (hreachable : (BoundaryEdgeSetSharedEndpointGraph (G := G) edges).Reachable e f)
+    {u v : V} (hu : u ∈ (e.1 : Sym2 V)) (hv : v ∈ (f.1 : Sym2 V)) :
+    ∃ _ : (BoundaryEdgeSetInducedGraph (G := G) edges).Walk
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) e.2 hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) f.2 hv), True := by
+  rcases hreachable with ⟨p⟩
+  exact exists_boundaryEdgeSetInducedGraph_walk_of_sharedEndpointGraph_walk
+    (G := G) (edges := edges) p hu hv
 
 /--
 Mapped collar-cut edges have preimages in the canonical graph induced by their
