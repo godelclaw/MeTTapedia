@@ -8,14 +8,13 @@ open GoertzelLemma818ClosedCollarWindingRealization
 /-!
 Planar-normal-form foundation index for the CAP5-free peeled-collar route.
 
-This module names the remaining foundation theorem target without adding it
-as an assumed field of the minimal-counterexample regime.  The target is the
-statement that the planar/CAP5-free normal form supplies the public
-face-placement foundation checklist.  Once that target is proved from the
-rotation-system, face-incidence, and CAP5-free infrastructure, the existing
-route immediately yields small-cut lifting, inherited cyclic
-five-edge-connectivity, no realized cyclic two-cut, and the S4 no-escape
-conclusion.
+This module names the remaining foundation theorem targets without adding
+them as assumed fields of the minimal-counterexample regime.  The stronger
+target is the statement that the planar/CAP5-free normal form supplies the
+public face-placement foundation checklist.  The smaller cut-lift target is
+the closed-walk off-boundary no-crossing checklist: enough to supply the
+small-cut lift, inherited cyclic five-edge-connectivity, no realized cyclic
+two-cut, and the S4 no-escape conclusion.
 -/
 
 /--
@@ -99,6 +98,58 @@ theorem cap5FreePeeledCollarPlanarNormalFormFoundationTargetIndex_of_regimeRoute
     hindex
 
 /--
+Smaller planar-normal-form theorem target for the cyclic-connectivity bridge.
+
+This records the precise cut-lift obligation needed upstream of the S4
+salvage: for the two annulus families, keep the existing separation targets;
+for the selected closed-walk collar, prove off-boundary no-crossing for each
+small cyclic collar cut.  This is weaker than the face-placement checklist but
+strong enough to discharge cyclic five-edge-connectivity.
+-/
+def CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :
+    Prop :=
+  CAP5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex
+
+/--
+The smaller planar-normal-form cut-lift target is the closed-walk
+off-boundary public foundation index.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_iff_closedWalkOffBoundaryNoCrossingFoundationTargetIndex :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex ↔
+      CAP5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex :=
+  Iff.rfl
+
+/-- The stronger face-placement index supplies the smaller cut-lift target. -/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_facePlacementFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarFacePlacementFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex_of_facePlacementFoundationTargetIndex
+    hindex
+
+/--
+The stronger planar-normal-form face-placement target supplies the smaller
+cut-lift target.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarPlanarNormalFormFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_facePlacementFoundationTargetIndex
+    (cap5FreePeeledCollarFacePlacementFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
+      hindex)
+
+/-- The smaller cut-lift target supplies the compact selected-source route index. -/
+theorem
+    cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarRegimeRouteFoundationTargetIndex :=
+  cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_closedWalkOffBoundaryNoCrossingFoundationTargetIndex
+    hindex
+
+/--
 Route target reached once the planar-normal-form foundation target is proved.
 This is the reusable end-to-end CAP5-free/S4 index with cyclic
 five-edge-connectivity supplied by the regime route rather than assumed.
@@ -116,5 +167,45 @@ theorem section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFo
   section92Step4CAP5FreeRegimeRouteIndexTarget_of_regimeRouteFoundationTargetIndex
     (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_planarNormalFormFoundationTargetIndex
       hindex)
+
+/--
+The smaller planar-normal-form cut-lift target also supplies the full
+downstream regime route index.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget :=
+  section92Step4CAP5FreeRegimeRouteIndexTarget_of_regimeRouteFoundationTargetIndex
+    (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
+      hindex)
+
+/--
+Expanded route target reached from the smaller planar-normal-form cut-lift
+foundation: both annulus separation routes, the closed-walk off-boundary route,
+and the regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The smaller planar-normal-form cut-lift target supplies the expanded route
+index, including the off-boundary/local-constancy/separation/small-cut-lift
+closed-walk consequences.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormCutLiftRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormCutLiftRouteIndexTarget := by
+  have hroutes :=
+    cap5FreePeeledCollarClosedWalkOffBoundaryNoCrossingFoundationTargetIndex_routeIndexTargets
+      hindex
+  exact ⟨hroutes.1, hroutes.2.1, hroutes.2.2.1, hroutes.2.2.2⟩
 
 end Mettapedia.GraphTheory.FourColor
