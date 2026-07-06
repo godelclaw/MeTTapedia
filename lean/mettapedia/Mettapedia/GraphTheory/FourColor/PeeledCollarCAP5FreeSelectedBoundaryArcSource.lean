@@ -731,4 +731,82 @@ theorem
     PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry.routeIndexConsequences_of_cap5FreeClosedWalkSelectedBoundaryArcSourceOffBoundaryTarget
       hfoundation data regime source hboundary
 
+/--
+Public selected-boundary-arc source foundation index.  It keeps the canonical
+and repaired separation obligations from the source-data index, while replacing
+the closed-walk source-data field by the selected-boundary-arc source field.
+-/
+def CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex :
+    Prop :=
+  CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
+    CAP5FreeClosedWalkPeeledCollarSelectedBoundaryArcSourceFoundationTarget
+
+/--
+The selected-boundary-arc source index supplies the public source-data index.
+-/
+theorem cap5FreePeeledCollarSourceDataFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex) :
+    CAP5FreePeeledCollarSourceDataFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkAttachmentFaceSourceDataFoundationTarget_of_selectedBoundaryArcSourceFoundationTarget
+      hindex.2.2⟩
+
+/--
+The public source-data index supplies the selected-boundary-arc source index.
+-/
+theorem cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_sourceDataFoundationTargetIndex
+    (hindex : CAP5FreePeeledCollarSourceDataFoundationTargetIndex) :
+    CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex :=
+  ⟨hindex.1,
+    hindex.2.1,
+    cap5FreeClosedWalkSelectedBoundaryArcSourceFoundationTarget_of_attachmentFaceSourceDataFoundationTarget
+      hindex.2.2⟩
+
+/--
+The public selected-boundary-arc source index is equivalent to the public
+source-data index.
+-/
+theorem cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_iff_sourceDataFoundationTargetIndex :
+    CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex ↔
+      CAP5FreePeeledCollarSourceDataFoundationTargetIndex :=
+  ⟨cap5FreePeeledCollarSourceDataFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex,
+    cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_of_sourceDataFoundationTargetIndex⟩
+
+/--
+The public selected-boundary-arc source index exposes the route-index targets
+that still separate the canonical and repaired separation obligations from the
+closed-walk selected-boundary-arc source obligation.
+-/
+theorem cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_routeIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget :=
+  ⟨section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget hindex.1,
+    section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget hindex.2.1,
+    section92Step4ClosedWalkCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget
+      hindex.2.2⟩
+
+/--
+The public selected-boundary-arc source index also exposes the aligned
+selected-boundary-arc route-index targets for the closed-walk, canonical, and
+repaired annulus forms.
+-/
+theorem cap5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex_alignedRouteIndexTargets
+    (hindex :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget ∧
+      Section92Step4ClosedWalkCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget :=
+  ⟨section92Step4CanonicalAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget
+      hindex.2.2,
+    section92Step4RepairedAnnulusCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget
+      hindex.2.2,
+    section92Step4ClosedWalkCAP5FreeSelectedBoundaryArcSourceOffBoundaryRouteIndexTarget
+      hindex.2.2⟩
+
 end Mettapedia.GraphTheory.FourColor
