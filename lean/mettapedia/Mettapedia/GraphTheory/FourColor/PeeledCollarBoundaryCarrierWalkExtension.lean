@@ -79,6 +79,48 @@ theorem of_edge_endpoint_outside
 
 end OffCarrierReachable
 
+/-- Endpoint support is monotone in the selected finite edge set. -/
+theorem boundaryEdgeSetEndpointSupport_mono
+    {G : SimpleGraph V} {edges₁ edges₂ : Finset G.edgeSet}
+    (hsubset : edges₁ ⊆ edges₂) :
+    boundaryEdgeSetEndpointSupport edges₁ ⊆
+      boundaryEdgeSetEndpointSupport edges₂ := by
+  intro v hv
+  rcases (mem_boundaryEdgeSetEndpointSupport_iff edges₁).1 hv with
+    ⟨e, he, hve⟩
+  exact (mem_boundaryEdgeSetEndpointSupport_iff edges₂).2
+    ⟨e, hsubset he, hve⟩
+
+omit [DecidableEq V] in
+/--
+Edge-local side constancy across every edge of an off-support walk makes the
+side predicate constant between the walk endpoints.
+-/
+theorem EdgeSideLocallyConstantOffSupport.walk_side_iff
+    {G : SimpleGraph V} {side : V → Prop} {support : Finset V}
+    (hlocal : EdgeSideLocallyConstantOffSupport (G := G) side support)
+    {u v : V} (p : G.Walk u v)
+    (hp : WalkUsesOnlyEdgesTouchingOutsideVertexSupport support p) :
+    side u ↔ side v := by
+  constructor
+  · intro hu
+    by_contra hv
+    rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides side p hu hv with
+      ⟨e, he, hcross⟩
+    exact
+      (not_edgeCrossesVertexSide_of_edgeSideLocallyConstantOffSupport
+        hlocal (hp e he)) hcross
+  · intro hv
+    by_contra hu
+    rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides
+        (fun x => ¬ side x) p hu (by simpa using hv) with
+      ⟨e, he, hcross⟩
+    have hcrossSide : EdgeCrossesVertexSide G side e :=
+      (edgeCrossesVertexSide_compl G side e).1 hcross
+    exact
+      (not_edgeCrossesVertexSide_of_edgeSideLocallyConstantOffSupport
+        hlocal (hp e he)) hcrossSide
+
 /--
 Ambient side obtained by filling a carrier cut through off-carrier
 reachability from true-side carrier vertices.
@@ -178,6 +220,65 @@ def toCarrierEndpointSupport
         ⟨v, hv, hvOutside⟩
     exact hnotCross hcross
 
+/--
+For the canonical endpoint-support induced graph, mapped cut edges are still
+selected carrier edges when the selected edge set is induced.
+-/
+theorem mappedCutEdgeSet_subset_carrierEdges_of_inducedSubgraph
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (hInduced : BoundaryEdgeSetInducedSubgraph edges)
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)) :
+    cut.edgeCut.map
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet ⊆
+      edges := by
+  intro e he
+  rcases Finset.mem_map.1 he with ⟨eH, _heH, heq⟩
+  rw [← heq]
+  exact boundaryEdgeSetInducedGraphEmbedding_mapEdgeSet_mem_of_inducedSubgraph
+    (G := G) (edges := edges) hInduced eH
+
+/--
+Canonical local-constancy data imply off-carrier walk consistency.  The only
+extra graph condition needed is that the finite carrier edge set is induced,
+so the mapped support of a carrier cut is contained in the full carrier
+support.
+-/
+theorem of_localConstancy
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    (hInduced : BoundaryEdgeSetInducedSubgraph edges)
+    (localData :
+      PeeledCollarCutAmbientSideLocalConstancy
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges) cut) :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistent (G := G) edges cut := by
+  intro a b hab
+  rcases hab with ⟨p, hp⟩
+  have hcutSupport_subset :
+      boundaryEdgeSetEndpointSupport
+          (cut.edgeCut.map
+            (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet) ⊆
+        boundaryEdgeSetEndpointSupport edges :=
+    boundaryEdgeSetEndpointSupport_mono
+      (mappedCutEdgeSet_subset_carrierEdges_of_inducedSubgraph
+        (G := G) (edges := edges) hInduced cut)
+  have hpCut :
+      WalkUsesOnlyEdgesTouchingOutsideVertexSupport
+        (boundaryEdgeSetEndpointSupport
+          (cut.edgeCut.map
+            (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet))
+        p := by
+    intro e he
+    rcases hp e he with ⟨v, hv, hvOutside⟩
+    exact ⟨v, hv, fun hvCut => hvOutside (hcutSupport_subset hvCut)⟩
+  have hside :
+      localData.side
+          (boundaryEdgeSetInducedGraphEmbedding (G := G) edges a) ↔
+        localData.side
+          (boundaryEdgeSetInducedGraphEmbedding (G := G) edges b) :=
+    localData.offBoundaryEndpoint_side_iff.walk_side_iff p hpCut
+  exact (localData.side_comp_embedding a).symm.trans
+    (hside.trans (localData.side_comp_embedding b))
+
 end BoundaryEdgeSetInducedCutOffCarrierWalkConsistent
 
 /--
@@ -203,6 +304,23 @@ theorem boundaryCarrierEndpointSupports_of_offCarrierWalkConsistencies
       (G := G) edges := by
   intro cut
   exact ⟨(hconsistent cut).toCarrierEndpointSupport⟩
+
+/--
+Canonical local-constancy data imply the off-carrier walk-consistency target
+when the selected finite carrier edge set is induced.
+-/
+theorem boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_localConstancies
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (hInduced : BoundaryEdgeSetInducedSubgraph edges)
+    (hlocal :
+      PeeledCollarCutAmbientSideLocalConstanciesToAmbient
+        (boundaryEdgeSetInducedGraphEmbedding (G := G) edges)) :
+    BoundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient
+      (G := G) edges := by
+  intro cut
+  rcases hlocal cut with ⟨localData⟩
+  exact BoundaryEdgeSetInducedCutOffCarrierWalkConsistent.of_localConstancy
+    (G := G) (edges := edges) hInduced localData
 
 /--
 Off-carrier walk consistency implies endpoint-range data for the canonical
