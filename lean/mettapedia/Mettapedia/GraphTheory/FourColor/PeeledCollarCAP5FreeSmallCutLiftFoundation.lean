@@ -65,6 +65,23 @@ def CAP5FreeRepairedAnnulusPeeledCollarSmallCutLiftFoundationTarget :
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph
 
 /--
+Closed-walk source small-cut lift foundation target for the selected induced
+peeled collar graph carried by a boundary source.
+-/
+def CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      PeeledCollarSmallCyclicCutLiftsToAmbient G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/--
 Candidate-lift foundations are stronger than small-cut lift foundations.
 -/
 theorem cap5FreePeeledCollarSmallCutLiftFoundationTarget_of_realizedCandidateLift
@@ -265,6 +282,64 @@ theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
 
 end PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry
 
+namespace PlanarBoundaryClosedWalkAnnulusBoundarySource
+
+/--
+A closed-walk source small-cut lift foundation theorem supplies the lift,
+cyclic five-edge-connectivity, no cyclic two-cut, and S4 no-escape for the
+selected induced peeled collar graph.
+-/
+theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    PeeledCollarSmallCyclicCutLiftsToAmbient G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+      CyclicallyFiveEdgeConnected
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+      ClosedCollarForbidsCyclicTwoCut
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
+  have hlift :
+      PeeledCollarSmallCyclicCutLiftsToAmbient G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+    hfoundation source regime
+  let inputs :
+      MinimalCounterexamplePeeledCollarRouteInputs G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := {
+    regime := regime
+    smallCutLift := hlift
+  }
+  exact
+    ⟨hlift,
+      inputs.cyclicallyFiveEdgeConnected,
+      inputs.closedCollarForbidsCyclicTwoCut,
+      inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
+
+/--
+The existing closed-walk face-source foundation supplies the selected-source
+small-cut lift foundation.
+-/
+theorem cap5FreeSmallCutLiftFoundationTarget_of_faceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
+    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget := by
+  intro V _ G emb source regime
+  exact
+    (source.routeIndexConsequences_of_cap5FreeFaceSourceFoundationTarget
+      hfoundation regime).2.2.2.2.1
+
+end PlanarBoundaryClosedWalkAnnulusBoundarySource
+
 /--
 Graph-facing CAP5-free small-cut lift route index.  Once the named foundation
 target is proved, cyclic five-edge-connectivity is supplied by the regime and
@@ -365,6 +440,50 @@ theorem section92Step4RepairedAnnulusCAP5FreeSmallCutLiftFoundationRouteIndexTar
   exact
     data.routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
       hfoundation regime
+
+/--
+Closed-walk source CAP5-free small-cut lift route index.
+-/
+def Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
+      PeeledCollarSmallCyclicCutLiftsToAmbient G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        CyclicallyFiveEdgeConnected
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ClosedCollarForbidsCyclicTwoCut
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/-- Route-index theorem for the closed-walk source small-cut lift target. -/
+theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget := by
+  intro V _ G emb source regime
+  exact
+    source.routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
+      hfoundation regime
+
+/--
+The closed-walk face-source foundation supplies the corresponding small-cut
+lift route index.
+-/
+theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget_of_faceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
+    Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget :=
+  section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget
+    (PlanarBoundaryClosedWalkAnnulusBoundarySource.cap5FreeSmallCutLiftFoundationTarget_of_faceSourceFoundationTarget
+      hfoundation)
 
 /--
 The separation foundation index supplies the corresponding small-cut lift
