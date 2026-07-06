@@ -57,6 +57,77 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexamplePeeledCollarRouteInputs
 
 /--
+Checker-facing index of the regime route inputs: the planar foundation theorem
+is stated as a lift for each realized separator candidate.  This is equivalent
+to the bundled small-cut lift, but matches the finite separator APIs used by
+the rotation-system side of the route.
+-/
+structure MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs
+    (G : SimpleGraph V) (H : SimpleGraph W) where
+  regime : MinimalCounterexamplePeeledCollarRegime G W H
+  realizedCandidateLift :
+    PeeledCollarRealizedCandidateLiftsToAmbientSmallCut G H
+
+namespace MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs
+
+/-- Realized-candidate route inputs supply the base graph-facing route inputs. -/
+def toRouteInputs
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H) :
+    MinimalCounterexamplePeeledCollarRouteInputs G H where
+  regime := inputs.regime
+  smallCutLift :=
+    peeledCollarSmallCyclicCutLiftsToAmbient_of_realizedCandidateLift
+      inputs.realizedCandidateLift
+
+/-- Realized-candidate route inputs rule out exact realization of each small
+collar separator candidate. -/
+theorem not_realizes
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H)
+    (candidate : CyclicSeparatorCandidate H) :
+    ¬ candidate.Realizes := by
+  intro hrealizes
+  rcases inputs.realizedCandidateLift candidate hrealizes with
+    ⟨ambientCut, hcard⟩
+  exact inputs.regime.ambient.noSmallCyclicEdgeCuts
+    ⟨ambientCut, le_trans hcard candidate.hcard_le_four⟩
+
+/-- The realized-candidate route inputs supply cyclic five-edge-connectivity
+for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H) :
+    CyclicallyFiveEdgeConnected H :=
+  inputs.toRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The realized-candidate route inputs supply the no-cyclic-two-cut fact
+consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H) :
+    ClosedCollarForbidsCyclicTwoCut H :=
+  inputs.toRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Realized-candidate S4 winding salvage: cyclic five-edge-connectivity is
+obtained from the ambient minimal-counterexample normal form plus the
+checker-facing candidate lift, not assumed for the peeled collar.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs :
+      MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+  inputs.toRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs
+
+/--
 More concrete index of the regime route inputs: the collar is embedded in the
 ambient graph, and every small cyclic collar cut has an ambient side extension
 with exactly the mapped crossing support.  This is the reusable interface for
