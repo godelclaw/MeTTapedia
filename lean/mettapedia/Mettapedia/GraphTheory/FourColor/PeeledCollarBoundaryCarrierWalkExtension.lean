@@ -1489,6 +1489,68 @@ def CutOffCarrierAttachmentFaceNoncrossingRouteTarget
                     data.FaceSelectedBoundaryEdgesDoNotCrossSide side f
 
 /--
+Source-facing face-local route target for one carrier cut: the selected
+boundary edges witnessing two attachments lie on a selected-boundary arc of a
+face whose selected boundary edges do not cross the cut-compatible side.
+
+This is one step closer to the planar normal-form source layer than
+`CutOffCarrierAttachmentFaceNoncrossingRouteTarget`: the needed face walk is
+derived from the selected-boundary arc geometry.
+-/
+def CutOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    (cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)) :
+    Prop :=
+  ∃ side : V → Prop,
+    (∀ w : BoundaryEdgeSetEndpointVertex
+        (G := G) data.ambientBoundaryEdgeSet,
+      side (data.inducedBoundaryEmbedding w) ↔ cut.side w) ∧
+      ∀ root : V,
+        ∀ a b : BoundaryEdgeSetEndpointVertex
+            (G := G) data.ambientBoundaryEdgeSet,
+          BoundaryEdgeSetInducedOffCarrierComponentAttachesToCarrierVertex
+            (G := G) data.ambientBoundaryEdgeSet root a →
+          BoundaryEdgeSetInducedOffCarrierComponentAttachesToCarrierVertex
+            (G := G) data.ambientBoundaryEdgeSet root b →
+            ∃ f : AmbientFace emb.faces,
+            ∃ e₁ e₂ : G.edgeSet,
+            ∃ _ : e₁ ∈ emb.faceBoundary f.1,
+            ∃ _ : e₂ ∈ emb.faceBoundary f.1,
+            ∃ _ : e₁ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
+            ∃ _ : e₂ ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
+              (a : V) ∈ (e₁ : Sym2 V) ∧
+                (b : V) ∈ (e₂ : Sym2 V) ∧
+                  BoundarySelectedBoundaryArcOnFace (emb := emb) f ∧
+                    data.FaceSelectedBoundaryEdgesDoNotCrossSide side f
+
+/--
+Selected-boundary arc route witnesses supply the existing attachment-face
+noncrossing route target by deriving the face-supported walk.
+-/
+theorem cutAttachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    {cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet)}
+    (h :
+      data.CutOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+        cut) :
+    data.CutOffCarrierAttachmentFaceNoncrossingRouteTarget cut := by
+  rcases h with ⟨side, hside, hroute⟩
+  refine ⟨side, hside, ?_⟩
+  intro root a b hrootA hrootB
+  rcases hroute root a b hrootA hrootB with
+    ⟨f, e₁, e₂, he₁Face, he₂Face, he₁, he₂, ha, hb, harc,
+      hnoncross⟩
+  refine ⟨f, e₁, e₂, he₁Face, he₂Face, he₁, he₂, ha, hb, ?_,
+    hnoncross⟩
+  exact boundaryComponentWalkOnFace_of_boundarySelectedBoundaryArcOnFace harc
+
+/--
 Annulus-boundary face-local noncrossing route target: every small cyclic cut
 admits the face witnesses needed to connect off-carrier component attachments
 after deleting the mapped cut.
@@ -1500,6 +1562,34 @@ def PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
       SmallCyclicEdgeCut
         (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet),
     data.CutOffCarrierAttachmentFaceNoncrossingRouteTarget cut
+
+/--
+Annulus-boundary source target using selected-boundary arcs: every small
+cyclic cut admits noncrossing face-arc witnesses for off-carrier component
+attachments.
+-/
+def PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb) : Prop :=
+  ∀ cut :
+      SmallCyclicEdgeCut
+        (BoundaryEdgeSetInducedGraph (G := G) data.ambientBoundaryEdgeSet),
+    data.CutOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget cut
+
+/--
+Selected-boundary arc source witnesses supply the attachment-face noncrossing
+route target.
+-/
+theorem attachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget := by
+  intro cut
+  exact
+    data.cutAttachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+      (h cut)
 
 /--
 Face-local noncrossing route witnesses supply the mapped-cut-deleted
@@ -1523,6 +1613,20 @@ theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncr
   refine ⟨ea, eb, ?_, ?_, hreachable⟩
   · simpa [hea] using ha
   · simpa [heb] using hb
+
+/--
+Selected-boundary arc source witnesses supply mapped-cut-deleted
+shared-endpoint connectivity for off-carrier component attachments.
+-/
+theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
+  mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+    (data.attachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+      h)
 
 /-- No-opposite-side off-carrier components supply annulus-boundary
 off-carrier walk consistency. -/
@@ -1848,6 +1952,29 @@ def PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
     |>.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
 
 /--
+Annulus-geometry noncrossing selected-boundary arc source target.
+-/
+def PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.boundaryData
+    |>.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+
+/--
+Annulus-geometry selected-boundary arc source witnesses supply the
+attachment-face noncrossing route target.
+-/
+theorem attachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget :=
+  data.boundaryData
+    |>.attachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+      h
+
+/--
 Annulus-geometry attachment-face noncrossing routes supply mapped-cut-deleted
 shared-endpoint connectivity.
 -/
@@ -1858,6 +1985,20 @@ theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncr
     data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
   data.boundaryData
     |>.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+      h
+
+/--
+Annulus-geometry selected-boundary arc source witnesses supply
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
+  data.boundaryData
+    |>.mappedCutAvoidingSharedEndpointConnectivityTarget_of_noncrossingSelectedBoundaryArcSourceTarget
       h
 
 /-- No-opposite-side off-carrier components supply annulus-geometry
@@ -2162,6 +2303,29 @@ def PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
     |>.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
 
 /--
+Repaired annulus-geometry noncrossing selected-boundary arc source target.
+-/
+def PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+
+/--
+Repaired annulus-geometry selected-boundary arc source witnesses supply the
+attachment-face noncrossing route target.
+-/
+theorem attachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.attachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+      h
+
+/--
 Repaired annulus-geometry attachment-face noncrossing routes supply
 mapped-cut-deleted shared-endpoint connectivity.
 -/
@@ -2172,6 +2336,20 @@ theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncr
     data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
   data.toPlanarBoundaryAnnulusCollarGeometry
     |>.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+      h
+
+/--
+Repaired annulus-geometry selected-boundary arc source witnesses supply
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      data.PeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget) :
+    data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.mappedCutAvoidingSharedEndpointConnectivityTarget_of_noncrossingSelectedBoundaryArcSourceTarget
       h
 
 /-- No-opposite-side off-carrier components supply repaired annulus-geometry
