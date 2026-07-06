@@ -713,6 +713,27 @@ structure MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
 
 namespace MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
 
+/-- Build annulus-extraction route inputs from the equivalent separation-form
+annulus target. -/
+def of_separationTarget
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (regime : MinimalCounterexamplePeeledCollarRegime G W H)
+    (ambientBoundaryEmbedding : PlaneEmbeddingWithBoundary G)
+    (annulusGeometry :
+      PlanarBoundaryAnnulusCollarGeometry ambientBoundaryEmbedding)
+    (embedding : H ↪g G)
+    (hseparate :
+      PlanarBoundaryAnnulusPeeledCollarSeparationTarget
+        annulusGeometry embedding) :
+    MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H where
+  regime := regime
+  ambientBoundaryEmbedding := ambientBoundaryEmbedding
+  annulusGeometry := annulusGeometry
+  embedding := embedding
+  annulusExtractionLocalConstancy :=
+    planarBoundaryAnnulusPeeledCollarLocalConstancyTarget_of_separationTarget
+      hseparate
+
 /-- Annulus-extraction route inputs supply the local-constancy route input
 record. -/
 def toLocalConstancyRouteInputs
@@ -801,6 +822,31 @@ def of_inducedBoundaryComponents_of_crossComponentChordFree
         hOuter hInner hCross
   annulusExtractionLocalConstancy := hlocal
 
+/--
+Build canonical annulus route inputs from component inducedness and the
+equivalent separation-form annulus target.
+-/
+def of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hseparate :
+      PlanarBoundaryAnnulusPeeledCollarSeparationTarget
+        data data.inducedBoundaryEmbedding) :
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data :=
+  of_inducedBoundaryComponents_of_crossComponentChordFree
+    regime hOuter hInner hCross
+    (planarBoundaryAnnulusPeeledCollarLocalConstancyTarget_of_separationTarget
+      hseparate)
+
 /-- Canonical annulus route inputs supply the off-carrier walk-consistency
 route input record. -/
 def toOffCarrierWalkConsistentRouteInputs
@@ -878,6 +924,31 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
     regime hOuter hInner hCross hlocal)
       |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
+/--
+Component-induced canonical-annulus S4 winding salvage from the separation-form
+annulus target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents_of_separation
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hseparate :
+      PlanarBoundaryAnnulusPeeledCollarSeparationTarget
+        data data.inducedBoundaryEmbedding) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  (of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
+    regime hOuter hInner hCross hseparate)
+      |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
@@ -926,6 +997,31 @@ def of_inducedBoundaryComponents_of_crossComponentChordFree
       |>.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
         hOuter hInner hCross
   previousBoundaryAnnulusExtractionLocalConstancy := hlocal
+
+/--
+Build repaired annulus route inputs from component inducedness and the
+equivalent separation-form previous-boundary annulus target.
+-/
+def of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hseparate :
+      PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
+        data data.inducedBoundaryEmbedding) :
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data :=
+  of_inducedBoundaryComponents_of_crossComponentChordFree
+    regime hOuter hInner hCross
+    (planarBoundaryPreviousBoundaryPeeledCollarLocalConstancyTarget_of_separationTarget
+      hseparate)
 
 /-- Repaired annulus route inputs supply the off-carrier walk-consistency route
 input record. -/
@@ -1002,6 +1098,31 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
       data.inducedBoundaryGraph :=
   (of_inducedBoundaryComponents_of_crossComponentChordFree
     regime hOuter hInner hCross hlocal)
+      |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+Component-induced repaired-annulus S4 winding salvage from the separation-form
+previous-boundary annulus target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents_of_separation
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hseparate :
+      PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
+        data data.inducedBoundaryEmbedding) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  (of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
+    regime hOuter hInner hCross hseparate)
       |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
@@ -1234,6 +1355,37 @@ theorem section92Step4CanonicalAnnulusRegimeDischargedS4SalvageTarget :
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 /--
+End-to-end S4 salvage target using the canonical annulus route with the
+annulus obligation stated as no-avoiding-walk side separation.
+-/
+def Section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (_ : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (_ : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (_ :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary),
+      PlanarBoundaryAnnulusPeeledCollarSeparationTarget
+        data data.inducedBoundaryEmbedding →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end canonical-annulus separation S4 salvage statement. -/
+theorem section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget :
+    Section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime hOuter hInner hCross hseparate
+  exact
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents_of_separation
+        regime hOuter hInner hCross hseparate
+
+/--
 End-to-end S4 salvage target using the repaired annulus route interface.
 -/
 def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
@@ -1249,5 +1401,36 @@ theorem section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget :
     Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget := by
   intro V _ G emb data inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the repaired annulus route with the
+annulus obligation stated as no-avoiding-walk side separation.
+-/
+def Section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (_ : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (_ : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (_ :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary),
+      PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
+        data data.inducedBoundaryEmbedding →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end repaired-annulus separation S4 salvage statement. -/
+theorem section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget :
+    Section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime hOuter hInner hCross hseparate
+  exact
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundaryComponents_of_separation
+        regime hOuter hInner hCross hseparate
 
 end Mettapedia.GraphTheory.FourColor

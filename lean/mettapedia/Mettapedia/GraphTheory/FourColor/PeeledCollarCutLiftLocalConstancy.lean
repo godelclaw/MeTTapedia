@@ -31,6 +31,38 @@ theorem not_edgeCrossesVertexSide_of_edgeSideLocallyConstantOffSupport
   rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
   exact hlocal e hoffSupport
 
+namespace PeeledCollarCutAmbientSideSeparation
+
+/--
+No-avoiding-walk separation rules out any side-crossing edge incident to a
+vertex outside the mapped cut endpoint support.
+-/
+def toOffBoundaryNoCrossing
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    {cut : SmallCyclicEdgeCut H}
+    (separation : PeeledCollarCutAmbientSideSeparation φ cut) :
+    PeeledCollarCutAmbientSideOffBoundaryNoCrossing φ cut where
+  side := separation.side
+  side_comp_embedding := separation.side_comp_embedding
+  nonBoundaryEndpoint_not_crossing := by
+    intro e hoffSupport
+    have hnotMapped : e ∉ cut.edgeCut.map φ.mapEdgeSet := by
+      intro he
+      rcases hoffSupport with ⟨v, hv, hvNotSupport⟩
+      have hvSupport :
+          v ∈ boundaryEdgeSetEndpointSupport
+            (cut.edgeCut.map φ.mapEdgeSet) :=
+        (mem_boundaryEdgeSetEndpointSupport_iff
+          (cut.edgeCut.map φ.mapEdgeSet)).2 ⟨e, he, hv⟩
+      exact hvNotSupport hvSupport
+    exact
+      ((no_walk_avoiding_edgeCut_iff_noncrossing_outside_edgeCut
+        (G := G) (edgeCut := cut.edgeCut.map φ.mapEdgeSet)
+        separation.side).1
+          separation.noWalkAvoiding_mappedCut) e hnotMapped
+
+end PeeledCollarCutAmbientSideSeparation
+
 /--
 Local-constancy datum for lifting one peeled-collar cut.  The ambient side
 agrees with the collar side on embedded vertices, and the side is constant on
@@ -164,6 +196,24 @@ theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideOffBou
   rcases hoffBoundary cut with ⟨offBoundary⟩
   exact ⟨offBoundary.toLocalConstancy⟩
 
+/-- No-avoiding-walk side separations imply off-boundary no-crossing data. -/
+theorem peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_ambientSideSeparations
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hseparate : PeeledCollarCutAmbientSideSeparationsToAmbient φ) :
+    PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient φ := by
+  intro cut
+  rcases hseparate cut with ⟨separation⟩
+  exact ⟨separation.toOffBoundaryNoCrossing⟩
+
+/-- No-avoiding-walk side separations imply local side constancy. -/
+theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideSeparations
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hseparate : PeeledCollarCutAmbientSideSeparationsToAmbient φ) :
+    PeeledCollarCutAmbientSideLocalConstanciesToAmbient φ :=
+  peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideOffBoundaryNoCrossings
+    (peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_ambientSideSeparations
+      hseparate)
+
 /-- Local side constancy and off-boundary no-crossing are equivalent foundation
 targets for the peeled-collar lift. -/
 theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_iff_offBoundaryNoCrossings
@@ -217,6 +267,15 @@ theorem peeledCollarCutAmbientSideSeparationsToAmbient_of_localConstancies
   peeledCollarCutAmbientSideSeparationsToAmbient_of_ambientSideOffBoundaryNoCrossings
     (peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_localConstancies
       hlocal)
+
+/-- Local side constancy and no-avoiding-walk side separation are equivalent
+foundation targets for the peeled-collar lift. -/
+theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_iff_ambientSideSeparations
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G} :
+    PeeledCollarCutAmbientSideLocalConstanciesToAmbient φ ↔
+      PeeledCollarCutAmbientSideSeparationsToAmbient φ :=
+  ⟨peeledCollarCutAmbientSideSeparationsToAmbient_of_localConstancies,
+    peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideSeparations⟩
 
 /-- Local side constancy implies concrete side extensions. -/
 theorem peeledCollarCutSideExtensionsToAmbient_of_localConstancies
