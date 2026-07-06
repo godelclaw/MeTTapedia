@@ -266,6 +266,28 @@ def CAP5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundati
   CAP5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex
 
 /--
+Stronger planar-normal-form theorem target in mapped-cut-deleted
+shared-endpoint connectivity language: the closed-walk foundation proves that
+attachments of each off-carrier component are connected in the selected
+boundary shared-endpoint graph after deleting the mapped carrier cut.
+-/
+def CAP5FreePeeledCollarPlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex :
+    Prop :=
+  CAP5FreePeeledCollarClosedWalkOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationTargetIndex
+
+/--
+The mapped-cut-deleted shared-endpoint planar-normal-form target supplies the
+cut-avoiding shared-endpoint target.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex_of_mappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_of_mappedCutAvoidingSharedEndpointConnectivityFoundationTargetIndex
+    hindex
+
+/--
 The cut-avoiding shared-endpoint planar-normal-form target supplies the
 attachment-carrier target.
 -/
@@ -288,6 +310,19 @@ theorem
     CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
   cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_attachmentCarrierConnectivityCutLiftFoundationTargetIndex
     (cap5FreePeeledCollarPlanarNormalFormAttachmentCarrierConnectivityCutLiftFoundationTargetIndex_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+      hindex)
+
+/--
+The mapped-cut-deleted shared-endpoint planar-normal-form target supplies the
+smaller cut-lift target.
+-/
+theorem
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_mappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex) :
+    CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+  cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_cutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (cap5FreePeeledCollarPlanarNormalFormCutAvoidingSharedEndpointCutLiftFoundationTargetIndex_of_mappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex
       hindex)
 
 /-- The stronger face-placement index supplies the smaller cut-lift target. -/
@@ -535,6 +570,44 @@ theorem
       hindex
   have hroutes :=
     cap5FreePeeledCollarClosedWalkOffCarrierCutAvoidingSharedEndpointReachabilityFoundationTargetIndex_routeIndexTargets
+      hindex
+  exact
+    ⟨hroutes.1,
+      hroutes.2.1,
+      hroutes.2.2.1,
+      hroutes.2.2.2.1,
+      section92Step4CAP5FreePlanarNormalFormRouteIndexTarget_of_planarNormalFormCutLiftFoundationTargetIndex
+        hcut⟩
+
+/--
+Expanded mapped-cut-deleted shared-endpoint route target reached from the
+stronger planar-normal-form target: both annulus separation routes, the
+closed-walk mapped-cut route, the cut-avoiding route, and the
+regime-discharged S4 route.
+-/
+def Section92Step4CAP5FreePlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftRouteIndexTarget :
+    Prop :=
+  Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationRouteIndexTarget ∧
+    Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabilityFoundationRouteIndexTarget ∧
+    Section92Step4CAP5FreePlanarNormalFormRouteIndexTarget
+
+/--
+The mapped-cut-deleted shared-endpoint planar-normal-form target supplies the
+expanded route index and therefore the existing regime-discharged S4 target.
+-/
+theorem
+    section92Step4CAP5FreePlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftRouteIndexTarget_of_mappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex) :
+    Section92Step4CAP5FreePlanarNormalFormMappedCutAvoidingSharedEndpointCutLiftRouteIndexTarget := by
+  have hcut :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex :=
+    cap5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex_of_mappedCutAvoidingSharedEndpointCutLiftFoundationTargetIndex
+      hindex
+  have hroutes :=
+    cap5FreePeeledCollarClosedWalkOffCarrierMappedCutAvoidingSharedEndpointConnectivityFoundationTargetIndex_routeIndexTargets
       hindex
   exact
     ⟨hroutes.1,
