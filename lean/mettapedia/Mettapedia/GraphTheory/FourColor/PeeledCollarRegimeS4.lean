@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftLocalConstancy
+import Mettapedia.GraphTheory.FourColor.PeeledCollarAnnulusExtraction
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -487,6 +487,65 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleLocalConstancyPeeledCollarRouteInputs
 
 /--
+Annulus-extraction index of the regime route inputs: the remaining foundation
+target is tied to an existing annulus collar geometry package and an embedded
+collar graph, and asks for the equivalent local/off-boundary side condition.
+-/
+structure MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
+    (G : SimpleGraph V) (H : SimpleGraph W) where
+  regime : MinimalCounterexamplePeeledCollarRegime G W H
+  ambientBoundaryEmbedding : PlaneEmbeddingWithBoundary G
+  annulusGeometry :
+    PlanarBoundaryAnnulusCollarGeometry ambientBoundaryEmbedding
+  embedding : H ↪g G
+  annulusExtractionLocalConstancy :
+    PlanarBoundaryAnnulusPeeledCollarLocalConstancyTarget
+      annulusGeometry embedding
+
+namespace MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
+
+/-- Annulus-extraction route inputs supply the local-constancy route input
+record. -/
+def toLocalConstancyRouteInputs
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H) :
+    MinimalCounterexampleLocalConstancyPeeledCollarRouteInputs G H where
+  regime := inputs.regime
+  embedding := inputs.embedding
+  ambientSideLocalConstancies :=
+    peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_annulusExtractionTarget
+      inputs.annulusExtractionLocalConstancy
+
+/-- The annulus-extraction route inputs supply cyclic five-edge-connectivity
+for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H) :
+    CyclicallyFiveEdgeConnected H :=
+  inputs.toLocalConstancyRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The annulus-extraction route inputs supply the no-cyclic-two-cut fact
+consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H) :
+    ClosedCollarForbidsCyclicTwoCut H :=
+  inputs.toLocalConstancyRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Annulus-extraction S4 winding salvage: cyclic five-edge-connectivity is
+obtained from the minimal-counterexample normal form plus the named annulus
+extraction target for the embedded peeled collar.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+  inputs.toLocalConstancyRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
+
+/--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
 collar route.  The route input record supplies the upstream collar
 connectivity bridge; the downstream closed-collar theorem then rules out the
@@ -623,6 +682,21 @@ def Section92Step4LocalConstancyRegimeDischargedS4SalvageTarget : Prop :=
 /-- Verbatim end-to-end local-constancy S4 salvage statement. -/
 theorem section92Step4LocalConstancyRegimeDischargedS4SalvageTarget :
     Section92Step4LocalConstancyRegimeDischargedS4SalvageTarget := by
+  intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the annulus-extraction route interface.
+-/
+def Section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W},
+      MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+
+/-- Verbatim end-to-end annulus-extraction S4 salvage statement. -/
+theorem section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget :
+    Section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
