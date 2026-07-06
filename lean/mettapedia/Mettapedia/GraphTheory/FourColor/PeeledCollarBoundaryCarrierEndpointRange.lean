@@ -163,6 +163,21 @@ theorem peeledCollarCutAmbientSideEndpointRangesToAmbient_of_boundaryCarrierEndp
   exact ⟨support.toAmbientSideEndpointRange⟩
 
 /--
+Carrier endpoint-support data imply mapped-cut boundary-support data for the
+canonical induced boundary graph.
+-/
+theorem
+    peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_boundaryCarrierEndpointSupports
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (hsupport :
+      BoundaryEdgeSetInducedCutAmbientSideEndpointSupportsToAmbient (G := G) edges) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient
+      (boundaryEdgeSetInducedGraphEmbedding (G := G) edges) :=
+  peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideEndpointRanges
+    (peeledCollarCutAmbientSideEndpointRangesToAmbient_of_boundaryCarrierEndpointSupports
+      hsupport)
+
+/--
 Carrier endpoint-support data imply the existing preimage target for the
 canonical induced boundary graph.
 -/
@@ -277,6 +292,18 @@ theorem peeledCollarCutAmbientSideEndpointRangesToAmbient_of_carrierEndpointSupp
     (G := G) (edges := data.ambientBoundaryEdgeSet) h
 
 /--
+The annulus-boundary carrier-endpoint target gives mapped-cut boundary-support
+data for the canonical induced annulus boundary graph.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_carrierEndpointSupportTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h : data.PeeledCollarCarrierEndpointSupportTarget) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient data.inducedBoundaryEmbedding :=
+  peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_boundaryCarrierEndpointSupports
+    (G := G) (edges := data.ambientBoundaryEdgeSet) h
+
+/--
 The annulus-boundary carrier-endpoint target gives the small-cut lift for the
 canonical induced annulus boundary graph.
 -/
@@ -332,6 +359,19 @@ theorem peeledCollarSmallCyclicCutLiftsToAmbient_of_carrierEndpointSupportTarget
     h
 
 /--
+The annulus-geometry carrier-endpoint target gives mapped-cut boundary-support
+data for the canonical induced annulus boundary graph.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_carrierEndpointSupportTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h : data.PeeledCollarCarrierEndpointSupportTarget) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient data.inducedBoundaryEmbedding :=
+  data.boundaryData
+    |>.peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_carrierEndpointSupportTarget
+      h
+
+/--
 The ambient minimal-counterexample regime plus the annulus-geometry
 carrier-endpoint target supplies cyclic five-edge-connectivity for the
 canonical induced annulus boundary graph.
@@ -374,6 +414,18 @@ theorem peeledCollarSmallCyclicCutLiftsToAmbient_of_carrierEndpointSupportTarget
     PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph :=
   data.toPlanarBoundaryAnnulusCollarGeometry
     |>.peeledCollarSmallCyclicCutLiftsToAmbient_of_carrierEndpointSupportTarget h
+
+/--
+The repaired annulus-geometry carrier-endpoint target gives mapped-cut
+boundary-support data for the canonical induced annulus boundary graph.
+-/
+theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_carrierEndpointSupportTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h : data.PeeledCollarCarrierEndpointSupportTarget) :
+    PeeledCollarCutAmbientSideBoundarySupportsToAmbient data.inducedBoundaryEmbedding :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_carrierEndpointSupportTarget h
 
 /--
 The ambient minimal-counterexample regime plus the repaired annulus-geometry
