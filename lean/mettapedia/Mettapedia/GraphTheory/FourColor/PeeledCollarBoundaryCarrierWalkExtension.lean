@@ -379,6 +379,40 @@ def PeeledCollarOffCarrierWalkConsistencyTarget
     (G := G) data.ambientBoundaryEdgeSet
 
 /--
+Canonical annulus-boundary local constancy implies off-carrier walk
+consistency when the selected annulus boundary edge set is induced.
+-/
+theorem offCarrierWalkConsistencyTarget_of_localConstancies
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
+    (hlocal :
+      PeeledCollarCutAmbientSideLocalConstanciesToAmbient
+        data.inducedBoundaryEmbedding) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  boundaryEdgeSetInducedCutOffCarrierWalkConsistenciesToAmbient_of_localConstancies
+    (G := G) (edges := data.ambientBoundaryEdgeSet) hInduced hlocal
+
+/--
+Selected-boundary inducedness plus canonical annulus-boundary local constancy
+implies off-carrier walk consistency.
+-/
+theorem offCarrierWalkConsistencyTarget_of_selectedBoundaryInducedSubgraph_of_localConstancies
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (hSelected : SelectedBoundaryInducedSubgraph emb)
+    (hlocal :
+      PeeledCollarCutAmbientSideLocalConstanciesToAmbient
+        data.inducedBoundaryEmbedding) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.offCarrierWalkConsistencyTarget_of_localConstancies
+    (by
+      simpa [SelectedBoundaryInducedSubgraph,
+        PlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet,
+        data.ambientBoundary_eq] using hSelected)
+    hlocal
+
+/--
 The annulus-boundary off-carrier walk consistency target gives the
 carrier-endpoint target for the canonical induced annulus boundary graph.
 -/
@@ -435,6 +469,21 @@ def PeeledCollarOffCarrierWalkConsistencyTarget
   data.boundaryData.PeeledCollarOffCarrierWalkConsistencyTarget
 
 /--
+Canonical annulus-geometry local constancy implies off-carrier walk
+consistency when the selected annulus boundary edge set is induced.
+-/
+theorem offCarrierWalkConsistencyTarget_of_localConstancies
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
+    (hlocal :
+      PeeledCollarCutAmbientSideLocalConstanciesToAmbient
+        data.inducedBoundaryEmbedding) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.boundaryData.offCarrierWalkConsistencyTarget_of_localConstancies
+    hInduced hlocal
+
+/--
 The annulus-geometry off-carrier walk consistency target gives the small-cut
 lift for the canonical induced annulus boundary graph.
 -/
@@ -478,6 +527,21 @@ def PeeledCollarOffCarrierWalkConsistencyTarget
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
   data.toPlanarBoundaryAnnulusCollarGeometry.PeeledCollarOffCarrierWalkConsistencyTarget
+
+/--
+Canonical repaired-annulus local constancy implies off-carrier walk
+consistency when the selected annulus boundary edge set is induced.
+-/
+theorem offCarrierWalkConsistencyTarget_of_localConstancies
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (hInduced : BoundaryEdgeSetInducedSubgraph data.ambientBoundaryEdgeSet)
+    (hlocal :
+      PeeledCollarCutAmbientSideLocalConstanciesToAmbient
+        data.inducedBoundaryEmbedding) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.offCarrierWalkConsistencyTarget_of_localConstancies hInduced hlocal
 
 /--
 The repaired annulus-geometry off-carrier walk consistency target gives the
