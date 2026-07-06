@@ -245,6 +245,113 @@ def BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpo
                 (G := G) (edges := edges) cut ea eb
 
 /--
+Selected boundary edges that survive deletion of the mapped carrier cut.
+-/
+abbrev BoundaryEdgeSetMappedCutAvoidingEdgeVertex
+    {G : SimpleGraph V} (edges : Finset G.edgeSet)
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)) :
+    Type _ :=
+  {e : BoundaryEdgeSetEdgeVertex (G := G) edges //
+    e.1 ∉ cut.edgeCut.map
+      (boundaryEdgeSetInducedGraphEmbedding (G := G) edges).mapEdgeSet}
+
+/--
+The selected-boundary shared-endpoint graph after deleting selected edges that
+are in the mapped carrier cut.
+-/
+def BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+    {G : SimpleGraph V} (edges : Finset G.edgeSet)
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)) :
+    SimpleGraph
+      (BoundaryEdgeSetMappedCutAvoidingEdgeVertex (G := G) edges cut) where
+  Adj e f := (BoundaryEdgeSetSharedEndpointGraph (G := G) edges).Adj e.1 f.1
+  symm := ⟨by
+    intro e f h
+    rcases h with ⟨hne, v, hvE, hvF⟩
+    exact ⟨hne.symm, v, hvF, hvE⟩
+  ⟩
+  loopless := ⟨fun e h => h.1 rfl⟩
+
+/--
+Reachability in the selected-edge shared-endpoint graph after deleting the
+mapped carrier cut supplies the existing cut-avoiding shared-endpoint
+reachability predicate.
+-/
+theorem
+    boundaryEdgeSetSharedEndpointMappedCutAvoidingReachable_of_mappedCutAvoidingSharedEndpointGraph_reachable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    {e f : BoundaryEdgeSetMappedCutAvoidingEdgeVertex (G := G) edges cut}
+    (hreachable :
+      (BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+        (G := G) edges cut).Reachable e f) :
+    BoundaryEdgeSetSharedEndpointMappedCutAvoidingReachable
+      (G := G) (edges := edges) cut e.1 f.1 := by
+  rcases hreachable with ⟨p⟩
+  induction p with
+  | @nil g =>
+      refine ⟨SimpleGraph.Walk.nil, ?_⟩
+      intro x hx
+      have hx_eq : x = g.1 := by
+        simpa using hx
+      simpa [hx_eq] using g.2
+  | @cons e₀ e₁ e₂ hadj p ih =>
+      rcases ih with ⟨tail, htail⟩
+      have hfullAdj :
+          (BoundaryEdgeSetSharedEndpointGraph (G := G) edges).Adj
+            e₀.1 e₁.1 := by
+        exact hadj
+      refine ⟨SimpleGraph.Walk.cons hfullAdj tail, ?_⟩
+      intro x hx
+      rcases (by
+          simpa [SimpleGraph.Walk.support_cons] using hx :
+          x = e₀.1 ∨ x ∈ tail.support) with hxHead | hxTail
+      · simpa [hxHead] using e₀.2
+      · exact htail x hxTail
+
+/--
+Planar-facing component target stated through the graph obtained by deleting
+the mapped carrier cut from the selected-boundary shared-endpoint graph.
+-/
+def BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnected
+    {G : SimpleGraph V} (edges : Finset G.edgeSet)
+    (cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)) :
+    Prop :=
+  ∀ root : V,
+    ∀ a b : BoundaryEdgeSetEndpointVertex (G := G) edges,
+      BoundaryEdgeSetInducedOffCarrierComponentAttachesToCarrierVertex
+        (G := G) edges root a →
+      BoundaryEdgeSetInducedOffCarrierComponentAttachesToCarrierVertex
+        (G := G) edges root b →
+        ∃ ea eb :
+          BoundaryEdgeSetMappedCutAvoidingEdgeVertex (G := G) edges cut,
+          (a : V) ∈ (ea.1.1 : Sym2 V) ∧
+            (b : V) ∈ (eb.1.1 : Sym2 V) ∧
+              (BoundaryEdgeSetMappedCutAvoidingSharedEndpointGraph
+                (G := G) edges cut).Reachable ea eb
+
+/--
+The cut-deleted shared-endpoint component target supplies the existing
+cut-avoiding shared-endpoint route target.
+-/
+theorem
+    boundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachable_of_mappedCutAvoidingSharedEndpointConnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    {cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges)}
+    (hconnected :
+      BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnected
+        (G := G) edges cut) :
+    BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachable
+      (G := G) edges cut := by
+  intro root a b hrootA hrootB
+  rcases hconnected root a b hrootA hrootB with
+    ⟨ea, eb, ha, hb, hreachable⟩
+  exact
+    ⟨ea.1, eb.1, ha, hb,
+      boundaryEdgeSetSharedEndpointMappedCutAvoidingReachable_of_mappedCutAvoidingSharedEndpointGraph_reachable
+        (G := G) (edges := edges) (cut := cut) hreachable⟩
+
+/--
 Cut-avoiding shared-endpoint boundary routes for component attachments supply
 the carrier-walk attachment-connectivity target.
 -/
@@ -632,6 +739,34 @@ def BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpo
       (G := G) edges cut
 
 /--
+For every small cyclic carrier cut, attachments of each off-carrier component
+are connected in the selected-boundary shared-endpoint graph after deleting
+the mapped carrier cut.
+-/
+def BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnectivitiesToAmbient
+    {G : SimpleGraph V} (edges : Finset G.edgeSet) : Prop :=
+  ∀ cut : SmallCyclicEdgeCut (BoundaryEdgeSetInducedGraph (G := G) edges),
+    BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnected
+      (G := G) edges cut
+
+/--
+The cut-deleted shared-endpoint component target supplies cut-avoiding
+shared-endpoint routes for every small cyclic carrier cut.
+-/
+theorem
+    boundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachabilitiesToAmbient_of_mappedCutAvoidingSharedEndpointConnectivities
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (hconnected :
+      BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnectivitiesToAmbient
+        (G := G) edges) :
+    BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachabilitiesToAmbient
+      (G := G) edges := by
+  intro cut
+  exact
+    boundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachable_of_mappedCutAvoidingSharedEndpointConnected
+      (G := G) (edges := edges) (cut := cut) (hconnected cut)
+
+/--
 Cut-avoiding shared-endpoint boundary routes supply the carrier-connectivity
 target for every small cyclic carrier cut.
 -/
@@ -962,6 +1097,17 @@ def PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
   BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachabilitiesToAmbient
     (G := G) data.ambientBoundaryEdgeSet
 
+/--
+Annulus-boundary mapped-cut-deleted shared-endpoint connectivity target: for
+every small cyclic cut, attachments of one off-carrier component are connected
+in the selected-boundary shared-endpoint graph after deleting the mapped cut.
+-/
+def PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb) : Prop :=
+  BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnectivitiesToAmbient
+    (G := G) data.ambientBoundaryEdgeSet
+
 /-- No-opposite-side off-carrier components supply annulus-boundary
 off-carrier walk consistency. -/
 theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
@@ -1031,6 +1177,19 @@ theorem attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabi
     (h : data.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget) :
     data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget :=
   boundaryEdgeSetInducedCutOffCarrierComponentAttachmentCarrierConnectivitiesToAmbient_of_cutAvoidingSharedEndpointReachabilities
+    (G := G) (edges := data.ambientBoundaryEdgeSet) h
+
+/--
+Mapped-cut-deleted shared-endpoint connectivity supplies annulus-boundary
+cut-avoiding shared-endpoint reachability.
+-/
+theorem cutAvoidingSharedEndpointReachabilityTarget_of_mappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusBoundaryData emb}
+    (h :
+      data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget) :
+    data.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget :=
+  boundaryEdgeSetInducedCutOffCarrierComponentAttachmentCutAvoidingSharedEndpointReachabilitiesToAmbient_of_mappedCutAvoidingSharedEndpointConnectivities
     (G := G) (edges := data.ambientBoundaryEdgeSet) h
 
 /-- The annulus-boundary off-carrier target can be stated either as walk
@@ -1230,6 +1389,15 @@ def PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
     (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
   data.boundaryData.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
 
+/--
+Annulus-geometry mapped-cut-deleted shared-endpoint connectivity target.
+-/
+def PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.boundaryData
+    |>.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+
 /-- No-opposite-side off-carrier components supply annulus-geometry
 off-carrier walk consistency. -/
 theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
@@ -1301,6 +1469,20 @@ theorem attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabi
     data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget :=
   data.boundaryData
     |>.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget h
+
+/--
+Mapped-cut-deleted shared-endpoint connectivity supplies annulus-geometry
+cut-avoiding shared-endpoint reachability.
+-/
+theorem cutAvoidingSharedEndpointReachabilityTarget_of_mappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget) :
+    data.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget :=
+  data.boundaryData
+    |>.cutAvoidingSharedEndpointReachabilityTarget_of_mappedCutAvoidingSharedEndpointConnectivityTarget
+      h
 
 /-- The annulus-geometry off-carrier target can be stated either as walk
 consistency or as no opposite-side off-carrier component. -/
@@ -1473,6 +1655,16 @@ def PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
   data.toPlanarBoundaryAnnulusCollarGeometry
     |>.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
 
+/--
+Repaired annulus-geometry mapped-cut-deleted shared-endpoint connectivity
+target.
+-/
+def PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+
 /-- No-opposite-side off-carrier components supply repaired annulus-geometry
 off-carrier walk consistency. -/
 theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
@@ -1544,6 +1736,20 @@ theorem attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabi
     data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget :=
   data.toPlanarBoundaryAnnulusCollarGeometry
     |>.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget h
+
+/--
+Mapped-cut-deleted shared-endpoint connectivity supplies repaired-annulus
+cut-avoiding shared-endpoint reachability.
+-/
+theorem cutAvoidingSharedEndpointReachabilityTarget_of_mappedCutAvoidingSharedEndpointConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget) :
+    data.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.cutAvoidingSharedEndpointReachabilityTarget_of_mappedCutAvoidingSharedEndpointConnectivityTarget
+      h
 
 /-- The repaired annulus-geometry off-carrier target can be stated either as
 walk consistency or as no opposite-side off-carrier component. -/
