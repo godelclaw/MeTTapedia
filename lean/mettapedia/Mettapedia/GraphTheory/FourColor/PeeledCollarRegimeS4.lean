@@ -873,6 +873,24 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleOffCarrierMappedCutAvoidingSharedEndpointConnectedPeeledCollarRouteInputs
 
+namespace MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+
+/-- Cut-avoiding shared-endpoint route inputs supply the equivalent
+mapped-cut-deleted shared-endpoint connectivity route input record. -/
+def toMappedCutAvoidingSharedEndpointConnectedRouteInputs
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+        G edges) :
+    MinimalCounterexampleOffCarrierMappedCutAvoidingSharedEndpointConnectedPeeledCollarRouteInputs
+      G edges where
+  regime := inputs.regime
+  offCarrierMappedCutAvoidingSharedEndpointConnectivities :=
+    boundaryEdgeSetInducedCutOffCarrierComponentAttachmentMappedCutAvoidingSharedEndpointConnectivitiesToAmbient_of_cutAvoidingSharedEndpointReachabilities
+      inputs.offCarrierCutAvoidingSharedEndpointReachabilities
+
+end MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
+
 /--
 Off-boundary index of the regime route inputs: the remaining planar
 normal-form obligation is stated locally, as no ambient side-crossing edge
