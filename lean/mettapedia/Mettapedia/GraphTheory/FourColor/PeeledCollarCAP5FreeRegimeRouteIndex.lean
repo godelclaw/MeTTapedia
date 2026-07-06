@@ -64,6 +64,20 @@ theorem cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_foundationTarget
     hindex
 
 /--
+The selected-boundary-arc source public index supplies the selected-source
+small-cut route index through the source-data and face-source public
+equivalences.
+-/
+theorem cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex) :
+    CAP5FreePeeledCollarRegimeRouteFoundationTargetIndex :=
+  cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_foundationTargetIndex
+    ((cap5FreePeeledCollarFoundationTargetIndex_iff_sourceDataFoundationTargetIndex).2
+      (cap5FreePeeledCollarSourceDataFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex
+        hindex))
+
+/--
 The split-source index forgets to the older public face-source foundation index.
 -/
 theorem cap5FreePeeledCollarFoundationTargetIndex_of_splitSourceFoundationTargetIndex
@@ -132,6 +146,18 @@ theorem section92Step4CAP5FreeRegimeRouteIndexTarget_of_foundationTargetIndex
     Section92Step4CAP5FreeRegimeRouteIndexTarget :=
   section92Step4CAP5FreeRegimeRouteIndexTarget_of_regimeRouteFoundationTargetIndex
     (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_foundationTargetIndex
+      hindex)
+
+/--
+The selected-boundary-arc source public index supplies the compact regime route
+index.
+-/
+theorem section92Step4CAP5FreeRegimeRouteIndexTarget_of_selectedBoundaryArcSourceFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarSelectedBoundaryArcSourceFoundationTargetIndex) :
+    Section92Step4CAP5FreeRegimeRouteIndexTarget :=
+  section92Step4CAP5FreeRegimeRouteIndexTarget_of_regimeRouteFoundationTargetIndex
+    (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_selectedBoundaryArcSourceFoundationTargetIndex
       hindex)
 
 /--
