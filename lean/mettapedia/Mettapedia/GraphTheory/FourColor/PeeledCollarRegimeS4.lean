@@ -755,6 +755,152 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
 
 /--
+Canonical annulus index of the regime route inputs: the peeled collar is the
+canonical endpoint-support induced graph selected by an annulus collar
+geometry.  The remaining planar-normal-form inputs are selected-boundary
+inducedness and the annulus local-constancy extraction target.
+-/
+structure MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+      data.inducedBoundaryGraph
+  selectedBoundaryInduced : SelectedBoundaryInducedSubgraph emb
+  annulusExtractionLocalConstancy :
+    PlanarBoundaryAnnulusPeeledCollarLocalConstancyTarget
+      data data.inducedBoundaryEmbedding
+
+namespace MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
+
+/-- Canonical annulus route inputs supply the off-carrier walk-consistency
+route input record. -/
+def toOffCarrierWalkConsistentRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data) :
+    MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs G
+      data.ambientBoundaryEdgeSet where
+  regime := inputs.regime
+  offCarrierWalkConsistencies :=
+    data.boundaryData
+      |>.offCarrierWalkConsistencyTarget_of_selectedBoundaryInducedSubgraph_of_localConstancies
+        inputs.selectedBoundaryInduced
+        inputs.annulusExtractionLocalConstancy
+
+/-- The canonical annulus route inputs supply cyclic five-edge-connectivity for
+the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data) :
+    CyclicallyFiveEdgeConnected data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The canonical annulus route inputs supply the no-cyclic-two-cut fact
+consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data) :
+    ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Canonical-annulus S4 winding salvage: cyclic five-edge-connectivity is
+obtained from the minimal-counterexample normal form, selected-boundary
+inducedness, and the annulus local-constancy extraction target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
+
+/--
+Repaired annulus index of the regime route inputs: the peeled collar is the
+canonical endpoint-support induced graph selected by a repaired annulus
+geometry.  This version keeps the stronger previous-boundary witness geometry
+in the public route interface.
+-/
+structure MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+      data.inducedBoundaryGraph
+  selectedBoundaryInduced : SelectedBoundaryInducedSubgraph emb
+  previousBoundaryAnnulusExtractionLocalConstancy :
+    PlanarBoundaryPreviousBoundaryPeeledCollarLocalConstancyTarget
+      data data.inducedBoundaryEmbedding
+
+namespace MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
+
+/-- Repaired annulus route inputs supply the off-carrier walk-consistency route
+input record. -/
+def toOffCarrierWalkConsistentRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data) :
+    MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs G
+      data.ambientBoundaryEdgeSet where
+  regime := inputs.regime
+  offCarrierWalkConsistencies :=
+    data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData
+      |>.offCarrierWalkConsistencyTarget_of_selectedBoundaryInducedSubgraph_of_localConstancies
+        inputs.selectedBoundaryInduced
+        inputs.previousBoundaryAnnulusExtractionLocalConstancy
+
+/-- The repaired annulus route inputs supply cyclic five-edge-connectivity for
+the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data) :
+    CyclicallyFiveEdgeConnected data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The repaired annulus route inputs supply the no-cyclic-two-cut fact
+consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data) :
+    ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Repaired-annulus S4 winding salvage: cyclic five-edge-connectivity is obtained
+from the minimal-counterexample normal form, selected-boundary inducedness, and
+the repaired annulus local-constancy extraction target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
+
+/--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
 collar route.  The route input record supplies the upstream collar
 connectivity bridge; the downstream closed-collar theorem then rules out the
@@ -962,6 +1108,40 @@ def Section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget : Prop :=
 theorem section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget :
     Section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the canonical annulus route interface.
+-/
+def Section92Step4CanonicalAnnulusRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb},
+      MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end canonical-annulus S4 salvage statement. -/
+theorem section92Step4CanonicalAnnulusRegimeDischargedS4SalvageTarget :
+    Section92Step4CanonicalAnnulusRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the repaired annulus route interface.
+-/
+def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb},
+      MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end repaired-annulus S4 salvage statement. -/
+theorem section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget :
+    Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end Mettapedia.GraphTheory.FourColor
