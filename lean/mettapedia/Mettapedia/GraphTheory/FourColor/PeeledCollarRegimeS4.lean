@@ -1421,6 +1421,28 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceN
     (data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
       h)
 
+/--
+Canonical-annulus S4 winding salvage from the noncrossing
+selected-boundary arc source target.
+-/
+theorem
+    closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceNoncrossingRouteTarget
+    regime
+    (planarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
+      h)
+
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
@@ -1837,6 +1859,28 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceN
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_mappedCutAvoidingSharedEndpointConnectivityTarget
     regime
     (data.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+      h)
+
+/--
+Repaired-annulus S4 winding salvage from the noncrossing selected-boundary
+arc source target.
+-/
+theorem
+    closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceNoncrossingRouteTarget
+    regime
+    (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget_of_noncrossingSelectedBoundaryArcSourceTarget
       h)
 
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
@@ -2444,6 +2488,34 @@ theorem
       regime h
 
 /--
+End-to-end S4 salvage target using the canonical annulus route with the
+annulus obligation stated as noncrossing selected-boundary arc source data.
+-/
+def
+    Section92Step4CanonicalAnnulusOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+        data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end canonical-annulus selected-boundary arc source S4 salvage statement. -/
+theorem
+    section92Step4CanonicalAnnulusOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceRegimeDischargedS4SalvageTarget :
+    Section92Step4CanonicalAnnulusOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
+      regime h
+
+/--
 End-to-end S4 salvage target using the repaired annulus route interface.
 -/
 def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
@@ -2678,6 +2750,34 @@ theorem
   intro V _ G emb data regime h
   exact
     MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceNoncrossingRouteTarget
+      regime h
+
+/--
+End-to-end S4 salvage target using the repaired annulus route with the
+annulus obligation stated as noncrossing selected-boundary arc source data.
+-/
+def
+    Section92Step4RepairedAnnulusOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
+        data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end repaired-annulus selected-boundary arc source S4 salvage statement. -/
+theorem
+    section92Step4RepairedAnnulusOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceRegimeDischargedS4SalvageTarget :
+    Section92Step4RepairedAnnulusOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
       regime h
 
 end Mettapedia.GraphTheory.FourColor
