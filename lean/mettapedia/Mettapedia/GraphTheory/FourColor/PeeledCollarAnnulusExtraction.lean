@@ -89,6 +89,17 @@ def PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarg
   data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
 
 /--
+Canonical annulus cut-avoiding shared-endpoint reachability target.  This is
+the planar-facing boundary-route obligation that implies attachment-carrier
+connectivity.
+-/
+def
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+
+/--
 Repaired previous-boundary annulus variant of the no-opposite-side off-carrier
 component target.
 -/
@@ -115,6 +126,16 @@ def
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
   data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+
+/--
+Repaired previous-boundary annulus variant of the cut-avoiding shared-endpoint
+reachability target.
+-/
+def
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.PeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
 
 /-- The annulus-extraction target is exactly the local-constancy bridge input. -/
 theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_annulusExtractionTarget
@@ -275,6 +296,21 @@ theorem
         data) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
   data.offCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget h
+
+/--
+The canonical annulus cut-avoiding shared-endpoint target supplies the
+attachment-carrier-connectivity target.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data) :
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+      data :=
+  data.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget h
 
 /--
 The canonical annulus off-carrier target can be stated either as walk
@@ -596,6 +632,21 @@ theorem
         data) :
     data.PeeledCollarOffCarrierWalkConsistencyTarget :=
   data.offCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget h
+
+/--
+The repaired annulus cut-avoiding shared-endpoint target supplies the
+attachment-carrier-connectivity target.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
+        data) :
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+      data :=
+  data.attachmentCarrierConnectivityTarget_of_cutAvoidingSharedEndpointReachabilityTarget h
 
 /--
 The repaired annulus off-carrier target can be stated either as walk
