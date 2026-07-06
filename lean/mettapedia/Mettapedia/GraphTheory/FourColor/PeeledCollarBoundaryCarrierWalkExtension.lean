@@ -1838,6 +1838,28 @@ def PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
   data.boundaryData
     |>.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
 
+/--
+Annulus-geometry attachment-face noncrossing route target.
+-/
+def PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.boundaryData
+    |>.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+
+/--
+Annulus-geometry attachment-face noncrossing routes supply mapped-cut-deleted
+shared-endpoint connectivity.
+-/
+theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h : data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget) :
+    data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
+  data.boundaryData
+    |>.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+      h
+
 /-- No-opposite-side off-carrier components supply annulus-geometry
 off-carrier walk consistency. -/
 theorem offCarrierWalkConsistencyTarget_of_oppositeSideDisconnectionTarget
@@ -2129,6 +2151,28 @@ def PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
     (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
   data.toPlanarBoundaryAnnulusCollarGeometry
     |>.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget
+
+/--
+Repaired annulus-geometry attachment-face noncrossing route target.
+-/
+def PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
+
+/--
+Repaired annulus-geometry attachment-face noncrossing routes supply
+mapped-cut-deleted shared-endpoint connectivity.
+-/
+theorem mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h : data.PeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget) :
+    data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget :=
+  data.toPlanarBoundaryAnnulusCollarGeometry
+    |>.mappedCutAvoidingSharedEndpointConnectivityTarget_of_attachmentFaceNoncrossingRouteTarget
+      h
 
 /-- No-opposite-side off-carrier components supply repaired annulus-geometry
 off-carrier walk consistency. -/
