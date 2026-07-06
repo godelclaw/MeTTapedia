@@ -61,6 +61,40 @@ def CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget : Prop :=
       source.RegimeNoncrossingFaceSourceFoundationTarget
 
 /--
+Canonical aligned face-source foundation target.  This is the data-level
+version of the closed-walk face-source target, with the boundary-data
+alignment stated explicitly.
+-/
+def CAP5FreeCanonicalAnnulusPeeledCollarFaceSourceFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData →
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph →
+      data.RegimeNoncrossingFaceSourceFoundationTarget
+
+/--
+Repaired aligned face-source foundation target, with the previous-boundary
+witness geometry aligned to a closed-walk boundary source.
+-/
+def CAP5FreeRepairedAnnulusPeeledCollarFaceSourceFoundationTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData →
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph →
+      data.RegimeNoncrossingFaceSourceFoundationTarget
+
+/--
 Combined index for the CAP5-free peeled-collar foundation package.  Each
 component is a theorem target for the planar-normal-form layer; downstream
 S4 consequences are proved below from these targets.
@@ -71,6 +105,90 @@ def CAP5FreePeeledCollarFoundationTargetIndex : Prop :=
     CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget
 
 namespace PlanarBoundaryAnnulusCollarGeometry
+
+/--
+Transport a minimal-counterexample peeled-collar regime across an explicit
+boundary-data alignment with a closed-walk annulus source.
+-/
+noncomputable def sourceRegime_of_boundaryData_eq
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph) :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex
+        (G := G)
+        source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+  hboundary ▸ regime
+
+/--
+Source-level noncrossing face-source data supplies the aligned canonical
+data-level face-source target.
+-/
+theorem
+    regimeNoncrossingFaceSourceFoundationTarget_of_sourceRegimeNoncrossingFaceSourceFoundationTarget
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (h : source.RegimeNoncrossingFaceSourceFoundationTarget) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget := by
+  change PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
+    data
+  simpa [PlanarBoundaryClosedWalkAnnulusBoundarySource.RegimeNoncrossingFaceSourceFoundationTarget,
+    RegimeNoncrossingFaceSourceFoundationTarget,
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget,
+    hboundary] using h
+
+/--
+Aligned canonical data-level face-source data is equivalent to the source-level
+face-source target for the same boundary data.
+-/
+theorem regimeNoncrossingFaceSourceFoundationTarget_iff_source
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget ↔
+      source.RegimeNoncrossingFaceSourceFoundationTarget :=
+  ⟨data.sourceRegimeNoncrossingFaceSourceFoundationTarget_of_regimeNoncrossingFaceSourceFoundationTarget
+      source hboundary,
+    data.regimeNoncrossingFaceSourceFoundationTarget_of_sourceRegimeNoncrossingFaceSourceFoundationTarget
+      source hboundary⟩
+
+/--
+The closed-walk CAP5-free face-source foundation theorem supplies the aligned
+canonical data-level face-source target.
+-/
+theorem regimeNoncrossingFaceSourceFoundationTarget_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget :=
+  data.regimeNoncrossingFaceSourceFoundationTarget_of_sourceRegimeNoncrossingFaceSourceFoundationTarget
+    source hboundary
+    (hfoundation source
+      (data.sourceRegime_of_boundaryData_eq source hboundary regime))
 
 /--
 A canonical CAP5-free separation foundation theorem supplies separation,
@@ -109,9 +227,129 @@ theorem routeIndexConsequences_of_cap5FreeSeparationFoundationTarget
       inputs.closedCollarForbidsCyclicTwoCut,
       inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
 
+/--
+The closed-walk CAP5-free face-source foundation theorem supplies the aligned
+canonical face-source target and the downstream graph consequences.
+-/
+theorem routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget ∧
+      CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
+      ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
+      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        data.inducedBoundaryGraph := by
+  have hdata :
+      data.RegimeNoncrossingFaceSourceFoundationTarget :=
+    data.regimeNoncrossingFaceSourceFoundationTarget_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+      hfoundation source hboundary regime
+  have hconsequences :=
+    data.routeIndexConsequences_of_regimeNoncrossingFaceSourceFoundationTarget
+      regime source hboundary hdata
+  exact ⟨hdata, hconsequences.1, hconsequences.2.1, hconsequences.2.2⟩
+
 end PlanarBoundaryAnnulusCollarGeometry
 
 namespace PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry
+
+/--
+Transport a minimal-counterexample peeled-collar regime across an explicit
+boundary-data alignment between repaired geometry and a closed-walk source.
+-/
+noncomputable def sourceRegime_of_boundaryData_eq
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph) :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex
+        (G := G)
+        source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+  hboundary ▸ regime
+
+/--
+Source-level noncrossing face-source data supplies the aligned repaired
+data-level face-source target.
+-/
+theorem
+    regimeNoncrossingFaceSourceFoundationTarget_of_sourceRegimeNoncrossingFaceSourceFoundationTarget
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (h : source.RegimeNoncrossingFaceSourceFoundationTarget) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget := by
+  change
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
+      data
+  simpa [PlanarBoundaryClosedWalkAnnulusBoundarySource.RegimeNoncrossingFaceSourceFoundationTarget,
+    RegimeNoncrossingFaceSourceFoundationTarget,
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget,
+    hboundary] using h
+
+/--
+Aligned repaired data-level face-source data is equivalent to the source-level
+face-source target for the same boundary data.
+-/
+theorem regimeNoncrossingFaceSourceFoundationTarget_iff_source
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget ↔
+      source.RegimeNoncrossingFaceSourceFoundationTarget :=
+  ⟨data.sourceRegimeNoncrossingFaceSourceFoundationTarget_of_regimeNoncrossingFaceSourceFoundationTarget
+      source hboundary,
+    data.regimeNoncrossingFaceSourceFoundationTarget_of_sourceRegimeNoncrossingFaceSourceFoundationTarget
+      source hboundary⟩
+
+/--
+The closed-walk CAP5-free face-source foundation theorem supplies the aligned
+repaired data-level face-source target.
+-/
+theorem regimeNoncrossingFaceSourceFoundationTarget_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget :=
+  data.regimeNoncrossingFaceSourceFoundationTarget_of_sourceRegimeNoncrossingFaceSourceFoundationTarget
+    source hboundary
+    (hfoundation source
+      (data.sourceRegime_of_boundaryData_eq source hboundary regime))
 
 /--
 A repaired CAP5-free separation foundation theorem supplies separation,
@@ -149,6 +387,38 @@ theorem routeIndexConsequences_of_cap5FreeSeparationFoundationTarget
       inputs.cyclicallyFiveEdgeConnected,
       inputs.closedCollarForbidsCyclicTwoCut,
       inputs.closedCollarWindingFreedomEscape_not_simplyRealizable⟩
+
+/--
+The closed-walk CAP5-free face-source foundation theorem supplies the aligned
+repaired face-source target and the downstream graph consequences.
+-/
+theorem routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData) :
+    data.RegimeNoncrossingFaceSourceFoundationTarget ∧
+      CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
+      ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
+      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        data.inducedBoundaryGraph := by
+  have hdata :
+      data.RegimeNoncrossingFaceSourceFoundationTarget :=
+    data.regimeNoncrossingFaceSourceFoundationTarget_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+      hfoundation source hboundary regime
+  have hconsequences :=
+    data.routeIndexConsequences_of_regimeNoncrossingFaceSourceFoundationTarget
+      regime source hboundary hdata
+  exact ⟨hdata, hconsequences.1, hconsequences.2.1, hconsequences.2.2⟩
 
 end PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry
 
@@ -234,6 +504,39 @@ theorem section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarg
       hfoundation regime
 
 /--
+Canonical annulus CAP5-free face-source route index, aligned with a
+closed-walk boundary source.
+-/
+def Section92Step4CanonicalAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData →
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph →
+      data.RegimeNoncrossingFaceSourceFoundationTarget ∧
+        CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
+        ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/--
+The closed-walk CAP5-free face-source foundation target supplies the canonical
+aligned face-source route index.
+-/
+theorem section92Step4CanonicalAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
+    Section92Step4CanonicalAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget := by
+  intro V _ G emb data source hboundary regime
+  exact
+    data.routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+      hfoundation regime source hboundary
+
+/--
 Repaired annulus CAP5-free route index: the previous-boundary witness
 geometry variant of the same discharged S4 bridge.
 -/
@@ -262,6 +565,40 @@ theorem section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarge
   exact
     data.routeIndexConsequences_of_cap5FreeSeparationFoundationTarget
       hfoundation regime
+
+/--
+Repaired annulus CAP5-free face-source route index, aligned with a closed-walk
+boundary source.
+-/
+def Section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData →
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph →
+      data.RegimeNoncrossingFaceSourceFoundationTarget ∧
+        CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
+        ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/--
+The closed-walk CAP5-free face-source foundation target supplies the repaired
+aligned face-source route index.
+-/
+theorem section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget
+    (hfoundation :
+      CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
+    Section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget := by
+  intro V _ G emb data source hboundary regime
+  exact
+    data.routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceFoundationTarget
+      hfoundation regime source hboundary
 
 /--
 Closed-walk CAP5-free face-source route index: once the face-source foundation
@@ -317,6 +654,20 @@ theorem cap5FreePeeledCollarFoundationTargetIndex_routeIndexTargets
       section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget
         hindex.2.1,
       section92Step4ClosedWalkCAP5FreeFaceSourceFoundationRouteIndexTarget
+        hindex.2.2⟩
+
+/--
+The combined CAP5-free foundation index also supplies the aligned canonical
+and repaired face-source route indices.
+-/
+theorem cap5FreePeeledCollarFoundationTargetIndex_alignedFaceSourceRouteIndexTargets
+    (hindex : CAP5FreePeeledCollarFoundationTargetIndex) :
+    Section92Step4CanonicalAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget ∧
+      Section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget := by
+  exact
+    ⟨section92Step4CanonicalAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget
+        hindex.2.2,
+      section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget
         hindex.2.2⟩
 
 end Mettapedia.GraphTheory.FourColor
