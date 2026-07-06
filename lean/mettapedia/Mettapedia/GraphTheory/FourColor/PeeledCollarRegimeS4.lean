@@ -660,6 +660,77 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs
 
 /--
+Off-carrier attachment-carrier-connectivity index of the regime route inputs:
+the remaining planar-normal-form obligation is that attachments of one
+off-carrier component are connected in the carrier after deleting the small
+carrier-cut edge support.
+-/
+structure MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+    (G : SimpleGraph V) (edges : Finset G.edgeSet) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) edges)
+      (BoundaryEdgeSetInducedGraph (G := G) edges)
+  offCarrierAttachmentCarrierConnectivities :
+    BoundaryEdgeSetInducedCutOffCarrierComponentAttachmentCarrierConnectivitiesToAmbient
+      (G := G) edges
+
+namespace MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+
+/-- Attachment-carrier-connectivity route inputs supply the component-attachment
+route input record. -/
+def toComponentAttachmentRouteInputs
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+        G edges) :
+    MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs G
+      edges where
+  regime := inputs.regime
+  offCarrierComponentOneSidedAttachments :=
+    boundaryEdgeSetInducedCutOffCarrierComponentOneSidedAttachmentsToAmbient_of_attachmentCarrierConnectivities
+      inputs.offCarrierAttachmentCarrierConnectivities
+
+/-- The attachment-carrier-connectivity route inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+        G edges) :
+    CyclicallyFiveEdgeConnected
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toComponentAttachmentRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The attachment-carrier-connectivity route inputs supply the no-cyclic-two-cut
+fact consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+        G edges) :
+    ClosedCollarForbidsCyclicTwoCut
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toComponentAttachmentRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Off-carrier attachment-carrier-connectivity S4 winding salvage: cyclic
+five-edge-connectivity is obtained from the minimal-counterexample normal form
+plus the planar-facing carrier-walk connectivity of off-carrier attachments.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {edges : Finset G.edgeSet}
+    (inputs :
+      MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+        G edges) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      (BoundaryEdgeSetInducedGraph (G := G) edges) :=
+  inputs.toComponentAttachmentRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+
+/--
 Off-boundary index of the regime route inputs: the remaining planar
 normal-form obligation is stated locally, as no ambient side-crossing edge
 being incident to a vertex outside the mapped collar-cut endpoint support.
@@ -1107,6 +1178,27 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttach
     (planarBoundaryAnnulusPeeledCollarOffCarrierOppositeSideTarget_of_componentAttachmentTarget
       h)
 
+/--
+Canonical-annulus S4 winding salvage from the attachment-carrier-connectivity
+target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttachmentTarget
+    regime
+    (planarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
+      h)
+
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
@@ -1443,6 +1535,27 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttach
     (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierOppositeSideTarget_of_componentAttachmentTarget
       h)
 
+/--
+Repaired-annulus S4 winding salvage from the attachment-carrier-connectivity
+target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttachmentTarget
+    regime
+    (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
+      h)
+
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
 
 /--
@@ -1704,6 +1817,27 @@ theorem section92Step4OffCarrierComponentAttachmentRegimeDischargedS4SalvageTarg
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 /--
+End-to-end S4 salvage target using the off-carrier
+attachment-carrier-connectivity route interface.
+-/
+def
+    Section92Step4OffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {edges : Finset G.edgeSet},
+      MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
+        G edges →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          (BoundaryEdgeSetInducedGraph (G := G) edges)
+
+/-- Verbatim end-to-end off-carrier attachment-carrier-connectivity S4 salvage statement. -/
+theorem
+    section92Step4OffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget :
+    Section92Step4OffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget := by
+  intro V _ G edges inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
 End-to-end S4 salvage target using the off-boundary route interface.
 -/
 def Section92Step4OffBoundaryRegimeDischargedS4SalvageTarget : Prop :=
@@ -1874,6 +2008,34 @@ theorem
       regime h
 
 /--
+End-to-end S4 salvage target using the canonical annulus route with the
+annulus obligation stated as attachment-carrier connectivity.
+-/
+def
+    Section92Step4CanonicalAnnulusOffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end canonical-annulus attachment-carrier-connectivity S4 salvage statement. -/
+theorem
+    section92Step4CanonicalAnnulusOffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget :
+    Section92Step4CanonicalAnnulusOffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
+      regime h
+
+/--
 End-to-end S4 salvage target using the repaired annulus route interface.
 -/
 def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
@@ -1997,6 +2159,34 @@ theorem
   intro V _ G emb data regime h
   exact
     MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttachmentTarget
+      regime h
+
+/--
+End-to-end S4 salvage target using the repaired annulus route with the
+annulus obligation stated as attachment-carrier connectivity.
+-/
+def
+    Section92Step4RepairedAnnulusOffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (_ :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph),
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          data.inducedBoundaryGraph
+
+/-- Verbatim end-to-end repaired-annulus attachment-carrier-connectivity S4 salvage statement. -/
+theorem
+    section92Step4RepairedAnnulusOffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget :
+    Section92Step4RepairedAnnulusOffCarrierAttachmentCarrierConnectedRegimeDischargedS4SalvageTarget := by
+  intro V _ G emb data regime h
+  exact
+    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
       regime h
 
 end Mettapedia.GraphTheory.FourColor

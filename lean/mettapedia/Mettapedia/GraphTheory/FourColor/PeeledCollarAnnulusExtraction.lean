@@ -79,6 +79,16 @@ def PlanarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget
   data.PeeledCollarOffCarrierComponentOneSidedAttachmentTarget
 
 /--
+Canonical annulus attachment-carrier-connectivity target.  This asks for a
+carrier walk avoiding the small cut between any two carrier vertices attached
+to the same off-carrier component.
+-/
+def PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) : Prop :=
+  data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+
+/--
 Repaired previous-boundary annulus variant of the no-opposite-side off-carrier
 component target.
 -/
@@ -95,6 +105,16 @@ def PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarge
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
   data.PeeledCollarOffCarrierComponentOneSidedAttachmentTarget
+
+/--
+Repaired previous-boundary annulus variant of the
+attachment-carrier-connectivity target.
+-/
+def
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) : Prop :=
+  data.PeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
 
 /-- The annulus-extraction target is exactly the local-constancy bridge input. -/
 theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_annulusExtractionTarget
@@ -228,6 +248,35 @@ theorem
   data.oppositeSideDisconnectionTarget_of_componentOneSidedAttachmentTarget h
 
 /--
+The canonical annulus attachment-carrier-connectivity target supplies the
+component-facing attachment target.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    PlanarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget
+      data :=
+  data.componentOneSidedAttachmentTarget_of_attachmentCarrierConnectivityTarget h
+
+/--
+The canonical annulus attachment-carrier-connectivity target supplies
+off-carrier walk consistency.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarOffCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.offCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget h
+
+/--
 The canonical annulus off-carrier target can be stated either as walk
 consistency or as no opposite-side off-carrier component.
 -/
@@ -309,6 +358,23 @@ theorem planarBoundaryAnnulusPeeledCollarSeparationTarget_of_componentAttachment
       data data.inducedBoundaryEmbedding :=
   planarBoundaryAnnulusPeeledCollarSeparationTarget_of_oppositeSideTarget
     (planarBoundaryAnnulusPeeledCollarOffCarrierOppositeSideTarget_of_componentAttachmentTarget
+      h)
+
+/--
+The canonical annulus attachment-carrier-connectivity target supplies the
+separation-form extraction target.
+-/
+theorem
+    planarBoundaryAnnulusPeeledCollarSeparationTarget_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (h :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    PlanarBoundaryAnnulusPeeledCollarSeparationTarget
+      data data.inducedBoundaryEmbedding :=
+  planarBoundaryAnnulusPeeledCollarSeparationTarget_of_componentAttachmentTarget
+    (planarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
       h)
 
 /--
@@ -503,6 +569,35 @@ theorem
   data.oppositeSideDisconnectionTarget_of_componentOneSidedAttachmentTarget h
 
 /--
+The repaired annulus attachment-carrier-connectivity target supplies the
+component-facing attachment target.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget
+      data :=
+  data.componentOneSidedAttachmentTarget_of_attachmentCarrierConnectivityTarget h
+
+/--
+The repaired annulus attachment-carrier-connectivity target supplies
+off-carrier walk consistency.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    data.PeeledCollarOffCarrierWalkConsistencyTarget :=
+  data.offCarrierWalkConsistencyTarget_of_attachmentCarrierConnectivityTarget h
+
+/--
 The repaired annulus off-carrier target can be stated either as walk
 consistency or as no opposite-side off-carrier component.
 -/
@@ -591,6 +686,23 @@ theorem
       data data.inducedBoundaryEmbedding :=
   planarBoundaryPreviousBoundaryPeeledCollarSeparationTarget_of_oppositeSideTarget
     (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierOppositeSideTarget_of_componentAttachmentTarget
+      h)
+
+/--
+The repaired annulus attachment-carrier-connectivity target supplies the
+separation-form extraction target.
+-/
+theorem
+    planarBoundaryPreviousBoundaryPeeledCollarSeparationTarget_of_attachmentCarrierConnectivityTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (h :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
+        data) :
+    PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
+      data data.inducedBoundaryEmbedding :=
+  planarBoundaryPreviousBoundaryPeeledCollarSeparationTarget_of_componentAttachmentTarget
+    (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget_of_attachmentCarrierConnectivityTarget
       h)
 
 /--
