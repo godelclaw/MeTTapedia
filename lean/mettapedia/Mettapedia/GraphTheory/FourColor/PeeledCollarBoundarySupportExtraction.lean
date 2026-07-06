@@ -93,6 +93,93 @@ theorem exists_edge_preimage_boundaryEdgeSetInducedGraphEmbedding_of_mem_edges
     (fun _ hv => (mem_boundaryEdgeSetEndpointSupport_iff edges).2 ⟨e, he, hv⟩)
 
 /--
+An endpoint of a selected ambient edge is a vertex of the canonical
+endpoint-support induced graph.
+-/
+def boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (he : e ∈ edges) {v : V} (hv : v ∈ (e : Sym2 V)) :
+    BoundaryEdgeSetEndpointVertex (G := G) edges :=
+  ⟨v, (mem_boundaryEdgeSetEndpointSupport_iff edges).2 ⟨e, he, hv⟩⟩
+
+@[simp]
+theorem boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint_val
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (he : e ∈ edges) {v : V} (hv : v ∈ (e : Sym2 V)) :
+    (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+      (G := G) (edges := edges) he hv : V) = v :=
+  rfl
+
+/--
+Two distinct endpoints of a selected ambient edge are adjacent in the
+canonical endpoint-support induced graph.
+-/
+theorem boundaryEdgeSetInducedGraph_adj_of_mem_edge_endpoints
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (he : e ∈ edges) {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V)) (hne : u ≠ v) :
+    (BoundaryEdgeSetInducedGraph (G := G) edges).Adj
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) he hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) he hv) := by
+  have heq : (e : Sym2 V) = s(u, v) :=
+    sym2_eq_mk_of_mem_of_mem_of_ne hu hv hne
+  have hadj : G.Adj u v :=
+    (SimpleGraph.mem_edgeSet G).1 (by simpa [heq] using e.property)
+  exact hadj
+
+/--
+Any two endpoints of a selected ambient edge are connected by a carrier walk in
+the canonical endpoint-support induced graph.
+-/
+def boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (he : e ∈ edges) {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V)) :
+    (BoundaryEdgeSetInducedGraph (G := G) edges).Walk
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) he hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) he hv) := by
+  by_cases hne : u = v
+  · subst hne
+    exact SimpleGraph.Walk.nil
+  · exact SimpleGraph.Walk.cons
+      (boundaryEdgeSetInducedGraph_adj_of_mem_edge_endpoints
+        (G := G) (edges := edges) he hu hv hne)
+      SimpleGraph.Walk.nil
+
+/--
+If two selected ambient edges share an endpoint, then the corresponding
+endpoint-support carrier vertices are connected through that shared endpoint.
+This is the graph-level bridge from the selected-boundary shared-endpoint graph
+to walks in the canonical endpoint-support carrier.
+-/
+def boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e f : G.edgeSet}
+    (he : e ∈ edges) (hf : f ∈ edges) {u v x : V}
+    (hu : u ∈ (e : Sym2 V)) (hxE : x ∈ (e : Sym2 V))
+    (hxF : x ∈ (f : Sym2 V)) (hv : v ∈ (f : Sym2 V)) :
+    (BoundaryEdgeSetInducedGraph (G := G) edges).Walk
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) he hu)
+      (boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+        (G := G) (edges := edges) hf hv) := by
+  have hx :
+      boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+          (G := G) (edges := edges) he hxE =
+        boundaryEdgeSetEndpointVertexOfMemEdgeEndpoint
+          (G := G) (edges := edges) hf hxF :=
+    Subtype.ext rfl
+  cases hx
+  exact
+    (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+      (G := G) (edges := edges) he hu hxE).append
+      (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
+        (G := G) (edges := edges) hf hxF hv)
+
+/--
 Mapped collar-cut edges have preimages in the canonical graph induced by their
 ambient endpoint support.
 -/
