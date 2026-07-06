@@ -364,6 +364,31 @@ def of_annulusNoncrossingFaceSourceTarget
         hboundary] using h)
 
 /--
+Build canonical route inputs directly from the split attachment-face
+placement and noncrossing-upgrade targets.
+-/
+def of_annulusAttachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
+    (hface :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceSourceTarget
+        data)
+    (hnoncross :
+      PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
+        data) :
+    CanonicalAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data :=
+  of_annulusNoncrossingFaceSourceTarget data regime source hboundary
+    (planarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget_of_attachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
+      hface hnoncross)
+
+/--
 Build canonical route inputs directly from the canonical selected-boundary-arc
 source target.
 -/
@@ -603,6 +628,32 @@ def of_previousBoundaryNoncrossingFaceSourceTarget
     (by
       simpa [PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget,
         hboundary] using h)
+
+/--
+Build repaired route inputs directly from the split attachment-face placement
+and noncrossing-upgrade targets.
+-/
+def of_previousBoundaryAttachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+        data.inducedBoundaryGraph)
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hboundary :
+      data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
+        source.toPlanarBoundaryAnnulusBoundaryData)
+    (hface :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceSourceTarget
+        data)
+    (hnoncross :
+      PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
+        data) :
+    RepairedAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data :=
+  of_previousBoundaryNoncrossingFaceSourceTarget data regime source hboundary
+    (planarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget_of_attachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
+      hface hnoncross)
 
 /--
 Build repaired route inputs directly from the repaired selected-boundary-arc
