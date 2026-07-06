@@ -995,6 +995,81 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_separationTarge
 end MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs
 
 /--
+Separation-only canonical annulus index of the regime route inputs.  This is
+the interface expected from the remaining planar annulus foundation theorem:
+the minimal-counterexample regime plus no-avoiding-walk separation for the
+canonical induced boundary carrier.  It deliberately does not carry selected
+boundary inducedness.
+-/
+structure MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusCollarGeometry emb) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+      data.inducedBoundaryGraph
+  annulusSeparation :
+    PlanarBoundaryAnnulusPeeledCollarSeparationTarget
+      data data.inducedBoundaryEmbedding
+
+namespace MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+
+/-- Separation-only canonical annulus inputs supply the off-carrier
+walk-consistency route input record. -/
+def toOffCarrierWalkConsistentRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs G
+      data.ambientBoundaryEdgeSet where
+  regime := inputs.regime
+  offCarrierWalkConsistencies :=
+    planarBoundaryAnnulusPeeledCollarOffCarrierWalkConsistencyTarget_of_separationTarget
+      inputs.annulusSeparation
+
+/-- Separation-only canonical annulus inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    CyclicallyFiveEdgeConnected data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- Separation-only canonical annulus inputs supply the no-cyclic-two-cut fact
+consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Separation-only canonical-annulus S4 winding salvage: cyclic
+five-edge-connectivity is obtained from the minimal-counterexample normal form
+and the named annulus separation target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusCollarGeometry emb}
+    (inputs :
+      MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
+
+/--
 Repaired annulus index of the regime route inputs: the peeled collar is the
 canonical endpoint-support induced graph selected by a repaired annulus
 geometry.  This version keeps the stronger previous-boundary witness geometry
@@ -1212,6 +1287,80 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_separationTarge
       hseparate)
 
 end MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs
+
+/--
+Separation-only repaired annulus index of the regime route inputs.  This is
+the repaired-geometry variant of the exact planar foundation interface: the
+minimal-counterexample regime plus no-avoiding-walk separation for the
+canonical induced boundary carrier.
+-/
+structure MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb) where
+  regime :
+    MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
+      data.inducedBoundaryGraph
+  annulusSeparation :
+    PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
+      data data.inducedBoundaryEmbedding
+
+namespace MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
+
+/-- Separation-only repaired annulus inputs supply the off-carrier
+walk-consistency route input record. -/
+def toOffCarrierWalkConsistentRouteInputs
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs G
+      data.ambientBoundaryEdgeSet where
+  regime := inputs.regime
+  offCarrierWalkConsistencies :=
+    planarBoundaryPreviousBoundaryPeeledCollarOffCarrierWalkConsistencyTarget_of_separationTarget
+      inputs.annulusSeparation
+
+/-- Separation-only repaired annulus inputs supply cyclic
+five-edge-connectivity for the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    CyclicallyFiveEdgeConnected data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- Separation-only repaired annulus inputs supply the no-cyclic-two-cut fact
+consumed by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Separation-only repaired-annulus S4 winding salvage: cyclic
+five-edge-connectivity is obtained from the minimal-counterexample normal form
+and the named previous-boundary annulus separation target.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
+    (inputs :
+      MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
+        data) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      data.inducedBoundaryGraph :=
+  inputs.toOffCarrierWalkConsistentRouteInputs
+    |>.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
 
 /--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
@@ -1463,8 +1612,9 @@ theorem section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget 
     Section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget := by
   intro V _ G emb data regime hseparate
   exact
-    MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_separationTarget
-      regime hseparate
+    (MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs.mk
+      regime hseparate)
+        |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 /--
 End-to-end S4 salvage target using the canonical annulus route with the
@@ -1531,8 +1681,9 @@ theorem section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget :
     Section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget := by
   intro V _ G emb data regime hseparate
   exact
-    MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_separationTarget
-      regime hseparate
+    (MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs.mk
+      regime hseparate)
+        |>.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 /--
 End-to-end S4 salvage target using the repaired annulus route with the
