@@ -487,6 +487,107 @@ theorem
     (cap5FreePeeledCollarRegimeRouteFoundationTargetIndex_of_planarNormalFormCutLiftFoundationTargetIndex
       hindex)
 
+namespace PlanarBoundaryClosedWalkAnnulusBoundarySource
+
+/--
+The smaller planar-normal-form cut-lift target supplies the selected closed
+walk collar's lift, cyclic five-edge-connectivity, no cyclic two-cut, and S4
+no-escape consequences.
+-/
+theorem routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    PeeledCollarSmallCyclicCutLiftsToAmbient G
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+      CyclicallyFiveEdgeConnected
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+      ClosedCollarForbidsCyclicTwoCut
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
+      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
+  have hsmall :
+      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+    cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
+      hindex.2.2
+  exact
+    source.routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
+      hsmall regime
+
+/--
+The load-bearing connectivity consequence: the planar-normal-form cut-lift
+target supplies cyclic five-edge-connectivity for the selected closed-walk
+peeled collar.
+-/
+theorem cyclicallyFiveEdgeConnected_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    CyclicallyFiveEdgeConnected
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+  (routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
+    hindex source regime).2.1
+
+/--
+The planar-normal-form cut-lift target supplies the no-cyclic-two-cut
+consequence consumed by the closed-collar winding theorem.
+-/
+theorem closedCollarForbidsCyclicTwoCut_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    ClosedCollarForbidsCyclicTwoCut
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+  (routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
+    hindex source regime).2.2.1
+
+/--
+The planar-normal-form cut-lift target supplies the regime-discharged closed
+collar S4 no-escape conclusion for the selected closed-walk peeled collar.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_planarNormalFormCutLiftFoundationTargetIndex
+    (hindex :
+      CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime :
+      MinimalCounterexamplePeeledCollarRegime G
+        (BoundaryEdgeSetEndpointVertex
+          (G := G)
+          source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+        source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+  (routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
+    hindex source regime).2.2.2
+
+end PlanarBoundaryClosedWalkAnnulusBoundarySource
+
 /--
 Expanded route target reached from the smaller planar-normal-form cut-lift
 foundation: both annulus separation routes, the closed-walk off-boundary route,
