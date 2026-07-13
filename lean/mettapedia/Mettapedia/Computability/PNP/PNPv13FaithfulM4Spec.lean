@@ -473,9 +473,15 @@ structure V13M4OpenConstructionObligations
   D48_compatibleCouplings : V13D48CompatibleCouplings E G C
   cnfCompilation : V13M4UniformCNFCompilation E CNFVar
 
-/-- Final statement boundary: one faithful mechanical construction record and
-the four quantitative analytic inputs on the exact same ensemble.  Section 11
-also consumes the parameter object chosen by Theorem 10.9 at its fixed clock. -/
+/-- Statement bundle retained for clients that want to carry the complete
+faithful boundary as one value: one mechanical construction record, the four
+quantitative analytic inputs on the exact same ensemble, and the Section-11
+upper premise on the parameter object chosen by Theorem 10.9 at its fixed
+clock.
+
+There is deliberately no equality identifying the D.48 leakage bound with the
+qSSM error.  Such an equality is not one of the manuscript's named inputs and
+would add an unadvertised premise to the endpoint. -/
 structure V13M4FaithfulConditionalEndpointTarget
     (E : V13QuantitativeEnsemble)
     (G : V13M4LayeredGeometry E)
@@ -487,9 +493,5 @@ structure V13M4FaithfulConditionalEndpointTarget
   analytic : V13FaithfulAnalyticFrontiers E
   section11SameObject :
     V13Section11SameObjectUpper E analytic.compressionStarSWHardness
-  coupling_error_is_qSSM_error :
-    forall theta m t,
-      mechanical.D48_compatibleCouplings.couplingLeakageBound theta m t =
-        analytic.safeQSSM.epsilonStep theta m t
 
 end Mettapedia.Computability.PNP
