@@ -39,7 +39,7 @@ noncomputable def v13M4ConcreteEnsemble : V13QuantitativeEnsemble where
   supported := fun _ => True
 
   Prefix _ m _ := V13M4ConcretePrefix m
-  legalPrefix := fun _ _ => True
+  legalPrefix := fun _ pref => v13M4ConcreteLegalPrefix pref
   prefixConsistent := v13M4ConcretePrefixConsistent
 
   GaugeCoord _ m _ := V13M4ConcreteGaugeIndex m
