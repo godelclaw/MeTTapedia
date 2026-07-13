@@ -11,8 +11,10 @@ and boundary-mixing packages are intended to establish.
 
 The accompanying audit expands the mechanical record field by field and then
 lists every analytic and upper-side premise.  It distinguishes scaffold
-theorems from the four residual mechanical hypotheses and the open analytic
-mathematics.
+theorems from four categories of residual mechanical content and the open
+analytic mathematics.  The conditional gauge-product category occupies two
+record rows: quotient-conditioned uniformity and legal-prefix adaptive
+uniformity.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -68,9 +70,10 @@ structure V13M4FaithfulEndpointHypothesisAudit where
   rows : List V13M4FaithfulEndpointAuditRow
 
 /-- The unique machine-readable audit beside the endpoint.  The four open
-mechanical rows are D.8, the adaptive conditional product-uniform part of the
-gauge lift/interface, the residual D.33 observer theorem, and D.48.  All
-remaining construction rows have concrete scaffold inhabitants. -/
+mechanical categories are D.8, the conditional gauge-product package, the
+residual D.33 observer theorem, and D.48.  The gauge-product package occupies
+two rows because the faithful construction record separately asks for the
+quotient-conditioned subvector law and the legal-prefix adaptive law. -/
 def v13M4FaithfulEndpointHypothesisAudit :
     V13M4FaithfulEndpointHypothesisAudit :=
   { rows :=
@@ -85,9 +88,9 @@ def v13M4FaithfulEndpointHypothesisAudit :
       , ⟨.D23BufferSatisfiable, .provedOnScaffold,
           "the strictly positive buffer relation has a completion"⟩
       , ⟨.quotientAndUniformGaugeLift, .openMechanical,
-          "quotient and uniform lift are proved; adaptive conditional product-uniformity remains open"⟩
+          "quotient equations are proved; quotient-conditioned subvector uniformity remains open"⟩
       , ⟨.finiteGaugeGroup, .openMechanical,
-          "positive-rank free action laws are proved; hidden-gauge product-uniformity remains open"⟩
+          "positive-rank free action laws are proved; legal-prefix adaptive product-uniformity remains open"⟩
       , ⟨.D8LockedMessageRigidity, .openMechanical,
           "requires a concrete locked-CSP clause family not supplied by the scaffold"⟩
       , ⟨.D30FullPublicSyntaxCoverage, .provedOnScaffold,
@@ -136,8 +139,8 @@ def v13M4FaithfulEndpointHypothesisAudit :
 
 /-- For the faithful regioned scaffold, the complete v13 separation
 architecture is machine-checked as one implication from exactly the mechanical
-construction record (including the named open D.8, adaptive gauge-product,
-D.33-residual, and D.48 fields), max-qSSM, bounded incidence, the Atomic
+construction record (including the named open D.8, conditional gauge-product
+package, D.33-residual, and D.48 fields), max-qSSM, bounded incidence, the Atomic
 Evidence Budget, conditional boundary mixing, fixed-clock incompressibility,
 and the Section-11 same-object upper premise at that fixed clock. This is NOT a
 proof of P != NP; the open inputs are open mathematics, and D.8 additionally
