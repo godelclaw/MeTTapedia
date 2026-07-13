@@ -11420,7 +11420,7 @@ theorem V13MaskedUSATStarSW_implies_separation_via_kernelFlipClean
     (hSW : V13MaskedUSATStarSW F) :
     F.pNeNPClaim := by
   simpa [V13RealLinearKernelFlipCleanRoute, V13MaskedUSATStarSW] using
-    pnp_steelman_conditional hKernel hSW
+    pnp_steelman_starSW_frameworkBundle_conditional hKernel hSW
 
 /-- Compact ledger of the current rung status. -/
 structure V13RealLinearRungLedger : Prop where

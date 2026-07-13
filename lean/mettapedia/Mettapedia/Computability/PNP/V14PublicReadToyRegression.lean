@@ -38,6 +38,9 @@ set_option autoImplicit false
 #check v14Toy_selfReductionUpperHypothesis_givenPNP
 #check v14ToyQuotientRead_exposes_rawGaugeSupport
 #check v14ToyNoPublicCoordinateDeterminesTarget
+#check V14ToyClosureSafeNeutralityTarget
+#check v14Toy_jointNeutralReads_recoverTarget
+#check v14Toy_closureSafeNeutralityTarget_fails
 #check v14ToyNoPublicTargetTags
 #check v14ToyHistory_admissible
 #check SafeQSSMFrontier
@@ -101,6 +104,9 @@ set_option autoImplicit false
 #print axioms v14Toy_selfReductionUpperHypothesis_givenPNP
 #print axioms v14ToyQuotientRead_exposes_rawGaugeSupport
 #print axioms v14ToyNoPublicCoordinateDeterminesTarget
+#print axioms V14ToyClosureSafeNeutralityTarget
+#print axioms v14Toy_jointNeutralReads_recoverTarget
+#print axioms v14Toy_closureSafeNeutralityTarget_fails
 #print axioms v14ToyNoPublicTargetTags
 #print axioms v14ToyHistory_admissible
 #print axioms v14ToyAtomCompleteness

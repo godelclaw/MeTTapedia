@@ -2,7 +2,7 @@ import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13InterfaceBattery
 
 /-!
-# PNP v14 locked/gauge public-read toy
+# PNP v14 public-read red-team regression toy
 
 This module upgrades the v14 public-read toy to a small locked/gauge
 construction.  The full public lock syntax has two Boolean coordinates and
@@ -10,9 +10,11 @@ forces the message by their xor; neither coordinate alone is a public target
 tag.  The raw witness/gauge layer has a genuine gauge orbit, and quotient-style
 public reads normalize to charged raw-gauge support.
 
-The structural interface fields are construction theorems for this toy.  The
-three quantitative fields are packaged as the single analytic frontier
-`V14ToyAnalyticFrontier`.
+This is a frozen red-team regression, not evidence for full public-syntax
+neutrality.  In particular, each lock coordinate is declared neutral in
+isolation while their composition computes the XOR target exactly.  The weak
+legacy structural fields and three scalar analytic fields remain packaged only
+to test old interface plumbing.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -565,6 +567,45 @@ theorem v14ToyNoPublicCoordinateDeterminesTarget :
     simp [v14ToyTarget, v14ToyPublicInput, v14ToyPublicCoordinateValue] at h00 h10
     have hcontra : (false : Bool) = true := h00.symm.trans h10
     cases hcontra
+
+/-! ## Faithful closure-safe neutrality target (red-team) -/
+
+/-- Values returned by an arbitrary finite history of declared-neutral lock
+coordinate reads. -/
+def v14ToyNeutralHistoryValues
+    (reads : List V14ToyPublicCoordinate) (Y : V14ToyPublic) : List Bool :=
+  reads.map fun coord => v14ToyPublicCoordinateValue coord Y
+
+/-- Honest closure-safe neutrality target: no finite composition/adaptive
+history consisting entirely of declared-neutral reads may recover the target.
+The v14 XOR toy is expected to refute this target. -/
+def V14ToyClosureSafeNeutralityTarget : Prop :=
+  forall reads : List V14ToyPublicCoordinate,
+    ¬ exists recover : List Bool -> Bool,
+      forall omega : V14ToyWorld,
+        v14ToyTarget omega =
+          recover (v14ToyNeutralHistoryValues reads (v14ToyPublicInput omega))
+
+/-- The two individually neutral lock reads jointly recover XOR exactly. -/
+theorem v14Toy_jointNeutralReads_recoverTarget :
+    exists recover : List Bool -> Bool,
+      forall omega : V14ToyWorld,
+        v14ToyTarget omega =
+          recover
+            (v14ToyNeutralHistoryValues
+              [.lockLeft, .lockRight] (v14ToyPublicInput omega)) := by
+  refine ⟨fun values => values.getD 0 false ^^ values.getD 1 false, ?_⟩
+  intro omega
+  rcases omega with ⟨left, right⟩
+  simp [v14ToyTarget, v14ToyNeutralHistoryValues, v14ToyPublicInput,
+    v14ToyPublicCoordinateValue]
+
+/-- Red-team result: the v14 toy fails closure-safe neutrality, despite both
+individual coordinate non-determination theorems. -/
+theorem v14Toy_closureSafeNeutralityTarget_fails :
+    ¬ V14ToyClosureSafeNeutralityTarget := by
+  intro h
+  exact h [.lockLeft, .lockRight] v14Toy_jointNeutralReads_recoverTarget
 
 /-! ## Finite phase-A and admissible-history bookkeeping for the toy -/
 
