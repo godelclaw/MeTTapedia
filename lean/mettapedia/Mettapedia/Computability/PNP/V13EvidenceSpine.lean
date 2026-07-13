@@ -74,9 +74,10 @@ noncomputable def couplingSepMass
   Finset.univ.sum
     (fun p => if T (left p) = T (right p) then 0 else pairWeight p)
 
-/-- Static pairwise-capture certificate for one observer.  The field
-`gapCaptured` is the finite coupling inequality after phase marginals have
-been checked for the concrete coupling. -/
+/-- Legacy static pair surface.  It records weighted opposite endpoints but
+does not itself require normalization or exact phase marginals.  The faithful
+version below adds those equations; users of this legacy record must supply
+`CapturesGap` separately. -/
 structure StaticPairwiseCapture
     {Omega : Type u} [Fintype Omega]
     (mu : FiniteRationalLaw Omega) (B : Omega -> Bool)
@@ -102,6 +103,28 @@ noncomputable def sepMass
   couplingSepMass T Gamma.pairWeight Gamma.left Gamma.right
 
 end StaticPairwiseCapture
+
+/-! ## Faithful Phase-A coupling statement -/
+
+/-- Phase-A compatible coupling with normalization and exact conditioned phase
+marginals in the record itself.  Event marginals are stated for every event on
+the finite world, matching Appendix D.47(i). -/
+structure FaithfulStaticPairwiseCoupling
+    {Omega : Type u} [Fintype Omega]
+    (mu : FiniteRationalLaw Omega) (B : Omega -> Bool)
+    (Pair : Type w) [Fintype Pair] where
+  pairWeight : Pair -> Rat
+  pairNonnegative : forall p, 0 <= pairWeight p
+  normalized : Finset.univ.sum pairWeight = 1
+  left : Pair -> Omega
+  right : Pair -> Omega
+  opposite : forall p, B (left p) = false ∧ B (right p) = true
+  left_exact_phase_marginal : forall event : Omega -> Bool,
+    Finset.univ.sum (fun p => if event (left p) then pairWeight p else 0) =
+      mu.conditionalProb B false (fun omega => event omega = true)
+  right_exact_phase_marginal : forall event : Omega -> Bool,
+    Finset.univ.sum (fun p => if event (right p) then pairWeight p else 0) =
+      mu.conditionalProb B true (fun omega => event omega = true)
 
 namespace StaticPairwiseCapture
 
@@ -157,7 +180,27 @@ theorem derivative_telescoping (D : DerivativeTelescoping Stage Branch) :
 
 end DerivativeTelescoping
 
-/-- Phase-A certificate combining capture and derivative accounting. -/
+/-- Faithful named Phase-A target.  The coupling equations are structural;
+trace capture and the refinement comparison remain separately visible open
+obligations until proved for the real execution/refinement sequence. -/
+structure V13FaithfulPhaseACaptureTarget
+    {Omega : Type u} [Fintype Omega]
+    (mu : FiniteRationalLaw Omega) (B : Omega -> Bool)
+    {Transcript : Type v} [DecidableEq Transcript]
+    (T : Omega -> Transcript) (observerBit : Transcript -> Bool)
+    (Pair : Type w) [Fintype Pair] (Stage : Type x) (Branch : Type y) where
+  coupling : FaithfulStaticPairwiseCoupling mu B Pair
+  captures_actual_trace :
+    Gap mu B T observerBit <=
+      (1 / 2 : Rat) *
+        couplingSepMass T coupling.pairWeight coupling.left coupling.right
+  telescoping : DerivativeTelescoping Stage Branch
+  separation_le_derivative_sum :
+    couplingSepMass T coupling.pairWeight coupling.left coupling.right <=
+      telescoping.derivativeSum
+
+/-- Legacy conditional Phase-A certificate combining assumed capture and
+assumed derivative accounting. -/
 structure EvidenceSpineBound
     {Omega : Type u} [Fintype Omega]
     (mu : FiniteRationalLaw Omega) (B : Omega -> Bool)
@@ -170,6 +213,8 @@ structure EvidenceSpineBound
   sep_le_derivativeSum :
     capture.sepMass ≤ telescoping.derivativeSum
 
+/-- Conditional certificate eliminator: this theorem chains `capturesGap` and
+`sep_le_derivativeSum`; it does not construct a coupling or prove either input. -/
 theorem phaseA_gap_le_half_derivative_sum
     {Omega : Type u} [Fintype Omega]
     {mu : FiniteRationalLaw Omega} {B : Omega -> Bool}
