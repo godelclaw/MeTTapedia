@@ -143,8 +143,8 @@ structure V13QuantitativeEnsemble where
   Program : Type f
   programLength : Program -> Nat
   deterministicPolynomialObserver : Program -> Prop
-  neutralCoherent : forall (theta : Parameter) (m t : Nat), Program -> Prop
-  safeCompatible : forall (theta : Parameter) (m t : Nat), Program -> Prop
+  neutralCoherent : forall {theta m t}, Program -> World theta m t -> Prop
+  safeCompatible : forall {theta m t}, Program -> World theta m t -> Prop
   safeChargedOccurrences : forall {theta m t},
     Program -> Finset (TargetCoord theta m t) -> World theta m t -> Nat
   cumulativeSafeLeakage : forall {theta m t},
@@ -514,8 +514,8 @@ structure V13AtomicEvidenceBudgetFrontier
         forall P : E.Program,
           E.programLength P <= L ->
           E.deterministicPolynomialObserver P ->
-          E.neutralCoherent theta m t P ->
-          E.safeCompatible theta m t P ->
+          E.neutralCoherent P omega ->
+          E.safeCompatible P omega ->
           E.safeChargedOccurrences P (E.switchedSet theta m t) omega <= Qtot ->
           E.gapSum P (E.switchedSet theta m t) omega <=
             (1 / 2 : Real) *
