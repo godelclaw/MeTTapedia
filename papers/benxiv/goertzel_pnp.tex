@@ -540,58 +540,46 @@ implication whose axiom print is \emph{empty}: pure plumbing, asserting no
 separation. (This is the concrete-instantiation frontier; the evidence spine of
 \S\ref{sec:spine} is the more settled core.)
 
-\subsection{The real gauge-buffered locked CNF ensemble (the M4 object)}
+\subsection{The linear gauge-CNF regression carrier and the faithful M4 specification}
 \label{sec:realM4}
-The linear testbed above is a stepping stone to the manuscript's actual milestone
-M4: \emph{one} concrete gauge-buffered locked ensemble satisfying every interface
-hypothesis of Thm.~4.31 at once. The development has since built that object
-directly --- the real regioned CNF world \texttt{RealM4CNFWorld} and its gauge-CNF
-realization \texttt{v13RealLinearGaugeCNF\dots} (a regioned public geometry with a
-hidden gauge coordinate and a locked global-message layer; not the two-point toy of
-\S\ref{sec:phaseD}, nor the inadmissible scaled family of \S\ref{sec:inadmissible}).
-On this real object the \emph{mechanical} half of the interface is discharged and
-the \emph{analytic} half is isolated as four named inputs --- an honest separation
-of what transfers from what stays open.
+The current \texttt{V15RealLinearCNFEnsemble} and
+\texttt{V15SmallSingleMessageCNFEnsemble} are frozen regression carriers, not the
+manuscript's M4 ensemble.  The general linear carrier unit-locks the decoded witness
+coordinates and has one free Boolean gauge coordinate.  It is useful for testing
+generic SAT/readout, gauge-action, and bit-fixing machinery, but it has no regioned
+neutral/buffer/locked/gauge/readout geometry and cannot supply the growing gauge
+entropy or buffer law used by the analytic argument.
 
-\paragraph{What transfers (mechanical, status (b), modulo a public-message
-invariant).} The structural interface fields hold on the real CNF ensemble as
-proved implications from a single \texttt{publicMessageInvariant} hypothesis:
-\begin{itemize}
-  \item the \textbf{single-message promise}
-        (\texttt{realM4CNF\_singleMessage\_of\_publicMessageInvariant},
-        \texttt{v13RealLinearGaugeCNFReadoutData\_singleMessagePromise}) with readout
-        consistency and CNF-extraction completeness on the real support;
-  \item the \textbf{gauge action}: it preserves the verifier and the readout and is
-        nontrivial (\texttt{v13RealLinearGaugeCNFGaugeAction\_preserves\_verifier},
-        \texttt{\_preserves\_readout}, \texttt{\_nontrivial}) --- the hidden-gauge
-        structure Cor.~4.19 needs;
-  \item \textbf{locked-message rigidity} and the \textbf{bit-fixing self-reduction}:
-        any supported SAT-search output decodes to the same message
-        (\texttt{realM4\_supportedArbitraryOutputSATSearchCorrect\dots},
-        \texttt{realM4\_bitFixingAssignment\_satisfies}) --- the
-        $\mathrm{P}=\mathrm{NP}$ upper side on the real object;
-  \item \textbf{admissibility}, the condition the scaled family failed
-        (\S\ref{sec:inadmissible}): the real CNF carries \emph{no} public target tag
-        and \emph{no} public readout tag
-        (\texttt{v13RealLinearGaugeCNFFormula\_noPublicTargetTags\_obstruction},
-        \texttt{\_noPublicReadoutTags\_obstruction}) --- it does not print the answer.
-\end{itemize}
-All are axiom-clean and conditional on the public-message invariant, which is the
-mechanical promise a regioned construction is built to enforce.
+Its principal manuscript-facing result is negative.  When the full concrete
+Appendix-I formula syntax is public, that syntax determines the target and the
+readout.  Accordingly,
+\texttt{v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula\_noPublicTargetTags\_obstruction}
+and
+\texttt{v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula\_noPublicReadoutTags\_obstruction}
+prove that the no-public-tag disciplines \emph{fail} on this carrier.  A theorem for
+a deliberately smaller neutral skeleton does not repair the full-syntax failure.
+Likewise, the carrier's Appendix-D-shaped read predicate asserts
+\texttt{message = targetBit}; its resulting \texttt{PublicMessageInvariant} is
+premise-baking and is not evidence that D.8 was constructed from bounded-arity
+lock/readout constraints.
 
-\paragraph{What stays open (analytic, status (c)/(d)) --- the four inputs, now on
-the real ensemble.} What the lift does \emph{not} discharge, and names precisely as
-frontier structures over the real ensemble, are the four Millennium-hard analytic
-inputs: \texttt{SafeQSSMFrontier} (soft-buffer leakage),
-\texttt{BoundedGaugeIncidenceFrontier} (gauge-rank entropy),
-\texttt{BoundaryMixingFrontier} (boundary-law mixing), and
-\texttt{CompressionStarSWHardness} (the $\StarSW$ average-case witness-bit
-hardness); the real lower-machine data threads $\StarSW$ explicitly
-(\texttt{starSWHardness : CompressionStarSWHardness \dots}). This is the honest state
-of the concrete route: the \emph{mechanical} interface now transfers to the
-manuscript's real M4 object, while the \emph{analytic} weight is reduced to the same
-four inputs the abstract interface named --- open mathematics, not Lean plumbing,
-and not established here. The terminal separation node remains at $0\%$.
+The manuscript-facing work is now a statement-only layer on one common size- and
+clock-indexed ensemble.  \texttt{V13FaithfulQuantitativeFrontiers} states the
+conditional hidden-gauge product law, a nontrivial indexed finite gauge action,
+full-public-syntax coverage, max-qSSM, finite-set bounded incidence together with
+the simultaneous Atomic Evidence Budget, conditional boundary mixing, the
+fixed-clock Theorem-10.9 probability bound, and the Section-11 upper side on the
+same object at $D^\ast$.  \texttt{PNPv13FaithfulM4Spec} states the five-region
+Appendix-D/I type layer, the $x/g/z$ quotient equations and uniform gauge lift,
+lock/readout and buffer predicates, legal probes, sampler support, compatible
+couplings, and uniform CNF compilation.  D.8, D.30, D.33, and D.48 remain exact
+named construction hypotheses.
+
+No inhabitant of this faithful M4 construction record is exhibited here.  The four
+analytic packages --- max-qSSM; bounded incidence plus the Atomic Evidence Budget;
+conditional boundary mixing; and fixed-clock global message incompressibility ---
+remain explicit open mathematics on that same prospective object.  The terminal
+separation node remains at $0\%$.
 
 \section{Obstructions and reroutings}
 \label{sec:obstructions}
@@ -635,27 +623,30 @@ log-Sobolev inequality can ever supply the missing domination; this is the
 structural reason the hardness input $\StarSW$ cannot be made a free lemma, and
 part of why v13 abandons the locality midpoint entirely.
 
-\paragraph{The steelman conditional.} The non-hardness plumbing of the repaired
-route assembles into a clean conditional: exact kernel-flip neutrality
-\emph{plus} the open $\StarSW$ hardness input implies the abstract separation
-endpoint.
+\paragraph{The steelman conditional.} The repaired abstract implication consumes
+two premise packages: kernel-flip neutrality plus the open $\StarSW$ hardness
+input, and a \texttt{PNPConditionalFramework} supplying pivot independence,
+compression from success, and the self-reduction clash.
 \begin{lstlisting}
-theorem pnp_steelman_conditional
+theorem pnp_steelman_starSW_frameworkBundle_conditional
     (hKernel : KernelFlipNeutrality F)
     (hSW : StarSWAverageCaseWitnessBitHardness F) :
     F.pNeNPClaim
 \end{lstlisting}
-\textbf{Status (b), conditional} --- and notably its axiom print is \emph{empty}
-(``does not depend on any axioms''): pure implication plumbing. It asserts no
-unconditional separation. $\StarSW$ is not weaker than the target: it is
+\texttt{pnpSteelmanFrameworkPremiseBundleAudit} lists the three non-$\StarSW$
+framework premises.  \textbf{Status (b), conditional}: the composition theorem is
+axiom-free, but it proves none of those premises and asserts no unconditional
+separation.  A future concrete theorem must establish every premise on the same
+faithful M4 ensemble.  ($\StarSW$ itself is not weaker than the target: it is
 contradicted in the $\mathrm{P}=\mathrm{NP}$ regime and is equivalent, on the
-ensemble, to the separation itself --- which is exactly why No-Threading forbids
-deriving it for free.
+ensemble, to the separation --- which is why No-Threading forbids deriving it for
+free.)
 
 \section{Status, scope, and the open frontier}
 \label{sec:scope}
 
-\paragraph{Machine-checked unconditionally.} The CD-ENF normalization
+\paragraph{Machine-checked unconditionally.} The syntactic CD-ENF
+semantics-preservation theorem (not the open real-execution primitive expansion)
 (\S\ref{sec:spine}); the atomic-evidence \emph{bookkeeping} algebra and its
 cancellation/exactness countermodels; non-vacuity of the nine-field interface; the
 Phase-E \emph{negatives} (the scaled family is inadmissible; the observer ladder
@@ -665,16 +656,23 @@ linear route, the two crude-constant success bounds, the parity trichotomy, the
 public-surface certificate, the $q\le1$ causal cases, and the true-first counting
 close.
 
-\paragraph{Machine-checked only modulo Ben's interface hypotheses.} The Phase-A
-gap bound; the Phase-C ledger-coherence lemmas; the \textbf{Phase-D upper--lower
-clash} (from the nine-field ledger plus a \texttt{ParameterRecord} bundling the two
-flagged open inputs); and the no-target sequential certificate (modulo a pinned
-counting \texttt{Prop}). These are the reduction skeleton toward \S11, not a
-separation. On the concrete side, the real M4 CNF ensemble's \emph{mechanical}
-interface --- single-message promise, gauge action, locked-message rigidity,
-bit-fixing self-reduction, and no-public-tag admissibility --- now transfers on the
-real object modulo a public-message invariant (\S\ref{sec:realM4}), isolating the
-four analytic inputs as the residual.
+\paragraph{Machine-checked only modulo explicit premise bundles.} The legacy
+Phase-A theorem is a conditional certificate eliminator; the faithful Phase-A
+record still requires normalized exact phase marginals, actual-trace capture, and
+the refinement comparison.  The Phase-C coherence lemmas use the legacy thin
+interface.  The \textbf{Phase-D upper--lower clash} is an implication from the full
+\texttt{ParameterRecord}, which supplies the phase budget, lower framework, kernel
+neutrality, $\StarSW$ transfer, and the incompatible Section-11 upper premise.
+These are reduction skeletons, not a separation.
+
+The no-target sequential result is \emph{not} conditional on the former pinned
+counting proposition.  \texttt{V13RealLinear\_rungLedger} records unconditional
+half-plus-epsilon bounds for both the adjusted no-target sequential sampler and the
+bit-junta sampler, together with unconditional Crux-2; only the
+$\StarSW$--framework endgame remains conditional.  Separately, the faithful
+quantitative frontiers and Appendix-D/I M4 layer are open statement/specification
+records: no concrete M4 inhabitant currently transfers the mechanical interface or
+the four analytic inputs.
 
 \paragraph{Open.} The sharp $2^q/2^m$ causal counting bounds for $q\ge2$; the
 random-switching lift \texttt{PhaseEScaledSwitchingStatementNeeded}; the $\StarSW$
@@ -708,8 +706,11 @@ ladder are the modules \texttt{V13EvidenceSpine}, \texttt{V13CDENF},
 the steelman conditional and its inputs are \texttt{PNPSteelmanConditional},
 \texttt{KernelFlipInvolution}, and \texttt{NoThreadingLemma}; the linear
 replacement route is the \texttt{V13RealRungOne*} / \texttt{V13RealRungTwoBitJunta}
-family; the real M4 gauge-buffered locked CNF ensemble (\S\ref{sec:realM4}) is
-\texttt{V15RealEnsembleSpine} and \texttt{V15RealLinearCNFEnsemble}. Lean listings
+family; the frozen legacy staging spine and linear CNF regression/obstruction
+carrier are \texttt{V15RealEnsembleSpine} and
+\texttt{V15RealLinearCNFEnsemble}.  The faithful manuscript-facing statement layers
+are \texttt{V13FaithfulQuantitativeFrontiers} and
+\texttt{PNPv13FaithfulM4Spec}; they specify, but do not construct, M4. Lean listings
 are ASCII transliterations of the source declarations
 (the sources are normative); every headline was checked with \texttt{\#print
 axioms}. Per-declaration source links are omitted pending publication of the
