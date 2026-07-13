@@ -1,3 +1,4 @@
+import Mettapedia.Computability.PNP.V13FaithfulM4ConditionalEndpoint
 import Mettapedia.Computability.PNP.V13FaithfulM4TransferMatrix
 
 /-!
@@ -16,6 +17,10 @@ namespace Mettapedia.Computability.PNP
 #check v13M4Concrete_openConstructionObligations_obstructed
 #check v13M4Concrete_bitFixingReadout_obstruction
 #check v13M4ConcreteTransferMatrix
+#check v13M4ScaffoldExecutionTraceExpansion
+#check v13M4ScaffoldFaithfulPhaseA
+#check v13M4FaithfulEndpointHypothesisAudit
+#check v13M4Faithful_fixedClock_upperLowerClash
 
 #print axioms v13M4Concrete_sampler_sound
 #print axioms v13M4Concrete_support_iff_positive_mass
@@ -28,6 +33,10 @@ namespace Mettapedia.Computability.PNP
 #print axioms v13M4Concrete_openConstructionObligations_obstructed
 #print axioms v13M4Concrete_bitFixingReadout_obstruction
 #print axioms v13M4ConcreteTransferMatrix
+#print axioms v13M4ScaffoldExecutionTraceExpansion
+#print axioms v13M4ScaffoldFaithfulPhaseA
+#print axioms v13M4FaithfulEndpointHypothesisAudit
+#print axioms v13M4Faithful_fixedClock_upperLowerClash
 
 example : v13M4ConcreteTransferMatrix .samplerSoundness = .proved := rfl
 example : v13M4ConcreteTransferMatrix .singleMessage = .obstructed := rfl
