@@ -7,6 +7,14 @@ Every row refers to this object.  No legacy carrier fact transfers by analogy.
 `proved` means an exact theorem is present below or in an imported construction
 module; `obstructed` means an exact counterexample is present; `openExactTarget`
 means the faithful record type remains unchanged and no proof is claimed.
+
+The Appendix-D source audit does not supply a replacement object for this
+matrix.  Definition D.5 specifies only abstract bounded-arity lock/readout
+predicates and Hypothesis D.8 separately assumes rigidity; Appendix I compiles
+those predicates without giving their clause tables.  Hence the D.8 and
+bit-fixing obstructions below remain the verdict for this concrete connector,
+while manuscript-level D.8 remains an uninstantiated exact hypothesis rather
+than a proved or refuted property of a second concrete core.
 -/
 
 namespace Mettapedia.Computability.PNP
