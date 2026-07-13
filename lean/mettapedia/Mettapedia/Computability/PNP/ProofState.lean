@@ -29,6 +29,7 @@ import Mettapedia.Computability.PNP.V13RealRungOneLinear
 import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
 import Mettapedia.Computability.PNP.V13RealRungOneRowObservers
 import Mettapedia.Computability.PNP.V13RealRungOneStaticRows
+import Mettapedia.Computability.PNP.V13RealRungTwoBitJunta
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -65,13 +66,13 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 948
-  sourceLines := 125688
-  internalImportEdges := 2294
-  regressionFiles := 295
-  filesOverSevenHundredFiftyLines := 2
+  sourceFiles := 1004
+  sourceLines := 211082
+  internalImportEdges := 2400
+  regressionFiles := 200
+  filesOverSevenHundredFiftyLines := 13
   zeroInternalImporterEntrypoints := 256
-  noDeclarationCompatibilityHubs := 128
+  noDeclarationCompatibilityHubs := 133
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
 structure SimpleTruthValue where
@@ -94,7 +95,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 948 Lean files, 125688 lines, 2294 internal import edges, and two files over the split threshold.",
+    evidence := "The lane currently has 1004 Lean files, 211082 lines, 2400 internal import edges, 200 regression files, 13 files over the split threshold, 256 zero-internal-importer entrypoints, and 133 no-declaration compatibility hubs.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -176,8 +177,8 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.steelman.kernel-flip-no-threading-star-sw-conditional",
     status := .checked,
     truthValue := ⟨100, 92⟩,
-    evidence := "KernelFlipInvolution proves the finite ZMod 2 kernel-flip pairing `kernelFlip_exactNeutrality_card`, with `toyKernelFlip_exactNeutrality_card` as an inhabited model. NoThreadingLemma proves `noThreading_neutral_sufficient_blocks_nontrivial_bit`, showing a neutral local statistic cannot also be sufficient for a nontrivial deterministic witness bit. PNPSteelmanConditional proves `pnp_steelman_conditional`: KernelFlipNeutrality plus the explicit open StarSWAverageCaseWitnessBitHardness input implies the abstract PNP endpoint through the non-SW chain.",
-    nextObligation := "The exact remaining input is StarSWAverageCaseWitnessBitHardness for Ben's masked isolated ensemble; no concentration/log-Sobolev replacement and no unconditional separation is asserted by this node."
+    evidence := "KernelFlipInvolution proves the finite ZMod 2 kernel-flip pairing `kernelFlip_exactNeutrality_card`, and NoThreadingLemma proves `noThreading_neutral_sufficient_blocks_nontrivial_bit`. PNPSteelmanConditional proves only `pnp_steelman_starSW_frameworkBundle_conditional`: KernelFlipNeutrality and StarSWAverageCaseWitnessBitHardness imply the abstract endpoint after the framework supplies pivotIndependenceStep, compressionFromSuccessStep, and selfReductionClashStep; `pnpSteelmanFrameworkPremiseBundleAudit_exact` lists those non-SW premises.",
+    nextObligation := "Prove StarSWAverageCaseWitnessBitHardness and the three audited framework premises on the faithful real M4 object; no unconditional separation is asserted by this node."
   },
   {
     key := "pnp.coarse-projection-repair-obstruction",
@@ -190,15 +191,15 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.v13.phase-a.finite-evidence-spine",
     status := .checked,
     truthValue := ⟨100, 91⟩,
-    evidence := "V13EvidenceSpine defines finite rational laws, conditional target gaps, static pairwise-capture certificates, derivative-telescoping certificates, and the combined `phaseA_gap_le_half_derivative_sum`; `toyV13_phaseA_gap_le_half_derivative_sum` gives a two-point inhabited model.",
-    nextObligation := "Feed the finite derivative sum through CD-ENF safe/gauge normalization rather than treating observer output as an opaque atom."
+    evidence := "V13EvidenceSpine now distinguishes `FaithfulStaticPairwiseCoupling`, which states normalization and exact conditioned phase marginals, from the legacy `StaticPairwiseCapture`. `V13FaithfulPhaseACaptureTarget` leaves actual-trace capture and refinement comparison explicit. The proved `phaseA_gap_le_half_derivative_sum` remains a conditional certificate eliminator, and its two-point inhabitant does not construct the faithful coupling for M4.",
+    nextObligation := "Construct the faithful coupling and prove actual execution-trace capture and the separation-to-derivative comparison on the faithful M4 sampler."
   },
   {
     key := "pnp.v13.phase-b.cd-enf-normalization",
     status := .checked,
     truthValue := ⟨100, 91⟩,
-    evidence := "V13CDENF defines RawEvidence without observer-output atoms, NormalEvidence with exactly neutral/safe/gauge leaf constructors, proves `CDENF_semantics`, and routes observers through `observerToEvidence_sat` plus `observerToCDENF_sat`; the toy observer interface inhabits the discipline.",
-    nextObligation := "Use the normalized safe/gauge leaves as the ledger surface for Phase C, including the joint nine-field inhabitation test."
+    evidence := "V13CDENF proves `CDENF_semantics`, a syntactic semantics-preservation theorem for its already classified evidence datatype. `V13ExecutionTracePrimitiveExpansionTarget` separately states the open execution obligation: expand every occurring real primitive soundly, prove each safe leaf legal, and expose every required fresh gauge support coordinate.",
+    nextObligation := "Inhabit `V13ExecutionTracePrimitiveExpansionTarget` for the faithful M4 execution trace; syntactic normalization alone is not construction evidence."
   },
   {
     key := "pnp.v13.phase-c.gauge-buffered-ledger",
@@ -227,6 +228,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 86⟩,
     evidence := "V13PhaseEConcrete instantiates GaugeBufferedLockedInterface on a four-world one-variable locked CNF family with a VV-style isolation row and hidden gauge bit. It proves the locked-CNF uniqueness lemma, discharges the nine obligations individually in the requested order, and records a nine-row obligation map with no checked failures.",
     nextObligation := "Do not generalize the zero-cost safeQSSM and Unit-pivot boundaryMixing smoke proofs to the scaled ensemble; those remain the hard scaled obligations."
+  },
+  {
+    key := "pnp.v13.real-rung-one.no-target-rows-rung-ledger",
+    status := .checked,
+    truthValue := ⟨100, 98⟩,
+    evidence := "`V13RealLinear_rungLedger` records the live true-first status: the no-target sequential and bit-junta sampler bounds and Crux-2 certificate are unconditional; only the StarSW/framework endgame remains conditional, and the converse requires its own explicit premise.",
+    nextObligation := "Use this rung ledger as the status source; do not restore the superseded conditional no-target-row certificate as the headline."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -875,7 +883,8 @@ theorem currentPNPSteelmanConditional_node :
   exact
     ⟨⟨kernelFlipZeroOneEquiv toyKernelW_isKernel toyKernelW_hits_zero⟩,
       noThreadingToy_obstruction,
-      fun hKernel hSW => pnp_steelman_conditional hKernel hSW,
+      fun hKernel hSW =>
+        pnp_steelman_starSW_frameworkBundle_conditional hKernel hSW,
       toy_pnp_steelman_conditional_nonvacuous⟩
 
 theorem currentPNPWeaknessCalculus_node :
@@ -1990,31 +1999,23 @@ theorem currentPNPV13RealRungOneSequentialQRowTransferCertificate_node :
     V13RealLinearSequentialQRowTransferCertificate := by
   exact v13RealLinear_sequentialQRowTransferCertificate
 
-theorem currentPNPV13RealRungOneNoTargetRowsSequentialQRowConditional_node :
-    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound →
-      ∀ {m q : Nat} (i₀ : Fin m)
-        (observer : V13RealLinearSequentialRowObserver m q),
-        v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
-          (1 / 2 : Rat) +
-            (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
-  intro hcount m q i₀ observer
-  exact
-    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
-      hcount i₀ observer
+theorem currentPNPV13RealRungOneNoTargetRowsSequentialSamplerUnconditional_node :
+    V13RealLinearNoTargetRungOneSequentialSamplerUnconditional := by
+  exact V13RealLinear_rungLedger.sequentialSampler
 
-theorem currentPNPV13RealRungOneNoTargetRowsConditionalCertificate_node :
-    V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
-  exact v13RealLinear_noTargetRows_rungOneConditionalCertificate
+theorem currentPNPV13RealRungOneLedger_node :
+    V13RealLinearRungLedger := by
+  exact V13RealLinear_rungLedger
 
-theorem currentPNPV13RealRungOneConditionalCharge_node :
+theorem currentPNPV13RealRungOneUnconditionalCharge_node :
     (∀ row ∈ phaseEScaledObligationMap,
         row.status = .familyInadmissible) ∧
       (∀ m k : Nat, PhaseEScaledPublicTargetTagViolation m k) ∧
-        V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
+        V13RealLinearNoTargetRungOneBothSamplersUnconditional := by
   exact
     ⟨phaseEScaledObligationMap_all_familyInadmissible,
       phaseEScaled_familyInadmissible_publicTargetTag,
-      v13RealLinear_noTargetRows_rungOneConditionalCertificate⟩
+      V13RealLinear_rungLedger.bothSamplers⟩
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
