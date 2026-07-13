@@ -84,8 +84,11 @@ structure CompressionKernelNeutrality (F : CompressionLowerFramework) where
   halfBudget_le_starBudget :
     F.halfBudget ≤ F.halfPlusSlackBudget
 
-/-- The open SW/hardness input needed to transfer the local half-bound to all
-short predictors. -/
+/-- **Retired thin StarSW transfer.** This legacy local-to-short-predictor
+implication is retained by the abstract clash plumbing, but it is not Theorem
+10.9: it has no size-indexed probability, message scale, exceptional event, or
+fixed-clock quantifier.  Manuscript-facing work must use
+`V13GlobalMessageIncompressibilityFrontier`. -/
 structure CompressionStarSWHardness (F : CompressionLowerFramework) where
   transferLocalNeutralityToShortPredictors :
     (∀ A : F.Predictor, F.uLocal A -> F.pivotSuccess A ≤ F.halfBudget) ->
@@ -212,7 +215,7 @@ structure LedgerFieldUseCertificate
     ¬ ∃ w0 w1,
       L.publicInput w0 = L.publicInput w1 ∧
         L.target w0 = false ∧ L.target w1 = true
-  hiddenGaugeProductUsed :
+  gaugePredicateTotalUsed :
     ∀ gamma omega, L.semantics.gaugeSat gamma omega
   noPublicTargetTagsUsed :
     PairNeutral L.oppositeSupport L.neutralSkeleton ∧
@@ -295,7 +298,7 @@ theorem v13_upperLowerClash
       { singleMessageUsed := L.singleMessage
         samePublicNotOpposite :=
           sameFullY_noOpposite L.publicInput L.target L.singleMessage
-        hiddenGaugeProductUsed := L.hiddenGaugeProduct
+        gaugePredicateTotalUsed := L.gaugePredicateTotal
         noPublicTargetTagsUsed := L.noPublicTargetTags
         atomCompletenessUsed := L.atomCompleteness
         gaugeFaithfulnessUsed := L.gaugeFaithfulness

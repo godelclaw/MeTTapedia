@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.V15RealEnsembleSpine
+import Mettapedia.Computability.PNP.V13FaithfulQuantitativeFrontiers
 
 /-!
 # PNP v15: linear CNF regression and obstruction carrier
@@ -2048,10 +2048,10 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_gaugeFaithfulness :
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` transfer for the concrete no-target-row
+/-- Structural `gaugePredicateTotal` transfer for the concrete no-target-row
 SAT-world surface.  Every hidden-gauge action is satisfied because it
 preserves verifier validity, public input, and fixed message readout. -/
-theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_hiddenGaugeProduct :
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_gaugePredicateTotal :
     ∀ gamma omega,
       v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics.gaugeSat
         gamma omega := by
@@ -3692,10 +3692,10 @@ theorem v13RealLinearSmallGaugeCNFSATWorld_gaugeFaithfulness :
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` transfer for the global SAT-world small
+/-- Structural `gaugePredicateTotal` transfer for the global SAT-world small
 real-linear gauge-CNF surface.  Every hidden-gauge action is satisfied because
 the action preserves verifier validity and the fixed message readout. -/
-theorem v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct :
+theorem v13RealLinearSmallGaugeCNFSATWorld_gaugePredicateTotal :
     ∀ gamma omega,
       v13RealLinearSmallGaugeCNFSATWorldSemantics.gaugeSat gamma omega := by
   intro gamma omega
@@ -3798,16 +3798,16 @@ def v13RealLinearSmallGaugeCNFSATWorldGaugeActionData :
     exact
       v13RealLinearSmallGaugeCNFSATWorldGaugeAction_preserves_target
         gamma omega
-  gaugeSatisfied := v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct
+  gaugeSatisfied := v13RealLinearSmallGaugeCNFSATWorld_gaugePredicateTotal
 
 /-- The explicit small gauge-CNF SAT-world action data projects the
-`hiddenGaugeProduct` structural field. -/
+`gaugePredicateTotal` structural field. -/
 theorem
-    v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct_fromActionData :
+    v13RealLinearSmallGaugeCNFSATWorld_gaugePredicateTotal_fromActionData :
     ∀ gamma omega,
       v13RealLinearSmallGaugeCNFSATWorldSemantics.gaugeSat
         gamma omega :=
-  RealM4GaugeActionData.hiddenGaugeProduct
+  RealM4GaugeActionData.gaugePredicateTotal
     v13RealLinearSmallGaugeCNFSATWorldGaugeActionData
 
 /-- Gauge satisfaction for the explicit small surface is target preservation
@@ -3858,11 +3858,11 @@ theorem v13RealLinearSmallGaugeCNF_gaugeFaithfulness
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` transfer for the explicit small
+/-- Structural `gaugePredicateTotal` transfer for the explicit small
 real-linear gauge-CNF instance: every Boolean gauge action is satisfied at
 every verifier-valid world because it only flips the hidden gauge coordinate
 and preserves the locked message readout. -/
-theorem v13RealLinearSmallGaugeCNF_hiddenGaugeProduct
+theorem v13RealLinearSmallGaugeCNF_gaugePredicateTotal
     (msg : Bool) :
     ∀ gamma omega,
       (v13RealLinearSmallGaugeCNFSemantics msg).gaugeSat gamma omega := by
@@ -4098,11 +4098,11 @@ theorem v13RealLinearSmallGaugeCNFEnsemble_gaugeFaithfulness :
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` transfer for the global two-message small
+/-- Structural `gaugePredicateTotal` transfer for the global two-message small
 real-linear gauge-CNF ensemble.  Every Boolean hidden-gauge action is
 satisfied at every global world because the action only flips the hidden
 coordinate and preserves the represented SAT witness readout. -/
-theorem v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct :
+theorem v13RealLinearSmallGaugeCNFEnsemble_gaugePredicateTotal :
     ∀ gamma omega,
       v13RealLinearSmallGaugeCNFEnsembleSemantics.gaugeSat gamma omega := by
   intro gamma omega
@@ -4133,15 +4133,15 @@ def v13RealLinearSmallGaugeCNFEnsembleGaugeActionData :
     exact
       v13RealLinearSmallGaugeCNFEnsembleGaugeAction_preserves_target
         gamma omega
-  gaugeSatisfied := v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct
+  gaugeSatisfied := v13RealLinearSmallGaugeCNFEnsemble_gaugePredicateTotal
 
 /-- The explicit small-ensemble action data projects the
-`hiddenGaugeProduct` structural field. -/
-theorem v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct_fromActionData :
+`gaugePredicateTotal` structural field. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_gaugePredicateTotal_fromActionData :
     ∀ gamma omega,
       v13RealLinearSmallGaugeCNFEnsembleSemantics.gaugeSat
         gamma omega :=
-  RealM4GaugeActionData.hiddenGaugeProduct
+  RealM4GaugeActionData.gaugePredicateTotal
     v13RealLinearSmallGaugeCNFEnsembleGaugeActionData
 
 /-- History field for the global small ensemble: observe only the hidden gauge
@@ -5453,11 +5453,11 @@ theorem
 
 /-! ## No-target-rows gauge CNF Appendix-D/I readout construction -/
 
-/-- Appendix-D locked core for the no-target-rows gauge-buffered CNF
-construction.  The public lock is the adjusted no-target-rows public surface;
-the quotient is the concrete gauge-buffered CNF witness; and the read
-predicate forces the message to the base target bit, independently of the free
-hidden gauge coordinate. -/
+/-- Regression-only Appendix-D-shaped locked core.  Its definition
+`readPredicate := (message = targetBit omega)` bakes the desired global message
+directly into acceptance.  Therefore its `PublicMessageInvariant` proof below
+is premise-baking and is explicitly excluded from evidence that D.8 has been
+constructed from a bounded-arity lock/readout layer. -/
 noncomputable def v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore
     {m : Nat} (i₀ : Fin m) :
     AppendixDLockedCore
@@ -5496,8 +5496,9 @@ noncomputable def v13RealLinearNoTargetRowsGaugeCNFLockedCompletionOfWitness
   read_ok := by
     simp [v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore]
 
-/-- The concrete no-target-rows gauge-CNF locked core has the public-message
-invariant: every accepted locked completion reads the base target bit. -/
+/-- Premise-baking regression: the public-message invariant follows because
+the read predicate was defined to assert `message = targetBit omega`.  This is
+not construction evidence for Appendix D.8. -/
 theorem
     v13RealLinearNoTargetRowsGaugeCNFAppendixD_publicMessageInvariant
     {m : Nat} (i₀ : Fin m) :
@@ -7158,6 +7159,22 @@ theorem
     (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesTarget
       i₀)
 
+/-- The full-formula failure above is the named obstruction to the faithful
+full-public-syntax target-hiding target.  It cannot be repaired by selecting a
+smaller neutral skeleton. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_obstructs_fullPublicSyntaxTargetHiding
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13FullPublicSyntaxTargetHiding
+      (@v13RealLinearNoTargetRowsTargetBit m i₀)
+      (fun Y =>
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).formula Y) := by
+  simpa [V13FullPublicSyntaxTargetHiding,
+    V13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormulaNoPublicTargetTags]
+    using
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_noPublicTargetTags_obstruction
+        i₀)
+
 /-- Formula-syntax no-public-readout-tags shape for the no-target-rows
 Appendix-I CNF data.  It asks whether the full concrete CNF formula syntax
 alone hides the fixed readout of every verifier-valid witness. -/
@@ -7229,6 +7246,23 @@ theorem
   exact hNoTags
     (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesReadout
       i₀)
+
+/-- The full-formula readout failure is the named obstruction to faithful
+full-public-syntax readout hiding on this carrier. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_obstructs_fullPublicSyntaxReadoutHiding
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13FullPublicSyntaxReadoutHiding
+      (realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+      (realM4CNFWitnessReadout (fun bit => bit))
+      (fun Y =>
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).formula Y) := by
+  simpa [V13FullPublicSyntaxReadoutHiding,
+    V13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormulaNoPublicReadoutTags]
+    using
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_noPublicReadoutTags_obstruction
+        i₀)
 
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
@@ -8529,9 +8563,9 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_gaugeFaithfulness
   rfl
 
 /-- The concrete hidden-gauge action satisfies the gauge predicate at every
-world.  This is the `hiddenGaugeProduct` structural field for the
+world.  This is the `gaugePredicateTotal` structural field for the
 gauge-buffered no-target-rows CNF surface. -/
-theorem v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct
+theorem v13RealLinearNoTargetRowsGaugeCNF_gaugePredicateTotal
     {m : Nat} (i₀ : Fin m) :
     ∀ gamma omega,
       (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).gaugeSat
@@ -8566,16 +8600,16 @@ def v13RealLinearNoTargetRowsGaugeCNFGaugeActionData {m : Nat}
       v13RealLinearNoTargetRowsGaugeCNFGaugeAction_preserves_target
         gamma omega
   gaugeSatisfied :=
-    v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct i₀
+    v13RealLinearNoTargetRowsGaugeCNF_gaugePredicateTotal i₀
 
 /-- The action-data projection recovers the same concrete
-`hiddenGaugeProduct` field. -/
-theorem v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct_fromActionData
+`gaugePredicateTotal` field. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_gaugePredicateTotal_fromActionData
     {m : Nat} (i₀ : Fin m) :
     ∀ gamma omega,
       (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).gaugeSat
         gamma omega :=
-  RealM4GaugeActionData.hiddenGaugeProduct
+  RealM4GaugeActionData.gaugePredicateTotal
     (v13RealLinearNoTargetRowsGaugeCNFGaugeActionData i₀)
 
 /-! ## Appendix-I CNF gauge action -/
@@ -9298,17 +9332,17 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_gaugeFaithfulness
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` transferred to the no-target-rows
+/-- Structural `gaugePredicateTotal` transferred to the no-target-rows
 Appendix-I CNF world carrier: every transported hidden-gauge predicate is
 satisfied on every concrete Appendix-I CNF world. -/
-theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_gaugePredicateTotal
     {m : Nat} (i₀ : Fin m) :
     ∀ gamma omega,
       (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
           i₀).gaugeSat gamma omega := by
   intro gamma omega
   exact
-    v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct i₀ gamma
+    v13RealLinearNoTargetRowsGaugeCNF_gaugePredicateTotal i₀ gamma
       (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
         omega)
 
@@ -9338,17 +9372,17 @@ def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeActionData
       v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_preserves_target
         gamma omega
   gaugeSatisfied :=
-    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct i₀
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_gaugePredicateTotal i₀
 
 /-- The explicit Appendix-I CNF action data projects the transported
-`hiddenGaugeProduct` structural field. -/
+`gaugePredicateTotal` structural field. -/
 theorem
-    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct_fromActionData
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_gaugePredicateTotal_fromActionData
     {m : Nat} (i₀ : Fin m) :
     ∀ gamma omega,
       (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
           i₀).gaugeSat gamma omega :=
-  RealM4GaugeActionData.hiddenGaugeProduct
+  RealM4GaugeActionData.gaugePredicateTotal
     (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeActionData i₀)
 
 end Mettapedia.Computability.PNP

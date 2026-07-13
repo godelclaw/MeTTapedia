@@ -3463,7 +3463,7 @@ structure RealM4MechanicalInterfaceData
   gaugeBound : Nat
   singleMessage :
     ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1
-  hiddenGaugeProduct :
+  gaugePredicateTotal :
     ∀ gamma omega, semantics.gaugeSat gamma omega
   noPublicTargetTags :
     PairNeutral oppositeSupport neutralSkeleton ∧
@@ -3515,7 +3515,7 @@ def ofCDENFComponents
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -3545,7 +3545,7 @@ def ofCDENFComponents
   gaugeIncidence := gaugeIncidence
   gaugeBound := gaugeBound
   singleMessage := singleMessage
-  hiddenGaugeProduct := hiddenGaugeProduct
+  gaugePredicateTotal := gaugePredicateTotal
   noPublicTargetTags := noPublicTargetTags
   atomCompleteness := realM4_atomCompleteness_of_CDENF semantics
   gaugeFaithfulness := realM4_gaugeFaithfulness_of_CDENF semantics
@@ -3591,7 +3591,7 @@ noncomputable def ofNoTargetRowsPublicCoordinateCDENFComponents
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     RealM4MechanicalInterfaceData
       (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
@@ -3608,7 +3608,7 @@ noncomputable def ofNoTargetRowsPublicCoordinateCDENFComponents
       coordinate)
     pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
     (v13RealLinearNoTargetRows_singleMessage i₀)
-    hiddenGaugeProduct
+    gaugePredicateTotal
     (v13RealLinearNoTargetRows_noPublicTargetTags i₀ hm.out)
     (v13RealLinearNoTargetRows_publicCoordinate_admissible
       i₀ coordinate hm.out)
@@ -3645,7 +3645,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_singleMessage
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     let M :=
       ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -3653,7 +3653,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_singleMessage
         (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget
-        gaugeIncidence gaugeBound hiddenGaugeProduct
+        gaugeIncidence gaugeBound gaugePredicateTotal
     ∀ w0 w1,
       M.publicInput w0 = M.publicInput w1 ->
         M.target w0 = M.target w1 := by
@@ -3662,10 +3662,10 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_singleMessage
     v13RealLinearNoTargetRows_singleMessage i₀
 
 /-- The real no-target-rows CD-ENF mechanical constructor transfers the
-`hiddenGaugeProduct` structural field carried by the explicit real
+`gaugePredicateTotal` structural field carried by the explicit real
 construction obligation.  This does not derive hidden-gauge product from
 CD-ENF or the no-target-rows public surface. -/
-theorem ofNoTargetRowsPublicCoordinateCDENFComponents_hiddenGaugeProduct
+theorem ofNoTargetRowsPublicCoordinateCDENFComponents_gaugePredicateTotal
     {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
     (coordinate : V13RealLinearPublicCoordinate m)
     {Neutral : Type} {Safe : Type x} {Gauge : Type y}
@@ -3694,7 +3694,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_hiddenGaugeProduct
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     let M :=
       ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -3702,11 +3702,11 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_hiddenGaugeProduct
         (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget
-        gaugeIncidence gaugeBound hiddenGaugeProduct
+        gaugeIncidence gaugeBound gaugePredicateTotal
     ∀ gamma omega, M.semantics.gaugeSat gamma omega := by
   simpa [ofNoTargetRowsPublicCoordinateCDENFComponents,
     ofCDENFComponents] using
-    hiddenGaugeProduct
+    gaugePredicateTotal
 
 /-- The real no-target-rows CD-ENF mechanical constructor transfers the
 `noPublicTargetTags` structural field from the checked no-target-rows public
@@ -3741,7 +3741,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_noPublicTargetTags
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     let M :=
       ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -3749,7 +3749,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_noPublicTargetTags
         (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget
-        gaugeIncidence gaugeBound hiddenGaugeProduct
+        gaugeIncidence gaugeBound gaugePredicateTotal
     PairNeutral M.oppositeSupport M.neutralSkeleton ∧
       HasMessageOppositePair M.oppositeSupport M.target ∧
         ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
@@ -3790,7 +3790,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_admissibleHistories
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     let M :=
       ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -3798,7 +3798,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_admissibleHistories
         (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget
-        gaugeIncidence gaugeBound hiddenGaugeProduct
+        gaugeIncidence gaugeBound gaugePredicateTotal
     BalancedBit M.target ∧
       BalancedConditioning
         (Omega := V13RealLinearNoTargetRowsWorld m i₀)
@@ -3839,7 +3839,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_atomCompleteness
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     let M :=
       ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -3847,7 +3847,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_atomCompleteness
         (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget
-        gaugeIncidence gaugeBound hiddenGaugeProduct
+        gaugeIncidence gaugeBound gaugePredicateTotal
     ∀ E : RawEvidence Neutral Safe Gauge,
       M.semantics.SatNormal (CDENF E) = M.semantics.SatRaw E := by
   simpa [ofNoTargetRowsPublicCoordinateCDENFComponents,
@@ -3885,7 +3885,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_gaugeFaithfulness
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega) :
     let M :=
       ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -3893,7 +3893,7 @@ theorem ofNoTargetRowsPublicCoordinateCDENFComponents_gaugeFaithfulness
         (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget
-        gaugeIncidence gaugeBound hiddenGaugeProduct
+        gaugeIncidence gaugeBound gaugePredicateTotal
     ∀ gamma : Gauge,
       M.semantics.SatNormal (CDENF (.gauge gamma)) =
         M.semantics.gaugeSat gamma := by
@@ -3933,7 +3933,7 @@ def withAnalyticFrontier
   gaugeIncidence := M.gaugeIncidence
   gaugeBound := M.gaugeBound
   singleMessage := M.singleMessage
-  hiddenGaugeProduct := M.hiddenGaugeProduct
+  gaugePredicateTotal := M.gaugePredicateTotal
   noPublicTargetTags := M.noPublicTargetTags
   atomCompleteness := M.atomCompleteness
   gaugeFaithfulness := M.gaugeFaithfulness
@@ -3942,7 +3942,10 @@ def withAnalyticFrontier
   boundaryMixing := boundaryMixing
   admissibleHistories := M.admissibleHistories
 
-/-- Real safe-qSSM analytic frontier field over explicit mechanical data. -/
+/-- **Retired thin frontier.** This scalar cost bound is retained for legacy
+endpoint compatibility; it is not Theorem 4.29.  New work must use
+`V13SafeQSSMFrontier`, which states the conditional max-divergence bound over
+legal adaptive probes. -/
 structure SafeQSSMFrontier
     (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
       Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) :
@@ -3950,8 +3953,10 @@ structure SafeQSSMFrontier
   safeQSSM :
     ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget
 
-/-- Real bounded-gauge-incidence analytic frontier field over explicit
-mechanical data. -/
+/-- **Retired thin frontier.** This pointwise natural-number bound is not
+Hypothesis 7.14.  New work must use `V13BoundedGaugeIncidenceFrontier` and
+`V13AtomicEvidenceBudgetFrontier`, which quantify over every finite gauge set
+and state the simultaneous high-probability budget. -/
 structure BoundedGaugeIncidenceFrontier
     (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
       Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) :
@@ -3959,8 +3964,10 @@ structure BoundedGaugeIncidenceFrontier
   boundedGaugeIncidence :
     ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound
 
-/-- Real boundary-mixing analytic frontier field.  The strict smallness bound
-is part of the boundary-mixing frontier, not a separate construction theorem. -/
+/-- **Retired thin frontier.** This unconditional predictor bound is retained
+for legacy endpoint compatibility; it is not Theorem 8.10's conditional law.
+New work must use `V13BoundaryMixingFrontier`, including every admissible
+history and the explicit `C_mix * rho_mix^L + tau_tree(m)` error. -/
 structure BoundaryMixingFrontier
     (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
       Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) :
@@ -3986,14 +3993,12 @@ def withRealAnalyticFrontier
 end RealM4MechanicalInterfaceData
 
 /--
-Gauge action data for a manuscript-facing M4 ensemble.
+Legacy predicate-compatible action data.
 
-The current v13 mechanical interface only needs gauge predicates and the
-hidden-gauge product.  This records the additional manuscript-facing action
-surface explicitly: each gauge element acts on worlds, preserves the public
-instance and target bit, and is compatible with the gauge predicate.  It is
-not a group-action theorem; any algebraic action laws for the eventual M4
-gauge family remain construction obligations outside this minimal bridge.
+This frozen bridge records an arbitrary map and a universally true gauge
+predicate.  It is not a group action and not the hidden-gauge product law.
+It cannot supply the new manuscript-facing `V13FiniteGaugeGroupAction` /
+`V13FaithfulGaugeInterface`; it remains only for legacy endpoint compatibility.
 -/
 structure RealM4GaugeActionData
     (Omega : Type u) (Public : Type v)
@@ -4015,9 +4020,9 @@ variable {Neutral : Type w} {Safe : Type x} {Gauge : Type y}
 variable {target : Omega -> Bool} {publicInput : Omega -> Public}
 variable {semantics : EvidenceSemantics Omega Neutral Safe Gauge}
 
-/-- The hidden-gauge product required by the mechanical interface is the
-predicate-compatibility projection of the explicit gauge-action data. -/
-theorem hiddenGaugeProduct
+/-- Projection of the legacy universally true gauge predicate.  The name now
+states its actual content and makes no product-law claim. -/
+theorem gaugePredicateTotal
     (G :
       RealM4GaugeActionData Omega Public Neutral Safe Gauge target
         publicInput semantics) :
@@ -4035,10 +4040,9 @@ variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
 variable {HistoryAtom : Type d} {Pivot : Type e}
 variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
 
-/-- The current minimal gauge-action surface can always use the identity
-world action once the mechanical hidden-gauge product is available.  This is
-only the action surface needed by the v13 clash interface; algebraic gauge
-laws for the eventual M4 family remain separate construction obligations. -/
+/-- Frozen legacy identity adapter.  It can populate only the old staging
+bridge.  `V13FiniteGaugeGroupAction.identityGaugeAction_not_manuscriptFacing`
+proves that an identity action cannot pass the new M4 nontrivial-orbit guard. -/
 def identityGaugeAction
     (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
       Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
@@ -4052,18 +4056,20 @@ def identityGaugeAction
   targetInvariant := by
     intro gamma omega
     rfl
-  gaugeSatisfied := M.hiddenGaugeProduct
+  gaugeSatisfied := M.gaugePredicateTotal
 
 end RealM4MechanicalInterfaceData
 
 /--
-Manuscript-facing M4 single-message SAT ensemble bridge.
+Legacy manuscript-labelled single-message SAT ensemble bridge.
 
 This is the first interface where the SAT readout spine and the v13 mechanical
 clash interface are tied together: the public instance `Y`, hidden witness
 `W`, verifier, fixed public readout, gauge-action data, and admissible
-histories all live in one object.  It is a bridge/gate only; this module does
-not construct the real manuscript M4 ensemble or the algebraic gauge family.
+histories all live in one object.  It is a frozen bridge/gate only; its action
+field accepts the identity adapter and therefore cannot inhabit the faithful
+M4 gauge interface.  This module does not construct the real manuscript M4
+ensemble or the algebraic gauge family.
 -/
 structure RealM4ManuscriptSingleMessageSATEnsembleInterface
     (Omega : Type u) [Fintype Omega] [Nonempty Omega]
@@ -4142,13 +4148,13 @@ theorem readout_eq_publicMessage_of_valid
 
 /-- The hidden-gauge product required by the mechanical interface is projected
 from the explicit gauge-action data. -/
-theorem hiddenGaugeProduct_from_gaugeAction
+theorem gaugePredicateTotal_from_gaugeAction
     (E :
       RealM4ManuscriptSingleMessageSATEnsembleInterface
         Omega Public Witness Neutral Safe Gauge Transcript Pair Stage Branch
         HistoryAtom Pivot Observer Output Skeleton) :
     ∀ gamma omega, E.mechanical.semantics.gaugeSat gamma omega :=
-  E.gaugeAction.hiddenGaugeProduct
+  E.gaugeAction.gaugePredicateTotal
 
 /-- The admissible-history field remains a mechanical construction theorem
 carried by the interface; it is not a theorem-level frontier hypothesis. -/
@@ -4488,7 +4494,7 @@ def ofCDENFComponents
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -4512,7 +4518,7 @@ def ofCDENFComponents
       law target publicInput neutralSkeleton oppositeSupport transcript
       observerBit phaseA semantics observerEvidence historyField pivotSummary
       epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
-      hiddenGaugeProduct noPublicTargetTags admissibleHistories
+      gaugePredicateTotal noPublicTargetTags admissibleHistories
   fixedGapBudget := fixedGapBudget
   phaseABudget := by
     simpa [RealM4MechanicalInterfaceData.ofCDENFComponents] using
@@ -4546,7 +4552,7 @@ def ofCDENFComponentsWithLowerMachine
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -4568,7 +4574,7 @@ def ofCDENFComponentsWithLowerMachine
     law target publicInput neutralSkeleton oppositeSupport transcript
     observerBit phaseA semantics observerEvidence historyField pivotSummary
     epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
-    hiddenGaugeProduct noPublicTargetTags admissibleHistories
+    gaugePredicateTotal noPublicTargetTags admissibleHistories
     fixedGapBudget phaseABudget epsSmall
     lowerMachine.lowerFramework lowerMachine.kernelNeutrality
 
@@ -5653,7 +5659,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_coveredLocksAndRigidity_exp
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -5692,7 +5698,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_coveredLocksAndRigidity_exp
           law target publicInput neutralSkeleton oppositeSupport transcript
           observerBit phaseA semantics observerEvidence historyField
           pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-          singleMessage hiddenGaugeProduct noPublicTargetTags
+          singleMessage gaugePredicateTotal noPublicTargetTags
           admissibleHistories fixedGapBudget phaseABudget epsSmall
           lowerFramework kernelNeutrality).interfaceWithAnalyticFrontier
         safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -5702,7 +5708,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_coveredLocksAndRigidity_exp
           law target publicInput neutralSkeleton oppositeSupport transcript
           observerBit phaseA semantics observerEvidence historyField
           pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-          singleMessage hiddenGaugeProduct noPublicTargetTags
+          singleMessage gaugePredicateTotal noPublicTargetTags
           admissibleHistories fixedGapBudget phaseABudget epsSmall
           lowerFramework kernelNeutrality).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity
@@ -5718,7 +5724,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_coveredLocksAndRigidity_exp
         law target publicInput neutralSkeleton oppositeSupport transcript
         observerBit phaseA semantics observerEvidence historyField
         pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-        singleMessage hiddenGaugeProduct noPublicTargetTags
+        singleMessage gaugePredicateTotal noPublicTargetTags
         admissibleHistories fixedGapBudget phaseABudget epsSmall
         lowerFramework kernelNeutrality)
       defaultMessage publicLockCoverage lockedMessageRigidity
@@ -5772,7 +5778,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -5809,7 +5815,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
           law target publicInput neutralSkeleton oppositeSupport transcript
           observerBit phaseA semantics observerEvidence historyField
           pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-          singleMessage hiddenGaugeProduct noPublicTargetTags
+          singleMessage gaugePredicateTotal noPublicTargetTags
           admissibleHistories fixedGapBudget phaseABudget epsSmall
           lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -5819,7 +5825,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
           law target publicInput neutralSkeleton oppositeSupport transcript
           observerBit phaseA semantics observerEvidence historyField
           pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-          singleMessage hiddenGaugeProduct noPublicTargetTags
+          singleMessage gaugePredicateTotal noPublicTargetTags
           admissibleHistories fixedGapBudget phaseABudget epsSmall
           lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
@@ -5834,7 +5840,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
       law target publicInput neutralSkeleton oppositeSupport transcript
       observerBit phaseA semantics observerEvidence historyField pivotSummary
       epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
-      hiddenGaugeProduct noPublicTargetTags admissibleHistories)
+      gaugePredicateTotal noPublicTargetTags admissibleHistories)
     fixedGapBudget
     (by
       simpa [RealM4MechanicalInterfaceData.ofCDENFComponents] using
@@ -5898,7 +5904,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -5936,7 +5942,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
           law target publicInput neutralSkeleton oppositeSupport transcript
           observerBit phaseA semantics observerEvidence historyField
           pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-          singleMessage hiddenGaugeProduct noPublicTargetTags
+          singleMessage gaugePredicateTotal noPublicTargetTags
           admissibleHistories fixedGapBudget phaseABudget epsSmall
           lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -5946,7 +5952,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
           law target publicInput neutralSkeleton oppositeSupport transcript
           observerBit phaseA semantics observerEvidence historyField
           pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-          singleMessage hiddenGaugeProduct noPublicTargetTags
+          singleMessage gaugePredicateTotal noPublicTargetTags
           admissibleHistories fixedGapBudget phaseABudget epsSmall
           lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
@@ -5961,7 +5967,7 @@ theorem realM4_conditionalClash_from_CDENFComponents_lowerMachine_finiteCNFVaria
       law target publicInput neutralSkeleton oppositeSupport transcript
       observerBit phaseA semantics observerEvidence historyField pivotSummary
       epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
-      hiddenGaugeProduct noPublicTargetTags admissibleHistories)
+      gaugePredicateTotal noPublicTargetTags admissibleHistories)
     fixedGapBudget
     (by
       simpa [RealM4MechanicalInterfaceData.ofCDENFComponents] using
@@ -7816,7 +7822,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -7855,7 +7861,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
             law target publicInput neutralSkeleton oppositeSupport transcript
             observerBit phaseA semantics observerEvidence historyField
             pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-            singleMessage hiddenGaugeProduct noPublicTargetTags
+            singleMessage gaugePredicateTotal noPublicTargetTags
             admissibleHistories fixedGapBudget phaseABudget epsSmall
             lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -7865,7 +7871,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
             law target publicInput neutralSkeleton oppositeSupport transcript
             observerBit phaseA semantics observerEvidence historyField
             pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-            singleMessage hiddenGaugeProduct noPublicTargetTags
+            singleMessage gaugePredicateTotal noPublicTargetTags
             admissibleHistories fixedGapBudget phaseABudget epsSmall
             lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
@@ -7881,7 +7887,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
       law target publicInput neutralSkeleton oppositeSupport transcript
       observerBit phaseA semantics observerEvidence historyField pivotSummary
       epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
-      hiddenGaugeProduct noPublicTargetTags admissibleHistories
+      gaugePredicateTotal noPublicTargetTags admissibleHistories
       fixedGapBudget phaseABudget epsSmall lowerMachine coverageData
       lockedMessageData finiteVariables pnpDeciderFamily constantDecoderRegime
       starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -7932,7 +7938,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
     (gaugeBound : Nat)
     (singleMessage :
       ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (noPublicTargetTags :
       PairNeutral oppositeSupport neutralSkeleton ∧
@@ -7972,7 +7978,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
             law target publicInput neutralSkeleton oppositeSupport transcript
             observerBit phaseA semantics observerEvidence historyField
             pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-            singleMessage hiddenGaugeProduct noPublicTargetTags
+            singleMessage gaugePredicateTotal noPublicTargetTags
             admissibleHistories fixedGapBudget phaseABudget epsSmall
             lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -7982,7 +7988,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
             law target publicInput neutralSkeleton oppositeSupport transcript
             observerBit phaseA semantics observerEvidence historyField
             pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
-            singleMessage hiddenGaugeProduct noPublicTargetTags
+            singleMessage gaugePredicateTotal noPublicTargetTags
             admissibleHistories fixedGapBudget phaseABudget epsSmall
             lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
@@ -7998,7 +8004,7 @@ theorem realM4_officialSeparation_from_CDENFComponents_lowerMachine_finiteCNFVar
       law target publicInput neutralSkeleton oppositeSupport transcript
       observerBit phaseA semantics observerEvidence historyField pivotSummary
       epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
-      hiddenGaugeProduct noPublicTargetTags admissibleHistories
+      gaugePredicateTotal noPublicTargetTags admissibleHistories
       fixedGapBudget phaseABudget epsSmall lowerMachine defaultMessage
       coverageData lockedMessageRigidity finiteVariables pnpDeciderFamily
       constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
@@ -8050,7 +8056,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (fixedGapBudget : Rat)
     (phaseABudget :
@@ -8081,7 +8087,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           fixedGapBudget phaseABudget epsSmall lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM boundedGaugeIncidence boundaryMixing)
       ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
@@ -8090,7 +8096,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           fixedGapBudget phaseABudget epsSmall lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
           (D := D) (F := lowerMachine.lowerFramework)
@@ -8103,7 +8109,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct)
+      gaugeBound gaugePredicateTotal)
     fixedGapBudget
     (by
       simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
@@ -8174,7 +8180,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (epsSmall : epsMix < (1 / 2 : Rat))
     (lowerMachine : RealM4CompressionLowerMachineData)
@@ -8202,7 +8208,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           (by
             simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
               RealM4MechanicalInterfaceData.ofCDENFComponents] using
@@ -8234,7 +8240,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           (by
             simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
               RealM4MechanicalInterfaceData.ofCDENFComponents] using
@@ -8276,7 +8282,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
         (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-        gaugeBound hiddenGaugeProduct)
+        gaugeBound gaugePredicateTotal)
       (by
         simpa [RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents,
           RealM4MechanicalInterfaceData.ofCDENFComponents] using epsSmall)
@@ -8340,7 +8346,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -8360,7 +8366,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8368,7 +8374,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8376,7 +8382,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+          gaugeIncidence gaugeBound gaugePredicateTotal)) :
     UpperLowerClash
       ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
           (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8384,7 +8390,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
         boundaryMixing.boundaryMixing)
@@ -8394,7 +8400,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
           (D := D) (F := lowerMachine.lowerFramework)
@@ -8409,7 +8415,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVar
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct)
+      gaugeBound gaugePredicateTotal)
     lowerMachine defaultMessage coverageData lockedMessageRigidity
     finiteVariables pnpDeciderFamily constantDecoderRegime starSWHardness
     safeQSSM boundedGaugeIncidence boundaryMixing
@@ -8457,7 +8463,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -8478,7 +8484,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8486,7 +8492,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8494,7 +8500,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+          gaugeIncidence gaugeBound gaugePredicateTotal)) :
     UpperLowerClash
       ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
           (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8502,7 +8508,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
         boundaryMixing.boundaryMixing)
@@ -8512,7 +8518,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
           (D := D) (F := lowerMachine.lowerFramework)
@@ -8527,7 +8533,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSuppo
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct)
+      gaugeBound gaugePredicateTotal)
     lowerMachine defaultMessage coverageData lockedMessageRigidity
     varDecidable pnpDeciderFamily constantDecoderRegime starSWHardness
     safeQSSM boundedGaugeIncidence boundaryMixing
@@ -8576,7 +8582,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -8598,7 +8604,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8606,7 +8612,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8614,7 +8620,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+          gaugeIncidence gaugeBound gaugePredicateTotal)) :
     UpperLowerClash
       ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
           (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8622,7 +8628,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
         boundaryMixing.boundaryMixing)
@@ -8632,7 +8638,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
           (D := D) (F := lowerMachine.lowerFramework)
@@ -8648,7 +8654,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct)
+      gaugeBound gaugePredicateTotal)
     lowerMachine defaultMessage coverageData lockedMessageRigidity
     variableAddressSyntax pnpDeciderFamily constantDecoderRegime
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
@@ -8695,7 +8701,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -8716,7 +8722,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8724,7 +8730,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8732,7 +8738,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+          gaugeIncidence gaugeBound gaugePredicateTotal)) :
     UpperLowerClash
       ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
           (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8740,7 +8746,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
         boundaryMixing.boundaryMixing)
@@ -8750,7 +8756,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
           (D := D) (F := lowerMachine.lowerFramework)
@@ -8766,7 +8772,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct)
+      gaugeBound gaugePredicateTotal)
     lowerMachine coverageData lockedMessageData variableAddressSyntax
     pnpDeciderFamily constantDecoderRegime starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
@@ -8814,7 +8820,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -8845,7 +8851,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8853,7 +8859,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8861,7 +8867,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct)) :
+          gaugeIncidence gaugeBound gaugePredicateTotal)) :
     UpperLowerClash
       ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
           (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8869,7 +8875,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
         safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
         boundaryMixing.boundaryMixing)
@@ -8879,7 +8885,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
             (Output := Output)
             i₀ coordinate law transcript observerBit phaseA semantics
             observerEvidence pivotSummary epsMix safeCost safeBudget
-            gaugeIncidence gaugeBound hiddenGaugeProduct)
+            gaugeIncidence gaugeBound gaugePredicateTotal)
           boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
         (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataLockedMessageDataAndLargeTargetKpolyCompatibility
           (D := D) (F := lowerMachine.lowerFramework)
@@ -8896,7 +8902,7 @@ theorem realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSynta
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct)
+      gaugeBound gaugePredicateTotal)
     lowerMachine coverageData lockedMessageData variableAddressSyntax
     pnpDeciderFamily eta eta_pos kpolyAt_eq etaTimes_eq
     targetBlocks_gt_decoder starSWHardness safeQSSM boundedGaugeIncidence
@@ -8947,7 +8953,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -8959,7 +8965,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8967,7 +8973,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -8975,7 +8981,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderUpperBridgeData D lowerMachine.lowerFramework C) :
@@ -8985,7 +8991,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct
+      gaugeBound gaugePredicateTotal
   let M :=
     RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
       interfaceData boundaryMixing.epsSmall lowerMachine
@@ -9073,7 +9079,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9085,7 +9091,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9093,7 +9099,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9101,7 +9107,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderUpperBridgeData D lowerMachine.lowerFramework C) :
@@ -9112,7 +9118,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct
+      gaugeBound gaugePredicateTotal
   let M :=
     RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
       interfaceData boundaryMixing.epsSmall lowerMachine
@@ -9201,7 +9207,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9213,7 +9219,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9221,7 +9227,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9229,7 +9235,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (supportData : RealM4OfficialPToDeciderUpperSupportData D)
     (languageData :
@@ -9239,7 +9245,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderBridge
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
       supportData languageData)
@@ -9283,7 +9289,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9295,7 +9301,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9303,7 +9309,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9311,7 +9317,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (supportData : RealM4OfficialPToDeciderUpperSupportData D)
     (languageData :
@@ -9322,7 +9328,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderBridge
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
       supportData languageData)
@@ -9370,7 +9376,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9382,7 +9388,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9390,7 +9396,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9398,7 +9404,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (defaultMessage : Message)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -9414,7 +9420,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax
       defaultMessage coverageData lockedMessageRigidity variableSyntax)
@@ -9459,7 +9465,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9471,7 +9477,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9479,7 +9485,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9487,7 +9493,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (defaultMessage : Message)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -9504,7 +9510,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndEncodableSyntax
       defaultMessage coverageData lockedMessageRigidity variableSyntax)
@@ -9554,7 +9560,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9566,7 +9572,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9574,7 +9580,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9582,7 +9588,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (defaultMessage : Message)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -9599,7 +9605,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndAddressSyntax
       defaultMessage coverageData lockedMessageRigidity variableAddressSyntax)
@@ -9645,7 +9651,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9657,7 +9663,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9665,7 +9671,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9673,7 +9679,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (defaultMessage : Message)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -9691,7 +9697,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderSupportAndLanguage
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (RealM4OfficialPToDeciderUpperSupportData.ofCoverageRigidityAndAddressSyntax
       defaultMessage coverageData lockedMessageRigidity variableAddressSyntax)
@@ -9740,7 +9746,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9752,7 +9758,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9760,7 +9766,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9768,7 +9774,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (defaultMessage : Message)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -9789,7 +9795,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderAddressSyntax
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing defaultMessage coverageData
     lockedMessageRigidity variableAddressSyntax
     (RealM4OfficialPToDeciderLanguageData.ofSplitOfficialData
@@ -9835,7 +9841,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9847,7 +9853,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9855,7 +9861,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9863,7 +9869,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (defaultMessage : Message)
     (coverageData : RealM4PublicLockCoverageData D)
@@ -9885,7 +9891,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderAddressSyntax
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing defaultMessage coverageData
     lockedMessageRigidity variableAddressSyntax
     (RealM4OfficialPToDeciderLanguageData.ofSplitOfficialData
@@ -9933,7 +9939,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -9945,7 +9951,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9953,7 +9959,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -9961,7 +9967,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderLockedMessageUpperBridgeData
@@ -9972,7 +9978,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct
+      gaugeBound gaugePredicateTotal
   let M :=
     RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
       interfaceData boundaryMixing.epsSmall lowerMachine
@@ -10061,7 +10067,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10073,7 +10079,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10081,7 +10087,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10089,7 +10095,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderLockedMessageUpperBridgeData
@@ -10100,7 +10106,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct
+      gaugeBound gaugePredicateTotal
   let M :=
     RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
       interfaceData boundaryMixing.epsSmall lowerMachine
@@ -10188,7 +10194,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10200,7 +10206,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10208,7 +10214,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10216,7 +10222,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderLockedMessageUpperBridgeData
@@ -10228,7 +10234,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
       (HistoryAtom := HistoryAtom) (Observer := Observer) (Output := Output)
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct
+      gaugeBound gaugePredicateTotal
   let M :=
     RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
       interfaceData boundaryMixing.epsSmall lowerMachine
@@ -10317,7 +10323,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10329,7 +10335,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10337,7 +10343,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10345,7 +10351,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderLockedMessageUpperBridgeData
@@ -10355,7 +10361,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     (realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageBridge
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing bridge)
 
 /-- Explicit contradiction branch for the same locked-message bridge route. -/
@@ -10394,7 +10400,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10406,7 +10412,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10414,7 +10420,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10422,7 +10428,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderLockedMessageUpperBridgeData
@@ -10432,7 +10438,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
   (realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageBridge
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing bridge) hEq
 
 /--
@@ -10478,7 +10484,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10490,7 +10496,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10498,7 +10504,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10506,7 +10512,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -10525,7 +10531,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageBridge
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (realM4_officialPToDeciderLockedMessageUpperBridgeData_of_supportAndLanguage
       (RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
@@ -10573,7 +10579,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10585,7 +10591,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10593,7 +10599,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10601,7 +10607,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -10622,7 +10628,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
     (realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageBridge
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing
       (realM4_officialPToDeciderLockedMessageUpperBridgeData_of_supportAndLanguage
         (RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
@@ -10670,7 +10676,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10682,7 +10688,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10690,7 +10696,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10698,7 +10704,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -10718,7 +10724,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageBridge
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing
     (realM4_officialPToDeciderLockedMessageUpperBridgeData_of_supportAndLanguage
       (RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
@@ -10768,7 +10774,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10780,7 +10786,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10788,7 +10794,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10796,7 +10802,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -10815,7 +10821,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.toLockedMessageSupport
@@ -10863,7 +10869,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10875,7 +10881,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10883,7 +10889,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10891,7 +10897,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -10910,7 +10916,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
   realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.toLockedMessageSupport
@@ -10959,7 +10965,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -10971,7 +10977,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10979,7 +10985,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -10987,7 +10993,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11007,7 +11013,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.toLockedMessageSupport
@@ -11060,7 +11066,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11072,7 +11078,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11080,7 +11086,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11088,7 +11094,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11109,7 +11115,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
       (realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
       variableAddressSyntax languageNPData pToDeciderFamilyData
       pToUniformConstantDecoderRegimeData)
@@ -11152,7 +11158,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11164,7 +11170,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11172,7 +11178,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11180,7 +11186,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11200,7 +11206,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
   (realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     pToUniformConstantDecoderRegimeData) hEq
@@ -11251,7 +11257,7 @@ theorem realM4_namedLanguageRealRouteEndpoints_from_noTargetRowsCDENF_lowerMachi
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11263,7 +11269,7 @@ theorem realM4_namedLanguageRealRouteEndpoints_from_noTargetRowsCDENF_lowerMachi
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11271,7 +11277,7 @@ theorem realM4_namedLanguageRealRouteEndpoints_from_noTargetRowsCDENF_lowerMachi
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11279,7 +11285,7 @@ theorem realM4_namedLanguageRealRouteEndpoints_from_noTargetRowsCDENF_lowerMachi
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11303,28 +11309,28 @@ theorem realM4_namedLanguageRealRouteEndpoints_from_noTargetRowsCDENF_lowerMachi
       realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-        gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+        gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
         boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
         variableAddressSyntax languageNPData pToDeciderFamilyData
         pToUniformConstantDecoderRegimeData⟩,
     realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
       variableAddressSyntax languageNPData pToDeciderFamilyData
       pToUniformConstantDecoderRegimeData,
     realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
       variableAddressSyntax languageNPData pToDeciderFamilyData
       pToUniformConstantDecoderRegimeData,
     realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
       variableAddressSyntax languageNPData pToDeciderFamilyData
       pToUniformConstantDecoderRegimeData⟩
@@ -11375,7 +11381,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11387,7 +11393,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11395,7 +11401,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11403,7 +11409,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11435,7 +11441,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
   realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility
@@ -11488,7 +11494,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11500,7 +11506,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11508,7 +11514,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11516,7 +11522,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11548,7 +11554,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
   realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility
@@ -11604,7 +11610,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11616,7 +11622,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11624,7 +11630,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11632,7 +11638,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11666,7 +11672,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
   realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibilityLargeTarget
@@ -11719,7 +11725,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11731,7 +11737,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11739,7 +11745,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11747,7 +11753,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11781,7 +11787,7 @@ theorem realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonic
   realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData
     (RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibilityLargeTarget
@@ -11831,7 +11837,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11843,7 +11849,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11851,7 +11857,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11859,7 +11865,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -11894,7 +11900,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
   (realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilitySplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData eta_of_inP
     eta_pos_of_inP kpolyAt_eq_of_inP etaTimes_eq_of_inP
@@ -11943,7 +11949,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDEN
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -11955,7 +11961,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDEN
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11963,7 +11969,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDEN
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -11971,7 +11977,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDEN
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -12010,7 +12016,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDEN
     realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilitySplit
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
       boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
       variableAddressSyntax languageNPData pToDeciderFamilyData eta_of_inP
       eta_pos_of_inP kpolyAt_eq_of_inP etaTimes_eq_of_inP
@@ -12020,7 +12026,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsCDEN
       realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilitySplit
         i₀ coordinate law transcript observerBit phaseA semantics
         observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-        gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+        gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
         boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
         variableAddressSyntax languageNPData pToDeciderFamilyData eta_of_inP
         eta_pos_of_inP kpolyAt_eq_of_inP etaTimes_eq_of_inP
@@ -12077,7 +12083,7 @@ structure RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
   safeBudget : Rat
   gaugeIncidence : Gauge -> Nat
   gaugeBound : Nat
-  hiddenGaugeProduct :
+  gaugePredicateTotal :
     ∀ gamma omega, semantics.gaugeSat gamma omega
   lowerMachine : RealM4CompressionLowerMachineData
   coverageData : RealM4PublicLockCoverageData D
@@ -12156,7 +12162,7 @@ structure
   safeBudget : Rat
   gaugeIncidence : Gauge -> Nat
   gaugeBound : Nat
-  hiddenGaugeProduct :
+  gaugePredicateTotal :
     ∀ gamma omega, semantics.gaugeSat gamma omega
   lowerMachine : RealM4CompressionLowerMachineData
   coverageData : RealM4PublicLockCoverageData D
@@ -12239,7 +12245,7 @@ noncomputable def
   safeBudget := K.safeBudget
   gaugeIncidence := K.gaugeIncidence
   gaugeBound := K.gaugeBound
-  hiddenGaugeProduct := K.hiddenGaugeProduct
+  gaugePredicateTotal := K.gaugePredicateTotal
   lowerMachine := K.lowerMachine
   coverageData := K.coverageData
   lockedMessageData := K.lockedMessageData
@@ -12349,7 +12355,7 @@ noncomputable def
     i₀ coordinate K.law K.transcript K.observerBit K.phaseA
     K.semantics K.observerEvidence K.pivotSummary K.epsMix
     K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
-    K.hiddenGaugeProduct
+    K.gaugePredicateTotal
 
 /--
 Structural-field audit for the strict named-language large-target mechanical
@@ -12415,7 +12421,7 @@ theorem
       (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
         i₀ coordinate K).admissibleHistories,
       (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
-        i₀ coordinate K).hiddenGaugeProduct⟩
+        i₀ coordinate K).gaugePredicateTotal⟩
 
 /--
 Mechanical interface projected from the finite-variable strict construction
@@ -14494,7 +14500,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsName
           i₀ coordinate K.law K.transcript K.observerBit K.phaseA
           K.semantics K.observerEvidence K.pivotSummary K.epsMix
           K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
-          K.hiddenGaugeProduct))
+          K.gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14503,7 +14509,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsName
           i₀ coordinate K.law K.transcript K.observerBit K.phaseA
           K.semantics K.observerEvidence K.pivotSummary K.epsMix
           K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
-          K.hiddenGaugeProduct))
+          K.gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14512,7 +14518,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsName
           i₀ coordinate K.law K.transcript K.observerBit K.phaseA
           K.semantics K.observerEvidence K.pivotSummary K.epsMix
           K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
-          K.hiddenGaugeProduct)) :
+          K.gaugePredicateTotal)) :
     (C.inNP K.languageNPData.separatedLanguage ∧
       ¬ C.inP K.languageNPData.separatedLanguage) ∧
       (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
@@ -14522,7 +14528,7 @@ theorem realM4_namedLanguageLargeTargetKpolySplitEndpoints_from_noTargetRowsName
     i₀ coordinate K.law K.transcript K.observerBit K.phaseA
     K.semantics K.observerEvidence K.pivotSummary K.epsMix
     K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
-    K.hiddenGaugeProduct K.lowerMachine starSWHardness safeQSSM
+    K.gaugePredicateTotal K.lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing K.coverageData
     K.lockedMessageData K.variableAddressSyntax K.languageNPData
     K.pToDeciderFamilyData K.eta_of_inP K.eta_pos_of_inP
@@ -14623,7 +14629,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -14635,7 +14641,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14643,7 +14649,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14651,7 +14657,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -14684,7 +14690,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
   (realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplit
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData eta_of_inP
     kpolyAt_eq_of_inP etaTimes_eq_of_inP
@@ -14737,7 +14743,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -14749,7 +14755,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14757,7 +14763,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14765,7 +14771,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -14818,7 +14824,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_addressSyntax_coverageDataAndLockedMessageData_canonicalGap_realFrontier_explicitPNP
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine coverageData lockedMessageData
+      gaugeBound gaugePredicateTotal lowerMachine coverageData lockedMessageData
       variableAddressSyntax pnpDeciderFamily constantDecoderRegime
       starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds
 
@@ -14868,7 +14874,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -14880,7 +14886,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14888,7 +14894,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -14896,7 +14902,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -14931,7 +14937,7 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
   realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxKpolyCompatibilityAtEquality
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    gaugeBound gaugePredicateTotal lowerMachine starSWHardness safeQSSM
     boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
     variableAddressSyntax languageNPData pToDeciderFamilyData hEq eta
     kpolyAt_eq etaTimes_eq
@@ -14991,7 +14997,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -15003,7 +15009,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -15011,7 +15017,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -15019,7 +15025,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -15059,7 +15065,7 @@ theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_re
     realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget
-      gaugeIncidence gaugeBound hiddenGaugeProduct lowerMachine
+      gaugeIncidence gaugeBound gaugePredicateTotal lowerMachine
       starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
       coverageData lockedMessageData variableAddressSyntax languageNPData
       pToDeciderFamilyData hEq (eta_of_pEqualsNP hEq)
@@ -15114,7 +15120,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (starSWHardness :
@@ -15126,7 +15132,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -15134,7 +15140,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -15142,7 +15148,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (coverageData : RealM4PublicLockCoverageData D)
     (lockedMessageData : RealM4LockedMessageRigidityData D.core)
@@ -15181,7 +15187,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalG
     (realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget
-      gaugeIncidence gaugeBound hiddenGaugeProduct lowerMachine
+      gaugeIncidence gaugeBound gaugePredicateTotal lowerMachine
       starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
       coverageData lockedMessageData variableAddressSyntax languageNPData
       pToDeciderFamilyData eta_of_pEqualsNP eta_pos_of_pEqualsNP
@@ -15236,7 +15242,7 @@ structure RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
   safeBudget : Rat
   gaugeIncidence : Gauge -> Nat
   gaugeBound : Nat
-  hiddenGaugeProduct :
+  gaugePredicateTotal :
     ∀ gamma omega, semantics.gaugeSat gamma omega
   lowerMachine : RealM4CompressionLowerMachineData
   coverageData : RealM4PublicLockCoverageData D
@@ -15277,7 +15283,7 @@ The mechanical real-interface surface extracted from the bundled
 no-target-rows equality-indexed construction data.  The public-surface
 constructor supplies `singleMessage`, `noPublicTargetTags`, and
 `admissibleHistories`; CD-ENF supplies atom completeness and gauge
-faithfulness; `hiddenGaugeProduct` is the explicit construction field carried
+faithfulness; `gaugePredicateTotal` is the explicit construction field carried
 by the bundle.
 -/
 noncomputable def
@@ -15320,7 +15326,7 @@ noncomputable def
     i₀ coordinate K.law K.transcript K.observerBit K.phaseA
     K.semantics K.observerEvidence K.pivotSummary K.epsMix
     K.safeCost K.safeBudget K.gaugeIncidence K.gaugeBound
-    K.hiddenGaugeProduct
+    K.gaugePredicateTotal
 
 /--
 Audit theorem for the structural fields of the mechanical interface extracted
@@ -15387,7 +15393,7 @@ theorem
       (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
         i₀ coordinate K).admissibleHistories,
       (realM4_noTargetRowsEqualityIndexedConstructionData_mechanicalInterface
-        i₀ coordinate K).hiddenGaugeProduct⟩
+        i₀ coordinate K).gaugePredicateTotal⟩
 
 /--
 Endgame mechanical data extracted from the equality-indexed construction
@@ -16614,7 +16620,7 @@ def
   safeBudget := K.safeBudget
   gaugeIncidence := K.gaugeIncidence
   gaugeBound := K.gaugeBound
-  hiddenGaugeProduct := K.hiddenGaugeProduct
+  gaugePredicateTotal := K.gaugePredicateTotal
   lowerMachine := K.lowerMachine
   coverageData := K.coverageData
   lockedMessageData := K.lockedMessageData
@@ -17215,7 +17221,7 @@ structure RealM4ManuscriptSingleMessageSATRealizationComponents
   safeBudget : Rat
   gaugeIncidence : Gauge -> Nat
   gaugeBound : Nat
-  hiddenGaugeProduct :
+  gaugePredicateTotal :
     ∀ gamma omega, semantics.gaugeSat gamma omega
   lowerMachine : RealM4CompressionLowerMachineData
   coverageData : RealM4PublicLockCoverageData D
@@ -17299,7 +17305,7 @@ def realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionDat
   safeBudget := R.safeBudget
   gaugeIncidence := R.gaugeIncidence
   gaugeBound := R.gaugeBound
-  hiddenGaugeProduct := R.hiddenGaugeProduct
+  gaugePredicateTotal := R.gaugePredicateTotal
   lowerMachine := R.lowerMachine
   coverageData := R.coverageData
   lockedMessageData := R.lockedMessageData
@@ -17797,7 +17803,7 @@ theorem
   · simpa [
       realM4_manuscriptSingleMessageSATRealizationInterfaceComponents_mechanicalInterface,
       R.mechanical_eq] using
-      R.ensembleInterface.hiddenGaugeProduct_from_gaugeAction
+      R.ensembleInterface.gaugePredicateTotal_from_gaugeAction
   · simpa [
       realM4_manuscriptSingleMessageSATRealizationInterfaceComponents_mechanicalInterface,
       R.mechanical_eq] using
@@ -18816,7 +18822,7 @@ theorem
       E,
       RealM4CNFMechanicalSATSpineData.toManuscriptSingleMessageSATEnsembleInterface,
       realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface]
-      using E.hiddenGaugeProduct_from_gaugeAction
+      using E.gaugePredicateTotal_from_gaugeAction
   · simpa [
       E,
       RealM4CNFMechanicalSATSpineData.toManuscriptSingleMessageSATEnsembleInterface,
@@ -19178,7 +19184,7 @@ def realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields :
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "publicLockCoverageData",
   "lockedMessageRigidityData",
@@ -19206,7 +19212,7 @@ theorem realM4NoTargetRowsEqualityIndexedOfficialConstructionDataFields_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -19226,7 +19232,7 @@ def realM4NoTargetRowsEqualityIndexedStructuralTransferItems :
   "atomCompleteness",
   "gaugeFaithfulness",
   "admissibleHistories",
-  "hiddenGaugeProductCarried"
+  "gaugePredicateTotalCarried"
 ]
 
 theorem realM4NoTargetRowsEqualityIndexedStructuralTransferItems_exact :
@@ -19236,11 +19242,11 @@ theorem realM4NoTargetRowsEqualityIndexedStructuralTransferItems_exact :
         "atomCompleteness",
         "gaugeFaithfulness",
         "admissibleHistories",
-        "hiddenGaugeProductCarried" ] := by
+        "gaugePredicateTotalCarried" ] := by
   rfl
 
 def realM4NoTargetRowsEqualityIndexedStructuralTransferStatement : String :=
-  "For the real v15/M4 no-target-rows equality-indexed construction surface, the named mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; hiddenGaugeProduct is carried as the explicit real construction field.  These structural fields are not theorem-level hypotheses of the equality-indexed endpoint."
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, the named mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; gaugePredicateTotal is carried as the explicit real construction field.  These structural fields are not theorem-level hypotheses of the equality-indexed endpoint."
 
 def realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataItems :
     List String := [
@@ -19557,7 +19563,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -19577,7 +19583,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19585,7 +19591,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19593,7 +19599,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPNPBridgeData
@@ -19603,7 +19609,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
           boundaryMixing.boundaryMixing)
@@ -19613,7 +19619,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
             (D := D) (F := lowerMachine.lowerFramework)
@@ -19629,7 +19635,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
     (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine defaultMessage coverageData
+      gaugeBound gaugePredicateTotal lowerMachine defaultMessage coverageData
       lockedMessageRigidity finiteVariables pnpDeciderFamily
       constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
@@ -19676,7 +19682,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -19696,7 +19702,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19704,7 +19710,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19712,7 +19718,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPNPBridgeData
@@ -19722,7 +19728,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
           boundaryMixing.boundaryMixing)
@@ -19732,7 +19738,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
             (D := D) (F := lowerMachine.lowerFramework)
@@ -19749,7 +19755,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_finiteCNFVari
     (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine defaultMessage coverageData
+      gaugeBound gaugePredicateTotal lowerMachine defaultMessage coverageData
       lockedMessageRigidity finiteVariables pnpDeciderFamily
       constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
@@ -19796,7 +19802,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -19817,7 +19823,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19825,7 +19831,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19833,7 +19839,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPNPBridgeData
@@ -19843,7 +19849,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
           boundaryMixing.boundaryMixing)
@@ -19853,7 +19859,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
             (D := D) (F := lowerMachine.lowerFramework)
@@ -19869,7 +19875,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_formulaSup
     (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSupport_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine defaultMessage coverageData
+      gaugeBound gaugePredicateTotal lowerMachine defaultMessage coverageData
       lockedMessageRigidity varDecidable pnpDeciderFamily
       constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
@@ -19916,7 +19922,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -19937,7 +19943,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19945,7 +19951,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -19953,7 +19959,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPNPBridgeData
@@ -19963,7 +19969,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
           boundaryMixing.boundaryMixing)
@@ -19973,7 +19979,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
             (D := D) (F := lowerMachine.lowerFramework)
@@ -19990,7 +19996,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSuppor
     (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_formulaSupport_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct lowerMachine defaultMessage coverageData
+      gaugeBound gaugePredicateTotal lowerMachine defaultMessage coverageData
       lockedMessageRigidity varDecidable pnpDeciderFamily
       constantDecoderRegime starSWHardness safeQSSM boundedGaugeIncidence
       boundaryMixing)
@@ -20038,7 +20044,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (lowerMachine : RealM4CompressionLowerMachineData)
     (defaultMessage : Message)
@@ -20059,7 +20065,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundedGaugeIncidence :
       RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -20067,7 +20073,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     (boundaryMixing :
       RealM4MechanicalInterfaceData.BoundaryMixingFrontier
         (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
@@ -20075,7 +20081,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
           (Output := Output)
           i₀ coordinate law transcript observerBit phaseA semantics
           observerEvidence pivotSummary epsMix safeCost safeBudget
-          gaugeIncidence gaugeBound hiddenGaugeProduct))
+          gaugeIncidence gaugeBound gaugePredicateTotal))
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPNPBridgeData
@@ -20085,7 +20091,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM.safeQSSM boundedGaugeIncidence.boundedGaugeIncidence
           boundaryMixing.boundaryMixing)
@@ -20095,7 +20101,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             boundaryMixing.epsSmall lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
             (D := D) (F := lowerMachine.lowerFramework)
@@ -20111,7 +20117,7 @@ theorem realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_natCodedFormu
   realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_formulaSupport_coverageDataAndRigidity_canonicalGap_realFrontier_explicitPNP
     i₀ coordinate law transcript observerBit phaseA semantics
     observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-    gaugeBound hiddenGaugeProduct lowerMachine defaultMessage coverageData
+    gaugeBound gaugePredicateTotal lowerMachine defaultMessage coverageData
     lockedMessageRigidity (realM4_varDecidable_of_variableNatCoding
       variableCoding) pnpDeciderFamily constantDecoderRegime starSWHardness
     safeQSSM boundedGaugeIncidence boundaryMixing bridge
@@ -20162,7 +20168,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
     (safeBudget : Rat)
     (gaugeIncidence : Gauge -> Nat)
     (gaugeBound : Nat)
-    (hiddenGaugeProduct :
+    (gaugePredicateTotal :
       ∀ gamma omega, semantics.gaugeSat gamma omega)
     (fixedGapBudget : Rat)
     (phaseABudget :
@@ -20195,7 +20201,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             fixedGapBudget phaseABudget epsSmall lowerMachine).interfaceWithAnalyticFrontier
           safeQSSM boundedGaugeIncidence boundaryMixing)
         ((RealM4EndgameMechanicalData.ofComponentsWithLowerMachine
@@ -20204,7 +20210,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
               (Output := Output)
               i₀ coordinate law transcript observerBit phaseA semantics
               observerEvidence pivotSummary epsMix safeCost safeBudget
-              gaugeIncidence gaugeBound hiddenGaugeProduct)
+              gaugeIncidence gaugeBound gaugePredicateTotal)
             fixedGapBudget phaseABudget epsSmall lowerMachine).parameterRecordExplicitPNP
           (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndRigidity
             (D := D) (F := lowerMachine.lowerFramework)
@@ -20218,7 +20224,7 @@ theorem realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_finiteCNFV
     (realM4_conditionalClash_from_noTargetRowsCDENF_lowerMachine_finiteCNFVariables_coverageDataAndRigidity_explicitPNP
       i₀ coordinate law transcript observerBit phaseA semantics
       observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
-      gaugeBound hiddenGaugeProduct fixedGapBudget phaseABudget epsSmall
+      gaugeBound gaugePredicateTotal fixedGapBudget phaseABudget epsSmall
       lowerMachine defaultMessage coverageData lockedMessageRigidity
       finiteVariables pnpDeciderFamily constantDecoderRegime starSWHardness
       safeQSSM boundedGaugeIncidence boundaryMixing)
@@ -20993,7 +20999,7 @@ def realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndLockedMessageDa
   "gaugeIncidence",
   "gaugeBound",
   "singleMessage",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "noPublicTargetTags",
   "admissibleHistories",
   "fixedGapBudget",
@@ -21026,7 +21032,7 @@ theorem realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndLockedMessa
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -21065,7 +21071,7 @@ theorem realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndLockedMessa
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -21106,7 +21112,7 @@ def realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP :
   "gaugeIncidence",
   "gaugeBound",
   "singleMessage",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "noPublicTargetTags",
   "admissibleHistories",
   "fixedGapBudget",
@@ -21140,7 +21146,7 @@ theorem realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP_exa
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -21180,7 +21186,7 @@ theorem realM4CDENFComponentCoveredLocksEndgameHypothesisAuditExplicitPNP_exact 
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -21222,7 +21228,7 @@ def realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgame
   "gaugeIncidence",
   "gaugeBound",
   "singleMessage",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "noPublicTargetTags",
   "admissibleHistories",
   "fixedGapBudget",
@@ -21256,7 +21262,7 @@ theorem realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEnd
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -21296,7 +21302,7 @@ theorem realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEnd
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -21335,7 +21341,7 @@ def realM4NoTargetRowsLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgameCo
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "fixedGapBudget",
   "phaseABudget",
   "epsSmall",
@@ -21364,7 +21370,7 @@ theorem realM4NoTargetRowsLowerMachineFiniteCNFVariablesCoverageAndRigidityEndga
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "fixedGapBudget",
         "phaseABudget",
         "epsSmall",
@@ -21399,7 +21405,7 @@ theorem realM4NoTargetRowsLowerMachineFiniteCNFVariablesCoverageAndRigidityEndga
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "fixedGapBudget",
         "phaseABudget",
         "epsSmall",
@@ -21441,7 +21447,7 @@ theorem realM4NoTargetRowsOfficialEndpointConstructionInputsExplicitPNP_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "fixedGapBudget",
         "phaseABudget",
         "epsSmall",
@@ -21480,7 +21486,7 @@ theorem realM4NoTargetRowsOfficialEndpointHypothesisAuditExplicitPNP_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "fixedGapBudget",
         "phaseABudget",
         "epsSmall",
@@ -21521,7 +21527,7 @@ def realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP :
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "epsSmall",
   "realCompressionLowerMachineData",
   "defaultMessage",
@@ -21548,7 +21554,7 @@ theorem realM4NoTargetRowsCanonicalGapEndgameConstructionInputsExplicitPNP_exact
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "epsSmall",
         "realCompressionLowerMachineData",
         "defaultMessage",
@@ -21581,7 +21587,7 @@ theorem realM4NoTargetRowsCanonicalGapEndgameHypothesisAuditExplicitPNP_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "epsSmall",
         "realCompressionLowerMachineData",
         "defaultMessage",
@@ -21621,7 +21627,7 @@ theorem realM4NoTargetRowsCanonicalGapOfficialEndpointConstructionInputsExplicit
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "epsSmall",
         "realCompressionLowerMachineData",
         "defaultMessage",
@@ -21658,7 +21664,7 @@ theorem realM4NoTargetRowsCanonicalGapOfficialEndpointHypothesisAuditExplicitPNP
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "epsSmall",
         "realCompressionLowerMachineData",
         "defaultMessage",
@@ -21697,7 +21703,7 @@ def realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExplicitP
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "defaultMessage",
   "publicLockCoverageData",
@@ -21723,7 +21729,7 @@ theorem realM4NoTargetRowsCanonicalGapRealFrontierEndgameConstructionInputsExpli
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -21755,7 +21761,7 @@ theorem realM4NoTargetRowsCanonicalGapRealFrontierEndgameHypothesisAuditExplicit
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -21789,7 +21795,7 @@ def realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierEndgameConstructionI
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "defaultMessage",
   "publicLockCoverageData",
@@ -21815,7 +21821,7 @@ theorem realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierEndgameConstruct
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -21847,7 +21853,7 @@ theorem realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierEndgameHypothesi
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -21881,7 +21887,7 @@ def realM4NoTargetRowsAddressSyntaxCanonicalGapRealFrontierEndgameConstructionIn
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "defaultMessage",
   "publicLockCoverageData",
@@ -21907,7 +21913,7 @@ theorem realM4NoTargetRowsAddressSyntaxCanonicalGapRealFrontierEndgameConstructi
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -21939,7 +21945,7 @@ theorem realM4NoTargetRowsAddressSyntaxCanonicalGapRealFrontierEndgameHypothesis
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -21973,7 +21979,7 @@ def realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontierEndg
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "publicLockCoverageData",
   "lockedMessageRigidityData",
@@ -21998,7 +22004,7 @@ theorem realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontier
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -22029,7 +22035,7 @@ theorem realM4NoTargetRowsAddressSyntaxLockedMessageDataCanonicalGapRealFrontier
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -22067,7 +22073,7 @@ theorem realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierOfficialEndpoint
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22103,7 +22109,7 @@ theorem realM4NoTargetRowsFormulaSupportCanonicalGapRealFrontierOfficialEndpoint
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22141,7 +22147,7 @@ def realM4NoTargetRowsNatCodedFormulaSupportCanonicalGapRealFrontierOfficialEndp
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "defaultMessage",
   "publicLockCoverageData",
@@ -22171,7 +22177,7 @@ theorem realM4NoTargetRowsNatCodedFormulaSupportCanonicalGapRealFrontierOfficial
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22207,7 +22213,7 @@ theorem realM4NoTargetRowsNatCodedFormulaSupportCanonicalGapRealFrontierOfficial
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22250,7 +22256,7 @@ theorem realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointConstructionIn
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22286,7 +22292,7 @@ theorem realM4NoTargetRowsCanonicalGapRealFrontierOfficialEndpointHypothesisAudi
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22418,7 +22424,7 @@ def realM4NoTargetRowsPToDeciderOfficialEndpointConstructionInputs :
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "officialPToDeciderUpperSupportData",
     "officialPToDeciderLanguageData" ]
@@ -22438,7 +22444,7 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointConstructionInputs_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "officialPToDeciderUpperSupportData",
         "officialPToDeciderLanguageData" ] := by
@@ -22479,7 +22485,7 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointHypothesisAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "officialPToDeciderUpperSupportData",
         "officialPToDeciderLanguageData",
@@ -22507,7 +22513,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityConstructionIn
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "officialPToDeciderLockedMessageUpperBridgeData" ]
 
@@ -22526,7 +22532,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityConstructi
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "officialPToDeciderLockedMessageUpperBridgeData" ] := by
   rfl
@@ -22551,7 +22557,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityHypothesis
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "officialPToDeciderLockedMessageUpperBridgeData",
         "starSWHardness",
@@ -22578,7 +22584,7 @@ def realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionInput
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "defaultMessage",
     "publicLockCoverageData",
@@ -22601,7 +22607,7 @@ theorem realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionI
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22630,7 +22636,7 @@ theorem realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointHypothesisAud
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22661,7 +22667,7 @@ def realM4NoTargetRowsPToDeciderAddressSyntaxOfficialEndpointConstructionInputs 
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "defaultMessage",
     "publicLockCoverageData",
@@ -22684,7 +22690,7 @@ theorem realM4NoTargetRowsPToDeciderAddressSyntaxOfficialEndpointConstructionInp
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22713,7 +22719,7 @@ theorem realM4NoTargetRowsPToDeciderAddressSyntaxOfficialEndpointHypothesisAudit
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22744,7 +22750,7 @@ def realM4NoTargetRowsPToDeciderAddressSyntaxSplitOfficialEndpointConstructionIn
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "defaultMessage",
     "publicLockCoverageData",
@@ -22769,7 +22775,7 @@ theorem realM4NoTargetRowsPToDeciderAddressSyntaxSplitOfficialEndpointConstructi
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22800,7 +22806,7 @@ theorem realM4NoTargetRowsPToDeciderAddressSyntaxSplitOfficialEndpointHypothesis
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "defaultMessage",
         "publicLockCoverageData",
@@ -22833,7 +22839,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxSplitOfficialEndpointC
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -22857,7 +22863,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxSplitOfficialEndpo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -22887,7 +22893,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxSplitOfficialEndpo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -22919,7 +22925,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxUniformRegimeSplitOffi
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -22943,7 +22949,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxUniformRegimeSplit
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -22973,7 +22979,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxUniformRegimeSplit
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23005,7 +23011,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySpli
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -23031,7 +23037,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibility
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23063,7 +23069,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibility
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23097,7 +23103,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompat
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -23124,7 +23130,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23157,7 +23163,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23193,7 +23199,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilityAtEq
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -23220,7 +23226,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibility
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23253,7 +23259,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibility
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23288,7 +23294,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompat
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -23316,7 +23322,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23350,7 +23356,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23387,7 +23393,7 @@ def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompat
     "safeBudget",
     "gaugeIncidence",
     "gaugeBound",
-    "hiddenGaugeProduct",
+    "gaugePredicateTotal",
     "realCompressionLowerMachineData",
     "publicLockCoverageData",
     "lockedMessageRigidityData",
@@ -23414,7 +23420,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23447,7 +23453,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23487,7 +23493,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23520,7 +23526,7 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxLargeTargetKpolyCo
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -23565,7 +23571,7 @@ theorem realM4OfficialEndpointConstructionInputsExplicitPNP_exact :
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -23608,7 +23614,7 @@ theorem realM4OfficialEndpointHypothesisAuditExplicitPNP_exact :
         "gaugeIncidence",
         "gaugeBound",
         "singleMessage",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "noPublicTargetTags",
         "admissibleHistories",
         "fixedGapBudget",
@@ -23820,9 +23826,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Gauge-leaf faithfulness is the gauge case of CD-ENF semantics; the separate real obligation is the hidden-gauge product law."
   },
   {
-    item := "hiddenGaugeProduct"
+    item := "gaugePredicateTotal"
     status := .openConstruction
-    checkedName := "GaugeBufferedLockedInterface.hiddenGaugeProduct"
+    checkedName := "GaugeBufferedLockedInterface.gaugePredicateTotal"
     note := "The M4 hidden-gauge product law is not yet constructed."
   },
   {
@@ -24446,7 +24452,7 @@ def realM4OpenConstructionItems : List String := [
   "publicLockCoverageData",
   "lockedMessageRigidityData",
   "noPublicTargetTags",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "admissibleHistories",
   "cnfVariableAddressSyntax",
   "realCompressionLowerMachineData",
@@ -24463,7 +24469,7 @@ theorem realM4OpenConstructionItems_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "noPublicTargetTags",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
@@ -24479,7 +24485,7 @@ def realM4ConcreteEnsembleConstructionItems : List String := [
   "publicLockCoverageData",
   "lockedMessageRigidityData",
   "noPublicTargetTags",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "admissibleHistories",
   "cnfVariableAddressSyntax"
 ]
@@ -24489,7 +24495,7 @@ theorem realM4ConcreteEnsembleConstructionItems_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "noPublicTargetTags",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "admissibleHistories",
         "cnfVariableAddressSyntax" ] := by
   rfl
@@ -24532,7 +24538,7 @@ theorem
 def realM4NoTargetRowsEqualityIndexedConcreteConstructionItems :
     List String :=
   realM4NoTargetRowsEqualityIndexedPublicSurfaceConstructionItems ++
-    [ "hiddenGaugeProduct",
+    [ "gaugePredicateTotal",
       "publicLockCoverageData",
       "lockedMessageRigidityData",
       "cnfVariableAddressSyntax" ]
@@ -24553,7 +24559,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
         "cnfVariableAddressSyntax" ] := by
@@ -24579,7 +24585,7 @@ theorem
   rfl
 
 def realM4NoTargetRowsEqualityIndexedOpenSurfaceStatement : String :=
-  "For the no-target-rows equality-indexed route, the public surface plus CD-ENF already derives singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories.  The concrete construction surface therefore keeps the actual no-target-rows public fields, hiddenGaugeProduct, public-lock coverage, locked-message data, and CNF address syntax as construction obligations, rather than listing those derived structural fields as theorem-level inputs."
+  "For the no-target-rows equality-indexed route, the public surface plus CD-ENF already derives singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories.  The concrete construction surface therefore keeps the actual no-target-rows public fields, gaugePredicateTotal, public-lock coverage, locked-message data, and CNF address syntax as construction obligations, rather than listing those derived structural fields as theorem-level inputs."
 
 def realM4NoTargetRowsNamedLanguageLargeTargetPublicSurfaceConstructionItems :
     List String :=
@@ -24606,7 +24612,7 @@ theorem
 def realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems :
     List String :=
   realM4NoTargetRowsNamedLanguageLargeTargetPublicSurfaceConstructionItems ++
-    [ "hiddenGaugeProduct",
+    [ "gaugePredicateTotal",
       "realCompressionLowerMachineData",
       "publicLockCoverageData",
       "lockedMessageRigidityData",
@@ -24628,7 +24634,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -24746,7 +24752,7 @@ theorem realM4LargeTargetOpenConstructionItems_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "noPublicTargetTags",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
@@ -24787,7 +24793,7 @@ theorem realM4EqualityIndexedLargeTargetOpenConstructionItems_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
         "cnfVariableAddressSyntax",
@@ -24844,7 +24850,7 @@ theorem realM4CompletionFrontierHypothesisAudit_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "noPublicTargetTags",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
@@ -24875,7 +24881,7 @@ theorem realM4LargeTargetCompletionFrontierHypothesisAudit_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "noPublicTargetTags",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
@@ -24916,7 +24922,7 @@ theorem realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit_exact 
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
         "cnfVariableAddressSyntax",
@@ -24934,7 +24940,7 @@ theorem realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit_exact 
   rfl
 
 def realM4EqualityIndexedLargeTargetCompletionFrontierStatement : String :=
-  "The equality-indexed large-target real v15/M4 completion frontier records the supplemental P=NP-indexed endpoint route.  Its open construction surface is the no-target-rows public surface, hiddenGaugeProduct, public-lock coverage, locked-message data, CNF address syntax, real lower-machine data, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block obligations.  The no-target-rows public surface and CD-ENF already derive singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories, so those structural fields are not repeated as open items on this route.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
+  "The equality-indexed large-target real v15/M4 completion frontier records the supplemental P=NP-indexed endpoint route.  Its open construction surface is the no-target-rows public surface, gaugePredicateTotal, public-lock coverage, locked-message data, CNF address syntax, real lower-machine data, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block obligations.  The no-target-rows public surface and CD-ENF already derive singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories, so those structural fields are not repeated as open items on this route.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
 
 def realM4RealLockInConstructionObligations : List String :=
   realM4NoTargetRowsNamedLanguageLargeTargetConcreteConstructionItems ++
@@ -24956,7 +24962,7 @@ theorem realM4RealLockInConstructionObligations_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25047,7 +25053,7 @@ theorem realM4RealLockInCompletionAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25124,7 +25130,7 @@ theorem realM4NamedLanguageRealRouteEndpointHypothesisAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25160,7 +25166,7 @@ theorem realM4NamedLanguageLargeTargetKpolySplitEndpointHypothesisAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25202,7 +25208,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25253,7 +25259,7 @@ theorem realM4NamedLanguageLargeTargetKpolySplitCompletionAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25288,7 +25294,7 @@ def realM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionDataFields :
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "publicLockCoverageData",
   "lockedMessageRigidityData",
@@ -25317,7 +25323,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25350,7 +25356,7 @@ def
   "safeBudget",
   "gaugeIncidence",
   "gaugeBound",
-  "hiddenGaugeProduct",
+  "gaugePredicateTotal",
   "realCompressionLowerMachineData",
   "publicLockCoverageData",
   "lockedMessageRigidityData",
@@ -25379,7 +25385,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25427,7 +25433,7 @@ def realM4NamedLanguageLargeTargetFiniteVariableStructuralTransferItems :
   "atomCompleteness",
   "gaugeFaithfulness",
   "admissibleHistories",
-  "hiddenGaugeProductCarried"
+  "gaugePredicateTotalCarried"
 ]
 
 theorem
@@ -25438,12 +25444,12 @@ theorem
         "atomCompleteness",
         "gaugeFaithfulness",
         "admissibleHistories",
-        "hiddenGaugeProductCarried" ] := by
+        "gaugePredicateTotalCarried" ] := by
   rfl
 
 def realM4NamedLanguageLargeTargetFiniteVariableStructuralTransferStatement :
     String :=
-  "For the finite-variable strict named-language large-target construction surface, the projected mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; hiddenGaugeProduct remains the explicit real construction field carried by the surface.  The finite variable family only supplies address syntax for the upper route."
+  "For the finite-variable strict named-language large-target construction surface, the projected mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; gaugePredicateTotal remains the explicit real construction field carried by the surface.  The finite variable family only supplies address syntax for the upper route."
 
 def realM4NamedLanguageLargeTargetFiniteVariableSelfReductionUpperItems :
     List String := [
@@ -25501,7 +25507,7 @@ theorem realM4StrictNamedFiniteVariableRealLockInConstructionObligations_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25534,7 +25540,7 @@ theorem realM4StrictNamedFiniteVariableRealLockInCompletionAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25615,7 +25621,7 @@ def realM4NoTargetRowsNamedLanguageLargeTargetStructuralTransferItems :
   "atomCompleteness",
   "gaugeFaithfulness",
   "admissibleHistories",
-  "hiddenGaugeProductCarried"
+  "gaugePredicateTotalCarried"
 ]
 
 theorem
@@ -25626,12 +25632,12 @@ theorem
         "atomCompleteness",
         "gaugeFaithfulness",
         "admissibleHistories",
-        "hiddenGaugeProductCarried" ] := by
+        "gaugePredicateTotalCarried" ] := by
   rfl
 
 def realM4NoTargetRowsNamedLanguageLargeTargetStructuralTransferStatement :
     String :=
-  "For the strict named-language large-target construction surface, the named mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; hiddenGaugeProduct is the explicit real construction field carried by the surface.  These structural fields are not endpoint hypotheses."
+  "For the strict named-language large-target construction surface, the named mechanical interface transfers singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories by construction; gaugePredicateTotal is the explicit real construction field carried by the surface.  These structural fields are not endpoint hypotheses."
 
 def realM4NamedLanguageLargeTargetNamedInterfaceEndpointHypothesisAudit :
     List String :=
@@ -25717,7 +25723,7 @@ theorem realM4StrictNamedRealLockInConstructionObligations_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25765,7 +25771,7 @@ theorem realM4StrictNamedRealLockInCompletionAudit_exact :
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25863,7 +25869,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -25933,7 +25939,7 @@ def realM4ManuscriptSingleMessageSATEnsembleInterfaceItems :
   "gaugeActionData",
   "gaugeActionPublicInvariant",
   "gaugeActionTargetInvariant",
-  "hiddenGaugeProductFromGaugeAction",
+  "gaugePredicateTotalFromGaugeAction",
   "admissibleHistoriesFromMechanicalInterface"
 ]
 
@@ -25950,12 +25956,12 @@ theorem realM4ManuscriptSingleMessageSATEnsembleInterfaceItems_exact :
         "gaugeActionData",
         "gaugeActionPublicInvariant",
         "gaugeActionTargetInvariant",
-        "hiddenGaugeProductFromGaugeAction",
+        "gaugePredicateTotalFromGaugeAction",
         "admissibleHistoriesFromMechanicalInterface" ] := by
   rfl
 
 def realM4ManuscriptSingleMessageSATEnsembleInterfaceStatement : String :=
-  "The manuscript-M4 single-message SAT ensemble interface now names the real public instance Y, hidden witness W, verifier, fixed public readout, witness readout, mechanical public/target identification, explicit gauge-action data, and admissible histories in one bridge object.  The bridge proves the SAT spine gives singleMessage and readout correctness for the mechanical target, and projects hiddenGaugeProduct from the gauge-action data and admissibleHistories from the mechanical interface.  It is still an interface gate, not an inhabited M4 construction and not an unconditional proof of P != NP."
+  "The manuscript-M4 single-message SAT ensemble interface now names the real public instance Y, hidden witness W, verifier, fixed public readout, witness readout, mechanical public/target identification, explicit gauge-action data, and admissible histories in one bridge object.  The bridge proves the SAT spine gives singleMessage and readout correctness for the mechanical target, and projects gaugePredicateTotal from the gauge-action data and admissibleHistories from the mechanical interface.  It is still an interface gate, not an inhabited M4 construction and not an unconditional proof of P != NP."
 
 def
     realM4ManuscriptSingleMessageSATRealizationInterfaceComponentItems :
@@ -26004,7 +26010,7 @@ theorem
 def
     realM4ManuscriptSingleMessageSATRealizationInterfaceComponentStatement :
     String :=
-  "The combined manuscript-M4 interface component gate ties the transparent strict construction components to a manuscript-facing single-message SAT/gauge interface over the same projected mechanical data.  The SAT spine now audits singleMessage and readout correctness for the exact mechanical target consumed by the endpoint, while hiddenGaugeProduct and admissibleHistories project through the shared mechanical equality.  The endpoint through this combined gate still has exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  This is an uninhabited construction gate, not a completed M4 ensemble and not an unconditional proof of P != NP."
+  "The combined manuscript-M4 interface component gate ties the transparent strict construction components to a manuscript-facing single-message SAT/gauge interface over the same projected mechanical data.  The SAT spine now audits singleMessage and readout correctness for the exact mechanical target consumed by the endpoint, while gaugePredicateTotal and admissibleHistories project through the shared mechanical equality.  The endpoint through this combined gate still has exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  This is an uninhabited construction gate, not a completed M4 ensemble and not an unconditional proof of P != NP."
 
 def realM4CNFMechanicalSATSpineBridgeItems : List String := [
   "appendixICNFWorldForEachMechanicalWorld",
@@ -26058,7 +26064,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",
@@ -26112,7 +26118,7 @@ theorem
         "safeBudget",
         "gaugeIncidence",
         "gaugeBound",
-        "hiddenGaugeProduct",
+        "gaugePredicateTotal",
         "realCompressionLowerMachineData",
         "publicLockCoverageData",
         "lockedMessageRigidityData",

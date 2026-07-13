@@ -311,9 +311,9 @@ def v13InterfaceEnforcedAssumedLedger : List V13EnforcedAssumedLedgerRow := [
     concreteObligation := "Prove the target bit is a function of the full public instance on support."
   },
   {
-    item := "field hiddenGaugeProduct"
+    item := "field gaugePredicateTotal"
     status := .carriedAsAssumption
-    checkedName := "GaugeBufferedLockedInterface.hiddenGaugeProduct"
+    checkedName := "GaugeBufferedLockedInterface.gaugePredicateTotal"
     concreteObligation := "Prove unsupported gauge coordinates remain product-fair under legal prefixes."
   },
   {

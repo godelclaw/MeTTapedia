@@ -1888,8 +1888,8 @@ theorem xorGaugeSingleMessage_gaugeFaithfulness :
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` field for the gauge-buffered anchor. -/
-theorem xorGaugeSingleMessage_hiddenGaugeProduct :
+/-- Structural `gaugePredicateTotal` field for the gauge-buffered anchor. -/
+theorem xorGaugeSingleMessage_gaugePredicateTotal :
     ∀ gamma omega,
       xorGaugeSingleMessageSemantics.gaugeSat gamma omega := by
   intro gamma omega
@@ -2994,15 +2994,15 @@ theorem xorGaugeSingleMessageAppendixICNF_gaugeFaithfulness :
   intro gamma
   rfl
 
-/-- Structural `hiddenGaugeProduct` transferred to the Appendix-I CNF world
+/-- Structural `gaugePredicateTotal` transferred to the Appendix-I CNF world
 carrier: every transported hidden-gauge predicate is satisfied on every
 concrete CNF world. -/
-theorem xorGaugeSingleMessageAppendixICNF_hiddenGaugeProduct :
+theorem xorGaugeSingleMessageAppendixICNF_gaugePredicateTotal :
     ∀ gamma omega,
       xorGaugeSingleMessageAppendixICNFSemantics.gaugeSat gamma omega := by
   intro gamma omega
   simpa [xorGaugeSingleMessageAppendixICNFSemantics] using
-    (xorGaugeSingleMessage_hiddenGaugeProduct gamma
+    (xorGaugeSingleMessage_gaugePredicateTotal gamma
       (xorGaugeSingleMessageAppendixICNFWorldAsSATWorld omega))
 
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/

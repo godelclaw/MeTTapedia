@@ -383,7 +383,7 @@ theorem phaseE_gaugeFaithfulness :
   cases gamma
   rfl
 
-theorem phaseE_hiddenGaugeProduct :
+theorem phaseE_gaugePredicateTotal :
     ∀ gamma omega, phaseESemantics.gaugeSat gamma omega := by
   intro gamma omega
   cases gamma
@@ -437,7 +437,7 @@ def phaseELockedInterface :
   gaugeIncidence := phaseEGaugeIncidence
   gaugeBound := 1
   singleMessage := phaseE_singleMessage
-  hiddenGaugeProduct := phaseE_hiddenGaugeProduct
+  gaugePredicateTotal := phaseE_gaugePredicateTotal
   noPublicTargetTags := phaseE_noPublicTargetTags
   atomCompleteness := phaseE_atomCompleteness
   gaugeFaithfulness := phaseE_gaugeFaithfulness
@@ -482,7 +482,7 @@ def phaseEObligationMap : List PhaseEObligationRow := [
     finding := "The one hidden gauge coordinate has no canonical public shortcut in this smoke instance."
   },
   {
-    fieldName := "hiddenGaugeProduct"
+    fieldName := "gaugePredicateTotal"
     status := .discharged
     finding := "Gauge evidence is hidden and universally satisfied in the abstract evidence semantics."
   },
@@ -546,7 +546,7 @@ theorem phaseE_all_nine_obligations :
       phaseE_noPublicTargetTags,
       phaseE_atomCompleteness,
       phaseE_gaugeFaithfulness,
-      phaseE_hiddenGaugeProduct,
+      phaseE_gaugePredicateTotal,
       phaseE_boundedGaugeIncidence,
       phaseE_admissibleHistories,
       phaseE_safeQSSM,

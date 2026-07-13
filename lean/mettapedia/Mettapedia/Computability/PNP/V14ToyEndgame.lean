@@ -206,7 +206,7 @@ def v14ToyEndgameMechanicalLedger :
     note := "Gauge-faithfulness field supplied by the toy construction."
   },
   {
-    item := "hiddenGaugeProduct"
+    item := "gaugePredicateTotal"
     status := .constructionProved
     checkedName := "v14ToyInterfaceHiddenGaugeProduct"
     note := "Hidden-gauge product field supplied by the toy construction."
