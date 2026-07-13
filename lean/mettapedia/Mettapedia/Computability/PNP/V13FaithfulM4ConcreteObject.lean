@@ -201,19 +201,68 @@ def v13M4ConcreteVerifier {m t : Nat}
 
 /-! ## Adaptive prefix and full visible primitive catalog -/
 
-/-- A genuine finite evidence prefix: it may record partial raw-gauge reads and
-the buffer probes already used. -/
+/-- A finite adaptive evidence prefix.  It records the outcomes of every
+non-neutral scaffold read: safe-buffer values, raw-gauge values, and quotient
+values.  `chargedGaugeSupport` records the union of raw-gauge and quotient
+supports exposed by those reads; `bufferVisited` is retained as the dynamic
+no-repeat guard used by the execution layer. -/
 structure V13M4ConcretePrefix (m : Nat) where
   gaugeObservation : V13M4ConcreteGaugeIndex m -> Option Bool
+  quotientObservation : V13M4ConcreteGaugeIndex m -> Option Bool
+  bufferObservation : V13M4ConcreteGaugeIndex m -> Option Bool
   bufferVisited : Finset (V13M4ConcreteGaugeIndex m)
+  chargedGaugeSupport : Finset (V13M4ConcreteGaugeIndex m)
+
+def v13M4ConcreteObservedSupport {m : Nat}
+    (observation : V13M4ConcreteGaugeIndex m -> Option Bool) :
+    Finset (V13M4ConcreteGaugeIndex m) :=
+  Finset.univ.filter fun v => (observation v).isSome
+
+@[simp] theorem v13M4Concrete_mem_observedSupport {m : Nat}
+    (observation : V13M4ConcreteGaugeIndex m -> Option Bool)
+    (v : V13M4ConcreteGaugeIndex m) :
+    v ∈ v13M4ConcreteObservedSupport observation <->
+      (observation v).isSome := by
+  simp [v13M4ConcreteObservedSupport]
+
+theorem v13M4Concrete_observedSupport_update_some {m : Nat}
+    (observation : V13M4ConcreteGaugeIndex m -> Option Bool)
+    (v : V13M4ConcreteGaugeIndex m) (b : Bool) :
+    v13M4ConcreteObservedSupport
+        (Function.update observation v (some b)) =
+      insert v (v13M4ConcreteObservedSupport observation) := by
+  ext w
+  by_cases hw : w = v
+  · subst w
+    simp
+  · simp [Function.update, hw]
+
+/-- Exact legal-prefix semantics for the scaffold request language.  Every
+visited buffer coordinate has one recorded safe value, and the charged gauge
+support is exactly the support exposed by raw-gauge and quotient reads.
+Public reads need no extra field: their values are determined by the public
+instance `Y` already present in `publicPrefixCondition`.
+
+Order is intentionally forgotten.  For this finite scaffold every record
+satisfying these support equations is realizable by listing its reads in any
+order; the product law depends only on the resulting conditioning event. -/
+def v13M4ConcreteLegalPrefix {m : Nat}
+    (pref : V13M4ConcretePrefix m) : Prop :=
+  pref.bufferVisited =
+      v13M4ConcreteObservedSupport pref.bufferObservation ∧
+    pref.chargedGaugeSupport =
+      v13M4ConcreteObservedSupport pref.gaugeObservation ∪
+        v13M4ConcreteObservedSupport pref.quotientObservation
 
 def v13M4ConcretePrefixConsistent {m t : Nat}
     (pref : V13M4ConcretePrefix m) (omega : V13M4ConcreteWorld m t) : Prop :=
-  forall v b, pref.gaugeObservation v = some b -> omega.g v = b
+  (forall v b, pref.gaugeObservation v = some b -> omega.g v = b) ∧
+    (forall v b, pref.quotientObservation v = some b -> omega.z v = b) ∧
+      forall v b, pref.bufferObservation v = some b -> omega.bufferLeft v = b
 
 def v13M4ConcreteGaugeSupport {m : Nat}
     (pref : V13M4ConcretePrefix m) : Finset (V13M4ConcreteGaugeIndex m) :=
-  Finset.univ.filter fun v => (pref.gaugeObservation v).isSome
+  pref.chargedGaugeSupport
 
 inductive V13M4ConcretePublicPrimitive (m t : Nat) where
   | geometry

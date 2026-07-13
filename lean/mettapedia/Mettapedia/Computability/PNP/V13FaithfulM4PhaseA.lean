@@ -226,15 +226,6 @@ noncomputable def v13M4ScaffoldPhaseCoupling (m t : Nat)
 
 /-! ## Executed transcripts and the one-step refinement -/
 
-def v13M4ScaffoldEmptyPrefix (m : Nat) : V13M4ConcretePrefix m where
-  gaugeObservation := fun _ => none
-  bufferVisited := ∅
-
-def v13M4ScaffoldEmptyExecutionState (m : Nat) :
-    V13M4ScaffoldExecutionState m where
-  evidencePrefix := v13M4ScaffoldEmptyPrefix m
-  chargedGaugeSupport := ∅
-
 noncomputable def v13M4ScaffoldPhaseTranscript {m t : Nat}
     {j : V13M4ConcreteMessageIndex t}
     (requests : List (V13M4ScaffoldRequest m t))

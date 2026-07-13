@@ -37,7 +37,27 @@ deriving DecidableEq, Repr
 
 structure V13M4ScaffoldExecutionState (m : Nat) where
   evidencePrefix : V13M4ConcretePrefix m
-  chargedGaugeSupport : Finset (V13M4ConcreteGaugeIndex m)
+
+def v13M4ScaffoldEmptyPrefix (m : Nat) : V13M4ConcretePrefix m where
+  gaugeObservation := fun _ => none
+  quotientObservation := fun _ => none
+  bufferObservation := fun _ => none
+  bufferVisited := ∅
+  chargedGaugeSupport := ∅
+
+def v13M4ScaffoldEmptyExecutionState (m : Nat) :
+    V13M4ScaffoldExecutionState m where
+  evidencePrefix := v13M4ScaffoldEmptyPrefix m
+
+@[simp] theorem v13M4ScaffoldEmptyPrefix_legal (m : Nat) :
+    v13M4ConcreteLegalPrefix (v13M4ScaffoldEmptyPrefix m) := by
+  constructor <;>
+    simp [v13M4ScaffoldEmptyPrefix, v13M4ConcreteObservedSupport]
+
+@[simp] theorem v13M4ScaffoldEmptyPrefix_consistent {m t : Nat}
+    (omega : V13M4ConcreteWorld m t) :
+    v13M4ConcretePrefixConsistent (v13M4ScaffoldEmptyPrefix m) omega := by
+  simp [v13M4ScaffoldEmptyPrefix, v13M4ConcretePrefixConsistent]
 
 inductive V13M4ScaffoldObservation (m t : Nat) where
   | publicValue : V13M4ConcretePublicPrimitive m t -> Bool ->
@@ -66,12 +86,107 @@ def V13M4ScaffoldPrimitiveOccurrence.WellFormed {m t : Nat}
 def v13M4ScaffoldObserveGauge {m : Nat}
     (pref : V13M4ConcretePrefix m) (v : V13M4ConcreteGaugeIndex m)
     (value : Bool) : V13M4ConcretePrefix m :=
-  { pref with gaugeObservation := Function.update pref.gaugeObservation v (some value) }
+  { pref with
+      gaugeObservation := Function.update pref.gaugeObservation v (some value)
+      chargedGaugeSupport := insert v pref.chargedGaugeSupport }
+
+def v13M4ScaffoldObserveQuotient {m : Nat}
+    (pref : V13M4ConcretePrefix m) (v : V13M4ConcreteGaugeIndex m)
+    (value : Bool) : V13M4ConcretePrefix m :=
+  { pref with
+      quotientObservation :=
+        Function.update pref.quotientObservation v (some value)
+      chargedGaugeSupport := insert v pref.chargedGaugeSupport }
 
 def v13M4ScaffoldVisitBuffer {m : Nat}
-    (pref : V13M4ConcretePrefix m) (q : V13M4ConcreteGaugeIndex m) :
+    (pref : V13M4ConcretePrefix m) (q : V13M4ConcreteGaugeIndex m)
+    (value : Bool) :
     V13M4ConcretePrefix m :=
-  { pref with bufferVisited := insert q pref.bufferVisited }
+  { pref with
+      bufferObservation :=
+        Function.update pref.bufferObservation q (some value)
+      bufferVisited := insert q pref.bufferVisited }
+
+theorem v13M4ScaffoldObserveGauge_preserves_legal {m : Nat}
+    (pref : V13M4ConcretePrefix m) (v : V13M4ConcreteGaugeIndex m)
+    (value : Bool) (hlegal : v13M4ConcreteLegalPrefix pref) :
+    v13M4ConcreteLegalPrefix
+      (v13M4ScaffoldObserveGauge pref v value) := by
+  rcases hlegal with ⟨hbuffer, hcharged⟩
+  constructor
+  · exact hbuffer
+  · rw [v13M4ScaffoldObserveGauge,
+      v13M4Concrete_observedSupport_update_some, hcharged]
+    ext w
+    simp
+
+theorem v13M4ScaffoldObserveQuotient_preserves_legal {m : Nat}
+    (pref : V13M4ConcretePrefix m) (v : V13M4ConcreteGaugeIndex m)
+    (value : Bool) (hlegal : v13M4ConcreteLegalPrefix pref) :
+    v13M4ConcreteLegalPrefix
+      (v13M4ScaffoldObserveQuotient pref v value) := by
+  rcases hlegal with ⟨hbuffer, hcharged⟩
+  constructor
+  · exact hbuffer
+  · rw [v13M4ScaffoldObserveQuotient,
+      v13M4Concrete_observedSupport_update_some, hcharged]
+    ext w
+    simp
+
+theorem v13M4ScaffoldVisitBuffer_preserves_legal {m : Nat}
+    (pref : V13M4ConcretePrefix m) (q : V13M4ConcreteGaugeIndex m)
+    (value : Bool) (hlegal : v13M4ConcreteLegalPrefix pref) :
+    v13M4ConcreteLegalPrefix (v13M4ScaffoldVisitBuffer pref q value) := by
+  rcases hlegal with ⟨hbuffer, hcharged⟩
+  constructor
+  · rw [v13M4ScaffoldVisitBuffer,
+      v13M4Concrete_observedSupport_update_some, hbuffer]
+  · exact hcharged
+
+theorem v13M4ScaffoldObserveGauge_preserves_consistency {m t : Nat}
+    (pref : V13M4ConcretePrefix m) (v : V13M4ConcreteGaugeIndex m)
+    (omega : V13M4ConcreteWorld m t)
+    (hconsistent : v13M4ConcretePrefixConsistent pref omega) :
+    v13M4ConcretePrefixConsistent
+      (v13M4ScaffoldObserveGauge pref v (omega.g v)) omega := by
+  rcases hconsistent with ⟨hgauge, hquotient, hbuffer⟩
+  refine ⟨?_, hquotient, hbuffer⟩
+  intro w b hobs
+  by_cases hw : w = v
+  · subst w
+    simpa [v13M4ScaffoldObserveGauge] using hobs
+  · apply hgauge w b
+    simpa [v13M4ScaffoldObserveGauge, Function.update, hw] using hobs
+
+theorem v13M4ScaffoldObserveQuotient_preserves_consistency {m t : Nat}
+    (pref : V13M4ConcretePrefix m) (v : V13M4ConcreteGaugeIndex m)
+    (omega : V13M4ConcreteWorld m t)
+    (hconsistent : v13M4ConcretePrefixConsistent pref omega) :
+    v13M4ConcretePrefixConsistent
+      (v13M4ScaffoldObserveQuotient pref v (omega.z v)) omega := by
+  rcases hconsistent with ⟨hgauge, hquotient, hbuffer⟩
+  refine ⟨hgauge, ?_, hbuffer⟩
+  intro w b hobs
+  by_cases hw : w = v
+  · subst w
+    simpa [v13M4ScaffoldObserveQuotient] using hobs
+  · apply hquotient w b
+    simpa [v13M4ScaffoldObserveQuotient, Function.update, hw] using hobs
+
+theorem v13M4ScaffoldVisitBuffer_preserves_consistency {m t : Nat}
+    (pref : V13M4ConcretePrefix m) (q : V13M4ConcreteGaugeIndex m)
+    (omega : V13M4ConcreteWorld m t)
+    (hconsistent : v13M4ConcretePrefixConsistent pref omega) :
+    v13M4ConcretePrefixConsistent
+      (v13M4ScaffoldVisitBuffer pref q (omega.bufferLeft q)) omega := by
+  rcases hconsistent with ⟨hgauge, hquotient, hbuffer⟩
+  refine ⟨hgauge, hquotient, ?_⟩
+  intro w b hobs
+  by_cases hw : w = q
+  · subst w
+    simpa [v13M4ScaffoldVisitBuffer] using hobs
+  · apply hbuffer w b
+    simpa [v13M4ScaffoldVisitBuffer, Function.update, hw] using hobs
 
 def v13M4ScaffoldStep {m t : Nat}
     (omega : V13M4ConcreteWorld m t)
@@ -85,17 +200,18 @@ def v13M4ScaffoldStep {m t : Nat}
   | .guardedBuffer q =>
       if q ∉ state.evidencePrefix.bufferVisited then
         ({ state with evidencePrefix :=
-            v13M4ScaffoldVisitBuffer state.evidencePrefix q },
+            (v13M4ScaffoldVisitBuffer state.evidencePrefix q
+              (omega.bufferLeft q)) },
           ⟨state, .safeBufferValue q (omega.bufferLeft q)⟩)
       else
         (state, ⟨state, .illegalBuffer q⟩)
   | .rawGauge v =>
       ({ evidencePrefix :=
-           v13M4ScaffoldObserveGauge state.evidencePrefix v (omega.g v)
-         chargedGaugeSupport := insert v state.chargedGaugeSupport },
+           v13M4ScaffoldObserveGauge state.evidencePrefix v (omega.g v) },
         ⟨state, .rawGaugeValue v (omega.g v)⟩)
   | .quotientUse v =>
-      ({ state with chargedGaugeSupport := insert v state.chargedGaugeSupport },
+      ({ evidencePrefix :=
+           v13M4ScaffoldObserveQuotient state.evidencePrefix v (omega.z v) },
         ⟨state, .quotientValue v (omega.z v)⟩)
 
 def v13M4ScaffoldRun {m t : Nat}
@@ -131,6 +247,76 @@ theorem v13M4ScaffoldStep_wellFormed {m t : Nat}
       split <;> simp_all [V13M4ScaffoldPrimitiveOccurrence.WellFormed]
   | rawGauge v => trivial
   | quotientUse v => trivial
+
+/-- Every step preserves the exact quantitative legal-prefix predicate. -/
+theorem v13M4ScaffoldStep_preserves_legalPrefix {m t : Nat}
+    (omega : V13M4ConcreteWorld m t)
+    (state : V13M4ScaffoldExecutionState m)
+    (request : V13M4ScaffoldRequest m t)
+    (hlegal : v13M4ConcreteLegalPrefix state.evidencePrefix) :
+    v13M4ConcreteLegalPrefix
+      (v13M4ScaffoldStep omega state request).1.evidencePrefix := by
+  cases request with
+  | publicSyntax primitive => exact hlegal
+  | guardedBuffer q =>
+      simp only [v13M4ScaffoldStep]
+      split
+      · exact v13M4ScaffoldVisitBuffer_preserves_legal _ _ _ hlegal
+      · exact hlegal
+  | rawGauge v =>
+      exact v13M4ScaffoldObserveGauge_preserves_legal _ _ _ hlegal
+  | quotientUse v =>
+      exact v13M4ScaffoldObserveQuotient_preserves_legal _ _ _ hlegal
+
+/-- Executing a real read records exactly its returned value, so prefix
+consistency with the sampled world is invariant under every step. -/
+theorem v13M4ScaffoldStep_preserves_prefixConsistency {m t : Nat}
+    (omega : V13M4ConcreteWorld m t)
+    (state : V13M4ScaffoldExecutionState m)
+    (request : V13M4ScaffoldRequest m t)
+    (hconsistent :
+      v13M4ConcretePrefixConsistent state.evidencePrefix omega) :
+    v13M4ConcretePrefixConsistent
+      (v13M4ScaffoldStep omega state request).1.evidencePrefix omega := by
+  cases request with
+  | publicSyntax primitive => exact hconsistent
+  | guardedBuffer q =>
+      simp only [v13M4ScaffoldStep]
+      split
+      · exact v13M4ScaffoldVisitBuffer_preserves_consistency _ _ _ hconsistent
+      · exact hconsistent
+  | rawGauge v =>
+      exact v13M4ScaffoldObserveGauge_preserves_consistency _ _ _ hconsistent
+  | quotientUse v =>
+      exact v13M4ScaffoldObserveQuotient_preserves_consistency _ _ _ hconsistent
+
+theorem v13M4ScaffoldRun_preserves_legalPrefix {m t : Nat}
+    (omega : V13M4ConcreteWorld m t)
+    (state : V13M4ScaffoldExecutionState m)
+    (requests : List (V13M4ScaffoldRequest m t))
+    (hlegal : v13M4ConcreteLegalPrefix state.evidencePrefix) :
+    v13M4ConcreteLegalPrefix
+      (v13M4ScaffoldRun omega state requests).1.evidencePrefix := by
+  induction requests generalizing state with
+  | nil => exact hlegal
+  | cons request requests ih =>
+      exact ih (v13M4ScaffoldStep omega state request).1
+        (v13M4ScaffoldStep_preserves_legalPrefix omega state request hlegal)
+
+theorem v13M4ScaffoldRun_preserves_prefixConsistency {m t : Nat}
+    (omega : V13M4ConcreteWorld m t)
+    (state : V13M4ScaffoldExecutionState m)
+    (requests : List (V13M4ScaffoldRequest m t))
+    (hconsistent :
+      v13M4ConcretePrefixConsistent state.evidencePrefix omega) :
+    v13M4ConcretePrefixConsistent
+      (v13M4ScaffoldRun omega state requests).1.evidencePrefix omega := by
+  induction requests generalizing state with
+  | nil => exact hconsistent
+  | cons request requests ih =>
+      exact ih (v13M4ScaffoldStep omega state request).1
+        (v13M4ScaffoldStep_preserves_prefixConsistency
+          omega state request hconsistent)
 
 theorem v13M4ScaffoldRun_occurrences_wellFormed {m t : Nat}
     (omega : V13M4ConcreteWorld m t)
@@ -258,14 +444,14 @@ def v13M4ScaffoldRequiredFreshGaugeSupport {m t : Nat}
     Finset (V13M4ConcreteGaugeIndex m) :=
   match occ.observation with
   | .rawGaugeValue v _ | .quotientValue v _ =>
-      if v ∈ occ.before.chargedGaugeSupport then ∅ else {v}
+      if v ∈ occ.before.evidencePrefix.chargedGaugeSupport then ∅ else {v}
   | _ => ∅
 
 theorem v13M4ScaffoldRequiredFreshGaugeSupport_fresh {m t : Nat}
     (occ : V13M4ScaffoldPrimitiveOccurrence m t)
     (v : V13M4ConcreteGaugeIndex m)
     (hv : v ∈ v13M4ScaffoldRequiredFreshGaugeSupport occ) :
-    v ∉ occ.before.chargedGaugeSupport := by
+    v ∉ occ.before.evidencePrefix.chargedGaugeSupport := by
   rcases occ with ⟨before, observation⟩
   cases observation with
   | publicValue primitive value =>
@@ -275,14 +461,14 @@ theorem v13M4ScaffoldRequiredFreshGaugeSupport_fresh {m t : Nat}
   | illegalBuffer probe =>
       simp [v13M4ScaffoldRequiredFreshGaugeSupport] at hv
   | rawGaugeValue coord value =>
-      by_cases hcharged : coord ∈ before.chargedGaugeSupport
+      by_cases hcharged : coord ∈ before.evidencePrefix.chargedGaugeSupport
       · simp [v13M4ScaffoldRequiredFreshGaugeSupport, hcharged] at hv
       · have : v = coord := by
           simpa [v13M4ScaffoldRequiredFreshGaugeSupport, hcharged] using hv
         subst v
         exact hcharged
   | quotientValue coord value =>
-      by_cases hcharged : coord ∈ before.chargedGaugeSupport
+      by_cases hcharged : coord ∈ before.evidencePrefix.chargedGaugeSupport
       · simp [v13M4ScaffoldRequiredFreshGaugeSupport, hcharged] at hv
       · have : v = coord := by
           simpa [v13M4ScaffoldRequiredFreshGaugeSupport, hcharged] using hv
@@ -346,7 +532,7 @@ noncomputable def v13M4ScaffoldExecutionTraceExpansion (m t : Nat) :
     | illegalBuffer probe =>
         simp [v13M4ScaffoldRequiredFreshGaugeSupport] at hcoord
     | rawGaugeValue v value =>
-        by_cases hv : v ∈ before.chargedGaugeSupport
+        by_cases hv : v ∈ before.evidencePrefix.chargedGaugeSupport
         · simp [v13M4ScaffoldRequiredFreshGaugeSupport, hv] at hcoord
         · have hcoordEq : coord = v := by
             simpa [v13M4ScaffoldRequiredFreshGaugeSupport, hv] using hcoord
@@ -356,7 +542,7 @@ noncomputable def v13M4ScaffoldExecutionTraceExpansion (m t : Nat) :
               NormalEvidence.gaugeLeaves], by
             simp [v13M4ScaffoldGaugeAtomSupport]⟩
     | quotientValue v value =>
-        by_cases hv : v ∈ before.chargedGaugeSupport
+        by_cases hv : v ∈ before.evidencePrefix.chargedGaugeSupport
         · simp [v13M4ScaffoldRequiredFreshGaugeSupport, hv] at hcoord
         · have hcoordEq : coord = v := by
             simpa [v13M4ScaffoldRequiredFreshGaugeSupport, hv] using hcoord
@@ -421,5 +607,8 @@ theorem v13M4Scaffold_safeLeaf_protectedDistance
     V13M4ConcreteE V13M4ConcreteG V13M4ConcreteC () m t
     atom.before.evidencePrefix atom.probe hlegalC site hsite protectedSite
     hprotected
+
+#print axioms v13M4ScaffoldRun_preserves_legalPrefix
+#print axioms v13M4ScaffoldRun_preserves_prefixConsistency
 
 end Mettapedia.Computability.PNP
