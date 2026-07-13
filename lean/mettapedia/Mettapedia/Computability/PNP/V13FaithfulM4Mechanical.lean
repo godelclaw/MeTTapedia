@@ -27,7 +27,7 @@ noncomputable def v13M4ConcreteEnsemble : V13QuantitativeEnsemble where
   Parameter := Unit
   parameterNonempty := ⟨()⟩
   World _ m t := V13M4ConcreteWorld m t
-  worldFintype _ m t := inferInstance
+  worldFintype _ _ _ := inferInstance
   law _ m t := v13UniformFiniteLaw (V13M4ConcreteWorld m t)
 
   Public _ m t := V13M4ConcretePublic m t
