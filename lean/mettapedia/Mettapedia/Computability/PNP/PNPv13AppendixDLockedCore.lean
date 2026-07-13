@@ -87,8 +87,11 @@ def LockedMessageSpec
     (Y : PublicLock) (msg : Message) : Prop :=
   ∀ L : C.LockedCompletion Y, L.message = msg
 
-/-- Public-message invariant candidate: all accepted completions over one
-supported public lock read the message determined by that public lock. -/
+/-- Explicit Appendix-D construction hypothesis: all accepted completions
+over one supported public lock read the message selected by that public lock.
+This is D.8 locked-message rigidity in chosen-function form, not a modest
+derived invariant.  It must remain a named hypothesis until proved from the
+actual bounded-arity lock/readout construction. -/
 def PublicMessageInvariant
     (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
     (publicMessage : PublicLock → Message) : Prop :=

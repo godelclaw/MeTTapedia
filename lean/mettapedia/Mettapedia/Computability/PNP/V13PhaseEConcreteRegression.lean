@@ -12,7 +12,7 @@ namespace Mettapedia.Computability.PNP
 #print axioms phaseE_noPublicTargetTags
 #print axioms phaseE_atomCompleteness
 #print axioms phaseE_gaugeFaithfulness
-#print axioms phaseE_hiddenGaugeProduct
+#print axioms phaseE_gaugePredicateTotal
 #print axioms phaseE_boundedGaugeIncidence
 #print axioms phaseE_admissibleHistories
 #print axioms phaseE_safeQSSM

@@ -127,7 +127,7 @@ def v13LedgerFaithfulnessRows : List V13FaithfulnessRow := [
     mismatch := "Formalizes that the target bit is fixed by the full public instance on the supported interface."
   },
   {
-    name := "hiddenGaugeProduct"
+    name := "gaugePredicateTotal"
     kind := .ledgerField
     noteSection := "Section 8.3"
     verdict := .weakerThanNote

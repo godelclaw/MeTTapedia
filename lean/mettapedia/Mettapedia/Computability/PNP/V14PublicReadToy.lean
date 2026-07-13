@@ -833,7 +833,7 @@ def v14ToyLockedInterface (A : V14ToyAnalyticFrontier) :
   gaugeIncidence := v14ToyGaugeIncidence
   gaugeBound := v14ToyGaugeBound
   singleMessage := v14ToySingleMessage
-  hiddenGaugeProduct := v14ToyInterfaceHiddenGaugeProduct
+  gaugePredicateTotal := v14ToyInterfaceHiddenGaugeProduct
   noPublicTargetTags := v14ToyNoPublicTargetTags
   atomCompleteness := v14ToyAtomCompleteness
   gaugeFaithfulness := v14ToyGaugeFaithfulness
@@ -868,7 +868,7 @@ structure V14ToyStructuralFieldsConstructed : Prop where
     ∀ w0 w1 : V14ToyWorld,
       v14ToyPublicInput w0 = v14ToyPublicInput w1 ->
         v14ToyTarget w0 = v14ToyTarget w1
-  hiddenGaugeProduct :
+  gaugePredicateTotal :
     ∀ gamma omega, v14ToySemantics.gaugeSat gamma omega
   noPublicTargetTags :
     PairNeutral v14ToyOppositeSupport v14ToyNeutralSkeleton ∧
@@ -889,7 +889,7 @@ structure V14ToyStructuralFieldsConstructed : Prop where
 theorem v14Toy_structuralFields_constructed :
     V14ToyStructuralFieldsConstructed where
   singleMessage := v14ToySingleMessage
-  hiddenGaugeProduct := v14ToyInterfaceHiddenGaugeProduct
+  gaugePredicateTotal := v14ToyInterfaceHiddenGaugeProduct
   noPublicTargetTags := v14ToyNoPublicTargetTags
   atomCompleteness := v14ToyAtomCompleteness
   gaugeFaithfulness := v14ToyGaugeFaithfulness
@@ -1020,7 +1020,7 @@ theorem v14Toy_reduction_uses_exact_analytic_frontier_givenPNP
       (v14ToyParameterRecordWithPNPUpper P D R)
 
 def v14ToyReductionStatement : String :=
-  "With singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, hiddenGaugeProduct, and admissibleHistories construction-proved for the v14 toy, and with SelfReductionUpperHypothesis construction-proved given an explicit V14ToyPNPSATDecider plus the constant-decoder regime, the residual open inputs are ParameterRecord.starSWHardness together with SafeQSSMFrontier.safeQSSM, BoundedGaugeIncidenceFrontier.boundedGaugeIncidence, and BoundaryMixingFrontier.boundaryMixing; the Lean conclusion remains UpperLowerClash for the ParameterRecord whose selfReductionUpper field is v14Toy_selfReductionUpperHypothesis_givenPNP."
+  "With singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, gaugePredicateTotal, and admissibleHistories construction-proved for the v14 toy, and with SelfReductionUpperHypothesis construction-proved given an explicit V14ToyPNPSATDecider plus the constant-decoder regime, the residual open inputs are ParameterRecord.starSWHardness together with SafeQSSMFrontier.safeQSSM, BoundedGaugeIncidenceFrontier.boundedGaugeIncidence, and BoundaryMixingFrontier.boundaryMixing; the Lean conclusion remains UpperLowerClash for the ParameterRecord whose selfReductionUpper field is v14Toy_selfReductionUpperHypothesis_givenPNP."
 
 /-! ## Weak-frontier canaries -/
 
@@ -1130,7 +1130,7 @@ def v14ToyConstructionLedger : List V14ConstructionLedgerRow := [
     note := "The public xor lock forces a unique message readout for all satisfying witnesses."
   },
   {
-    item := "field hiddenGaugeProduct"
+    item := "field gaugePredicateTotal"
     status := .constructionProved
     checkedName := "v14ToyHiddenGaugeProduct"
     note := "The unsupported one-coordinate hidden gauge law is fair by finite counting."
@@ -1282,9 +1282,9 @@ def v14ToyExactUseLedger : List V14ExactUseLedgerRow := [
     checkedName := "V14ToyStructuralFieldsConstructed.singleMessage"
   },
   {
-    item := "hiddenGaugeProduct"
+    item := "gaugePredicateTotal"
     status := .structuralProved
-    checkedName := "V14ToyStructuralFieldsConstructed.hiddenGaugeProduct"
+    checkedName := "V14ToyStructuralFieldsConstructed.gaugePredicateTotal"
   },
   {
     item := "noPublicTargetTags"
