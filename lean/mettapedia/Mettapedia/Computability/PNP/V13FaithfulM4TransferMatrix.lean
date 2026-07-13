@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.V13FaithfulM4HypothesisBoundary
+import Mettapedia.Computability.PNP.V13FaithfulM4AdaptiveGaugeProduct
 
 /-!
 # Transfer-or-obstruction matrix for the concrete regioned scaffold
@@ -45,7 +45,7 @@ def v13M4ConcreteTransferMatrix :
   | .samplerSoundness => .proved
   | .singleMessage => .obstructed
   | .groupAction => .proved
-  | .adaptiveProductLaw => .openExactTarget
+  | .adaptiveProductLaw => .proved
   | .noPublicTags => .proved
   | .actualTraceAtomExpansion => .openExactTarget
   | .compatibleCouplings => .openExactTarget
@@ -107,7 +107,7 @@ theorem v13M4Concrete_matrix_groupAction :
     v13M4ConcreteTransferMatrix .groupAction = .proved := rfl
 
 theorem v13M4Concrete_matrix_adaptiveProductLaw :
-    v13M4ConcreteTransferMatrix .adaptiveProductLaw = .openExactTarget := rfl
+    v13M4ConcreteTransferMatrix .adaptiveProductLaw = .proved := rfl
 
 theorem v13M4Concrete_matrix_noPublicTags :
     v13M4ConcreteTransferMatrix .noPublicTags = .proved := rfl

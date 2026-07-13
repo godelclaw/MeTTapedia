@@ -10,11 +10,10 @@ This module attaches the concrete five-band object to
 quotient equations, a positive-rank free gauge action, and the local
 bounded-arity geometry facts.
 
-The exact adaptive product law is not asserted here.  Although the sampler is
-uniform in its raw gauge vector, transferring that static product law through
-the actual partial-prefix conditioning is a separate named construction
-obligation.  The later hypothesis-boundary module exposes it without replacing
-the prefix by a vacuous unit type.
+The exact adaptive product law is not asserted in this mechanical base module.
+The downstream adaptive-gauge module proves its faithful record from the
+reconciled execution prefix, rather than replacing the prefix by a vacuous
+unit type.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -377,8 +376,8 @@ theorem v13M4Concrete_buffer_satisfiable_D23
   rw [← hz]
   exact v13M4Concrete_witnessOfWorld_buffer omega
 
-/-- The almost-sure quotient half of `V13M4UniformGaugeLift`; the conditional
-subvector probability half remains separately open. -/
+/-- The almost-sure quotient half of `V13M4UniformGaugeLift`; the downstream
+adaptive-gauge module proves the conditional subvector probability half. -/
 theorem v13M4Concrete_quotient_equations_on_support
     (theta : V13M4ConcreteE.Parameter) (m t : Nat)
     (omega : V13M4ConcreteE.World theta m t) :
