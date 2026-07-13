@@ -8,6 +8,15 @@ regioned gauge-buffered locked ensemble of Appendices D and I.  It does not
 construct an inhabitant.  In particular D.8, D.30, D.33, compatible couplings,
 and every analytic frontier remain visibly named hypotheses.
 
+Appendix D does not supply a concrete locked-clause family to instantiate this
+interface.  Definition D.5 leaves `Lock_Y` and `Read_Y` as abstract
+conjunctions of bounded-arity predicates, Hypothesis D.8 assumes their
+locked-message rigidity, and Proposition D.41 derives the single-message
+promise from that hypothesis.  Definition I.16 then generically compiles the
+unspecified local predicates; it does not define their truth tables.  Thus a
+concrete lock core and its D.8 proof remain construction data, not consequences
+of the Appendix-D/I type layer.
+
 The specification is attached to the same `V13QuantitativeEnsemble` used by
 the quantitative frontier statements.  A future construction must fill this
 record; a linear unit-CNF or two-point carrier is not an inhabitant merely by
@@ -183,7 +192,9 @@ end V13M4LocalComponents
 /-! ## Exact named Appendix-D hypotheses -/
 
 /-- Hypothesis D.8 exactly: any two accepted locked completions over the same
-supported public lock syntax carry the same message. -/
+supported public lock syntax carry the same message.  This is an explicit
+manuscript hypothesis, not a theorem obtained from bounded arity or from the
+generic Appendix-I truth-table compiler. -/
 structure V13D8LockedMessageRigidity
     (E : V13QuantitativeEnsemble) (G : V13M4LayeredGeometry E)
     (C : V13M4LocalComponents E G) : Prop where

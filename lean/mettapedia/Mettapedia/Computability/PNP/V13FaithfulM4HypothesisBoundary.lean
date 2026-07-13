@@ -9,6 +9,14 @@ Hypothesis D.8 is false.  This module proves that obstruction against the
 faithful record and consequently proves that the full
 `V13M4OpenConstructionObligations` record is not inhabited on this object.
 
+This counterexample concerns the concrete XOR connector in this construction
+attempt.  It does not refute a separate manuscript clause family: Appendix D
+does not provide one.  Definition D.5 leaves the lock/readout predicates
+abstract and D.8 assumes rigidity, while Appendix I only supplies their generic
+bounded-arity CNF compilation.  Replacing this connector therefore requires
+new lock construction data and a proof of D.8; neither can be recovered from
+the manuscript's displayed clauses because no such clauses are displayed.
+
 The public catalog itself contains every visible geometry, quotient, buffer,
 lock, readout, and probe-syntax primitive and contains no raw assignment.  Its
 exact D.30 record is constructible.  D.33 remains open because classifying a
