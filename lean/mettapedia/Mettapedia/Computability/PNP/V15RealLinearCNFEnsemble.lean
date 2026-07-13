@@ -1,14 +1,19 @@
 import Mettapedia.Computability.PNP.V15RealEnsembleSpine
 
 /-!
-# PNP v15: real linear CNF ensemble
+# PNP v15: linear CNF regression and obstruction carrier
 
-This module gives an actual CNF/SAT realization of the existing real linear
-single-message surface.  For a public instance `Y = (A, b)`, the formula has
-one concrete unit clause per witness coordinate, locking that coordinate to
-the full public decoder `A⁻¹ b`.  This is a real finite CNF construction over
-the v13 linear public instance; it is not the manuscript M4 ensemble and does
-not prove any analytic frontier.
+This frozen regression module gives a CNF/SAT realization of the linear
+single-message test surface.  For a public instance `Y = (A, b)`, the formula
+has one concrete unit clause per witness coordinate, locking that coordinate
+to the full public decoder `A⁻¹ b`.
+
+It is **not** the manuscript M4 ensemble: it has no regioned buffer/lock
+geometry and its full public formula syntax exposes the target.  Its positive
+results are regression checks for generic SAT/readout and action machinery;
+its load-bearing manuscript-facing result is the named full-syntax
+no-public-tag obstruction below.  New M4 work is superseded by the faithful
+Appendix-D/I specification layer; this carrier is retained, not promoted.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -7138,10 +7143,11 @@ theorem
           (v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
             i₀ (v13RealLinearNoTargetRowsPublicInput Y)).symm
 
-/-- Named obstruction: if the full concrete Appendix-I CNF formula syntax is
-made public, `noPublicTargetTags` fails for the no-target-rows real CNF
-surface.  The construction-proved field therefore must use the neutral
-no-target-row skeleton above, not the complete locking formula syntax. -/
+/-- **Failure theorem.** If the full concrete Appendix-I CNF formula syntax is
+public, the no-public-target-tag discipline fails on this regression carrier.
+The formula exposes the target through its selected unit clause.  Passing a
+property of the deliberately smaller neutral skeleton does not repair this
+full-public-syntax obstruction. -/
 theorem
     v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_noPublicTargetTags_obstruction
     {m : Nat} (i₀ : Fin m) :
@@ -7210,10 +7216,10 @@ theorem
           (v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
             i₀ (v13RealLinearNoTargetRowsPublicInput Y)).symm
 
-/-- Named readout obstruction: with the full concrete Appendix-I CNF formula
-syntax public, no-public-readout-tags fails for verifier-valid witnesses.  The
-same target-unit tag that exposes the target also exposes the single-message
-witness readout. -/
+/-- **Failure theorem.** With the full concrete Appendix-I CNF formula syntax
+public, the no-public-readout-tag discipline fails on this regression carrier.
+The same target-unit clause that exposes the target also exposes the readout
+of every verifier-valid witness. -/
 theorem
     v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_noPublicReadoutTags_obstruction
     {m : Nat} (i₀ : Fin m) :

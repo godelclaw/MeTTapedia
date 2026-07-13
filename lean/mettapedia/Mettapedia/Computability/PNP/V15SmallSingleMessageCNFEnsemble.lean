@@ -2,14 +2,16 @@ import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutCore
 import Mettapedia.Computability.PNP.V15RealEnsembleSpine
 
 /-!
-# PNP v15: small concrete single-message CNF ensemble
+# PNP v15: small single-message CNF regression carrier
 
-This file gives a concrete finite CNF/SAT ensemble rather than an endpoint
-wrapper.  The public instance is a Boolean message bit `Y`; the CNF is the
-single unit clause forcing one assignment variable to equal `M(Y) = Y`, and the
-CNF-level readout reads that assignment variable.  This is not the manuscript
-M4 construction; it is the smallest concrete single-message CNF anchor for the
-readout interface.
+This frozen regression file gives the smallest finite CNF/SAT anchor for the
+single-message readout interface.  The public instance is the Boolean message
+bit `Y`; one unit clause forces one assignment variable to `M(Y) = Y`.
+
+This carrier is **not** the manuscript M4 construction and supplies no evidence
+for its public-syntax, gauge-rank, buffer, or analytic obligations.  It is
+superseded for manuscript-facing work by the faithful Appendix-D/I
+specification layer and remains only as a small regression test.
 -/
 
 namespace Mettapedia.Computability.PNP

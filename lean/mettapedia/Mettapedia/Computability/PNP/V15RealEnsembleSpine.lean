@@ -3,7 +3,7 @@ import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
 
 /-!
-# PNP v15 real ensemble spine
+# PNP v15 legacy real-ensemble staging spine
 
 This module starts the real-ensemble lift beyond the v14 toy endpoint.  It
 records the manuscript-facing single-message SAT spine as an interface over a
@@ -12,9 +12,13 @@ readout.  The checked inhabitant below is the real v13 linear public surface:
 the full public instance `(A, A x)` fixes the target coordinate and any valid
 witness reads the same message.
 
-This is not yet the full M4 SAT ensemble.  The ledger at the end records the
-remaining construction obligations separately from the four irreducible
-mathematical inputs.
+This is not the full M4 SAT ensemble.  It is now a frozen legacy staging
+surface: no new carrier/orbit facts, endpoint aliases, or string-valued audit
+wrappers should be added here.  Existing wrappers remain for compatibility,
+but `realM4_exists_np_not_p_from_noTargetRowsNamedLanguageLargeTargetConstructionData_realFrontier`
+is the canonical legacy endpoint implication.  New manuscript-facing work is
+superseded by the faithful quantitative frontier and Appendix-D/I specification
+layers, where every construction and analytic obligation is explicit.
 -/
 
 namespace Mettapedia.Computability.PNP
