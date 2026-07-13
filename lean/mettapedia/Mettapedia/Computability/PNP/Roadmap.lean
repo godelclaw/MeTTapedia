@@ -235,13 +235,13 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvUpperPercent := 100
       obligation := "Record the sequential adaptive row-query theorem as V13RealLinearSequentialQRowTransferCertificate: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." },
     { stage := .v13RealRungOneQRowBound
-      proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-sequential-qrow-conditional"
-      status := .openBackground
-      truthValue := ⟨100, 94⟩
-      progressPercent := 84
-      itvLowerPercent := 94
+      proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-rung-ledger"
+      status := .checked
+      truthValue := ⟨100, 98⟩
+      progressPercent := 100
+      itvLowerPercent := 98
       itvUpperPercent := 100
-      obligation := "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. Zero-query and high-budget no-target counting are closed; the full sampler-specific obligation now reduces to the low-positive trace-coset-hit bound `V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound` for `0 < q` and `q < m`." },
+      obligation := "Use `V13RealLinear_rungLedger` as the live true-first status: the adjusted no-target sequential and bit-junta sampler bounds and Crux-2 certificate are unconditional. Keep only the StarSW/framework endgame conditional, with its converse scope explicit." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -326,7 +326,7 @@ theorem currentPNPRoadmap_orders_local_ledger_before_global_promotion :
       (currentPNPRoadmap_decides_kpoly_barrier_and_opens_replacement).2.1,
       by simp [currentPNPRoadmap]⟩
 
-theorem currentPNPRoadmap_records_pnp_steelman_conditional :
+theorem currentPNPRoadmap_records_pnp_steelman_starSW_framework_bundle_conditional :
     ({ stage := PNPRoadmapStage.steelmanConditional
        proofNodeKey := "pnp.steelman.kernel-flip-no-threading-star-sw-conditional"
        status := .checked
@@ -547,16 +547,16 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_sequential_qrow_transfer :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
-theorem currentPNPRoadmap_records_v13_real_rung_one_no_target_rows_sequential_qrow_conditional :
+theorem currentPNPRoadmap_records_v13_real_rung_one_no_target_rows_rung_ledger :
     ({ stage := PNPRoadmapStage.v13RealRungOneQRowBound
-       proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-sequential-qrow-conditional"
-       status := .openBackground
-       truthValue := ⟨100, 94⟩
-       progressPercent := 84
-       itvLowerPercent := 94
+       proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-rung-ledger"
+       status := .checked
+       truthValue := ⟨100, 98⟩
+       progressPercent := 100
+       itvLowerPercent := 98
        itvUpperPercent := 100
        obligation :=
-        "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. Zero-query and high-budget no-target counting are closed; the full sampler-specific obligation now reduces to the low-positive trace-coset-hit bound `V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound` for `0 < q` and `q < m`." } :
+        "Use `V13RealLinear_rungLedger` as the live true-first status: the adjusted no-target sequential and bit-junta sampler bounds and Crux-2 certificate are unconditional. Keep only the StarSW/framework endgame conditional, with its converse scope explicit." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
