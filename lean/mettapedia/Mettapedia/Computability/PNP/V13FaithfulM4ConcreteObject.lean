@@ -11,11 +11,12 @@ no raw witness assignment; worlds contain explicit `x/g/z` representatives,
 a bounded-arity lock/readout layer, and a strictly positive non-degenerate
 buffer layer.
 
-The local lock relation deliberately does not force a common message.  Thus
+The local lock relation deliberately does not force a common message. Thus
 this object does not claim Hypothesis D.8, and no target message is baked into
-the readout predicate.  D.8, D.30, D.33, D.48, the adaptive hidden-gauge
-product law, and the four analytic packages are handled at the explicit
-hypothesis boundary in later modules.
+the readout predicate. D.8, D.30, D.33, D.48, and the four analytic packages
+are handled at the explicit boundary in later modules. The reconciled prefix
+below supports a downstream construction proof of the adaptive hidden-gauge
+product law.
 -/
 
 namespace Mettapedia.Computability.PNP

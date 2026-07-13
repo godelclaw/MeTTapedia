@@ -22,7 +22,8 @@ lock, readout, and probe-syntax primitive and contains no raw assignment.  Its
 exact D.30 record is constructible.  D.33 remains open because classifying a
 new datatype is not a proof that actual observer executions expand to those
 classes.  D.48 and every quantitative analytic package also remain exact open
-hypotheses.
+hypotheses. The uniform gauge lift and adaptive product fields retained in the
+exact boundary below are discharged by the downstream adaptive-gauge module.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -172,8 +173,9 @@ inductive V13M4ConcreteNormalizedPrimitive (m t : Nat) where
       V13M4ConcreteNormalizedPrimitive m t
 deriving DecidableEq, Repr
 
-/-- Exact open boundary on this one ensemble.  No field is replaced by a
-weaker proposition.  The D.8 field makes the boundary uninhabited for the
+/-- Exact boundary on this one ensemble. No field is replaced by a
+weaker proposition. The gauge fields are constructed downstream; the D.8
+field makes the boundary uninhabited for the
 current scaffold, as proved below; a revised lock core is required before the
 remaining hypotheses can be assembled into a faithful M4 inhabitant. -/
 structure V13M4ConcreteExactHypothesisBoundary where
