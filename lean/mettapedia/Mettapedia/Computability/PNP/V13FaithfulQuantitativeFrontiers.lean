@@ -182,7 +182,52 @@ structure V13QuantitativeEnsemble where
     World theta m t -> World theta m t -> Prop
   parametersAdmissibleForClock : Parameter -> Nat -> Prop
   sizeAtMessageScale : Parameter -> Nat -> Nat
+  /-- Raw numeric slot for `Kpoly_D(M(Y)|Y)`.  A final manuscript-facing
+  construction must additionally provide `V13ClockedKpolySemantics`, which
+  ties this value to a fuel-bounded prefix-program minimum. -/
   clockedKpoly : forall {theta m t}, Nat -> World theta m t -> Nat
+
+/-- The manuscript clock `(encoded public length + 2)^D`. -/
+def v13PolynomialClockFuel (encodedPublic : List Bool) (D : Nat) : Nat :=
+  (encodedPublic.length + 2) ^ D
+
+/-- Operational meaning of the raw `clockedKpoly` slot.  Programs have
+self-delimiting binary descriptions, the programs below any length bound are
+explicitly and finitely enumerable with the manuscript's exponential counting
+bound, evaluation is step-bounded, and the sublevel equivalence gives the exact
+minimum-description semantics.  The additive `programCountingConstant` is the
+fixed universal-machine overhead used by the prefix-program union bound. -/
+structure V13ClockedKpolySemantics (E : V13QuantitativeEnsemble) where
+  encodePublic : forall {theta m t}, E.Public theta m t -> List Bool
+  programCode : E.Program -> List Bool
+  programCode_injective : Function.Injective programCode
+  programCode_prefixFree : forall {p q : E.Program} {suffix : List Bool},
+    programCode q = programCode p ++ suffix -> p = q
+  programLength_eq_codeLength : forall p,
+    E.programLength p = (programCode p).length
+  programsUpToLength : Nat -> List E.Program
+  programsUpToLength_nodup : forall a,
+    (programsUpToLength a).Nodup
+  programsUpToLength_spec : forall a p,
+    p ∈ programsUpToLength a <-> E.programLength p <= a
+  programCountingConstant : Nat
+  programsUpToLength_card_bound : forall a,
+    (programsUpToLength a).length <=
+      2 ^ (a + programCountingConstant)
+  evalWithinSteps : E.Program -> List Bool -> Nat -> Option (List Bool)
+  eval_fuel_mono : forall {p input fuel output},
+    evalWithinSteps p input fuel = some output ->
+      forall {fuel'}, fuel <= fuel' ->
+        evalWithinSteps p input fuel' = some output
+  clockedKpoly_le_iff :
+    forall {theta m t} (D : Nat) (omega : E.World theta m t) (a : Nat),
+      E.clockedKpoly D omega <= a <->
+        exists p : E.Program,
+          E.programLength p <= a ∧
+            evalWithinSteps p (encodePublic (E.publicInput omega))
+                (v13PolynomialClockFuel
+                  (encodePublic (E.publicInput omega)) D) =
+              some (E.message (E.witnessOfWorld omega))
 
 namespace V13QuantitativeEnsemble
 
@@ -565,6 +610,9 @@ probability at least `1 - 2^(-kappa*t)`.
 `Real.exp (-(kappa*t)*log 2)` is exactly `2^(-kappa*t)`. -/
 structure V13GlobalMessageIncompressibilityFrontier
     (E : V13QuantitativeEnsemble) where
+  /-- The numeric complexity observable has the manuscript's operational
+  minimum-program meaning; it is not freely chosen analytic data. -/
+  clockedKpolySemantics : V13ClockedKpolySemantics E
   parameterAtClock : Nat -> E.Parameter
   eta : Nat -> Real
   kappa : Nat -> Real
