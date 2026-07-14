@@ -11,6 +11,7 @@ set_option autoImplicit false
 #check V13M4Region
 #check V13M4LayeredGeometry
 #check V13M4LocalComponents
+#check V13M4LocalComponents.targetBit_reads_witness_message
 #check V13M4LocalComponents.GaugeVectorActionSpec
 #check V13D8LockedMessageRigidity
 #check V13D30NoPublicTargetTags
@@ -24,6 +25,7 @@ set_option autoImplicit false
 #print axioms V13M4Region
 #print axioms V13M4LayeredGeometry
 #print axioms V13M4LocalComponents
+#print axioms V13M4LocalComponents.targetBit_reads_witness_message
 #print axioms V13M4LocalComponents.GaugeVectorActionSpec
 #print axioms V13D8LockedMessageRigidity
 #print axioms V13D30NoPublicTargetTags

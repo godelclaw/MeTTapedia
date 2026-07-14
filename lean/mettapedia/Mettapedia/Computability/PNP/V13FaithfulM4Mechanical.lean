@@ -211,6 +211,17 @@ noncomputable def v13M4ConcreteComponents :
     intro _ _ t W
     change (List.ofFn W.messageBits).length = t + 1
     exact List.length_ofFn
+  targetMessageIndex := fun j => j
+  targetBit_reads_witness_message := by
+    intro _ m t omega j
+    change omega.messageBits j =
+      (List.ofFn omega.messageBits).getD j.val false
+    rw [List.getD_eq_getElem]
+    · symm
+      simpa using
+        (List.getElem_ofFn (f := omega.messageBits) (i := j.val)
+          (by simpa using j.isLt))
+    · simpa using j.isLt
 
   lockPredicate := v13M4ConcreteLockPredicate
   readoutPredicate := v13M4ConcreteReadoutPredicate
@@ -256,6 +267,19 @@ noncomputable def v13M4ConcreteComponents :
     exact v13M4Concrete_buffer_distance_protected q protectedSite hprotected
 
 noncomputable abbrev V13M4ConcreteC := v13M4ConcreteComponents
+
+/-- The scaffold's switched target bit is the corresponding coordinate of
+the global message, rather than an unrelated observable. -/
+theorem v13M4Concrete_targetBit_reads_witness_message {m t : Nat}
+    (omega : V13M4ConcreteWorld m t)
+    (j : V13M4ConcreteMessageIndex t) :
+    V13M4ConcreteE.targetBit (theta := ()) omega j =
+      (V13M4ConcreteE.message
+        (V13M4ConcreteE.witnessOfWorld (theta := ()) omega)).getD
+        (V13M4ConcreteC.targetMessageIndex
+          (theta := ()) (m := m) (t := t) j).val false :=
+  V13M4ConcreteC.targetBit_reads_witness_message
+    (theta := ()) omega j
 
 /-! ## Sampler and component-conjunction facts -/
 

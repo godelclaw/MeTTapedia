@@ -105,6 +105,15 @@ structure V13M4LocalComponents
     messageLinearConstant * (t : Real) <= (messageLength theta m t : Real)
   witness_message_length : forall {theta m t} (W : E.Witness theta m t),
     (E.message W).length = messageLength theta m t
+  /-- The switched target coordinates used by the evidence argument are
+  literal coordinates of the global message used by Theorem 10.9. -/
+  targetMessageIndex : forall {theta m t},
+    E.TargetCoord theta m t -> Fin (messageLength theta m t)
+  targetBit_reads_witness_message : forall {theta m t}
+    (omega : E.World theta m t) (j : E.TargetCoord theta m t),
+    E.targetBit omega j =
+      (E.message (E.witnessOfWorld omega)).getD
+        (targetMessageIndex j).val false
 
   lockPredicate : forall {theta m t},
     LockPublic theta m t ->
