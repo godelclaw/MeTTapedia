@@ -56,24 +56,28 @@ because its `clockedKpoly` field is definitionally zero on every world. -/
 theorem v13M4Concrete_not_globalMessageIncompressibility :
     ¬ Nonempty (V13GlobalMessageIncompressibilityFrontier V13M4ConcreteE) := by
   rintro ⟨lower⟩
-  let D : Nat := 0
+  let D : Nat := 1
   let t : Nat := max (lower.threshold D) 1
+  have hD : 1 <= D := by simp [D]
   have ht : lower.threshold D <= t := Nat.le_max_left _ _
   have htpos : 0 < t := lt_of_lt_of_le Nat.zero_lt_one (Nat.le_max_right _ _)
-  have heta : 0 < lower.eta D := lower.eta_positive D
-  have hkappa : 0 < lower.kappa D := lower.kappa_positive D
+  have heta : 0 < lower.eta D := lower.eta_positive D hD
+  have hkappa : 0 < lower.kappa D := lower.kappa_positive D hD
   have htReal : (0 : Real) < t := by exact_mod_cast htpos
   have hrate : 0 < lower.eta D * (t : Real) := mul_pos heta htReal
-  have hbound := lower.global_message_incompressibility D t ht
+  have hbound := lower.global_message_incompressibility D hD t ht
   have hevent :
       (fun omega : V13M4ConcreteE.World (lower.parameterAtClock D) t t =>
-        (lower.eta D * t : Real) <= V13M4ConcreteE.clockedKpoly D omega) =
+        v13ClockedKpolyAtLeast (lower.eta D * t)
+          (V13M4ConcreteE.clockedKpoly D omega)) =
         (fun _ => False) := by
     funext omega
     apply propext
     apply iff_false_intro
-    simpa [V13M4ConcreteE, v13M4ConcreteEnsemble] using
-      (not_le_of_gt hrate)
+    intro hAtLeast
+    have hzeroRate := hAtLeast 0 (by
+      simp [V13M4ConcreteE, v13M4ConcreteEnsemble])
+    exact (not_le_of_gt hrate) (by simpa using hzeroRate)
   have hprobabilityZero :
       V13M4ConcreteE.probabilityAt (lower.parameterAtClock D) t t
         (fun _ => False) = 0 := by
@@ -81,7 +85,8 @@ theorem v13M4Concrete_not_globalMessageIncompressibility :
   change
     V13M4ConcreteE.probabilityAt (lower.parameterAtClock D) t t
         (fun omega =>
-          (lower.eta D * t : Real) <= V13M4ConcreteE.clockedKpoly D omega) >=
+          v13ClockedKpolyAtLeast (lower.eta D * t)
+            (V13M4ConcreteE.clockedKpoly D omega)) >=
       1 - Real.exp (-(lower.kappa D * t) * Real.log 2) at hbound
   rw [hevent, hprobabilityZero] at hbound
   have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)

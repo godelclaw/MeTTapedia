@@ -3,11 +3,12 @@ import Mettapedia.Computability.PNP.V13FaithfulQuantitativeFrontiers
 /-!
 # PNP v13: operational clocked `Kpoly` semantics
 
-Theorem 10.9 concerns the minimum prefix-program length needed to output the
+Definition 2.1 and Theorem 10.9 concern the minimum prefix-program length
+needed to output the
 global message from the encoded public instance within clock
-`(|Y| + 2)^D`.  A bare natural-valued observable does not enforce that
-meaning.  This module supplies the operational law required of the final M4
-object.
+`(|Y| + 2)^D`, for `D >= 1`, with value `⊤` if no program succeeds.  A bare
+natural-valued observable cannot express that meaning.  This module supplies
+the operational law required of the final M4 object.
 
 Programs remain abstract, but their binary descriptions are injective and
 prefix-free.  Every length sublevel is explicitly enumerated with the
@@ -38,8 +39,10 @@ theorem message_eq_of_samePublic_of_clockedKpoly_zero
     (hzero1 : E.clockedKpoly D omega1 = 0) :
     E.message (E.witnessOfWorld omega0) =
       E.message (E.witnessOfWorld omega1) := by
-  have hle0 : E.clockedKpoly D omega0 <= 0 := by omega
-  have hle1 : E.clockedKpoly D omega1 <= 0 := by omega
+  have hle0 : E.clockedKpoly D omega0 <= (0 : WithTop Nat) := by
+    simp [hzero0]
+  have hle1 : E.clockedKpoly D omega1 <= (0 : WithTop Nat) := by
+    simp [hzero1]
   rcases (S.clockedKpoly_le_iff D omega0 0).mp hle0 with
     ⟨p0, hp0, hrun0⟩
   rcases (S.clockedKpoly_le_iff D omega1 0).mp hle1 with
