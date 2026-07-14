@@ -56,6 +56,89 @@ def HasMatchingDefectColors (data : FramedTrailData G)
     (C : G.EdgeColoring Color) : Prop :=
   data.missingColorAt C 0 = data.missingColorAt C 1
 
+/-- A nonzero color can be placed on the missing trail edge at one defect
+when it differs from every color already incident there. -/
+def IsAdmissibleAtDefect (data : FramedTrailData G)
+    (C : G.EdgeColoring Color) (i : Fin 2) (c : Color) : Prop :=
+  c ≠ 0 ∧
+    ∀ e ∈ incidentEdgeFinset G (data.defectVertex i), c ≠ C e
+
+/-- A color extends the missing trail edge properly at both endpoints. -/
+def IsProperTrailExtensionColor (data : FramedTrailData G)
+    (C : G.EdgeColoring Color) (c : Color) : Prop :=
+  data.IsAdmissibleAtDefect C 0 c ∧ data.IsAdmissibleAtDefect C 1 c
+
+private theorem eq_add_of_three_distinct_nonzero {a b c : Color}
+    (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c) :
+    c = a + b := by
+  rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero a ha with rfl | rfl | rfl <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero b hb with rfl | rfl | rfl <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero c hc with rfl | rfl | rfl <;>
+    simp at hab hac hbc ⊢
+
+/-- At a well-formed degree-two defect of a Tait coloring, the incident-edge
+sum is the unique nonzero color that can be assigned to the missing edge. -/
+theorem missingColorAt_is_unique_admissible
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (i : Fin 2) :
+    data.IsAdmissibleAtDefect C i (data.missingColorAt C i) ∧
+      ∀ c : Color,
+        data.IsAdmissibleAtDefect C i c -> c = data.missingColorAt C i := by
+  rcases Finset.card_eq_two.mp (hdata.2.1 i) with ⟨e, f, hef, hincident⟩
+  have heMem : e ∈ incidentEdgeFinset G (data.defectVertex i) := by
+    rw [hincident]
+    simp
+  have hfMem : f ∈ incidentEdgeFinset G (data.defectVertex i) := by
+    rw [hincident]
+    simp
+  have heAtDefect : data.defectVertex i ∈ (e : Sym2 V) := by
+    simpa [incidentEdgeFinset] using heMem
+  have hfAtDefect : data.defectVertex i ∈ (f : Sym2 V) := by
+    simpa [incidentEdgeFinset] using hfMem
+  have hcolors : C e ≠ C f :=
+    C.valid (G.lineGraph_adj_of_edgeSet_common_vertex hef heAtDefect hfAtDefect)
+  have hmissing : data.missingColorAt C i = C e + C f := by
+    simp [missingColorAt, hincident, hef]
+  have hthird := third_color_properties (hC e) (hC f) hcolors
+  constructor
+  · constructor
+    · rw [hmissing]
+      exact hthird.1
+    · intro x hx
+      rw [hincident] at hx
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+      rcases hx with rfl | rfl
+      · rw [hmissing]
+        exact hthird.2.1
+      · rw [hmissing]
+        exact hthird.2.2
+  · intro c hc
+    calc
+      c = C e + C f := eq_add_of_three_distinct_nonzero
+        (hC e) (hC f) hc.1 hcolors (Ne.symm (hc.2 e heMem))
+          (Ne.symm (hc.2 f hfMem))
+      _ = data.missingColorAt C i := hmissing.symm
+
+/-- The computed equality of the two defect requests is exactly the existence
+of one nonzero color that extends the missing trail edge properly at both
+endpoints. -/
+theorem hasMatchingDefectColors_iff_exists_properTrailExtensionColor
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
+    data.HasMatchingDefectColors C ↔
+      ∃ c : Color, data.IsProperTrailExtensionColor C c := by
+  have hunique0 := data.missingColorAt_is_unique_admissible hdata C hC 0
+  have hunique1 := data.missingColorAt_is_unique_admissible hdata C hC 1
+  constructor
+  · intro hmatch
+    refine ⟨data.missingColorAt C 0, hunique0.1, ?_⟩
+    simpa [HasMatchingDefectColors] using hmatch ▸ hunique1.1
+  · rintro ⟨c, hc0, hc1⟩
+    rw [HasMatchingDefectColors]
+    exact (hunique0.2 c hc0).symm.trans (hunique1.2 c hc1)
+
 end FramedTrailData
 
 /-- Kauffman-facing one-step definition: switch one genuine two-color
@@ -115,6 +198,32 @@ theorem framedTangleLegalKempeStep_eq_on_frozenInterface
   intro heComponent
   exact (Set.disjoint_left.1 hdisjoint) heComponent (by simpa using heFrozen)
 
+/-- Swapping a genuine component of two nonzero colors preserves the Tait
+condition. -/
+theorem isTaitEdgeColoring_swapOnKempeComponent
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {a b : Color} (hab : ValidColorPair a b)
+    (K : (C.bicoloredSubgraph a b).ConnectedComponent) :
+    IsTaitEdgeColoring G (C.swapOnKempeComponent a b K) := by
+  intro e
+  by_cases he : e ∈ C.kempeComponentSet a b K
+  · rw [C.swapOnKempeComponent_apply_of_mem he]
+    rcases C.mem_bicoloredSet_of_mem_kempeComponentSet he with hcolor | hcolor
+    · simpa [hcolor] using hab.2.1
+    · simpa [hcolor] using hab.1
+  · rw [C.swapOnKempeComponent_apply_of_not_mem he]
+    exact hC e
+
+/-- Every legal framed-tangle move preserves use of the three nonzero Tait
+colors. -/
+theorem framedTangleLegalKempeStep_preserves_isTaitEdgeColoring
+    {data : FramedTrailData G} {C C' : G.EdgeColoring Color}
+    (hstep : FramedTangleLegalKempeStep data C C')
+    (hC : IsTaitEdgeColoring G C) :
+    IsTaitEdgeColoring G C' := by
+  rcases hstep with ⟨a, b, K, hab, _hdisjoint, rfl⟩
+  exact isTaitEdgeColoring_swapOnKempeComponent hC hab K
+
 /-- Finite sequences of Kauffman between-region moves. -/
 def KauffmanBetweenRegionKempeReachable
     (data : FramedTrailData G) :
@@ -141,6 +250,18 @@ theorem L10_kauffmanBetweenRegionKempeReachable_iff_framedTangleKempeReachable
         data source target)
   simp only [KauffmanBetweenRegionKempeReachable,
     FramedTangleKempeReachable, hstep]
+
+/-- Tait colors remain nonzero through any finite sequence of legal framed
+moves. -/
+theorem framedTangleKempeReachable_preserves_isTaitEdgeColoring
+    {data : FramedTrailData G} {C C' : G.EdgeColoring Color}
+    (hreach : FramedTangleKempeReachable data C C')
+    (hC : IsTaitEdgeColoring G C) :
+    IsTaitEdgeColoring G C' := by
+  induction hreach using Relation.ReflTransGen.head_induction_on with
+  | refl => exact hC
+  | head hstep _ ih =>
+      exact ih (framedTangleLegalKempeStep_preserves_isTaitEdgeColoring hstep hC)
 
 /-- Completion phrased with Kauffman's between-region move relation. -/
 def KauffmanBetweenRegionCompletable
@@ -173,6 +294,30 @@ theorem L10_kauffmanBetweenRegionCompletable_iff_framedTangleCompletable
       (L10_kauffmanBetweenRegionKempeReachable_iff_framedTangleKempeReachable
         data C C').2 hreach,
       hmatch⟩
+
+/-- The framed completion predicate has its direct graph meaning: after legal
+moves, one nonzero color can be placed on the missing trail edge and is proper
+at both defect endpoints. -/
+theorem framedTangleCompletable_iff_exists_reachable_properTrailExtensionColor
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
+    FramedTangleCompletable data C ↔
+      ∃ C' : G.EdgeColoring Color, ∃ c : Color,
+        FramedTangleKempeReachable data C C' ∧
+          data.IsProperTrailExtensionColor C' c := by
+  constructor
+  · rintro ⟨C', hreach, hmatch⟩
+    have hC' :=
+      framedTangleKempeReachable_preserves_isTaitEdgeColoring hreach hC
+    rcases (data.hasMatchingDefectColors_iff_exists_properTrailExtensionColor
+      hdata C' hC').1 hmatch with ⟨c, hc⟩
+    exact ⟨C', c, hreach, hc⟩
+  · rintro ⟨C', c, hreach, hc⟩
+    have hC' :=
+      framedTangleKempeReachable_preserves_isTaitEdgeColoring hreach hC
+    exact ⟨C', hreach,
+      (data.hasMatchingDefectColors_iff_exists_properTrailExtensionColor
+        hdata C' hC').2 ⟨c, hc⟩⟩
 
 end GoertzelV24FramedTrail
 
