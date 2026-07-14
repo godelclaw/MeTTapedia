@@ -111,6 +111,77 @@ theorem exists_mass_pos (Gamma : V13FiniteCoupling Omega) :
   have hsum := Gamma.mass_sum_one
   simp [hzero] at hsum
 
+/-- A probability-one event transfers to any pointwise larger event. -/
+theorem probability_eq_one_of_probability_one_of_imp
+    (Gamma : V13FiniteCoupling Omega)
+    {event₁ event₂ : Omega -> Omega -> Prop}
+    (hone : Gamma.probability event₁ = 1)
+    (himp : forall omega0 omega1,
+      event₁ omega0 omega1 -> event₂ omega0 omega1) :
+    Gamma.probability event₂ = 1 := by
+  classical
+  have hcomplement :
+      Gamma.probability (fun omega0 omega1 => ¬ event₂ omega0 omega1) = 0 := by
+    rw [probability]
+    apply Finset.sum_eq_zero
+    intro omega0 _
+    apply Finset.sum_eq_zero
+    intro omega1 hmem
+    have hnot₂ : ¬ event₂ omega0 omega1 := by
+      simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hmem
+    by_contra hmass_ne
+    have hmass_pos : 0 < Gamma.mass omega0 omega1 :=
+      lt_of_le_of_ne (Gamma.mass_nonnegative omega0 omega1)
+        (Ne.symm hmass_ne)
+    have hevent₁ := Gamma.event_of_probability_one_of_mass_pos hone hmass_pos
+    exact hnot₂ (himp omega0 omega1 hevent₁)
+  have hpartition := Gamma.probability_add_probability_not event₂
+  rw [hcomplement] at hpartition
+  linarith
+
+/-- Exact opposite-phase marginals force the two target bits to differ with
+coupling probability one. -/
+theorem target_mismatch_probability_one_of_opposite_phase_marginals
+    (Gamma : V13FiniteCoupling Omega) (target : Omega -> Bool)
+    (hleftTrue : Gamma.leftProbability (fun omega => target omega = true) = 0)
+    (hrightFalse : Gamma.rightProbability (fun omega => target omega = false) = 0) :
+    Gamma.probability (fun omega0 omega1 =>
+      target omega0 ≠ target omega1) = 1 := by
+  classical
+  have hequal_zero :
+      Gamma.probability (fun omega0 omega1 =>
+        target omega0 = target omega1) = 0 := by
+    rw [probability]
+    apply Finset.sum_eq_zero
+    intro omega0 _
+    apply Finset.sum_eq_zero
+    intro omega1 hmem
+    have hequal : target omega0 = target omega1 := by
+      simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hmem
+    cases htarget0 : target omega0 with
+    | false =>
+        have htarget1 : target omega1 = false := by
+          rw [← hequal]
+          exact htarget0
+        have hle := Gamma.mass_le_probability_of_event
+          (event := fun _ b => target b = false)
+          (omega0 := omega0) htarget1
+        change Gamma.mass omega0 omega1 <=
+          Gamma.rightProbability (fun b => target b = false) at hle
+        rw [hrightFalse] at hle
+        exact le_antisymm hle (Gamma.mass_nonnegative omega0 omega1)
+    | true =>
+        have hle := Gamma.mass_le_probability_of_event
+          (event := fun a _ => target a = true)
+          (omega1 := omega1) htarget0
+        change Gamma.mass omega0 omega1 <=
+          Gamma.leftProbability (fun a => target a = true) at hle
+        rw [hleftTrue] at hle
+        exact le_antisymm hle (Gamma.mass_nonnegative omega0 omega1)
+  have hpartition := Gamma.probability_add_probability_not
+    (fun omega0 omega1 => target omega0 ≠ target omega1)
+  simpa [hequal_zero] using hpartition
+
 /-- No coupling can both match a target-rigid relation almost surely and have
 left-false/right-true phase marginals. -/
 theorem no_rigid_match_with_opposite_phase_marginals
@@ -265,6 +336,67 @@ theorem v13D48GlobalNeutralSkeletonMatching_false_of_publicTargetRigidity
       V13FiniteLaw.conditionalProbability, V13FiniteLaw.probability] using h
   exact Gamma.no_rigid_match_with_opposite_phase_marginals target matched
     hmatched hrigid hleftTrue hrightFalse
+
+/-- Strong form of the D.8/D.31/D.48 boundary.  Under exact opposite-phase
+marginals, public-fiber target rigidity, and a complete all-neutral valuation
+that determines the public instance, the complete neutral valuation differs
+with coupling probability exactly one.  Thus Proposition D.50's zero
+derivative on *same-public* relations cannot be promoted to global neutral
+cancellation on the Phase-A coupling. -/
+theorem v13D48_completeNeutralSyntax_mismatch_probability_one_of_publicTargetRigidity
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    (D48 : V13D48CompatibleCouplings E G C)
+    (theta : E.Parameter) (m t : Nat) (j : E.TargetCoord theta m t)
+    (allPublicSyntaxNeutral :
+      forall primitive : E.PublicPrimitive theta m t,
+        primitive ∈ E.fullPublicSyntax theta m t ->
+          E.declaredNeutralPrimitive primitive)
+    (publicInput_ext : forall omega0 omega1 : E.World theta m t,
+      (forall primitive : E.PublicPrimitive theta m t,
+        primitive ∈ E.fullPublicSyntax theta m t ->
+          E.primitiveValue primitive omega0 =
+            E.primitiveValue primitive omega1) ->
+      E.publicInput omega0 = E.publicInput omega1)
+    (targetRigidOnPublicFiber : forall omega0 omega1 : E.World theta m t,
+      E.publicInput omega0 = E.publicInput omega1 ->
+        E.targetBit omega0 j = E.targetBit omega1 j) :
+    let Gamma := D48.coupling theta m t j
+    @V13FiniteCoupling.probability (E.World theta m t)
+      (E.worldFintype theta m t) Gamma
+      (fun omega0 omega1 =>
+        ¬ forall primitive : E.PublicPrimitive theta m t,
+          primitive ∈ E.fullPublicSyntax theta m t ->
+          E.declaredNeutralPrimitive primitive ->
+            E.primitiveValue primitive omega0 =
+              E.primitiveValue primitive omega1) = 1 := by
+  letI := E.worldFintype theta m t
+  let Gamma := D48.coupling theta m t j
+  let target := fun omega : E.World theta m t => E.targetBit omega j
+  have hleftTrue :
+      Gamma.leftProbability (fun omega => target omega = true) = 0 := by
+    have h := D48.left_phase_marginal theta m t j
+      (fun omega => E.targetBit omega j = true)
+    simpa [Gamma, target, V13QuantitativeEnsemble.conditionalProbabilityAt,
+      V13FiniteLaw.conditionalProbability, V13FiniteLaw.probability] using h
+  have hrightFalse :
+      Gamma.rightProbability (fun omega => target omega = false) = 0 := by
+    have h := D48.right_phase_marginal theta m t j
+      (fun omega => E.targetBit omega j = false)
+    simpa [Gamma, target, V13QuantitativeEnsemble.conditionalProbabilityAt,
+      V13FiniteLaw.conditionalProbability, V13FiniteLaw.probability] using h
+  have htarget : Gamma.probability (fun omega0 omega1 =>
+      target omega0 ≠ target omega1) = 1 :=
+    Gamma.target_mismatch_probability_one_of_opposite_phase_marginals
+      target hleftTrue hrightFalse
+  apply Gamma.probability_eq_one_of_probability_one_of_imp htarget
+  intro omega0 omega1 htarget_ne hmatch
+  apply htarget_ne
+  apply targetRigidOnPublicFiber
+  apply publicInput_ext
+  intro primitive hprimitive
+  exact hmatch primitive hprimitive
+    (allPublicSyntaxNeutral primitive hprimitive)
 
 /-- The open construction rejects global complete-neutral matching.  On the
 finite support world type of D.39, D.8 and opposite-phase marginals contradict
