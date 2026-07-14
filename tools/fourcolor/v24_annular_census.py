@@ -71,9 +71,9 @@ def canonical_hash(value: Any) -> str:
 
 
 def tube_dual_triangles(hexagon_rings: int) -> tuple[list[tuple[int, int, int]], int]:
-    """Triangulated dual of the (5,0) tube with one or two hexagon rings."""
-    if hexagon_rings not in (1, 2):
-        raise ValueError("the v24 census uses one or two hexagon rings")
+    """Triangulated dual of the (5,0) tube with zero to two hexagon rings."""
+    if hexagon_rings not in (0, 1, 2):
+        raise ValueError("the finite v24 censuses use zero to two hexagon rings")
 
     next_vertex = 0
 

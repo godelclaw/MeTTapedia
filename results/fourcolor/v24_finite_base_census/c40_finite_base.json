@@ -1,0 +1,599 @@
+{
+  "algorithm": "deterministic-mrv-and-explicit-kempe-components-v1",
+  "cap_tangle": {
+    "bad_word_solution_count": 1920,
+    "bichromatic_component_parity_histogram": {
+      "0": 1560,
+      "1": 1560
+    },
+    "cut_pentagon_spokes": [
+      0,
+      1,
+      4,
+      3,
+      2
+    ],
+    "dead_end_count": 17400,
+    "good_word_solution_count": 1200,
+    "inner_word_count": 60,
+    "inner_word_fiber_size_histogram": {
+      "40": 30,
+      "64": 30
+    },
+    "instance_hash": "b0e680db20d087d79179b7a2b6c5fa4dba61c811acaff0cfbd3fe8e68b293709",
+    "kempe_class_count": 1,
+    "kempe_class_sizes": [
+      3120
+    ],
+    "kempe_transition_count": 12840,
+    "root_color_solution_counts": {
+      "0": 1040,
+      "1": 1040,
+      "2": 1040
+    },
+    "search_node_count": 349161,
+    "solution_count": 3120,
+    "solution_digest_sum": "2470d1cf87d8ccc001104aafd5a5139a706a4b582aeaf60f3a6cf9445b008924",
+    "solution_digest_xor": "da773091d5c5f658a925e4c725ad259491b9b4a12d4a67b35a8db10e5c8949a2"
+  },
+  "closed": {
+    "all_kempe_classes_closed_under_global_recoloring": true,
+    "bichromatic_component_parity_histogram": {
+      "0": 240,
+      "1": 960
+    },
+    "dead_end_count": 1008,
+    "instance_hash": "df1d2e3b6e20ebfb113787bfda00094fd9f06e9444564e33ead0fa43f83fef80",
+    "kempe_class_count": 6,
+    "kempe_class_sizes": [
+      960,
+      48,
+      48,
+      48,
+      48,
+      48
+    ],
+    "kempe_classes": [
+      {
+        "bichromatic_component_parity_histogram": {
+          "1": 960
+        },
+        "size": 960
+      },
+      {
+        "bichromatic_component_parity_histogram": {
+          "0": 48
+        },
+        "size": 48
+      },
+      {
+        "bichromatic_component_parity_histogram": {
+          "0": 48
+        },
+        "size": 48
+      },
+      {
+        "bichromatic_component_parity_histogram": {
+          "0": 48
+        },
+        "size": 48
+      },
+      {
+        "bichromatic_component_parity_histogram": {
+          "0": 48
+        },
+        "size": 48
+      },
+      {
+        "bichromatic_component_parity_histogram": {
+          "0": 48
+        },
+        "size": 48
+      }
+    ],
+    "kempe_transition_count": 3840,
+    "root_color_solution_counts": {
+      "0": 400,
+      "1": 400,
+      "2": 400
+    },
+    "search_node_count": 39471,
+    "solution_count": 1200,
+    "solution_digest_sum": "959dd442e5ebd4bdadad8f35c090c4ed8005ab97214e65f5e1c56f4c334489ed",
+    "solution_digest_xor": "6a17aa8f09a0f6a79019343dbdf17de26c2b09ff2ff31bd6a5fddae1bf4751db"
+  },
+  "graph": {
+    "cut_pentagon_dual_vertex": 0,
+    "cut_pentagon_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "cut_pentagon_vertices": [
+      0,
+      1,
+      4,
+      3,
+      2
+    ],
+    "dual_triangles": [
+      [
+        0,
+        2,
+        3
+      ],
+      [
+        0,
+        2,
+        6
+      ],
+      [
+        0,
+        3,
+        4
+      ],
+      [
+        0,
+        4,
+        5
+      ],
+      [
+        0,
+        5,
+        6
+      ],
+      [
+        1,
+        17,
+        18
+      ],
+      [
+        1,
+        17,
+        21
+      ],
+      [
+        1,
+        18,
+        19
+      ],
+      [
+        1,
+        19,
+        20
+      ],
+      [
+        1,
+        20,
+        21
+      ],
+      [
+        2,
+        3,
+        8
+      ],
+      [
+        2,
+        6,
+        7
+      ],
+      [
+        2,
+        7,
+        8
+      ],
+      [
+        3,
+        4,
+        9
+      ],
+      [
+        3,
+        8,
+        9
+      ],
+      [
+        4,
+        5,
+        10
+      ],
+      [
+        4,
+        9,
+        10
+      ],
+      [
+        5,
+        6,
+        11
+      ],
+      [
+        5,
+        10,
+        11
+      ],
+      [
+        6,
+        7,
+        11
+      ],
+      [
+        7,
+        8,
+        13
+      ],
+      [
+        7,
+        11,
+        12
+      ],
+      [
+        7,
+        12,
+        13
+      ],
+      [
+        8,
+        9,
+        14
+      ],
+      [
+        8,
+        13,
+        14
+      ],
+      [
+        9,
+        10,
+        15
+      ],
+      [
+        9,
+        14,
+        15
+      ],
+      [
+        10,
+        11,
+        16
+      ],
+      [
+        10,
+        15,
+        16
+      ],
+      [
+        11,
+        12,
+        16
+      ],
+      [
+        12,
+        13,
+        18
+      ],
+      [
+        12,
+        16,
+        17
+      ],
+      [
+        12,
+        17,
+        18
+      ],
+      [
+        13,
+        14,
+        19
+      ],
+      [
+        13,
+        18,
+        19
+      ],
+      [
+        14,
+        15,
+        20
+      ],
+      [
+        14,
+        19,
+        20
+      ],
+      [
+        15,
+        16,
+        21
+      ],
+      [
+        15,
+        20,
+        21
+      ],
+      [
+        16,
+        17,
+        21
+      ]
+    ],
+    "dual_vertex_count": 22,
+    "graph_hash": "e88725132ddca56e3fbe88ea47a63b8164a8f95dc195c0bb0d72177530ad414f",
+    "name": "C40",
+    "pentagon_dual_vertices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "primal_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        10
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        13
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        15
+      ],
+      [
+        4,
+        17
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        5,
+        32
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        39
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        34
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        36
+      ],
+      [
+        9,
+        38
+      ],
+      [
+        10,
+        12
+      ],
+      [
+        10,
+        14
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        11,
+        19
+      ],
+      [
+        12,
+        20
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        13,
+        16
+      ],
+      [
+        14,
+        23
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        15,
+        18
+      ],
+      [
+        16,
+        25
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        17,
+        19
+      ],
+      [
+        18,
+        27
+      ],
+      [
+        19,
+        21
+      ],
+      [
+        20,
+        22
+      ],
+      [
+        20,
+        24
+      ],
+      [
+        21,
+        22
+      ],
+      [
+        21,
+        29
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        23,
+        26
+      ],
+      [
+        24,
+        33
+      ],
+      [
+        25,
+        26
+      ],
+      [
+        25,
+        28
+      ],
+      [
+        26,
+        35
+      ],
+      [
+        27,
+        28
+      ],
+      [
+        27,
+        29
+      ],
+      [
+        28,
+        37
+      ],
+      [
+        29,
+        31
+      ],
+      [
+        30,
+        32
+      ],
+      [
+        30,
+        34
+      ],
+      [
+        31,
+        32
+      ],
+      [
+        31,
+        39
+      ],
+      [
+        33,
+        34
+      ],
+      [
+        33,
+        36
+      ],
+      [
+        35,
+        36
+      ],
+      [
+        35,
+        38
+      ],
+      [
+        37,
+        38
+      ],
+      [
+        37,
+        39
+      ]
+    ]
+  },
+  "schema": "fourcolor-v24-finite-base-census-v1"
+}
