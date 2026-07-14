@@ -521,30 +521,31 @@ def yangMillsSameConstantLowerEvenExtractionNode : YangMillsProofNode where
   evidence := "not_sameConstantEvenBelowSixteenGapRouteCertificate and not_atLeast2048EvenBelowSixteenGapRouteCertificate rule out the lower-even extraction repair, while rgContraction_2224_two_sixteen records the positive dmax=16 arithmetic benchmark."
   nextObligation := "Do not revive lower-even extraction as a mass-gap route unless the recombination constant or route shape is genuinely changed and audited."
 
-/-- Erratum for the extraction-constant audit: the corrected Cauchy estimate
-keeps the extended-extraction contraction standing. -/
+/-- Source adjudication of the former extraction-constant erratum.  The
+sign-only repair and the literal factor-fourteen reading are refuted; only the
+parameterized scalar arithmetic and our explicit norm-one realization stand. -/
 def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   id := "yang-mills.rg.extraction-constant-erratum"
-  status := .checked
-  truthValue := ⟨100, 98⟩
-  evidence := "benCauchyC1UpperBound_le_advertised proves that the corrected Cauchy-estimate bound Cextract <= 2 gives C1 <= 2224; benCauchyC1UpperBound_gain_two_sixteen_lt_one and benCauchyC1UpperBound_contraction_two_sixteen prove the resulting b=2,dmax=16 gain is below 1. The old displayed-series contraction failure was an artifact of reading an inverted-ratio typo literally, so it is retracted as an erratum, not a Yang-Mills refutation."
-  nextObligation := "Keep the extended-extraction contraction as standing route evidence, and focus the open endpoint on the continuum constructive-QFT gate: continuum measure, covariance, reflection positivity, OS reconstruction, and Hamiltonian mass-gap transfer."
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  evidence := "ExtractionMajorant proves that changing only the exponent sign does not give a bound two with binomial multiplicities. projectionRangeSpecification_does_not_imply_bound_two refutes a uniform bound from v14's range-only projection definition, and fourteen_lt_contactStrip_rail_contacts refutes the literal total-contact interpretation of the recombination factor."
+  nextObligation := "Specify the actual dimension<=16 basis and dual jets, prove their uniform conditioning, and prove the rooted cumulant-family generation bound in the same Wilson majorant norm before assigning a Wilson RG constant."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   id := "yang-mills.continuum-os-reconstruction-conditional"
   status := .checked
   truthValue := ⟨100, 96⟩
-  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional endpoint: the standing corrected Lambda<1 contraction feeds an explicit open bridge to lattice mass gap and exponential clustering, then OS reflection positivity and a Kirk-style OS reconstruction machine yield HasSpectralMassGap for the continuum Hamiltonian."
-  nextObligation := "Discharge the open bridge from Ben's Lambda<1 contraction to lattice gap/clustering, prove Wilson-measure OS reflection positivity for the same lattice family, and supply the OS reconstruction/subsequential-limit machinery; until then the continuum mass gap remains unclaimed."
+  evidence := "BenYMContinuumOSConditional.continuumMassGap is an abstract conditional endpoint: its carried bridge supplies lattice mass gap and exponential clustering, after which OS reflection positivity and a Kirk-style reconstruction machine yield HasSpectralMassGap. The legacy numerical contraction inside that wrapper is not an actual-map Wilson constant certificate."
+  nextObligation := "First derive the actual Wilson RG constant and recursion; then prove the bridge to lattice gap/clustering, Wilson-measure reflection positivity for the same lattice family, and OS reconstruction/subsequential-limit machinery."
 
 /-- Five-input completion steelman for Ben's current Yang-Mills route. -/
 def yangMillsCompletionSteelmanNode : YangMillsProofNode where
   id := "yang-mills.completion-steelman"
   status := .checked
   truthValue := ⟨100, 94⟩
-  evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The favorable recombination branch is verified at C=11088/5, b=2, dmax=16; support, two-marked identity, KP/RP, and actual Wilson RG recursion are reduced to named APIs/assumptions; the Pro blueprint artifact is recorded separately as unreadable."
-  nextObligation := "Prove FirstLoadBearingYangMillsCompletionInput for the actual Wilson Yang-Mills RG map, with the support branch, two-marked identity, KP convergence, and Wilson reflection-positivity APIs instantiated."
+  evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The v14 extraction/recombination constant is refuted as written, the July blueprint is audited guidance, and support, two-marked identity, KP/RP, and the actual Wilson RG recursion remain explicit construction obligations."
+  nextObligation := "Supply the actual Wilson basis/dual-jet conditioning and rooted cumulant-generation estimate, then prove FirstLoadBearingYangMillsCompletionInput with support, two-marked identity, KP convergence, and Wilson reflection positivity instantiated."
 
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
@@ -630,8 +631,8 @@ theorem yangMillsSameConstantLowerEvenExtractionNode_refuted :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted := by
   rfl
 
-theorem yangMillsExtractionConstantErratumNode_checked :
-    yangMillsExtractionConstantErratumNode.status = .checked := by
+theorem yangMillsExtractionConstantErratumNode_refuted :
+    yangMillsExtractionConstantErratumNode.status = .refuted := by
   rfl
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
@@ -681,18 +682,20 @@ theorem currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet :
     ⟨rgContraction_2224_two_sixteen,
       not_rgContraction_2224_two_fourteen⟩
 
-theorem currentYangMillsExtractionConstantErratum_packet :
-    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
-      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
-      HasExtendedExtractionContraction 2224 2 16 := by
+theorem currentYangMillsExtractionConstantAdjudication_packet :
+    ¬ V14LiteralExtractionRecombinationClaims ∧
+      f5DisplayedConstantAtBlockTwo = 33152 ∧
+      proposedMajorantLedgerConstant = (5544 : ℝ) / 5 ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) := by
   exact
-    ⟨benCauchyC1UpperBound_le_advertised,
-      benCauchyC1UpperBound_gain_two_sixteen_eq,
-      benCauchyC1UpperBound_gain_two_sixteen_lt_one,
-      benCauchyC1UpperBound_contraction_two_sixteen,
-      rgContraction_2224_two_sixteen⟩
+    ⟨not_v14LiteralExtractionRecombinationClaims,
+      f5DisplayedConstantAtBlockTwo_eq,
+      proposedMajorantLedgerConstant_eq,
+      proposedMajorantLedger_twoSourceSlack_two_fifteen,
+      fun _ hD =>
+        not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD⟩
 
 theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
@@ -710,7 +713,7 @@ theorem currentYangMillsContinuumOSConditional_packet
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
     (D : BenYMContinuumOSConditional A Δ corr) :
-    BenStandingExtendedExtractionContraction ∧
+    HasTwoSourceBootstrapSlack D.lambdaBridge.Ctrue 2 16 ∧
       HasSpectralMassGap A Δ ∧
         0 < Δ ∧
           currentYangMillsConstructiveWorldInterfaces.missingFor
@@ -730,29 +733,28 @@ theorem currentYangMillsContinuumOSConditional_packet
       yangMillsMassGapEndpointNode_open⟩
 
 theorem currentYangMillsCompletionSteelman_packet :
-    recombinationConstantSteelmanRow.verdict = .verified ∧
+    recombinationConstantSteelmanRow.verdict = .refutedOrInconsistent ∧
       supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
       twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
       kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
       realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption ∧
-      proBlueprintSteelmanRow.verdict = .blockedByUnreadableArtifact ∧
-      HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 16 ∧
-      rgGain benFavorableRecombinationConstant 2 16 = (693 : ℝ) / 2560 ∧
-      (∀ dmax : ℕ, dmax ≤ 15 →
-        ¬ HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 dmax) ∧
+      proBlueprintSteelmanRow.verdict = .verified ∧
+      ¬ V14LiteralExtractionRecombinationClaims ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) ∧
       yangMillsCompletionSteelmanNode.status = .checked := by
   exact
-    ⟨recombinationConstantSteelman_verified,
+    ⟨recombinationConstantSteelman_refutedOrInconsistent,
       supportRecurrenceSteelman_reduced,
       twoMarkedIdentitySteelman_reduced,
       kpWilsonSteelman_reduced,
       realRGRecursionSteelman_reduced,
-      proBlueprintSteelman_blocked,
-      benFavorableRecombination_twoSourceSlack_two_sixteen,
-      benFavorableRecombination_gain_two_sixteen_eq,
-      fun dmax hdmax =>
-        not_benFavorableRecombination_twoSourceSlack_two_of_dmax_le_fifteen
-          hdmax,
+      proBlueprintSteelman_verified,
+      not_v14LiteralExtractionRecombinationClaims,
+      proposedMajorantLedger_twoSourceSlack_two_fifteen,
+      fun _ hD =>
+        not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD,
       yangMillsCompletionSteelmanNode_checked⟩
 
 theorem currentYangMillsConstructiveDependency_packet :

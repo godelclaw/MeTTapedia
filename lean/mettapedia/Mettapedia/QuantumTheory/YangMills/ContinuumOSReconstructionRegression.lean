@@ -46,9 +46,11 @@ theorem continuum_os_gap_positive_regression
   continuumGapPositive_of_latticeMassGap_reflectionPositive_clustering
     machine massGap reflectionPositive clustering
 
-theorem ben_standing_contraction_regression :
-    BenStandingExtendedExtractionContraction :=
-  benStandingExtendedExtractionContraction_checked
+theorem ben_carried_actual_wilson_contraction_regression
+    {corr : SpatialCorrelation}
+    (bridge : BenLambdaToKirkOpenInput corr) :
+    HasTwoSourceBootstrapSlack bridge.Ctrue 2 16 :=
+  bridge.actualWilsonTwoSourceContraction
 
 def ben_lambda_bridge_lattice_inputs_regression
     {corr : SpatialCorrelation}
@@ -67,13 +69,13 @@ theorem ben_continuum_os_conditional_packet_regression
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
     (D : BenYMContinuumOSConditional A Δ corr) :
-    BenStandingExtendedExtractionContraction ∧
+    HasTwoSourceBootstrapSlack D.lambdaBridge.Ctrue 2 16 ∧
       HasSpectralMassGap A Δ ∧
         0 < Δ :=
   D.reductionPacket
 
 theorem ben_open_inputs_lambda_bridge_regression :
-    "Ben Lambda<1 contraction implies lattice mass gap and exponential clustering" ∈
+    "Actual Wilson contraction implies lattice mass gap and exponential clustering" ∈
       benContinuumEndpointOpenInputs :=
   benContinuumEndpointOpenInputs_records_lambda_bridge
 

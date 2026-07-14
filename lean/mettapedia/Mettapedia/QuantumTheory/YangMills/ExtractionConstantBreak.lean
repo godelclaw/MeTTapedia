@@ -1,19 +1,19 @@
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 
 /-!
-# Yang-Mills Extraction Constant Erratum
+# Legacy Appendix-O extraction-ledger arithmetic
 
-The manuscript's extended-extraction contraction uses the advertised numerical
-audit `2224 * 2^-13 < 1`.  That arithmetic remains true when `2224` is supplied
-as an input, and it also remains true for the Cauchy-estimate bound
-`Cextract <= 2`.
+This file retains arithmetic for Appendix O's proposed factor ledger with the
+numeral `Cextract = 2`.  It does **not** prove that numeral is an operator-norm
+bound.  `ExtractionMajorant` proves that changing only the printed exponent
+sign still leaves a binomial sum greater than two, while
+`ExtendedExtractionTransfer` proves that the manuscript's range-only
+projection definition cannot imply a uniform bound two.  The actual
+source-adjudicated verdict is in `WilsonExtractionRecombinationConstant`.
 
-Erratum: the previous `ExtractionConstantBreak` audit read the displayed
-extraction-projection ratio with the inverted exponent literally.  That made a
-convergent Cauchy estimate look like a growing series and incorrectly produced
-an extraction-constant refutation.  The corrected interpretation keeps the
-extended-extraction contraction standing; the continuum Yang-Mills endpoint
-is still open because the constructive-QFT/continuum gate has not been closed.
+Consequently every "upper bound" name below should be read as legacy naming
+for a proposed ledger value, not as a theorem about the v14 Wilson RG map.  The
+arithmetic implication remains useful once its analytic factors are supplied.
 
 The only negative theorem retained here is a generic HYPOTHETICAL threshold:
 if some unrelated future constant satisfies `C >= 8192`, then it cannot certify
@@ -35,12 +35,12 @@ recursion constant at block factor `b = 2`, using `1.65 = 33/20`,
 def manuscriptC1FromCextract (Cextract : ℝ) : ℝ :=
   ((33 : ℝ) / 20) * (3 * (2 : ℝ) ^ 4) * 14 * Cextract
 
-/-- The corrected Cauchy-estimate extraction bound used by the manuscript:
-`Cextract <= 2`. -/
+/-- The numeral assigned to the extraction factor in Appendix O.  No theorem in
+this file proves it bounds the v14 extraction operator. -/
 def benCauchyCextractUpperBound : ℝ :=
   2
 
-/-- The resulting `C1` bound from the manuscript factor map. -/
+/-- The resulting proposed `C1` value from the Appendix-O factor map. -/
 def benCauchyC1UpperBound : ℝ :=
   manuscriptC1FromCextract benCauchyCextractUpperBound
 
@@ -71,8 +71,8 @@ theorem hypothetical_not_rgContraction_two_sixteen_of_constant_ge_8192
   norm_num at hlt
   exact (not_lt_of_ge hC) hlt
 
-/-- The corrected Cauchy-estimate constant has one-step gain about `0.2707`,
-so it is below `1`. -/
+/-- The Appendix-O proposed ledger value has one-step gain about `0.2707`, so
+its arithmetic value is below `1`. -/
 theorem benCauchyC1UpperBound_gain_two_sixteen_eq :
     benCauchyC1UpperBound * irrelevantScale 2 16 =
       (693 : ℝ) / 2560 := by
@@ -85,8 +85,8 @@ theorem benCauchyC1UpperBound_gain_two_sixteen_lt_one :
   rw [benCauchyC1UpperBound_gain_two_sixteen_eq]
   norm_num
 
-/-- Therefore the corrected Cauchy-estimate bound certifies the advertised
-extended-extraction contraction at `b = 2, dmax = 16`. -/
+/-- Conditional arithmetic only: the Appendix-O proposed ledger value meets
+linear contraction at `b = 2, dmax = 16`. -/
 theorem benCauchyC1UpperBound_contraction_two_sixteen :
     HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 := by
   exact

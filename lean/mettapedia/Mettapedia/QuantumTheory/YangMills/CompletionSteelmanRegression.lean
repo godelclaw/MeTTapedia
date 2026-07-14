@@ -13,16 +13,15 @@ namespace QuantumTheory
 namespace YangMills
 
 theorem completionSteelman_recombination_regression :
-    HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 16 ∧
-      rgGain benFavorableRecombinationConstant 2 16 = (693 : ℝ) / 2560 ∧
-      (∀ dmax : ℕ, dmax ≤ 15 →
-        ¬ HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 dmax) := by
+    ¬ V14LiteralExtractionRecombinationClaims ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) := by
   exact
-    ⟨benFavorableRecombination_twoSourceSlack_two_sixteen,
-      benFavorableRecombination_gain_two_sixteen_eq,
-      fun dmax hdmax =>
-        not_benFavorableRecombination_twoSourceSlack_two_of_dmax_le_fifteen
-          hdmax⟩
+    ⟨not_v14LiteralExtractionRecombinationClaims,
+      proposedMajorantLedger_twoSourceSlack_two_fifteen,
+      fun _ hD =>
+        not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD⟩
 
 theorem completionSteelman_support_regression :
     (∀ {r : ℕ → ℝ} {A : ℝ}, 0 ≤ A →
@@ -47,19 +46,31 @@ theorem completionSteelman_twoMarked_canary_regression :
       oneMarkedPushforward_does_not_imply_twoMarked_canary⟩
 
 theorem completionSteelman_primary_verdicts_regression :
-    recombinationConstantSteelmanRow.verdict = .verified ∧
+    recombinationConstantSteelmanRow.verdict = .refutedOrInconsistent ∧
       supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
       twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
       kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
       realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption ∧
-      proBlueprintSteelmanRow.verdict = .blockedByUnreadableArtifact := by
+      proBlueprintSteelmanRow.verdict = .verified := by
   exact
-    ⟨recombinationConstantSteelman_verified,
+    ⟨recombinationConstantSteelman_refutedOrInconsistent,
       supportRecurrenceSteelman_reduced,
       twoMarkedIdentitySteelman_reduced,
       kpWilsonSteelman_reduced,
       realRGRecursionSteelman_reduced,
-      proBlueprintSteelman_blocked⟩
+      proBlueprintSteelman_verified⟩
+
+#print axioms wilsonPlaquetteHolonomy_gaugeAct
+#print axioms specialUnitaryWilsonPotential
+#print axioms FiniteWilsonBlock.polynomialEvaluate_gaugeInvariant
+#print axioms FiniteWilsonBlock.polynomialMajorantNorm_truncate_le
+#print axioms projectionRangeSpecification_does_not_imply_bound_two
+#print axioms coefficientL1_basisJetProjection_le
+#print axioms polymerActivityMajorant_recombineByUnion_le
+#print axioms fourteen_lt_contactStrip_rail_contacts
+#print axioms rootedTwoPolymerConnectionChoices_card
+#print axioms not_v14LiteralExtractionRecombinationClaims
+#print axioms proposedMajorantLedger_leastDepth_and_leastEvenDepth
 
 end YangMills
 end QuantumTheory

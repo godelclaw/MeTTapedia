@@ -23,9 +23,9 @@ theorem same_constant_lower_even_extraction_node_refuted_regression :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted :=
   yangMillsSameConstantLowerEvenExtractionNode_refuted
 
-theorem extraction_constant_erratum_node_checked_regression :
-    yangMillsExtractionConstantErratumNode.status = .checked :=
-  yangMillsExtractionConstantErratumNode_checked
+theorem extraction_constant_erratum_node_refuted_regression :
+    yangMillsExtractionConstantErratumNode.status = .refuted :=
+  yangMillsExtractionConstantErratumNode_refuted
 
 theorem continuum_os_conditional_scaffold_node_checked_regression :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked :=
@@ -48,13 +48,14 @@ theorem current_rg_crux_lower_even_extraction_arithmetic_packet_regression :
       ¬ HasExtendedExtractionContraction 2224 2 14 := by
   exact currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet
 
-theorem current_extraction_constant_erratum_packet_regression :
-    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
-      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
-      HasExtendedExtractionContraction 2224 2 16 := by
-  exact currentYangMillsExtractionConstantErratum_packet
+theorem current_extraction_constant_adjudication_packet_regression :
+    ¬ V14LiteralExtractionRecombinationClaims ∧
+      f5DisplayedConstantAtBlockTwo = 33152 ∧
+      proposedMajorantLedgerConstant = (5544 : ℝ) / 5 ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) := by
+  exact currentYangMillsExtractionConstantAdjudication_packet
 
 theorem current_extraction_constant_hypothetical_threshold_packet_regression :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
@@ -70,7 +71,7 @@ theorem current_continuum_os_conditional_packet_regression
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
     (D : BenYMContinuumOSConditional A Δ corr) :
-    BenStandingExtendedExtractionContraction ∧
+    HasTwoSourceBootstrapSlack D.lambdaBridge.Ctrue 2 16 ∧
       HasSpectralMassGap A Δ ∧
         0 < Δ ∧
           currentYangMillsConstructiveWorldInterfaces.missingFor

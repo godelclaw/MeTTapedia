@@ -7,9 +7,17 @@ Current status:
 
 - `CompletionSteelman.lean` steelmans the five completion inputs from the
   Ben-facing report.
-- The favorable recombination branch is verified:
-  `C = 11088/5`, `b = 2`, `dmax = 16`, gain `693/2560 <= 1/3`; all
-  `dmax <= 15` fail for that branch.
+- The v14 extraction/recombination constant is not derived as written.
+  `WilsonBlockMajorant.lean` proves norm-one canonical truncation on concrete
+  gauge-invariant finite Wilson observables; `ExtendedExtractionTransfer.lean`
+  gives both the basis/dual-jet transfer theorem and a range-only projection
+  counterexample; `WilsonPolymerRecombination.lean` proves norm-one regrouping
+  by union and refutes the literal total-contact reading of the factor `14`.
+- Under Appendix O's other proposed factors, substituting the proved
+  extraction factor `1` gives the conditional ledger `C = 5544/5`; depth `15`
+  is the least unrestricted two-source depth and `16` the least even depth.
+  This is not an actual Wilson RG constant until the remaining analytic factor
+  bounds are proved in the same norm.
 - The support recurrence is reduced to a manuscript branch choice:
   coarsen-then-thicken is uniformly bounded, while thicken-only is unbounded.
 - The two-marked centered correlation identity is a named API; a canary proves
