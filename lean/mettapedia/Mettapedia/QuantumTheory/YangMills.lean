@@ -12,6 +12,7 @@ import Mettapedia.QuantumTheory.YangMills.ExtractionProjection
 import Mettapedia.QuantumTheory.YangMills.ExtractionRemainder
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRGCrux
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
+import Mettapedia.QuantumTheory.YangMills.ExtendedExtractionTransfer
 import Mettapedia.QuantumTheory.YangMills.FiniteOSReconstruction
 import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.OSGateAudit
@@ -28,6 +29,9 @@ import Mettapedia.QuantumTheory.YangMills.Roadmap
 import Mettapedia.QuantumTheory.YangMills.SupportGrowth
 import Mettapedia.QuantumTheory.YangMills.ToyRGMap
 import Mettapedia.QuantumTheory.YangMills.TransferGapClustering
+import Mettapedia.QuantumTheory.YangMills.WilsonBlockMajorant
+import Mettapedia.QuantumTheory.YangMills.WilsonExtractionRecombinationConstant
+import Mettapedia.QuantumTheory.YangMills.WilsonPolymerRecombination
 import Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGap
 import Mettapedia.QuantumTheory.YangMills.Z2TransferClustering
 import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap

@@ -1,6 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
-import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlack
 import Mettapedia.QuantumTheory.YangMills.SupportGrowth
+import Mettapedia.QuantumTheory.YangMills.WilsonExtractionRecombinationConstant
 
 /-!
 # Yang-Mills five-input completion steelman
@@ -12,9 +12,10 @@ what remains the central Wilson RG theorem.
 
 Scope:
 
-* The recombination-constant threshold is checked for the most favorable
-  internally consistent Cauchy-estimate branch already present in
-  `ExtractionConstantBreak`.
+* The extraction/recombination constant is adjudicated on a concrete finite
+  Wilson-block majorant realization.  The proposed Appendix-O ledger has
+  conditional bootstrap arithmetic, while the v14 as-written component claims
+  have explicit counterexamples.
 * The support recurrence dichotomy reuses the checked good/bad recurrences in
   `SupportGrowth`.
 * The two-marked correlation identity is recorded as a named API, with a small
@@ -44,58 +45,12 @@ inductive CompletionSteelmanVerdict where
   | blockedByUnreadableArtifact
 deriving DecidableEq, Repr
 
-/-! ## 1. Recombination constant -/
+/-! ## 1. Extraction/recombination constant
 
-/-- The favorable internally consistent recombination branch: use the corrected
-Cauchy extraction bound `Cextract <= 2`, hence
-`C1 = 11088 / 5 <= 2224`. -/
-def benFavorableRecombinationConstant : ℝ :=
-  benCauchyC1UpperBound
-
-theorem benFavorableRecombinationConstant_eq :
-    benFavorableRecombinationConstant = (11088 : ℝ) / 5 := by
-  unfold benFavorableRecombinationConstant
-  exact benCauchyC1UpperBound_eq
-
-/-- The favorable recombination branch satisfies the two-source `1/3`
-bootstrap threshold at `b = 2`, `dmax = 16`. -/
-theorem benFavorableRecombination_twoSourceSlack_two_sixteen :
-    HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 16 := by
-  refine ⟨?_, ?_⟩
-  · unfold benFavorableRecombinationConstant
-    exact benCauchyC1UpperBound_nonneg
-  · unfold rgGain benFavorableRecombinationConstant
-    rw [benCauchyC1UpperBound_gain_two_sixteen_eq]
-    norm_num
-
-/-- Exact threshold value for the favorable branch:
-`(11088/5) * 2^(3-16) = 693/2560 <= 1/3`. -/
-theorem benFavorableRecombination_gain_two_sixteen_eq :
-    rgGain benFavorableRecombinationConstant 2 16 = (693 : ℝ) / 2560 := by
-  unfold rgGain benFavorableRecombinationConstant
-  exact benCauchyC1UpperBound_gain_two_sixteen_eq
-
-/-- Depth `16` is the least depth up to the checked range for the favorable
-branch's two-source threshold; every `dmax <= 15` fails. -/
-theorem not_benFavorableRecombination_twoSourceSlack_two_of_dmax_le_fifteen
-    {dmax : ℕ} (hdmax : dmax ≤ 15) :
-    ¬ HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 dmax := by
-  intro h
-  have hg : benFavorableRecombinationConstant * irrelevantScale 2 dmax ≤
-      (1 : ℝ) / 3 := h.2
-  unfold benFavorableRecombinationConstant at hg
-  rw [benCauchyC1UpperBound_eq] at hg
-  interval_cases dmax <;> norm_num [irrelevantScale] at hg
-
-theorem benFavorableRecombination_leastDepth_two_packet :
-    HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 16 ∧
-      ∀ dmax : ℕ, dmax ≤ 15 →
-        ¬ HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 dmax := by
-  exact
-    ⟨benFavorableRecombination_twoSourceSlack_two_sixteen,
-      fun dmax hdmax =>
-        not_benFavorableRecombination_twoSourceSlack_two_of_dmax_le_fifteen
-          hdmax⟩
+The source-verified verdict and conditional depth calculation are the headline
+theorems `not_v14LiteralExtractionRecombinationClaims` and
+`proposedMajorantLedger_leastDepth_and_leastEvenDepth`.  No second wrapper is
+introduced here. -/
 
 /-! ## 2. Support recurrence -/
 
@@ -231,12 +186,15 @@ def wilsonReflectionPositivity_plugs_into_os
 structure BenWilsonRGRecursionSublemmas where
   oneStepMapDefined : Prop
   extractionRecombination : Prop
+  actualWilsonRecursionConstant : ℝ
+  actualWilsonRecursionConstant_nonneg : 0 ≤ actualWilsonRecursionConstant
+  actualWilsonRecursionConstantBoundProved : Prop
   supportUsesCoarsenThenThicken :
     BenGlueUsesCoarsenThenThicken .coarsenThenThicken
   twoMarkedCorrelationIdentity :
     ∃ Obs0 ObsJ : Type, Nonempty (BenTwoMarkedCorrelationIdentityAPI Obs0 ObsJ)
   irrelevantContraction :
-    HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 16
+    HasTwoSourceBootstrapSlack actualWilsonRecursionConstant 2 16
   relevantMarginalControl : Prop
   twoSourceBootstrapSources : Prop
   errorSummability : Prop
@@ -251,6 +209,8 @@ structure BenActualWilsonRGMapRecursionTheorem
     (corr : SpatialCorrelation) where
   sublemmas : BenWilsonRGRecursionSublemmas
   lambdaToKirk : BenLambdaToKirkOpenInput corr
+  constantMatchesBridge :
+    lambdaToKirk.Ctrue = sublemmas.actualWilsonRecursionConstant
 
 /-- If the actual Wilson RG recursion theorem is supplied, together with an OS
 machine, the existing conditional endpoint yields the continuum spectral gap. -/
@@ -291,12 +251,12 @@ deriving Repr
 
 def recombinationConstantSteelmanRow : CompletionSteelmanRow where
   item := 1
-  label := "Recombination constant"
-  verdict := .verified
+  label := "Extraction/recombination constant"
+  verdict := .refutedOrInconsistent
   evidence :=
-    "benFavorableRecombination_twoSourceSlack_two_sixteen proves C=(11088/5), b=2, dmax=16 gives gain 693/2560 <= 1/3; not_benFavorableRecombination_twoSourceSlack_two_of_dmax_le_fifteen proves smaller dmax<=15 fails."
+    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; polymerActivityMajorant_recombineByUnion_le proves union regrouping has norm one; fourteen_lt_contactStrip_rail_contacts refutes the literal total-contact reading of 14."
   nextObligation :=
-    "Manuscript should choose this internally consistent derivation or supply another C and rerun the same threshold theorem."
+    "Specify the dimension<=16 invariant basis and dual jets, prove their uniform conditioning, and prove the rooted cumulant-generation/tree-graph bound in the same majorant norm. Then multiply those actual-map factors and rerun the parameterized depth theorem."
 
 def supportRecurrenceSteelmanRow : CompletionSteelmanRow where
   item := 2
@@ -337,11 +297,11 @@ def realRGRecursionSteelmanRow : CompletionSteelmanRow where
 def proBlueprintSteelmanRow : CompletionSteelmanRow where
   item := 6
   label := "Pro completion blueprint artifact"
-  verdict := .blockedByUnreadableArtifact
+  verdict := .verified
   evidence :=
-    "The cover note reports a 16-page blueprint for the same five inputs, but the local tex/pdf artifact is not readable by this user."
+    "The 16-page July 2026 blueprint was read and source-compared. It is theorem-planning guidance from the formalization effort, not manuscript content; its norm-one majorant proposal is realized by WilsonBlockMajorant, while its basis and recombination factors were proposals rather than derived v14 constants."
   nextObligation :=
-    "Make the blueprint artifact readable, then compare its theorem names and constants against this steelman table."
+    "Use the audited dependency map; do not attribute blueprint repairs or constants to the v14 manuscript."
 
 def currentYangMillsCompletionSteelmanRows : List CompletionSteelmanRow :=
   [ recombinationConstantSteelmanRow
@@ -360,8 +320,8 @@ theorem fivePrimaryCompletionInputs_classified :
     (currentYangMillsCompletionSteelmanRows.take 5).length = 5 := by
   rfl
 
-theorem recombinationConstantSteelman_verified :
-    recombinationConstantSteelmanRow.verdict = .verified := by
+theorem recombinationConstantSteelman_refutedOrInconsistent :
+    recombinationConstantSteelmanRow.verdict = .refutedOrInconsistent := by
   rfl
 
 theorem supportRecurrenceSteelman_reduced :
@@ -380,8 +340,8 @@ theorem realRGRecursionSteelman_reduced :
     realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption := by
   rfl
 
-theorem proBlueprintSteelman_blocked :
-    proBlueprintSteelmanRow.verdict = .blockedByUnreadableArtifact := by
+theorem proBlueprintSteelman_verified :
+    proBlueprintSteelmanRow.verdict = .verified := by
   rfl
 
 end YangMills

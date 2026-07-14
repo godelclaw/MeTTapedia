@@ -88,18 +88,19 @@ def z3HalfScaleLinearRGStepRoadmapEntry : YangMillsRoadmapEntry where
   evidence := "z3HalfScaleLinearRGStep_preserves_physicalGap proves a concrete kappa=1/2 refinement step preserving t(a)/a, while z3QuadraticHeatTime_physicalGap_closes records the schedule boundary."
   nextObligation := "Classify the full refinement schedules that preserve or close the physical lower bound; this is a scaling diagnostic, not a continuum mass-gap theorem."
 
-/-- Erratum for the extraction constant: the corrected Cauchy estimate keeps
-the advertised extended-extraction contraction standing. -/
+/-- Completed adjudication of the proposed extraction/recombination constant:
+the v14 as-written component package is refuted, while a concrete norm-one
+Wilson majorant realization and its conditional depth arithmetic are checked. -/
 def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   stage := .extractionConstantErratum
   nodeId := yangMillsExtractionConstantErratumNode.id
-  status := .checked
-  truthValue := ⟨100, 98⟩
-  itvLowerPercent := 98
-  itvUpperPercent := 100
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  itvLowerPercent := 0
+  itvUpperPercent := 1
   progressPercent := 100
-  evidence := "currentYangMillsExtractionConstantErratum_packet records that the corrected Cauchy estimate gives C1 <= 2224 and a b=2,dmax=16 gain 693/2560 < 1, so HasExtendedExtractionContraction holds. The old displayed-series contraction failure is retracted as an inverted-ratio erratum, not a Yang-Mills refutation."
-  nextObligation := "Treat the extended-extraction contraction as standing route evidence, and keep the continuum mass-gap endpoint gated by constructive-QFT obligations."
+  evidence := "currentYangMillsExtractionConstantAdjudication_packet records the explicit projection and contact countermodels, F.5's actual displayed value 33152, and the conditional Appendix-O majorant ledger value 5544/5."
+  nextObligation := "Prove basis/dual-jet conditioning and rooted cumulant generation for the actual Wilson RG map before assigning C_true."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -111,11 +112,11 @@ def yangMillsContinuumOSConditionalRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 96
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional OS/Kirk endpoint: standing Lambda<1 contraction plus an explicit bridge to lattice gap/clustering, OS reflection positivity, and the carried OS reconstruction machine imply HasSpectralMassGap for the continuum Hamiltonian."
-  nextObligation := "Do not treat the conditional as a mass-gap theorem until Ben's Lambda<1-to-clustering bridge, Wilson-measure reflection positivity, and OS reconstruction/subsequential-limit inputs are supplied."
+  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional OS/Kirk endpoint from a carried actual-Wilson two-source contraction, its bridge to lattice gap/clustering, OS reflection positivity, and the OS reconstruction machine."
+  nextObligation := "Do not treat the conditional as a mass-gap theorem until the actual Wilson constant, contraction-to-clustering bridge, Wilson-measure reflection positivity, and OS reconstruction/subsequential-limit inputs are supplied."
 
-/-- Five-input completion steelman: one arithmetic input verified, the rest
-made into named theorem/API obligations. -/
+/-- Five-input completion steelman after adjudicating the constant and auditing
+the July blueprint. -/
 def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
   stage := .fiveInputCompletionSteelman
   nodeId := yangMillsCompletionSteelmanNode.id
@@ -124,8 +125,8 @@ def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 94
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "currentYangMillsCompletionSteelman_packet records the five-input steelman: recombination is verified for C=11088/5, b=2, dmax=16 with gain 693/2560 <= 1/3 and dmax<=15 excluded; support, two-marked correlation, KP/RP, and actual Wilson RG recursion are reduced to named APIs/assumptions."
-  nextObligation := "Prove FirstLoadBearingYangMillsCompletionInput for the actual Wilson Yang-Mills RG map, instantiating the named support, two-marked, KP, and Wilson reflection-positivity inputs."
+  evidence := "currentYangMillsCompletionSteelman_packet records the refuted as-written constant, the audited blueprint, the norm-one Wilson realization, and the remaining support, two-marked, KP/RP, and actual Wilson RG obligations."
+  nextObligation := "Derive the actual Wilson constant, then prove FirstLoadBearingYangMillsCompletionInput with support, two-marked, KP, and reflection-positivity inputs instantiated."
 
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
@@ -209,29 +210,30 @@ theorem currentYangMillsRoadmap_records_z3_half_scale_rg_step :
         exact z3HalfScaleLinearRGStep_preserves_physicalGap (a := a) (κ := κ) ha,
       z3QuadraticHeatTime_physicalGap_closes⟩
 
-theorem currentYangMillsRoadmap_records_extraction_constant_erratum :
+theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
     ∃ entry : YangMillsRoadmapEntry,
       entry.nodeId = yangMillsExtractionConstantErratumNode.id ∧
-        entry.status = .checked ∧
+        entry.status = .refuted ∧
         entry.progressPercent = 100 ∧
-        HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
-        HasExtendedExtractionContraction 2224 2 16 ∧
-        benCauchyC1UpperBound * irrelevantScale 2 16 < 1 := by
+        ¬ V14LiteralExtractionRecombinationClaims ∧
+        f5DisplayedConstantAtBlockTwo = 33152 ∧
+        proposedMajorantLedgerConstant = (5544 : ℝ) / 5 := by
   refine ⟨yangMillsExtractionConstantErratumRoadmapEntry, ?_⟩
   exact
     ⟨rfl,
       rfl,
       rfl,
-      benCauchyC1UpperBound_contraction_two_sixteen,
-      rgContraction_2224_two_sixteen,
-      benCauchyC1UpperBound_gain_two_sixteen_lt_one⟩
+      not_v14LiteralExtractionRecombinationClaims,
+      f5DisplayedConstantAtBlockTwo_eq,
+      proposedMajorantLedgerConstant_eq⟩
 
 theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ∃ entry : YangMillsRoadmapEntry,
-      entry.nodeId = yangMillsContinuumOSConditionalScaffoldNode.id ∧
+        entry.nodeId = yangMillsContinuumOSConditionalScaffoldNode.id ∧
         entry.status = .checked ∧
         entry.progressPercent = 100 ∧
-        BenStandingExtendedExtractionContraction ∧
+        "Actual Wilson RG constant and two-source contraction at depth 16" ∈
+          benContinuumEndpointOpenInputs ∧
         preprints2025041268Verdict = .notRouteBlocking ∧
         yangMillsMassGapEndpointNode.status = .openGoal := by
   refine ⟨yangMillsContinuumOSConditionalRoadmapEntry, ?_⟩
@@ -239,7 +241,7 @@ theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ⟨rfl,
       rfl,
       rfl,
-      benStandingExtendedExtractionContraction_checked,
+      by simp [benContinuumEndpointOpenInputs],
       preprints2025041268Verdict_notRouteBlocking,
       yangMillsMassGapEndpointNode_open⟩
 
@@ -248,7 +250,7 @@ theorem currentYangMillsRoadmap_records_completion_steelman :
       entry.nodeId = yangMillsCompletionSteelmanNode.id ∧
         entry.status = .checked ∧
         entry.progressPercent = 100 ∧
-        recombinationConstantSteelmanRow.verdict = .verified ∧
+        recombinationConstantSteelmanRow.verdict = .refutedOrInconsistent ∧
         supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
         twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
         kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
@@ -258,7 +260,7 @@ theorem currentYangMillsRoadmap_records_completion_steelman :
     ⟨rfl,
       rfl,
       rfl,
-      recombinationConstantSteelman_verified,
+      recombinationConstantSteelman_refutedOrInconsistent,
       supportRecurrenceSteelman_reduced,
       twoMarkedIdentitySteelman_reduced,
       kpWilsonSteelman_reduced,
