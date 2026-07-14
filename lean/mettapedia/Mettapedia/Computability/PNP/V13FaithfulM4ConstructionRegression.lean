@@ -11,6 +11,7 @@ namespace Mettapedia.Computability.PNP
 #check v13M4Concrete_sampler_sound
 #check v13M4Concrete_support_iff_positive_mass
 #check v13M4Concrete_quotient_equations_on_support
+#check v13M4Concrete_targetBit_reads_witness_message
 #check v13M4ConcreteGaugeAction_manuscriptFacing
 #check v13M4ConcreteHiddenGaugeProduct
 #check v13M4ConcreteUniformGaugeLift
@@ -26,6 +27,7 @@ namespace Mettapedia.Computability.PNP
 #print axioms v13M4Concrete_sampler_sound
 #print axioms v13M4Concrete_support_iff_positive_mass
 #print axioms v13M4Concrete_quotient_equations_on_support
+#print axioms v13M4Concrete_targetBit_reads_witness_message
 #print axioms v13M4ConcreteGaugeAction_manuscriptFacing
 #print axioms v13M4ConcreteHiddenGaugeProduct
 #print axioms v13M4ConcreteUniformGaugeLift
