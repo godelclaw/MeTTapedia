@@ -9,6 +9,8 @@ namespace Mettapedia.Computability.PNP
 set_option autoImplicit false
 
 #check V13QuantitativeEnsemble
+#check v13PolynomialClockFuel
+#check V13ClockedKpolySemantics
 #check V13HiddenGaugeProductFrontier
 #check V13FiniteGaugeGroupAction
 #check V13FiniteGaugeGroupAction.ManuscriptFacing
@@ -25,6 +27,8 @@ set_option autoImplicit false
 #check V13FaithfulAnalyticFrontiers
 
 #print axioms V13QuantitativeEnsemble
+#print axioms v13PolynomialClockFuel
+#print axioms V13ClockedKpolySemantics
 #print axioms V13HiddenGaugeProductFrontier
 #print axioms V13FiniteGaugeGroupAction
 #print axioms V13FiniteGaugeGroupAction.ManuscriptFacing

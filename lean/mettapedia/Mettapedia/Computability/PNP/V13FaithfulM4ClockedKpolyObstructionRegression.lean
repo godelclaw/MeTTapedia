@@ -1,0 +1,15 @@
+import Mettapedia.Computability.PNP.V13FaithfulM4ClockedKpolyObstruction
+
+namespace Mettapedia.Computability.PNP
+
+#check V13ClockedKpolySemantics.message_eq_of_samePublic_of_clockedKpoly_zero
+#check V13ClockedKpolySemantics.not_nonempty_of_samePublic_distinctMessage_clockedKpoly_zero
+#check v13M4Concrete_not_clockedKpolySemantics
+#check v13M4Concrete_not_globalMessageIncompressibility
+
+#print axioms V13ClockedKpolySemantics.message_eq_of_samePublic_of_clockedKpoly_zero
+#print axioms V13ClockedKpolySemantics.not_nonempty_of_samePublic_distinctMessage_clockedKpoly_zero
+#print axioms v13M4Concrete_not_clockedKpolySemantics
+#print axioms v13M4Concrete_not_globalMessageIncompressibility
+
+end Mettapedia.Computability.PNP
