@@ -473,25 +473,4 @@ structure V13M4OpenConstructionObligations
   D48_compatibleCouplings : V13D48CompatibleCouplings E G C
   cnfCompilation : V13M4UniformCNFCompilation E CNFVar
 
-/-- Statement bundle retained for clients that want to carry the complete
-faithful boundary as one value: one mechanical construction record, the four
-quantitative analytic inputs on the exact same ensemble, and the Section-11
-upper premise on the parameter object chosen by Theorem 10.9 at its fixed
-clock.
-
-There is deliberately no equality identifying the D.48 leakage bound with the
-qSSM error.  Such an equality is not one of the manuscript's named inputs and
-would add an unadvertised premise to the endpoint. -/
-structure V13M4FaithfulConditionalEndpointTarget
-    (E : V13QuantitativeEnsemble)
-    (G : V13M4LayeredGeometry E)
-    (C : V13M4LocalComponents E G)
-    (NormalizedPrimitive : E.Parameter -> Nat -> Nat -> Type f)
-    (CNFVar : E.Parameter -> Nat -> Nat -> Type g) where
-  mechanical :
-    V13M4OpenConstructionObligations E G C NormalizedPrimitive CNFVar
-  analytic : V13FaithfulAnalyticFrontiers E
-  section11SameObject :
-    V13Section11SameObjectUpper E analytic.compressionStarSWHardness
-
 end Mettapedia.Computability.PNP

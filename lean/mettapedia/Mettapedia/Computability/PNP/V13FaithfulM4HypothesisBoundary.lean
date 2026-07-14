@@ -22,8 +22,8 @@ lock, readout, and probe-syntax primitive and contains no raw assignment.  Its
 exact D.30 record is constructible.  D.33 remains open because classifying a
 new datatype is not a proof that actual observer executions expand to those
 classes.  D.48 and every quantitative analytic package also remain exact open
-hypotheses. The uniform gauge lift and adaptive product fields retained in the
-exact boundary below are discharged by the downstream adaptive-gauge module.
+hypotheses. The downstream adaptive-gauge module proves the uniform gauge lift
+and adaptive product law directly on this scaffold.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -160,7 +160,7 @@ theorem v13M4Concrete_D8_lockedMessageRigidity_obstruction :
     v13M4Concrete_trueCompletion_readout
   simp at hmessages
 
-/-! ## Exact unresolved records -/
+/-! ## D.33 carrier and construction obstruction -/
 
 /-- Actual normalized-primitive carrier expected from a future execution-trace
 expansion.  Merely declaring these constructors does not establish D.33. -/
@@ -172,31 +172,6 @@ inductive V13M4ConcreteNormalizedPrimitive (m t : Nat) where
   | rawGauge : V13M4ConcreteGaugeIndex m -> Bool ->
       V13M4ConcreteNormalizedPrimitive m t
 deriving DecidableEq, Repr
-
-/-- Exact boundary on this one ensemble. No field is replaced by a
-weaker proposition. The gauge fields are constructed downstream; the D.8
-field makes the boundary uninhabited for the
-current scaffold, as proved below; a revised lock core is required before the
-remaining hypotheses can be assembled into a faithful M4 inhabitant. -/
-structure V13M4ConcreteExactHypothesisBoundary where
-  uniformGaugeLift :
-    V13M4UniformGaugeLift V13M4ConcreteE V13M4ConcreteG V13M4ConcreteC
-  adaptiveHiddenGaugeProduct : V13HiddenGaugeProductFrontier V13M4ConcreteE
-  D8_lockedMessageRigidity :
-    V13D8LockedMessageRigidity V13M4ConcreteE V13M4ConcreteG V13M4ConcreteC
-  D30_noPublicTargetTags : V13D30NoPublicTargetTags V13M4ConcreteE
-  D33_atomCompleteness :
-    V13D33AtomCompleteness V13M4ConcreteE V13M4ConcreteG V13M4ConcreteC
-      (fun _ m t => V13M4ConcreteNormalizedPrimitive m t)
-  D48_compatibleCouplings :
-    V13D48CompatibleCouplings V13M4ConcreteE V13M4ConcreteG V13M4ConcreteC
-  analytic : V13FaithfulAnalyticFrontiers V13M4ConcreteE
-
-theorem v13M4Concrete_exactHypothesisBoundary_obstructed :
-    ¬ Nonempty V13M4ConcreteExactHypothesisBoundary := by
-  rintro ⟨boundary⟩
-  exact v13M4Concrete_D8_lockedMessageRigidity_obstruction
-    boundary.D8_lockedMessageRigidity
 
 /-- Therefore the exact faithful construction record itself is not inhabited
 on this scaffold, independently of how D.33 or D.48 are later formulated. -/

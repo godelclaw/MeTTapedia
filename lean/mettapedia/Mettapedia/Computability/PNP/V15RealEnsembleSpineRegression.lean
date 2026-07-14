@@ -1063,7 +1063,6 @@ set_option autoImplicit false
 #check realM4StrictNamedPreferredEndpointStatement
 #check realM4NamedLanguageLargeTargetKpolySplitBundleStatement
 #check realM4_deterministicReadoutOnly_counterexample
-#check realM4_publicMessageInvariant_guardrails
 
 #print axioms RealSingleMessageSATSpine
 #print axioms RealSingleMessageSATSpine.singleMessage
@@ -2140,6 +2139,5 @@ set_option autoImplicit false
 #print axioms realM4StrictNamedPreferredEndpointStatement
 #print axioms realM4NamedLanguageLargeTargetKpolySplitBundleStatement
 #print axioms realM4_deterministicReadoutOnly_counterexample
-#print axioms realM4_publicMessageInvariant_guardrails
 
 end Mettapedia.Computability.PNP

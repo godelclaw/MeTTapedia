@@ -20,7 +20,6 @@ set_option autoImplicit false
 #check V13D48CompatibleCouplings
 #check V13M4UniformCNFCompilation
 #check V13M4OpenConstructionObligations
-#check V13M4FaithfulConditionalEndpointTarget
 
 #print axioms V13M4Region
 #print axioms V13M4LayeredGeometry
@@ -34,6 +33,5 @@ set_option autoImplicit false
 #print axioms V13D48CompatibleCouplings
 #print axioms V13M4UniformCNFCompilation
 #print axioms V13M4OpenConstructionObligations
-#print axioms V13M4FaithfulConditionalEndpointTarget
 
 end Mettapedia.Computability.PNP
