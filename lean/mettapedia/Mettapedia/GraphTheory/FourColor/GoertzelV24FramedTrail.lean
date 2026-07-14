@@ -141,6 +141,111 @@ theorem hasMatchingDefectColors_iff_exists_properTrailExtensionColor
 
 end FramedTrailData
 
+/-- A selected two-color component terminates at `v` along `e` when `e` is
+selected and no other edge incident to `v` carries either selected color. -/
+def KempePairTerminatesAtVertex
+    (C : G.EdgeColoring Color) (a b : Color) (e : G.edgeSet) (v : V) : Prop :=
+  e ∈ incidentEdgeFinset G v ∧
+    (C e = a ∨ C e = b) ∧
+    ∀ f ∈ incidentEdgeFinset G v, f ≠ e -> C f ≠ a ∧ C f ≠ b
+
+/-- If a two-color component terminates along an edge at one of its graph
+endpoints, that edge has at most one neighbor in the bicolored line graph.
+Thus the component cannot pass through the defect as a circuit. -/
+theorem bicoloredNeighborSet_subsingleton_of_terminatesAtVertex
+    (C : G.EdgeColoring Color) {a b : Color} {e : G.edgeSet} {v : V}
+    (hcolor : C e = a)
+    (hterm : KempePairTerminatesAtVertex C a b e v) :
+    Set.Subsingleton
+      ((C.bicoloredSubgraph a b).neighborSet
+        ⟨e, Or.inl hcolor⟩) := by
+  intro f hf g hg
+  apply Subtype.ext
+  by_contra hfg
+  have hef : G.lineGraph.Adj e f.val := hf
+  have heg : G.lineGraph.Adj e g.val := hg
+  have hfColor : C f.val = b := by
+    rcases f.property with hfa | hfb
+    · exact False.elim ((C.valid hef) (hcolor.trans hfa.symm))
+    · exact hfb
+  have hgColor : C g.val = b := by
+    rcases g.property with hga | hgb
+    · exact False.elim ((C.valid heg) (hcolor.trans hga.symm))
+    · exact hgb
+  rcases (SimpleGraph.lineGraph_adj_iff_exists).1 hef with
+    ⟨hefNe, x, hxe, hxf⟩
+  rcases (SimpleGraph.lineGraph_adj_iff_exists).1 heg with
+    ⟨hegNe, y, hye, hyg⟩
+  have hxNe : x ≠ v := by
+    intro hxv
+    subst x
+    have hfIncident : f.val ∈ incidentEdgeFinset G v := by
+      simpa [incidentEdgeFinset] using hxf
+    exact (hterm.2.2 f.val hfIncident hefNe.symm).2 hfColor
+  have hyNe : y ≠ v := by
+    intro hyv
+    subst y
+    have hgIncident : g.val ∈ incidentEdgeFinset G v := by
+      simpa [incidentEdgeFinset] using hyg
+    exact (hterm.2.2 g.val hgIncident hegNe.symm).2 hgColor
+  have hvEdge : v ∈ (e : Sym2 V) := by
+    simpa [incidentEdgeFinset] using hterm.1
+  obtain ⟨w, hw⟩ := Sym2.mem_iff_exists.mp hvEdge
+  have hxCases : x = v ∨ x = w := by
+    rw [hw] at hxe
+    simpa using hxe
+  have hyCases : y = v ∨ y = w := by
+    rw [hw] at hye
+    simpa using hye
+  have hxy : x = y :=
+    (hxCases.resolve_left hxNe).trans (hyCases.resolve_left hyNe).symm
+  have hfgAdj : G.lineGraph.Adj f.val g.val :=
+    (SimpleGraph.lineGraph_adj_iff_exists).2
+      ⟨hfg, x, hxf, by simpa [hxy] using hyg⟩
+  exact (C.valid hfgAdj) (hfColor.trans hgColor.symm)
+
+namespace FramedTrailData
+
+/-- Defect-Freedom, local termination form. For every incident edge at a
+degree-two defect, its color and the computed missing color form a valid
+Kempe pair, and that pair terminates at the defect along the edge. -/
+theorem defectFreedom_terminatesAtDefect
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (i : Fin 2) (e : G.edgeSet)
+    (he : e ∈ incidentEdgeFinset G (data.defectVertex i)) :
+    ValidColorPair (C e) (data.missingColorAt C i) ∧
+      KempePairTerminatesAtVertex C (C e) (data.missingColorAt C i)
+        e (data.defectVertex i) := by
+  have hadmissible := (data.missingColorAt_is_unique_admissible hdata C hC i).1
+  refine ⟨⟨hC e, hadmissible.1, Ne.symm (hadmissible.2 e he)⟩,
+    he, Or.inl rfl, ?_⟩
+  intro f hf hfe
+  have heAtDefect : data.defectVertex i ∈ (e : Sym2 V) := by
+    simpa [incidentEdgeFinset] using he
+  have hfAtDefect : data.defectVertex i ∈ (f : Sym2 V) := by
+    simpa [incidentEdgeFinset] using hf
+  constructor
+  · exact C.valid
+      (G.lineGraph_adj_of_edgeSet_common_vertex hfe hfAtDefect heAtDefect)
+  · exact Ne.symm (hadmissible.2 f hf)
+
+/-- Defect-Freedom in the bicolored line graph: the incident edge is an
+endpoint, not an internal circuit vertex, of the component selected by its
+own color and the missing third color. -/
+theorem defectFreedom_bicoloredNeighborSet_subsingleton
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (i : Fin 2) (e : G.edgeSet)
+    (he : e ∈ incidentEdgeFinset G (data.defectVertex i)) :
+    Set.Subsingleton
+      ((C.bicoloredSubgraph (C e) (data.missingColorAt C i)).neighborSet
+        ⟨e, Or.inl rfl⟩) := by
+  apply bicoloredNeighborSet_subsingleton_of_terminatesAtVertex C rfl
+  exact (data.defectFreedom_terminatesAtDefect hdata C hC i e he).2
+
+end FramedTrailData
+
 /-- Kauffman-facing one-step definition: switch one genuine two-color
 component whose entire support lies in the movable between-region, including
 the two container cycles. -/
