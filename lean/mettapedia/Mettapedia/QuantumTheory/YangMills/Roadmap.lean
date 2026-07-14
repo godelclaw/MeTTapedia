@@ -99,8 +99,8 @@ def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 0
   itvUpperPercent := 1
   progressPercent := 100
-  evidence := "currentYangMillsExtractionConstantAdjudication_packet records the explicit projection and contact countermodels, F.5's actual displayed value 33152, and the conditional Appendix-O majorant ledger value 5544/5."
-  nextObligation := "Prove basis/dual-jet conditioning and rooted cumulant generation for the actual Wilson RG map before assigning C_true."
+  evidence := "currentYangMillsExtractionConstantAdjudication_packet records the explicit projection and contact countermodels and both manuscript ledgers. currentYangMillsDimension16CoordinateCertificate_packet records the source-level construction obstruction: F.4 and O.9 choose different EOM policies, while the actual lattice representatives, quotient basis, dimension-16 dual jets, biorthogonality, and conditioning certificate are absent."
+  nextObligation := "Obtain a source clarification or state an explicit repaired action-sector quotient and block convention; only then construct the actual Wilson basis/dual jets and prove rooted cumulant generation before assigning C_true."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -215,6 +215,7 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
       entry.nodeId = yangMillsExtractionConstantErratumNode.id ∧
         entry.status = .refuted ∧
         entry.progressPercent = 100 ∧
+        ¬ V14Dimension16SourceCertificateComplete ∧
         ¬ V14LiteralExtractionRecombinationClaims ∧
         f5DisplayedConstantAtBlockTwo = 33152 ∧
         proposedMajorantLedgerConstant = (5544 : ℝ) / 5 := by
@@ -223,6 +224,7 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
     ⟨rfl,
       rfl,
       rfl,
+      not_v14Dimension16SourceCertificateComplete,
       not_v14LiteralExtractionRecombinationClaims,
       f5DisplayedConstantAtBlockTwo_eq,
       proposedMajorantLedgerConstant_eq⟩

@@ -3,6 +3,7 @@ import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGCrux
 import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
 import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
+import Mettapedia.QuantumTheory.YangMills.Dimension16WilsonExtractionCertificate
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 
@@ -528,8 +529,8 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   id := "yang-mills.rg.extraction-constant-erratum"
   status := .refuted
   truthValue := ⟨0, 99⟩
-  evidence := "ExtractionMajorant proves that changing only the exponent sign does not give a bound two with binomial multiplicities. projectionRangeSpecification_does_not_imply_bound_two refutes a uniform bound from v14's range-only projection definition, and fourteen_lt_contactStrip_rail_contacts refutes the literal total-contact interpretation of the recombination factor."
-  nextObligation := "Specify the actual dimension<=16 basis and dual jets, prove their uniform conditioning, and prove the rooted cumulant-family generation bound in the same Wilson majorant norm before assigning a Wilson RG constant."
+  evidence := "ExtractionMajorant refutes the displayed bound-two calculation, while v14Dimension16WilsonExtraction_asWritten_obstructed records that F.4's on-shell relation policy conflicts with O.9's off-shell policy and that v14 supplies no lattice representatives, quotient basis, dimension-16 dual jets, biorthogonality, or conditioning certificate. The range-only and polymer-contact countermodels remain independent obstructions."
+  nextObligation := "A repaired route must first choose and state one action-sector relation quotient and exact block convention, then supply actual lattice Wilson representatives, a finite quotient basis, dual jets, biorthogonality, and certified conditioning before the rooted actual-map cumulant estimate can define a Wilson RG constant."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -696,6 +697,17 @@ theorem currentYangMillsExtractionConstantAdjudication_packet :
       proposedMajorantLedger_twoSourceSlack_two_fifteen,
       fun _ hD =>
         not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD⟩
+
+/-- The source-level dimension-sixteen construction attempt terminates at a
+checked underdetermination: the relation policies disagree, the coordinate
+certificate is incomplete, and the advertised bound is not derived. -/
+theorem currentYangMillsDimension16CoordinateCertificate_packet :
+    (¬ V14Dimension16SourceCertificateComplete) ∧
+      v14F4RelationPolicy ≠ v14O9RelationPolicy ∧
+      (¬ V14LiteralDimension16ExtractionBound) ∧
+      v14Dimension16CertificateStatus .extractionConstant = .notDerived ∧
+      v14Dimension16CertificateStatus .wilsonRecursionConstant = .notDerived :=
+  v14Dimension16WilsonExtraction_asWritten_obstructed
 
 theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
