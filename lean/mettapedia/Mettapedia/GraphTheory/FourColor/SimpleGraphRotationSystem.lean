@@ -95,6 +95,21 @@ theorem toRotationSystem_rho (d : G.Dart) :
     data.toRotationSystem.rho d = data.vertexRotation d :=
   rfl
 
+/-- For a rotation system constructed from a finite simple graph, the
+three-darts-per-vertex predicate is exactly graph-theoretic 3-regularity. -/
+theorem toRotationSystem_isCubic_iff :
+    data.toRotationSystem.IsCubic ↔ G.IsRegularOfDegree 3 := by
+  unfold RotationSystem.IsCubic SimpleGraph.IsRegularOfDegree
+  change (∀ v : V, ({d : G.Dart | d.fst = v} : Finset _).card = 3) ↔
+    ∀ v : V, G.degree v = 3
+  constructor
+  · intro h v
+    rw [← G.dart_fst_fiber_card_eq_degree v]
+    exact h v
+  · intro h v
+    rw [G.dart_fst_fiber_card_eq_degree v]
+    exact h v
+
 end Data
 
 /-- A global face-successor package on `SimpleGraph.Dart`.  In a rotation

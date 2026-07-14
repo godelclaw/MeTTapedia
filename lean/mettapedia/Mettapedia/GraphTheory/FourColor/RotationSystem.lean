@@ -62,6 +62,15 @@ def internalFaces : Finset (Finset E) :=
 def dartsOn (e : E) : Finset RS.D :=
   Finset.univ.filter (fun d => RS.edgeOf d = e)
 
+/-- Darts based at a vertex. -/
+def dartsAt (v : V) : Finset RS.D :=
+  Finset.univ.filter (fun d => RS.vertOf d = v)
+
+/-- Cubicity expressed directly in the rotation data: every vertex has exactly
+three based darts. -/
+def IsCubic : Prop :=
+  ∀ v : V, (RS.dartsAt v).card = 3
+
 /-- Internal faces incident to edge `e`. -/
 def facesIncidence (e : E) : Finset (Finset E) :=
   RS.internalFaces.filter (fun f => e ∈ f)
@@ -159,6 +168,31 @@ end PlanarGeometry
 theorem dartsOn_card_two (e : E) : (RS.dartsOn e).card = 2 := by
   unfold dartsOn
   exact RS.edge_fiber_two e
+
+/-- The darts partition into the two-element fibers over edges. -/
+theorem card_darts_eq_twice_card_edges :
+    Fintype.card RS.D = 2 * Fintype.card E := by
+  have hfibers :
+      Fintype.card RS.D = ∑ e : E, (RS.dartsOn e).card := by
+    change (Finset.univ : Finset RS.D).card =
+      ∑ e : E, (Finset.univ.filter (fun d => RS.edgeOf d = e)).card
+    exact Finset.card_eq_sum_card_fiberwise (by simp)
+  rw [hfibers]
+  simp [RS.dartsOn_card_two, mul_comm]
+
+/-- A cubic rotation system has three darts per vertex, so its total dart
+count is three times its vertex count. -/
+theorem card_darts_eq_three_times_card_vertices (h : RS.IsCubic) :
+    Fintype.card RS.D = 3 * Fintype.card V := by
+  unfold IsCubic at h
+  have hfibers :
+      Fintype.card RS.D = ∑ v : V, (RS.dartsAt v).card := by
+    change (Finset.univ : Finset RS.D).card =
+      ∑ v : V, (Finset.univ.filter (fun d => RS.vertOf d = v)).card
+    exact Finset.card_eq_sum_card_fiberwise (by simp)
+  rw [hfibers]
+  simp_rw [h]
+  simp [mul_comm]
 
 @[simp]
 theorem phi_apply (d : RS.D) : RS.phi d = RS.rho (RS.alpha d) :=
