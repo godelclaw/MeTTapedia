@@ -149,6 +149,46 @@ theorem fourteen_lt_contactStrip_rail_contacts :
     14 < polymerContactCount contactStripLeft contactStripRight := by
   decide
 
+/-! ## The natural rooted meaning of `2(2d-1)` -/
+
+/-- An oriented coordinate direction in four dimensions. -/
+abbrev OrientedDirection4 := Fin 4 × Bool
+
+/-- Reverse the orientation while preserving the coordinate axis. -/
+def reverseOrientedDirection4 (direction : OrientedDirection4) :
+    OrientedDirection4 :=
+  (direction.1, !direction.2)
+
+/-- After one marked oriented edge, a nonbacktracking next edge may use any of
+the eight oriented lattice directions except the reverse edge. -/
+def nonbacktrackingDirectionChoices
+    (previous : OrientedDirection4) : Finset OrientedDirection4 :=
+  Finset.univ.erase (reverseOrientedDirection4 previous)
+
+theorem nonbacktrackingDirectionChoices_card
+    (previous : OrientedDirection4) :
+    (nonbacktrackingDirectionChoices previous).card = 7 := by
+  classical
+  simp [nonbacktrackingDirectionChoices]
+
+/-- The leading Boolean records which of two marked polymers supplies the
+rooted endpoint; the second coordinate is its nonbacktracking direction. -/
+def rootedTwoPolymerConnectionChoices
+    (previous : OrientedDirection4) :
+    Finset (Bool × OrientedDirection4) :=
+  Finset.univ.product (nonbacktrackingDirectionChoices previous)
+
+/-- **Natural factor-fourteen theorem.**  At one rooted marked edge in four
+dimensions there are exactly `2 * (2*4-1) = 14` endpoint/direction choices.
+This local branching number is not a uniform bound on the total contacts of
+two extended polymers. -/
+theorem rootedTwoPolymerConnectionChoices_card
+    (previous : OrientedDirection4) :
+    (rootedTwoPolymerConnectionChoices previous).card = 14 := by
+  classical
+  simp [rootedTwoPolymerConnectionChoices,
+    nonbacktrackingDirectionChoices_card]
+
 end YangMills
 end QuantumTheory
 end Mettapedia
