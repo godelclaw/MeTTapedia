@@ -28,6 +28,33 @@ set_option autoImplicit false
 
 universe u v
 
+namespace V13FiniteLaw
+
+variable {Omega : Type u} [Fintype Omega]
+
+/-- A zero-mass atom has zero conditional singleton probability under every
+conditioning event, including an undefined zero-mass condition. -/
+theorem conditionalProbability_singleton_eq_zero_of_mass_eq_zero
+    (mu : V13FiniteLaw Omega) (condition : Omega -> Prop) (omega : Omega)
+    (hzero : mu.mass omega = 0) :
+    mu.conditionalProbability (fun omega' => omega' = omega) condition = 0 := by
+  classical
+  have hnumerator :
+      mu.probability (fun omega' => omega' = omega ∧ condition omega') = 0 := by
+    rw [probability]
+    apply Finset.sum_eq_zero
+    intro omega' hmem
+    have heq : omega' = omega := by
+      have hcondition : omega' = omega ∧ condition omega' := by
+        simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hmem
+      exact hcondition.1
+    subst omega'
+    exact hzero
+  rw [conditionalProbability, hnumerator]
+  simp
+
+end V13FiniteLaw
+
 namespace V13FiniteCoupling
 
 variable {Omega : Type u} [Fintype Omega]
@@ -223,6 +250,79 @@ theorem no_rigid_match_with_opposite_phase_marginals
 
 end V13FiniteCoupling
 
+namespace V13D48CompatibleCouplings
+
+/-- Every positive coupling atom has a positive-mass left endpoint in the
+original ensemble law.  This follows from the exact conditional marginal, not
+from an extra support hypothesis. -/
+theorem left_law_mass_pos_of_coupling_mass_pos
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    (D48 : V13D48CompatibleCouplings E G C)
+    {theta : E.Parameter} {m t : Nat} (j : E.TargetCoord theta m t)
+    {omega0 omega1 : E.World theta m t}
+    (hmass : 0 < @V13FiniteCoupling.mass (E.World theta m t)
+      (E.worldFintype theta m t) (D48.coupling theta m t j)
+      omega0 omega1) :
+    0 < @V13FiniteLaw.mass (E.World theta m t)
+      (E.worldFintype theta m t) (E.law theta m t) omega0 := by
+  letI := E.worldFintype theta m t
+  let Gamma := D48.coupling theta m t j
+  have hle := Gamma.mass_le_probability_of_event
+    (event := fun a _ => a = omega0) (omega1 := omega1) rfl
+  change Gamma.mass omega0 omega1 <=
+    Gamma.leftProbability (fun a => a = omega0) at hle
+  rw [D48.left_phase_marginal theta m t j
+    (fun a => a = omega0)] at hle
+  change Gamma.mass omega0 omega1 <=
+    (E.law theta m t).conditionalProbability
+      (fun a => a = omega0)
+      (fun omega => E.targetBit omega j = false) at hle
+  by_contra hnot
+  have hlaw_zero : (E.law theta m t).mass omega0 = 0 := by
+    exact le_antisymm (not_lt.mp hnot)
+      ((E.law theta m t).mass_nonnegative omega0)
+  rw [V13FiniteLaw.conditionalProbability_singleton_eq_zero_of_mass_eq_zero
+    (E.law theta m t)
+    (fun omega => E.targetBit omega j = false) omega0 hlaw_zero] at hle
+  linarith
+
+/-- Every positive coupling atom has a positive-mass right endpoint in the
+original ensemble law. -/
+theorem right_law_mass_pos_of_coupling_mass_pos
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    (D48 : V13D48CompatibleCouplings E G C)
+    {theta : E.Parameter} {m t : Nat} (j : E.TargetCoord theta m t)
+    {omega0 omega1 : E.World theta m t}
+    (hmass : 0 < @V13FiniteCoupling.mass (E.World theta m t)
+      (E.worldFintype theta m t) (D48.coupling theta m t j)
+      omega0 omega1) :
+    0 < @V13FiniteLaw.mass (E.World theta m t)
+      (E.worldFintype theta m t) (E.law theta m t) omega1 := by
+  letI := E.worldFintype theta m t
+  let Gamma := D48.coupling theta m t j
+  have hle := Gamma.mass_le_probability_of_event
+    (event := fun _ b => b = omega1) (omega0 := omega0) rfl
+  change Gamma.mass omega0 omega1 <=
+    Gamma.rightProbability (fun b => b = omega1) at hle
+  rw [D48.right_phase_marginal theta m t j
+    (fun b => b = omega1)] at hle
+  change Gamma.mass omega0 omega1 <=
+    (E.law theta m t).conditionalProbability
+      (fun b => b = omega1)
+      (fun omega => E.targetBit omega j = true) at hle
+  by_contra hnot
+  have hlaw_zero : (E.law theta m t).mass omega1 = 0 := by
+    exact le_antisymm (not_lt.mp hnot)
+      ((E.law theta m t).mass_nonnegative omega1)
+  rw [V13FiniteLaw.conditionalProbability_singleton_eq_zero_of_mass_eq_zero
+    (E.law theta m t)
+    (fun omega => E.targetBit omega j = true) omega1 hlaw_zero] at hle
+  linarith
+
+end V13D48CompatibleCouplings
+
 /-- D.8 gives target-bit rigidity on every supported public fiber once the
 verifier is the Appendix-D component conjunction and the target/message
 coordinate wire is present. -/
@@ -261,6 +361,28 @@ theorem V13M4OpenConstructionObligations.targetBit_rigid_on_supported_publicFibe
     · simpa [hpublic] using hcomponents1.2.1
   rw [C.targetBit_reads_witness_message omega0 j,
     C.targetBit_reads_witness_message omega1 j, hmessage]
+
+/-- D.8 target rigidity applies to every positive D.48 coupling atom: exact
+marginals place both endpoints in positive sampler support. -/
+theorem V13M4OpenConstructionObligations.targetBit_rigid_on_couplingSupport
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    {NormalizedPrimitive : E.Parameter -> Nat -> Nat -> Type u}
+    {CNFVar : E.Parameter -> Nat -> Nat -> Type v}
+    (O : V13M4OpenConstructionObligations E G C NormalizedPrimitive CNFVar)
+    {theta : E.Parameter} {m t : Nat} (j : E.TargetCoord theta m t)
+    (omega0 omega1 : E.World theta m t)
+    (hmass : 0 < @V13FiniteCoupling.mass (E.World theta m t)
+      (E.worldFintype theta m t)
+      (O.D48_compatibleCouplings.coupling theta m t j) omega0 omega1)
+    (hpublic : E.publicInput omega0 = E.publicInput omega1) :
+    E.targetBit omega0 j = E.targetBit omega1 j := by
+  apply O.targetBit_rigid_on_supported_publicFiber j omega0 omega1
+  · exact (O.sampler_support_is_positive_mass theta m t omega0).mpr
+      (O.D48_compatibleCouplings.left_law_mass_pos_of_coupling_mass_pos j hmass)
+  · exact (O.sampler_support_is_positive_mass theta m t omega1).mpr
+      (O.D48_compatibleCouplings.right_law_mass_pos_of_coupling_mass_pos j hmass)
+  · exact hpublic
 
 /-- The deliberately rejected global-neutral-matching strengthening of
 D.47(ii).  This is not a field of the faithful D.48 record. -/
@@ -430,5 +552,90 @@ theorem v13OpenConstruction_rejects_D48GlobalNeutralSkeletonMatching
     exact O.targetBit_rigid_on_supported_publicFiber j omega0 omega1
       (worldTypeIsSamplerSupport omega0) (worldTypeIsSamplerSupport omega1) hpublic
   · exact hglobal
+
+/-- Route-level incompatibility between D.8, D.31, D.48's exact opposite-phase
+marginals, and Definition 7.4.  If the complete public primitive valuation
+determines the public instance and every public primitive is D.31-neutral,
+Definition 7.4 makes every positive coupling atom have equal public inputs.
+D.8 then makes its target bits equal, contradicting the opposite-phase
+marginals.
+
+This theorem uses no analytic frontier.  A faithful route can escape only by
+rejecting at least one displayed premise: incomplete public observability,
+all-public D.31 neutrality, D.8 public-fiber rigidity, exact opposite-phase
+marginals, or Definition 7.4 support-wide neutral coherence. -/
+theorem v13OpenConstruction_incompatible_with_definition7_completePublicNeutrality
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    {NormalizedPrimitive : E.Parameter -> Nat -> Nat -> Type u}
+    {CNFVar : E.Parameter -> Nat -> Nat -> Type v}
+    (O : V13M4OpenConstructionObligations E G C NormalizedPrimitive CNFVar)
+    (neutralCoherence : V13Definition7NeutralPairCoherence
+      E G C O.D48_compatibleCouplings)
+    (theta : E.Parameter) (m t : Nat) (j : E.TargetCoord theta m t)
+    (allPublicSyntaxNeutral :
+      forall primitive : E.PublicPrimitive theta m t,
+        primitive ∈ E.fullPublicSyntax theta m t ->
+          E.declaredNeutralPrimitive primitive)
+    (publicInput_ext : forall omega0 omega1 : E.World theta m t,
+      (forall primitive : E.PublicPrimitive theta m t,
+        primitive ∈ E.fullPublicSyntax theta m t ->
+          E.primitiveValue primitive omega0 =
+            E.primitiveValue primitive omega1) ->
+      E.publicInput omega0 = E.publicInput omega1) :
+    False := by
+  letI := E.worldFintype theta m t
+  let Gamma := O.D48_compatibleCouplings.coupling theta m t j
+  rcases Gamma.exists_mass_pos with ⟨omega0, omega1, hmass⟩
+  have hpublic : E.publicInput omega0 = E.publicInput omega1 := by
+    apply publicInput_ext
+    intro primitive hprimitive
+    exact neutralCoherence.pair_neutral_on_coupling_support
+      theta m t j primitive hprimitive
+      (allPublicSyntaxNeutral primitive hprimitive) omega0 omega1 hmass
+  have htarget_eq := O.targetBit_rigid_on_couplingSupport
+    j omega0 omega1 hmass hpublic
+  have hleftTrue :
+      Gamma.leftProbability (fun omega => E.targetBit omega j = true) = 0 := by
+    have h := O.D48_compatibleCouplings.left_phase_marginal theta m t j
+      (fun omega => E.targetBit omega j = true)
+    simpa [Gamma, V13QuantitativeEnsemble.conditionalProbabilityAt,
+      V13FiniteLaw.conditionalProbability, V13FiniteLaw.probability] using h
+  have hrightFalse :
+      Gamma.rightProbability (fun omega => E.targetBit omega j = false) = 0 := by
+    have h := O.D48_compatibleCouplings.right_phase_marginal theta m t j
+      (fun omega => E.targetBit omega j = false)
+    simpa [Gamma, V13QuantitativeEnsemble.conditionalProbabilityAt,
+      V13FiniteLaw.conditionalProbability, V13FiniteLaw.probability] using h
+  have hmismatch_one :=
+    Gamma.target_mismatch_probability_one_of_opposite_phase_marginals
+      (fun omega => E.targetBit omega j) hleftTrue hrightFalse
+  have hmismatch := Gamma.event_of_probability_one_of_mass_pos
+    hmismatch_one hmass
+  exact hmismatch htarget_eq
+
+/-- Record-level no-go theorem for the exact manuscript combination.  A
+construction with D.8 and D.48 cannot simultaneously have an extensionally
+complete public catalog, D.31 neutrality for that whole catalog, and
+Definition 7.4 support-wide pair neutrality at any target coordinate.
+
+The obstruction is already finite and mechanical; qSSM, incidence, mixing,
+and Kpoly assumptions play no role. -/
+theorem v13OpenConstruction_D31_definition7_fullPublicSyntax_noGo
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    {NormalizedPrimitive : E.Parameter -> Nat -> Nat -> Type u}
+    {CNFVar : E.Parameter -> Nat -> Nat -> Type v}
+    (O : V13M4OpenConstructionObligations E G C NormalizedPrimitive CNFVar)
+    (D31 : V13D31PublicSyntaxNeutrality E)
+    (fullSyntax : V13FullPublicSyntaxObservability E)
+    (neutralCoherence : V13Definition7NeutralPairCoherence
+      E G C O.D48_compatibleCouplings)
+    (theta : E.Parameter) (m t : Nat) (j : E.TargetCoord theta m t) :
+    False := by
+  exact v13OpenConstruction_incompatible_with_definition7_completePublicNeutrality
+    O neutralCoherence theta m t j
+    (D31.every_public_template_primitive_neutral theta m t)
+    (fullSyntax.publicInput_ext theta m t)
 
 end Mettapedia.Computability.PNP

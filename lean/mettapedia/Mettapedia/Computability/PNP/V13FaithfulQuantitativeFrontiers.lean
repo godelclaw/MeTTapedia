@@ -466,6 +466,29 @@ structure V13FullPublicSyntaxCoverage (E : V13QuantitativeEnsemble) : Prop where
       primitive ∈ E.fullPublicSyntax theta m t ->
       ¬ E.recoversForbiddenWithoutCharge primitive
 
+/-- Appendix D.31 in its public-template form, kept separate from Hypothesis
+4.21's neutral-or-charged coverage.  Every primitive in the complete public
+template catalog normalizes to the declared-neutral class. -/
+structure V13D31PublicSyntaxNeutrality (E : V13QuantitativeEnsemble) : Prop where
+  every_public_template_primitive_neutral :
+    forall theta m t (primitive : E.PublicPrimitive theta m t),
+      primitive ∈ E.fullPublicSyntax theta m t ->
+      E.declaredNeutralPrimitive primitive
+
+/-- Extensional completeness of a catalog advertised as the *full* public
+syntax.  If two worlds give the same value to every visible public primitive,
+they have the same public instance.  This construction obligation enforces the
+no-hidden-syntax discipline; it is not an analytic assumption. -/
+structure V13FullPublicSyntaxObservability
+    (E : V13QuantitativeEnsemble) : Prop where
+  publicInput_ext :
+    forall theta m t (omega0 omega1 : E.World theta m t),
+      (forall primitive : E.PublicPrimitive theta m t,
+        primitive ∈ E.fullPublicSyntax theta m t ->
+        E.primitiveValue primitive omega0 =
+          E.primitiveValue primitive omega1) ->
+      E.publicInput omega0 = E.publicInput omega1
+
 /-- Semantic target-hiding test for an entire public syntax object.  It is a
 necessary consequence of full-public coverage and is useful for naming
 concrete counterexamples. -/

@@ -411,6 +411,31 @@ structure V13D48CompatibleCouplings
             E.gaugeValue omega1 v = gamma ⟨v, hv⟩) condition =
         1 / (2 : Real) ^ J.card)
 
+/-- Definition 7.4's pair-neutrality obligation for the public normalized
+neutral atoms.  Every such atom must agree on every positive-mass pair in the
+opposite-phase coupling.  This pointwise support formulation is preserved by
+all later conditioning, so it also supplies the definition's repeated
+requirement after admissible neutral public conditioning.
+
+This is intentionally separate from D.48.  Appendix D.47(ii) only says
+"whenever possible", whereas Section 7 uses the unconditional support-wide
+property to prove zero neutral derivative. -/
+structure V13Definition7NeutralPairCoherence
+    (E : V13QuantitativeEnsemble) (G : V13M4LayeredGeometry E)
+    (C : V13M4LocalComponents E G)
+    (D48 : V13D48CompatibleCouplings E G C) : Prop where
+  pair_neutral_on_coupling_support :
+    forall theta m t (j : E.TargetCoord theta m t)
+      (primitive : E.PublicPrimitive theta m t),
+      primitive ∈ E.fullPublicSyntax theta m t ->
+      E.declaredNeutralPrimitive primitive ->
+      forall omega0 omega1 : E.World theta m t,
+        0 < @V13FiniteCoupling.mass (E.World theta m t)
+          (E.worldFintype theta m t) (D48.coupling theta m t j)
+          omega0 omega1 ->
+        E.primitiveValue primitive omega0 =
+          E.primitiveValue primitive omega1
+
 /-! ## Appendix I: uniform CNF compilation and fixed projection -/
 
 /-- Appendix-I compilation interface.  Soundness, completeness, fixed message

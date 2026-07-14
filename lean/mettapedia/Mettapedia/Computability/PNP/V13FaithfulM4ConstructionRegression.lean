@@ -18,6 +18,7 @@ namespace Mettapedia.Computability.PNP
 #check v13M4ConcreteFaithfulGaugeInterface
 #check v13M4ConcreteCNFCompilation
 #check v13M4Concrete_D30_noPublicTargetTags
+#check v13M4Concrete_fullPublicSyntaxObservability
 #check v13M4Concrete_D8_lockedMessageRigidity_obstruction
 #check v13M4Concrete_openConstructionObligations_obstructed
 #check v13M4Concrete_bitFixingReadout_obstruction
@@ -34,6 +35,7 @@ namespace Mettapedia.Computability.PNP
 #print axioms v13M4ConcreteFaithfulGaugeInterface
 #print axioms v13M4ConcreteCNFCompilation
 #print axioms v13M4Concrete_D30_noPublicTargetTags
+#print axioms v13M4Concrete_fullPublicSyntaxObservability
 #print axioms v13M4Concrete_D8_lockedMessageRigidity_obstruction
 #print axioms v13M4Concrete_openConstructionObligations_obstructed
 #print axioms v13M4Concrete_bitFixingReadout_obstruction
