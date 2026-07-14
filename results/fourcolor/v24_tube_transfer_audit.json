@@ -1,0 +1,4170 @@
+{
+  "algorithm": "local-ring-coloring-and-germ-pairing-dp-v1",
+  "capped_family_audit": {
+    "all_masses_match_doubling_formula": true,
+    "all_reachable_sources_have_two_unit_extensions": true,
+    "first_recurrent_length": 9,
+    "maximum_tube_length": 30,
+    "rows": [
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 2,
+        "exit_target_state_set_digest": "4aff6318a66e47b101f298d68facba35ad787d8c1ccf060bc7c99f360fad9185",
+        "exit_transition_signature": "a686ff45eb5843dbe44a95eca7c2ff0c983f0283293183ba226241c2fe352fbe",
+        "expected_doubling_mass": 4,
+        "final_alive_mass": 4,
+        "final_alive_state_count": 3,
+        "graph_hash": "142b99b90cd7579569104b88a35940d9b8506920a1c5cc7b78e7e799b501b661",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 1
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 4,
+        "exit_target_state_set_digest": "8be13df9715e3a0aa22d4c7cf1e35019aff4cd98225c26326e00a12f69df550e",
+        "exit_transition_signature": "3f61992d84ea3add4df3ca639f5134b7eb212f7e1d5bc7c895febc284ba7ae05",
+        "expected_doubling_mass": 8,
+        "final_alive_mass": 8,
+        "final_alive_state_count": 4,
+        "graph_hash": "27e5424b7129e192d289f1447d3e8ed3974199fa7afaa694a9da62ae97916d04",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 2
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 6,
+        "exit_target_state_set_digest": "f0cf11400582de65f139e21b50bb6120d7d74a028027a12dadaa29ea7054c618",
+        "exit_transition_signature": "c20aa224167db91dff97bd7609f251d4b3065619544e5055454a761b8b7ab259",
+        "expected_doubling_mass": 16,
+        "final_alive_mass": 16,
+        "final_alive_state_count": 5,
+        "graph_hash": "45a1986c679dd3e17a95de25a0b1677f6c9de21a976189ee39119e82dd9809c4",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 3
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 8,
+        "exit_target_state_set_digest": "bdc0b0206e91ecfd6c298b0ba8f16b6653224e20134a045144f1e9088992b9a4",
+        "exit_transition_signature": "0fc4aaa0896706333c535b7ae52e6682eb3cf75b98759fba4c5faf832cd45304",
+        "expected_doubling_mass": 32,
+        "final_alive_mass": 32,
+        "final_alive_state_count": 6,
+        "graph_hash": "df49660abf866629797561fc437b49355204a9163fec9948f5de998ee60f3634",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 4
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 10,
+        "exit_target_state_set_digest": "150149a516f8672d0ade50a9a70e99ce7f2de64a715cc58ea53b0276bda3a976",
+        "exit_transition_signature": "ff4317665c3f440cbd60f5bedaf4adeba2e68c3a9abab66e583f83daa7da0370",
+        "expected_doubling_mass": 64,
+        "final_alive_mass": 64,
+        "final_alive_state_count": 7,
+        "graph_hash": "7f222feebda8421622de6bdbf5f63c6484f52cb4a22ad5e51640caf19abce698",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 5
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 12,
+        "exit_target_state_set_digest": "362017b117db468b7f5bf9b8a30491432dec03f41525709d63d8a02ccb264b84",
+        "exit_transition_signature": "365e9336b41111bd01346cab8c67f017037fd51f24a36a3b893f7bdc23374c9b",
+        "expected_doubling_mass": 128,
+        "final_alive_mass": 128,
+        "final_alive_state_count": 8,
+        "graph_hash": "101c5cedaa8dc1f44f7e23f5fe98365779dcb9eaefd6f4e6f023cb22b2557e11",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 6
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 14,
+        "exit_target_state_set_digest": "82e18d1061a1057b2fe36a34ee3c3800f5a99c2c6eb1cb9123062635f9ee10f9",
+        "exit_transition_signature": "5b6461abde814b0209447a237cce6feba264ba040cb31d29fb9f71eaa26f3d7a",
+        "expected_doubling_mass": 256,
+        "final_alive_mass": 256,
+        "final_alive_state_count": 9,
+        "graph_hash": "26b4a438059072ffa36413a1e1c143851555487099dadc9b7db7636f3de3775c",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 7
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "pascal_path",
+        "exit_source_level": 16,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "655ade1bc1d2b3b9cf8e372d87686830733a0dc1ee169dea99a97822084e2e2b",
+        "expected_doubling_mass": 512,
+        "final_alive_mass": 512,
+        "final_alive_state_count": 10,
+        "graph_hash": "c577ba1e346efe21d2056252b1e32c6868ec703d54fb931834f8e64c0fa4c487",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 8
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 18,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 1024,
+        "final_alive_mass": 1024,
+        "final_alive_state_count": 10,
+        "graph_hash": "7ca555866cc7716ac6047d7ad782c477828ac11956eb9a36ee3c24ea54eebeb1",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 9
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 20,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 2048,
+        "final_alive_mass": 2048,
+        "final_alive_state_count": 10,
+        "graph_hash": "caf57f9283a599eccf2ec82f9754913a176ba04e85cf2b6dd641a57a3f963379",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 10
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 22,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 4096,
+        "final_alive_mass": 4096,
+        "final_alive_state_count": 10,
+        "graph_hash": "c7759e7e1063f2e5cb48532607e9b6fa52c84644d51c5d727e2bad42be567b02",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 11
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 24,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 8192,
+        "final_alive_mass": 8192,
+        "final_alive_state_count": 10,
+        "graph_hash": "99d6842f5931044f6448212acb1fc5c32dcbd15d98fc654f30f2b73ea15c2bc9",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 12
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 26,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 16384,
+        "final_alive_mass": 16384,
+        "final_alive_state_count": 10,
+        "graph_hash": "54353951be9d700b6a97c9d82f46c96217fde1f65cb560123ecfb07fa6aee39e",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 13
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 28,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 32768,
+        "final_alive_mass": 32768,
+        "final_alive_state_count": 10,
+        "graph_hash": "4b3e1412382afe61c388d5720220f2df445278cf3733db747703fd3e9fdd493f",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 14
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 30,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 65536,
+        "final_alive_mass": 65536,
+        "final_alive_state_count": 10,
+        "graph_hash": "665fb426462c644c2fb79c23c42f552248605534bc9c5862f0095cae6c47e53b",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 15
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 32,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 131072,
+        "final_alive_mass": 131072,
+        "final_alive_state_count": 10,
+        "graph_hash": "0b536505167bc1f03763d030336a3663c8287caafdf177ebbee5fa080a4372f8",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 16
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 34,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 262144,
+        "final_alive_mass": 262144,
+        "final_alive_state_count": 10,
+        "graph_hash": "04fe30cb38d196b6ddb95534d3f66e96dab19f8d1174ec75c53fad8ea0f5022f",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 17
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 36,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 524288,
+        "final_alive_mass": 524288,
+        "final_alive_state_count": 10,
+        "graph_hash": "1765f3a62d4fd8384c70479e1480382ebf09b62a483639d3b66765dabdcdaacc",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 18
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 38,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 1048576,
+        "final_alive_mass": 1048576,
+        "final_alive_state_count": 10,
+        "graph_hash": "678489d35343e6d99d6decf05375433bd2c35756826b23552af85ef035138133",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 19
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 40,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 2097152,
+        "final_alive_mass": 2097152,
+        "final_alive_state_count": 10,
+        "graph_hash": "075b405b6ff101542606882d1ae3bd2fc8014b1a0223c023953a3a93c0c4bc4c",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 20
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 42,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 4194304,
+        "final_alive_mass": 4194304,
+        "final_alive_state_count": 10,
+        "graph_hash": "5543a1d8de6e0422ff28469e991543166376f19d4f1c4e7c037d2dbb0abfd07c",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 21
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 44,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 8388608,
+        "final_alive_mass": 8388608,
+        "final_alive_state_count": 10,
+        "graph_hash": "2f49f9510b50588609cf5c056746765673e91f921c1a5509cf7e09a8b1cd57be",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 22
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 46,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 16777216,
+        "final_alive_mass": 16777216,
+        "final_alive_state_count": 10,
+        "graph_hash": "e1a95cf598862035f970cdf8de6c9f23747a796007eb325db4855a443a01f2e9",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 23
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 48,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 33554432,
+        "final_alive_mass": 33554432,
+        "final_alive_state_count": 10,
+        "graph_hash": "db3ab5063d70d71ae45ab6f2ac226a8721eaa348245886903b90ad80d82b55ba",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 24
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 50,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 67108864,
+        "final_alive_mass": 67108864,
+        "final_alive_state_count": 10,
+        "graph_hash": "394b3774972e27563f9214af7ffaddc61bbb788e15ba155b597bca8d6afc1765",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 25
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 52,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 134217728,
+        "final_alive_mass": 134217728,
+        "final_alive_state_count": 10,
+        "graph_hash": "81a0c93f79ca1d555e4d21507e84161a9febe71b7e695f15a06bd86d977d9a01",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 26
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 54,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 268435456,
+        "final_alive_mass": 268435456,
+        "final_alive_state_count": 10,
+        "graph_hash": "b132143bd0e2ee916c90554c7c2f8ffec6ac9cd6d872b3e38ce53abaffc02b11",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 27
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 56,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 536870912,
+        "final_alive_mass": 536870912,
+        "final_alive_state_count": 10,
+        "graph_hash": "02da07f471daa0268bb698f1bc8c045925429aff9a6dd0fa1e69b4dcdaee99f5",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 28
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 58,
+        "exit_target_state_set_digest": "c192f502b559ceb0273cc3ff414e8b296ac097c35ef4ae1708ffc7c630cb615e",
+        "exit_transition_signature": "6cf31ad018bda7a53edef608768d20cdadb50cac325c35cfdd35cb18fda870bf",
+        "expected_doubling_mass": 1073741824,
+        "final_alive_mass": 1073741824,
+        "final_alive_state_count": 10,
+        "graph_hash": "2482752576756a5ccc82f84ce1d25d930cae1874fb9d7e3801204cec9720a3ff",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 29
+      },
+      {
+        "all_reachable_sources_have_two_unit_extensions": true,
+        "exit_incidence_kind": "recurrent_cycle",
+        "exit_source_level": 60,
+        "exit_target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "exit_transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e",
+        "expected_doubling_mass": 2147483648,
+        "final_alive_mass": 2147483648,
+        "final_alive_state_count": 10,
+        "graph_hash": "c850c8a91dde10fe16c991dfa670ccdefb9c07e2fbf76d2b7325775d7ac455cb",
+        "mass_matches_doubling_formula": true,
+        "tube_length": 30
+      }
+    ]
+  },
+  "direct_census_crosschecks": [
+    {
+      "counts_equal": true,
+      "direct_certificate_file": "tube_j1_seed_census.json",
+      "direct_certificate_sha256": "bd06ef07a7d9f173eafa37ebac8d671c0c6d1e72ce68adc033c8ef6060186ae4",
+      "direct_fully_routed_seed_count": 4,
+      "target_level": 4,
+      "transfer_alive_mass": 4,
+      "tube_length": 1
+    },
+    {
+      "counts_equal": true,
+      "direct_certificate_file": "tube_j2_seed_census.json",
+      "direct_certificate_sha256": "eddc328bc3f4e48995e8e35522af471a7b64cc933ac6f9cd05fde36326d265e4",
+      "direct_fully_routed_seed_count": 8,
+      "target_level": 6,
+      "transfer_alive_mass": 8,
+      "tube_length": 2
+    },
+    {
+      "counts_equal": true,
+      "direct_certificate_file": "tube_j3_seed_census.json",
+      "direct_certificate_sha256": "5dbe34cdd31552b5fc0d24ef59dc7f1a1b454fef3de6b9a2cc51823de6dea558",
+      "direct_fully_routed_seed_count": 16,
+      "target_level": 8,
+      "transfer_alive_mass": 16,
+      "tube_length": 3
+    },
+    {
+      "counts_equal": true,
+      "direct_certificate_file": "tube_j4_seed_census.json",
+      "direct_certificate_sha256": "5c98d962e76971032a00c2426ad389383a3b193462ac19fc5bac3c54391c76e4",
+      "direct_fully_routed_seed_count": 32,
+      "target_level": 10,
+      "transfer_alive_mass": 32,
+      "tube_length": 4
+    },
+    {
+      "counts_equal": true,
+      "direct_certificate_file": "tube_j5_seed_census.json",
+      "direct_certificate_sha256": "6a48c9f8c03e155be5ae9535464da562cf872e545b88cdaa49029676eec7e72f",
+      "direct_fully_routed_seed_count": 64,
+      "target_level": 12,
+      "transfer_alive_mass": 64,
+      "tube_length": 5
+    },
+    {
+      "counts_equal": true,
+      "direct_certificate_file": "tube_j6_seed_census.json",
+      "direct_certificate_sha256": "bab5be90e03e016e50c59975f22111cc2028c29547b919757edc067d8252ed4f",
+      "direct_fully_routed_seed_count": 128,
+      "target_level": 14,
+      "transfer_alive_mass": 128,
+      "tube_length": 6
+    }
+  ],
+  "fixed_inner_word": "00012",
+  "majority_pair": "01",
+  "schema": "fourcolor-v24-tube-transfer-audit-v1",
+  "transfer": {
+    "all_reachable_sources_have_two_unit_extensions": true,
+    "expected_doubling_mass": 2147483648,
+    "final_alive_mass": 2147483648,
+    "final_alive_state_count": 10,
+    "final_frontier_level": 62,
+    "first_non_pascal_source_level": 18,
+    "graph_hash": "c850c8a91dde10fe16c991dfa670ccdefb9c07e2fbf76d2b7325775d7ac455cb",
+    "level_alive_masses": {
+      "0": 1,
+      "1": 32,
+      "10": 32,
+      "11": 1024,
+      "12": 64,
+      "13": 2048,
+      "14": 128,
+      "15": 4096,
+      "16": 256,
+      "17": 8192,
+      "18": 512,
+      "19": 16384,
+      "2": 2,
+      "20": 1024,
+      "21": 32768,
+      "22": 2048,
+      "23": 65536,
+      "24": 4096,
+      "25": 131072,
+      "26": 8192,
+      "27": 262144,
+      "28": 16384,
+      "29": 524288,
+      "3": 64,
+      "30": 32768,
+      "31": 1048576,
+      "32": 65536,
+      "33": 2097152,
+      "34": 131072,
+      "35": 4194304,
+      "36": 262144,
+      "37": 8388608,
+      "38": 524288,
+      "39": 16777216,
+      "4": 4,
+      "40": 1048576,
+      "41": 33554432,
+      "42": 2097152,
+      "43": 67108864,
+      "44": 4194304,
+      "45": 134217728,
+      "46": 8388608,
+      "47": 268435456,
+      "48": 16777216,
+      "49": 536870912,
+      "5": 128,
+      "50": 33554432,
+      "51": 1073741824,
+      "52": 67108864,
+      "53": 2147483648,
+      "54": 134217728,
+      "55": 4294967296,
+      "56": 268435456,
+      "57": 8589934592,
+      "58": 536870912,
+      "59": 17179869184,
+      "6": 8,
+      "60": 1073741824,
+      "61": 34359738368,
+      "62": 2147483648,
+      "7": 256,
+      "8": 16,
+      "9": 512
+    },
+    "level_state_counts": {
+      "0": 1,
+      "1": 32,
+      "10": 6,
+      "11": 192,
+      "12": 7,
+      "13": 224,
+      "14": 8,
+      "15": 256,
+      "16": 9,
+      "17": 288,
+      "18": 10,
+      "19": 320,
+      "2": 2,
+      "20": 10,
+      "21": 320,
+      "22": 10,
+      "23": 320,
+      "24": 10,
+      "25": 320,
+      "26": 10,
+      "27": 320,
+      "28": 10,
+      "29": 320,
+      "3": 64,
+      "30": 10,
+      "31": 320,
+      "32": 10,
+      "33": 320,
+      "34": 10,
+      "35": 320,
+      "36": 10,
+      "37": 320,
+      "38": 10,
+      "39": 320,
+      "4": 3,
+      "40": 10,
+      "41": 320,
+      "42": 10,
+      "43": 320,
+      "44": 10,
+      "45": 320,
+      "46": 10,
+      "47": 320,
+      "48": 10,
+      "49": 320,
+      "5": 96,
+      "50": 10,
+      "51": 320,
+      "52": 10,
+      "53": 320,
+      "54": 10,
+      "55": 320,
+      "56": 10,
+      "57": 320,
+      "58": 10,
+      "59": 320,
+      "6": 4,
+      "60": 10,
+      "61": 320,
+      "62": 10,
+      "7": 128,
+      "8": 5,
+      "9": 160
+    },
+    "maximum_vertex_distance": 63,
+    "ring_audits": [
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2
+        ],
+        "source_extension_masses": [
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 0,
+        "source_multiplicities": [
+          1
+        ],
+        "source_state_count": 1,
+        "source_state_digests": [
+          "2e5ba0c9dc547545d78155b5edb80d0259e2552c04d7f9cc563ac89cce612cc4"
+        ],
+        "source_state_set_digest": "d92f613d25adb7e45ac8af067d7c3dace8774e8829bac44edac1dff6dee81780",
+        "source_total_mass": 1,
+        "target_is_binomial_row": true,
+        "target_level": 2,
+        "target_multiplicities": [
+          1,
+          1
+        ],
+        "target_state_count": 2,
+        "target_state_digests": [
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a"
+        ],
+        "target_state_set_digest": "f50ab260b5f93a610591531c297a4d1259c739c70e694cab785fb0caddb1ada9",
+        "target_total_mass": 2,
+        "transition_signature": "7d67981ac5b7bde5621f8ad3d1c7db4a105d83daa4a093c24d8f83fd5392ea73"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 2,
+        "source_multiplicities": [
+          1,
+          1
+        ],
+        "source_state_count": 2,
+        "source_state_digests": [
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a"
+        ],
+        "source_state_set_digest": "f50ab260b5f93a610591531c297a4d1259c739c70e694cab785fb0caddb1ada9",
+        "source_total_mass": 2,
+        "target_is_binomial_row": true,
+        "target_level": 4,
+        "target_multiplicities": [
+          1,
+          2,
+          1
+        ],
+        "target_state_count": 3,
+        "target_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315"
+        ],
+        "target_state_set_digest": "1cef7c0d0c884649b1d5b122acbbebe2b0c53b2647e3ae7e210eed6dfc060a0e",
+        "target_total_mass": 4,
+        "transition_signature": "033dbfca035291bd5afc6d4af50d8fb0ae06bfc13bbcc0a3dfe65fe88e41948b"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 4,
+        "source_multiplicities": [
+          1,
+          2,
+          1
+        ],
+        "source_state_count": 3,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315"
+        ],
+        "source_state_set_digest": "1cef7c0d0c884649b1d5b122acbbebe2b0c53b2647e3ae7e210eed6dfc060a0e",
+        "source_total_mass": 4,
+        "target_is_binomial_row": true,
+        "target_level": 6,
+        "target_multiplicities": [
+          1,
+          3,
+          3,
+          1
+        ],
+        "target_state_count": 4,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0"
+        ],
+        "target_state_set_digest": "a10f6af794a9cc3372e4738ef9e13ee29da74a181e2def0ae3efe68e2ce44174",
+        "target_total_mass": 8,
+        "transition_signature": "6896d5b7ae9716e08f97c1ee314b82761d66f481a8afc0476ab017bfa6ed3fd0"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 6,
+        "source_multiplicities": [
+          1,
+          3,
+          3,
+          1
+        ],
+        "source_state_count": 4,
+        "source_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0"
+        ],
+        "source_state_set_digest": "a10f6af794a9cc3372e4738ef9e13ee29da74a181e2def0ae3efe68e2ce44174",
+        "source_total_mass": 8,
+        "target_is_binomial_row": true,
+        "target_level": 8,
+        "target_multiplicities": [
+          1,
+          4,
+          6,
+          4,
+          1
+        ],
+        "target_state_count": 5,
+        "target_state_digests": [
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "target_state_set_digest": "abec03c0556303a36fe42d391640eb890904b12aaef0c165a05e08c5edb48630",
+        "target_total_mass": 16,
+        "transition_signature": "929f36e7e7bbf1fcdfd8104c49db82b782684a7787c578ba83290516d085f510"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 8,
+        "source_multiplicities": [
+          1,
+          4,
+          6,
+          4,
+          1
+        ],
+        "source_state_count": 5,
+        "source_state_digests": [
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986"
+        ],
+        "source_state_set_digest": "abec03c0556303a36fe42d391640eb890904b12aaef0c165a05e08c5edb48630",
+        "source_total_mass": 16,
+        "target_is_binomial_row": true,
+        "target_level": 10,
+        "target_multiplicities": [
+          1,
+          5,
+          10,
+          10,
+          5,
+          1
+        ],
+        "target_state_count": 6,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090"
+        ],
+        "target_state_set_digest": "45116c13d12c5d376d9a921850f6d0fa51add64506e3afe05846ea32c2c2ed89",
+        "target_total_mass": 32,
+        "transition_signature": "d40deae8037b2e8780bc84716a541b9e38f65cc3b23d48512b53f58e4c825a14"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 10,
+        "source_multiplicities": [
+          1,
+          5,
+          10,
+          10,
+          5,
+          1
+        ],
+        "source_state_count": 6,
+        "source_state_digests": [
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115"
+        ],
+        "source_state_set_digest": "45116c13d12c5d376d9a921850f6d0fa51add64506e3afe05846ea32c2c2ed89",
+        "source_total_mass": 32,
+        "target_is_binomial_row": true,
+        "target_level": 12,
+        "target_multiplicities": [
+          1,
+          6,
+          15,
+          20,
+          15,
+          6,
+          1
+        ],
+        "target_state_count": 7,
+        "target_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a"
+        ],
+        "target_state_set_digest": "c4b4fcda0972ff0c5c61d44d5620f5a7cc989d17b80bb51da788048adf236e26",
+        "target_total_mass": 64,
+        "transition_signature": "fd7de0a44f16ef6721c529e109c0ed8b4d07d6eba7da389c66047e8e040fa738"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 12,
+        "source_multiplicities": [
+          1,
+          6,
+          15,
+          20,
+          15,
+          6,
+          1
+        ],
+        "source_state_count": 7,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a"
+        ],
+        "source_state_set_digest": "c4b4fcda0972ff0c5c61d44d5620f5a7cc989d17b80bb51da788048adf236e26",
+        "source_total_mass": 64,
+        "target_is_binomial_row": true,
+        "target_level": 14,
+        "target_multiplicities": [
+          1,
+          7,
+          21,
+          35,
+          35,
+          21,
+          7,
+          1
+        ],
+        "target_state_count": 8,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7"
+        ],
+        "target_state_set_digest": "3de753c2c6fc416a31edffd9556b658cb08759da8e7574bd3dd64bc86c2c4df4",
+        "target_total_mass": 128,
+        "transition_signature": "22702cb2320421de27846dc997244aed193a6d70bf94fd5718dfebf956a78693"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 14,
+        "source_multiplicities": [
+          1,
+          7,
+          21,
+          35,
+          35,
+          21,
+          7,
+          1
+        ],
+        "source_state_count": 8,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115"
+        ],
+        "source_state_set_digest": "3de753c2c6fc416a31edffd9556b658cb08759da8e7574bd3dd64bc86c2c4df4",
+        "source_total_mass": 128,
+        "target_is_binomial_row": true,
+        "target_level": 16,
+        "target_multiplicities": [
+          1,
+          8,
+          28,
+          56,
+          70,
+          56,
+          28,
+          8,
+          1
+        ],
+        "target_state_count": 9,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986"
+        ],
+        "target_state_set_digest": "a2d28988cbfa467deb0371516e8d96c6b911d932b09a0be648157dd320f2e16d",
+        "target_total_mass": 256,
+        "transition_signature": "147d2192054faa70ddbad88799c9d4cfbaec7a7d73bc86701a89461dd32a1313"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ]
+        ],
+        "incidence_kind": "pascal_path",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": true,
+        "source_level": 16,
+        "source_multiplicities": [
+          1,
+          8,
+          28,
+          56,
+          70,
+          56,
+          28,
+          8,
+          1
+        ],
+        "source_state_count": 9,
+        "source_state_digests": [
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4"
+        ],
+        "source_state_set_digest": "a2d28988cbfa467deb0371516e8d96c6b911d932b09a0be648157dd320f2e16d",
+        "source_total_mass": 256,
+        "target_is_binomial_row": true,
+        "target_level": 18,
+        "target_multiplicities": [
+          1,
+          9,
+          36,
+          84,
+          126,
+          126,
+          84,
+          36,
+          9,
+          1
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 512,
+        "transition_signature": "61832c813fe238762263476b4bbda108804023720e438293e2405e26babe500f"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 18,
+        "source_multiplicities": [
+          36,
+          9,
+          1,
+          1,
+          9,
+          36,
+          84,
+          126,
+          126,
+          84
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 512,
+        "target_is_binomial_row": false,
+        "target_level": 20,
+        "target_multiplicities": [
+          120,
+          45,
+          10,
+          2,
+          10,
+          45,
+          120,
+          210,
+          252,
+          210
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 1024,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 20,
+        "source_multiplicities": [
+          2,
+          10,
+          45,
+          120,
+          210,
+          252,
+          210,
+          120,
+          45,
+          10
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 1024,
+        "target_is_binomial_row": false,
+        "target_level": 22,
+        "target_multiplicities": [
+          12,
+          12,
+          55,
+          165,
+          330,
+          462,
+          462,
+          330,
+          165,
+          55
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 2048,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 22,
+        "source_multiplicities": [
+          330,
+          462,
+          462,
+          330,
+          165,
+          55,
+          12,
+          12,
+          55,
+          165
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 2048,
+        "target_is_binomial_row": false,
+        "target_level": 24,
+        "target_multiplicities": [
+          495,
+          792,
+          924,
+          792,
+          495,
+          220,
+          67,
+          24,
+          67,
+          220
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 4096,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 24,
+        "source_multiplicities": [
+          792,
+          924,
+          792,
+          495,
+          220,
+          67,
+          24,
+          67,
+          220,
+          495
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 4096,
+        "target_is_binomial_row": false,
+        "target_level": 26,
+        "target_multiplicities": [
+          1287,
+          1716,
+          1716,
+          1287,
+          715,
+          287,
+          91,
+          91,
+          287,
+          715
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 8192,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 26,
+        "source_multiplicities": [
+          91,
+          91,
+          287,
+          715,
+          1287,
+          1716,
+          1716,
+          1287,
+          715,
+          287
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 8192,
+        "target_is_binomial_row": false,
+        "target_level": 28,
+        "target_multiplicities": [
+          378,
+          182,
+          378,
+          1002,
+          2002,
+          3003,
+          3432,
+          3003,
+          2002,
+          1002
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 16384,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 28,
+        "source_multiplicities": [
+          1002,
+          378,
+          182,
+          378,
+          1002,
+          2002,
+          3003,
+          3432,
+          3003,
+          2002
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 16384,
+        "target_is_binomial_row": false,
+        "target_level": 30,
+        "target_multiplicities": [
+          3004,
+          1380,
+          560,
+          560,
+          1380,
+          3004,
+          5005,
+          6435,
+          6435,
+          5005
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 32768,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 30,
+        "source_multiplicities": [
+          6435,
+          5005,
+          3004,
+          1380,
+          560,
+          560,
+          1380,
+          3004,
+          5005,
+          6435
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 32768,
+        "target_is_binomial_row": false,
+        "target_level": 32,
+        "target_multiplicities": [
+          12870,
+          11440,
+          8009,
+          4384,
+          1940,
+          1120,
+          1940,
+          4384,
+          8009,
+          11440
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 65536,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 32,
+        "source_multiplicities": [
+          4384,
+          8009,
+          11440,
+          12870,
+          11440,
+          8009,
+          4384,
+          1940,
+          1120,
+          1940
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 65536,
+        "target_is_binomial_row": false,
+        "target_level": 34,
+        "target_multiplicities": [
+          6324,
+          12393,
+          19449,
+          24310,
+          24310,
+          19449,
+          12393,
+          6324,
+          3060,
+          3060
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 131072,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 34,
+        "source_multiplicities": [
+          6324,
+          12393,
+          19449,
+          24310,
+          24310,
+          19449,
+          12393,
+          6324,
+          3060,
+          3060
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 131072,
+        "target_is_binomial_row": false,
+        "target_level": 36,
+        "target_multiplicities": [
+          9384,
+          18717,
+          31842,
+          43759,
+          48620,
+          43759,
+          31842,
+          18717,
+          9384,
+          6120
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 262144,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 36,
+        "source_multiplicities": [
+          43759,
+          31842,
+          18717,
+          9384,
+          6120,
+          9384,
+          18717,
+          31842,
+          43759,
+          48620
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 262144,
+        "target_is_binomial_row": false,
+        "target_level": 38,
+        "target_multiplicities": [
+          92379,
+          75601,
+          50559,
+          28101,
+          15504,
+          15504,
+          28101,
+          50559,
+          75601,
+          92379
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 524288,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 38,
+        "source_multiplicities": [
+          50559,
+          28101,
+          15504,
+          15504,
+          28101,
+          50559,
+          75601,
+          92379,
+          92379,
+          75601
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 524288,
+        "target_is_binomial_row": false,
+        "target_level": 40,
+        "target_multiplicities": [
+          126160,
+          78660,
+          43605,
+          31008,
+          43605,
+          78660,
+          126160,
+          167980,
+          184758,
+          167980
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 1048576,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 40,
+        "source_multiplicities": [
+          31008,
+          43605,
+          78660,
+          126160,
+          167980,
+          184758,
+          167980,
+          126160,
+          78660,
+          43605
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 1048576,
+        "target_is_binomial_row": false,
+        "target_level": 42,
+        "target_multiplicities": [
+          74613,
+          74613,
+          122265,
+          204820,
+          294140,
+          352738,
+          352738,
+          294140,
+          204820,
+          122265
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 2097152,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 42,
+        "source_multiplicities": [
+          294140,
+          352738,
+          352738,
+          294140,
+          204820,
+          122265,
+          74613,
+          74613,
+          122265,
+          204820
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 2097152,
+        "target_is_binomial_row": false,
+        "target_level": 44,
+        "target_multiplicities": [
+          498960,
+          646878,
+          705476,
+          646878,
+          498960,
+          327085,
+          196878,
+          149226,
+          196878,
+          327085
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 4194304,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 44,
+        "source_multiplicities": [
+          646878,
+          705476,
+          646878,
+          498960,
+          327085,
+          196878,
+          149226,
+          196878,
+          327085,
+          498960
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 4194304,
+        "target_is_binomial_row": false,
+        "target_level": 46,
+        "target_multiplicities": [
+          1145838,
+          1352354,
+          1352354,
+          1145838,
+          826045,
+          523963,
+          346104,
+          346104,
+          523963,
+          826045
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 8388608,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 46,
+        "source_multiplicities": [
+          346104,
+          346104,
+          523963,
+          826045,
+          1145838,
+          1352354,
+          1352354,
+          1145838,
+          826045,
+          523963
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 8388608,
+        "target_is_binomial_row": false,
+        "target_level": 48,
+        "target_multiplicities": [
+          870067,
+          692208,
+          870067,
+          1350008,
+          1971883,
+          2498192,
+          2704708,
+          2498192,
+          1971883,
+          1350008
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 16777216,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 48,
+        "source_multiplicities": [
+          1350008,
+          870067,
+          692208,
+          870067,
+          1350008,
+          1971883,
+          2498192,
+          2704708,
+          2498192,
+          1971883
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 16777216,
+        "target_is_binomial_row": false,
+        "target_level": 50,
+        "target_multiplicities": [
+          3321891,
+          2220075,
+          1562275,
+          1562275,
+          2220075,
+          3321891,
+          4470075,
+          5202900,
+          5202900,
+          4470075
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 33554432,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 50,
+        "source_multiplicities": [
+          5202900,
+          4470075,
+          3321891,
+          2220075,
+          1562275,
+          1562275,
+          2220075,
+          3321891,
+          4470075,
+          5202900
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 33554432,
+        "target_is_binomial_row": false,
+        "target_level": 52,
+        "target_multiplicities": [
+          10405800,
+          9672975,
+          7791966,
+          5541966,
+          3782350,
+          3124550,
+          3782350,
+          5541966,
+          7791966,
+          9672975
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 67108864,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 52,
+        "source_multiplicities": [
+          5541966,
+          7791966,
+          9672975,
+          10405800,
+          9672975,
+          7791966,
+          5541966,
+          3782350,
+          3124550,
+          3782350
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 67108864,
+        "target_is_binomial_row": false,
+        "target_level": 54,
+        "target_multiplicities": [
+          9324316,
+          13333932,
+          17464941,
+          20078775,
+          20078775,
+          17464941,
+          13333932,
+          9324316,
+          6906900,
+          6906900
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 134217728,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 54,
+        "source_multiplicities": [
+          9324316,
+          13333932,
+          17464941,
+          20078775,
+          20078775,
+          17464941,
+          13333932,
+          9324316,
+          6906900,
+          6906900
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 134217728,
+        "target_is_binomial_row": false,
+        "target_level": 56,
+        "target_multiplicities": [
+          16231216,
+          22658248,
+          30798873,
+          37543716,
+          40157550,
+          37543716,
+          30798873,
+          22658248,
+          16231216,
+          13813800
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 268435456,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 56,
+        "source_multiplicities": [
+          37543716,
+          30798873,
+          22658248,
+          16231216,
+          13813800,
+          16231216,
+          22658248,
+          30798873,
+          37543716,
+          40157550
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 268435456,
+        "target_is_binomial_row": false,
+        "target_level": 58,
+        "target_multiplicities": [
+          77701266,
+          68342589,
+          53457121,
+          38889464,
+          30045016,
+          30045016,
+          38889464,
+          53457121,
+          68342589,
+          77701266
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4"
+        ],
+        "target_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "target_total_mass": 536870912,
+        "transition_signature": "552b728198c0c232fda810145c64fd251fe61be1ea9818d8c60dfcc4af6a5a9c"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 58,
+        "source_multiplicities": [
+          53457121,
+          38889464,
+          30045016,
+          30045016,
+          38889464,
+          53457121,
+          68342589,
+          77701266,
+          77701266,
+          68342589
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "341be45c545095d57588ed9b1864b4489522e56bfa2fbc123b64d8d8c22626f7",
+          "ec35fb2c0795c518f6a40116081d2c6728b6881f325a0fa3f2721d01c800c23a",
+          "5f9a458c2dfbe9ef57bc24026c019ed0a6cbdd3aefecd8400d6af067b1f0e090",
+          "a321316d1c45fa745723525fb0324cd3837a369e4a2b61c39576e846f054059c",
+          "d3b2062d3d9f8a34a934349716f34a41d5b2336ad929dc039612bd375d2753d0",
+          "ff60dff855d78857da8e1ba012d8621cda1b667692e83bb37e5c5aa1583feaba",
+          "b00a5896afb3f9314d9dd5ded8dbec708994a74586e67a080f6280bf96d1b763",
+          "22b9e9a94978bcf813bb40347416131a8bd2d7755581ddc9defe632179efc115",
+          "b3c82552f29bdabfa58b272f861809d26390113c5f2f2d1513e52d0c9f1cadf4",
+          "5c995219794dfb3a7d27236e2b1b31d1d514cb547cc095836370c55b8ac54aa5"
+        ],
+        "source_state_set_digest": "3fc2f4be68561f133a95074b56477b7532cb726b6f50c7e37611bbdbba69c8c0",
+        "source_total_mass": 536870912,
+        "target_is_binomial_row": false,
+        "target_level": 60,
+        "target_multiplicities": [
+          121799710,
+          92346585,
+          68934480,
+          60090032,
+          68934480,
+          92346585,
+          121799710,
+          146043855,
+          155402532,
+          146043855
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81"
+        ],
+        "target_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "target_total_mass": 1073741824,
+        "transition_signature": "a9627bc49266093fd7abfe31e4606b198cfcea806bde44ea33831c93d2237627"
+      },
+      {
+        "every_source_has_two_unit_extensions": true,
+        "incidence_adjacency": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            0
+          ]
+        ],
+        "incidence_kind": "recurrent_cycle",
+        "source_distinct_outdegrees": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_extension_masses": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "source_is_binomial_row": false,
+        "source_level": 60,
+        "source_multiplicities": [
+          92346585,
+          68934480,
+          60090032,
+          68934480,
+          92346585,
+          121799710,
+          146043855,
+          155402532,
+          146043855,
+          121799710
+        ],
+        "source_state_count": 10,
+        "source_state_digests": [
+          "7a72a5a1718770487ab2cd93d8468cb2999b9714487a1d426e0a6540ae3cc39f",
+          "d6ddfdd56ebda4591c28ffeb5ebb2d3544fa5416617027452ff0d5215a442f84",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "bc0d742d78de6353f3494ad00fb178633a94a2fa1e5603f07cf80f00d7c32315",
+          "15cb1c604c3b1b040ab101af89a5141abd72d7243e79571a49ccd7b9a163b0e4",
+          "3f2c2537c5fd2892e12cab9709e660b362af1be32788358765c52d4696154c81",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "c95758f4195d26bb9c5a3c15ff40f97506a33a0d5b7a1c5199de99c60fe412e4"
+        ],
+        "source_state_set_digest": "2402ef46d55ef87fb7ddab3c0e332b5d3a521b55887ee6f061d08750ddbc0928",
+        "source_total_mass": 1073741824,
+        "target_is_binomial_row": false,
+        "target_level": 62,
+        "target_multiplicities": [
+          214146295,
+          161281065,
+          129024512,
+          129024512,
+          161281065,
+          214146295,
+          267843565,
+          301446387,
+          301446387,
+          267843565
+        ],
+        "target_state_count": 10,
+        "target_state_digests": [
+          "1365596a8dc543f9da9a8f30bc7b6d862c49b9972374983c8196d1028410c664",
+          "be397f780e20bd5abb891ae1f1ac39467ce8bf8b0cacb9a2a735e218284db868",
+          "f94eae0eab084b6d424b29d4f49cf3a065c3ccb192273c19391abfd648cb182b",
+          "359865309f11933a2b03b3fb3474ebb7ab9186a240fc7a28a564f620c20b1ff6",
+          "6f9735bc17ea35270cfab130c862f67d28281e379965bf818f085e6b62a4c986",
+          "63a7ef671af606e85492929c18098066dcd0b701facfd42f3697fb4a8edf2ee0",
+          "4d2d3145ed1f48676e18855c5381a027a3757827f328682fc05970beb884a915",
+          "cdf2ffb412f95a84308fd17c2e1f7457bfe01f90f86176a9e56ef46174aa601c",
+          "6ec0022c7a8a5963b5ab7f617ecbd8f8b04a091b2310e1dd6f3fc4a978cce71a",
+          "60539ca706706aafdc9d2d6c1849606c38843288ad5e7c5bb96a4afe1975eee1"
+        ],
+        "target_state_set_digest": "e3c6bae7e4826d2a1095171ef26fb71038e5581b17680188948ee58e928c17b9",
+        "target_total_mass": 2147483648,
+        "transition_signature": "5275e04d77d6e9a428ad052eb539ae67d9361a00df7b1d8e6c79656c5ac8bf7e"
+      }
+    ],
+    "tube_length": 30
+  }
+}
