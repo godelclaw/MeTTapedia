@@ -505,3 +505,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Necklace
 import Mettapedia.GraphTheory.FourColor.GoertzelV24WindingClassification
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail
+import Mettapedia.GraphTheory.FourColor.RotationSystemEdgeColoring
