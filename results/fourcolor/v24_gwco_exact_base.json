@@ -1,0 +1,184 @@
+{
+  "algorithm": "three-matchings-rotation-system-exhaustion-v1",
+  "conditions": [
+    "simple three-edge-colored cubic internal graph",
+    "ten degree-one feet, five assigned to each hole",
+    "every bicolored component is a radial path",
+    "two spherical face traces gather exactly one hole's feet each",
+    "all non-hole faces have length at least five",
+    "restoring each cap cycle creates only faces of length at least five",
+    "the inner face word has cyclic block type (3,1,1)"
+  ],
+  "normalization": "The six labeled alpha feet are fixed on vertices 0..5; the alpha stabilizer exhausts the remaining internal relabelings; global reversal fixes rotation bit 0.",
+  "schema": "fourcolor-v24-gwco-exact-base-v1",
+  "sizes": [
+    {
+      "alpha_stabilizer_size": 36,
+      "beta_candidate_count": 18,
+      "beta_orbit_coverage_count": 18,
+      "beta_orbit_representative_count": 1,
+      "beta_orbit_size_histogram": {
+        "18": 1
+      },
+      "gamma_candidate_count": 18,
+      "inner_stub_ids": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "internal_vertex_count": 6,
+      "outer_stub_ids": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "raw_connected_matching_triples": 0,
+      "raw_core_attachment_eligible_matching_triples": 0,
+      "raw_correct_hole_partition_rotation_systems": 0,
+      "raw_radial_matching_triples": 72,
+      "raw_rotation_systems_covered": 0,
+      "raw_satisfying_rotation_systems": 0,
+      "raw_spherical_rotation_systems": 0,
+      "representative_pair_checks": 18,
+      "representative_rotation_systems_tested": 0,
+      "rotation_blocker_histogram": {},
+      "spherical_face_count_if_connected": 0,
+      "verdict": "UNSAT",
+      "witness": null
+    },
+    {
+      "alpha_stabilizer_size": 72,
+      "beta_candidate_count": 156,
+      "beta_orbit_coverage_count": 156,
+      "beta_orbit_representative_count": 4,
+      "beta_orbit_size_histogram": {
+        "12": 1,
+        "36": 2,
+        "72": 1
+      },
+      "gamma_candidate_count": 156,
+      "inner_stub_ids": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "internal_vertex_count": 8,
+      "outer_stub_ids": [
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "raw_connected_matching_triples": 4608,
+      "raw_core_attachment_eligible_matching_triples": 0,
+      "raw_correct_hole_partition_rotation_systems": 0,
+      "raw_radial_matching_triples": 7200,
+      "raw_rotation_systems_covered": 0,
+      "raw_satisfying_rotation_systems": 0,
+      "raw_spherical_rotation_systems": 0,
+      "representative_pair_checks": 624,
+      "representative_rotation_systems_tested": 0,
+      "rotation_blocker_histogram": {},
+      "spherical_face_count_if_connected": 1,
+      "verdict": "UNSAT",
+      "witness": null
+    },
+    {
+      "alpha_stabilizer_size": 288,
+      "beta_candidate_count": 1632,
+      "beta_orbit_coverage_count": 1632,
+      "beta_orbit_representative_count": 9,
+      "beta_orbit_size_histogram": {
+        "144": 5,
+        "288": 3,
+        "48": 1
+      },
+      "gamma_candidate_count": 1632,
+      "inner_stub_ids": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "internal_vertex_count": 10,
+      "outer_stub_ids": [
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "raw_connected_matching_triples": 673920,
+      "raw_core_attachment_eligible_matching_triples": 4032,
+      "raw_correct_hole_partition_rotation_systems": 8064,
+      "raw_radial_matching_triples": 806400,
+      "raw_rotation_systems_covered": 4128768,
+      "raw_satisfying_rotation_systems": 0,
+      "raw_spherical_rotation_systems": 4128768,
+      "representative_pair_checks": 14688,
+      "representative_rotation_systems_tested": 18432,
+      "rotation_blocker_histogram": {
+        "mixed_hole_feet": 4112640,
+        "short_cap_adjacent_face": 8064,
+        "wrong_hole_face_count": 8064
+      },
+      "spherical_face_count_if_connected": 2,
+      "verdict": "UNSAT",
+      "witness": null
+    },
+    {
+      "alpha_stabilizer_size": 1728,
+      "beta_candidate_count": 20160,
+      "beta_orbit_coverage_count": 20160,
+      "beta_orbit_representative_count": 17,
+      "beta_orbit_size_histogram": {
+        "1728": 7,
+        "288": 1,
+        "864": 9
+      },
+      "gamma_candidate_count": 20160,
+      "inner_stub_ids": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "internal_vertex_count": 12,
+      "outer_stub_ids": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "raw_connected_matching_triples": 110260224,
+      "raw_core_attachment_eligible_matching_triples": 5184000,
+      "raw_correct_hole_partition_rotation_systems": 829440,
+      "raw_radial_matching_triples": 120559104,
+      "raw_rotation_systems_covered": 21233664000,
+      "raw_satisfying_rotation_systems": 0,
+      "raw_spherical_rotation_systems": 14835253248,
+      "representative_pair_checks": 342720,
+      "representative_rotation_systems_tested": 11608064,
+      "rotation_blocker_histogram": {
+        "mixed_hole_feet": 2342075904,
+        "positive_genus": 6398410752,
+        "short_cap_adjacent_face": 172800,
+        "short_internal_face": 656640,
+        "wrong_hole_face_count": 12492347904
+      },
+      "spherical_face_count_if_connected": 3,
+      "verdict": "UNSAT",
+      "witness": null
+    }
+  ]
+}
