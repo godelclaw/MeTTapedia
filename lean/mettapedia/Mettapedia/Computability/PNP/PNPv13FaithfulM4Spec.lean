@@ -511,13 +511,22 @@ structure V13M4OpenConstructionObligations
         E.supported omega ∧ E.publicInput omega = Y ∧
           C.zCoord (E.witnessOfWorld omega) = z) ->
       exists xi, C.bufferPredicate (C.bufferPublicOf Y) z xi
+  /-- A manuscript-facing message scale has at least one switched coordinate.
+  This prevents every message-dependent obligation from being inhabited
+  vacuously by an empty target type. -/
+  switched_targets_nonempty :
+    forall theta m t, 0 < t -> (E.switchedSet theta m t).Nonempty
   quotientAndUniformGaugeLift : V13M4UniformGaugeLift E G C
   finiteGaugeGroup :
     V13FaithfulGaugeInterface E (fun theta m t => C.GaugeVector theta m t)
   D8_lockedMessageRigidity : V13D8LockedMessageRigidity E G C
   D30_noPublicTargetTags : V13D30NoPublicTargetTags E
+  D31_publicSyntaxNeutrality : V13D31PublicSyntaxNeutrality E
+  fullPublicSyntaxObservability : V13FullPublicSyntaxObservability E
   D33_atomCompleteness : V13D33AtomCompleteness E G C NormalizedPrimitive
   D48_compatibleCouplings : V13D48CompatibleCouplings E G C
+  definition7_neutralPairCoherence :
+    V13Definition7NeutralPairCoherence E G C D48_compatibleCouplings
   cnfCompilation : V13M4UniformCNFCompilation E CNFVar
 
 end Mettapedia.Computability.PNP

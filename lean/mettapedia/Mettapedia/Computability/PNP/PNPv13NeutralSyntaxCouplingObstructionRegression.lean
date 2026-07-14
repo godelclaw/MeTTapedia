@@ -18,6 +18,7 @@ namespace Mettapedia.Computability.PNP
 #check v13OpenConstruction_rejects_D48GlobalNeutralSkeletonMatching
 #check v13OpenConstruction_incompatible_with_definition7_completePublicNeutrality
 #check v13OpenConstruction_D31_definition7_fullPublicSyntax_noGo
+#check v13M4OpenConstructionObligations_uninhabited
 
 #print axioms V13FiniteCoupling.probability_add_probability_not
 #print axioms V13FiniteCoupling.event_of_probability_one_of_mass_pos
@@ -35,5 +36,6 @@ namespace Mettapedia.Computability.PNP
 #print axioms v13OpenConstruction_rejects_D48GlobalNeutralSkeletonMatching
 #print axioms v13OpenConstruction_incompatible_with_definition7_completePublicNeutrality
 #print axioms v13OpenConstruction_D31_definition7_fullPublicSyntax_noGo
+#print axioms v13M4OpenConstructionObligations_uninhabited
 
 end Mettapedia.Computability.PNP

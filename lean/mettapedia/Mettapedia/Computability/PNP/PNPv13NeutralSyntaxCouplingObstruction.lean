@@ -638,4 +638,26 @@ theorem v13OpenConstruction_D31_definition7_fullPublicSyntax_noGo
     (D31.every_public_template_primitive_neutral theta m t)
     (fullSyntax.publicInput_ext theta m t)
 
+/-- The complete faithful mechanical target is uninhabited.  Its nonempty
+switched-target guard supplies a target at message scale one, while its exact
+D.31, full-public observability, Definition 7.4, D.8, and D.48 fields trigger
+the route-level no-go theorem above.
+
+This is not a P != NP theorem.  It proves that the displayed v13 mechanical
+interface cannot be the premise of a non-vacuous separation proof without
+revising at least one of those manuscript requirements. -/
+theorem v13M4OpenConstructionObligations_uninhabited
+    {E : V13QuantitativeEnsemble} {G : V13M4LayeredGeometry E}
+    {C : V13M4LocalComponents E G}
+    {NormalizedPrimitive : E.Parameter -> Nat -> Nat -> Type u}
+    {CNFVar : E.Parameter -> Nat -> Nat -> Type v} :
+    ¬ Nonempty
+      (V13M4OpenConstructionObligations E G C NormalizedPrimitive CNFVar) := by
+  rintro ⟨O⟩
+  rcases E.parameterNonempty with ⟨theta⟩
+  rcases O.switched_targets_nonempty theta 0 1 (by decide) with ⟨j, _hj⟩
+  exact v13OpenConstruction_D31_definition7_fullPublicSyntax_noGo
+    O O.D31_publicSyntaxNeutrality O.fullPublicSyntaxObservability
+    O.definition7_neutralPairCoherence theta 0 1 j
+
 end Mettapedia.Computability.PNP
