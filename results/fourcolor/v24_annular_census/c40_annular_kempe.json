@@ -1,0 +1,264 @@
+{
+  "algorithm": "explicit-bichromatic-components-and-union-find-v1",
+  "all_good_fibers_inner_avoiding_connected": true,
+  "full_kempe_class_count": 1,
+  "full_kempe_class_sizes": [
+    31704
+  ],
+  "full_kempe_transition_count": 187236,
+  "good_fiber_class_count_histogram": {
+    "1": 30
+  },
+  "good_fiber_size_histogram": {
+    "104": 30
+  },
+  "good_fibers": [
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "00012"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "00021"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "00120"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "00210"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "01112"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "01200"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "01222"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "02100"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "02111"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "02221"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "10002"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "10211"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "10222"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "11021"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "11102"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "11120"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "11201"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "12000"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "12011"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "12220"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "20001"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "20111"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "20122"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "21000"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "21022"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "21110"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "22012"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "22102"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "22201"
+    },
+    {
+      "coloring_count": 104,
+      "inner_avoiding_class_count": 1,
+      "inner_avoiding_class_sizes": [
+        104
+      ],
+      "inner_word": "22210"
+    }
+  ],
+  "good_inner_word_fiber_count": 30,
+  "graph": "C40",
+  "graph_hash": "51ebf78d529c61fac31fc6c36f8754a8c397bae9a1f02c9be0db3552f6fbd2d6",
+  "inner_avoiding_transition_count": 76716,
+  "inner_word_fiber_count": 243,
+  "schema": "fourcolor-v24-annular-kempe-census-v1",
+  "solution_count": 31704
+}
