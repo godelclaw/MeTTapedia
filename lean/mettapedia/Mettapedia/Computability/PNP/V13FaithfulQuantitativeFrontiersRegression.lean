@@ -19,6 +19,8 @@ set_option autoImplicit false
 #check V13FaithfulGaugeInterface
 #check V13DeclaredNeutralPairNeutrality
 #check V13FullPublicSyntaxCoverage
+#check V13D31PublicSyntaxNeutrality
+#check V13FullPublicSyntaxObservability
 #check V13SafeQSSMFrontier
 #check V13BoundedGaugeIncidenceFrontier
 #check V13AtomicEvidenceBudgetFrontier
@@ -38,6 +40,8 @@ set_option autoImplicit false
 #print axioms V13FaithfulGaugeInterface
 #print axioms V13DeclaredNeutralPairNeutrality
 #print axioms V13FullPublicSyntaxCoverage
+#print axioms V13D31PublicSyntaxNeutrality
+#print axioms V13FullPublicSyntaxObservability
 #print axioms V13SafeQSSMFrontier
 #print axioms V13BoundedGaugeIncidenceFrontier
 #print axioms V13AtomicEvidenceBudgetFrontier

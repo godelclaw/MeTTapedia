@@ -19,6 +19,7 @@ set_option autoImplicit false
 #check V13M4UniformGaugeLift
 #check V13FiniteCoupling
 #check V13D48CompatibleCouplings
+#check V13Definition7NeutralPairCoherence
 #check V13M4UniformCNFCompilation
 #check V13M4OpenConstructionObligations
 
@@ -33,6 +34,7 @@ set_option autoImplicit false
 #print axioms V13M4UniformGaugeLift
 #print axioms V13FiniteCoupling
 #print axioms V13D48CompatibleCouplings
+#print axioms V13Definition7NeutralPairCoherence
 #print axioms V13M4UniformCNFCompilation
 #print axioms V13M4OpenConstructionObligations
 

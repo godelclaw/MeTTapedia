@@ -82,6 +82,24 @@ theorem v13M4Concrete_D30_noPublicTargetTags :
     change ¬v13M4ConcreteRecoversTargetWithoutCharge primitive
     exact v13M4Concrete_noPrimitiveRecoversTargetWithoutCharge m t primitive
 
+/-- The scaffold's primitive valuation is extensionally complete for its
+one-bit public object.  This does not assert D.31 neutrality: the scaffold
+currently classifies its visible constraint templates as charged. -/
+theorem v13M4Concrete_fullPublicSyntaxObservability :
+    V13FullPublicSyntaxObservability V13M4ConcreteE := by
+  constructor
+  intro theta m t omega0 omega1 hagree
+  cases theta
+  change forall primitive : V13M4ConcretePublicPrimitive m t,
+    primitive ∈ Finset.univ ->
+      v13M4ConcretePrimitiveValue primitive omega0 =
+        v13M4ConcretePrimitiveValue primitive omega1 at hagree
+  have htoken := hagree .neutralToken (Finset.mem_univ _)
+  change omega0.neutralToken = omega1.neutralToken at htoken
+  change V13M4ConcretePublic.mk omega0.neutralToken =
+    V13M4ConcretePublic.mk omega1.neutralToken
+  rw [htoken]
+
 /-! ## Exact D.8 obstruction -/
 
 def v13M4ConcreteZeroPublic : V13M4ConcretePublic 0 0 := ⟨false⟩
