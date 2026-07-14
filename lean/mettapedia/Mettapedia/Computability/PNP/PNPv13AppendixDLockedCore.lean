@@ -166,7 +166,13 @@ noncomputable def publicMessageOfLockedRigidity
 
 /-- D.7 plus D.8 constructs the public-message invariant used by the real
 single-message and SAT-search adapters.  The theorem does not prove D.8; for
-M4, locked-message rigidity remains the construction obligation. -/
+M4, locked-message rigidity remains the construction obligation.
+
+In particular, D.7 and D.8 are incompatible with a reading of D.30 that
+forbids the existence of *every* set-theoretic recovery map from the complete
+public lock syntax.  D.30 must instead prohibit raw/local or computationally
+uncharged recovery: D.8 itself makes the common message a function of the
+public syntax. -/
 theorem publicMessageInvariant_of_lockSatisfiable_of_lockedMessageRigidity
     (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
     (defaultMessage : Message)
