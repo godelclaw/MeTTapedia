@@ -182,10 +182,11 @@ structure V13QuantitativeEnsemble where
     World theta m t -> World theta m t -> Prop
   parametersAdmissibleForClock : Parameter -> Nat -> Prop
   sizeAtMessageScale : Parameter -> Nat -> Nat
-  /-- Raw numeric slot for `Kpoly_D(M(Y)|Y)`.  A final manuscript-facing
+  /-- Extended-natural slot for `Kpoly_D(M(Y)|Y)`.  The value is `⊤` when no
+  program returns the message within the clock.  A manuscript-facing
   construction must additionally provide `V13ClockedKpolySemantics`, which
   ties this value to a fuel-bounded prefix-program minimum. -/
-  clockedKpoly : forall {theta m t}, Nat -> World theta m t -> Nat
+  clockedKpoly : forall {theta m t}, Nat -> World theta m t -> WithTop Nat
 
 /-- The manuscript clock `(encoded public length + 2)^D`. -/
 def v13PolynomialClockFuel (encodedPublic : List Bool) (D : Nat) : Nat :=
@@ -221,7 +222,7 @@ structure V13ClockedKpolySemantics (E : V13QuantitativeEnsemble) where
         evalWithinSteps p input fuel' = some output
   clockedKpoly_le_iff :
     forall {theta m t} (D : Nat) (omega : E.World theta m t) (a : Nat),
-      E.clockedKpoly D omega <= a <->
+      E.clockedKpoly D omega <= (a : WithTop Nat) <->
         exists p : E.Program,
           E.programLength p <= a ∧
             evalWithinSteps p (encodePublic (E.publicInput omega))
@@ -314,6 +315,13 @@ def separationIndicator {theta : E.Parameter} {m t : Nat}
   exact if E.gaugeSetCanSeparate U j then 1 else 0
 
 end V13QuantitativeEnsemble
+
+/-- Extended-natural comparison with a real lower rate.  A finite value `n`
+satisfies this predicate exactly when `rate <= n`; `⊤` satisfies it
+vacuously.  This avoids replacing Definition 2.1's possible infinity by an
+arbitrary finite sentinel. -/
+def v13ClockedKpolyAtLeast (rate : Real) (K : WithTop Nat) : Prop :=
+  forall n : Nat, K <= (n : WithTop Nat) -> rate <= (n : Real)
 
 /-! ## Critical 3: genuine gauge action and product law -/
 
@@ -617,16 +625,17 @@ structure V13GlobalMessageIncompressibilityFrontier
   eta : Nat -> Real
   kappa : Nat -> Real
   threshold : Nat -> Nat
-  parameters_chosen_after_clock : forall D,
+  parameters_chosen_after_clock : forall D, 1 <= D ->
     E.parametersAdmissibleForClock (parameterAtClock D) D
-  eta_positive : forall D, 0 < eta D
-  kappa_positive : forall D, 0 < kappa D
+  eta_positive : forall D, 1 <= D -> 0 < eta D
+  kappa_positive : forall D, 1 <= D -> 0 < kappa D
   global_message_incompressibility :
-    forall D t, threshold D <= t ->
+    forall D, 1 <= D -> forall t, threshold D <= t ->
       let theta := parameterAtClock D
       let m := E.sizeAtMessageScale theta t
       E.probabilityAt theta m t
-        (fun omega => (eta D * t : Real) <= E.clockedKpoly D omega) >=
+        (fun omega =>
+          v13ClockedKpolyAtLeast (eta D * t) (E.clockedKpoly D omega)) >=
           1 - Real.exp (-(kappa D * t) * Real.log 2)
 
 /-- Section 11 on the **same** parameterized object selected by Theorem 10.9
@@ -637,6 +646,7 @@ structure V13Section11SameObjectUpper
     (E : V13QuantitativeEnsemble)
     (lower : V13GlobalMessageIncompressibilityFrontier E) where
   Dstar : Nat
+  Dstar_ge_one : 1 <= Dstar
   constantProgramCost : Nat
   clocked_self_reduction_upper :
     forall t,
@@ -644,7 +654,7 @@ structure V13Section11SameObjectUpper
       let m := E.sizeAtMessageScale theta t
       forall omega : E.World theta m t,
         E.supported omega ->
-        E.clockedKpoly Dstar omega <= constantProgramCost
+        E.clockedKpoly Dstar omega <= (constantProgramCost : WithTop Nat)
 
 /-- The four open quantitative mathematics packages on one ensemble: safe
 qSSM, incidence plus the Atomic Evidence Budget, boundary mixing, and clocked
