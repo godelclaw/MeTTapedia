@@ -511,3 +511,8 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCut
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Square
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareComposition
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareLineProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareGraphSplit
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareGraphComposition
