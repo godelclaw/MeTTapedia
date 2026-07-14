@@ -53,7 +53,7 @@ theorem
     (h :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
     regime
@@ -111,7 +111,7 @@ theorem
     (h :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
     regime
@@ -140,7 +140,7 @@ def
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical-annulus closed-walk-source face-source S4 salvage statement. -/
@@ -173,7 +173,7 @@ def
         source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired-annulus closed-walk-source face-source S4 salvage statement. -/

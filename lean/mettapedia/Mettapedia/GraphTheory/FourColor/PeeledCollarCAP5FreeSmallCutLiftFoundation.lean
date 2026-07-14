@@ -64,11 +64,10 @@ def CAP5FreeRepairedAnnulusPeeledCollarSmallCutLiftFoundationTarget :
         data.inducedBoundaryGraph →
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph
 
-/--
-Closed-walk source small-cut lift foundation target for the selected induced
-peeled collar graph carried by a boundary source.
--/
-def CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :
+/-- For the induced collar selected by a closed-walk boundary source, every
+small cyclic collar cut lifts to the ambient graph without increasing its
+support. -/
+def ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :
     Prop :=
   ∀ {V : Type} [DecidableEq V]
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
@@ -80,6 +79,23 @@ def CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
       PeeledCollarSmallCyclicCutLiftsToAmbient G
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
+
+/-- Small-cut lifting instantiates inherited cyclic five-edge connectivity from
+the ambient minimal-counterexample regime. -/
+theorem closedWalkActualCollar_cyclicallyFiveEdgeConnected_of_smallCyclicCutLift
+    (hcutLift : ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient)
+    {V : Type} [DecidableEq V]
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (regime : MinimalCounterexamplePeeledCollarRegime G
+      (BoundaryEdgeSetEndpointVertex
+        (G := G)
+        source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
+    CyclicallyFiveEdgeConnected
+      source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
+  peeledCollar_cyclicallyFiveEdgeConnected_of_minimalCounterexampleRegime_of_smallCutLift
+    regime (hcutLift source regime)
 
 /--
 Candidate-lift foundations are stronger than small-cut lift foundations.
@@ -130,7 +146,7 @@ theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
     PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
       CyclicallyFiveEdgeConnected H ∧
       ClosedCollarForbidsCyclicTwoCut H ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H := by
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H := by
   have hlift : PeeledCollarSmallCyclicCutLiftsToAmbient G H :=
     hfoundation regime
   let inputs : MinimalCounterexamplePeeledCollarRouteInputs G H := {
@@ -157,7 +173,7 @@ theorem routeIndexConsequences_of_cap5FreeRealizedCandidateLiftFoundationTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
       CyclicallyFiveEdgeConnected H ∧
       ClosedCollarForbidsCyclicTwoCut H ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H := by
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H := by
   have hcandidate :
       PeeledCollarRealizedCandidateLiftsToAmbientSmallCut G H :=
     hfoundation regime
@@ -225,7 +241,7 @@ theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
     PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hlift :
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph :=
@@ -277,7 +293,7 @@ theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
     PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hlift :
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph :=
@@ -305,7 +321,7 @@ selected induced peeled collar graph.
 -/
 theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
     (hfoundation :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget)
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient)
     {V : Type} [DecidableEq V]
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
@@ -321,7 +337,7 @@ theorem routeIndexConsequences_of_cap5FreeSmallCutLiftFoundationTarget
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hlift :
       PeeledCollarSmallCyclicCutLiftsToAmbient G
@@ -345,7 +361,7 @@ realized-candidate route-input record for the selected induced peeled collar.
 -/
 def realizedCandidateRouteInputs_of_cap5FreeSmallCutLiftFoundationTarget
     (hfoundation :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget)
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient)
     {V : Type} [DecidableEq V]
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
@@ -369,7 +385,7 @@ small-cut lift foundation.
 theorem cap5FreeSmallCutLiftFoundationTarget_of_faceSourceFoundationTarget
     (hfoundation :
       CAP5FreeClosedWalkPeeledCollarFaceSourceFoundationTarget) :
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget := by
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient := by
   intro V _ G emb source regime
   exact
     (source.routeIndexConsequences_of_cap5FreeFaceSourceFoundationTarget
@@ -389,7 +405,7 @@ def Section92Step4CAP5FreeSmallCutLiftFoundationRouteIndexTarget : Prop :=
         PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
         CyclicallyFiveEdgeConnected H ∧
         ClosedCollarForbidsCyclicTwoCut H ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Route-index theorem for the graph-facing small-cut lift foundation target. -/
 theorem section92Step4CAP5FreeSmallCutLiftFoundationRouteIndexTarget
@@ -412,7 +428,7 @@ def Section92Step4CAP5FreeRealizedCandidateLiftFoundationRouteIndexTarget :
         PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
         CyclicallyFiveEdgeConnected H ∧
         ClosedCollarForbidsCyclicTwoCut H ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Route-index theorem for the checker-facing realized-candidate lift target. -/
 theorem section92Step4CAP5FreeRealizedCandidateLiftFoundationRouteIndexTarget
@@ -440,7 +456,7 @@ def Section92Step4CAP5FreeRealizedCandidateRouteInputsFoundationRouteIndexTarget
           (∀ candidate : CyclicSeparatorCandidate H, ¬ candidate.Realizes) ∧
           CyclicallyFiveEdgeConnected H ∧
           ClosedCollarForbidsCyclicTwoCut H ∧
-          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+          ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /--
 Route-index theorem for the checker-facing realized-candidate route-input
@@ -491,7 +507,7 @@ def Section92Step4CanonicalAnnulusCAP5FreeSmallCutLiftFoundationRouteIndexTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the canonical annulus small-cut lift target. -/
@@ -518,7 +534,7 @@ def Section92Step4RepairedAnnulusCAP5FreeSmallCutLiftFoundationRouteIndexTarget 
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the repaired annulus small-cut lift target. -/
@@ -550,13 +566,13 @@ def Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Route-index theorem for the closed-walk source small-cut lift target. -/
 theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget
     (hfoundation :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient) :
     Section92Step4ClosedWalkCAP5FreeSmallCutLiftFoundationRouteIndexTarget := by
   intro V _ G emb source regime
   exact
@@ -592,7 +608,7 @@ def Section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexT
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
           ClosedCollarForbidsCyclicTwoCut
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -600,7 +616,7 @@ Route-index theorem for the closed-walk checker-facing route-input target.
 -/
 theorem section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget
     (hfoundation :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient) :
     Section92Step4ClosedWalkCAP5FreeSmallCutLiftRouteInputsFoundationRouteIndexTarget := by
   intro V _ G emb source regime
   have hlift :

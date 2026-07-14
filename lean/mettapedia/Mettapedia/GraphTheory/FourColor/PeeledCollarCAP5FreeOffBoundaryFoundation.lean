@@ -114,7 +114,7 @@ theorem routeIndexConsequences_of_cap5FreeEmbeddedOffBoundaryNoCrossingFoundatio
       PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
       CyclicallyFiveEdgeConnected H ∧
       ClosedCollarForbidsCyclicTwoCut H ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H := by
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H := by
   have hoffBoundary :
       PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient φ :=
     hfoundation φ regime
@@ -191,7 +191,7 @@ theorem routeIndexConsequences_of_cap5FreeOffBoundaryNoCrossingFoundationTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hoffBoundary :
       PlanarBoundaryAnnulusPeeledCollarOffBoundaryNoCrossingTarget
@@ -281,7 +281,7 @@ theorem routeIndexConsequences_of_cap5FreeOffBoundaryNoCrossingFoundationTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hoffBoundary :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffBoundaryNoCrossingTarget
@@ -332,7 +332,7 @@ def Section92Step4EmbeddedCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarge
         PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
         CyclicallyFiveEdgeConnected H ∧
         ClosedCollarForbidsCyclicTwoCut H ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Route-index theorem for the embedded off-boundary target. -/
 theorem section92Step4EmbeddedCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarget
@@ -365,7 +365,7 @@ def
         PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the canonical annulus off-boundary target. -/
@@ -400,7 +400,7 @@ def
         PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the repaired annulus off-boundary target. -/

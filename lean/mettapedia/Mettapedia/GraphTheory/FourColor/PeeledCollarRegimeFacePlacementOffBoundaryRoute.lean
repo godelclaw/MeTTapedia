@@ -87,7 +87,7 @@ theorem offBoundaryRouteConsequences_of_regimeFacePlacementFoundationTarget
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
   source.offBoundaryRouteConsequences_of_minimalCounterexampleRegime_of_facePlacementNoncrossingTarget
     regime
@@ -125,7 +125,7 @@ def Section92Step4ClosedWalkRegimeFacePlacementOffBoundaryRouteIndexTarget :
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
           ClosedCollarForbidsCyclicTwoCut
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--

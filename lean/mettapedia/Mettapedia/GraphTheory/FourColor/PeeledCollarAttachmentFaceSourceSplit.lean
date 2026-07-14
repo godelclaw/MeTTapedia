@@ -255,7 +255,7 @@ theorem
     (hnoncross :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   data.closedCollarWindingFreedomEscape_not_simplyRealizable_of_closedWalkAnnulusBoundarySource_faceSourceTarget
     regime source hboundary
@@ -290,7 +290,7 @@ theorem
     (hnoncross :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   data.closedCollarWindingFreedomEscape_not_simplyRealizable_of_closedWalkAnnulusBoundarySource_faceSourceTarget
     regime source hboundary
@@ -320,7 +320,7 @@ def
         source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical-annulus split-source S4 salvage statement. -/
@@ -353,7 +353,7 @@ def
         source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired-annulus split-source S4 salvage statement. -/

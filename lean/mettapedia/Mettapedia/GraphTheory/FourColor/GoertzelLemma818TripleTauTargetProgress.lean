@@ -3949,7 +3949,7 @@ theorem ttFiber3AppendParentRowsBaseDataStructural :
       ttFiber3AppendParentRowsCertifiedTriple
 
 /--
-The live finite target-surface remainder after the two checked `TTT` append
+The finite target-surface remainder after the two checked `TTT` append
 certificates.
 
 This is strictly narrower than the universal non-singleton append-transfer

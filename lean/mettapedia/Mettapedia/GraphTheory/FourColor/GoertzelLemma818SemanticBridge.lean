@@ -251,6 +251,13 @@ def chainAuditForFrontierWord
     (word : List GoertzelLemma818FrontierMode.TauOrient) : Bool :=
   GoertzelLemma814.chainLKRInAudit (frontierWordToChainWord word)
 
+/-- The actual per-target Gate-2 test. Unlike the earlier DFA-classification
+audit, this checks compatibility and Kempe-orbit connectivity in every fixed
+four-input fiber of the concrete chain state space. -/
+def representativeTargetFiberKempeOrbitConnectivityAudit
+    (target : RepresentativeSemanticTarget) : Bool :=
+  chainAuditForFrontierWord (targetFrontierWord target)
+
 def concreteChainStates
     (word : List GoertzelLemma818FrontierMode.TauOrient) :
     List (List GoertzelLemma814.TauState) :=
@@ -9540,123 +9547,23 @@ theorem chainAuditForFrontierWord_ok_of_prefix_and_fibration
       hPrefix hFibration)
     word
 
-structure ChainAuditFibrationCertificate
-    (word : List GoertzelLemma818FrontierMode.TauOrient) : Type 1 where
-  Total : Type
-  Base : Type
-  totalStep : Total → Total → Prop
-  baseStep : Base → Base → Prop
-  proj : Total → Base
-  fibration : Fibration totalStep baseStep proj
-  baseConnected : Connected baseStep
-  auditOfTotalConnected :
-    Connected totalStep → chainAuditForFrontierWord word = true
-
-theorem ChainAuditFibrationCertificate.audit_ok
-    {word : List GoertzelLemma818FrontierMode.TauOrient}
-    (cert : ChainAuditFibrationCertificate word) :
-    chainAuditForFrontierWord word = true :=
-  cert.auditOfTotalConnected
-    (cert.fibration.totalConnected_of_baseConnected cert.baseConnected)
-
-def ChainAuditFibrationCertificate.ofAudit
-    {word : List GoertzelLemma818FrontierMode.TauOrient}
-    (hAudit : chainAuditForFrontierWord word = true) :
-    ChainAuditFibrationCertificate word :=
-  { Total := Unit
-    Base := Unit
-    totalStep := fun _ _ => True
-    baseStep := fun _ _ => True
-    proj := fun _ => ()
-    fibration :=
-      { fiberReach := by
-          intro x y _
-          cases x
-          cases y
-          exact Reach.refl ()
-        liftStep := by
-          intro x b _
-          cases x
-          cases b
-          exact ⟨(), rfl, Reach.refl ()⟩ }
-    baseConnected := by
-      intro x y
-      cases x
-      cases y
-      exact Reach.refl ()
-    auditOfTotalConnected := by
-      intro _
-      exact hAudit }
-
-def ChainAuditFibrationCertificate.ofConcrete
-    {word : List GoertzelLemma818FrontierMode.TauOrient}
-    (cert : ChainWordConcreteFibrationCertificate word) :
-    ChainAuditFibrationCertificate word :=
-  { Total := Unit
-    Base := Unit
-    totalStep := fun _ _ => True
-    baseStep := fun _ _ => True
-    proj := fun _ => ()
-    fibration :=
-      { fiberReach := by
-          intro x y _
-          cases x
-          cases y
-          exact Reach.refl ()
-        liftStep := by
-          intro x b _
-          cases x
-          cases b
-          exact ⟨(), rfl, Reach.refl ()⟩ }
-    baseConnected := by
-      intro x y
-      cases x
-      cases y
-      exact Reach.refl ()
-    auditOfTotalConnected := by
-      intro _
-      exact chainAuditForFrontierWord_of_concreteFibrationCertificate cert }
-
 def semanticFrontierStateFibrationCertificates
     (targetAudit : RepresentativeSemanticTarget → Bool) : Prop :=
   ∀ {word : List GoertzelLemma818FrontierMode.TauOrient} {state : FrontierState},
     frontierState word = state →
     semanticFrontierStateAudit targetAudit state = true →
-    Nonempty (ChainAuditFibrationCertificate word)
+    Nonempty (ChainWordConcreteFibrationCertificate word)
 
 def chainAuditFibrationEmptyCertificate : Prop :=
-  Nonempty (ChainAuditFibrationCertificate [])
+  Nonempty (ChainWordConcreteFibrationCertificate [])
 
 theorem emptyChainAuditForFrontierWord_ok :
     chainAuditForFrontierWord [] = true := by
   decide
 
 def emptyChainAuditFibrationCertificate :
-    ChainAuditFibrationCertificate [] :=
-  { Total := Unit
-    Base := Unit
-    totalStep := fun _ _ => True
-    baseStep := fun _ _ => True
-    proj := fun _ => ()
-    fibration :=
-      { fiberReach := by
-          intro x y _
-          cases x
-          cases y
-          exact Reach.refl ()
-        liftStep := by
-          intro x b _
-          cases x
-          cases b
-          exact ⟨(), rfl, Reach.refl ()⟩ }
-    baseConnected := by
-      intro x y
-      cases x
-      cases y
-      exact Reach.refl ()
-    auditOfTotalConnected := by
-      intro _
-      exact emptyChainAuditForFrontierWord_ok }
+    ChainWordConcreteFibrationCertificate [] :=
+  emptyConcreteChainWordFibrationCertificate
 
 theorem chainAuditFibrationEmptyCertificate_ok :
     chainAuditFibrationEmptyCertificate :=
@@ -9677,12 +9584,12 @@ theorem singletonChainAuditForFrontierWord_ok
 
 def chainAuditFibrationSingletonSeeds : Prop :=
   ∀ orient : GoertzelLemma818FrontierMode.TauOrient,
-    Nonempty (ChainAuditFibrationCertificate [orient])
+    Nonempty (ChainWordConcreteFibrationCertificate [orient])
 
 theorem chainAuditFibrationSingletonSeeds_ok :
     chainAuditFibrationSingletonSeeds := by
   intro orient
-  exact ⟨ChainAuditFibrationCertificate.ofAudit
+  exact ⟨ChainWordConcreteFibrationCertificate.ofChainAudit
     (singletonChainAuditForFrontierWord_ok orient)⟩
 
 theorem concreteChainWordFibrationSingletonSeeds_ok :
@@ -9866,15 +9773,15 @@ theorem not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute :
 def chainAuditFibrationTransferClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient),
-    Nonempty (ChainAuditFibrationCertificate word) →
-      Nonempty (ChainAuditFibrationCertificate (word ++ [orient]))
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      Nonempty (ChainWordConcreteFibrationCertificate (word ++ [orient]))
 
 def chainAuditFibrationNonemptyTransferClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient),
     word ≠ [] →
-    Nonempty (ChainAuditFibrationCertificate word) →
-      Nonempty (ChainAuditFibrationCertificate (word ++ [orient]))
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      Nonempty (ChainWordConcreteFibrationCertificate (word ++ [orient]))
 
 theorem chainAuditFibrationTransferClosed_of_concrete_empty_and_transfer
     (hEmpty : Nonempty (ChainWordConcreteFibrationCertificate []))
@@ -9883,7 +9790,7 @@ theorem chainAuditFibrationTransferClosed_of_concrete_empty_and_transfer
   intro word orient _hcert
   rcases chainWordConcreteFibrationCertificate_of_empty_and_transfer
     hEmpty hTransfer (word ++ [orient]) with ⟨cert⟩
-  exact ⟨ChainAuditFibrationCertificate.ofConcrete cert⟩
+  exact ⟨cert⟩
 
 theorem chainAuditFibrationTransferClosed_of_concrete_transfer
     (hTransfer : concreteChainAuditFibrationTransferClosed) :
@@ -9915,19 +9822,19 @@ theorem chainAuditFibrationCertificate_of_singletons_and_nonempty_transfer_aux
     (hTransfer : chainAuditFibrationNonemptyTransferClosed)
     (suffix pref : List GoertzelLemma818FrontierMode.TauOrient)
     (hpref_ne : pref ≠ [])
-    (hpref : Nonempty (ChainAuditFibrationCertificate pref)) :
-    Nonempty (ChainAuditFibrationCertificate (pref ++ suffix)) := by
+    (hpref : Nonempty (ChainWordConcreteFibrationCertificate pref)) :
+    Nonempty (ChainWordConcreteFibrationCertificate (pref ++ suffix)) := by
   induction suffix generalizing pref with
   | nil =>
       simpa using hpref
   | cons orient rest ih =>
       have hnext : Nonempty
-          (ChainAuditFibrationCertificate (pref ++ [orient])) :=
+          (ChainWordConcreteFibrationCertificate (pref ++ [orient])) :=
         hTransfer pref orient hpref_ne hpref
       have hnext_ne : pref ++ [orient] ≠ [] := by
         simp
       have hrest : Nonempty
-          (ChainAuditFibrationCertificate ((pref ++ [orient]) ++ rest)) :=
+          (ChainWordConcreteFibrationCertificate ((pref ++ [orient]) ++ rest)) :=
         ih (pref ++ [orient]) hnext_ne hnext
       simpa [List.append_assoc] using hrest
 
@@ -9935,12 +9842,12 @@ theorem chainAuditFibrationCertificate_of_singletons_and_nonempty_transfer
     (hSeed : chainAuditFibrationSingletonSeeds)
     (hTransfer : chainAuditFibrationNonemptyTransferClosed)
     (word : List GoertzelLemma818FrontierMode.TauOrient) :
-    Nonempty (ChainAuditFibrationCertificate word) := by
+    Nonempty (ChainWordConcreteFibrationCertificate word) := by
   cases word with
   | nil =>
       exact chainAuditFibrationEmptyCertificate_ok
   | cons orient rest =>
-      have hbase : Nonempty (ChainAuditFibrationCertificate [orient]) :=
+      have hbase : Nonempty (ChainWordConcreteFibrationCertificate [orient]) :=
         hSeed orient
       simpa using
         chainAuditFibrationCertificate_of_singletons_and_nonempty_transfer_aux
@@ -9949,17 +9856,17 @@ theorem chainAuditFibrationCertificate_of_singletons_and_nonempty_transfer
 theorem chainAuditFibrationCertificate_of_empty_and_transfer_aux
     (hTransfer : chainAuditFibrationTransferClosed)
     (suffix pref : List GoertzelLemma818FrontierMode.TauOrient)
-    (hpref : Nonempty (ChainAuditFibrationCertificate pref)) :
-    Nonempty (ChainAuditFibrationCertificate (pref ++ suffix)) := by
+    (hpref : Nonempty (ChainWordConcreteFibrationCertificate pref)) :
+    Nonempty (ChainWordConcreteFibrationCertificate (pref ++ suffix)) := by
   induction suffix generalizing pref with
   | nil =>
       simpa using hpref
   | cons orient rest ih =>
       have hnext : Nonempty
-          (ChainAuditFibrationCertificate (pref ++ [orient])) :=
+          (ChainWordConcreteFibrationCertificate (pref ++ [orient])) :=
         hTransfer pref orient hpref
       have hrest : Nonempty
-          (ChainAuditFibrationCertificate ((pref ++ [orient]) ++ rest)) :=
+          (ChainWordConcreteFibrationCertificate ((pref ++ [orient]) ++ rest)) :=
         ih (pref ++ [orient]) hnext
       simpa [List.append_assoc] using hrest
 
@@ -9967,7 +9874,7 @@ theorem chainAuditFibrationCertificate_of_empty_and_transfer
     (hEmpty : chainAuditFibrationEmptyCertificate)
     (hTransfer : chainAuditFibrationTransferClosed)
     (word : List GoertzelLemma818FrontierMode.TauOrient) :
-    Nonempty (ChainAuditFibrationCertificate word) := by
+    Nonempty (ChainWordConcreteFibrationCertificate word) := by
   simpa using
     chainAuditFibrationCertificate_of_empty_and_transfer_aux
       hTransfer word [] hEmpty
@@ -9981,14 +9888,8 @@ theorem semanticFrontierStateFibrationCertificates_of_empty_and_transfer
   exact chainAuditFibrationCertificate_of_empty_and_transfer
     hEmpty hTransfer word
 
-/--
-The finite sufficiency hook still missing from the frontier plan.
-
-It says that a successful semantic audit of the DFA mode is enough to prove the
-real chain audit for every concrete word folding to that mode.  Supplying this
-hook is the future congruence/sufficiency theorem; the theorem below proves the
-remaining induction plumbing.
--/
+/-- DFA-mode sufficiency means that a successful semantic audit of a mode
+proves the real chain audit for every concrete word folding to that mode. -/
 def semanticModeSufficientForChain
     (targetAudit : RepresentativeSemanticTarget → Bool) : Prop :=
   ∀ {word : List GoertzelLemma818FrontierMode.TauOrient} {mode : FrontierMode},
@@ -10006,10 +9907,8 @@ theorem chainAuditForFrontierWord_ok_of_targets_and_sufficiency
     chainAuditForFrontierWord word = true :=
   hSufficient hmode (wordMode_hasSemanticModeAudit_of_targets hTarget hmode)
 
-/--
-The same missing sufficiency theorem, stated over the explicit total finite
-frontier state `frontierState word`.
--/
+/-- Sufficiency stated over the explicit total finite frontier state
+`frontierState word`. -/
 def semanticFrontierStateSufficientForChain
     (targetAudit : RepresentativeSemanticTarget → Bool) : Prop :=
   ∀ {word : List GoertzelLemma818FrontierMode.TauOrient} {state : FrontierState},
@@ -10368,7 +10267,7 @@ theorem semanticFrontierStateSufficientForChain_of_fibrationCertificates
     semanticFrontierStateSufficientForChain targetAudit := by
   intro word state hstate haudit
   rcases hCerts hstate haudit with ⟨cert⟩
-  exact cert.audit_ok
+  exact chainAuditForFrontierWord_of_concreteFibrationCertificate cert
 
 theorem semanticFrontierStateSufficientForChain_of_empty_and_transfer
     {targetAudit : RepresentativeSemanticTarget → Bool}
@@ -10387,7 +10286,7 @@ theorem semanticFrontierStateSufficientForChain_of_singletons_and_nonempty_trans
   intro word _state _hstate _haudit
   rcases chainAuditFibrationCertificate_of_singletons_and_nonempty_transfer
     hSeed hTransfer word with ⟨cert⟩
-  exact cert.audit_ok
+  exact chainAuditForFrontierWord_of_concreteFibrationCertificate cert
 
 theorem chainAuditForFrontierWord_ok_of_targets_empty_and_transfer
     {targetAudit : RepresentativeSemanticTarget → Bool}

@@ -75,7 +75,7 @@ theorem routeIndexConsequences_of_cap5FreeEmbeddedLocalConstancyFoundationTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
       CyclicallyFiveEdgeConnected H ∧
       ClosedCollarForbidsCyclicTwoCut H ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H := by
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H := by
   have hlocal : PeeledCollarCutAmbientSideLocalConstanciesToAmbient φ :=
     hfoundation φ regime
   have hlift : PeeledCollarSmallCyclicCutLiftsToAmbient G H :=
@@ -144,7 +144,7 @@ theorem routeIndexConsequences_of_cap5FreeLocalConstancyFoundationTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hlocal :
       PlanarBoundaryAnnulusPeeledCollarLocalConstancyTarget
@@ -226,7 +226,7 @@ theorem routeIndexConsequences_of_cap5FreeLocalConstancyFoundationTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hlocal :
       PlanarBoundaryPreviousBoundaryPeeledCollarLocalConstancyTarget
@@ -270,7 +270,7 @@ def Section92Step4EmbeddedCAP5FreeLocalConstancyFoundationRouteIndexTarget :
         PeeledCollarSmallCyclicCutLiftsToAmbient G H ∧
         CyclicallyFiveEdgeConnected H ∧
         ClosedCollarForbidsCyclicTwoCut H ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Route-index theorem for the embedded local-constancy target. -/
 theorem section92Step4EmbeddedCAP5FreeLocalConstancyFoundationRouteIndexTarget
@@ -301,7 +301,7 @@ def
         PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the canonical annulus local-constancy target. -/
@@ -334,7 +334,7 @@ def
         PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the repaired annulus local-constancy target. -/

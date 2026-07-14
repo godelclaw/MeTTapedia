@@ -140,9 +140,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivit
     (hboundary :
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
     (h : source.OffCarrierAttachmentFacePlacementNoncrossingTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (data.cyclicallyFiveEdgeConnected_of_closedWalkAnnulusBoundarySource_facePlacementNoncrossingTarget
       regime source hboundary h)
 
@@ -187,9 +187,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivit
       data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
         source.toPlanarBoundaryAnnulusBoundaryData)
     (h : source.OffCarrierAttachmentFacePlacementNoncrossingTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (data.cyclicallyFiveEdgeConnected_of_closedWalkAnnulusBoundarySource_facePlacementNoncrossingTarget
       regime source hboundary h)
 
@@ -212,7 +212,7 @@ def
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData →
       source.OffCarrierAttachmentFacePlacementNoncrossingTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical closed-walk face-placement target S4 statement. -/
@@ -242,7 +242,7 @@ def
       data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
         source.toPlanarBoundaryAnnulusBoundaryData →
       source.OffCarrierAttachmentFacePlacementNoncrossingTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired closed-walk face-placement target S4 statement. -/

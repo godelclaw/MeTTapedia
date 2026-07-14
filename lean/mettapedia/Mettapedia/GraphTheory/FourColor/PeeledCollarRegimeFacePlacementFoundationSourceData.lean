@@ -80,7 +80,7 @@ theorem routeIndexConsequences_of_regimeAttachmentFaceSourceDataFoundationTarget
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
   section92Step4ClosedWalkRegimeFacePlacementFoundationRouteIndexTarget
     source regime
@@ -151,7 +151,7 @@ theorem routeIndexConsequences_of_regimeAttachmentFaceSourceDataFoundationTarget
     (h : data.RegimeAttachmentFaceSourceDataFoundationTarget) :
     CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph :=
   section92Step4CanonicalClosedWalkRegimeFacePlacementFoundationRouteIndexTarget
     data regime source hboundary
@@ -226,7 +226,7 @@ theorem routeIndexConsequences_of_regimeAttachmentFaceSourceDataFoundationTarget
     (h : data.RegimeAttachmentFaceSourceDataFoundationTarget) :
     CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph :=
   section92Step4RepairedClosedWalkRegimeFacePlacementFoundationRouteIndexTarget
     data regime source hboundary
@@ -260,7 +260,7 @@ def Section92Step4ClosedWalkRegimeAttachmentFaceSourceDataFoundationRouteIndexTa
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Verbatim source-level route index for the chosen source-data foundation target. -/

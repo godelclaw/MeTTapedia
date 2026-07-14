@@ -41,7 +41,7 @@ selected-source small-cut lift foundation target.
 theorem cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
     (hfoundation :
       CAP5FreeClosedWalkPeeledCollarOffBoundaryNoCrossingFoundationTarget) :
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget := by
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient := by
   intro V _ G emb source regime
   exact
     peeledCollarSmallCyclicCutLiftsToAmbient_of_ambientSideOffBoundaryNoCrossings
@@ -136,7 +136,7 @@ def Section92Step4ClosedWalkCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTar
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--

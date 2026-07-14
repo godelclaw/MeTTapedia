@@ -282,7 +282,7 @@ theorem
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
     regime
@@ -305,7 +305,7 @@ theorem
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelectedBoundaryArcOnFace_of_faceSourceTarget
     regime geom.boundarySelectedBoundaryArcOnFace h
@@ -331,7 +331,7 @@ theorem
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_noncrossingSelectedBoundaryArcSourceTarget
     regime
@@ -354,7 +354,7 @@ theorem
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelectedBoundaryArcOnFace_of_faceSourceTarget
     regime geom.boundarySelectedBoundaryArcOnFace h
@@ -380,7 +380,7 @@ def
         BoundarySelectedBoundaryArcOnFace (emb := emb) f) →
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus face-source S4 salvage statement. -/
@@ -411,7 +411,7 @@ def
         BoundarySelectedBoundaryArcOnFace (emb := emb) f) →
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingFaceSourceTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus face-source S4 salvage statement. -/

@@ -13170,7 +13170,7 @@ theorem cert80_connected :
     closedCollarFiberKempeConnected word [LColor.p, LColor.p, LColor.p, LColor.p] :=
   closedCollarFiberKempeConnected_of_fiberFrom_eq_nil closedStates_eq cert80_empty
 
-theorem targetForWord : closedCollarS2BridgeTargetForWord word := by
+theorem targetForWord : closedCollarLength23RadialClosingEdgeFiberCensusForWord word := by
   intro key hkey
   have hcases :
       key = [LColor.r, LColor.r, LColor.r, LColor.r] ∨

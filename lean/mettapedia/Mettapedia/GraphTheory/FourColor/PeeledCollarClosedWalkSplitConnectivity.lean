@@ -84,9 +84,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivit
     (hnoncross :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (data.cyclicallyFiveEdgeConnected_of_closedWalkAnnulusBoundarySource_attachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
       regime source hboundary hface hnoncross)
 
@@ -172,9 +172,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivit
     (hnoncross :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (data.cyclicallyFiveEdgeConnected_of_closedWalkAnnulusBoundarySource_attachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
       regime source hboundary hface hnoncross)
 
@@ -263,7 +263,7 @@ def
         source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical closed-walk split-source S4 statement through cyclic connectivity. -/
@@ -296,7 +296,7 @@ def
         source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired closed-walk split-source S4 statement through cyclic connectivity. -/

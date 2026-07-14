@@ -10,6 +10,13 @@ two-layer ambient execution lab: a Kempe switch that is valid in the tested
 outer collar alone, but whose ambient component in a downstream one-gadget
 layer leaves the collar, reaches the fixed outer-input side, and therefore
 does not restrict to the certified collar move.
+
+The result is an abstract-chain regression countermodel. It is deliberately
+retained as a guard against reintroducing the invalid restriction principle,
+but this module does not realize its tau states as a Tait coloring of a simple
+planar graph, as a collar extracted from rotation/face-incidence data, or as a
+cyclically-five-edge-connected graph. No graph-facing counterexample follows
+from this computation.
 -/
 
 namespace GoertzelLemma818TwoLayerEscape
@@ -362,10 +369,12 @@ theorem twoLayerEscape_actualAmbientComponent :
   decide
 
 /--
-The finite obstruction class for Section 9.2 Step 4: a collar-certified
-switch can be input-avoiding before ambient execution, yet the corresponding
-ambient component can escape through the shared inner side, hit the fixed
-outer input side, and induce a different restriction on the collar.
+The finite abstract-chain regression obstruction for Section 9.2 Step 4: a
+collar-certified switch can be input-avoiding before ambient execution, yet
+the corresponding ambient component can escape through the shared inner side,
+hit the fixed outer input side, and induce a different restriction on the
+collar. This statement contains no simple-planar or cyclic-connectivity graph
+realization.
 -/
 def Section92Step4TwoLayerCounterexampleClass : Prop :=
   compatibleChainStates twoLayerEscapeOuterWord twoLayerEscapeCollarSource = true ∧

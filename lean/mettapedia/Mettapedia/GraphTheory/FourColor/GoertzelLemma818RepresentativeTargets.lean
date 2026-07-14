@@ -170,7 +170,10 @@ def baseCertifiedModes : List FrontierMode :=
 def representativeTargetModes : List FrontierMode :=
   allRepresentativeSemanticTargets.map targetFrontierMode
 
-def representativeTargetAudit (t : RepresentativeSemanticTarget) : Bool :=
+/-- DFA metadata check only: this does not inspect a chain fiber or a Kempe
+orbit. -/
+def representativeTargetDfaClassificationAudit
+    (t : RepresentativeSemanticTarget) : Bool :=
   wordMode (targetFrontierWord t) == some (targetFrontierMode t)
     && (frontierState (targetFrontierWord t) ==
       FrontierState.active (targetFrontierMode t))
@@ -192,29 +195,29 @@ theorem representativeTarget_not_baseCertified
     baseCertifiedModes.contains (targetFrontierMode t) = false := by
   cases t <;> decide
 
-theorem representativeTargetAudit_ok
+theorem representativeTargetDfaClassificationAudit_ok
     (t : RepresentativeSemanticTarget) :
-    representativeTargetAudit t = true := by
+    representativeTargetDfaClassificationAudit t = true := by
   cases t <;> decide
 
-def representativeTargetCoverageAudit : Bool :=
-  allRepresentativeSemanticTargets.all representativeTargetAudit
+def representativeTargetDfaCoverageAudit : Bool :=
+  allRepresentativeSemanticTargets.all representativeTargetDfaClassificationAudit
 
-theorem representativeTargetCoverageAudit_ok :
-    representativeTargetCoverageAudit = true := by
+theorem representativeTargetDfaCoverageAudit_ok :
+    representativeTargetDfaCoverageAudit = true := by
   decide
 
-def plannedSemanticModeCoverage (mode : FrontierMode) : Bool :=
+def plannedDfaModeCoverage (mode : FrontierMode) : Bool :=
   baseCertifiedModes.contains mode || representativeTargetModes.contains mode
 
-def plannedSemanticModeCoverageAudit : Bool :=
-  allModes.all plannedSemanticModeCoverage
+def plannedDfaModeCoverageAudit : Bool :=
+  allModes.all plannedDfaModeCoverage
     && baseCertifiedModes.length == 6
     && representativeTargetModes.length == 14
     && (baseCertifiedModes ++ representativeTargetModes).length == 20
 
-theorem plannedSemanticModeCoverageAudit_ok :
-    plannedSemanticModeCoverageAudit = true := by
+theorem plannedDfaModeCoverageAudit_ok :
+    plannedDfaModeCoverageAudit = true := by
   decide
 
 end GoertzelLemma818RepresentativeTargets

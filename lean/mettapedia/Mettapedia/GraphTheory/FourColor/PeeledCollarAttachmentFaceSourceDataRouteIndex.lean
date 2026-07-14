@@ -43,7 +43,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusCollarGeometry emb}
     (inputs : CanonicalAnnulusAttachmentFaceSourceDataRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelectedBoundaryArcOnFace_of_attachmentFaceSourceDataTarget
     inputs.regime inputs.selectedBoundaryArcOnFace
@@ -87,7 +87,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
     (inputs : RepairedAnnulusAttachmentFaceSourceDataRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelectedBoundaryArcOnFace_of_attachmentFaceSourceDataTarget
     inputs.regime inputs.selectedBoundaryArcOnFace
@@ -133,7 +133,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {data : PlanarBoundaryAnnulusCollarGeometry emb}
     (inputs :
       CanonicalAnnulusClosedWalkAttachmentFaceSourceDataRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   data.closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivity_of_closedWalkAnnulusBoundarySource_attachmentFaceSourceDataTarget
     inputs.regime inputs.source inputs.boundaryData_eq_source
@@ -180,7 +180,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
     (inputs :
       RepairedAnnulusClosedWalkAttachmentFaceSourceDataRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   data.closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivity_of_closedWalkAnnulusBoundarySource_attachmentFaceSourceDataTarget
     inputs.regime inputs.source inputs.boundaryData_eq_source

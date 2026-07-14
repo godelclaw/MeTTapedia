@@ -86,7 +86,7 @@ theorem offBoundaryRouteConsequences_of_minimalCounterexampleRegime_of_facePlace
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hoffBoundary :
       PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient
@@ -153,7 +153,7 @@ def Section92Step4ClosedWalkFacePlacementOffBoundaryRouteIndexTarget :
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
           ClosedCollarForbidsCyclicTwoCut
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
             source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Route-index theorem for the closed-walk face-placement off-boundary bridge. -/

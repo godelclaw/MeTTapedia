@@ -139,7 +139,7 @@ theorem routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceOffBoundaryTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hface :
       data.RegimeNoncrossingFaceSourceFoundationTarget :=
@@ -253,7 +253,7 @@ theorem routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceOffBoundaryTarget
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hface :
       data.RegimeNoncrossingFaceSourceFoundationTarget :=
@@ -320,7 +320,7 @@ def
             data.inducedBoundaryGraph ∧
           CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
           ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
             data.inducedBoundaryGraph
 
 /-- Route-index theorem for the canonical face-source/off-boundary bridge. -/
@@ -360,7 +360,7 @@ def
             data.inducedBoundaryGraph ∧
           CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
           ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-          ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+          ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
             data.inducedBoundaryGraph
 
 /-- Route-index theorem for the repaired face-source/off-boundary bridge. -/

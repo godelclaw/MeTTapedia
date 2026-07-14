@@ -72,7 +72,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb}
     (inputs : ClosedWalkMappedCutAvoidingFaceRouteInputs source) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
   source.closedCollarWindingFreedomEscape_not_simplyRealizable_of_minimalCounterexampleRegime_of_mappedCutAvoidingFaceRouteTarget
     inputs.regime inputs.mappedCutAvoidingFaceRoute
@@ -230,7 +230,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {data : PlanarBoundaryAnnulusCollarGeometry emb}
     (inputs :
       CanonicalAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   inputs.toMappedCutAvoidingSharedEndpointConnectedRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -490,7 +490,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
     (inputs :
       RepairedAnnulusClosedWalkMappedCutAvoidingFaceRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   inputs.toMappedCutAvoidingSharedEndpointConnectedRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
