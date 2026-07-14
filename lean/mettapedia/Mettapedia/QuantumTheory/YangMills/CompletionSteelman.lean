@@ -254,7 +254,7 @@ def recombinationConstantSteelmanRow : CompletionSteelmanRow where
   label := "Extraction/recombination constant"
   verdict := .refutedOrInconsistent
   evidence :=
-    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; polymerActivityMajorant_recombineByUnion_le proves union regrouping has norm one; fourteen_lt_contactStrip_rail_contacts refutes the literal total-contact reading of 14."
+    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; polymerActivityMajorant_recombineByUnion_le proves union regrouping has norm one; fourteen_lt_contactStrip_rail_contacts refutes the literal total-contact reading of 14; the fluctuation big-O and raw cumulant-count pins show the other Appendix-O numerals require quantitative analytic estimates."
   nextObligation :=
     "Specify the dimension<=16 invariant basis and dual jets, prove their uniform conditioning, and prove the rooted cumulant-generation/tree-graph bound in the same majorant norm. Then multiply those actual-map factors and rerun the parameterized depth theorem."
 

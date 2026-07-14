@@ -1,6 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.ExtendedExtractionTransfer
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlack
 import Mettapedia.QuantumTheory.YangMills.WilsonPolymerRecombination
+import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-!
 # The v14 extraction/recombination constant: arithmetic verdict
@@ -50,6 +51,44 @@ factor product into the advertised constant. -/
 theorem f5DisplayedConstantAtBlockTwo_ne_2224 :
     f5DisplayedConstantAtBlockTwo ≠ 2224 := by
   rw [f5DisplayedConstantAtBlockTwo_eq]
+  norm_num
+
+/-! ## The advertised fluctuation and cumulant factors are not raw consequences -/
+
+/-- The exponent hidden by the notation `O(beta⁻¹)` when its implicit constant
+is `K`. -/
+def fluctuationBigOExponent (K beta : ℝ) : ℝ := K / beta
+
+/-- **Fluctuation-factor inference obstruction.**  At the manuscript's minimum
+`beta = 2`, an admissible unspecified big-O constant `K = 2` gives exponent
+`1`, strictly larger than the claimed `1/2`.  Therefore
+`exp(O(beta⁻¹)) ≤ exp(1/2)` requires an explicit uniform big-O constant bound;
+it does not follow from big-O notation alone. -/
+theorem half_lt_fluctuationBigOExponent_two_two :
+    (1 : ℝ) / 2 < fluctuationBigOExponent 2 2 := by
+  norm_num [fluctuationBigOExponent]
+
+theorem exp_half_lt_exp_fluctuationBigOExponent_two_two :
+    Real.exp ((1 : ℝ) / 2) <
+      Real.exp (fluctuationBigOExponent 2 2) :=
+  Real.exp_lt_exp.mpr half_lt_fluctuationBigOExponent_two_two
+
+/-- Prüfer-code carrier for labeled six-vertex tree terms.  Cayley's classical
+bijection identifies these codes with labeled spanning trees; here only the raw
+finite cardinality needed for the combinatorial audit is used. -/
+abbrev SixVertexTreeCode := Fin 4 → Fin 6
+
+theorem sixVertexTreeCode_card :
+    Fintype.card SixVertexTreeCode = 1296 := by
+  norm_num [SixVertexTreeCode, Fintype.card_fun]
+
+/-- **Raw-count obstruction for `3 b^4`.**  At `b = 2`, the proposed number
+`3 b^4 = 48` cannot bound unweighted labeled tree terms even at cumulant order
+six.  A valid constant must therefore come from a weighted tree-graph/KP
+estimate, not a raw count of connected contributions. -/
+theorem three_b_four_lt_sixVertexTreeCode_card :
+    3 * 2 ^ 4 < Fintype.card SixVertexTreeCode := by
+  rw [sixVertexTreeCode_card]
   norm_num
 
 /-- Appendix O's alternative proposed factor ledger at `b = 2`, parameterized

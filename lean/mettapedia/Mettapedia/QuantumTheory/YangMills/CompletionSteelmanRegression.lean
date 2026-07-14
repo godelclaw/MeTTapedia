@@ -69,6 +69,8 @@ theorem completionSteelman_primary_verdicts_regression :
 #print axioms polymerActivityMajorant_recombineByUnion_le
 #print axioms fourteen_lt_contactStrip_rail_contacts
 #print axioms rootedTwoPolymerConnectionChoices_card
+#print axioms exp_half_lt_exp_fluctuationBigOExponent_two_two
+#print axioms three_b_four_lt_sixVertexTreeCode_card
 #print axioms not_v14LiteralExtractionRecombinationClaims
 #print axioms proposedMajorantLedger_leastDepth_and_leastEvenDepth
 
