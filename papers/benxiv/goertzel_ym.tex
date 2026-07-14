@@ -69,7 +69,7 @@
 RG Contraction in the Wilson-Lattice / OS Route\\
 to a 4D Yang--Mills Mass Gap}
 \author{The MeTTapedia formalization effort}
-\date{June 2026}
+\date{July 2026}
 
 \begin{document}
 \maketitle
@@ -78,38 +78,41 @@ to a 4D Yang--Mills Mass Gap}
 \begin{abstract}
 Ben Goertzel's manuscript \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap,
 Polymer Expansion, OS Reconstruction} (v14) proposes to construct a continuum
-$\SUN$ Yang--Mills theory as a limit of Wilson lattice gauge theory, organized
-around a multiscale renormalization-group (RG) bootstrap, a Koteck\'y--Preiss
-(KP) polymer expansion yielding exponential clustering at a fixed physical
-scale, and an Osterwalder--Schrader (OS) reconstruction producing a Hamiltonian
-with a strictly positive spectral gap. The technical keystone is an
-\emph{extended-extraction} RG contraction $\Lambda = C_1\,\Lirr < 1$, with an
-advertised recombination constant $C_1 \leq 2224$ and an irrelevant-eigenvalue
-factor $\Lirr = 2^{-13}$ (block factor $b=2$, extraction depth $\dmax = 16$), so
-that $2224 \cdot 2^{-13} \approx 0.27 < 1$. We report what the MeTTapedia
-formalization effort has machine-checked in Lean about this route. We model the
-contraction predicate \texttt{HasExtendedExtractionContraction}, verify the
-knife-edge arithmetic ($2224 \cdot 2^{-13} < 1$ holds at $\dmax=16$; the
-analogous bound \emph{fails} at the nearest even depth $\dmax=14$, where
-$2^{11}=2048<2224$), establish genuine finite $\mathbb{Z}_2$ and $\mathbb{Z}_3$
-single-link strong-coupling spectral gaps through a finite OS reconstruction, and
-\emph{gate the continuum endpoint as open}: the continuum mass gap carries an
-explicit open status with no claimed support. We are precise about scope. The
-checked arithmetic takes the recombination constant $C_1 = 2224$ as a
-\emph{given input}. The load-bearing quantity --- whether the true
-extraction-projection operator norm, hence $C_1$, is as small as advertised ---
-is taken as an input to the checked arithmetic. The manuscript's \emph{displayed}
-bound for that norm prints the summand $(r_1/r_0)^{-d}$, which for $r_1/r_0=1/2$
-would grow like $2^{d}$; read literally this is an apparent obstruction. That
-printed exponent is a sign erratum: the intended Cauchy estimate uses
-$(r_1/r_0)^{+d}$, a convergent geometric series summing to $1/(1-r_1/r_0)=2$, so
-$C_{\mathrm{extract}} \leq 2$ and the contraction $\Lambda \approx 0.27 < 1$
-stands. We therefore record a two-line displayed-formula erratum, not a defect in
-the route; the genuinely open endpoint is not this constant but the
-\emph{continuum limit} (clustering, glue, and OS reconstruction), which we gate open. The
-finite gaps that are checked are real but Clay-irrelevant (abelian, single-link,
-strong-coupling, finite). The Yang--Mills mass gap itself remains open; we make
-no claim about it.
+$\SUN$ Yang--Mills theory from Wilson lattice gauge theory via a multiscale
+renormalization-group (RG) bootstrap, a Koteck\'y--Preiss (KP) polymer expansion,
+exponential clustering, and Osterwalder--Schrader (OS) reconstruction. Its
+technical keystone is an \emph{extended-extraction} contraction
+$\Lambda=C_1\Lirr<1$, with advertised constant near $2224$ and
+$\Lirr=2^{-13}$ at block factor $2$ and extraction depth $16$.
+
+The scalar bootstrap arithmetic is exact, but the advertised Wilson recursion
+constant is \emph{not derived in v14 as written}. The main-text factor product
+is $33152$ at $b=2$; Appendix~O's different proposed factorization is
+$11088/5$ when its extraction factor is $2$. A sign-only repair of the printed
+extraction series is insufficient once the displayed multivariate
+multiplicities are retained.
+
+We construct a concrete finite Wilson-polynomial realization on actual
+group-valued link fields. In its explicit coefficient-majorant norm,
+canonical-dimension truncation is gauge invariant and has operator constant
+$1$. This does not transfer from v14's range-only specification of
+$P_{\mathrm{ext}}$: a skew projection onto the same low-coordinate range has
+arbitrarily large coefficient norm. We prove the correct transfer theorem from
+explicit basis and dual-jet matrices with their column-sum conditioning bounds,
+but v14 does not provide those data for the dimension-$16$ action sector.
+Likewise, regrouping connected families by union support has norm $1$; the
+factor $14$ is exactly a \emph{local rooted branching count}
+$2(2\cdot4-1)$, not a bound on the total contacts of two extended polymers.
+The fluctuation big-$O$ and weighted cumulant-generation estimates also require
+quantitative proofs on the actual Wilson RG map.
+
+Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
+recursion. The support recurrence, two-marked glue identity, stopping-scale
+polymer estimates, Wilson reflection positivity, and continuum/OS construction
+remain route-specific open inputs. The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
+and $Q_8$ gaps checked in Lean are real but Clay-irrelevant
+(single-link, strong-coupling, finite). The Yang--Mills mass gap remains open;
+we make no claim about it.
 \end{abstract}
 
 \section{The problem and Ben Goertzel's route}
@@ -160,10 +163,10 @@ one extracts only the relevant and marginal operators of dimension $\leq 4$.
 Under rescaling, a dimension-$d$ operator scales by $b^{4-d}$, so the leading
 irrelevant operators (dimension $6$) contract by $b^{-2} = 0.25$ for $b=2$. But
 the RG step also recombines polymers, contributing a combinatorial constant
-$C_1$. The manuscript's rigorous worst-case bound is $C_1 \leq 2224$ for $b=2$,
-giving
+$C_1$. The manuscript advertises the working bound $C_1 \leq 2224$ for $b=2$;
+if that value were established, the naive gain would be
 \[
-  \Lambda_{\mathrm{naive}} \;=\; C_1\, b^{-2} \;\geq\; 2224 \times 0.25 \;=\; 556 \;>\; 1,
+  \Lambda_{\mathrm{naive}} \;=\; 2224\, b^{-2} \;=\; 2224 \times 0.25 \;=\; 556 \;>\; 1,
 \]
 an \emph{expanding} map: initial smallness would grow like $556^{J}$ over
 $J\sim|\log a_0|$ steps and diverge as $a_0\to 0$.
@@ -175,11 +178,13 @@ sector then begins at dimension $\dmax+1 = 17$ and contracts by
 \[
   \Lirr \;=\; b^{\,4-(\dmax+1)} \;=\; b^{\,3-\dmax} \;=\; 2^{-13} \;\approx\; 1.2\times 10^{-4}.
 \]
-With the same rigorous $C_1 \leq 2224$, the effective contraction factor becomes
+With the same advertised value, the proposed contraction factor becomes
 \[
   \boxed{\;\Lambda \;=\; C_1\,\Lirr \;\leq\; 2224 \cdot 2^{-13} \;\approx\; 0.27 \;<\; 1.\;}
 \]
 The manuscript presents this as genuine contraction ``with substantial slack.''
+The audit below verifies this arithmetic only \emph{conditional on the supplied
+constant}; it refutes the available derivations of that constant as written.
 The price is tracking a finite-dimensional vector of higher couplings
 $\vec g_j = (g_j^{(4)},g_j^{(6)},\dots,g_j^{(\dmax)})$ rather than the single
 gauge coupling; the manuscript argues these are perturbatively small and do not
@@ -189,12 +194,14 @@ information.
 
 \subsection{The recombination constant and the extraction-projection norm}
 
-The constant $C_1$ is itself a product of factors (manuscript Computation~O.7),
+Appendix~O proposes the factorization
 \[
   C_1 \;\leq\; C_{\mathrm{fluct}} \cdot C_{\mathrm{cumulant}} \cdot C_{\mathrm{recomb}} \cdot C_{\mathrm{extract}}
-  \;\leq\; 1.65 \times 3b^4 \times 14 \times 2 \;\approx\; 139\,b^4,
+  \;\leq\; 1.65 \times 3b^4 \times 14 \times 2,
 \]
-which for $b=2$ gives $C_1 \leq 139 \times 16 \approx 2224$. The last factor
+which at $b=2$ equals $11088/5=2217.6$, rather than exactly $2224$.
+Appendix~F.5 displays a different factor product which equals $33152$ at
+$b=2$; the two ledgers are inconsistent. The last Appendix-O factor
 $C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$ is the operator norm of the
 extraction projection onto the finite-dimensional space of operators of
 dimension $\leq \dmax$. The manuscript bounds it (its Computation~O.7(d)) by
@@ -203,11 +210,12 @@ dimension $\leq \dmax$. The manuscript bounds it (its Computation~O.7(d)) by
   \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
 \]
 and asserts $\|\Pleq\|_{\mathrm{op}} \leq 2$ for $r_1/r_0 = 1/2$ and $\dmax=16$.
-The displayed exponent $(r_1/r_0)^{-d}$ is a sign erratum (it should read
-$(r_1/r_0)^{+d}$); with that correction the sum is the convergent geometric series
-consistent with the asserted bound $\leq 2$. We return to this in
-\S\ref{sec:honest}; it is the load-bearing input on which the smallness of $C_1$,
-and hence the contraction, rests.
+The literal negative exponent grows, but changing only its sign does not turn
+the displayed multivariate sum into a one-dimensional geometric series. More
+fundamentally, v14 specifies $P_{\mathrm{ext}}$ by its range and does not give
+the dimension-$16$ invariant basis, dual jets, or conditioning estimates needed
+to determine its operator norm. We return to the proved realization and the
+transfer obstruction in \S\ref{sec:honest}.
 
 \section{What we formalized}
 
@@ -442,30 +450,27 @@ value of the manuscript's recombination constant. The Lean ledger is therefore
 faithful to the route's bookkeeping but agnostic about the route's hardest
 analytic claim.
 
-\paragraph{The extraction-projection norm: a displayed-formula erratum, not a
-defect.}
-The smallness of $C_1$ rests on the factor
-$C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$, which the manuscript bounds by
-\[
-  \|\Pleq\|_{\mathrm{op}}
-  \;\leq\; \sum_{d=0}^{\dmax} \binom{\#\mathrm{indices}}{d}\,(r_1/r_0)^{-d}
-  \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
-\]
-asserting the value $\leq 2$ for $r_1/r_0 = 1/2$, $\dmax = 16$. There is a tension
-internal to the written expression: taken literally the summand
-$(r_1/r_0)^{-d} = 2^{d}$ \emph{grows} in $d$, whereas the asserted closed form
-$1 + O\big((r_0/r_1)^{\dmax}\big)$ is a convergent, \emph{decaying} tail. The two
-are reconciled by the intended reading, in which the exponent carries the
-opposite sign: the Cauchy estimate is the convergent geometric series
-$\sum_{d \geq 0} (r_1/r_0)^{d} = 1/(1 - r_1/r_0) = 2$, whose exact tail is the
-displayed closed form. On that reading $C_{\mathrm{extract}} \leq 2$,
-$C_1 \leq 2224$, and $\Lambda \approx 0.27 < 1$ all stand; the printed
-$(r_1/r_0)^{-d}$ is a sign erratum in two displayed lines, not a growth in the
-norm. The corresponding Lean module records this as a \emph{retracted erratum}
-rather than a break in the contraction. We remain precise that the \emph{sharp}
-value of $C_1$ is taken as an input to the checked arithmetic, not independently
-derived; but the apparent growth is a transcription typo, and the load-bearing
-open question for this route is the continuum endpoint below, not this constant.
+\paragraph{The extraction projection: realization succeeds, range-only transfer
+fails.}
+The sign-only repair is insufficient: even with positive exponent, the displayed
+binomial/multivariate multiplicities make the corrected finite sum exceed $2$
+once at least two coordinates are present. We therefore constructed the natural
+finite polynomial realization rather than treating the omission as a verdict.
+For a finite Wilson block of actual group-valued links, plaquette holonomies,
+and a conjugation-invariant Wilson potential, finite polynomials in the
+plaquette coordinates are gauge invariant. In the explicitly defined weighted
+coefficient-majorant norm, canonical-dimension truncation has operator constant
+$1$ (module \texttt{WilsonBlockMajorant}).
+
+This is our realization of the manuscript's extraction idea, not an attribution
+to v14. It cannot be transferred to v14's $P_{\mathrm{ext}}$ from the specified
+range alone: \texttt{projectionRangeSpecification\_does\_not\_imply\_bound\_two}
+constructs an idempotent skew projection onto the same low-coordinate range
+that violates the bound $2$. The positive transfer theorem
+\texttt{coefficientL1\_basisJetProjection\_le} shows exactly what would suffice:
+explicit basis and dual-jet matrices whose coefficient-column bounds multiply.
+Those action-sector matrices and uniform bounds are absent from v14. Hence the
+extraction component is not a standing erratum repair, and $C_1$ is not derived.
 
 \paragraph{The finite gaps are real but Clay-irrelevant.}
 The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
@@ -502,14 +507,17 @@ as open, and sharpened others into theorems:
     $\varepsilon^{*}$-ball in one step at depth 15
     (\texttt{toyRG\_ball\_escape\_two\_fifteen},
     \texttt{benToyRGBootstrapRealization}).
-  \item \textbf{The extraction norm, settled at the level of the written
-    expressions.} The manuscript's literal displayed sum is $\geq 3$ for every
+  \item \textbf{The extraction realization and transfer obstruction.} The
+    manuscript's literal displayed sum is $\geq 3$ for every
     $n\geq 1$ and never $\leq 2$
     (\texttt{three\_le\_literalExtractionOperatorSum},
-    \texttt{not\_literalExtractionOperatorSum\_le\_two}); a
-    coefficient-majorant (weighted $\ell^{1}$) norm repairs the argument
-    cleanly, with monomial truncation contractive ($C_{\mathrm{extract}}\leq 1$)
-    and tail gain $(r_1/r_0)^{\dmax+1}$ (module \texttt{ExtractionMajorant}).
+    \texttt{not\_literalExtractionOperatorSum\_le\_two}). On an explicit
+    finite Wilson-block polynomial algebra, coefficient-majorant truncation is
+    norm one and gauge invariant (\texttt{WilsonBlockMajorant}). A matrix
+    column-sum theorem transfers through explicit basis and dual jets; v14 does
+    not provide these for $P_{\mathrm{ext}}\leq16$, and a skew-projection
+    counterexample proves that no bound follows from the range alone
+    (\texttt{ExtendedExtractionTransfer}).
   \item \textbf{The support-growth dichotomy.} The two collar-growth statements
     the manuscript makes are inequivalent, and both branches are now tight
     theorems: a coarsen-then-thicken recurrence $r_{j+1}\leq r_j/b + A$ yields
@@ -545,17 +553,18 @@ following inputs --- listed with their exact status in v14, since these are
 three different situations.
 
 \begin{enumerate}
-  \item \textbf{One derivation of the recombination constant.}
-    \emph{Status: derived in v14, with an internal inconsistency.} The
-    manuscript carries two factorizations of $C_1$ (the main text's and
-    Computation~O.7's $1.65\times 3b^{4}\times 14\times 2\approx 139\,b^{4}$);
-    they do not agree. \emph{What settles it:} fix one derivation. Any supplied
-    $C$ is then machine-checkable instantly against the feasibility condition
-    $C\,b^{\,3-\dmax}\leq 1/3$; e.g.\ $C\approx 3.3\times 10^{4}$ would simply
-    move the required depth to $\dmax=20$. If extraction uses a non-orthogonal
-    gauge-invariant operator basis, the honest constant includes a finite
-    matrix-conditioning factor $M_A(r,\dmax)$ that must be computed and fed
-    back into the depth selection.
+  \item \textbf{Derive the extraction/recombination constant on the actual map.}
+    \emph{Status: not derived.} Appendix~F.5's displayed factors equal $33152$
+    at $b=2$; Appendix~O's different factors with
+    $C_{\mathrm{extract}}=2$ equal $11088/5$. The fluctuation big-$O$ constant,
+    weighted cumulant-generation estimate, rooted tree-graph factor, and
+    basis/dual-jet conditioning are not proved on the actual map. Regrouping
+    connected families by union has norm one; the factor $14$ is the local
+    rooted branching count, not a total-contact bound. \emph{What settles it:}
+    supply the dimension-$16$ invariant basis and dual jets, prove their
+    uniform conditioning, and prove the weighted Wilson cumulant/tree estimate
+    in the same norm. The resulting actual constant can then be checked against
+    $C\,b^{\,3-\dmax}\leq1/3$.
   \item \textbf{Which support recurrence the glue satisfies.}
     \emph{Status: v14 asserts both branches of a now-proven dichotomy in
     different places.} \emph{What settles it:} one paragraph identifying the
@@ -571,10 +580,11 @@ three different situations.
     \emph{What settles it:} state it precisely and prove it, or carry it as an
     explicit named assumption; once stated, its formalization is immediate.
   \item \textbf{KP convergence at the stopping scale and Wilson-measure
-    reflection positivity.} \emph{Status: invoked in v14 via the classical
-    literature (Koteck\'y--Preiss; Osterwalder--Seiler), correctly.} These are
-    established mathematics; machine-checking them is mechanical work with no
-    research risk, and does not require anything further from the manuscript.
+    reflection positivity.} \emph{Status: abstract results are classical; the
+    route-specific instantiation is open.} One must construct the actual
+    stopping-scale Wilson activities in the same norm, prove the KP criterion
+    uniformly, and verify reflection and boundary-limit compatibility for the
+    same Wilson family and RG kernels.
   \item \textbf{The real RG map satisfies the recursion.}
     \emph{Status: the central claimed content of v14's RG analysis; not
     independently verified here.} Everything above shows the surrounding
@@ -584,9 +594,10 @@ three different situations.
     that is neither bookkeeping, nor a clarification, nor classical.
 \end{enumerate}
 
-Items (1)--(3) are short clarifications at the manuscript level; item (4) is
-mechanical formalization; item (5) is where the proof lives. The Yang--Mills
-mass gap remains open.
+Items (1), (2), (3), and (5) contain route-specific mathematics. The classical
+theorem statements in item (4) do not discharge their Wilson instantiation.
+The actual RG recursion and constructive-QFT promotion remain open, and the
+Yang--Mills mass gap remains open.
 
 \paragraph{Lean modules.}
 The results reported here are in
@@ -601,7 +612,14 @@ reconstruction and strong-coupling gaps), and
 \texttt{Mettapedia.QuantumTheory.YangMills.ProofState} (the continuum-open
 gating); and, from the second round,
 \texttt{RGBootstrapSlack} (two-source bootstrap and depth trichotomy),
-\texttt{ExtractionMajorant} (displayed-sum audit and majorant repair),
+\texttt{ExtractionMajorant} (displayed-sum audit and generic majorant model),
+\texttt{WilsonBlockMajorant} (the concrete finite Wilson-polynomial realization),
+\texttt{ExtendedExtractionTransfer} (the range-only obstruction and explicit
+basis/dual-jet transfer theorem),
+\texttt{WilsonPolymerRecombination} (norm-one union regrouping, the total-contact
+counterexample, and the rooted interpretation of $14$),
+\texttt{WilsonExtractionRecombinationConstant} (the two ledger calculations,
+analytic-factor obstructions, and conditional depth arithmetic),
 \texttt{SupportGrowth} (the recurrence dichotomy),
 \texttt{TransferGapClustering} and \texttt{Z2TransferClustering}
 (gap $\Leftrightarrow$ clustering and the discharged finite continuum gate),
