@@ -123,6 +123,132 @@ theorem faceCycleTotalCurvature_eq_twelve
   have heuler := h.euler
   omega
 
+/-- The minimum-face-size part of the cyclically five-edge-connected normal
+form, stated on the facial cycles that enter Gauss--Bonnet. -/
+def FaceCycleMinimumFive (lengths : Multiset Nat) : Prop :=
+  ∀ n ∈ lengths, 5 ≤ n
+
+/-- Total negative-curvature magnitude: a face of length `n > 6` contributes
+`n - 6`, while pentagons and hexagons contribute zero. -/
+def faceCycleNegativeCurvatureWeight (lengths : Multiset Nat) : Nat :=
+  (lengths.map fun n => n - 6).sum
+
+/-- At face length at least five, curvature is one pentagon indicator minus
+the long-face excess. -/
+theorem faceLengthCurvature_eq_pentagonIndicator_sub_excess
+    {n : Nat} (hn : 5 ≤ n) :
+    faceLengthCurvature n =
+      (if n = 5 then (1 : Int) else 0) - (n - 6 : Nat) := by
+  unfold faceLengthCurvature
+  by_cases h5 : n = 5
+  · subst n
+    norm_num
+  · by_cases h6 : n = 6
+    · subst n
+      norm_num
+    · have h7 : 7 ≤ n := by omega
+      simp only [h5, if_false]
+      rw [Nat.cast_sub (by omega : 6 ≤ n)]
+      omega
+
+/-- Exact weighted face-budget identity before using spherical curvature. -/
+theorem sum_faceLengthCurvature_eq_pentagonCount_sub_negativeWeight
+    (lengths : Multiset Nat) (hmin : FaceCycleMinimumFive lengths) :
+    (lengths.map faceLengthCurvature).sum =
+      (lengths.count 5 : Int) - faceCycleNegativeCurvatureWeight lengths := by
+  induction lengths using Multiset.induction_on with
+  | empty => simp [faceCycleNegativeCurvatureWeight]
+  | cons n lengths ih =>
+      have hn : 5 ≤ n := hmin n (by simp)
+      have htail : FaceCycleMinimumFive lengths := by
+        intro m hm
+        exact hmin m (by simp [hm])
+      simp only [Multiset.map_cons, Multiset.sum_cons, Multiset.count_cons]
+      rw [ih htail, faceLengthCurvature_eq_pentagonIndicator_sub_excess hn]
+      unfold faceCycleNegativeCurvatureWeight
+      simp only [Multiset.map_cons, Multiset.sum_cons]
+      by_cases h5 : n = 5
+      · subst n
+        norm_num
+        ring
+      · have h5' : 5 ≠ n := by
+          exact fun h ↦ h5 h.symm
+        simp only [h5, h5', if_false]
+        push_cast
+        ring
+
+/-- Corrected pentagon budget for a normal-form cubic sphere map. Long faces
+do not disappear: each unit of negative curvature requires one pentagon beyond
+the base twelve. -/
+theorem faceCyclePentagonCount_eq_twelve_add_negativeCurvatureWeight
+    (RS : RotationSystem V E) (h : SphericalCubicMapData RS)
+    (hmin : FaceCycleMinimumFive (faceCycleLengths RS)) :
+    (faceCycleLengths RS).count 5 =
+      12 + faceCycleNegativeCurvatureWeight (faceCycleLengths RS) := by
+  have hcurvature := faceCycleTotalCurvature_eq_twelve RS h
+  unfold faceCycleTotalCurvature at hcurvature
+  rw [sum_faceLengthCurvature_eq_pentagonCount_sub_negativeWeight _ hmin] at hcurvature
+  exact_mod_cast (show
+    ((faceCycleLengths RS).count 5 : Int) =
+      12 + faceCycleNegativeCurvatureWeight (faceCycleLengths RS) by omega)
+
+/-- Quantitative scope gate: allowing long-face excess `B` changes the valid
+pentagon budget from twelve to `12 + B`, exactly. -/
+theorem faceCyclePentagonCount_le_iff_negativeCurvatureWeight_le
+    (RS : RotationSystem V E) (h : SphericalCubicMapData RS)
+    (hmin : FaceCycleMinimumFive (faceCycleLengths RS)) (B : Nat) :
+    (faceCycleLengths RS).count 5 ≤ 12 + B ↔
+      faceCycleNegativeCurvatureWeight (faceCycleLengths RS) ≤ B := by
+  rw [faceCyclePentagonCount_eq_twelve_add_negativeCurvatureWeight RS h hmin]
+  omega
+
+/-- In particular, a twelve-pentagon cap is valid exactly when longer faces
+contribute no negative curvature. -/
+theorem faceCyclePentagonCount_le_twelve_iff_negativeCurvatureWeight_eq_zero
+    (RS : RotationSystem V E) (h : SphericalCubicMapData RS)
+    (hmin : FaceCycleMinimumFive (faceCycleLengths RS)) :
+    (faceCycleLengths RS).count 5 ≤ 12 ↔
+      faceCycleNegativeCurvatureWeight (faceCycleLengths RS) = 0 := by
+  simpa using
+    faceCyclePentagonCount_le_iff_negativeCurvatureWeight_le RS h hmin 0
+
+/-- Fullerene scope on facial cycles: every face is a pentagon or hexagon. -/
+def FaceCycleFullereneRestriction (lengths : Multiset Nat) : Prop :=
+  ∀ n ∈ lengths, n = 5 ∨ n = 6
+
+theorem faceCycleFullereneRestriction_minimumFive
+    {lengths : Multiset Nat} (h : FaceCycleFullereneRestriction lengths) :
+    FaceCycleMinimumFive lengths := by
+  intro n hn
+  rcases h n hn with rfl | rfl <;> omega
+
+theorem faceCycleNegativeCurvatureWeight_eq_zero_of_fullerene
+    {lengths : Multiset Nat} (h : FaceCycleFullereneRestriction lengths) :
+    faceCycleNegativeCurvatureWeight lengths = 0 := by
+  induction lengths using Multiset.induction_on with
+  | empty => simp [faceCycleNegativeCurvatureWeight]
+  | cons n lengths ih =>
+      have hn := h n (by simp)
+      have htail : FaceCycleFullereneRestriction lengths := by
+        intro m hm
+        exact h m (by simp [hm])
+      unfold faceCycleNegativeCurvatureWeight
+      simp only [Multiset.map_cons, Multiset.sum_cons]
+      have ihtail := ih htail
+      unfold faceCycleNegativeCurvatureWeight at ihtail
+      rw [ihtail]
+      rcases hn with rfl | rfl <;> norm_num
+
+/-- The familiar exactly-twelve-pentagon theorem is recovered under the
+explicit fullerene restriction. -/
+theorem faceCyclePentagonCount_eq_twelve_of_fullerene
+    (RS : RotationSystem V E) (h : SphericalCubicMapData RS)
+    (hfullerene : FaceCycleFullereneRestriction (faceCycleLengths RS)) :
+    (faceCycleLengths RS).count 5 = 12 := by
+  rw [faceCyclePentagonCount_eq_twelve_add_negativeCurvatureWeight RS h
+    (faceCycleFullereneRestriction_minimumFive hfullerene)]
+  rw [faceCycleNegativeCurvatureWeight_eq_zero_of_fullerene hfullerene]
+
 /-- The face-size consequences used by the v24 normal-form budget argument,
 separated from any claim that the list is realized by a graph. -/
 def NormalFormFaceSizeConsequences (faceSizes : List Nat) : Prop :=
