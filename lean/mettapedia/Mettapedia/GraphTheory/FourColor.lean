@@ -507,3 +507,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24WindingClassification
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail
 import Mettapedia.GraphTheory.FourColor.RotationSystemEdgeColoring
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Digon
+import Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor
