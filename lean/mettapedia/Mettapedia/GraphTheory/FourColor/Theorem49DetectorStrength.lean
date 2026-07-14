@@ -4,13 +4,11 @@ namespace Mettapedia.GraphTheory.FourColor
 
 variable {V : Type*} [DecidableEq V]
 
-/-- On any embedding with an unblocked interior endpoint, the full
-selected-boundary-zero space strictly contains the concrete theorem-4.9 target
-`W₀(H)` built from `selectedBoundaryInteriorEdgeEndpointVertices`: a single
-interior edge gives a boundary-zero chain whose Kirchhoff sum is nonzero at
-that surviving endpoint.  This is the precise algebraic reason the new
-detector/cancellation oracle is stronger than the manuscript target on every
-shell-bearing embedding. -/
+/-- On any embedding with an unblocked interior endpoint, the unrestricted
+selected-boundary-zero chain space contains a chain outside the formal
+Kirchhoff detector.  The detector becomes v23's `W₀(H)` only after separate
+incidence data identify its vertex and boundary carriers with all annulus
+interior vertices and both boundary cycles. -/
 theorem exists_mem_planarBoundaryZeroSubmodule_not_mem_theorem49BoundaryZeroKirchhoffSubspace_of_hasUnblockedInteriorEndpoint
     {G : SimpleGraph V} [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     (hEndpoint : HasUnblockedInteriorEndpoint emb) :
@@ -43,11 +41,11 @@ theorem exists_mem_planarBoundaryZeroSubmodule_not_mem_theorem49BoundaryZeroKirc
       simp [hvEdge]
     exact red_ne_zero (hsumRed.symm.trans hsumZero)
 
-/-- For shell-bearing embeddings, the theorem-4.9 target `W₀(H)` is a proper
-subspace of the full selected-boundary-zero chain space.  So any oracle stated
-on all of `planarBoundaryZeroSubmodule` is formally stronger than the current
-manuscript target. -/
-theorem theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_hasUnblockedInteriorEndpoint
+/-- For shell-bearing embeddings, the formal Kirchhoff detector is a proper
+subspace of the unrestricted selected-boundary-zero chain space.  This compares
+two formal oracle domains; it does not refute v23 Theorem 4.9's inclusion into
+the unprojected Definition 4.8 generator span. -/
+theorem formalW0Proxy_lt_unrestrictedSelectedBoundaryZeroChainSpace_of_hasUnblockedInteriorEndpoint
     {G : SimpleGraph V} [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     (hEndpoint : HasUnblockedInteriorEndpoint emb) :
     theorem49BoundaryZeroKirchhoffSubspace emb

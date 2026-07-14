@@ -31,13 +31,9 @@ open GoertzelLemma818TwoSidedAvoidance
 
 /-! ## Section 9.2 closed-collar bridge -/
 
-theorem closedCollarS2BridgeTarget_audit :
-    closedCollarS2BridgeTarget :=
-  closedCollarS2BridgeTarget_proved
-
-theorem section92S2BridgeLemmaTarget_audit :
-    section92S2BridgeLemmaTarget :=
-  section92S2BridgeLemmaTarget_proved
+theorem closedCollarLength23RadialClosingEdgeFiberCensus_audit :
+    closedCollarLength23RadialClosingEdgeFiberCensus :=
+  closedCollarLength23RadialClosingEdgeFiberCensus_proved
 
 theorem closedCollarWindingFreedomTheorem_audit :
     ClosedCollarWindingFreedomTheorem :=
@@ -54,23 +50,6 @@ theorem closedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm_audit :
 theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut_audit :
     LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut :=
   localTwoPoleDesingularizationCannotRemoveCyclicTwoCut
-
-theorem closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes_audit :
-    ClosedCollarWindingFreedomEscapeForcesCyclicTwoCutAllSizes :=
-  closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes
-
-theorem closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected_audit
-    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
-    ClosedCollarTriangulationCollarForbidsCyclicTwoCut G :=
-  closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected hcyclic
-
-theorem closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_audit :
-    ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes
-
-theorem section92Step4RepairedByAllSizesCyclicTwoCutTarget_audit :
-    Section92Step4RepairedByAllSizesCyclicTwoCutTarget :=
-  section92Step4RepairedByAllSizesCyclicTwoCutTarget
 
 theorem closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix_audit :
     ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix :=
@@ -1425,7 +1404,7 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryG
 
 def closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_ofWitnessOnCurrentBoundary_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm)
@@ -1438,7 +1417,7 @@ def closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
 
 theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm)
@@ -1452,7 +1431,7 @@ theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpg
 
 theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_toWitnessOnCurrentBoundary_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -1464,7 +1443,7 @@ theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpg
 
 theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_iff_witnessOnCurrentBoundary_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm) :
@@ -1523,7 +1502,7 @@ theorem closedCollarWindingFreedomPreviousBoundaryRepairHasBlocker_of_not_nonrea
 
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -1535,7 +1514,7 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
 
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutCoverage_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -1549,7 +1528,7 @@ theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFace
 
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutHistogramCoverage_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -1827,7 +1806,7 @@ theorem closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBloc
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
       normalForm :=
   closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBlocker_of_auditedRows
@@ -1846,7 +1825,7 @@ theorem closedCollarWindingFreedomNormalFormHasFactoredPreviousBoundaryWitnessRe
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
       normalForm :=
   closedCollarWindingFreedomNormalFormHasFactoredPreviousBoundaryWitnessRepairBlocker_of_auditedRows
@@ -1863,7 +1842,7 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstructi
 
 theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker_of_no_concretePreviousBoundaryNormalFormExtraction_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G)
     (hno :
       ¬ Nonempty
         (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
@@ -2451,7 +2430,7 @@ theorem closedCollarWindingFreedomNormalFormHasCurrentBoundaryWitnessRepairBlock
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairHasBlocker
       normalForm :=
   closedCollarWindingFreedomNormalFormHasCurrentBoundaryWitnessRepairBlocker_of_auditedRows
@@ -2468,7 +2447,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairObstruction_of_aud
 
 theorem closedCollarWindingFreedomCurrentBoundaryWitnessPlacementFailure_numCollars_ne_one_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm)
@@ -2480,7 +2459,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryWitnessPlacementFailure_numColl
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPlacementFailure_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -2492,7 +2471,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPla
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_numCollars_gt_one_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2501,7 +2480,7 @@ def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_numCollars_gt_one_au
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_interiorEdgeSupport_nonempty_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2511,7 +2490,7 @@ def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_interiorEdgeSupport_
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_notWitnessOnCurrentBoundary_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2520,7 +2499,7 @@ def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_notWitnessOnCurrentB
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_witness_not_previousBoundaryCycle_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2530,7 +2509,7 @@ def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_witness_not_previous
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_notPreviousBoundaryWitnessUpgrade_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2541,7 +2520,7 @@ def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_notPreviousBoundaryW
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_toMultiCollarEscape_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2551,7 +2530,7 @@ def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_toMultiCollarEscape_
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessPlacementFailure_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -2564,7 +2543,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witness
 
 theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker_of_badWitnessFaceEscape_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (hbad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
         normalForm) :
@@ -2576,7 +2555,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker_of_badWitn
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessOnCurrentBoundaryBlocker_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (hblocker :
       ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
         normalForm
@@ -2588,7 +2567,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witness
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_witnessOnCurrentBoundaryBlocker_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G} :
     ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
       normalForm ↔
       ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
@@ -2598,7 +2577,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_witnes
 
 theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessUpgradeBlocker_iff_witnessOnCurrentBoundaryBlocker_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G} :
     ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
       normalForm
       .previousBoundaryWitnessUpgrade ↔
@@ -2609,7 +2588,7 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessUpgradeBlocker_
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previousBoundaryWitnessUpgradeBlocker_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G} :
     ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
       normalForm ↔
       ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
@@ -2619,7 +2598,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previo
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_badWitnessFaceEscape_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (hbad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
         normalForm) :
@@ -2630,7 +2609,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_badWitness
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCollarEscape_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (escape :
       ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
         normalForm) :
@@ -2641,7 +2620,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCo
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessOnCurrentBoundaryBlocker_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G)
     (hblocker :
       ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
         normalForm
@@ -2677,7 +2656,7 @@ theorem closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_
 
 theorem closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes_audit
     {V : Type} {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ¬ ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
       candidate.Realizes :=
   closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes
@@ -2685,7 +2664,7 @@ theorem closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes
 
 def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_noExactTemplateRealizes_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -2697,7 +2676,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_false_of_forcesE
     (hforces :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -3389,7 +3368,7 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticF
 
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)

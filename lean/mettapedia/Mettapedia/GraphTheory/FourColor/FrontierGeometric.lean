@@ -87,7 +87,7 @@ theorem theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of
     theorem49BoundaryZeroKirchhoffSubspace emb
         (selectedBoundaryInteriorEdgeEndpointVertices emb) <
       planarBoundaryZeroSubmodule emb :=
-  theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_hasUnblockedInteriorEndpoint
+  formalW0Proxy_lt_unrestrictedSelectedBoundaryZeroChainSpace_of_hasUnblockedInteriorEndpoint
     shell.endpoint
 
 /-- Every closed-walk shell (the endpoint witness suffices) forces two distinct

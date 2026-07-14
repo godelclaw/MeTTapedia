@@ -539,10 +539,10 @@ theorem routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hsmall :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :=
     cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
       hindex.2.2
   exact
@@ -569,7 +569,7 @@ def realizedCandidateRouteInputs_of_planarNormalFormCutLiftFoundationTargetIndex
     MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G
       source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hsmall :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :=
     cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
       hindex.2.2
   exact
@@ -658,7 +658,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_planarNormalFor
           (G := G)
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
   (routeIndexConsequences_of_planarNormalFormCutLiftFoundationTargetIndex
     hindex source regime).2.2.2
@@ -813,7 +813,7 @@ theorem
       CAP5FreePeeledCollarPlanarNormalFormCutLiftFoundationTargetIndex) :
     Section92Step4CAP5FreePlanarNormalFormClosedWalkRouteInputsCutLiftRouteIndexTarget := by
   have hsmall :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :=
     cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
       hindex.2.2
   exact

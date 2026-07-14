@@ -227,7 +227,7 @@ def Section92Step4ClosedWalkCAP5FreeFacePlacementFoundationOffBoundaryRouteIndex
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--

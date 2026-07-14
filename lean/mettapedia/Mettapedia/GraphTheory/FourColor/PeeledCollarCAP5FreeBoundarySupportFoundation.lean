@@ -76,7 +76,7 @@ small-cut lift foundation target.
 theorem cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_boundarySupportFoundationTarget
     (hfoundation :
       CAP5FreeClosedWalkPeeledCollarBoundarySupportFoundationTarget) :
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :=
   cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offBoundaryNoCrossingFoundationTarget
     (cap5FreeClosedWalkOffBoundaryNoCrossingFoundationTarget_of_boundarySupportFoundationTarget
       hfoundation)
@@ -170,7 +170,7 @@ def Section92Step4ClosedWalkCAP5FreeBoundarySupportFoundationRouteIndexTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -202,7 +202,7 @@ theorem section92Step4ClosedWalkCAP5FreeBoundarySupportFoundationRouteIndexTarge
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
     section92Step4ClosedWalkCAP5FreeOffBoundaryNoCrossingFoundationRouteIndexTarget
       hoffFoundation source regime
@@ -263,7 +263,7 @@ def Section92Step4ClosedWalkCAP5FreeBoundarySupportRegimeDischargedS4SalvageTarg
           (G := G)
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--

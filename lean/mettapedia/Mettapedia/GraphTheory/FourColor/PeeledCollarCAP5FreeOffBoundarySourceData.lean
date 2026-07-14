@@ -124,7 +124,7 @@ theorem routeIndexConsequences_of_regimeAttachmentFaceSourceDataOffBoundaryTarge
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hface :
       source.RegimeNoncrossingFaceSourceFoundationTarget :=
@@ -269,7 +269,7 @@ theorem routeIndexConsequences_of_cap5FreeClosedWalkAttachmentFaceSourceDataOffB
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hdata :
       data.RegimeAttachmentFaceSourceDataFoundationTarget :=
@@ -412,7 +412,7 @@ theorem routeIndexConsequences_of_cap5FreeClosedWalkAttachmentFaceSourceDataOffB
       PeeledCollarSmallCyclicCutLiftsToAmbient G data.inducedBoundaryGraph ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hdata :
       data.RegimeAttachmentFaceSourceDataFoundationTarget :=
@@ -487,7 +487,7 @@ def Section92Step4ClosedWalkCAP5FreeAttachmentFaceSourceDataOffBoundaryRouteInde
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Route-index theorem for the closed-walk source-data off-boundary target. -/
@@ -540,7 +540,7 @@ def
           data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the canonical source-data off-boundary target. -/
@@ -582,7 +582,7 @@ def
           data.inducedBoundaryGraph ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the repaired source-data off-boundary target. -/

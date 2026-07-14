@@ -11,10 +11,10 @@ the canonical three-cell collar gadget.  The gadget has internal vertices
 `F0..F5`, boundary stubs `B0..B7`, internal tree
 `F1-F0-F2-F4-F5` with leaf `F3`, and fixed input stubs `B0..B3`.
 
-The definitions below are intentionally finite and concrete: a coloring state
-is one of the proper 3-edge-colorings of this fixed tree gadget, Kempe steps
-are switches on two-color components disjoint from the input stubs, and
-`tauLKRInAudit` checks that every fixed-input fiber is connected.
+The definitions below are intentionally finite and concrete. They encode
+incidence colorings and computed two-color components of the fixed tree
+gadget. The accompanying graph-fidelity module proves exhaustiveness of the
+192 colorings and gives graph-level semantics for the encoded moves.
 -/
 
 namespace GoertzelLemma814
@@ -872,19 +872,14 @@ def tauTreeTransparencyAtIndex (i : Nat) : Bool :=
 def tauTreeTransparencyRangeAudit (start len : Nat) : Bool :=
   (List.range len).all (fun k => tauTreeTransparencyAtIndex (start + k))
 
-/-- The finite tree-transparency audit corresponding to Lemma 8.15. -/
+/-- The encoded finite tree-transparency audit used for the 8.15 model. -/
 def tauTreeTransparencyAudit : Bool :=
   tauTreeTransparencyRangeAudit 0 64 &&
     tauTreeTransparencyRangeAudit 64 64 &&
     tauTreeTransparencyRangeAudit 128 64
 
-/--
-Finite check for Lemma 8.14 on the canonical gadget.  This is the exact Lean
-predicate that must reduce to `true`: the state space has 192 proper states,
-and the indexed path certificate verifies `LKR_in` by paths of length at most
-two to fixed-input representatives.
--/
-def lemma814_tau_lkrIn_finiteCheck : Bool :=
+/-- The finite encoded-model check underlying the former 8.14 headline. -/
+def lemma814_tau_finiteEncodedModelCheck : Bool :=
   tauStateSpaceAudit && tauLKRInAudit
 
 set_option maxRecDepth 4096 in
@@ -914,10 +909,11 @@ theorem lemma814PathCertificateAudit_ok :
   simp [lemma814PathCertificateAudit, lemma814PathCertificate_length_ok,
     lemma814PathCertificate_rows_ok, representativeCoherenceAudit_ok]
 
-/-- Lemma 8.14, closed by the finite state-space and indexed path certificate. -/
-theorem lemma814_tau_lkrIn_audit :
-    lemma814_tau_lkrIn_finiteCheck = true := by
-  simp [lemma814_tau_lkrIn_finiteCheck, tauStateSpaceAudit_ok, tauLKRInAudit,
+/-- The 8.14 finite encoded-model audit.  It does not by itself prove that the
+listed incidence moves are Kempe switches on an actual graph realization. -/
+theorem lemma814_tau_finiteEncodedModelAudit :
+    lemma814_tau_finiteEncodedModelCheck = true := by
+  simp [lemma814_tau_finiteEncodedModelCheck, tauStateSpaceAudit_ok, tauLKRInAudit,
     lemma814PathCertificateAudit_ok]
 
 /-- The mirror gadget has the same incidence tree; reflection changes only the planar order. -/
@@ -929,11 +925,9 @@ theorem lemma814_mirror_lkrIn_same_check :
     mirrorTauLKRInAudit = tauLKRInAudit :=
   rfl
 
-/--
-Finite check for Lemma 8.15: every two-color component in every listed
-coloring of the tree gadget is a boundary-to-boundary path.
--/
-def lemma815_tau_tree_transparency_finiteCheck : Bool :=
+/-- Encoded-model check that every computed two-color component in every listed
+coloring is a boundary-to-boundary tree path. -/
+def lemma815_tau_finiteEncodedModelTransparencyCheck : Bool :=
   tauTreeTransparencyAudit
 
 set_option maxRecDepth 4096 in
@@ -954,13 +948,11 @@ theorem tauTreeTransparencyRange_128_64_ok :
     tauTreeTransparencyRangeAudit 128 64 = true := by
   decide
 
-/--
-Lemma 8.15 finite audit: every two-color component in every canonical
-three-cell gadget coloring is a boundary-to-boundary tree path.
--/
-theorem lemma815_tau_tree_transparency_audit :
-    lemma815_tau_tree_transparency_finiteCheck = true := by
-  unfold lemma815_tau_tree_transparency_finiteCheck tauTreeTransparencyAudit
+/-- The 8.15 finite encoded-model transparency audit.  Its graph-realization
+bridge is not supplied by this theorem. -/
+theorem lemma815_tau_finiteEncodedModelTransparencyAudit :
+    lemma815_tau_finiteEncodedModelTransparencyCheck = true := by
+  unfold lemma815_tau_finiteEncodedModelTransparencyCheck tauTreeTransparencyAudit
   rw [tauTreeTransparencyRange_0_64_ok]
   rw [tauTreeTransparencyRange_64_64_ok]
   rw [tauTreeTransparencyRange_128_64_ok]

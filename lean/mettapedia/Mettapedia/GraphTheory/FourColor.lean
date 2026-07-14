@@ -10,6 +10,7 @@ import Mettapedia.GraphTheory.FourColor.CAP5WheelRouteData
 import Mettapedia.GraphTheory.FourColor.CAP5DodecahedralRouteData
 import Mettapedia.GraphTheory.FourColor.CAP5GP12RouteData
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma814
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma814GraphFidelity
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ComponentCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818FrontierMode
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818CompositeCertificate
@@ -498,3 +499,6 @@ import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgePositiveG
 import Mettapedia.GraphTheory.FourColor.CDLFlow
 import Mettapedia.GraphTheory.FourColor.Goal
 import Mettapedia.GraphTheory.FourColor.PillarASmallerSpace
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CurvatureScope
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DependencyLedger
+import Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers

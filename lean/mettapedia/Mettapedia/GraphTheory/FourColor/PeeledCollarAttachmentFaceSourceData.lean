@@ -202,9 +202,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelecte
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (cyclicallyFiveEdgeConnected_of_boundarySelectedBoundaryArcOnFace_of_attachmentFaceSourceDataTarget
       regime harc h)
 
@@ -247,9 +247,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelecte
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (cyclicallyFiveEdgeConnected_of_boundarySelectedBoundaryArcOnFace_of_attachmentFaceSourceDataTarget
       regime harc h)
 
@@ -299,9 +299,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivit
     (h :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (data.cyclicallyFiveEdgeConnected_of_closedWalkAnnulusBoundarySource_attachmentFaceSourceDataTarget
       regime source hboundary h)
 
@@ -353,9 +353,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_throughConnectivit
     (h :
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         source.toPlanarBoundaryAnnulusBoundaryData) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (data.cyclicallyFiveEdgeConnected_of_closedWalkAnnulusBoundarySource_attachmentFaceSourceDataTarget
       regime source hboundary h)
 
@@ -379,7 +379,7 @@ def
         BoundarySelectedBoundaryArcOnFace (emb := emb) f) →
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical-annulus chosen-source-data S4 statement. -/
@@ -409,7 +409,7 @@ def
         BoundarySelectedBoundaryArcOnFace (emb := emb) f) →
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired-annulus chosen-source-data S4 statement. -/
@@ -439,7 +439,7 @@ def
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical closed-walk chosen-source-data S4 statement through connectivity. -/
@@ -470,7 +470,7 @@ def
         source.toPlanarBoundaryAnnulusBoundaryData →
       PlanarBoundaryAnnulusBoundaryData.PeeledCollarOffCarrierAttachmentFaceSourceDataTarget
         source.toPlanarBoundaryAnnulusBoundaryData →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired closed-walk chosen-source-data S4 statement through connectivity. -/

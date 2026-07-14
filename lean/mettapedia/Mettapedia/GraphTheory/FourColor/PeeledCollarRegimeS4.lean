@@ -50,8 +50,8 @@ collar hypothesis.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexamplePeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     inputs.cyclicallyFiveEdgeConnected
 
 end MinimalCounterexamplePeeledCollarRouteInputs
@@ -122,7 +122,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs :
       MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleRealizedCandidatePeeledCollarRouteInputs
@@ -176,7 +176,7 @@ transport for peeled-collar cuts.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleEmbeddedPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleEmbeddedPeeledCollarRouteInputs
@@ -230,7 +230,7 @@ side separation plus the minimal-counterexample normal form.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleSeparatedPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toEmbeddedRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleSeparatedPeeledCollarRouteInputs
@@ -284,7 +284,7 @@ small cyclic collar cut.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleBarrierPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toSeparatedRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleBarrierPeeledCollarRouteInputs
@@ -338,7 +338,7 @@ ambient side-crossing edges.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexamplePreimagePeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toBarrierRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexamplePreimagePeeledCollarRouteInputs
@@ -392,7 +392,7 @@ ambient side-crossing edges have endpoints in the embedded collar range.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toPreimageRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleEndpointRangePeeledCollarRouteInputs
@@ -446,7 +446,7 @@ ambient side-crossing edge endpoints are supported by the mapped collar cut.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toEndpointRangeRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs
@@ -509,7 +509,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {edges : Finset G.edgeSet}
     (inputs :
       MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toBoundarySupportRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
@@ -580,7 +580,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
         G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toEndpointRangeRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
@@ -650,7 +650,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
         G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toBoundaryCarrierEndpointSupportRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -723,7 +723,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs
         G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -794,7 +794,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
         G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toComponentAttachmentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -865,7 +865,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
         G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toAttachmentCarrierConnectedRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -937,7 +937,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleOffCarrierMappedCutAvoidingSharedEndpointConnectedPeeledCollarRouteInputs
         G edges) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       (BoundaryEdgeSetInducedGraph (G := G) edges) :=
   inputs.toCutAvoidingSharedEndpointRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -1011,7 +1011,7 @@ that ambient side-crossing edges cannot touch off-boundary vertices.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toBoundarySupportRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs
@@ -1066,7 +1066,7 @@ the filled side is locally constant off the mapped collar-cut boundary.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleLocalConstancyPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toOffBoundaryRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleLocalConstancyPeeledCollarRouteInputs
@@ -1146,7 +1146,7 @@ extraction target for the embedded peeled collar.
 theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {G : SimpleGraph V} {H : SimpleGraph W}
     (inputs : MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H :=
   inputs.toLocalConstancyRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
 end MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs
@@ -1269,7 +1269,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {data : PlanarBoundaryAnnulusCollarGeometry emb}
     (inputs :
       MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -1294,7 +1294,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
     (hlocal :
       PlanarBoundaryAnnulusPeeledCollarLocalConstancyTarget
         data data.inducedBoundaryEmbedding) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (of_inducedBoundaryComponents_of_crossComponentChordFree
     regime hOuter hInner hCross hlocal)
@@ -1319,7 +1319,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
     (hseparate :
       PlanarBoundaryAnnulusPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
     regime hOuter hInner hCross hseparate)
@@ -1339,7 +1339,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkC
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph)
     (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs.mk
     regime h)
@@ -1361,7 +1361,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_separationTarge
     (hseparate :
       PlanarBoundaryAnnulusPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
     regime
@@ -1382,7 +1382,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_oppositeSideTar
         data.inducedBoundaryGraph)
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierOppositeSideTarget data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
     regime
@@ -1403,7 +1403,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttach
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_oppositeSideTarget
     regime
@@ -1424,7 +1424,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarri
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttachmentTarget
     regime
@@ -1445,7 +1445,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingShar
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
     regime
@@ -1464,7 +1464,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_mappedCutAvoidi
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph)
     (h : data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingSharedEndpointReachabilityTarget
     regime
@@ -1485,7 +1485,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceN
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_mappedCutAvoidingSharedEndpointConnectivityTarget
     regime
@@ -1507,7 +1507,7 @@ theorem
     (h :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceNoncrossingRouteTarget
     regime
@@ -1584,7 +1584,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleCanonicalAnnulusSeparationPeeledCollarRouteInputs
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -1709,7 +1709,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb}
     (inputs :
       MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -1734,7 +1734,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
     (hlocal :
       PlanarBoundaryPreviousBoundaryPeeledCollarLocalConstancyTarget
         data data.inducedBoundaryEmbedding) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (of_inducedBoundaryComponents_of_crossComponentChordFree
     regime hOuter hInner hCross hlocal)
@@ -1759,7 +1759,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_inducedBoundary
     (hseparate :
       PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (of_inducedBoundaryComponents_of_crossComponentChordFree_of_separation
     regime hOuter hInner hCross hseparate)
@@ -1779,7 +1779,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkC
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph)
     (h : data.PeeledCollarOffCarrierWalkConsistencyTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs.mk
     regime h)
@@ -1801,7 +1801,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_separationTarge
     (hseparate :
       PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
     regime
@@ -1822,7 +1822,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_oppositeSideTar
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierOppositeSideTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_offCarrierWalkConsistencyTarget
     regime
@@ -1843,7 +1843,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttach
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_oppositeSideTarget
     regime
@@ -1864,7 +1864,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarri
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_componentAttachmentTarget
     regime
@@ -1885,7 +1885,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingShar
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentCarrierConnectivityTarget
     regime
@@ -1904,7 +1904,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_mappedCutAvoidi
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph)
     (h : data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_cutAvoidingSharedEndpointReachabilityTarget
     regime
@@ -1925,7 +1925,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceN
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_mappedCutAvoidingSharedEndpointConnectivityTarget
     regime
@@ -1947,7 +1947,7 @@ theorem
     (h :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   closedCollarWindingFreedomEscape_not_simplyRealizable_of_attachmentFaceNoncrossingRouteTarget
     regime
@@ -2023,7 +2023,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
     (inputs :
       MinimalCounterexampleRepairedAnnulusSeparationPeeledCollarRouteInputs
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   inputs.toOffCarrierWalkConsistentRouteInputs
     |>.closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -2040,7 +2040,7 @@ def Section92Step4RegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexamplePeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end regime-discharged S4 salvage statement. -/
 theorem section92Step4RegimeDischargedS4SalvageTarget :
@@ -2056,7 +2056,7 @@ def Section92Step4EmbeddedRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleEmbeddedPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end embedded-regime S4 salvage statement. -/
 theorem section92Step4EmbeddedRegimeDischargedS4SalvageTarget :
@@ -2072,7 +2072,7 @@ def Section92Step4SeparatedRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleSeparatedPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end separation-regime S4 salvage statement. -/
 theorem section92Step4SeparatedRegimeDischargedS4SalvageTarget :
@@ -2087,7 +2087,7 @@ def Section92Step4BarrierRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleBarrierPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end barrier-regime S4 salvage statement. -/
 theorem section92Step4BarrierRegimeDischargedS4SalvageTarget :
@@ -2102,7 +2102,7 @@ def Section92Step4PreimageRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexamplePreimagePeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end preimage-regime S4 salvage statement. -/
 theorem section92Step4PreimageRegimeDischargedS4SalvageTarget :
@@ -2117,7 +2117,7 @@ def Section92Step4EndpointRangeRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end endpoint-range S4 salvage statement. -/
 theorem section92Step4EndpointRangeRegimeDischargedS4SalvageTarget :
@@ -2132,7 +2132,7 @@ def Section92Step4BoundarySupportRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end boundary-support S4 salvage statement. -/
 theorem section92Step4BoundarySupportRegimeDischargedS4SalvageTarget :
@@ -2148,7 +2148,7 @@ def Section92Step4BoundaryEdgeSetInducedRegimeDischargedS4SalvageTarget : Prop :
   ∀ {V : Type} [DecidableEq V]
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleBoundaryEdgeSetInducedPeeledCollarRouteInputs G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end boundary-edge-set induced S4 salvage statement. -/
@@ -2167,7 +2167,7 @@ def Section92Step4BoundaryCarrierEndpointSupportRegimeDischargedS4SalvageTarget 
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleBoundaryCarrierEndpointSupportPeeledCollarRouteInputs
         G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end boundary-carrier endpoint-support S4 salvage statement. -/
@@ -2186,7 +2186,7 @@ def Section92Step4OffCarrierWalkConsistentRegimeDischargedS4SalvageTarget :
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleOffCarrierWalkConsistentPeeledCollarRouteInputs
         G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end off-carrier walk-consistency S4 salvage statement. -/
@@ -2205,7 +2205,7 @@ def Section92Step4OffCarrierComponentAttachmentRegimeDischargedS4SalvageTarget :
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleOffCarrierComponentAttachmentPeeledCollarRouteInputs
         G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end off-carrier component-attachment S4 salvage statement. -/
@@ -2225,7 +2225,7 @@ def
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleOffCarrierAttachmentCarrierConnectedPeeledCollarRouteInputs
         G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end off-carrier attachment-carrier-connectivity S4 salvage statement. -/
@@ -2246,7 +2246,7 @@ def
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleOffCarrierCutAvoidingSharedEndpointPeeledCollarRouteInputs
         G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end cut-avoiding shared-endpoint S4 salvage statement. -/
@@ -2267,7 +2267,7 @@ def
     {G : SimpleGraph V} {edges : Finset G.edgeSet},
       MinimalCounterexampleOffCarrierMappedCutAvoidingSharedEndpointConnectedPeeledCollarRouteInputs
         G edges →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           (BoundaryEdgeSetInducedGraph (G := G) edges)
 
 /-- Verbatim end-to-end mapped-cut-deleted shared-endpoint S4 salvage statement. -/
@@ -2284,7 +2284,7 @@ def Section92Step4OffBoundaryRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end off-boundary S4 salvage statement. -/
 theorem section92Step4OffBoundaryRegimeDischargedS4SalvageTarget :
@@ -2299,7 +2299,7 @@ def Section92Step4LocalConstancyRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleLocalConstancyPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end local-constancy S4 salvage statement. -/
 theorem section92Step4LocalConstancyRegimeDischargedS4SalvageTarget :
@@ -2314,7 +2314,7 @@ def Section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget : Prop :=
   ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
     {G : SimpleGraph V} {H : SimpleGraph W},
       MinimalCounterexampleAnnulusExtractionPeeledCollarRouteInputs G H →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization H
 
 /-- Verbatim end-to-end annulus-extraction S4 salvage statement. -/
 theorem section92Step4AnnulusExtractionRegimeDischargedS4SalvageTarget :
@@ -2330,7 +2330,7 @@ def Section92Step4CanonicalAnnulusRegimeDischargedS4SalvageTarget : Prop :=
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusCollarGeometry emb},
       MinimalCounterexampleCanonicalAnnulusPeeledCollarRouteInputs data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus S4 salvage statement. -/
@@ -2354,7 +2354,7 @@ def Section92Step4CanonicalAnnulusSeparationRegimeDischargedS4SalvageTarget :
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus separation S4 salvage statement. -/
@@ -2380,7 +2380,7 @@ def Section92Step4CanonicalAnnulusOffCarrierRegimeDischargedS4SalvageTarget :
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph),
       data.PeeledCollarOffCarrierWalkConsistencyTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus off-carrier S4 salvage statement. -/
@@ -2407,7 +2407,7 @@ def
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarOffCarrierOppositeSideTarget data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus off-carrier-disconnection S4 salvage statement. -/
@@ -2435,7 +2435,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarOffCarrierComponentAttachmentTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus component-attachment S4 salvage statement. -/
@@ -2463,7 +2463,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus attachment-carrier-connectivity S4 salvage statement. -/
@@ -2491,7 +2491,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus cut-avoiding shared-endpoint S4 salvage statement. -/
@@ -2518,7 +2518,7 @@ def
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph),
       data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus mapped-cut-deleted shared-endpoint S4 salvage statement. -/
@@ -2546,7 +2546,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus attachment-face noncrossing S4 salvage statement. -/
@@ -2574,7 +2574,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end canonical-annulus selected-boundary arc source S4 salvage statement. -/
@@ -2594,7 +2594,7 @@ def Section92Step4RepairedAnnulusRegimeDischargedS4SalvageTarget : Prop :=
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     {data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb},
       MinimalCounterexampleRepairedAnnulusPeeledCollarRouteInputs data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus S4 salvage statement. -/
@@ -2618,7 +2618,7 @@ def Section92Step4RepairedAnnulusSeparationRegimeDischargedS4SalvageTarget :
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
         data data.inducedBoundaryEmbedding →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus separation S4 salvage statement. -/
@@ -2644,7 +2644,7 @@ def Section92Step4RepairedAnnulusOffCarrierRegimeDischargedS4SalvageTarget :
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph),
       data.PeeledCollarOffCarrierWalkConsistencyTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus off-carrier S4 salvage statement. -/
@@ -2672,7 +2672,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierOppositeSideTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus off-carrier-disconnection S4 salvage statement. -/
@@ -2700,7 +2700,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierComponentAttachmentTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus component-attachment S4 salvage statement. -/
@@ -2728,7 +2728,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentCarrierConnectivityTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus attachment-carrier-connectivity S4 salvage statement. -/
@@ -2756,7 +2756,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierCutAvoidingSharedEndpointReachabilityTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus cut-avoiding shared-endpoint S4 salvage statement. -/
@@ -2783,7 +2783,7 @@ def
         (BoundaryEdgeSetEndpointVertex (G := G) data.ambientBoundaryEdgeSet)
         data.inducedBoundaryGraph),
       data.PeeledCollarOffCarrierMappedCutAvoidingSharedEndpointConnectivityTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus mapped-cut-deleted shared-endpoint S4 salvage statement. -/
@@ -2811,7 +2811,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingRouteTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus attachment-face noncrossing S4 salvage statement. -/
@@ -2839,7 +2839,7 @@ def
         data.inducedBoundaryGraph),
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentNoncrossingSelectedBoundaryArcSourceTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim end-to-end repaired-annulus selected-boundary arc source S4 salvage statement. -/

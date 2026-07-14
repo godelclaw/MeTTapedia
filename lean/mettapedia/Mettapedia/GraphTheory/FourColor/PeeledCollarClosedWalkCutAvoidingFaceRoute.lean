@@ -166,9 +166,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_minimalCountere
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
     (h : source.OffCarrierAttachmentMappedCutAvoidingFaceRouteTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (source.cyclicallyFiveEdgeConnected_of_minimalCounterexampleRegime_of_mappedCutAvoidingFaceRouteTarget
       regime h)
 
@@ -191,7 +191,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_closedWalkAnnul
     (hboundary :
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
     (h : source.OffCarrierAttachmentMappedCutAvoidingFaceRouteTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph := by
   have hmappedSource :
       source.toPlanarBoundaryAnnulusBoundaryData
@@ -228,7 +228,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_closedWalkAnnul
       data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
         source.toPlanarBoundaryAnnulusBoundaryData)
     (h : source.OffCarrierAttachmentMappedCutAvoidingFaceRouteTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph := by
   have hmappedSource :
       source.toPlanarBoundaryAnnulusBoundaryData
@@ -290,7 +290,7 @@ def Section92Step4ClosedWalkMappedCutAvoidingFaceRouteRegimeDischargedS4SalvageT
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph),
       source.OffCarrierAttachmentMappedCutAvoidingFaceRouteTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Verbatim closed-walk cut-avoiding face-route S4 statement through cyclic connectivity. -/
@@ -319,7 +319,7 @@ def
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb),
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData →
       source.OffCarrierAttachmentMappedCutAvoidingFaceRouteTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical closed-walk cut-avoiding face-route S4 statement. -/
@@ -350,7 +350,7 @@ def
       data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
         source.toPlanarBoundaryAnnulusBoundaryData →
       source.OffCarrierAttachmentMappedCutAvoidingFaceRouteTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired closed-walk cut-avoiding face-route S4 statement. -/

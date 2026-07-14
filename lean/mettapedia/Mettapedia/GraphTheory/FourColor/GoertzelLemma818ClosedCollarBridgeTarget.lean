@@ -1,17 +1,16 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma814
+import Mettapedia.GraphTheory.EdgeColoring
+import Mettapedia.GraphTheory.Kempe
 
 namespace Mettapedia.GraphTheory.FourColor
 
 /-!
-# Goertzel Lemma 8.18: closed-collar bridge target
+# Length-2/3 radial-closing-edge fiber census and manuscript S2 target
 
-This module states the finite target opened after the length-2/3 closed-collar
-lab.  Existing `chainLKRInAudit` checks fixed first-input fibers.  The
-section-9.2 collar step needs the cyclically re-glued fiber with the closing
-edges fixed, so the target below uses a separate closed-collar edge model.
-
-No certificate is asserted here: `closedCollarS2BridgeTarget` and
-`section92S2BridgeLemmaTarget` are the next statements to prove.
+The finite encoded model below checks words of length 2 and 3 while fixing the
+four edges used to close the radial cut. This is distinct from the manuscript's
+S2 claim, which fixes every outer-boundary stub and ranges over collars of
+arbitrary length; the graph-facing definition at the end states that property.
 -/
 
 namespace GoertzelLemma818ClosedCollarBridgeTarget
@@ -182,30 +181,63 @@ The closed-collar S2 target suggested by the length-2/3 lab: each fixed
 closing-edge fiber is empty or connected by Kempe switches disjoint from the
 closing edges.  Empty fibers are covered because the subtype has no points.
 -/
-def closedCollarS2BridgeTargetForWord (orients : List TauOrient) : Prop :=
+def closedCollarLength23RadialClosingEdgeFiberCensusForWord
+    (orients : List TauOrient) : Prop :=
   ∀ key, key ∈ colorAssignments4 → closedCollarFiberKempeConnected orients key
 
-def closedCollarS2BridgeTarget : Prop :=
+/-- The certified finite census: length-2/3 tau/mirror words, with the four
+radial closing edges fixed. -/
+def closedCollarLength23RadialClosingEdgeFiberCensus : Prop :=
   ∀ orients, orients ∈ closedCollarL1Words →
-    closedCollarS2BridgeTargetForWord orients
+    closedCollarLength23RadialClosingEdgeFiberCensusForWord orients
 
 def gate2FirstInputCertificate (orients : List TauOrient) : Prop :=
   chainLKRInAudit orients = true
 
-/--
-The section-9.2 bridge target: first-input chain certificates for the same
-finite words must lift to the cyclic closed-collar fibers with closing edges
-fixed.
--/
-def section92S2BridgeLemmaTarget : Prop :=
-  (∀ orients, orients ∈ closedCollarL1Words → gate2FirstInputCertificate orients) →
-    closedCollarS2BridgeTarget
+/-! ## Manuscript-scale S2 -/
 
-theorem section92S2BridgeLemmaTarget_of_closedCollarS2BridgeTarget
-    (h : closedCollarS2BridgeTarget) :
-    section92S2BridgeLemmaTarget := by
-  intro _hFirstInput
-  exact h
+/-- Two graph edge colorings have identical colors on every designated outer
+boundary stub. -/
+def edgeColoringsAgreeOnOuterStubs {G : SimpleGraph V}
+    (outerStubs : Finset G.edgeSet)
+    (C D : G.EdgeColoring LColor) : Prop :=
+  ∀ e, e ∈ outerStubs → C e = D e
+
+/-- One genuine edge-Kempe switch whose component avoids every designated
+outer boundary stub. -/
+noncomputable def outerStubAvoidingEdgeKempeStep {G : SimpleGraph V}
+    (outerStubs : Finset G.edgeSet)
+    (C D : G.EdgeColoring LColor) : Prop :=
+  ∃ colorOne colorTwo,
+    ∃ K : (C.bicoloredSubgraph colorOne colorTwo).ConnectedComponent,
+      (∀ e, e ∈ outerStubs →
+          e ∉ C.kempeComponentSet colorOne colorTwo K) ∧
+        D = C.swapOnKempeComponent colorOne colorTwo K
+
+/-- The fiber of actual proper edge colorings with all outer stub colors fixed
+to those of `base`. -/
+def OuterStubFixedEdgeColoringFiber {G : SimpleGraph V}
+    (outerStubs : Finset G.edgeSet) (base : G.EdgeColoring LColor) : Type :=
+  { C : G.EdgeColoring LColor //
+      edgeColoringsAgreeOnOuterStubs outerStubs base C }
+
+/-- The graph-facing S2 statement for one actual collar graph. -/
+noncomputable def manuscriptS2AllOuterStubsFixedForCollar
+    {G : SimpleGraph V} (outerStubs : Finset G.edgeSet) : Prop :=
+  ∀ base, ∀ x y : OuterStubFixedEdgeColoringFiber outerStubs base,
+    Relation.ReflTransGen
+      (fun C D => outerStubAvoidingEdgeKempeStep outerStubs C.1 D.1) x y
+
+/-- Manuscript Section 9.2 S2, stated for an arbitrary indexed family of
+actual collar graphs: every collar, without a length bound, has connected
+all-outer-stubs-fixed fibers under outer-stub-avoiding edge-Kempe switches.
+
+The length-2/3 encoded census above proves a different finite property. -/
+noncomputable def ManuscriptSection92S2AllOuterStubsFixedArbitraryCollar
+    {I : Type} (Vertex : I → Type) [∀ i, DecidableEq (Vertex i)]
+    (collarGraph : ∀ i, SimpleGraph (Vertex i))
+    (outerStubs : ∀ i, Finset (collarGraph i).edgeSet) : Prop :=
+  ∀ i, manuscriptS2AllOuterStubsFixedForCollar (outerStubs i)
 
 end GoertzelLemma818ClosedCollarBridgeTarget
 

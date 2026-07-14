@@ -241,7 +241,7 @@ theorem routeIndexConsequences_of_mappedCutAvoidingFaceRouteTarget
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hsource :
       source.RegimeAttachmentFaceSourceDataFoundationTarget :=
@@ -281,7 +281,7 @@ def Section92Step4ClosedWalkMappedCutFaceRouteEquivFoundationRouteIndexTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Verbatim source-level route index for the mapped-cut face-route equivalence. -/

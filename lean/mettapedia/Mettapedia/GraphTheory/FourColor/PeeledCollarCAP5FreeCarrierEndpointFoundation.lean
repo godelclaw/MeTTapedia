@@ -696,7 +696,7 @@ foundation target.
 theorem cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_carrierEndpointSupportFoundationTarget
     (hfoundation :
       CAP5FreeClosedWalkPeeledCollarCarrierEndpointSupportFoundationTarget) :
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget := by
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient := by
   intro V _ G emb source regime
   exact
     source.toPlanarBoundaryAnnulusBoundaryData
@@ -710,7 +710,7 @@ foundation target.
 theorem cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
     (hfoundation :
       CAP5FreeClosedWalkPeeledCollarOffCarrierWalkConsistencyFoundationTarget) :
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :=
   cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_carrierEndpointSupportFoundationTarget
     (cap5FreeClosedWalkCarrierEndpointSupportFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
       hfoundation)
@@ -1263,7 +1263,7 @@ def Section92Step4ClosedWalkCAP5FreeCarrierEndpointSupportFoundationRouteIndexTa
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1331,7 +1331,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRouteInde
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1356,7 +1356,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierRouteInputsFoundationRouteIndexTar
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1383,7 +1383,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierComponentAttachmentFoundationRoute
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1411,7 +1411,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierAttachmentCarrierConnectivityFound
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1440,7 +1440,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierCutAvoidingSharedEndpointReachabil
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1469,7 +1469,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierMappedCutAvoidingSharedEndpointCon
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1636,7 +1636,7 @@ theorem section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyFoundationRoute
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
     section92Step4ClosedWalkCAP5FreeCarrierEndpointSupportFoundationRouteIndexTarget
       (cap5FreeClosedWalkCarrierEndpointSupportFoundationTarget_of_offCarrierWalkConsistencyFoundationTarget
@@ -1673,7 +1673,7 @@ def Section92Step4ClosedWalkCAP5FreeCarrierEndpointSupportRegimeDischargedS4Salv
           (G := G)
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -1690,7 +1690,7 @@ def Section92Step4ClosedWalkCAP5FreeOffCarrierWalkConsistencyRegimeDischargedS4S
           (G := G)
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--

@@ -103,7 +103,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_regimeFacePlace
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
     (h : source.RegimeFacePlacementFoundationTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
   (source.closedWalkMappedCutAvoidingFaceRouteInputs_of_regimeFacePlacementFoundationTarget
     regime h).closedCollarWindingFreedomEscape_not_simplyRealizable
@@ -175,7 +175,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_regimeFacePlace
     (hboundary :
       data.boundaryData = source.toPlanarBoundaryAnnulusBoundaryData)
     (h : source.RegimeFacePlacementFoundationTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (data.closedWalkMappedCutAvoidingFaceRouteInputs_of_regimeFacePlacementFoundationTarget
     regime source hboundary h)
@@ -252,7 +252,7 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_regimeFacePlace
       data.toPlanarBoundaryAnnulusCollarGeometry.boundaryData =
         source.toPlanarBoundaryAnnulusBoundaryData)
     (h : source.RegimeFacePlacementFoundationTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
   (data.closedWalkMappedCutAvoidingFaceRouteInputs_of_regimeFacePlacementFoundationTarget
     regime source hboundary h)
@@ -283,7 +283,7 @@ def Section92Step4ClosedWalkRegimeFacePlacementFoundationRouteIndexTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Verbatim source-level route index for the face-placement foundation target. -/
@@ -318,7 +318,7 @@ def Section92Step4CanonicalClosedWalkRegimeFacePlacementFoundationRouteIndexTarg
       source.RegimeFacePlacementFoundationTarget →
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical aligned route index for the face-placement foundation target. -/
@@ -352,7 +352,7 @@ def Section92Step4RepairedClosedWalkRegimeFacePlacementFoundationRouteIndexTarge
       source.RegimeFacePlacementFoundationTarget →
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired aligned route index for the face-placement foundation target. -/

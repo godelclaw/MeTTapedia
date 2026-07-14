@@ -136,9 +136,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelecte
     (hnoncross :
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (cyclicallyFiveEdgeConnected_of_boundarySelectedBoundaryArcOnFace_of_attachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
       regime harc hface hnoncross)
 
@@ -233,9 +233,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_boundarySelecte
     (hnoncross :
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         data) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       data.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (cyclicallyFiveEdgeConnected_of_boundarySelectedBoundaryArcOnFace_of_attachmentFaceSourceTarget_of_faceNoncrossingUpgradeTarget
       regime harc hface hnoncross)
 
@@ -324,7 +324,7 @@ def
         data →
       PlanarBoundaryAnnulusPeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim canonical-annulus split-source S4 statement through cyclic connectivity. -/
@@ -356,7 +356,7 @@ def
         data →
       PlanarBoundaryPreviousBoundaryPeeledCollarOffCarrierAttachmentFaceNoncrossingUpgradeTarget
         data →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Verbatim repaired-annulus split-source S4 statement through cyclic connectivity. -/

@@ -18,8 +18,8 @@ namespace GoertzelLemma818ClosedCollarS2Bridge
 open GoertzelLemma814
 open GoertzelLemma818ClosedCollarBridgeTarget
 
-theorem closedCollarS2BridgeTarget_proved :
-    closedCollarS2BridgeTarget := by
+theorem closedCollarLength23RadialClosingEdgeFiberCensus_proved :
+    closedCollarLength23RadialClosingEdgeFiberCensus := by
   intro orients horients
   have hcases :
       orients = GoertzelLemma818ClosedCollarS2Word0.word ∨
@@ -82,11 +82,6 @@ theorem closedCollarS2BridgeTarget_proved :
     simpa using GoertzelLemma818ClosedCollarS2Word10.targetForWord
   · subst orients
     simpa using GoertzelLemma818ClosedCollarS2Word11.targetForWord
-
-theorem section92S2BridgeLemmaTarget_proved :
-    section92S2BridgeLemmaTarget :=
-  section92S2BridgeLemmaTarget_of_closedCollarS2BridgeTarget
-    closedCollarS2BridgeTarget_proved
 
 end GoertzelLemma818ClosedCollarS2Bridge
 

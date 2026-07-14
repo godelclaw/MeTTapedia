@@ -45,19 +45,37 @@ def RouteUsedDiscrepancyClass (emb : PlaneEmbeddingWithBoundary G)
     (z : G.edgeSet → Color) : Prop :=
   ∃ pair : RouteBoundaryCompatiblePair emb, z = routeDiscrepancyClass pair
 
-/-- Prop (1): the existing Theorem-4.9 detector subspace is exactly the span of
-the projected route generator family. -/
-def PillarADetectorSubspaceEqualsRouteGeneratorSpan
+/-- v23 Definition 4.1's `W₀(H)`, with the two semantic carriers explicit:
+`interiorVertices` must be all annulus interior vertices and `boundaryEdges`
+must be the union of both boundary cycles. -/
+def V23W0CycleSpace [Fintype G.edgeSet]
+    (interiorVertices : Finset V) (boundaryEdges : Finset G.edgeSet) :
+    Submodule F2 (G.edgeSet → Color) :=
+  kirchhoffSubmodule G interiorVertices ⊓ boundaryZeroSubmodule boundaryEdges
+
+/-- The inclusion stated by v23 Theorem 4.9: the Kirchhoff-constrained,
+full-boundary-zero `W₀(H)` is contained in the span of the unprojected
+Definition 4.8 Kempe-closure generator family. -/
+def V23Theorem49W0ContainedInKempeClosureGeneratorSpan
+    [Fintype G.edgeSet] {F : Type*}
+    (faceBoundary : F → Finset G.edgeSet)
+    (interiorVertices : Finset V) (boundaryEdges : Finset G.edgeSet)
+    (C₀ : G.EdgeColoring Color) : Prop :=
+  V23W0CycleSpace interiorVertices boundaryEdges ≤
+    Submodule.span F2 (kempeClosureGeneratorFamily faceBoundary C₀)
+
+/-- Equality between the formal detector and the projected route-generator
+span.  This is a stronger projected-oracle statement, not v23 Theorem 4.9. -/
+def PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan
     [Fintype G.edgeSet] (emb : PlaneEmbeddingWithBoundary G)
     (vertices : Finset V) (C₀ : G.EdgeColoring Color) : Prop :=
   theorem49BoundaryZeroKirchhoffSubspace emb vertices =
     Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀)
 
-/-- Corrected need-based Prop (1'): the detector subspace is contained in the
-projected route-generator span.  This is the direction the route consumer
-actually needs; equality with the projected family is too strong on
-shell-bearing embeddings. -/
-def PillarADetectorSubspaceContainedInRouteGeneratorSpan
+/-- Need-based inclusion from the formal detector to the projected
+route-generator span.  This is what the route consumer uses, but it remains
+stronger and differently shaped than v23's unprojected Theorem 4.9 target. -/
+def PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan
     [Fintype G.edgeSet] (emb : PlaneEmbeddingWithBoundary G)
     (vertices : Finset V) (C₀ : G.EdgeColoring Color) : Prop :=
   theorem49BoundaryZeroKirchhoffSubspace emb vertices ≤
@@ -201,7 +219,7 @@ theorem needBasedPillarARequirement_of_detectorSpan_of_stepPreserves_of_routeDis
     [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     {vertices : Finset V} {C₀ : G.EdgeColoring Color}
     {step : (G.edgeSet → Color) → (G.edgeSet → Color) → Prop}
-    (hspan : PillarADetectorSubspaceEqualsRouteGeneratorSpan emb vertices C₀)
+    (hspan : PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan emb vertices C₀)
     (hstep : PillarCExecutionStepPreservesDetectorSubspace emb vertices step)
     (hdisc : RouteUsedDiscrepancyClassesLieInDetectorSubspace emb vertices) :
     NeedBasedPillarARequirement emb vertices C₀ step := by
@@ -213,7 +231,7 @@ theorem needBasedPillarARequirement_of_detectorSpan_of_stepPreserves_of_routeDis
   have hspanEq :
       theorem49BoundaryZeroKirchhoffSubspace emb vertices =
         Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) := by
-    simpa [PillarADetectorSubspaceEqualsRouteGeneratorSpan] using hspan
+    simpa [PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan] using hspan
   rw [hspanEq] at hzU
   exact hzU
 
@@ -224,7 +242,7 @@ theorem needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_rout
     [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     {vertices : Finset V} {C₀ : G.EdgeColoring Color}
     {step : (G.edgeSet → Color) → (G.edgeSet → Color) → Prop}
-    (hle : PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀)
+    (hle : PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan emb vertices C₀)
     (hstep : PillarCExecutionStepPreservesDetectorSubspace emb vertices step)
     (hdisc : RouteUsedDiscrepancyClassesLieInDetectorSubspace emb vertices) :
     NeedBasedPillarARequirement emb vertices C₀ step := by
@@ -242,7 +260,7 @@ theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_boundaryZeroAnni
     (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
     (C₀ : G.EdgeColoring Color)
     (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀) :
-    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ := by
+    PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan emb vertices C₀ := by
   intro z hz
   have hzProjected :
       z ∈ projectedKempeClosureGeneratorSubspace emb C₀ :=
@@ -258,7 +276,7 @@ theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryIn
     (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
     (data : PlanarBoundaryInteriorDualBoundaryRootAdjDistancePeelData emb)
     (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
-    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+    PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan emb vertices C₀ :=
   theorem49BoundaryZeroKirchhoffSubspace_le_span_projectedKempeClosureGeneratorFamily_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData
     (G := G) emb data C₀ hC₀ vertices
 
@@ -269,7 +287,7 @@ theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryHe
     (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
     (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb)
     (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
-    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+    PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan emb vertices C₀ :=
   theorem49BoundaryZeroKirchhoffSubspace_le_span_projectedKempeClosureGeneratorFamily_of_planarBoundaryHeightOrderedFacePeelWitnessData
     (G := G) emb data C₀ hC₀ vertices
 
@@ -280,7 +298,7 @@ theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryCo
     (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
     (data : PlanarBoundaryCollarLayerFacePeelWitnessData emb)
     (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
-    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+    PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan emb vertices C₀ :=
   theorem49BoundaryZeroKirchhoffSubspace_le_span_projectedKempeClosureGeneratorFamily_of_planarBoundaryCollarLayerFacePeelWitnessData
     (G := G) emb data C₀ hC₀ vertices
 
@@ -291,7 +309,7 @@ theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryLo
     (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
     (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
     (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
-    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+    PillarAProjectedDetectorContainedInProjectedRouteGeneratorSpan emb vertices C₀ :=
   pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_boundaryZeroAnnihilatorTrivial
     (G := G) emb vertices C₀
     (boundaryZeroAnnihilatorTrivialForEmbedding_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
@@ -414,7 +432,7 @@ theorem closedWalkExactShell_needBasedPillarARequirement_of_detectorSpan_of_step
     {step : (G.edgeSet → Color) → (G.edgeSet → Color) → Prop}
     (hG : HasCubicIncidentEdgeTriples G)
     (hspan :
-      PillarADetectorSubspaceEqualsRouteGeneratorSpan emb
+      PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan emb
         (selectedBoundaryInteriorEdgeEndpointVertices emb) shell.tait.coloring)
     (hstep :
       PillarCExecutionStepPreservesDetectorSubspace emb
@@ -537,9 +555,10 @@ theorem not_projectedKempeClosureGeneratorSpan_le_theorem49BoundaryZeroKirchhoff
     ⟨z, hzSpan, hzNotDetector⟩
   exact hzNotDetector (hle hzSpan)
 
-/-- If the projected Definition 4.8 generator family spans the full selected
-boundary-zero submodule, then a strict detector/boundary-zero gap refutes Prop
-(1) for that same family. -/
+/-- If the projected generator family spans the unrestricted selected-boundary-
+zero submodule, then the strict detector/domain gap refutes equality for that
+stronger projected oracle.  It says nothing negative about v23's unprojected
+`W₀(H) ≤ span(KC(C₀))` inclusion. -/
 theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_span_eq_planarBoundaryZeroSubmodule_of_detector_lt
     [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     {vertices : Finset V} {C₀ : G.EdgeColoring Color}
@@ -549,7 +568,7 @@ theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_span_eq_planarBou
     (hlt :
       theorem49BoundaryZeroKirchhoffSubspace emb vertices <
         planarBoundaryZeroSubmodule emb) :
-    ¬ PillarADetectorSubspaceEqualsRouteGeneratorSpan emb vertices C₀ := by
+    ¬ PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan emb vertices C₀ := by
   intro hpillar
   have htargetFull :
       theorem49BoundaryZeroKirchhoffSubspace emb vertices =
@@ -557,40 +576,38 @@ theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_span_eq_planarBou
     calc
       theorem49BoundaryZeroKirchhoffSubspace emb vertices =
           Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) := by
-            simpa [PillarADetectorSubspaceEqualsRouteGeneratorSpan] using hpillar
+            simpa [PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan] using hpillar
       _ = planarBoundaryZeroSubmodule emb := hspan
   rw [htargetFull] at hlt
   exact (lt_irrefl (planarBoundaryZeroSubmodule emb)) hlt
 
-/-- Closed-walk shell specialization of the same obstruction: on shell-bearing
-embeddings the detector is strictly smaller than full selected-boundary-zero,
-so any full boundary-zero spanning result for this projected family blocks Prop
-(1) rather than proving it. -/
+/-- Closed-walk shell specialization of the same projected-oracle obstruction.
+It is formally stronger-oracle evidence, not a refutation of v23 Theorem 4.9. -/
 theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_closedWalkExactShell_of_span_eq_planarBoundaryZeroSubmodule
     [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     (shell : ClosedWalkExactShell emb) {C₀ : G.EdgeColoring Color}
     (hspan :
       Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) =
         planarBoundaryZeroSubmodule emb) :
-    ¬ PillarADetectorSubspaceEqualsRouteGeneratorSpan emb
+    ¬ PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan emb
       (selectedBoundaryInteriorEdgeEndpointVertices emb) C₀ :=
   not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_span_eq_planarBoundaryZeroSubmodule_of_detector_lt
     (G := G) (emb := emb)
     (vertices := selectedBoundaryInteriorEdgeEndpointVertices emb)
     (C₀ := C₀) hspan
-    (theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_hasUnblockedInteriorEndpoint
+    (formalW0Proxy_lt_unrestrictedSelectedBoundaryZeroChainSpace_of_hasUnblockedInteriorEndpoint
       shell.endpoint)
 
-/-- Boundary-zero annihilator form of the closed-walk obstruction.  The
-manuscript-style annihilator endpoint for this projected family proves full
-selected-boundary-zero spanning; on shell-bearing embeddings that is too large
-to be equal to the detector subspace. -/
+/-- Boundary-zero annihilator form of the closed-walk projected-oracle
+obstruction.  Full unrestricted boundary-zero spanning is too large to equal
+the detector on a shell-bearing embedding. This theorem does not decide v23's
+unprojected inclusion. -/
 theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_closedWalkExactShell_of_boundaryZeroAnnihilatorTrivial
     [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
     {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
     {C₀ : G.EdgeColoring Color}
     (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀) :
-    ¬ PillarADetectorSubspaceEqualsRouteGeneratorSpan emb
+    ¬ PillarAProjectedDetectorEqualsProjectedRouteGeneratorSpan emb
       (selectedBoundaryInteriorEdgeEndpointVertices emb) C₀ :=
   not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_closedWalkExactShell_of_span_eq_planarBoundaryZeroSubmodule
     (G := G) shell

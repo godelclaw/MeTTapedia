@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
 import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48
+import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48Literal
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWinding
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusGeometry
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
@@ -21,6 +22,54 @@ namespace GoertzelLemma818ClosedCollarWindingRealization
 open GoertzelLemma814
 open GoertzelLemma818ClosedCollarBridgeTarget
 open GoertzelLemma818ClosedCollarWinding
+open SimpleGraph
+
+/-- The three unordered nonzero color pairs used by graph-facing winding
+profiles. -/
+def closedCollarGraphColorPairs : List (Color × Color) :=
+  [(red, blue), (red, purple), (blue, purple)]
+
+/-- Number of radial-cut edges belonging to one genuine graph Kempe component. -/
+noncomputable def closedCollarGraphComponentRadialCutCount
+    {G : SimpleGraph V} (radialCut : Finset G.edgeSet)
+    (C : G.EdgeColoring Color) (a b : Color)
+    (K : (C.bicoloredSubgraph a b).ConnectedComponent) : Nat := by
+  classical
+  exact
+    ((boundaryBicoloredEdges C a b radialCut).filter fun e =>
+      e ∈ C.kempeComponentSet a b K).card
+
+/-- Counts actual graph Kempe components meeting the radial cut, separated by
+even and odd radial-cut crossing count. -/
+noncomputable def closedCollarGraphWindingCountsForPair
+    {G : SimpleGraph V} (radialCut : Finset G.edgeSet)
+    (C : G.EdgeColoring Color) (a b : Color) : ClosedCollarWindingCounts := by
+  classical
+  let components := boundaryKempeComponents C a b radialCut
+  exact
+    { winding0 :=
+        (components.filter fun K =>
+          closedCollarGraphComponentRadialCutCount radialCut C a b K % 2 = 0).card
+      winding1 :=
+        (components.filter fun K =>
+          closedCollarGraphComponentRadialCutCount radialCut C a b K % 2 = 1).card }
+
+/-- Component-level winding profile computed from a graph edge coloring and the
+chosen radial cut. -/
+noncomputable def closedCollarGraphWindingProfile
+    {G : SimpleGraph V} (radialCut : Finset G.edgeSet)
+    (C : G.EdgeColoring Color) :
+    List ((Color × Color) × ClosedCollarWindingCounts) :=
+  closedCollarGraphColorPairs.map fun pair =>
+    (pair, closedCollarGraphWindingCountsForPair radialCut C pair.1 pair.2)
+
+/-- Aggregate radial-cut parity computed directly from a graph edge coloring. -/
+noncomputable def closedCollarGraphAggregateCutParityProfile
+    {G : SimpleGraph V} (radialCut : Finset G.edgeSet)
+    (C : G.EdgeColoring Color) : List ((Color × Color) × Bool) := by
+  classical
+  exact closedCollarGraphColorPairs.map fun pair =>
+    (pair, (boundaryBicoloredEdges C pair.1 pair.2 radialCut).card % 2 == 1)
 
 def closedCollarEdgesHaveSameUnorderedEndpoints
     (orients : List TauOrient) (e f : ChainEdge) : Bool :=
@@ -104,9 +153,10 @@ theorem closedCollarWindingFreedomWitnessRealizationData :
 
 /--
 Graph-facing realization interface for the winding-freedom witness in an
-embedded annular collar.  The finite closed-collar witness supplies the
-abstract winding data; this structure names the geometric data that a genuine
-minimal-counterexample annulus would additionally have to provide.
+embedded annular collar.  Unlike the earlier encoded-data shell, its parity and
+winding claims below are computed directly from the two stored Tait colorings,
+their graph Kempe components, and `radialCut`.  These graph profiles do not by
+themselves identify the stored colorings with the finite tau states.
 -/
 structure ClosedCollarWindingFreedomAnnularRealization
     (G : SimpleGraph V) where
@@ -130,15 +180,29 @@ structure ClosedCollarWindingFreedomAnnularRealization
   outerBoundary_fixed :
     ∀ e : G.edgeSet, e ∈ outerBoundaryEdges →
       noWindingColoring e = withWindingColoring e
-  aggregateCutParityNoWinding : List ((Color × Color) × Bool)
-  aggregateCutParityWithWinding : List ((Color × Color) × Bool)
-  windingProfileNoWinding : List ((Color × Color) × ClosedCollarWindingCounts)
-  windingProfileWithWinding : List ((Color × Color) × ClosedCollarWindingCounts)
   aggregateCutParity_agrees :
-    aggregateCutParityNoWinding = aggregateCutParityWithWinding
+    closedCollarGraphAggregateCutParityProfile radialCut noWindingColoring =
+      closedCollarGraphAggregateCutParityProfile radialCut withWindingColoring
   windingProfile_differs :
-    windingProfileNoWinding ≠ windingProfileWithWinding
+    closedCollarGraphWindingProfile radialCut noWindingColoring ≠
+      closedCollarGraphWindingProfile radialCut withWindingColoring
   realizesCoreWitness : ClosedCollarWindingFreedomWitnessRealizationData
+
+theorem ClosedCollarWindingFreedomAnnularRealization.computedAggregateCutParity_agrees
+    {G : SimpleGraph V}
+    (annular : ClosedCollarWindingFreedomAnnularRealization G) :
+    closedCollarGraphAggregateCutParityProfile annular.radialCut
+        annular.noWindingColoring =
+      closedCollarGraphAggregateCutParityProfile annular.radialCut
+        annular.withWindingColoring :=
+  annular.aggregateCutParity_agrees
+
+theorem ClosedCollarWindingFreedomAnnularRealization.computedWindingProfile_differs
+    {G : SimpleGraph V}
+    (annular : ClosedCollarWindingFreedomAnnularRealization G) :
+    closedCollarGraphWindingProfile annular.radialCut annular.noWindingColoring ≠
+      closedCollarGraphWindingProfile annular.radialCut annular.withWindingColoring :=
+  annular.windingProfile_differs
 
 /--
 Interface for the face created by cutting an annular collar open along a radial
@@ -164,12 +228,13 @@ def ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
   Nonempty (ClosedCollarCutOpenRadialFace annular)
 
 /--
-Normal-form hypotheses for an annular realization of the winding-freedom
-witness.  Only cyclic five-edge-connectivity is already connected to a reusable
-graph theorem here; the remaining fields record the serious geometric regime
-that later work must discharge rather than hiding it inside a lab verdict.
+Encoded-data shell for normal-form hypotheses around an annular realization.
+Only `cyclicallyFiveEdgeConnected` has graph-defined mathematical content.
+The five remaining Prop fields are uninterpreted and have no connection to the
+rotation, face-incidence, or cut APIs, so they cannot support graph-facing
+normal-form conclusions.
 -/
-structure ClosedCollarWindingFreedomNormalFormRealization
+structure ClosedCollarWindingFreedomNormalFormEncodedDataShell
     (G : SimpleGraph V) where
   annular : ClosedCollarWindingFreedomAnnularRealization G
   cyclicallyFiveEdgeConnected : CyclicallyFiveEdgeConnected G
@@ -190,7 +255,7 @@ needed to compare the embedded annulus with the cut-open rotation-system lab.
 -/
 structure ClosedCollarWindingFreedomNormalFormRadialFaceRealization
     (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   radialFace : ClosedCollarCutOpenRadialFace normalForm.annular
 
 /--
@@ -309,20 +374,25 @@ theorem LocalTwoPoleReplacementSideRankModel.hasCycleOnSide
       (localTwoPoleReplacementConnectedSide_hasCycle
         model.sideGraph stats model.connected model.vertexCount model.edgeCount)
 
-/--
-Graph-facing interface for an arbitrary-size simple planar desingularization
-of the winding-freedom parallel endpoint bundle.  The side classification is
-the local Jordan/separation obligation: the two listed terminal-crossing edges
-are exactly the edges crossing the chosen side.  The side cycle itself is not a
-field; it is derived from the all-size two-pole rank count.
--/
-structure ClosedCollarWindingFreedomParallelBundleDesingularization
+/-- The computed profile facts carried by the finite winding-freedom witness. -/
+def ClosedCollarWindingFreedomEncodedProfileEquality : Prop :=
+  closedCollarWindingProfile windingFreedomWord windingFreedomStateNoWinding =
+      windingFreedomProfileNoWinding ∧
+    closedCollarWindingProfile windingFreedomWord windingFreedomStateWithWinding =
+      windingFreedomProfileWithWinding
+
+theorem closedCollarWindingFreedomEncodedProfileEquality :
+    ClosedCollarWindingFreedomEncodedProfileEquality :=
+  windingFreedom_profiles
+
+/-- Replacement data that explicitly includes the size-two separator and its
+outside cycle. The record does not derive either fact from planarity. -/
+structure ClosedCollarWindingFreedomSeparatorEquippedDesingularization
     (G : SimpleGraph V) where
   realizesCoreWitness : ClosedCollarWindingFreedomWitnessRealizationData
   desingularizesParallelEndpointBundle :
     closedCollarHasParallelEndpointEdges windingFreedomWord
-  profilePreserving : Prop
-  hprofilePreserving : profilePreserving
+  encodedProfileEquality : ClosedCollarWindingFreedomEncodedProfileEquality
   stats : LocalTwoPoleReplacementStats
   edgeCut : Finset G.edgeSet
   side : V → Prop
@@ -334,9 +404,9 @@ structure ClosedCollarWindingFreedomParallelBundleDesingularization
     ∀ e : G.edgeSet, e ∉ edgeCut → ¬ EdgeCrossesVertexSide G side e
   houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)
 
-def ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandidate
+def ClosedCollarWindingFreedomSeparatorEquippedDesingularization.cyclicTwoCutCandidate
     {G : SimpleGraph V}
-    (data : ClosedCollarWindingFreedomParallelBundleDesingularization G) :
+    (data : ClosedCollarWindingFreedomSeparatorEquippedDesingularization G) :
     CyclicSeparatorCandidate G where
   edgeCut := data.edgeCut
   side := data.side
@@ -347,15 +417,15 @@ def ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandid
   hinside_cycle := data.rankModel.hasCycleOnSide
   houtside_cycle := data.houtside_cycle
 
-theorem ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandidate_card
+theorem ClosedCollarWindingFreedomSeparatorEquippedDesingularization.cyclicTwoCutCandidate_card
     {G : SimpleGraph V}
-    (data : ClosedCollarWindingFreedomParallelBundleDesingularization G) :
+    (data : ClosedCollarWindingFreedomSeparatorEquippedDesingularization G) :
     data.cyclicTwoCutCandidate.edgeCut.card = 2 :=
   data.edgeCut_card_eq_two
 
-theorem ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCandidate_realizes
+theorem ClosedCollarWindingFreedomSeparatorEquippedDesingularization.cyclicTwoCutCandidate_realizes
     {G : SimpleGraph V}
-    (data : ClosedCollarWindingFreedomParallelBundleDesingularization G) :
+    (data : ClosedCollarWindingFreedomSeparatorEquippedDesingularization G) :
     data.cyclicTwoCutCandidate.Realizes := by
   intro e
   constructor
@@ -364,14 +434,11 @@ theorem ClosedCollarWindingFreedomParallelBundleDesingularization.cyclicTwoCutCa
     by_contra hmem
     exact data.hnoncut_not_crosses e hmem hcross
 
-/--
-Existence form for a simple planar collar realization of the winding-freedom
-escape.  Such a realization must replace the parallel endpoint bundle by an
-arbitrary-size simple two-pole side while preserving the winding profile.
--/
-def ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+/-- Existence of replacement data carrying a realized cyclic two-cut. This is
+not a simple-planar graph-realization predicate. -/
+def ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
     (G : SimpleGraph V) : Prop :=
-  Nonempty (ClosedCollarWindingFreedomParallelBundleDesingularization G)
+  Nonempty (ClosedCollarWindingFreedomSeparatorEquippedDesingularization G)
 
 /-- A cyclic two-cut in the graph-facing collar API: a realized cyclic separator
 whose listed crossing support has cardinality two. -/
@@ -379,20 +446,10 @@ def ClosedCollarHasCyclicTwoCut (G : SimpleGraph V) : Prop :=
   ∃ candidate : CyclicSeparatorCandidate G,
     candidate.edgeCut.card = 2 ∧ candidate.Realizes
 
-/--
-All-size structural theorem: every simple planar desingularization of the
-winding-freedom escape forces a cyclic two-cut.  The proof uses only the
-two-pole handshaking count to obtain the side cycle; the rest is the exact
-side-crossing classification supplied by the local planar separation datum.
--/
-def ClosedCollarWindingFreedomEscapeForcesCyclicTwoCutAllSizes : Prop :=
-  ∀ {V : Type} {G : SimpleGraph V},
-    ClosedCollarWindingFreedomSimplePlanarEscapeRealization G →
-      ClosedCollarHasCyclicTwoCut G
-
-theorem closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes :
-    ClosedCollarWindingFreedomEscapeForcesCyclicTwoCutAllSizes := by
-  intro V G hrealization
+theorem closedCollarWindingFreedomSeparatorEquippedRealization_has_cyclicTwoCut
+    {G : SimpleGraph V}
+    (hrealization : ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization G) :
+    ClosedCollarHasCyclicTwoCut G := by
   rcases hrealization with ⟨data⟩
   exact
     ⟨data.cyclicTwoCutCandidate,
@@ -415,54 +472,21 @@ theorem closedCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected
   intro candidate _hcard
   exact candidate.not_realizes_of_cyclicallyFiveEdgeConnected hcyclic
 
-/-- Triangulation-collar connectivity surface used by the all-size repair. -/
-def ClosedCollarTriangulationCollarForbidsCyclicTwoCut
-    (G : SimpleGraph V) : Prop :=
-  ClosedCollarForbidsCyclicTwoCut G
-
-theorem closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected
-    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
-    ClosedCollarTriangulationCollarForbidsCyclicTwoCut G :=
-  closedCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected hcyclic
-
-/--
-Closing all-size repair theorem for the S4 winding-freedom escape: once the
-collar supplies the local triangulation connectivity fact forbidding cyclic
-two-cuts, no simple planar collar realization of the escape exists.
--/
-def ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes : Prop :=
-  ∀ {V : Type} {G : SimpleGraph V},
-    ClosedCollarTriangulationCollarForbidsCyclicTwoCut G →
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization G
-
-theorem closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes :
-    ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes := by
-  intro V G hnoTwoCut hrealization
+theorem closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_forbidsCyclicTwoCut
+    {G : SimpleGraph V} (hnoTwoCut : ClosedCollarForbidsCyclicTwoCut G) :
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization G := by
+  intro hrealization
   rcases
-    closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes
+    closedCollarWindingFreedomSeparatorEquippedRealization_has_cyclicTwoCut
       hrealization with
     ⟨candidate, hcard, hrealizes⟩
   exact hnoTwoCut candidate hcard hrealizes
 
-theorem closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+theorem closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization G :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes
-    (closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected
-      hcyclic)
-
-/--
-Repaired Section 9.2 Step 4 target at the collar level: the winding-freedom
-escape class is empty for simple planar triangulation collars, because every
-simple profile-preserving desingularization forces a cyclic two-cut and the
-collar connectivity fact forbids such a cut.
--/
-def Section92Step4RepairedByAllSizesCyclicTwoCutTarget : Prop :=
-  ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes
-
-theorem section92Step4RepairedByAllSizesCyclicTwoCutTarget :
-    Section92Step4RepairedByAllSizesCyclicTwoCutTarget :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization G :=
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_forbidsCyclicTwoCut
+    (closedCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected hcyclic)
 
 /--
 Summary counts for the bounded simple cubic four-terminal patch search.  The
@@ -1326,7 +1350,7 @@ diagonal collar two-pole templates as a realized cyclic separator.
 -/
 def ClosedCollarWindingFreedomNormalFormRealizationForcesExactTemplate : Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    ClosedCollarWindingFreedomNormalFormRealization G →
+    ClosedCollarWindingFreedomNormalFormEncodedDataShell G →
       ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
         candidate.Realizes
 
@@ -1334,10 +1358,10 @@ def ClosedCollarWindingFreedomNormalFormRealizationForcesExactTemplate : Prop :=
 normal-form annular realization. -/
 def ClosedCollarWindingFreedomNonrealizableInNormalForm : Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    ClosedCollarWindingFreedomNormalFormRealization G → False
+    ClosedCollarWindingFreedomNormalFormEncodedDataShell G → False
 
 theorem closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
-    {G : SimpleGraph V} (data : ClosedCollarWindingFreedomNormalFormRealization G)
+    {G : SimpleGraph V} (data : ClosedCollarWindingFreedomNormalFormEncodedDataShell G)
     (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G)
     (hrealizes : candidate.Realizes) :
     False :=
@@ -3450,7 +3474,7 @@ finite patch representation are the same annular realization.
 -/
 structure ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation
     (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   representation : ClosedCollarWindingFreedomSimplePatchN6Representation G
   annular_eq : representation.annular = normalForm.annular
 
@@ -3471,7 +3495,7 @@ finite lab certificate that such a pass was counted.
 -/
 structure ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass
     (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   representation : ClosedCollarWindingFreedomSimplePatchN6Representation G
   hpassCountPositive :
     0 <
@@ -3485,7 +3509,7 @@ checks count it as a surviving pass.
 -/
 def ClosedCollarWindingFreedomSimplePatchN6CoveredByLab : Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    ClosedCollarWindingFreedomNormalFormRealization G →
+    ClosedCollarWindingFreedomNormalFormEncodedDataShell G →
       ClosedCollarWindingFreedomSimplePatchN6Representation G →
         Nonempty (ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G)
 
@@ -3507,7 +3531,7 @@ simple patch can exist.
 def ClosedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm : Prop :=
   ClosedCollarWindingFreedomSimplePatchN6CoveredByLab →
     ∀ {V : Type} {G : SimpleGraph V},
-      ClosedCollarWindingFreedomNormalFormRealization G →
+      ClosedCollarWindingFreedomNormalFormEncodedDataShell G →
         ClosedCollarWindingFreedomSimplePatchN6Representation G → False
 
 theorem closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm :
@@ -3948,7 +3972,7 @@ outcome from the archived lab.
 -/
 structure ClosedCollarWindingFreedomNormalFormN6DetailedTaxonomyCoverage
     {V : Type} {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G
   normalForm_eq : data.normalForm = normalForm
   outcome : ClosedCollarWindingFreedomSimplePatchN6TaxonomyLabOutcome data
@@ -3960,7 +3984,7 @@ simple-patch representations.
 -/
 structure ClosedCollarWindingFreedomNormalFormN6RepresentationExtraction
     {V : Type} {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G
   normalForm_eq : data.normalForm = normalForm
 
@@ -3971,7 +3995,7 @@ lab.
 -/
 structure ClosedCollarWindingFreedomNormalFormRadialFaceExtraction
     {V : Type} {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   normalFormRadialFace : ClosedCollarWindingFreedomNormalFormRadialFaceRealization G
   normalForm_eq : normalFormRadialFace.normalForm = normalForm
 
@@ -3994,7 +4018,7 @@ simple-patch representation.
 def ClosedCollarWindingFreedomEveryNormalFormHasN6Representation :
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomNormalFormN6RepresentationExtraction normalForm)
 
@@ -4002,7 +4026,7 @@ def ClosedCollarWindingFreedomEveryNormalFormHasN6Representation :
 def ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomNormalFormRadialFaceExtraction normalForm)
 
@@ -4014,7 +4038,7 @@ the cut-open collar face must be extracted.
 def ClosedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace :
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       normalForm.actualCollarEmbeddingConstraints →
         ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
           normalForm.annular
@@ -4040,7 +4064,7 @@ annulus-collar support equalities from the later face-selection obligation.
 -/
 structure ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   emb : PlaneEmbeddingWithBoundary G
   collarGeometry : PlanarBoundaryAnnulusCollarGeometry emb
   collarEdges_eq :
@@ -4057,7 +4081,7 @@ stronger surface to the winding witness support equalities.
 -/
 structure ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   emb : PlaneEmbeddingWithBoundary G
   previousGeometry : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb
   collarEdges_eq :
@@ -4070,7 +4094,7 @@ structure ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometr
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData.toGeometryData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (data :
       ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
         normalForm) :
@@ -4089,7 +4113,7 @@ can be applied to the normal-form witness.
 -/
 structure ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   emb : PlaneEmbeddingWithBoundary G
   previousGeometry : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb
   collarEdges_eq :
@@ -4111,7 +4135,7 @@ structure ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialF
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.toPreviousBoundaryGeometryData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (data :
       ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
         normalForm) :
@@ -4129,7 +4153,7 @@ taxonomy route.
 -/
 structure ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm) where
   cutOpenFace : AmbientFace geometry.emb.faces
@@ -4149,7 +4173,7 @@ specific cut-open collar face whose boundary contains the radial cut.
 -/
 structure ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   emb : PlaneEmbeddingWithBoundary G
   collarGeometry : PlanarBoundaryAnnulusCollarGeometry emb
   collarEdges_eq :
@@ -4168,7 +4192,7 @@ structure ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.toRadialFaceData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (data :
       ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
         normalForm) :
@@ -4188,7 +4212,7 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceDat
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.toCutOpenRadialFace
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (data :
       ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
         normalForm) :
@@ -4200,7 +4224,7 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceDat
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.toNormalFormRadialFaceRealization
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (data :
       ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
         normalForm) :
@@ -4210,7 +4234,7 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceDat
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (previousData :
       ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
         normalForm)
@@ -4232,7 +4256,7 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceDat
 
 def ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData.ofGeometryExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm)
     (radialFace :
@@ -4259,7 +4283,7 @@ constraints must produce the concrete radial-face certificate above.
 def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       normalForm.actualCollarEmbeddingConstraints →
         Nonempty
           (ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData
@@ -4273,7 +4297,7 @@ boundary contains the winding radial cut.
 def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       normalForm.actualCollarEmbeddingConstraints →
         Nonempty
           (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
@@ -4286,7 +4310,7 @@ annulus-collar geometry with the normal-form support equalities.
 def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       normalForm.actualCollarEmbeddingConstraints →
         Nonempty
           (ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
@@ -4300,7 +4324,7 @@ collar-geometry shell.
 def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       normalForm.actualCollarEmbeddingConstraints →
         Nonempty
           (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
@@ -4337,7 +4361,7 @@ by the current repair route.
 -/
 structure ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm) where
@@ -4349,7 +4373,7 @@ structure ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessU
 
 def ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.toPreviousBoundaryGeometryData
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -4367,7 +4391,7 @@ def ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
 
 def ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.ofWitnessOnCurrentBoundary
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm)
@@ -4384,7 +4408,7 @@ def ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
 
 theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm)
@@ -4399,7 +4423,7 @@ theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpg
 
 theorem ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.toWitnessOnCurrentBoundary
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -4415,7 +4439,7 @@ theorem ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpg
 
 theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_iff_witnessOnCurrentBoundary
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm) :
@@ -4439,7 +4463,7 @@ upgrades ordinary collar geometry to previous-boundary witness geometry.
 def ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G},
       (geometry :
         ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
           normalForm) →
@@ -4453,7 +4477,7 @@ a single annulus collar layer.
 def ClosedCollarWindingFreedomActualCollarGeometrySuppliesOneCollar :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G},
       (geometry :
         ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
           normalForm) →
@@ -4476,7 +4500,7 @@ then upgrade to the previous-boundary witness geometry.
 def ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G},
       (geometry :
         ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
           normalForm) →
@@ -4529,7 +4553,7 @@ it supplies the cut-open radial face used by the normal-form n6 extraction.
 def ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G},
       (geometry :
         ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
           normalForm) →
@@ -4642,7 +4666,7 @@ the exhaustive n6 detailed taxonomy.
 def ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy :
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomNormalFormN6DetailedTaxonomyCoverage normalForm)
 
@@ -4795,7 +4819,7 @@ equalities, before selecting the cut-open radial face.
 -/
 structure ClosedCollarWindingFreedomEmbeddedGeometryNormalFormRealization
     {V : Type} [DecidableEq V] (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   geometryData :
     ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm
 
@@ -4805,7 +4829,7 @@ the specific normal-form annulus being refuted.
 -/
 structure ClosedCollarWindingFreedomEmbeddedGeometryNormalFormExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   embedded : ClosedCollarWindingFreedomEmbeddedGeometryNormalFormRealization G
   normalForm_eq : embedded.normalForm = normalForm
 
@@ -4816,7 +4840,7 @@ concrete embedded collar geometry certificate for that same annulus.
 def ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomEmbeddedGeometryNormalFormExtraction
           normalForm)
@@ -4843,7 +4867,7 @@ extracted from actual planar annulus-collar geometry.
 -/
 structure ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization
     {V : Type} [DecidableEq V] (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   radialFaceData :
     ClosedCollarWindingFreedomActualCollarEmbeddingRadialFaceData normalForm
 
@@ -4884,7 +4908,7 @@ specific normal-form annulus being refuted.
 -/
 structure ClosedCollarWindingFreedomEmbeddedCollarNormalFormExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   embedded : ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G
   normalForm_eq : embedded.normalForm = normalForm
 
@@ -4897,7 +4921,7 @@ full normal-form nonrealizability.
 def ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomEmbeddedCollarNormalFormExtraction
           normalForm)
@@ -8727,7 +8751,7 @@ needed by the row-certificate obstruction.
 -/
 structure ClosedCollarWindingFreedomNormalFormArchiveN6RepresentationExtraction
     {V : Type} {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G
   normalForm_eq : data.normalForm = normalForm
   case_mem_archive :
@@ -8742,7 +8766,7 @@ rows.
 def ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation :
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomNormalFormArchiveN6RepresentationExtraction
           normalForm)
@@ -9064,7 +9088,7 @@ for that representation.
 -/
 structure ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   previousBoundaryRadialFaceData :
     ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
       normalForm
@@ -9085,7 +9109,7 @@ and audited archive key.
 def ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
           normalForm)
@@ -9927,7 +9951,7 @@ are accepted.
 -/
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -9962,7 +9986,7 @@ faces induce the forbidden four-radial-cut-edges-on-one-face row certificate.
 -/
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutCoverage
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -9994,7 +10018,7 @@ the positive histogram entry for four radial-cut edges on one face.
 -/
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_maxCutHistogramCoverage
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -10027,7 +10051,7 @@ archive.
 -/
 theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (extraction :
       ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
         normalForm)
@@ -10092,7 +10116,7 @@ archive key.
 -/
 structure ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
     {V : Type} [DecidableEq V] (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   geometry :
     ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm
   previousUpgrade :
@@ -10150,7 +10174,7 @@ version, but the first repaired geometric field is stated directly as
 -/
 structure ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization
     {V : Type} [DecidableEq V] (G : SimpleGraph V) where
-  normalForm : ClosedCollarWindingFreedomNormalFormRealization G
+  normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G
   geometry :
     ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm
   witnessCurrent : geometry.collarGeometry.WitnessOnCurrentBoundary
@@ -10396,7 +10420,7 @@ needed to turn the local concrete obstruction into full nonrealizability.
 -/
 structure ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   concrete :
     ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization G
   normalForm_eq : concrete.normalForm = normalForm
@@ -10407,7 +10431,7 @@ specified normal-form annulus.
 -/
 structure ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   concrete :
     ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization G
   normalForm_eq : concrete.normalForm = normalForm
@@ -10420,7 +10444,7 @@ previous-boundary package.
 def ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
           normalForm)
@@ -10432,7 +10456,7 @@ current-boundary witness placement.
 def ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) →
       Nonempty
         (ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormExtraction
           normalForm)
@@ -10809,7 +10833,7 @@ inductive ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker where
 
 def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker.Occurs
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker → Prop
   | .previousBoundaryGeometry =>
       ¬ Nonempty
@@ -10850,7 +10874,7 @@ def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker.Occurs
 
 def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     Prop :=
   ∃ blocker : ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker,
     blocker.Occurs normalForm
@@ -10864,7 +10888,7 @@ theorem closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBloc
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
       normalForm := by
   classical
@@ -10919,7 +10943,7 @@ surviving witness carries a staged previous-boundary repair blocker.
 def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       @ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
         V hV G normalForm
 
@@ -10957,7 +10981,7 @@ inductive ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker
 
 def ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker → Prop
   | .collarGeometry =>
       ¬ Nonempty
@@ -11014,7 +11038,7 @@ def ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occur
 
 def ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     Prop :=
   ∃ blocker : ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker,
     blocker.Occurs normalForm
@@ -11030,7 +11054,7 @@ theorem closedCollarWindingFreedomNormalFormHasFactoredPreviousBoundaryWitnessRe
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
       normalForm := by
   classical
@@ -11098,7 +11122,7 @@ has one of the factored previous-boundary blockers.
 def ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       @ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
         V hV G normalForm
 
@@ -11137,7 +11161,7 @@ inductive ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker where
 
 def ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker → Prop
   | .collarGeometry =>
       ¬ Nonempty
@@ -11197,7 +11221,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
 
 def ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairHasBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     Prop :=
   ∃ blocker : ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker,
     blocker.Occurs normalForm
@@ -11213,7 +11237,7 @@ theorem closedCollarWindingFreedomNormalFormHasCurrentBoundaryWitnessRepairBlock
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairHasBlocker
       normalForm := by
   classical
@@ -11280,7 +11304,7 @@ one of the current-boundary staged blockers.
 def ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       @ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairHasBlocker
         V hV G normalForm
 
@@ -11305,7 +11329,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairObstruction_of_aud
 
 theorem closedCollarWindingFreedomCurrentBoundaryWitnessPlacementFailure_numCollars_ne_one
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm)
@@ -11325,7 +11349,7 @@ escape, because radius one makes the placement condition vacuous.
 -/
 def ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     Prop :=
   ∃ geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
@@ -11340,7 +11364,7 @@ stage.
 -/
 structure ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) where
   geometry :
     ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
       normalForm
@@ -11355,7 +11379,7 @@ structure ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.numCollars_gt_one
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11366,7 +11390,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.numCollars_gt_one
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.interiorEdgeSupport_nonempty
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11378,7 +11402,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.interiorEdgeSupport_
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.notWitnessOnCurrentBoundary
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11391,7 +11415,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.notWitnessOnCurrentB
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.witness_not_previousBoundaryCycle
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11406,7 +11430,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.witness_not_previous
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.notPreviousBoundaryWitnessUpgrade
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11418,7 +11442,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.notPreviousBoundaryW
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.toMultiCollarEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11437,7 +11461,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.toMultiCollarEscape
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     Prop :=
   Nonempty
     (ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
@@ -11445,7 +11469,7 @@ def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessPlacementFailure
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -11471,7 +11495,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witness
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_badWitnessFaceEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (hbad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
         normalForm) :
@@ -11482,7 +11506,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_badWitness
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCollarEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (escape :
       ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
         normalForm) :
@@ -11495,7 +11519,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCo
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPlacementFailure
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     {geometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
         normalForm}
@@ -11509,7 +11533,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessPla
 
 theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker_of_badWitnessFaceEscape
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (hbad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
         normalForm) :
@@ -11521,7 +11545,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker_of_badWitn
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witnessOnCurrentBoundaryBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (hblocker :
       ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
         normalForm
@@ -11535,7 +11559,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_witness
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_witnessOnCurrentBoundaryBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G} :
     ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
       normalForm ↔
       ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
@@ -11547,7 +11571,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_witnes
 
 theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessUpgradeBlocker_iff_witnessOnCurrentBoundaryBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G} :
     ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
       normalForm
       .previousBoundaryWitnessUpgrade ↔
@@ -11572,7 +11596,7 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessUpgradeBlocker_
 
 theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previousBoundaryWitnessUpgradeBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G} :
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G} :
     ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
       normalForm ↔
       ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
@@ -11584,7 +11608,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_iff_previo
 
 theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscape_of_witnessOnCurrentBoundaryBlocker
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G)
     (hblocker :
       ClosedCollarWindingFreedomCurrentBoundaryWitnessRepairBlocker.Occurs
         normalForm
@@ -11604,7 +11628,7 @@ therefore that geometry is not radius one.
 def ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       @ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscape
         V hV G normalForm
 
@@ -11615,14 +11639,14 @@ whose selected witness edge misses the current boundary of that collar stage.
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       @ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape
         V hV G normalForm
 
 def ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       @ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairBlocker.Occurs
         V hV G normalForm .previousBoundaryWitnessUpgrade
 
@@ -11649,14 +11673,14 @@ to expose one of the exact diagonal two-pole templates.
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate :
     Prop :=
   ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G},
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace normalForm →
         ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
           candidate.Realizes
 
 theorem closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes
     {V : Type} {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G) :
     ¬ ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
       candidate.Realizes := by
   rintro ⟨candidate, hrealizes⟩
@@ -11666,7 +11690,7 @@ theorem closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes
 
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace.noExactTemplateRealizes
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (_bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11679,7 +11703,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_false_of_forcesE
     (hforces :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G}
     (bad :
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
         normalForm) :
@@ -11689,7 +11713,7 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_false_of_forcesE
 def ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction :
     Prop :=
   ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
-    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G,
       ∃ _bad :
         @ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
           V hV G normalForm,
@@ -12315,7 +12339,7 @@ first missing datum for that witness.
 -/
 theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker_of_no_concretePreviousBoundaryNormalFormExtraction
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
-    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G)
+    (normalForm : ClosedCollarWindingFreedomNormalFormEncodedDataShell G)
     (hno :
       ¬ Nonempty
         (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction

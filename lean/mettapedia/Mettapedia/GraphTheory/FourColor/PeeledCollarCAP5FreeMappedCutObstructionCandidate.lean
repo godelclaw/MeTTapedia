@@ -174,7 +174,7 @@ face-route obstructions.
 theorem
     cap5FreeClosedWalkNoMappedCutFaceRouteObstructionFoundationTarget_of_closedWalkSmallCutLift
     (hlift :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient) :
     CAP5FreeClosedWalkPeeledCollarNoMappedCutFaceRouteObstructionFoundationTarget := by
   intro V _ G emb source regime
   exact
@@ -229,7 +229,7 @@ avoiding face-route foundation.
 theorem
     cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_closedWalkSmallCutLift
     (hlift :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient) :
     CAP5FreeClosedWalkPeeledCollarMappedCutAvoidingFaceRouteFoundationTarget :=
   cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_noMappedCutFaceRouteObstructionFoundationTarget
     (cap5FreeClosedWalkNoMappedCutFaceRouteObstructionFoundationTarget_of_closedWalkSmallCutLift
@@ -243,7 +243,7 @@ theorem
     cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_mappedCutAvoidingFaceRouteFoundationTarget
     (hfoundation :
       CAP5FreeClosedWalkPeeledCollarMappedCutAvoidingFaceRouteFoundationTarget) :
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget := by
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient := by
   intro V _ G emb source regime
   let inputs : ClosedWalkMappedCutAvoidingFaceRouteInputs source := {
     regime := regime
@@ -258,7 +258,7 @@ small-cut lifting are equivalent foundation targets.
 theorem
     cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_iff_closedWalkSmallCutLift :
     CAP5FreeClosedWalkPeeledCollarMappedCutAvoidingFaceRouteFoundationTarget ↔
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget :=
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient :=
   ⟨cap5FreeClosedWalkSmallCutLiftFoundationTarget_of_mappedCutAvoidingFaceRouteFoundationTarget,
     cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_closedWalkSmallCutLift⟩
 
@@ -320,7 +320,7 @@ def CAP5FreePeeledCollarMappedCutClosedWalkSmallCutLiftFoundationTargetIndex :
     Prop :=
   CAP5FreeCanonicalAnnulusPeeledCollarSeparationFoundationTarget ∧
     CAP5FreeRepairedAnnulusPeeledCollarSeparationFoundationTarget ∧
-    CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget
+    ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient
 
 /--
 The public CAP5-free foundation index supplies the selected-source small-cut
@@ -475,7 +475,7 @@ foundation.
 theorem
     section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget_of_closedWalkSmallCutLift
     (hlift :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient) :
     Section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget :=
   section92Step4ClosedWalkCAP5FreeMappedCutFoundationRouteIndexTarget
     (cap5FreeClosedWalkMappedCutAvoidingFaceRouteFoundationTarget_of_closedWalkSmallCutLift
@@ -598,7 +598,7 @@ def Section92Step4ClosedWalkCAP5FreeMappedCutObstructionRealizedCandidateRegimeD
           (G := G)
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -616,7 +616,7 @@ def Section92Step4ClosedWalkCAP5FreeMappedCutSmallCutLiftRegimeDischargedS4Salva
           (G := G)
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph →
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /--
@@ -695,7 +695,7 @@ regime-discharged S4 salvage statement directly.
 theorem
     section92Step4ClosedWalkCAP5FreeMappedCutSmallCutLiftRegimeDischargedS4SalvageTarget_of_closedWalkSmallCutLift
     (hlift :
-      CAP5FreeClosedWalkPeeledCollarSmallCutLiftFoundationTarget) :
+      ClosedWalkActualCollarSmallCyclicCutLiftsToAmbient) :
     Section92Step4ClosedWalkCAP5FreeMappedCutSmallCutLiftRegimeDischargedS4SalvageTarget := by
   intro V _ G emb source regime
   exact

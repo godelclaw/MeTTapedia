@@ -209,7 +209,7 @@ theorem routeIndexConsequences_of_cap5FreeSeparationFoundationTarget
         data data.inducedBoundaryEmbedding ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hseparate :
       PlanarBoundaryAnnulusPeeledCollarSeparationTarget
@@ -247,7 +247,7 @@ theorem routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceFoundationTarget
     data.RegimeNoncrossingFaceSourceFoundationTarget ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hdata :
       data.RegimeNoncrossingFaceSourceFoundationTarget :=
@@ -370,7 +370,7 @@ theorem routeIndexConsequences_of_cap5FreeSeparationFoundationTarget
         data data.inducedBoundaryEmbedding ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hseparate :
       PlanarBoundaryPreviousBoundaryPeeledCollarSeparationTarget
@@ -409,7 +409,7 @@ theorem routeIndexConsequences_of_cap5FreeClosedWalkFaceSourceFoundationTarget
     data.RegimeNoncrossingFaceSourceFoundationTarget ∧
       CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         data.inducedBoundaryGraph := by
   have hdata :
       data.RegimeNoncrossingFaceSourceFoundationTarget :=
@@ -452,7 +452,7 @@ theorem routeIndexConsequences_of_cap5FreeFaceSourceFoundationTarget
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
       ClosedCollarForbidsCyclicTwoCut
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-      ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+      ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph := by
   have hsource :
       source.RegimeNoncrossingFaceSourceFoundationTarget :=
@@ -490,7 +490,7 @@ def Section92Step4CanonicalAnnulusCAP5FreeSeparationFoundationRouteIndexTarget :
           data data.inducedBoundaryEmbedding ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the canonical CAP5-free separation foundation target. -/
@@ -520,7 +520,7 @@ def Section92Step4CanonicalAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget :
       data.RegimeNoncrossingFaceSourceFoundationTarget ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /--
@@ -553,7 +553,7 @@ def Section92Step4RepairedAnnulusCAP5FreeSeparationFoundationRouteIndexTarget :
           data data.inducedBoundaryEmbedding ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /-- Route-index theorem for the repaired CAP5-free separation foundation target. -/
@@ -584,7 +584,7 @@ def Section92Step4RepairedAnnulusCAP5FreeFaceSourceFoundationRouteIndexTarget :
       data.RegimeNoncrossingFaceSourceFoundationTarget ∧
         CyclicallyFiveEdgeConnected data.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut data.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           data.inducedBoundaryGraph
 
 /--
@@ -626,7 +626,7 @@ def Section92Step4ClosedWalkCAP5FreeFaceSourceFoundationRouteIndexTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
         ClosedCollarForbidsCyclicTwoCut
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph ∧
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Route-index theorem for the closed-walk CAP5-free face-source target. -/

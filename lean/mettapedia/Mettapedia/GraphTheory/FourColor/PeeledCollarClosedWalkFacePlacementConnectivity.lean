@@ -115,9 +115,9 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable_of_minimalCountere
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph)
     (h : source.OffCarrierAttachmentFacePlacementNoncrossingTarget) :
-    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+    ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
       source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph :=
-  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_of_cyclicallyFiveEdgeConnected
+  closedCollarWindingFreedomSeparatorEquippedEscape_not_realizable_of_cyclicallyFiveEdgeConnected
     (source.cyclicallyFiveEdgeConnected_of_minimalCounterexampleRegime_of_facePlacementNoncrossingTarget
       regime h)
 
@@ -185,7 +185,7 @@ def Section92Step4ClosedWalkFacePlacementRegimeDischargedS4SalvageTarget :
           source.toPlanarBoundaryAnnulusBoundaryData.ambientBoundaryEdgeSet)
         source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph),
       source.OffCarrierAttachmentFacePlacementNoncrossingTarget →
-        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization
+        ¬ ClosedCollarWindingFreedomSeparatorEquippedEscapeRealization
           source.toPlanarBoundaryAnnulusBoundaryData.inducedBoundaryGraph
 
 /-- Verbatim closed-walk face-placement S4 statement through cyclic connectivity. -/
