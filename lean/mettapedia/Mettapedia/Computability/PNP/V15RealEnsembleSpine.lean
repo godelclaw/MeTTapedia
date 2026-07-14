@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
+import Mettapedia.Computability.PNP.PNPv13AppendixDLockedCore
 import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
 
@@ -26392,16 +26392,11 @@ or an equivalent cross-completion rigidity theorem before SAT-search promotion. 
 theorem realM4_deterministicReadoutOnly_counterexample :
     ∃ C : AppendixDLockedCore Unit Bool Unit Bool,
       C.LockSatisfiable ∧ C.ReadDeterministic ∧
-        ¬ C.LockedMessageRigidity :=
-  lockedCoreLabCanaries_separate_readDeterministic_from_lockedMessageRigidity.2
-
-theorem realM4_publicMessageInvariant_guardrails :
-    (rigidAppendixDLockedCore.PublicMessageInvariant
-        rigidAppendixDLockedCore_publicMessage ∧
-      rigidAppendixDLockedCore.LockedMessageRigidity) ∧
-      (∀ publicMessage : Unit -> Bool,
-        ¬ ambiguousAppendixDLockedCore.PublicMessageInvariant publicMessage) ∧
-      ¬ ambiguousAppendixDLockedCore.LockedMessageRigidity :=
-  lockedCorePublicMessageInvariant_lab_guardrails
+        ¬ C.LockedMessageRigidity := by
+  exact
+    ⟨ambiguousAppendixDLockedCore,
+      ambiguousAppendixDLockedCore_lockSatisfiable,
+      ambiguousAppendixDLockedCore_readDeterministic,
+      ambiguousAppendixDLockedCore_not_lockedMessageRigidity⟩
 
 end Mettapedia.Computability.PNP

@@ -10,7 +10,7 @@ import Mettapedia.Computability.PNP.Barriers.ReplacementOpened
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanaries
 import Mettapedia.Computability.PNP.PNPv13FiniteGibbsDobrushinCanaries
-import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
+import Mettapedia.Computability.PNP.PNPv13AppendixDIdentityReadoutFamily
 import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
 import Mettapedia.Computability.PNP.PNPSteelmanConditional
@@ -112,23 +112,9 @@ def currentPNPProofNodes : List PNPProofNode := [
     evidence := "currentPNPStrongestHonestStatus records covered local items and the still-uncovered kpoly compression bridge for the current local packet.",
     nextObligation := "Continue distinguishing ledger coverage from a global complexity separation."
   },
-  {
-    key := "pnp.v13.locked-core-lab-canaries",
-    status := .blockedByCounterexample,
-    truthValue := ⟨100, 97⟩,
-    evidence := "ambiguousAppendixDLockedCore_lab_negative_canary proves that lock satisfiability and deterministic per-state readout do not imply locked-message rigidity; rigidAppendixDLockedCore_lab_positive_canary records the bounded public-message invariant canary.",
-    nextObligation := "Do not replace Appendix D.8 locked-message rigidity by deterministic readout; require a public-message invariant or an equivalent cross-completion rigidity theorem before SAT-search promotion."
-  },
-  {
-    key := "pnp.v13.locked-core-public-message-invariant",
-    status := .blockedByCounterexample,
-    truthValue := ⟨100, 99⟩,
-    evidence := "lockedCorePublicMessageInvariant_bool_guardrails records the finite lab gate: a public-message invariant clears the rigid canary, while deterministic readout with a cross-completion ambiguity blocks the gate and refutes the invariant.",
-    nextObligation := "Treat public-message invariance, or an equivalent cross-completion theorem, as a real missing hypothesis before promoting the locked-core readout route."
-  },
   { key := "pnp.v13.locked-core-identity-readout-family",
     status := .blockedByCounterexample, truthValue := ⟨100, 99⟩,
-    evidence := "lockedCoreIdentityReadoutFamily_lab_refutation proves that every positive finite identity-readout locked-core dimension is satisfiable and read-deterministic, while every public-message invariant and D.8 locked-message rigidity fail.",
+    evidence := "identityReadoutAppendixDLockedCoreFinSucc_refutation_packet proves that every positive finite identity-readout locked-core dimension is satisfiable and read-deterministic, while every public-message invariant and D.8 locked-message rigidity fail.",
     nextObligation := "Do not try to derive Appendix D.8 from local satisfiability plus deterministic readout; a replacement route must supply a public-message invariant or a stronger cross-completion theorem."
   },
   {
@@ -464,35 +450,13 @@ theorem currentPNPKpolyBridgeCoverageCore_node_refutation_packet :
     ⟨kpolyCompressionBridge_covered_currentPNPKpolyCompressionBridgePromotedPacket,
       currentPNPKpolyCompressionBridgeCoverage_refutation_packet⟩
 
-theorem currentPNPv13LockedCoreLabCanaries_node :
-    (rigidAppendixDLockedCore.LockSatisfiable ∧
-      rigidAppendixDLockedCore.ReadDeterministic ∧
-      rigidAppendixDLockedCore.LockedMessageRigidity) ∧
-      (ambiguousAppendixDLockedCore.LockSatisfiable ∧
-        ambiguousAppendixDLockedCore.ReadDeterministic ∧
-        ¬ ambiguousAppendixDLockedCore.LockedMessageRigidity) := by
-  exact
-    ⟨rigidAppendixDLockedCore_lab_positive_canary,
-      ambiguousAppendixDLockedCore_lab_negative_canary⟩
-
-theorem currentPNPv13LockedCorePublicMessageInvariant_node :
-    lockedCoreRigidPublicMessageInvariantAudit.clearsPublicMessageInvariantGate =
-        true ∧
-      lockedCoreAmbiguousDeterministicReadoutAudit.deterministicReadoutOnlyCounterexample =
-        true ∧
-      lockedCoreAmbiguousDeterministicReadoutAudit.clearsPublicMessageInvariantGate =
-        false ∧
-      lockedCoreAmbiguousDeterministicReadoutAudit.blocksPublicMessageInvariant =
-        true := by
-  exact lockedCorePublicMessageInvariant_bool_guardrails
-
 theorem currentPNPv13LockedCoreIdentityReadoutFamily_node (n : Nat) :
     (identityReadoutAppendixDLockedCoreFinSucc n).LockSatisfiable ∧
       (identityReadoutAppendixDLockedCoreFinSucc n).ReadDeterministic ∧
       (∀ publicMessage : Unit → Fin (n + 1) → Bool, ¬
         (identityReadoutAppendixDLockedCoreFinSucc n).PublicMessageInvariant publicMessage) ∧
       ¬ (identityReadoutAppendixDLockedCoreFinSucc n).LockedMessageRigidity := by
-  exact lockedCoreIdentityReadoutFamily_lab_refutation n
+  exact identityReadoutAppendixDLockedCoreFinSucc_refutation_packet n
 
 theorem currentPNPv13CDENFNormalizerCanaries_node :
     CDENFAllTargetRelevantLeavesInAllowedClasses cdenfPositiveCanaryLeaves ∧
