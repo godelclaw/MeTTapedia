@@ -20,7 +20,7 @@ stored in structure fields or passed as named premises.
 | Four Color, v23 | Annular difference spanning; CAP5-free radius-one locality; execution of mixed Kempe switches through Penrose–Kauffman operators and local reachability on a canonical three-cell collar | Encoded local audits and substantial composition machinery are checked. Graph-fidelity and global assembly obligations remain open; an encoded-model seam failure refutes the collar-to-ambient reinterpretation as written in that model. This does not challenge the already-established Four-Color Theorem. | [source](goertzel_4cp.tex), [PDF](goertzel_4cp.pdf) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
 | Navier–Stokes, v7 | Lift Navier–Stokes to heat flow on `SDiff(T³)`, apply a Cole–Hopf transform, push the gradient down at the identity, and control Beale–Kato–Majda through identity carré-du-champ energy | The original local adjoint hypothesis H1 is refuted in a normalized Fourier shear model. A stochastic-Lagrangian repair has a checked conditional BKM skeleton, but its pancake closure requires the still-open pointwise scale-local strain budget `ScaleLocalPancakeStrainBudget`. | [source](goertzel_ns.tex), [PDF](goertzel_ns.pdf) |
-| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's range-only `P_ext` data cannot transfer that bound. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail as written. Support, two-marked glue, weighted Wilson/KP estimates, reflection positivity on the same family, and continuum OS construction remain open. | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
+| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's action-sector coordinate certificate cannot be reconstructed from the source as written: F.4 and O.9 use different EOM policies, while the dimension-16 lattice basis and dual jets are absent. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail. Support, weighted Wilson/KP estimates, reflection positivity on the same family, and continuum OS construction remain open. | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
 
 ## Four-Color route
 
@@ -96,15 +96,18 @@ The formalization now distinguishes three different statements:
 2. a concrete finite Wilson-polynomial extraction, for which coefficient-majorant
    truncation is gauge invariant and norm one; and
 3. the actual v14 action-sector extraction and Wilson RG map, for which the
-   necessary basis, dual jets, conditioning, and weighted analytic estimates
-   have not been supplied.
+   necessary lattice representatives, quotient basis, dual jets, conditioning,
+   and weighted analytic estimates have not been supplied. F.4's on-shell
+   reduction and O.9's off-shell census do not define the same coordinate space.
 
 Range alone does not control a projection norm. Union-support recombination is
 norm one, while `14` is a rooted local branching count rather than a universal
 contact bound. The F.5 and Appendix-O factor ledgers disagree, and neither
-derives `C_true`. The next substantive work is to construct the dimension-16
-invariant basis and dual jets and prove the connected Wilson cumulant/KP bound
-in the same norm—not to add another scalar endpoint wrapper.
+derives `C_true`. The next substantive work is to obtain a source clarification
+or state an explicit repaired relation quotient and block convention, then
+construct its dimension-16 Wilson representatives, quotient basis, and dual
+jets and prove the connected Wilson cumulant/KP bound in the same norm—not to
+add another scalar endpoint wrapper.
 
 ## Status discipline
 

@@ -21,6 +21,13 @@ Current status:
   gives both the basis/dual-jet transfer theorem and a range-only projection
   counterexample; `WilsonPolymerRecombination.lean` proves norm-one regrouping
   by union and refutes the literal total-contact reading of the factor `14`.
+- `Dimension16WilsonExtractionCertificate.lean` records the decisive outcome
+  of attempting the manuscript-facing coordinate construction. F.4 uses an
+  on-shell relation policy while O.9 explicitly selects an off-shell census;
+  v14 gives no dimension-16 lattice representatives, quotient basis, dual
+  jets, biorthogonality matrix, or conditioning certificate. Appendix I's
+  explicit jets belong to the distinct dimension-4 observable sector. Thus
+  the source as written cannot instantiate the positive transfer theorem.
 - Under Appendix O's other proposed factors, substituting the proved
   extraction factor `1` gives the conditional ledger `C = 5544/5`; depth `15`
   is the least unrestricted two-source depth and `16` the least even depth.
@@ -52,9 +59,9 @@ recursion, support branch, two-marked identity, KP convergence, Wilson
 reflection positivity, and OS/subsequential-limit machinery are all instantiated
 for the same route.
 
-The first extraction-side construction targets are the explicit
-dimension-16 gauge-invariant action basis and dual jets. Their finite
-column-sum conditioning bounds would connect the proved norm-one
-Wilson-polynomial realization to the manuscript-facing extraction. The first
-recombination-side target is the weighted connected-cumulant/tree/KP estimate
-for the actual Wilson activities in that same norm.
+The extraction-side route now needs a source clarification or an explicitly
+labeled repair selecting one relation quotient and exact block convention.
+Only after that choice is fixed can actual lattice Wilson representatives, a
+finite quotient basis, dual jets, and their column-sum conditioning certificate
+be constructed. The recombination-side target remains the weighted connected-
+cumulant/tree/KP estimate for the actual Wilson activities in that same norm.

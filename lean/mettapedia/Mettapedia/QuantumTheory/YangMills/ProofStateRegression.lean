@@ -57,6 +57,22 @@ theorem current_extraction_constant_adjudication_packet_regression :
         ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) := by
   exact currentYangMillsExtractionConstantAdjudication_packet
 
+theorem current_dimension_sixteen_coordinate_certificate_packet_regression :
+    (¬ V14Dimension16SourceCertificateComplete) ∧
+      v14F4RelationPolicy ≠ v14O9RelationPolicy ∧
+      (¬ V14LiteralDimension16ExtractionBound) ∧
+      v14Dimension16CertificateStatus .extractionConstant = .notDerived ∧
+      v14Dimension16CertificateStatus .wilsonRecursionConstant = .notDerived :=
+  currentYangMillsDimension16CoordinateCertificate_packet
+
+/--
+info: 'Mettapedia.QuantumTheory.YangMills.currentYangMillsDimension16CoordinateCertificate_packet' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms currentYangMillsDimension16CoordinateCertificate_packet
+
 theorem current_extraction_constant_hypothetical_threshold_packet_regression :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
       ¬ HasExtendedExtractionContraction C 2 16 := by

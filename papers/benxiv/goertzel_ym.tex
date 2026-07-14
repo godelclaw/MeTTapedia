@@ -99,7 +99,13 @@ $1$. This does not transfer from v14's range-only specification of
 $P_{\mathrm{ext}}$: a skew projection onto the same low-coordinate range has
 arbitrarily large coefficient norm. We prove the correct transfer theorem from
 explicit basis and dual-jet matrices with their column-sum conditioning bounds,
-but v14 does not provide those data for the dimension-$16$ action sector.
+but v14 does not provide those data for the dimension-$16$ action sector. A
+direct source reconciliation shows that they cannot be reconstructed uniquely
+from the present text: Appendix~F.4 uses equations of motion to identify the
+operator space, while Appendix~O.9 explicitly retains EOM operators in an
+off-shell basis; neither section supplies lattice Wilson representatives or a
+quotient basis, and Appendix~I's explicit dual jets stop at the distinct
+dimension-$4$ observable sector.
 Likewise, regrouping connected families by union support has norm $1$; the
 factor $14$ is exactly a \emph{local rooted branching count}
 $2(2\cdot4-1)$, not a bound on the total contacts of two extended polymers.
@@ -469,7 +475,13 @@ constructs an idempotent skew projection onto the same low-coordinate range
 that violates the bound $2$. The positive transfer theorem
 \texttt{coefficientL1\_basisJetProjection\_le} shows exactly what would suffice:
 explicit basis and dual-jet matrices whose coefficient-column bounds multiply.
-Those action-sector matrices and uniform bounds are absent from v14. Hence the
+The construction attempt is certified in
+\texttt{Dimension16WilsonExtractionCertificate}: F.4's on-shell relation
+policy and O.9's off-shell policy disagree already on the displayed
+dimension-$6$ divergence-square operator; the exact block quotient, lattice
+representatives, finite basis, dimension-$16$ dual jets, biorthogonality, and
+conditioning matrices are not supplied. Appendix~I's explicit jets concern
+the separate observable projection $P^{\mathrm{obs}}_{\leq4}$. Hence the
 extraction component is not a standing erratum repair, and $C_1$ is not derived.
 
 \paragraph{The finite gaps are real but Clay-irrelevant.}
@@ -517,7 +529,11 @@ as open, and sharpened others into theorems:
     column-sum theorem transfers through explicit basis and dual jets; v14 does
     not provide these for $P_{\mathrm{ext}}\leq16$, and a skew-projection
     counterexample proves that no bound follows from the range alone
-    (\texttt{ExtendedExtractionTransfer}).
+    (\texttt{ExtendedExtractionTransfer}). The source-certificate audit further
+    proves that F.4 and O.9 select different EOM relation policies and records
+    the absent lattice representatives, quotient basis, dimension-$16$ jets,
+    biorthogonality, and conditioning rows
+    (\texttt{Dimension16WilsonExtractionCertificate}).
   \item \textbf{The support-growth dichotomy.} The two collar-growth statements
     the manuscript makes are inequivalent, and both branches are now tight
     theorems: a coarsen-then-thicken recurrence $r_{j+1}\leq r_j/b + A$ yields
@@ -561,10 +577,12 @@ three different situations.
     basis/dual-jet conditioning are not proved on the actual map. Regrouping
     connected families by union has norm one; the factor $14$ is the local
     rooted branching count, not a total-contact bound. \emph{What settles it:}
-    supply the dimension-$16$ invariant basis and dual jets, prove their
-    uniform conditioning, and prove the weighted Wilson cumulant/tree estimate
-    in the same norm. The resulting actual constant can then be checked against
-    $C\,b^{\,3-\dmax}\leq1/3$.
+    first select one source-faithful relation policy and exact block quotient
+    (or label the choice as a repaired construction), then supply the actual
+    dimension-$16$ lattice Wilson representatives, quotient basis, and dual
+    jets, prove their uniform conditioning, and prove the weighted Wilson
+    cumulant/tree estimate in the same norm. The resulting actual constant can
+    then be checked against $C\,b^{\,3-\dmax}\leq1/3$.
   \item \textbf{Which support recurrence the glue satisfies.}
     \emph{Status: v14 asserts both branches of a now-proven dichotomy in
     different places.} \emph{What settles it:} one paragraph identifying the
@@ -616,6 +634,9 @@ gating); and, from the second round,
 \texttt{WilsonBlockMajorant} (the concrete finite Wilson-polynomial realization),
 \texttt{ExtendedExtractionTransfer} (the range-only obstruction and explicit
 basis/dual-jet transfer theorem),
+\texttt{Dimension16WilsonExtractionCertificate} (the F.4/O.9 relation-policy
+mismatch, checked source transfer table, and obstructed as-written coordinate
+certificate),
 \texttt{WilsonPolymerRecombination} (norm-one union regrouping, the total-contact
 counterexample, and the rooted interpretation of $14$),
 \texttt{WilsonExtractionRecombinationConstant} (the two ledger calculations,
