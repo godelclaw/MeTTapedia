@@ -1,0 +1,486 @@
+{
+  "algorithm": "restored-cap-components-and-exhaustive-colorings-v1",
+  "annular": {
+    "all_good_fibers_contain_menu_b": true,
+    "annulus": {
+      "base_graph_hash": "e88725132ddca56e3fbe88ea47a63b8164a8f95dc195c0bb0d72177530ad414f",
+      "graph_hash": "d6100fbbdcce57654435af5320557ed0bdf553f448c533aa30700d79203fe594",
+      "inner_face_edges": [
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          5,
+          7
+        ]
+      ],
+      "inner_face_vertices": [
+        5,
+        6,
+        9,
+        8,
+        7
+      ],
+      "inner_pentagon_dual_vertex": 1,
+      "inner_spokes": [
+        5,
+        6,
+        9,
+        8,
+        7
+      ],
+      "name": "C40-first-disjoint-pentagons",
+      "outer_face_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "outer_face_vertices": [
+        0,
+        1,
+        4,
+        3,
+        2
+      ],
+      "outer_pentagon_dual_vertex": 0,
+      "outer_spokes": [
+        0,
+        1,
+        4,
+        3,
+        2
+      ],
+      "pentagon_pair_selection": "lexicographically-first-vertex-disjoint",
+      "tangle_edges": [
+        [
+          0,
+          10
+        ],
+        [
+          1,
+          11
+        ],
+        [
+          2,
+          13
+        ],
+        [
+          3,
+          15
+        ],
+        [
+          4,
+          17
+        ],
+        [
+          5,
+          32
+        ],
+        [
+          6,
+          39
+        ],
+        [
+          7,
+          34
+        ],
+        [
+          8,
+          36
+        ],
+        [
+          9,
+          38
+        ],
+        [
+          10,
+          12
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          11,
+          19
+        ],
+        [
+          12,
+          20
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          13,
+          16
+        ],
+        [
+          14,
+          23
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          15,
+          18
+        ],
+        [
+          16,
+          25
+        ],
+        [
+          17,
+          18
+        ],
+        [
+          17,
+          19
+        ],
+        [
+          18,
+          27
+        ],
+        [
+          19,
+          21
+        ],
+        [
+          20,
+          22
+        ],
+        [
+          20,
+          24
+        ],
+        [
+          21,
+          22
+        ],
+        [
+          21,
+          29
+        ],
+        [
+          22,
+          30
+        ],
+        [
+          23,
+          24
+        ],
+        [
+          23,
+          26
+        ],
+        [
+          24,
+          33
+        ],
+        [
+          25,
+          26
+        ],
+        [
+          25,
+          28
+        ],
+        [
+          26,
+          35
+        ],
+        [
+          27,
+          28
+        ],
+        [
+          27,
+          29
+        ],
+        [
+          28,
+          37
+        ],
+        [
+          29,
+          31
+        ],
+        [
+          30,
+          32
+        ],
+        [
+          30,
+          34
+        ],
+        [
+          31,
+          32
+        ],
+        [
+          31,
+          39
+        ],
+        [
+          33,
+          34
+        ],
+        [
+          33,
+          36
+        ],
+        [
+          35,
+          36
+        ],
+        [
+          35,
+          38
+        ],
+        [
+          37,
+          38
+        ],
+        [
+          37,
+          39
+        ]
+      ]
+    },
+    "dead_end_count": 0,
+    "fibers_containing_menu_b_count": 30,
+    "good_fiber_size_histogram": {
+      "104": 30
+    },
+    "good_fibers": [
+      {
+        "fiber_size": 104,
+        "inner_word": "00012",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "00021",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "00120",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "00210",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "01112",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "01200",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "01222",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "02100",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "02111",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "02221",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "10002",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "10211",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "10222",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "11021",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "11102",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "11120",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "11201",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "12000",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "12011",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "12220",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "20001",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "20111",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "20122",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "21000",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "21022",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "21110",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "22012",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "22102",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "22201",
+        "menu_b_state_count": 56
+      },
+      {
+        "fiber_size": 104,
+        "inner_word": "22210",
+        "menu_b_state_count": 56
+      }
+    ],
+    "good_inner_word_fiber_count": 30,
+    "good_word_closed_web_count": 0,
+    "good_word_solution_count": 3120,
+    "menu_a_only_state_count": 1440,
+    "menu_b_pair_count_per_state_histogram": {
+      "0": 1440,
+      "1": 1440,
+      "2": 240
+    },
+    "menu_b_pair_instance_count": 1920,
+    "menu_b_state_count": 1680,
+    "propagation": {
+      "all_cap_composed_menu_b_moves_preserve_menu_b": true,
+      "cap_composed_menu_b_move_count": 3840,
+      "menu_b_preserved_move_count": 3840,
+      "target_cap_reconstruction_mismatch_count": 0,
+      "target_good_state_missing_count": 0
+    },
+    "root_color_solution_counts": {
+      "0": 10568,
+      "1": 10568,
+      "2": 10568
+    },
+    "search_node_count": 367737,
+    "solution_count": 31704,
+    "solution_digest_sum": "7529caa32c2fd8ac87a034500fc70e69285698b322fb44faa44fc41ec231191e",
+    "solution_digest_xor": "1c230a7ee06d31773c083324b75f5471844e3b9f325f8a0535a238196893d21e"
+  },
+  "closed_cap_configurations": {
+    "all_closed_coloring_pentagon_words_good": true,
+    "both_majority_pairs_single_component_count": 5760,
+    "closed_coloring_count": 1200,
+    "good_coloring_pentagon_instance_count": 14400,
+    "majority_pair_component_count_histogram": {
+      "1,1": 5760,
+      "1,2": 6720,
+      "2,2": 1920
+    },
+    "pentagon_count": 12
+  },
+  "graph": "C40",
+  "schema": "fourcolor-v24-pentagon-finite-seals-v1"
+}

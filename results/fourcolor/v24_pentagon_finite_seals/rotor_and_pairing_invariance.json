@@ -1,0 +1,1209 @@
+{
+  "all_majority_pairings_have_weave_distance_type_1_2": true,
+  "good_word_count": 30,
+  "pairing_invariance_check_count": 120,
+  "pairing_invariance_failure_count": 0,
+  "pairing_invariance_failures": [],
+  "rotor_rows": [
+    {
+      "cap_cycle_colors": "21201",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "00012"
+    },
+    {
+      "cap_cycle_colors": "12102",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ],
+      "word": "00021"
+    },
+    {
+      "cap_cycle_colors": "12012",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "00120"
+    },
+    {
+      "cap_cycle_colors": "21021",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "00210"
+    },
+    {
+      "cap_cycle_colors": "20201",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "01112"
+    },
+    {
+      "cap_cycle_colors": "20121",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "01200"
+    },
+    {
+      "cap_cycle_colors": "20101",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "01222"
+    },
+    {
+      "cap_cycle_colors": "10212",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "02100"
+    },
+    {
+      "cap_cycle_colors": "10202",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "02111"
+    },
+    {
+      "cap_cycle_colors": "10102",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "02221"
+    },
+    {
+      "cap_cycle_colors": "21210",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "10002"
+    },
+    {
+      "cap_cycle_colors": "21020",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "10211"
+    },
+    {
+      "cap_cycle_colors": "21010",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "10222"
+    },
+    {
+      "cap_cycle_colors": "02102",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "11021"
+    },
+    {
+      "cap_cycle_colors": "20210",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "11102"
+    },
+    {
+      "cap_cycle_colors": "02012",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ],
+      "word": "11120"
+    },
+    {
+      "cap_cycle_colors": "20120",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "11201"
+    },
+    {
+      "cap_cycle_colors": "01212",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "12000"
+    },
+    {
+      "cap_cycle_colors": "01202",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "12011"
+    },
+    {
+      "cap_cycle_colors": "01012",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ],
+      "word": "12220"
+    },
+    {
+      "cap_cycle_colors": "12120",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ],
+      "word": "20001"
+    },
+    {
+      "cap_cycle_colors": "12020",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "20111"
+    },
+    {
+      "cap_cycle_colors": "12010",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "20122"
+    },
+    {
+      "cap_cycle_colors": "02121",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "21000"
+    },
+    {
+      "cap_cycle_colors": "02101",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "21022"
+    },
+    {
+      "cap_cycle_colors": "02021",
+      "majority_pairings": [
+        {
+          "color_pair": "01",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ],
+      "word": "21110"
+    },
+    {
+      "cap_cycle_colors": "01201",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "word": "22012"
+    },
+    {
+      "cap_cycle_colors": "10210",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "22102"
+    },
+    {
+      "cap_cycle_colors": "10120",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        }
+      ],
+      "word": "22201"
+    },
+    {
+      "cap_cycle_colors": "01021",
+      "majority_pairings": [
+        {
+          "color_pair": "02",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        },
+        {
+          "color_pair": "12",
+          "cyclic_distance_type": [
+            1,
+            2
+          ],
+          "pairing": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ],
+      "word": "22210"
+    }
+  ]
+}
