@@ -1,0 +1,666 @@
+{
+  "algorithm": "explicit-bichromatic-inner-touching-components-v1",
+  "all_closed_words_have_entire_fiber_closed": true,
+  "bad_word_closed_web_count": 720,
+  "closed_fiber_size_histogram": {
+    "8": 90
+  },
+  "closed_inner_word_count": 90,
+  "closed_inner_word_count_type_histogram": {
+    "3,2": 60,
+    "4,1": 30
+  },
+  "closed_inner_word_fibers": [
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00001"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00002"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00010"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00011"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00020"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00022"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00100"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00101"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00110"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00111"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00200"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00202"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00220"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "00222"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01000"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01001"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01010"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01011"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01100"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01101"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01110"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "01111"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02000"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02002"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02020"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02022"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02200"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02202"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02220"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "02222"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10000"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10001"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10010"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10011"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10100"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10101"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10110"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "10111"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11000"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11001"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11010"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11011"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11100"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11101"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11110"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11112"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11121"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11122"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11211"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11212"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11221"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "11222"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12111"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12112"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12121"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12122"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12211"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12212"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12221"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "12222"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20000"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20002"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20020"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20022"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20200"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20202"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20220"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "20222"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21111"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21112"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21121"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21122"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21211"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21212"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21221"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "21222"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22000"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22002"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22020"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22022"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22111"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22112"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22121"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22122"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22200"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22202"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "3,2",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22211"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22212"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22220"
+    },
+    {
+      "closed_web_count": 8,
+      "count_type": "4,1",
+      "entire_fiber_closed": true,
+      "fiber_size": 8,
+      "inner_word": "22221"
+    }
+  ],
+  "closed_solution_digest_sum": "7b028cb483b5265513009e4de23d026a37fe8e0ded9b9701faab41a21838174c",
+  "closed_solution_digest_xor": "2d99e98e1d03b84de90451fe01b781fe5f0bb0aa88bf17fe5c4d22a2968c5486",
+  "closed_state_inner_avoiding_component_count_histogram": {
+    "0": 720
+  },
+  "closed_web_anatomy_histogram": {
+    "0,10,0": 720
+  },
+  "closed_web_count_type_histogram": {
+    "3,2": 480,
+    "4,1": 240
+  },
+  "closed_webs_per_inner_word_histogram": {
+    "8": 90
+  },
+  "good_word_closed_web_count": 0,
+  "graph": "C40",
+  "graph_hash": "51ebf78d529c61fac31fc6c36f8754a8c397bae9a1f02c9be0db3552f6fbd2d6",
+  "schema": "fourcolor-v24-annular-closed-web-census-v1",
+  "solution_count": 31704,
+  "totally_closed_web_count": 720
+}
