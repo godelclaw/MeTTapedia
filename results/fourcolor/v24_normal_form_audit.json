@@ -1,0 +1,77 @@
+{
+  "algorithm": "explicit-cycle-and-separation-enumeration-v1",
+  "criterion": "minimum dual degree five, no nonfacial dual triangle, and no separating dual four-cycle",
+  "graphs": [
+    {
+      "all_face_curvature_sum": 12,
+      "dual_degree_histogram": {
+        "5": 12,
+        "6": 80
+      },
+      "dual_facial_triangle_count": 180,
+      "dual_four_cycle_count": 270,
+      "dual_nonfacial_three_cycle_count": 0,
+      "dual_normal_form_cycle_criterion_holds": true,
+      "dual_separating_four_cycle_count": 0,
+      "dual_three_cycle_count": 180,
+      "dual_vertex_count": 92,
+      "euler_characteristic": 2,
+      "every_primal_edge_has_two_incident_faces": true,
+      "every_primal_five_cycle_is_a_facial_pentagon": true,
+      "face_count": 92,
+      "face_size_histogram": {
+        "5": 12,
+        "6": 80
+      },
+      "facial_pentagon_count": 12,
+      "frequency": 3,
+      "graph_hash": "22bb9f63081ab81b32afdcf5f95135d9ebb65d12ec4866da3f923560397d9899",
+      "maximum_hexagon_pentagon_distance": 1,
+      "pentagon_far_hexagon_count": 0,
+      "primal_bridge_count": 0,
+      "primal_connected": true,
+      "primal_degree_histogram": {
+        "3": 180
+      },
+      "primal_edge_count": 270,
+      "primal_five_cycle_count": 12,
+      "primal_vertex_count": 180
+    },
+    {
+      "all_face_curvature_sum": 12,
+      "dual_degree_histogram": {
+        "5": 12,
+        "6": 630
+      },
+      "dual_facial_triangle_count": 1280,
+      "dual_four_cycle_count": 1920,
+      "dual_nonfacial_three_cycle_count": 0,
+      "dual_normal_form_cycle_criterion_holds": true,
+      "dual_separating_four_cycle_count": 0,
+      "dual_three_cycle_count": 1280,
+      "dual_vertex_count": 642,
+      "euler_characteristic": 2,
+      "every_primal_edge_has_two_incident_faces": true,
+      "every_primal_five_cycle_is_a_facial_pentagon": true,
+      "face_count": 642,
+      "face_size_histogram": {
+        "5": 12,
+        "6": 630
+      },
+      "facial_pentagon_count": 12,
+      "frequency": 8,
+      "graph_hash": "4d0df71095aa7641cd3e672c3bf53d56bea1c8e209d7a6aeb7f44d27e4284f93",
+      "maximum_hexagon_pentagon_distance": 7,
+      "pentagon_far_hexagon_count": 510,
+      "primal_bridge_count": 0,
+      "primal_connected": true,
+      "primal_degree_histogram": {
+        "3": 1280
+      },
+      "primal_edge_count": 1920,
+      "primal_five_cycle_count": 12,
+      "primal_vertex_count": 1280
+    }
+  ],
+  "schema": "fourcolor-v24-goldberg-normal-form-audit-v1"
+}
