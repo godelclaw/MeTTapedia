@@ -318,11 +318,19 @@ noncomputable def conditionalProbability (Gamma : V13FiniteCoupling Omega)
 
 end V13FiniteCoupling
 
-/-- Hypothesis D.48 with D.47's four compatibility clauses kept separately
-visible.  The marginal equations are literal finite conditional laws.  The
-final fields are conditional-probability obligations for the buffer coupling
-and unsupported gauge marginals; they cannot be filled by an unrelated truth
-pin. -/
+/-- Hypothesis D.48 with D.47's compatibility clauses kept separately visible.
+The marginal equations are literal finite conditional laws.  The neutral
+syntax field uses Proposition D.50's precise exported consequence: a neutral
+public atom has zero derivative on every relation whose pairs agree on the
+public instance.  The scaffold has no separate type of "surviving relations",
+so this finite formulation quantifies over every such relation; this is a
+stronger, non-vacuous simplification.  It deliberately does *not* require all
+neutral syntax to match almost surely on the whole opposite-phase coupling:
+D.47(ii) only says "whenever possible" and does not define that global event.
+
+The final fields are conditional-probability obligations for the buffer
+coupling and unsupported gauge marginals; they cannot be filled by an
+unrelated truth pin. -/
 structure V13D48CompatibleCouplings
     (E : V13QuantitativeEnsemble) (G : V13M4LayeredGeometry E)
     (C : V13M4LocalComponents E G) where
@@ -344,16 +352,21 @@ structure V13D48CompatibleCouplings
         (E.worldFintype theta m t) Gamma event =
       E.conditionalProbabilityAt theta m t event
         (fun omega => E.targetBit omega j = true)
-  neutral_skeleton_matched :
-    forall theta m t (j : E.TargetCoord theta m t),
+  neutral_public_atoms_zero_on_same_public_relations :
+    forall theta m t (j : E.TargetCoord theta m t)
+      (primitive : E.PublicPrimitive theta m t)
+      (H : E.World theta m t -> E.World theta m t -> Prop),
+      primitive ∈ E.fullPublicSyntax theta m t ->
+      E.declaredNeutralPrimitive primitive ->
+      (forall omega0 omega1, H omega0 omega1 ->
+        E.publicInput omega0 = E.publicInput omega1) ->
       let Gamma := coupling theta m t j
       @V13FiniteCoupling.probability (E.World theta m t)
         (E.worldFintype theta m t) Gamma
         (fun omega0 omega1 =>
-          forall primitive : E.PublicPrimitive theta m t,
-            primitive ∈ E.fullPublicSyntax theta m t ->
-            E.declaredNeutralPrimitive primitive ->
-            E.primitiveValue primitive omega0 = E.primitiveValue primitive omega1) = 1
+          H omega0 omega1 ∧
+            E.primitiveValue primitive omega0 ≠
+              E.primitiveValue primitive omega1) = 0
   couplingLeakageBound : E.Parameter -> Nat -> Nat -> Real
   couplingLeakageBound_nonnegative : forall theta m t,
     0 <= couplingLeakageBound theta m t
