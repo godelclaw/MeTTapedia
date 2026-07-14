@@ -1,0 +1,355 @@
+{
+  "algorithm": "explicit-goldberg-and-direct-constraint-audit-v1",
+  "deep_patches": [
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "-2": 1,
+        "0": 4
+      },
+      "chiral_hexagon_count": 1,
+      "constrained_face_count": 5,
+      "deep_constraint_count": 15,
+      "edge_index_digest": "23cbf2002cf1fa994b9bb4788ba6e61dc3d24a226855c4d7dfbe0d6d95aaee4d",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "0": 4,
+        "2": 1
+      },
+      "melted_hexagon_count": 4,
+      "patch_edge_count": 60,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 2,
+      "source_file": "deep_patch_R2.json",
+      "source_sha256": "cc2e478080be6c6626030d59e0803e2cabb869fa410925da39323e111ed6500b"
+    },
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "-2": 1,
+        "0": 4
+      },
+      "chiral_hexagon_count": 1,
+      "constrained_face_count": 5,
+      "deep_constraint_count": 15,
+      "edge_index_digest": "bf6562d0e2c70c6f0ea8186cf22f7f2ac8e4714e483c0ad2fc739b8e7f933e5a",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "0": 4,
+        "2": 1
+      },
+      "melted_hexagon_count": 4,
+      "patch_edge_count": 75,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 3,
+      "source_file": "deep_patch_R3.json",
+      "source_sha256": "ac1e97b2f2df2f7499fb50eb444a8f49e8d25bc925d6f4b6433fc6e2135ced86"
+    },
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "-2": 3,
+        "0": 10,
+        "2": 2
+      },
+      "chiral_hexagon_count": 5,
+      "constrained_face_count": 15,
+      "deep_constraint_count": 95,
+      "edge_index_digest": "ea4a4479526b2bb4f9539fcf1680074b521792625f104213745cd390f85b3cf0",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "-2": 5,
+        "0": 10
+      },
+      "melted_hexagon_count": 10,
+      "patch_edge_count": 110,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 4,
+      "source_file": "deep_patch_R4.json",
+      "source_sha256": "c7db39ce131069da0c494f43c791ec007aa85b3e7959dfabf11203ba22a38239"
+    },
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "-2": 3,
+        "0": 10,
+        "2": 2
+      },
+      "chiral_hexagon_count": 5,
+      "constrained_face_count": 15,
+      "deep_constraint_count": 95,
+      "edge_index_digest": "ba35548ce5a1a9e94356bc82b7ee83a656269983b5c0d9ad6c974346cc320f92",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "-2": 5,
+        "0": 10
+      },
+      "melted_hexagon_count": 10,
+      "patch_edge_count": 130,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 5,
+      "source_file": "deep_patch_R5.json",
+      "source_sha256": "3ea81aac5c197f1acd156576c9c5b6360dbe085429b30bbc715df2bec8ee8542"
+    },
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "0": 29,
+        "2": 1
+      },
+      "chiral_hexagon_count": 1,
+      "constrained_face_count": 30,
+      "deep_constraint_count": 255,
+      "edge_index_digest": "aa2c3838f24c13226a2f66bb1ff1c776f76fc6ddda677e9a829b5a03ed04ac32",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "-2": 1,
+        "0": 29
+      },
+      "melted_hexagon_count": 29,
+      "patch_edge_count": 175,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 6,
+      "source_file": "deep_patch_R6.json",
+      "source_sha256": "76c056a1a670ada9836c5c82fb49beca294b85add4745d7d849acf790ed21ef8"
+    },
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "0": 29,
+        "2": 1
+      },
+      "chiral_hexagon_count": 1,
+      "constrained_face_count": 30,
+      "deep_constraint_count": 255,
+      "edge_index_digest": "40cfdbf22d818cf234ac05cc6e15aa0779667f1c138268ee1488045a3a9e01be",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "-2": 1,
+        "0": 29
+      },
+      "melted_hexagon_count": 29,
+      "patch_edge_count": 200,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 7,
+      "source_file": "deep_patch_R7.json",
+      "source_sha256": "e15bd0b6e9a5a92c805dd7425390b8718675e2f8351822e4869d6bf73578d222"
+    },
+    {
+      "all_constraint_edges_present": true,
+      "certificate_order_winding_histogram": {
+        "-2": 7,
+        "0": 37,
+        "2": 6
+      },
+      "chiral_hexagon_count": 13,
+      "constrained_face_count": 50,
+      "deep_constraint_count": 480,
+      "edge_index_digest": "6cace2f872ac928a698af61a2a38fbf324d567ab4034a0e29dcd2d29a72714af",
+      "every_deep_constraint_uses_all_three_colors": true,
+      "globally_oriented_winding_histogram": {
+        "-2": 11,
+        "0": 37,
+        "2": 2
+      },
+      "melted_hexagon_count": 37,
+      "patch_edge_count": 255,
+      "patch_edge_set_exact": true,
+      "proper_partial_coloring": true,
+      "radius": 8,
+      "source_file": "deep_patch_R8.json",
+      "source_sha256": "75875114d56ed702daac838b34c3a2ae65a158fa2350025d2a64147b911c5e71"
+    }
+  ],
+  "graph": {
+    "edge_count": 1920,
+    "face_count": 642,
+    "frequency": 8,
+    "graph_hash": "4d0df71095aa7641cd3e672c3bf53d56bea1c8e209d7a6aeb7f44d27e4284f93",
+    "vertex_count": 1280
+  },
+  "schema": "fourcolor-v24-specimen-audit-v1",
+  "short_strand_counterexample": {
+    "boundary_word": "00102",
+    "deep_constraint_count": 155,
+    "deep_desert_radius": 7,
+    "every_deep_constraint_uses_all_three_colors": true,
+    "exceptional_pairing_01": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "exceptional_pairing_02": [
+      [
+        0,
+        4
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "graph_frequency": 8,
+    "graph_hash": "4d0df71095aa7641cd3e672c3bf53d56bea1c8e209d7a6aeb7f44d27e4284f93",
+    "minimum_unlock_radius_found": 8,
+    "necklace_strands": [
+      {
+        "color_pair": "01",
+        "edge_count": 219,
+        "edge_index_digest": "3f2a9f768733f1007b450971006af7b75edb5ed0d121cda6ce6161817057cec0",
+        "reach": 40,
+        "stub_endpoints": [
+          0,
+          3
+        ]
+      },
+      {
+        "color_pair": "01",
+        "edge_count": 48,
+        "edge_index_digest": "d251f704e3c4cfdd88b7497e0950400059f23014f830e43e1a5a8a5455a30214",
+        "reach": 18,
+        "stub_endpoints": [
+          1,
+          2
+        ]
+      },
+      {
+        "color_pair": "02",
+        "edge_count": 258,
+        "edge_index_digest": "8fa3010cbc103d17e9a2762798e3e52e9f93fc9f01534666bae0afadffef6934",
+        "reach": 45,
+        "stub_endpoints": [
+          0,
+          4
+        ]
+      },
+      {
+        "color_pair": "02",
+        "edge_count": 125,
+        "edge_index_digest": "5bbb601b8443f04cba917ce130a0b9d0fb0d19c3ea4aee31b7562a674da19d24",
+        "reach": 44,
+        "stub_endpoints": [
+          1,
+          3
+        ]
+      },
+      {
+        "color_pair": "12",
+        "edge_count": 688,
+        "edge_index_digest": "507ec3c3beeb759ed44cfc4c68f349635b81286617967088e2cf7778094a68e4",
+        "reach": 40,
+        "stub_endpoints": [
+          2,
+          4
+        ]
+      }
+    ],
+    "proper_tait_coloring": true,
+    "source_file": "conjecture_counterexample.json",
+    "source_sha256": "194f5bf62c817832a10c6fdfa93308cc976f10f444cebeac0bb0432b086f5643",
+    "tangle_edge_count": 1915,
+    "unlock_moves": [
+      {
+        "color_pair": "01",
+        "component_edge_count": 22,
+        "component_edge_indices": [
+          12,
+          14,
+          16,
+          19,
+          20,
+          23,
+          25,
+          32,
+          315,
+          316,
+          319,
+          320,
+          322,
+          323,
+          325,
+          327,
+          356,
+          358,
+          359,
+          361,
+          375,
+          377
+        ]
+      },
+      {
+        "color_pair": "02",
+        "component_edge_count": 9,
+        "component_edge_indices": [
+          0,
+          1,
+          6,
+          7,
+          8,
+          9,
+          12,
+          13,
+          15
+        ]
+      }
+    ],
+    "unlock_radius_audit": [
+      {
+        "radius": 0,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 1,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 2,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 3,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 4,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 5,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 6,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 7,
+        "reachable_state_count": 1,
+        "reaches_good_word": false
+      },
+      {
+        "radius": 8,
+        "reachable_state_count": 5,
+        "reaches_good_word": true
+      }
+    ]
+  }
+}
