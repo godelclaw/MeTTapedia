@@ -1,0 +1,32 @@
+{
+  "algorithm": "fixed-inner-word-deterministic-mrv-v1",
+  "category_digest_sum": {
+    "crossing": "35337a70152144363b5e6fa9f18bd7454f2b7c88d46d5413704fd00ce50ebdf0",
+    "seed_fully_routed": "0d1e54071a272b589db349800d6466986c6a50cd726ead194e9676614e3a643a",
+    "seed_nonrouted": "1d7a55bfaa413fdbbb1ea10877ea70a48766c8630bb97d4f44d6215dea53072b"
+  },
+  "category_digest_xor": {
+    "crossing": "ff2709afc3ddb9a8bd2f2a951687d25c412c562cff5a3aa7e9d46ac2a2fd37a2",
+    "seed_fully_routed": "51e30ca9d773322f383e258f972c4807087adefb9d379c68c662ddbe930fc4d6",
+    "seed_nonrouted": "fdf07a8b9091baa1bb212d31988af99bfd15e3acbb7a0d5a8de463f7cf36697f"
+  },
+  "category_histogram": {
+    "crossing": 1098,
+    "seed_fully_routed": 16,
+    "seed_nonrouted": 409
+  },
+  "dead_end_count": 23988,
+  "fixed_inner_word": "00012",
+  "graph_hash": "df49660abf866629797561fc437b49355204a9163fec9948f5de998ee60f3634",
+  "majority_pair": "01",
+  "root_color": 0,
+  "root_edge": [
+    0,
+    10
+  ],
+  "root_edge_index": 0,
+  "schema": "fourcolor-v24-tube-seed-census-shard-v1",
+  "search_node_count": 546773,
+  "solution_count": 1523,
+  "tube_length": 4
+}
