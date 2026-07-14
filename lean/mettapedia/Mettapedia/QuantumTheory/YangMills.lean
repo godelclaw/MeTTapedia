@@ -3,6 +3,7 @@ import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
 import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
 import Mettapedia.QuantumTheory.YangMills.ConstructiveGateObstruction
 import Mettapedia.QuantumTheory.YangMills.ContinuumMeasureGateCanaries
+import Mettapedia.QuantumTheory.YangMills.Dimension16WilsonExtractionCertificate
 import Mettapedia.QuantumTheory.YangMills.EuclideanCovarianceGateCanaries
 import Mettapedia.QuantumTheory.YangMills.ExtractionObservable
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
