@@ -510,3 +510,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24Digon
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCut
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Square
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe
