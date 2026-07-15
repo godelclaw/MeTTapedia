@@ -6,6 +6,7 @@ import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
 import Mettapedia.QuantumTheory.YangMills.Dimension16WilsonExtractionCertificate
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
+import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
 
 /-!
 # Yang-Mills proof state
@@ -22,6 +23,8 @@ noncomputable section
 namespace Mettapedia
 namespace QuantumTheory
 namespace YangMills
+
+open V14FDQuotientTransferNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -511,7 +514,7 @@ def yangMillsRegressionSurfaceNode : YangMillsProofNode where
   id := "yang-mills.regression-surface"
   status := .checked
   truthValue := ⟨100, 93⟩
-  evidence := "Mettapedia.QuantumTheory.YangMills.Regression imports eleven focused regression companions."
+  evidence := "Mettapedia.QuantumTheory.YangMills.Regression imports the focused regression companions for the live route modules."
   nextObligation := "Add future regression companions beside the route module they protect."
 
 /-- The same-constant lower-even extraction repair is arithmetically refuted. -/
@@ -529,8 +532,8 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   id := "yang-mills.rg.extraction-constant-erratum"
   status := .refuted
   truthValue := ⟨0, 99⟩
-  evidence := "ExtractionMajorant refutes the displayed bound-two calculation, while v14Dimension16WilsonExtraction_asWritten_obstructed records that F.4's on-shell relation policy conflicts with O.9's off-shell policy and that v14 supplies no lattice representatives, quotient basis, dimension-16 dual jets, biorthogonality, or conditioning certificate. The range-only and polymer-contact countermodels remain independent obstructions."
-  nextObligation := "A repaired route must first choose and state one action-sector relation quotient and exact block convention, then supply actual lattice Wilson representatives, a finite quotient basis, dual jets, biorthogonality, and certified conditioning before the rooted actual-map cumulant estimate can define a Wilson RG constant."
+  evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-17 derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
+  nextObligation := "Any replacement must grade spacetime derivatives separately from radial field degree and either retain boundary descendants, use a proved boundary-coboundary quotient, or postpone integration by parts until global recombination. Only after that new transfer object is constructed can basis conditioning and the rooted actual-map cumulant estimate define a Wilson RG constant."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -708,6 +711,24 @@ theorem currentYangMillsDimension16CoordinateCertificate_packet :
       v14Dimension16CertificateStatus .extractionConstant = .notDerived ∧
       v14Dimension16CertificateStatus .wilsonRecursionConstant = .notDerived :=
   v14Dimension16WilsonExtraction_asWritten_obstructed
+
+/-- The completed MOVE-5 transfer audit: neither surviving radial extractor is
+the canonical `F,D` cutoff, and neither EOM policy admits the as-written
+ordinary block-functional realization or an RG-compatible extension. -/
+theorem currentYangMillsFDQuotientTransferNoGo_packet :
+    (¬ AssociatedRadialImplementsCanonicalCutoff) ∧
+      (¬ IndependentRadialImplementsCanonicalCutoff) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .offShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .offShell)) := by
+  exact
+    ⟨not_associatedRadialImplementsCanonicalCutoff,
+      not_independentRadialImplementsCanonicalCutoff,
+      no_faithfulFDTransferSocket .onShell,
+      no_faithfulFDTransferSocket .offShell,
+      no_rgCompatibleFDTransferSocket .onShell,
+      no_rgCompatibleFDTransferSocket .offShell⟩
 
 theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
