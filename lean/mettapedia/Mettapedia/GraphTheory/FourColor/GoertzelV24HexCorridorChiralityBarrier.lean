@@ -108,6 +108,52 @@ theorem exactFlankingTransfer_oppositeChirality_hasZeroWinding
   · exact exactFlankingTransfer_negativeToPositive_hasZeroWinding
       hpath hstart hfinish
 
+/-- A positive chiral raw slab state used to test sharpness of the finite
+color-only transition. -/
+def positiveChiralTransferWitness : HexSlabColorState :=
+  ⟨0, 2, ![.a, .b, .c, .a, .b, .c]⟩
+
+/-- A zero-winding rainbow state between the two opposite chiral witnesses. -/
+def meltedTransferWitness : HexSlabColorState :=
+  ⟨0, 2, ![.c, .a, .c, .b, .a, .b]⟩
+
+/-- A negative chiral raw slab state. -/
+def negativeChiralTransferWitness : HexSlabColorState :=
+  ⟨0, 2, ![.c, .b, .a, .c, .b, .a]⟩
+
+theorem positiveChiralTransferWitness_windingScore :
+    windingScore positiveChiralTransferWitness.color = 6 := by
+  decide
+
+theorem meltedTransferWitness_windingScore :
+    windingScore meltedTransferWitness.color = 0 := by
+  decide
+
+theorem negativeChiralTransferWitness_windingScore :
+    windingScore negativeChiralTransferWitness.color = -6 := by
+  decide
+
+theorem positiveToMeltedTransferWitness :
+    FlankingTaitColorTransition positiveChiralTransferWitness
+      meltedTransferWitness := by
+  decide
+
+theorem meltedToNegativeTransferWitness :
+    FlankingTaitColorTransition meltedTransferWitness
+      negativeChiralTransferWitness := by
+  decide
+
+/-- The zero-winding barrier is sharp for the finite color-only relation:
+opposite chiral states are joined in exactly two steps through a melted
+rainbow word. Thus winding alone cannot supply the corridor-splicing or
+self-loop invariant; strand-connectivity data is essential. -/
+theorem colorOnlyTransfer_twoStep_chiralReversal :
+    ExactRelationalTransfer FlankingTaitColorTransition 2
+      positiveChiralTransferWitness negativeChiralTransferWitness := by
+  exact ExactRelationalTransfer.succ positiveToMeltedTransferWitness
+    (ExactRelationalTransfer.succ meltedToNegativeTransferWitness
+      (ExactRelationalTransfer.zero negativeChiralTransferWitness))
+
 end GoertzelV24HexCorridorChiralityBarrier
 
 end Mettapedia.GraphTheory.FourColor
