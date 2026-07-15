@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitIncidence
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitPartitionBridge
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexPathExtraction
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -6,8 +6,10 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24OrbitFaceCurvatureBulk
 
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24FaceOrbitPartitionBridge
 open GoertzelV24HexPathExtraction
 open GoertzelV24BulkCorridor
+open GoertzelV24CurvatureScope
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
@@ -20,6 +22,16 @@ structure OrbitSphericalCubicMapData (RS : RotationSystem V E) where
   euler :
     (Fintype.card V : Int) - Fintype.card E +
       Fintype.card (OrbitFace RS) = 2
+
+/-- The quotient-face Euler interface is derived from the existing
+cycle-partition sphere data; it is not an additional map hypothesis. -/
+def OrbitSphericalCubicMapData.ofSphericalCubicMapData
+    (RS : RotationSystem V E) (h : SphericalCubicMapData RS) :
+    OrbitSphericalCubicMapData RS where
+  cubic := h.cubic
+  euler := by
+    rw [card_orbitFace_eq_faceCycleLengths_card]
+    exact h.euler
 
 /-- No facial cycle repeats an underlying edge. This is the exact local
 simplicity fact needed to identify facial-walk length with boundary-support
@@ -133,7 +145,7 @@ facial dual is connected, more than `7^(13L-1)` faces force a geodesic dual
 path carrying `L` consecutive hexagons. The remaining geometry is to expose
 the corresponding primal ladder patch. -/
 theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
-    (RS : RotationSystem V E) (hsphere : OrbitSphericalCubicMapData RS)
+    (RS : RotationSystem V E) (hsphere : SphericalCubicMapData RS)
     (hsimple : OrbitFaceBoundarySimple RS)
     (hfullerene : OrbitFaceFullerene RS)
     (hconnected :
@@ -163,7 +175,8 @@ theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
       (faceDefectSet (orbitFaceBoundary RS)
         (Finset.univ : Finset (OrbitFace RS))).card ≤ 12 := by
     rw [orbitFaceDefectSet_card_eq_twelve_of_fullerene
-      RS hsphere hsimple hfullerene]
+      RS (OrbitSphericalCubicMapData.ofSphericalCubicMapData RS hsphere)
+        hsimple hfullerene]
   simpa using
     connectedSixFaceDual_exists_allHexagonalGeodesicBlock
       (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))
