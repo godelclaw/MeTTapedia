@@ -525,6 +525,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24CleanHexCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSlab
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrientedHexSlab
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabSideAdjacency
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorInterfaceMatching
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DependencyLedger
 import Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorPumping
