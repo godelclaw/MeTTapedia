@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutRotationSplice
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RewiredTaitColoring
+import Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedCorridorCutProfile
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -8,6 +9,7 @@ namespace GoertzelV24OrderedCutTaitSplice
 open GoertzelV24OrderedCutRotationSplice
 open GoertzelV24RotationCutDartDecomposition
 open GoertzelV24RotationSpliceConstructor
+open GoertzelV24GraphDerivedCorridorCutProfile
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
@@ -246,6 +248,52 @@ theorem orderedCutSplicedColoring_isTait
   · intro dart
     exact hC (RS.edgeOf (matchedPartUnderlyingDart RS keep
       (orderedCut leftCrossing) (orderedCut rightCrossing) dart))
+
+/-- Equality of two computed corridor profiles supplies the cut-color
+hypothesis automatically. Thus the properness item in the v24 splice
+checklist is a theorem of the graph-derived profile, not an extra premise. -/
+theorem orderedCutSplicedColoring_isTait_of_profiles_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    {terminalCount faceFragmentCount : Nat}
+    (left right : GraphCorridorCutData RS n terminalCount faceFragmentCount)
+    (hleftCrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = left.crossingEdge step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (hrightCrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = right.crossingEdge step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (hleftInjective : Function.Injective left.crossingEdge)
+    (hrightInjective : Function.Injective right.crossingEdge)
+    (hcover : ∀ dart : BoundaryDart RS keep,
+      RS.edgeOf dart.1.1 ∈ orderedCut left.crossingEdge ∨
+        RS.edgeOf dart.1.1 ∈ orderedCut right.crossingEdge)
+    (hdisjoint : Disjoint (orderedCut left.crossingEdge)
+      (orderedCut right.crossingEdge))
+    (houter : keep (RS.vertOf RS.outer))
+    (hseamEndpoints : ∀ step,
+      RS.vertOf
+          (orderedBoundaryDart RS keep left.crossingEdge
+            hleftCrosses step).1.1.1 ≠
+        RS.vertOf
+          (orderedBoundaryDart RS keep right.crossingEdge
+            hrightCrosses step).1.1.1)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (hprofiles : left.profile C hC = right.profile C hC) :
+    (orderedCutRotationSystem RS keep left.crossingEdge right.crossingEdge
+      hleftCrosses hrightCrosses hleftInjective hrightInjective
+      hcover hdisjoint houter hseamEndpoints).IsTaitEdgeColoring
+        (orderedCutSplicedColoring RS keep left.crossingEdge right.crossingEdge
+          hleftCrosses hrightCrosses hleftInjective hrightInjective
+          hcover hdisjoint houter hseamEndpoints C
+          (crossingEdge_color_eq_of_profiles_eq left right C C hC hC
+            hprofiles)) :=
+  orderedCutSplicedColoring_isTait RS keep
+    left.crossingEdge right.crossingEdge hleftCrosses hrightCrosses
+    hleftInjective hrightInjective hcover hdisjoint houter hseamEndpoints
+    C hC (crossingEdge_color_eq_of_profiles_eq left right C C hC hC
+      hprofiles)
 
 end
 
