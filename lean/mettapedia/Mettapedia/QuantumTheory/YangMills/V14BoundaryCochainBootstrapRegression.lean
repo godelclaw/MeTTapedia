@@ -21,6 +21,16 @@ example :
   displayedTemplateBoundaryH0_finrank
 
 example :
+    Module.finrank ℝ
+      (TwoBlockBoundaryH0 (RetainedDisplayedTemplate .onShell)) = 4 :=
+  onShellDisplayedBoundaryH0_finrank
+
+example :
+    Module.finrank ℝ
+      (TwoBlockBoundaryH0 (RetainedDisplayedTemplate .offShell)) = 5 :=
+  offShellDisplayedBoundaryH0_finrank
+
+example :
     assembledActionLaplacianBulk 0 .actionLaplacian = 1 ∧
     assembledActionLaplacianBulk 1 .actionLaplacian = -1 ∧
     (LinearMap.range
@@ -45,6 +55,8 @@ example :
 
 #print axioms range_sharedBoundaryCoboundary_eq_ker_globalRecombine
 #print axioms twoBlockBoundaryH0_finrank
+#print axioms onShellDisplayedBoundaryH0_finrank
+#print axioms offShellDisplayedBoundaryH0_finrank
 #print axioms witnessFields_interfaceCompatible
 #print axioms move5Witness_handled_by_postponedIBP
 #print axioms canonicalCoordinateJetMatrix_eq_one

@@ -161,6 +161,35 @@ theorem displayedTemplateBoundaryH0_finrank :
   rw [twoBlockBoundaryH0_finrank]
   decide
 
+/-- Branch-specific displayed census.  This preserves the manuscript's
+on-shell/off-shell distinction rather than blending the two relation
+policies. -/
+abbrev RetainedDisplayedTemplate
+    (policy : V14ActionSectorRelationPolicy) :=
+  {operator : V14ActionOperatorTemplate // policy.retains operator = true}
+
+theorem onShellRetainedDisplayedTemplate_card :
+    Fintype.card (RetainedDisplayedTemplate .onShell) = 4 := by
+  decide
+
+theorem offShellRetainedDisplayedTemplate_card :
+    Fintype.card (RetainedDisplayedTemplate .offShell) = 5 := by
+  decide
+
+/-- The on-shell displayed audit recovers four global coordinates. -/
+theorem onShellDisplayedBoundaryH0_finrank :
+    Module.finrank ℝ
+      (TwoBlockBoundaryH0 (RetainedDisplayedTemplate .onShell)) = 4 := by
+  rw [twoBlockBoundaryH0_finrank]
+  exact onShellRetainedDisplayedTemplate_card
+
+/-- The off-shell displayed audit recovers five global coordinates. -/
+theorem offShellDisplayedBoundaryH0_finrank :
+    Module.finrank ℝ
+      (TwoBlockBoundaryH0 (RetainedDisplayedTemplate .offShell)) = 5 := by
+  rw [twoBlockBoundaryH0_finrank]
+  exact offShellRetainedDisplayedTemplate_card
+
 /-! ## Two actual, interface-compatible `SU(2)` block fields -/
 
 /-- The central element `-I` of `SU(2)`. -/
