@@ -16,6 +16,9 @@ namespace YangMills
 namespace ProofStateRegression
 
 open V14FDQuotientTransferNoGo
+open V14BoundaryCochainComplex
+open V14BoundaryCochainExtraction
+open V14BoundaryCochainBootstrap
 
 theorem constructive_qft_node_constructive_gate_uncleared_regression :
     yangMillsConstructiveQFTNode.status = .constructiveGateUncleared :=
@@ -28,6 +31,10 @@ theorem same_constant_lower_even_extraction_node_refuted_regression :
 theorem extraction_constant_erratum_node_refuted_regression :
     yangMillsExtractionConstantErratumNode.status = .refuted :=
   yangMillsExtractionConstantErratumNode_refuted
+
+theorem postponed_ibp_repair_node_checked_regression :
+    yangMillsPostponedIBPRepairNode.status = .checked :=
+  yangMillsPostponedIBPRepairNode_checked
 
 theorem continuum_os_conditional_scaffold_node_checked_regression :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked :=
@@ -85,6 +92,18 @@ theorem current_fd_quotient_transfer_no_go_packet_regression :
   currentYangMillsFDQuotientTransferNoGo_packet
 
 #print axioms currentYangMillsFDQuotientTransferNoGo_packet
+
+theorem current_postponed_ibp_repair_packet_regression :
+    (LinearMap.range
+        (sharedBoundaryCoboundaryLinear ActionLaplacianCensus)).mkQ
+      assembledActionLaplacianBulk = 0 ∧
+    RepairedBoundaryCochainExtractionCertificate ∧
+    repairedBoundaryCochainRecursionBudget = (5544 : ℝ) / 5 ∧
+    HasTwoSourceBootstrapSlack
+      repairedBoundaryCochainRecursionBudget 2 15 :=
+  currentYangMillsPostponedIBPRepair_packet
+
+#print axioms currentYangMillsPostponedIBPRepair_packet
 
 theorem current_extraction_constant_hypothetical_threshold_packet_regression :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →

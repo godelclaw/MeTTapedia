@@ -7,6 +7,7 @@ import Mettapedia.QuantumTheory.YangMills.Dimension16WilsonExtractionCertificate
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
+import Mettapedia.QuantumTheory.YangMills.V14BoundaryCochainBootstrap
 
 /-!
 # Yang-Mills proof state
@@ -25,6 +26,9 @@ namespace QuantumTheory
 namespace YangMills
 
 open V14FDQuotientTransferNoGo
+open V14BoundaryCochainComplex
+open V14BoundaryCochainExtraction
+open V14BoundaryCochainBootstrap
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -533,7 +537,16 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   status := .refuted
   truthValue := ⟨0, 99⟩
   evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-18 scalar derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
-  nextObligation := "Any replacement must grade spacetime derivatives separately from radial field degree and either retain boundary descendants, use a proved boundary-coboundary quotient, or postpone integration by parts until global recombination. Only after that new transfer object is constructed can basis conditioning and the rooted actual-map cumulant estimate define a Wilson RG constant."
+  nextObligation := "The postponed-IBP pilot now supplies the derivative-aware complex and coordinate extraction. Complete the full dimension-sixteen Wilson census, transfer the F.3 analytic norm to its cochain coordinates, and prove fluctuation/cumulant estimates plus Wilson RG intertwining on that same repaired object before assigning an actual C_true."
+
+/-- Constructed algebraic/mechanical part of the postponed-IBP repair.  The
+full Wilson analytic and RG transfer remains open. -/
+def yangMillsPostponedIBPRepairNode : YangMillsProofNode where
+  id := "yang-mills.rg.postponed-ibp-boundary-cochain"
+  status := .checked
+  truthValue := ⟨100, 98⟩
+  evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with repaired coefficient-l1 constant one. V14BoundaryCochainBootstrap propagates the unchanged numerical factor boundaries conditionally and records the full census, F.3 norm transfer, repaired-norm fluctuation/cumulant bounds, and Wilson RG intertwining as open rows."
+  nextObligation := "Enumerate the full dimension-sixteen F,D census with actual Wilson representatives, construct analytic Wilson-to-cochain dual jets, and prove the unchanged fluctuation/cumulant bounds and RG intertwining in the repaired norm."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -613,6 +626,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsRegressionSurfaceNode
   , yangMillsSameConstantLowerEvenExtractionNode
   , yangMillsExtractionConstantErratumNode
+  , yangMillsPostponedIBPRepairNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -637,6 +651,10 @@ theorem yangMillsSameConstantLowerEvenExtractionNode_refuted :
 
 theorem yangMillsExtractionConstantErratumNode_refuted :
     yangMillsExtractionConstantErratumNode.status = .refuted := by
+  rfl
+
+theorem yangMillsPostponedIBPRepairNode_checked :
+    yangMillsPostponedIBPRepairNode.status = .checked := by
   rfl
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
@@ -729,6 +747,19 @@ theorem currentYangMillsFDQuotientTransferNoGo_packet :
       no_faithfulFDTransferSocket .offShell,
       no_rgCompatibleFDTransferSocket .onShell,
       no_rgCompatibleFDTransferSocket .offShell⟩
+
+/-- Constructed MOVE-6 replacement packet.  The exact block cancellation,
+coordinate certificate, and conditional arithmetic are proved; the analytic
+transfer rows remain visibly open in `boundaryCochainRouteMatrix`. -/
+theorem currentYangMillsPostponedIBPRepair_packet :
+    (LinearMap.range
+        (sharedBoundaryCoboundaryLinear ActionLaplacianCensus)).mkQ
+      assembledActionLaplacianBulk = 0 ∧
+    RepairedBoundaryCochainExtractionCertificate ∧
+    repairedBoundaryCochainRecursionBudget = (5544 : ℝ) / 5 ∧
+    HasTwoSourceBootstrapSlack
+      repairedBoundaryCochainRecursionBudget 2 15 :=
+  v14_postponedIBP_boundaryCochain_constructed_packet
 
 theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
