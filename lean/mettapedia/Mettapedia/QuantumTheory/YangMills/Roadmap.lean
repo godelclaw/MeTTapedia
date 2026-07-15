@@ -20,12 +20,15 @@ namespace YangMills
 open V14FDQuotientTransferNoGo
 open V14BoundaryCochainBootstrap
 open SU2LatticeFDCensusNoGo
+open V14HypercubicQuarticCensus
+open V14HypercubicFDCensusPaddingNoGo
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
   | finiteLatticeStrongCouplingGap
   | continuumScalingDiagnostic
   | extractionConstantErratum
+  | hypercubicCensusDecision
   | continuumOSReconstructionConditional
   | fiveInputCompletionSteelman
   | continuumMassGapEndpoint
@@ -104,7 +107,21 @@ def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   itvUpperPercent := 1
   progressPercent := 100
   evidence := "currentYangMillsFDQuotientTransferNoGo_packet refutes the v14 ordinary block-functional socket, and currentYangMillsPostponedIBPRepair_packet constructs the replacement's algebraic core. YM MOVE 7 decisively refutes the requested completion: on an exact SU(2) Cartan link chart, a canonical-dimension-eight Wilson observable has a hypercubic quartic jet outside every finite O.9 Lorentz-scalar span, for both relation policies and every enumerated same-target variant."
-  nextObligation := "Do not continue the impossible actual-lattice Lorentz-only census. State a new route using either a hypercubic-complete lattice basis or a separately justified continuum/Symanzik projection, then re-prove dual-jet conditioning and all analytic/RG estimates on that new same object."
+  nextObligation := "The unpadded quartic H(4) basis is checked, but the padded dimension-sixteen carrier is refuted. Replace it with faithful unpadded syntax or a padding quotient, or prove a quantitative continuum/Symanzik projection; then re-prove all conditioning and analytic/RG estimates on that same object."
+
+/-- Decision of the first hypercubic-census construction attempt: a complete
+quartic basis exists, while the fixed-width dimension-sixteen carrier cannot
+support a faithful invertible census. -/
+def yangMillsHypercubicCensusDecisionRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .hypercubicCensusDecision
+  nodeId := yangMillsHypercubicDimension16PaddedCensusNode.id
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  itvLowerPercent := 0
+  itvUpperPercent := 1
+  progressPercent := 100
+  evidence := "The unpadded dimension-eight quartic carrier has four certified H(4)-covariant basis functions and identity conditioning. For the full fixed-width carrier, faithful_dimension16_exactCensus_uninhabited proves that active-syntax fidelity is incompatible with the ExactCensusCertificate right inverse because inactive padding creates distinct duplicate encodings."
+  nextObligation := "Construct a finite unpadded/dependent F,D syntax (or a checked padding quotient), prove the H(4) action and relation rows descend, and only then rerun the signed-orbit census and exact conditioning through dimension sixteen."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -130,7 +147,7 @@ def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
   itvUpperPercent := 100
   progressPercent := 100
   evidence := "currentYangMillsCompletionSteelman_packet records the refuted as-written constant, the audited blueprint, the norm-one Wilson realization, and the remaining support, two-marked, KP/RP, and actual Wilson RG obligations."
-  nextObligation := "First replace the refuted Lorentz-only actual-lattice census by a hypercubic-complete basis or a proved continuum/Symanzik projection. Derive the actual Wilson constant on that replacement, then prove FirstLoadBearingYangMillsCompletionInput with support, two-marked, KP, and reflection-positivity inputs instantiated."
+  nextObligation := "Repair the refuted padded dimension-sixteen H(4) carrier or prove a continuum/Symanzik projection. Derive the actual Wilson constant on that replacement, then instantiate support, two-marked, KP, and reflection-positivity inputs."
 
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
@@ -151,6 +168,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z2QuadraticHeatTimeGapClosingRoadmapEntry
   , z3HalfScaleLinearRGStepRoadmapEntry
   , yangMillsExtractionConstantErratumRoadmapEntry
+  , yangMillsHypercubicCensusDecisionRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsCompletionSteelmanRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
@@ -240,6 +258,20 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
       no_faithfulDimension16WilsonCoordinateCertificate_offShell,
       f5DisplayedConstantAtBlockTwo_eq,
       proposedMajorantLedgerConstant_eq⟩
+
+theorem currentYangMillsRoadmap_records_hypercubic_census_decision :
+    yangMillsHypercubicCensusDecisionRoadmapEntry.status = .refuted ∧
+      yangMillsHypercubicCensusDecisionRoadmapEntry.progressPercent = 100 ∧
+      (∀ coordinate : Fin 4,
+        IsHypercubicQuarticCoefficient (quarticOrbitBasis coordinate)) ∧
+      (¬ ∃ (Coordinate : Type) (_ : Fintype Coordinate)
+          (_ : DecidableEq Coordinate)
+          (certificate : V14HypercubicFDCensus.ExactCensusCertificate Coordinate),
+        ∀ coordinate : Coordinate,
+          IsPaddingInvariant (fun monomial =>
+            certificate.basisToRaw monomial coordinate)) := by
+  exact ⟨rfl, rfl, quarticOrbitBasis_invariant,
+    faithful_dimension16_exactCensus_uninhabited⟩
 
 theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ∃ entry : YangMillsRoadmapEntry,

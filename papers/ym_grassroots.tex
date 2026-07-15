@@ -1065,11 +1065,46 @@ Wilson recursion constant.
 
 The resulting status is exact: there is no currently derived
 \(C_{\mathrm{true}}\) for the v14 Wilson RG recursion.  A completion must first
-select one relation quotient and exact block convention, with any choice not
-fixed by v14 labeled as a repair.  It must then supply the actual dimension-16
-lattice Wilson representatives, quotient basis, and dual jets, prove their
-uniform conditioning, and establish the fluctuation and weighted
-cumulant/tree/KP estimates in the same norm on the same Wilson family.
+select one relation quotient, exact block convention, and faithful finite raw
+syntax, with any choice not fixed by v14 labeled as a repair.  It must then
+supply the actual dimension-16 lattice Wilson representatives, quotient basis,
+and dual jets, prove their uniform conditioning, and establish the fluctuation
+and weighted cumulant/tree/KP estimates in the same norm on the same Wilson
+family.
+
+\section{Hypercubic Census Decision}
+
+The finite-spacing lattice has hypercubic symmetry, not full \(O(4)\)
+symmetry.  The exact \(\mathrm{SU}(2)\) Cartan Wilson chart gives a
+canonical-dimension-eight quartic jet proportional to
+\(\sum_{\mu<\nu}F_{\mu\nu}^{4}\).  A rational orthogonal rotation changes its
+value from \(1\) to \(337/625\).  Therefore the Lorentz-scalar census in
+Appendix O.9 cannot span the actual lattice sector, independently of the
+on-shell/off-shell, Bianchi, integration-by-parts, trace, or
+Cayley--Hamilton relation choice.
+
+The hypercubic replacement succeeds completely on the unpadded
+derivative-free Cartan quartic carrier.  The concrete signed-permutation group
+has order \(384\).  All \(126\) quartic monomials have checked signed-orbit
+certificates; four admissible orbit functions survive, evaluation at their
+representatives gives an identity \(4\times4\) conditioning matrix, and every
+hypercubic-covariant rational quartic coefficient function reconstructs from
+those four coordinates.  This is an exact basis theorem at quartic order, not
+a claim about the full noncommutative derivative quotient.
+
+The first dimension-sixteen carrier is refuted for a separate reason.  Its
+fixed-width representation retains inactive field and derivative slots in raw
+equality.  Lean constructs two distinct representations with zero active
+fields and derivatives but identical active syntax.  If every basis column is
+faithful to active syntax, the corresponding basis rows are equal; an exact
+right inverse instead requires them to be distinct rows of the identity
+matrix.  Thus no invertible exact census on this padded carrier can have every
+basis vector padding-invariant
+(\lean{faithful\_dimension16\_exactCensus\_uninhabited}).  A valid continuation
+must first construct finite unpadded/dependent \(F,D\) syntax or a checked
+padding quotient on which the \(H(4)\) action and explicit relation rows
+descend.  No quartic conditioning constant transfers automatically to that
+new object.
 
 \section{What Remains}
 
@@ -1090,10 +1125,11 @@ This layer does not solve the Clay problem.  The hard work still includes:
     \(C_{\mathrm{true}}\); the manuscript's advertised \(2224\) is not presently
     established.
   \item resolving F.4's on-shell versus O.9's off-shell relation policy and
-    fixing the exact block quotient before supplying the dimension-16 lattice
-    Wilson representatives, quotient basis, dual jets, and uniform
-    matrix-conditioning estimates needed to transfer the norm-one
-    Wilson-polynomial realization to a repaired extraction operator.
+    fixing the exact block quotient and an unpadded/dependent raw \(F,D\)
+    syntax before supplying the dimension-16 lattice Wilson representatives,
+    quotient basis, dual jets, and uniform matrix-conditioning estimates
+    needed to transfer the norm-one Wilson-polynomial realization to a
+    repaired extraction operator.
   \item proving the fluctuation, connected-cumulant/tree, stopping-scale KP,
     source-summability, and decaying-remainder estimates on the same actual
     Wilson RG map and in the same norm.

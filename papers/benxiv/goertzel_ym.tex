@@ -149,6 +149,23 @@ finite coordinate system: it forces either a genuinely hypercubic census at
 finite lattice spacing or a separately proved continuum/Symanzik projection
 with a quantitatively controlled Lorentz-breaking remainder.
 
+A fifth machine-checked round begins the hypercubic branch. On the unpadded
+derivative-free Cartan quartic carrier, all $126$ monomials are classified by
+signed $H(4)$ orbit certificates. Exactly four admissible orbit basis
+functions remain; evaluation at their representatives gives four duals and
+the identity conditioning matrix, and every hypercubic-covariant rational
+quartic coefficient function is reconstructed from them. The attempted
+dimension-$16$ extension then reaches a different terminal obstruction: its
+fixed-width raw carrier retains inactive padding as part of equality. Two
+distinct encodings with zero active fields and derivatives have identical
+active syntax. Any basis faithful to active syntax must give them equal rows,
+whereas the proposed exact census requires a right inverse and hence distinct
+identity-matrix rows. Lean proves that no invertible exact census on this
+padded carrier can have every basis column padding-invariant. The next
+finite-spacing construction must use an unpadded dependent syntax or an
+explicit padding quotient before relation rows and dimension-$16$ duals are
+meaningful.
+
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
 polymer estimates, Wilson reflection positivity, and continuum/OS construction
@@ -640,6 +657,31 @@ same-target symmetry mismatch. The result is already an $N=2$ counterexample
 to an architecture asserted uniformly for $\mathrm{SU}(N)$. It is not a no-go
 for a hypercubic-complete basis or for a controlled continuum projection.
 
+\paragraph{The first hypercubic census succeeds at quartic order and refutes
+its padded extension.}
+The unpadded carrier of degree-four monomials in the six oriented two-form
+components has cardinality $126$. Exact signed-orbit certificates divide it
+into four admissible $H(4)$ orbit types --- a pure fourth power, adjacent
+squares, opposite squares, and a rectangle product --- plus monomials killed
+by negative stabilizers. Four signed orbit indicators obey the full
+hypercubic covariance law, their representative evaluations form the
+$4\times4$ identity, and they reconstruct every invariant rational
+coefficient function. This is a complete result for the derivative-free
+Cartan quartic restriction, not for the noncommutative $(F,D)$ quotient.
+
+The fixed-width full carrier cannot supply that extension faithfully.
+Inactive field and derivative slots are mathematically padding but remain
+part of raw equality. The module
+\texttt{V14HypercubicFDCensusPaddingNoGo} constructs two distinct encodings
+of the empty active syntax and proves
+\texttt{faithful\_dimension16\_exactCensus\_uninhabited}: if every basis
+column ignores inactive padding, the two basis rows coincide; the required
+right inverse instead makes them two different rows of the identity matrix.
+This obstruction precedes Bianchi, EOM, integration-by-parts, trace, and
+Cayley--Hamilton reduction. It does not show that an $H(4)$ basis cannot
+exist. It shows that the next construction must first replace the raw carrier
+by an unpadded/dependent syntax or quotient padding explicitly.
+
 \paragraph{The finite gaps are real but Clay-irrelevant.}
 The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
 they are abelian, single-link, strong-coupling, and finite. They exemplify the
@@ -779,6 +821,37 @@ the manuscript's Lorentz-only operator census:
     automatically from the refuted census.
 \end{itemize}
 
+\subsection*{Machine-checked in the fifth round}
+
+The first branch of the live fork was pursued directly:
+
+\begin{itemize}
+  \item \textbf{The exact hypercubic group and finite raw syntax are
+    mechanical.} Signed coordinate permutations form a concrete group of
+    order $384$. The raw surface records field and derivative indices, trace
+    cycles, derivative ownership/order, canonical dimension through $16$,
+    scalar/pseudoscalar characters, and separate relation-family labels. A
+    label still supplies no relation row by itself
+    (\texttt{V14HypercubicFDCensus}).
+  \item \textbf{The unpadded dimension-$8$ quartic census is complete.}
+    The $126$ Cartan quartic monomials have checked signed-orbit certificates.
+    Four surviving orbit functions form a basis, representative evaluation
+    supplies exact duals, and the conditioning matrix is the identity
+    (\texttt{V14HypercubicQuarticCensusCertificate},
+    \texttt{V14HypercubicQuarticBasis}).
+  \item \textbf{The padded dimension-$16$ extension is refuted.} Two distinct
+    fixed-width encodings of the empty active syntax differ only in inactive
+    padding. Any active-syntax-faithful basis gives them equal rows, which is
+    incompatible with the right-inverse identity required by
+    \texttt{ExactCensusCertificate}
+    (\texttt{V14HypercubicFDCensusPaddingNoGo}).
+  \item \textbf{The corrected next object is exact.} Replace the padded raw
+    carrier by finite unpadded/dependent $(F,D)$ syntax, or form a checked
+    padding quotient on which the $H(4)$ action and all relation rows descend.
+    Then enumerate the full signed orbits and relation quotient through
+    dimension $16$. No dimension-$8$ constant transfers automatically.
+\end{itemize}
+
 \subsection*{The remaining inputs}
 
 With the arithmetic and structural skeleton closed, the route now rests on the
@@ -804,11 +877,16 @@ three different situations.
     complex retaining total-derivative descendants per block and imposing
     integration by parts only at global recombination. The fourth round
     constructed that mechanical scaffold but proved that its actual-lattice
-    coordinate census cannot use only O.9.3's Lorentz scalars. \emph{What
-    settles it now:} enumerate and certify an $H(4)$-complete basis through
-    dimension $16$, with exact duals and conditioning, or supply a quantitative
+    coordinate census cannot use only O.9.3's Lorentz scalars. The fifth round
+    completed the unpadded Cartan quartic $H(4)$ basis and identity dual chart,
+    but proved that the fixed-width dimension-$16$ raw carrier cannot support
+    a faithful invertible census because inactive padding remains observable.
+    \emph{What settles it now:} construct a finite unpadded/dependent $(F,D)$
+    syntax or a checked padding quotient, prove that the $H(4)$ action and the
+    explicit relation rows descend, and certify its basis and conditioning
+    through dimension $16$; alternatively supply a quantitative
     continuum/Symanzik projection controlling every discarded
-    Lorentz-breaking coordinate; then prove the norm-below-two estimate, the
+    Lorentz-breaking coordinate. Then prove the norm-below-two estimate, the
     weighted Wilson cumulant/tree estimate, and the Wilson-RG intertwining law
     on the same object.
     The resulting actual constant can then be checked against
@@ -892,7 +970,13 @@ uninhabited transfer sockets); and, from the fourth round,
 \texttt{V14BoundaryCochainBootstrap} (the derivative-aware boundary-cochain
 scaffold and its conditional arithmetic), together with
 \texttt{SU2LatticeFDCensusNoGo} (the exact hypercubic quartic witness and the
-off-shell/on-shell Lorentz-census no-go) --- all in the same namespace, all axiom-guarded
+off-shell/on-shell Lorentz-census no-go); and, from the fifth round,
+\texttt{V14HypercubicFDCensus} (the signed $H(4)$ action and finite raw
+surface), \texttt{V14HypercubicQuarticCensusCertificate} and
+\texttt{V14HypercubicQuarticBasis} (the complete unpadded Cartan quartic
+census, duals, and identity conditioning), and
+\texttt{V14HypercubicFDCensusPaddingNoGo} (the uninhabited faithful padded
+dimension-$16$ exact census) --- all in the same namespace, all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
 no \texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS

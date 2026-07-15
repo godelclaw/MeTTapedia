@@ -9,6 +9,8 @@ import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
 import Mettapedia.QuantumTheory.YangMills.V14BoundaryCochainBootstrap
 import Mettapedia.QuantumTheory.YangMills.SU2LatticeFDCensusNoGo
+import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticBasis
+import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 
 /-!
 # Yang-Mills proof state
@@ -31,6 +33,8 @@ open V14BoundaryCochainComplex
 open V14BoundaryCochainExtraction
 open V14BoundaryCochainBootstrap
 open SU2LatticeFDCensusNoGo
+open V14HypercubicQuarticCensus
+open V14HypercubicFDCensusPaddingNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -539,7 +543,7 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   status := .refuted
   truthValue := ⟨0, 99⟩
   evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-18 scalar derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
-  nextObligation := "The postponed-IBP pilot supplies the derivative-aware complex, but YM MOVE 7 refutes the requested identification of an actual Wilson-lattice census with O.9's Lorentz-only census. Choose and state a new target: either a hypercubic-complete lattice census, or a separately proved continuum/Symanzik projection with controlled Lorentz-breaking remainder, before resuming analytic conditioning or assigning an actual C_true."
+  nextObligation := "The unpadded quartic carrier now has a complete four-coordinate hypercubic basis, but the fixed-width dimension-sixteen carrier is refuted by inactive padding. Replace it with an unpadded/dependent syntax or an explicit padding quotient, then construct the full relation quotient and conditioning; alternatively prove a quantitative continuum/Symanzik projection."
 
 /-- Constructed algebraic/mechanical part of the postponed-IBP repair.  The
 full Wilson analytic and RG transfer remains open. -/
@@ -548,7 +552,7 @@ def yangMillsPostponedIBPRepairNode : YangMillsProofNode where
   status := .checked
   truthValue := ⟨100, 98⟩
   evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with constant one in coefficient-l1 and in F.3's coefficient-sup branch after coordinatization. YM MOVE 7 then proves that the requested actual-lattice O.9 coordinate completion is impossible already at canonical dimension eight: an exact SU(2) Wilson observable has a hypercubic quartic jet outside every Lorentz-scalar span."
-  nextObligation := "Preserve the boundary-cochain repair, but do not build dual jets for the impossible same-target census. First replace the target by either a hypercubic-complete lattice census or a proved continuum/Symanzik quotient; only then restate the analytic conditioning, fluctuation/cumulant, and Wilson RG intertwining obligations."
+  nextObligation := "Preserve the boundary-cochain repair and the certified unpadded quartic basis. Before dimension-sixteen dual jets, replace the padded raw carrier by faithful unpadded syntax or an explicit padding quotient, then supply the H(4)-stable relation rows and exact quotient basis."
 
 /-- Terminal decision for the requested O.9/F.4.3 actual-lattice coordinate
 campaign.  The no-go is SU(2)-scoped and occurs at canonical dimension eight,
@@ -559,6 +563,24 @@ def yangMillsDimension16O9WilsonCensusNode : YangMillsProofNode where
   truthValue := ⟨0, 99⟩
   evidence := "ymMove7_dimension16WilsonCoordinate_terminalNoGo constructs the exact SU(2) Cartan link chart, proves that the actual normalized Wilson observable has fourth jet 6 times the hypercubic quartic, exhibits an orthogonal rotation changing that jet from 1 to 337/625, and refutes every finite O.9 Lorentz-scalar spanning census under both off-shell and on-shell relation policies and all enumerated same-target variants."
   nextObligation := "Treat a hypercubic-complete lattice census or a controlled continuum/Symanzik projection as a new route. Neither may inherit the old dual-jet conditioning or bootstrap constants without a fresh same-object proof."
+
+/-- Complete derivative-free Cartan quartic census on an unpadded carrier. -/
+def yangMillsHypercubicQuarticCensusNode : YangMillsProofNode where
+  id := "yang-mills.rg.hypercubic-quartic-census"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "V14HypercubicQuarticCensusCertificate classifies all 126 quartic monomials into four admissible signed H(4) orbits and seven killed orbit classes. V14HypercubicQuarticBasis constructs the four covariant orbit basis functions, representative-evaluation duals, identity conditioning matrix, reconstruction, and coordinate independence."
+  nextObligation := "Use this as the unpadded dimension-eight regression anchor only. It does not include noncommutative color/trace syntax, derivatives, or the dimension-sixteen relation quotient."
+
+/-- Terminal decision for the current fixed-width dimension-sixteen raw
+carrier.  Inactive padding prevents an invertible census from also being a
+faithful census of active operator syntax. -/
+def yangMillsHypercubicDimension16PaddedCensusNode : YangMillsProofNode where
+  id := "yang-mills.rg.hypercubic-dimension16-padded-census"
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  evidence := "faithful_dimension16_exactCensus_uninhabited gives two distinct padded encodings with zero active fields and derivatives but identical active syntax, then proves that no invertible ExactCensusCertificate can make every basis column padding-invariant: equal basis rows contradict the right-inverse identity matrix."
+  nextObligation := "Replace PaddedRawFDMonomial by an unpadded/dependent syntax or quotient inactive padding explicitly. Only on that repaired carrier should one enumerate H(4) signed orbits, construct Bianchi/EOM/IBP/trace/Cayley--Hamilton rows, and derive dual-jet conditioning through dimension sixteen."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -574,7 +596,7 @@ def yangMillsCompletionSteelmanNode : YangMillsProofNode where
   status := .checked
   truthValue := ⟨100, 94⟩
   evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The v14 extraction/recombination constant is refuted as written, the July blueprint is audited guidance, and support, two-marked identity, KP/RP, and the actual Wilson RG recursion remain explicit construction obligations."
-  nextObligation := "Replace the refuted actual-lattice Lorentz-only census by either a hypercubic-complete basis or a proved continuum/Symanzik projection, then certify its dual-jet conditioning and rooted cumulant-generation estimate before proving FirstLoadBearingYangMillsCompletionInput with support, two-marked identity, KP convergence, and Wilson reflection positivity instantiated."
+  nextObligation := "The unpadded quartic H(4) basis is checked, while the padded dimension-sixteen extension is refuted. Repair the full raw carrier and relation quotient, or prove a continuum/Symanzik projection; then derive same-object dual conditioning and the rooted cumulant estimate before instantiating the remaining completion inputs."
 
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
@@ -640,6 +662,8 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsExtractionConstantErratumNode
   , yangMillsPostponedIBPRepairNode
   , yangMillsDimension16O9WilsonCensusNode
+  , yangMillsHypercubicQuarticCensusNode
+  , yangMillsHypercubicDimension16PaddedCensusNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -672,6 +696,14 @@ theorem yangMillsPostponedIBPRepairNode_checked :
 
 theorem yangMillsDimension16O9WilsonCensusNode_refuted :
     yangMillsDimension16O9WilsonCensusNode.status = .refuted := by
+  rfl
+
+theorem yangMillsHypercubicQuarticCensusNode_checked :
+    yangMillsHypercubicQuarticCensusNode.status = .checked := by
+  rfl
+
+theorem yangMillsHypercubicDimension16PaddedCensusNode_refuted :
+    yangMillsHypercubicDimension16PaddedCensusNode.status = .refuted := by
   rfl
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
