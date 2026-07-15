@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabConnectivityProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedCorridorCutProfile
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -12,6 +12,7 @@ open GoertzelV24HexCorridorColorTransfer
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
+open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24HexSlabSideAdjacency
 
@@ -208,6 +209,65 @@ theorem placedHexCenterPrefixCutProfile_connected_of_cyclicSuccessor
   exact ⟨hleftMem, hrightMem, hleftColor, hrightColor,
     SimpleGraph.Adj.reachable
       ⟨⟨hedgeAdj, hleftColor, hrightColor⟩, hleftMem, hrightMem⟩⟩
+
+/-- The center-prefix cut as an instance of the full graph-derived cut-data
+carrier. There are six crossing ports and no fixed terminals or open face
+fragments in this local realization. -/
+def placedHexCenterPrefixGraphCutData
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior) :
+    GraphCorridorCutData RS 6 0 0 where
+  regionEdges :=
+    corridorPrefixEdgeRegion corridor (interior.center.val + 1)
+  crossingEdge position := faceCycleEdge RS placement.root
+    (placementPositionOfSix placement position)
+  terminalEdge impossible := Fin.elim0 impossible
+  fragmentFace impossible := Fin.elim0 impossible
+  fragmentEdges impossible := Fin.elim0 impossible
+
+theorem placedHexCenterPrefixGraphCutData_portsInRegion
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior) :
+    (placedHexCenterPrefixGraphCutData placement).PortsInRegion := by
+  intro port
+  rcases port with crossing | impossible
+  · exact placedHexBoundaryEdge_mem_centerPrefix placement crossing
+  · exact Fin.elim0 impossible
+
+/-- The earlier six-port center-prefix profile is exactly the
+zero-terminal, zero-fragment instance of the complete graph-derived profile. -/
+theorem placedHexCenterPrefixGraphCutData_profile_eq
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C) :
+    (placedHexCenterPrefixGraphCutData placement).profile C hC =
+      placedHexCenterPrefixCutProfile placement C hC := by
+  unfold GraphCorridorCutData.profile placedHexCenterPrefixGraphCutData
+    placedHexCenterPrefixCutProfile placedHexBoundaryCutProfile
+  rw [CorridorCutProfile.mk.injEq]
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · funext pair left right
+    rcases left with left | impossible
+    · rcases right with right | impossible
+      · rfl
+      · exact Fin.elim0 impossible
+    · exact Fin.elim0 impossible
+  · funext impossible
+    exact Fin.elim0 impossible
+  · funext impossible
+    exact Fin.elim0 impossible
 
 end
 
