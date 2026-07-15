@@ -43,11 +43,11 @@
 \newcommand{\CAd}{C_{\mathrm{Ad}}}
 \newcommand{\Cphi}{C_\varphi}
 
-\title{A Machine-Checked Obstruction to Hypothesis~(H1)\\
-in the SG--Cole--Hopf Route to\\
-3D Navier--Stokes Global Regularity}
+\title{Machine-Checked Status of the SG--Cole--Hopf Route to\\
+3D Navier--Stokes Global Regularity:\\
+H1 Obstruction, Stochastic-Lagrangian Repair, and Pancake Closure}
 \author{The MeTTapedia formalization effort}
-\date{June 2026}
+\date{July 2026}
 
 \begin{document}
 \maketitle
@@ -56,30 +56,37 @@ in the SG--Cole--Hopf Route to\\
 \begin{abstract}
 Ben Goertzel's manuscript \emph{Global Regularity of 3D Navier--Stokes via
 SG--Cole--Hopf Program} (v7) reduces global regularity of the 3D incompressible
-Navier--Stokes equation on $\mathbb{T}^3$ to a single uniform-in-time
-identity-energy bound on the volume-preserving diffeomorphism group
-$\SG = \SDiff(\mathbb{T}^3)$. That bound is in turn obtained from two purely
-\emph{local} hypotheses on a chart-cutoff region $K$, the first of which,
-hypothesis~(H1), asks that the adjoint / push-forward operator $\Ad_g$ be
-uniformly bounded as a map $\Hm \to \Hm$ for all $g$ in an $\Hm$
-chart-neighborhood of the identity. We record a machine-checked finding of the
-MeTTapedia formalization effort: hypothesis~(H1) is \emph{false} in a clean
-Fourier-mode shear model. On the normalized two-torus we exhibit a one-parameter
-family of area-preserving shear displacements of \emph{fixed} $\Hm$ size
-$\varepsilon$ (hence inside any prescribed chart radius), whose adjoint operator
-ratio equals $\sqrt{1+(\varepsilon k)^2}$ and therefore exceeds every finite
-constant as the wavenumber $k\to\infty$. The statement and three supporting
-theorems are formalized with no \texttt{sorry} in the Lean module
-\texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}; an accompanying
-numeric lab \emph{derives} the relevant Sobolev norms from the weight structure
-rather than assuming them, isolating the Ebin--Marsden derivative-loss mechanism
-($\Ad_g$ loses one derivative: $\Ad_g v = (Dg)\,(v\circ g^{-1})$, and
-$g\in\Hm \Rightarrow Dg\in H^{m-1}$). We emphasize the exact scope: this is a
-refutation \emph{of (H1) within a model}, not a from-first-principles Sobolev
-theorem, and it says nothing about Navier--Stokes regularity itself, which
-remains open. The consequence for the route is precise and limited: the
-SG--Cole--Hopf program does not establish global regularity, because the single
-hypothesis on which it rests does not hold as stated.
+Navier--Stokes equation on $\mathbb{T}^3$ to a uniform-in-time identity-energy
+bound on the volume-preserving diffeomorphism group
+$\SG=\SDiff(\mathbb{T}^3)$.  The June 2026 MeTTapedia formalization found that
+the route's original local adjoint hypothesis (H1) is false in a normalized
+Fourier-mode shear model: inside every positive $\Hm$ chart radius there are
+area-preserving shears of fixed $\Hm$ displacement size whose adjoint
+$\Hm\to\Hm$ ratio is $\sqrt{1+(\varepsilon k)^2}$ and therefore unbounded.
+That refutation remains intact.
+
+This July revision records the follow-up repair campaign in full.  The
+corrected route does not rely on the false $\Hm\to\Hm$ adjoint bound; it
+replaces it with a stochastic-Lagrangian/cotangent transport skeleton and a
+microlocal vorticity-stretching gate.  The machine-checked surface now
+comprises: the evasion contrast showing the H1-breaking shear family leaves
+pointwise Jacobians untouched; the one-form transport calculus with the exact
+frame-Laplacian identity; the divergence-free non-exact witness that forces
+the gauge; the stochastic-Lagrangian pushdown deriving Navier--Stokes with a
+fully explicit pressure; the conditional BKM chain with its gate consumers;
+nonzero exact inhabitants and end-to-end canaries; the frozen-strain pancake
+obstruction with its exact peak-amplification law; the plane-wave
+Biot--Savart null structure claimed in the pancake-closure proposal; and the
+dyadic absorption step that would turn the pancake-sector estimate into the
+BKM bound.  The latest audit also isolates why the proposed pancake closure does
+not yet prove the Millennium statement: its high-low split covers all aperture
+angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
+the quantitative budget it set out to prove.  The surviving open input is the
+pointwise-in-time Lean predicate
+\texttt{ScaleLocalPancakeStrainBudget}, a sharpened version of the earlier
+\texttt{StochasticStretchingEstimate}.  Thus the status is neither a completed
+Navier--Stokes proof nor a vague ``hard analytic gap'': it is a conditional
+route with one named, scale-local, machine-audited analytic pin.
 \end{abstract}
 
 \section{The problem and the role of hypothesis (H1)}
@@ -388,12 +395,406 @@ $C=100$ at $k=10000$): no finite $\CAd$ survives.}
 \label{tab:lab}
 \end{table}
 
+\section{The repaired stochastic-Lagrangian route: the full formalized layer}
+\label{sec:repair}
+
+After the H1 obstruction was isolated, the formalization effort tested a
+different repair strategy.  The repaired route abandons the false
+$\Hm\to\Hm$ adjoint estimate and moves the load-bearing estimate to the
+stochastic-Lagrangian derivative flow of Constantin--Iyer (\emph{Comm.\ Pure
+Appl.\ Math.}\ \textbf{61} (2008), 330--345): the state is a momentum
+one-form $\mu = u^\flat + dW$ transported along a noisy flow, the velocity is
+recovered by averaging and projection, and the continuation estimate is a
+vorticity-stretching gate feeding the BKM criterion.  In the Lean development
+the gate appears first as the coarse input
+\texttt{StochasticStretchingEstimate}, and in the dyadic refinement as the
+scale-local predicate \texttt{ScaleLocalPancakeStrainBudget}.
+
+This section records the \emph{whole} machine-checked surface of the repair
+campaign, layer by layer, not only the current crux.  All Lean listings below
+are structurally verbatim from the sources (declaration names, hypotheses,
+and conclusions exactly as checked), with Unicode notation transliterated to
+ASCII for typesetting; the Lean sources are normative.  Table~\ref{tab:surface}
+summarizes the layers.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Layer (module) & Headline results & Scope label \\
+\midrule
+H1 model (\texttt{BenH1Break}) & adjoint ratio unbounded; $\neg$(H1) & model refutation \\
+Evasion (\texttt{ShearJacobianBounds}) & same family: pointwise Jacobian $\le\varepsilon$ & model contrast \\
+One-forms (\texttt{OneFormFrameCalculus}) & frame-Laplacian identity $\sum_i L^2_{E_i}=\Delta$ & exact identity \\
+Exactness (\texttt{OneFormExactness}) & div-free smooth non-exact witness & exact witness \\
+Gradients (\texttt{GradientOneForm}) & Cartan formula; self-transport identity & exact identities \\
+Pushdown (\texttt{ConstantinIyerRepresentation}) & NS with explicit pressure from transport & conditional (interface) \\
+Instances (\texttt{DecayingShearInstance}, regression) & nonzero exact inhabitant; rest canaries & exact instances \\
+Gate (\texttt{VorticityStretchingGate}) & conditional BKM route, one named pin & conditional \\
+Countermodel (\texttt{FrozenStrainModel}) & exact pancake solution; no uniform depletion & model refutation \\
+Aperture (\texttt{ApertureCoverageDichotomy}) & dichotomy $\iff$ strain budget; gap failures & model equivalence \\
+Null structure (\texttt{PlaneWaveSelfStrain}) & single-mode Biot--Savart null stretching & exact identity \\
+Dyadic closure (\texttt{DyadicPancakeClosure}) & absorption algebra; sharpened pin; route & conditional \\
+\bottomrule
+\end{tabular}
+\caption{The formalized surface of the repair campaign (all modules under
+\texttt{Mettapedia.FluidDynamics.NavierStokes}, July 2026).  ``Model''
+statements are proved in named analytic models; ``exact'' statements are
+unconditional identities or witnesses on $\mathbb{R}^3$-coordinate space;
+``conditional'' statements are machine-checked implications whose analytic
+inputs are named hypotheses.}
+\label{tab:surface}
+\end{table}
+
+\subsection{Why a pointwise transport route can evade the H1 countermodel}
+\label{sec:evasion}
+
+The first question for any repair is whether the Section~\ref{sec:lean}
+countermodel already defeats it.  It does not, and this is itself a theorem.
+On \emph{the same} $\Hm$-normalized shear family that refutes (H1), the
+module \texttt{ShearJacobianBounds} proves
+(\texttt{shearFamily\_pointwise\_bounded\_while\_sobolev\_ratio\_unbounded}):
+
+\begin{enumerate}
+  \item every pointwise Jacobian deviation is bounded by $\varepsilon$
+        uniformly in the frequency $k$
+        (\texttt{shearFamily\_jacobian\_uniform\_bound}:
+        $\|Dg_k(x)v - v\| \le \varepsilon\|v\|$ for all $x,v$); while
+  \item the $\Hm\to\Hm$ operator ratio $\sqrt{1+(\varepsilon k)^2}$ of the
+        same family admits no finite uniform bound (Section~\ref{sec:lean}).
+\end{enumerate}
+
+The high-frequency-shear derivative-loss mechanism therefore lives entirely
+in the Sobolev operator topology: the quantity feeding a pointwise gate
+$\int_0^T \mathbb{E}\|DX_t\|_\infty\,dt$ is not stressed at all by this
+family.  The checked statement is deliberately labeled: it does not prove any
+pointwise gate --- it proves this family cannot refute one.  That is what
+licenses moving the route from adjoint bounds to Lagrangian transport.
+
+\subsection{The one-form layer: non-exact momenta and the frame Laplacian}
+\label{sec:oneform}
+
+The repaired state is a momentum one-form with a gauge, $\mu=u^\flat+dW$,
+not a scalar potential.  Two checked facts pin down why this shape is forced
+and why the frame generator acts correctly on it.
+
+\emph{Non-exact momenta are necessary.}  Exact one-forms are closed
+(\texttt{oneFormExtDerivAt\_eq\_zero\_of\_exact}), and there is a smooth,
+everywhere divergence-free field that is not exact --- the transverse sine
+mode:
+
+\begin{lstlisting}[language={}]
+theorem exists_divergenceFree_smooth_not_exact_dim3 :
+    exists u0 : EuclideanSpace Real (Fin 3) -> EuclideanSpace Real (Fin 3),
+      ContDiff Real 2 u0 /\
+      (forall x, coordDivergence u0 x = 0) /\
+      Not (IsExactOneForm u0)
+\end{lstlisting}
+
+A scalar-potential (pure Cole--Hopf) ansatz therefore cannot carry a general
+divergence-free momentum: vorticity lives exactly in the non-exact part.
+This is the constructive face of the Section~\ref{sec:problem} diagnosis, and
+it is what the additive gauge $dW$ is for.
+
+\emph{The frame reproduces the Laplacian.}  The route's generator is a sum of
+squared frame derivatives (v7's $L=\sum_i D_i^2$).  On the truncated
+trigonometric coordinate frame (three axes, transverse polarizations, both
+phases) the squared Lie derivatives of a one-form sum \emph{exactly} to the
+coordinate Laplacian: with amplitude $1/\sqrt2$ in dimension~3,
+\[
+  \sum_{j}\sum_{p\ne j}
+    \Bigl(L^2_{\cos\text{-mode}(j,p)} + L^2_{\sin\text{-mode}(j,p)}\Bigr)\mu
+  = \Delta\mu
+\]
+(\texttt{frameLaplacian\_oneForm\_normalized}, from the general
+$(\mathrm{card}\,\iota-1)a^2$ identity \texttt{frameLaplacian\_oneForm} and
+the phase-pair cancellation \texttt{lieOneForm\_sq\_cos\_add\_sin}).  The
+supporting calculus (\texttt{GradientOneForm}) includes the coordinate Cartan
+formula for exact forms (\texttt{lieOneForm\_gradField}: the Lie derivative
+of $dV$ along $u$ is exact with potential $\langle u,\nabla V\rangle$, i.e.\
+$L_u\,dV = d\langle u,\nabla V\rangle$ pointwise) and the self-transport
+identity (\texttt{lieOneForm\_self}: $L_u u^\flat = (u\cdot\nabla)u +
+\tfrac12\nabla|u|^2$).  These two identities are what turn transport
+equations into Navier--Stokes with a pressure, next.
+
+\subsection{The pushdown theorem: Navier--Stokes with an explicit pressure}
+\label{sec:pushdown}
+
+The structure \texttt{TransportedMomentumData} packages a velocity $u$, a
+gauge $W$, their certified time derivatives, the gradient/Laplacian exchange
+facts, and one transport hypothesis --- the It\^o-averaged frame-transport
+equation for the momentum one-form:
+\[
+  \partial_t u + \nabla \dot W
+    + L_u\bigl(u^\flat + dW\bigr)
+  = \nu \,\Sigma_{\mathrm{frame}}\bigl(u^\flat + dW\bigr),
+\]
+where $\Sigma_{\mathrm{frame}}$ is the normalized frame second-order sum of
+Section~\ref{sec:oneform} (the hypothesis is stated in averaged form; no
+stochastic calculus is formalized, and the field is labeled accordingly in
+the source).  From this single hypothesis the pushdown theorem derives the
+Navier--Stokes equations with a fully explicit pressure:
+
+\begin{lstlisting}[language={}]
+/-- Pushdown theorem: the averaged frame-transport equation for the
+momentum one-form u^flat + dW forces u to satisfy the Navier-Stokes
+equations with the explicit pressure
+p = dW/dt + (1/2)<u,u> + <u, grad W> - nu * Lap W. -/
+theorem navierStokes_of_transportedMomentum (t : Real) (x : R3) :
+    deriv (fun s => D.u s x) t + fderiv Real (D.u t) x (D.u t x) +
+      gradField (D.pressure t) x =
+    D.nu smul coordLaplacian (D.u t) x
+\end{lstlisting}
+
+with
+\[
+  p \;=\; \partial_t W \;+\; \tfrac12\langle u,u\rangle
+      \;+\; \langle u,\nabla W\rangle \;-\; \nu\,\Delta W .
+\]
+The pressure is not posited: it is assembled from the exact terms of the
+transport (gauge drift, kinetic energy via the self-transport identity, gauge
+advection via the Cartan formula, viscous gauge term), and the theorem is
+unconditional given the data.  This is the repaired route's replacement for
+v7's identity-energy pushdown: the same endpoint (a genuine Navier--Stokes
+solution with pressure), reached without the false adjoint bound.
+
+\subsection{The vorticity-stretching gate and the conditional route}
+\label{sec:gate}
+
+Continuation is fed by the averaged Cauchy formula
+$\omega(t)=\mathbb{E}[(DX_t)(\omega_0\circ A_t)]$, which bounds
+$\|\omega(t)\|_\infty$ by moments of the flow Jacobian.  The gate is the
+named open input of the coarse route, exactly:
+
+\begin{lstlisting}[language={}]
+/-- The vorticity-stretching gate (named analytic input; OPEN). -/
+def StochasticStretchingEstimate
+    (D : StochasticCauchyVorticityData Omega) (T : Real) : Prop :=
+  IntervalIntegrable D.expectedJacobianBound volume 0 T
+\end{lstlisting}
+
+Its consumers are mechanical and checked: a time-uniform Jacobian bound gives
+a time-uniform vorticity bound
+(\texttt{vorticity\_uniform\_bound\_of\_jacobian\_bound}), and under the gate
+the BKM integrand $t\mapsto\|\omega(t,x)\|$ is interval-integrable with
+$\int_0^T\|\omega\| \le \|\omega_0\|_\infty \int_0^T
+\mathbb{E}\|DX_t\|_\infty$
+(\texttt{bkm\_integrand\_intervalIntegrable}, \texttt{bkm\_integral\_bound}).
+The assembled conditional route
+(\texttt{stochasticLagrangian\_conditional\_route}) states: given transported
+momentum data, averaged-Cauchy vorticity data linked by
+$\omega=\operatorname{curl}u$, and the gate on $[0,T]$, the velocity
+satisfies Navier--Stokes with the explicit pressure \emph{and} the BKM
+integrand is controlled.  Every step is machine-checked; the only analytic
+input is the gate.
+
+\emph{The route is inhabited.}  Non-vacuity is itself checked, twice.  The
+rest state instantiates the route end-to-end
+(\texttt{conditional\_route\_rest}, with the gate discharged by a constant
+envelope).  Beyond the rest state, the module \texttt{DecayingShearInstance}
+provides a nonzero exact solution of the full transported-momentum system:
+the decaying shear $u(t,y)=e^{-t}\sin(y_1)\,e_0$ with gauge amplitude
+$b(t)=(e^{-2t}-e^{-4t})/8$ on the frequency-doubled mode, whose balance
+$b'=-4b+\tfrac14 e^{-2t}$ (\texttt{gaugeAmp\_balance}) absorbs the kinetic
+self-transport term; \texttt{decayingShear\_navierStokes} confirms the pair
+satisfies Navier--Stokes with the representation pressure at $\nu=1$.  So the
+conditional machinery is not vacuously true: its hypotheses have nonzero
+exact witnesses.
+
+\subsection{The frozen-strain countermodel and the aperture geometry}
+\label{sec:frozen}
+
+Any proof of the gate must use more than local strain geometry plus
+stochastic averaging.  The frozen-strain model makes this a theorem.  For the
+prescribed strain $A=\mathrm{diag}(2\gamma,-\gamma,-\gamma)$ and the pancake
+packet (vorticity along the expanding axis, wave vector along a compressive
+axis), the module \texttt{FrozenStrainModel} proves that
+\[
+  \omega(t,x) = a(t)\,\sin\bigl(k(t)\,x_1\bigr)\,e_0,
+  \qquad
+  k(t)=k_0e^{\gamma t},
+  \qquad
+  a(t)=a_0\exp\Bigl(2\gamma t - \nu k_0^2\tfrac{e^{2\gamma t}-1}{2\gamma}\Bigr)
+\]
+is an \emph{exact} solution of the frozen vorticity equation
+$\partial_t\omega+(Ax\cdot\nabla)\omega=A\omega+\nu\Delta\omega$
+(\texttt{frozenStrainVorticity\_solves}; the drift, stretching, phase and
+viscous terms are all checked, not modeled).  Writing
+$g=2\gamma/(\nu k_0^2)$ for the normalized strain, the amplification peaks at
+$t^*=\log g/(2\gamma)$ with the exact value
+\[
+  \frac{a(t^*)}{a_0} = g\,e^{1/g-1}
+  \qquad(\texttt{frozenStrainAmplification\_peak}),
+\]
+which is unbounded over the strain family: no uniform depletion bound of the
+form ``pancake alignment always acquires diffusive decay at rate
+$\nu\lambda^2$'' survives
+(\texttt{frozenStrain\_no\_uniform\_amplification\_bound}).  Any correct gate
+proof must therefore use the \emph{self-consistency} of the Navier--Stokes
+strain --- a statement quantified over arbitrary imposed strains is false.
+
+The angular version is the aperture-coverage geometry.  Anisotropic
+Bernstein estimates control cone apertures up to $\lambda^{-1/2}$;
+stretch--diffusion covariance controls apertures above
+$\sqrt{\gamma/\nu}/\lambda$.  The band claimed by neither,
+\[
+  \bigl(\lambda^{-1/2},\; \sqrt{\gamma/\nu}/\lambda\bigr),
+  \qquad\text{is nonempty}\iff \nu\lambda<\gamma
+  \qquad(\texttt{anisotropic\_coverage\_gap}).
+\]
+
+\subsection{July additions: the aperture dichotomy is the strain budget}
+\label{sec:aperture}
+
+The July campaign sharpened the coverage gap into an equivalence and closed
+the remaining escape routes.  In \texttt{ApertureCoverageDichotomy.lean}:
+
+\begin{lstlisting}[language={}]
+theorem pancakeApertureCovered_iff_strain_le
+    (hnu : 0 < nu) (hlam : 0 < lam) :
+    (forall theta : Real,
+        theta <= (Real.sqrt lam)^{-1} \/ Real.sqrt (gamma / nu) / lam <= theta)
+      <-> gamma <= nu * lam
+\end{lstlisting}
+
+That is: the ``narrow $\Rightarrow$ enstrophy-controlled, else
+$\Rightarrow$ angularly coercive'' dichotomy tiles the whole aperture range
+\emph{exactly when} the scale-local strain budget $\gamma\le\nu\lambda_q$
+holds.  On the gap band both mechanisms fail quantitatively:
+\texttt{gapAperture\_diffusionRate\_lt\_strain} proves
+$\nu(\theta\lambda)^2<\gamma$ below the stretch--diffusion threshold (the
+diffusive rate is strictly beaten by the strain), and
+\texttt{gapAperture\_bernstein\_volume\_exceeds\_planar\_budget} proves
+$\lambda^2<\theta^2\lambda^3$ above the Bernstein threshold (the cone's
+Fourier-support volume exceeds the planar budget behind the improved
+$L^2\to L^\infty$ constant).
+
+The time-averaged escape route is closed by a Gr\"onwall-saturation
+computation: over the coherent window the packet consumes an integrated
+strain budget of exactly $\int_0^{t^*}2\gamma\,dt=\log g$
+(\texttt{frozenStrain\_integratedStrain\_peakWindow}) while amplifying to
+$g\,e^{1/g-1}\ge e^{\log g-1}$, i.e.\ amplification at least
+$e^{\,\mathrm{budget}-1}$
+(\texttt{frozenStrainAmplification\_peak\_ge\_exp\_integratedStrain\_sub\_one}).
+An averaged strain hypothesis therefore bounds amplification only
+exponentially in itself and cannot substitute for the pointwise-in-time
+aperture condition in a dyadic relaxation estimate.
+
+\subsection{The dyadic pancake closure: verified pieces and the isolated pin}
+\label{sec:pancake}
+
+The July repair proposal claims a complete closure of the gate: decompose the
+weighted stretching sum by angular sector, prove the pancake-sector estimate
+\[
+  \int_0^T \sum_{q\ge Q}\lambda_q^{-2}
+    \bigl\|A_q\,\omega_q^{\mathrm{pan}}\bigr\|_\infty\,dt
+  \;\le\; C(T,\nu,u_0,Q) + \varepsilon\int_0^T D_Q(t)\,dt,
+  \qquad
+  D_Q(t):=\sum_{q\ge Q}\|\Delta_q\omega(t)\|_\infty,
+\]
+with $A_q=S(S_{q-L}u)$ the low-frequency strain and
+$\omega_q^{\mathrm{pan}}$ the projection onto the pancake cone of aperture
+$\delta_q=\lambda_q^{-1/2}$, then absorb $\varepsilon\int D_Q$ and conclude
+$\int_0^T D_Q<\infty$, hence BKM.  The formalization adjudicates this claim
+piece by piece.
+
+\emph{The genuinely new ingredient is verified.}  The proposal's Step~1 --- a
+pancake vorticity mode does not generate the strain that stretches itself ---
+is checked exactly, not at symbol level.  In \texttt{PlaneWaveSelfStrain}:
+for $\omega(x)=\alpha\sin(\kappa x_1)e_0$ with its Biot--Savart velocity (the
+shear $u(x)=-(\alpha/\kappa)\cos(\kappa x_1)e_2$),
+\texttt{curlField\_planeWaveVelocityMode} proves
+$\operatorname{curl}u=\omega$ exactly, and
+\texttt{strainRateApply\_planeWaveVelocityMode\_vorticity} proves
+$S(u)\,\omega = \tfrac12\bigl(\nabla u+(\nabla u)^{\mathsf T}\bigr)\omega=0$
+pointwise, with a non-vacuity witness
+(\texttt{planeWaveVorticityMode\_ne\_zero}).  The scope is honest: the
+identity is for one exact mode; a pancake \emph{sector} aggregates a cone of
+modes, and charging the cross-mode strain is precisely the open budget below.
+
+\emph{The absorption skeleton is checked with explicit constants.}  The
+structure \texttt{DyadicVorticityStretchingData} carries the four time
+functionals ($D_Q$; pancake, angularly coercive, and residual stretching
+sums), their nonnegativity and integrability, and the transported dyadic
+relaxation inequality.  The three sector estimates are explicit predicates,
+e.g.
+\begin{lstlisting}[language={}]
+def PancakeSectorEstimate (C eps : Real) : Prop :=
+  (Integral of D.pancakeStretchSum over 0..D.T) <=
+    C + eps * (Integral of D.highBlockSum over 0..D.T)
+\end{lstlisting}
+(coercive and residual analogous; both are \emph{interfaces} here ---
+established in the source analysis by good-unknown/stretch--diffusion and
+Coifman--Meyer arguments respectively, consumed as named hypotheses, not
+re-proved).  The absorption theorem
+\texttt{highBlockIntegral\_le\_of\_sectorEstimates} proves: sector estimates
+with total gain $\varepsilon_p+\varepsilon_c+\varepsilon_r<1$ imply
+\[
+  \int_0^T D_Q(t)\,dt \;\le\;
+  \frac{C_{\mathrm{relax}} + C_p + C_c + C_r}
+       {1-(\varepsilon_p+\varepsilon_c+\varepsilon_r)} ,
+\]
+with the a-priori finiteness carried by the integrability fields (supplied in
+the analytic setting by local-in-time regularity and continuation, which is
+standard and not re-derived).  The theorem
+\texttt{pancakeSectorEstimate\_of\_scaleLocalStrainBudget} derives the
+pancake-sector estimate from the pointwise scale-local budget by time
+integration.
+
+\emph{Where the claimed proof fails.}  The proposal's high-low split charges
+the whole non-pancake complement to the angularly coercive estimate.  By
+Section~\ref{sec:aperture} that charge is \emph{equivalent} to the
+scale-local budget $\gamma\le\nu\lambda_q$ --- which is exactly the bound the
+proposal's own conditional section had identified as ``the remaining
+burden'' before the claimed proof.  The claimed proof therefore consumes, at
+its high-low split, the statement it set out to prove; the closure is
+circular at precisely that point, and nothing else in it repairs the circle.
+
+The remaining pin is a precise predicate, structurally verbatim:
+\begin{lstlisting}[language={}]
+/-- The scale-local pancake strain budget (named analytic input; OPEN --
+the first load-bearing missing lemma of the claimed pancake closure). -/
+def ScaleLocalPancakeStrainBudget (D : DyadicVorticityStretchingData)
+    (B eps : Real) : Prop :=
+  exists budget : Real -> Real,
+    IntervalIntegrable budget volume 0 D.T /\
+    (Integral of budget over 0..D.T) <= B /\
+    forall t in Set.Icc 0 D.T,
+      D.pancakeStretchSum t <= budget t + eps * D.highBlockSum t
+\end{lstlisting}
+Here \texttt{pancakeStretchSum} represents
+$\sum_{q\ge Q}\lambda_q^{-2}\|A_q\omega_q^{\mathrm{pan}}(t)\|_\infty$.  The
+obligation is to establish this pointwise envelope for the
+\emph{self-consistent} Navier--Stokes strain (generated from the vorticity by
+the Biot--Savart law), not for an externally imposed frozen strain --- via a
+genuinely Navier--Stokes-specific mechanism (pressure/Hessian feedback,
+multi-scale Biot--Savart self-depletion, or frequency-cascade accounting, in
+the proposal's own taxonomy).  The verified plane-wave null structure is
+evidence in the right direction; the aperture equivalence states exactly what
+quantitative multi-scale estimate is still missing.
+
+\emph{The sharpened conditional route.}  The headline theorem
+\texttt{stochasticLagrangian\_conditional\_route\_of\_pancakeBudget} closes
+the loop: given transported momentum data, dyadic relaxation data whose block
+sum dominates the high-frequency part of $\|\operatorname{curl}u\|$
+(the Littlewood--Paley decomposition interface), the scale-local pancake
+strain budget, and the coercive/residual interfaces with total gain below
+$1$, the velocity satisfies Navier--Stokes with the explicit pressure and the
+BKM integrand is interval-integrable with an explicit bound.  This reaches
+the same endpoint as the coarse conditional route with the gate replaced by
+the sharper geometric pin; the two pins are cross-referenced in the sources
+and both remain open.  An end-to-end rest-state canary
+(\texttt{rest\_conditional\_route}) checks that the refined hypotheses are
+simultaneously satisfiable.
+
 \section{Status and scope}
 \label{sec:scope}
 
 We state the scope of this finding exactly.
 
-\paragraph{What is established.} Hypothesis~(H1) of v7 --- a uniform
+\paragraph{What is established from the original audit.} Hypothesis~(H1) of
+v7 --- a uniform
 $\Hm\to\Hm$ operator bound \eqref{eq:H1} on the adjoint / push-forward $\Ad_g$
 over an $\Hm$ chart-neighborhood of the identity --- is \emph{false} in the
 normalized Fourier-mode shear model of Section~\ref{sec:lean}. The refutation is
@@ -415,7 +816,7 @@ analysis. The mechanism (derivative loss) is captured faithfully, but the
 strength of the conclusion is ``checked in this model,'' not ``checked over the
 entire chart from Mathlib's Sobolev theory.''
 
-\paragraph{Consequence for the route.} Because every quantitative step of the
+\paragraph{Consequence for v7.} Because every quantitative step of the
 SG--Cole--Hopf program inherits the constant $\CAd$ from \eqref{eq:H1} ---
 through \eqref{eq:prop65}, \eqref{eq:logbound}, and \eqref{eq:vort} --- the
 falsity of~(H1) as stated means the route does \emph{not}, as written, establish
@@ -423,19 +824,75 @@ global regularity. v7 reduces 3D Navier--Stokes global regularity to~(H1)
 (equivalently, to a uniform curvature / Bakry--\'Emery-type bound), and that
 reduction target does not hold uniformly in the form required.
 
-\paragraph{What remains open.} We make no claim about Navier--Stokes itself.
-Global regularity of the 3D incompressible Navier--Stokes equation remains an
-open problem; the finding here concerns only the viability of one particular
-proof route. Whether a repaired hypothesis --- for instance an
-$\Hm\to H^{m-1}$ adjoint bound combined with a separate mechanism to recover the
-lost derivative --- could resurrect a version of the argument is left as a
-question for future work.
+\paragraph{What the repair establishes.} The stochastic-Lagrangian repair is
+not refuted by the H1 countermodel, and that evasion is itself a checked
+theorem (Section~\ref{sec:evasion}).  Machine-checked without \texttt{sorry}
+across the campaign: the one-form calculus with the exact frame-Laplacian
+identity; the divergence-free non-exact witness forcing the gauge; the
+pushdown theorem producing Navier--Stokes with the explicit pressure
+$p=\partial_tW+\tfrac12\langle u,u\rangle+\langle u,\nabla W\rangle-\nu\Delta W$
+from the averaged transport hypothesis; the gate consumers and the assembled
+conditional route; nonzero exact inhabitants (decaying shear with balanced
+gauge) and end-to-end rest canaries for both the coarse and the refined
+route; the frozen-strain exact solution with its unbounded-amplification and
+coverage-gap theorems; the aperture dichotomy--budget equivalence with both
+gap-band failure theorems and the Gr\"onwall-saturation bound; the
+single-mode Biot--Savart null structure; and the dyadic absorption algebra
+with explicit constants.  The theorem
+\texttt{stochasticLagrangian\_conditional\_route\_of\_pancakeBudget} records
+that the route closes if the scale-local pancake strain budget and the
+non-pancake sector estimates are supplied.
+
+\paragraph{Scope of the new pieces.}  The same honesty discipline as for the
+H1 model applies.  The frozen-strain results are theorems about a linear
+prescribed-strain model, labeled as such; the aperture theorems are exact
+inequalities between the model's threshold parameters; the plane-wave null
+structure is an identity for one exact Fourier mode (sector aggregation is
+exactly the open budget); the averaged transport equation enters the
+pushdown as a hypothesis field (no stochastic calculus is formalized); and
+the coercive/residual sector estimates are named interfaces consumed from
+the source analysis, not re-proved.  None of these statements is a claim
+about general Navier--Stokes solutions beyond what its label says.
+
+\paragraph{Verification metadata.}  Every headline theorem named in this
+paper carries a machine axiom audit: each depends on exactly the three
+standard Lean axioms \texttt{propext}, \texttt{Classical.choice},
+\texttt{Quot.sound} --- no \texttt{sorry}, no additional axioms, no unsafe
+definitions, and no elaboration-limit overrides anywhere in the campaign's
+modules.  The Navier--Stokes live-surface and regression aggregates build
+green, and every conditional theorem ships with an instantiation canary
+demonstrating its hypotheses are simultaneously satisfiable.
+
+\paragraph{What remains open.} We make no claim to have proved the Millennium
+Navier--Stokes statement.  The latest pancake-closure proposal fails as a
+complete proof because its aperture split requires the pointwise scale-local
+condition $\gamma\le\nu\lambda_q$, and that condition is exactly the burden of
+the unresolved self-consistent strain estimate.  The open analytic input is
+\texttt{ScaleLocalPancakeStrainBudget}, cross-referenced with the coarser
+\texttt{StochasticStretchingEstimate}.  A successful completion must prove a
+pointwise-in-time, scale-local, Biot--Savart self-consistency estimate strong
+enough to cover the gap band identified above.
 
 \section*{Provenance}
 The manuscript discussed is Ben Goertzel, \emph{Global Regularity of 3D
-Navier--Stokes via SG--Cole--Hopf Program}, version v7. The formalization,
-Fourier-mode model, and numeric lab are work of the MeTTapedia formalization
-effort; the Lean development is the module
-\texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}.
+Navier--Stokes via SG--Cole--Hopf Program}, version v7, together with the
+subsequent pancake-closure repair proposal audited in July 2026.  The
+formalization, Fourier-mode model, repaired conditional route, pancake
+adjudication, and numeric lab are work of the MeTTapedia formalization
+effort.  The repaired-route development comprises, under
+\texttt{Mettapedia.FluidDynamics.NavierStokes}: \texttt{BenH1Break},
+\texttt{OneFormFrameCalculus}, \texttt{OneFormExactness},
+\texttt{GradientOneForm}, \texttt{FrozenStrainModel},
+\texttt{ApertureCoverageDichotomy}, \texttt{PlaneWaveSelfStrain}, and the
+\texttt{StochasticLagrangian} layer (\texttt{PullbackOneForm},
+\texttt{ShearJacobianBounds}, \texttt{ConstantinIyerRepresentation},
+\texttt{VorticityStretchingGate}, \texttt{DecayingShearInstance},
+\texttt{DyadicPancakeClosure}), each with a regression companion.
+Background references: J.~T. Beale, T.~Kato, A.~Majda, \emph{Comm.\ Math.\
+Phys.}\ \textbf{94} (1984), 61--66; P.~Constantin, G.~Iyer, \emph{Comm.\
+Pure Appl.\ Math.}\ \textbf{61} (2008), 330--345; D.~Ebin, J.~Marsden,
+\emph{Ann.\ of Math.}\ \textbf{92} (1970), 102--163; H.~Bahouri,
+J.-Y.~Chemin, R.~Danchin, \emph{Fourier Analysis and Nonlinear Partial
+Differential Equations}, Springer, 2011.
 
 \end{document}
