@@ -564,6 +564,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorTransferMatrix
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingTransfer
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCorridorStrands
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCorridorLineGraph
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Necklace
 import Mettapedia.GraphTheory.FourColor.GoertzelV24WindingClassification
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail
