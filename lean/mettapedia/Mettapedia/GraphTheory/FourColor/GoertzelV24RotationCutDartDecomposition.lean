@@ -222,6 +222,19 @@ def orderedBoundaryDart
     exact Finset.mem_image.2 ⟨step, Finset.mem_univ _,
       (orientedBoundaryDart_edgeOf RS keep crossingEdge hcrosses step).symm⟩⟩
 
+@[simp]
+theorem orderedBoundaryDart_edgeOf
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (crossingEdge : Fin n → E)
+    (hcrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = crossingEdge step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (step : Fin n) :
+    RS.edgeOf (orderedBoundaryDart RS keep crossingEdge hcrosses step).1.1.1 =
+      crossingEdge step :=
+  orientedBoundaryDart_edgeOf RS keep crossingEdge hcrosses step
+
 /-- An injective ordered edge cut gives an injective enumeration of its
 outward boundary darts. -/
 theorem orderedBoundaryDart_injective

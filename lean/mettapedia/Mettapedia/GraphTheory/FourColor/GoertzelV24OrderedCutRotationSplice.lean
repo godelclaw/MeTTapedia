@@ -132,6 +132,27 @@ theorem matchedPartUnderlyingDart_eq_equiv_symm_val
   · rfl
   · rcases side with left | right <;> rfl
 
+/-- Forgetting the three-part tag is injective because the tags are the
+partition induced by the retained-dart equivalence. -/
+theorem matchedPartUnderlyingDart_injective
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (leftCut rightCut : Finset E)
+    (hcover : ∀ dart : BoundaryDart RS keep,
+      RS.edgeOf dart.1.1 ∈ leftCut ∨ RS.edgeOf dart.1.1 ∈ rightCut)
+    (hdisjoint : Disjoint leftCut rightCut) :
+    Function.Injective
+      (matchedPartUnderlyingDart RS keep leftCut rightCut) := by
+  intro left right hdarts
+  let parts := retainedDartEquivMatchedParts RS keep leftCut rightCut
+    hcover hdisjoint
+  apply parts.symm.injective
+  apply Subtype.ext
+  rw [← matchedPartUnderlyingDart_eq_equiv_symm_val RS keep leftCut
+    rightCut hcover hdisjoint left]
+  rw [← matchedPartUnderlyingDart_eq_equiv_symm_val RS keep leftCut
+    rightCut hcover hdisjoint right]
+  exact hdarts
+
 /-- The decomposition equivalence does not alter the underlying dart. -/
 theorem matchedPartUnderlyingDart_equiv
     (RS : RotationSystem V E) (keep : V → Prop)
