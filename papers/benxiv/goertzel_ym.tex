@@ -112,6 +112,43 @@ $2(2\cdot4-1)$, not a bound on the total contacts of two extended polymers.
 The fluctuation big-$O$ and weighted cumulant-generation estimates also require
 quantitative proofs on the actual Wilson RG map.
 
+A third machine-checked round works on the exact $\mathrm{SU}(2)$, $b=2$
+Wilson block with normalized Haar measure and decides the extraction stage
+from three sides. (i)~Representative-wise hard truncation is not well-defined
+on the actual trace-word quotient: for the centered trace words
+$a=2-\Tr(U)$ and $b=2-\Tr(U^2)$, Cayley--Hamilton forces $a^3b-4a^4+a^5=0$
+with monomial canonical dimensions $16$, $16$, $20$; truncation at $16$
+deletes only $a^5$, and the truncated expression evaluates to $-32$ on the
+holonomy $\mathrm{diag}(i,-i)$ while the exact expression vanishes
+identically. (ii)~Two corrected constructions nevertheless carry exact
+norm-below-two extractors --- the full associated-graded jet chart
+($131071/65536<2$) and the one-plaquette trace quotient ($31/16<2$); with
+Appendix~O's other factors kept unchanged, the resulting conditional constant
+$90832203/40960\approx2217.6$ closes the two-source bootstrap at depth $16$
+and fails at depth $15$. (iii)~Neither survivor transfers to v14's canonical
+$(F,D)$ operator space: a dimension-$18$ scalar descendant has radial degree
+only $6$ (resp.\ $3$), so both extractors retain it, and the dimension-$6$
+descendant $\partial^2\Tr(F^2)$ is zero in the manuscript's
+integration-by-parts quotient yet has a nonzero gauge-invariant realization
+on an explicit three-plaquette block. The transfer socket required before any
+Wilson-RG intertwiner is therefore uninhabited as written, under both the
+on-shell and off-shell relation policies.
+
+A fourth machine-checked round tests the replacement census against the exact
+symmetry of the finite-spacing lattice. On an explicit $\mathrm{SU}(2)$ Cartan
+link chart, the sum of squared normalized Wilson potentials over the six
+coordinate plaquettes is gauge invariant and has canonical dimension $8$.
+Its exact fourth jet is $6\sum_{\mu<\nu}F_{\mu\nu}^{4}$. A rational orthogonal
+rotation changes the corresponding quartic from $1$ to $337/625$. Thus the
+observable is hypercubic-invariant but not $O(4)$-invariant. Every span of
+Appendix~O.9.3's Lorentz-scalar contractions remains $O(4)$-invariant, so it
+cannot be complete for actual lattice Wilson observables. This obstruction
+closes the off-shell, on-shell EOM, Bianchi/IBP, trace, Cayley--Hamilton, and
+postponed-IBP variants of the same Lorentz-only target. It does not rule out a
+finite coordinate system: it forces either a genuinely hypercubic census at
+finite lattice spacing or a separately proved continuum/Symanzik projection
+with a quantitatively controlled Lorentz-breaking remainder.
+
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
 polymer estimates, Wilson reflection positivity, and continuum/OS construction
@@ -484,6 +521,125 @@ conditioning matrices are not supplied. Appendix~I's explicit jets concern
 the separate observable projection $P^{\mathrm{obs}}_{\leq4}$. Hence the
 extraction component is not a standing erratum repair, and $C_1$ is not derived.
 
+\paragraph{Hard truncation does not descend to the actual trace-word quotient.}
+The third round replaces schematic carriers by the exact object: the
+$\mathrm{SU}(2)$, $b=2$ Wilson block with normalized Haar measure --- $81$
+vertices, $216$ positive links of which $8$ are internal, $216$ plaquettes,
+an internal spanning tree with $7$ co-tree links, exact boundary-plus-co-tree
+coordinates, the gauge action, the normalized Wilson potential, and the
+fixed-boundary product-Haar reference integral with its logarithmic effective
+block action (modules \texttt{SU2WilsonBlockPilot},
+\texttt{SU2MajorantRepairDecision}). On this object the question ``is
+canonical-dimension truncation even well-defined on the gauge-invariant
+quotient?'' has a negative, intrinsic answer. For any $U\in\mathrm{SU}(2)$
+the Cayley--Hamilton identity gives $\Tr(U^2)=\Tr(U)^2-2$; writing
+$a=2-\Tr(U)$ and $b=2-\Tr(U^2)$ (each of canonical dimension $4$), the exact
+relation $b=4a-a^2$ yields
+\[
+  a^3b-4a^4+a^5 \;=\; 0,
+\]
+whose three monomials have construction-derived canonical dimensions $16$,
+$16$, $20$. Truncation through dimension $16$ deletes only $a^5$; on the
+explicit holonomy $\mathrm{diag}(i,-i)$ the truncated expression evaluates to
+$-32$, while the exact left-hand side vanishes on every field. Hence the
+semantic kernel is not stable under representative-wise hard truncation, no
+function on the evaluated trace-word quotient agrees with that truncation,
+and the corresponding descended extraction certificate is uninhabited
+(module \texttt{SU2CayleyHamiltonTruncationObstruction}). The witness uses
+only the Cayley--Hamilton relation --- no equations-of-motion quotient and no
+boundary-extension convention --- so it applies to both of v14's relation
+policies, and it refutes any uniform-in-$N$ architecture that requires
+representative-wise hard truncation of redundant Wilson trace words.
+
+\paragraph{Corrected constructions do carry norm-below-two extractors.}
+Truncation is, of course, definable on a \emph{chosen basis}, and the third
+round constructs the two natural repairs exactly. The full associated-graded
+jet chart on the gauge-fixed block ($7$ co-tree links, $3$ Lie coordinates
+each, hence $21$ coordinates) carries the symmetric-monomial basis of jets
+through total degree $16$, with identity jet matrix and biorthogonal
+coefficient duals; radial Taylor extraction at radius ratio $1/2$ has the
+exact operator constant
+$\sum_{d=0}^{16}2^{-d}=131071/65536<2$
+(modules \texttt{SU2AssociatedGradedExtraction},
+\texttt{SU2AssociatedGradedExtractionDecision}). Independently, the evaluated
+one-plaquette trace algebra is exactly a one-variable polynomial algebra: the
+normal-form theorem $b=4a-a^2$ (proved semantically complete via an infinite
+Cayley-rotation family) gives the basis $1,a,a^2,a^3,a^4$ through dimension
+$16$, with extraction constant $\sum_{d=0}^{4}2^{-d}=31/16<2$ (module
+\texttt{SU2IndependentTraceBasis}). Keeping Appendix~O's other factors
+unchanged, the associated-graded constant yields the conditional ledger value
+\[
+  C_{\mathrm{proposed}}
+  \;=\; \tfrac{90832203}{40960} \;\approx\; 2217.583 \;<\; 2224,
+\]
+whose two-source gain at depth $16$ is
+$90832203/335544320\approx0.2707<1/3$, while depth $15$ does not close. This
+is conditional bookkeeping: the fluctuation, cumulant, and recombination
+factors remain unproved on the actual map. Two exact theorems keep these
+constructions honestly separated from v14's object: the full graded chart has
+dimension $12{,}875{,}774{,}670$ and admits no linear equivalence onto any
+coordinate space of dimension at most $1851$, so the manuscript's schematic
+count requires a genuine invariant quotient that v14 does not construct; and
+the radial norm used here is a precise repair, not provably the manuscript's
+intended multivariate norm.
+
+\paragraph{Neither survivor transfers to the canonical $(F,D)$ space.}
+The transfer question is then decided negatively by two independent
+machine-checked obstructions (module \texttt{V14FDQuotientTransferNoGo},
+headline \texttt{v14\_fullFD\_quotientTransfer\_noGo}). \emph{Derivative
+blindness:} v14 counts canonical dimension as $2\cdot\#F+\#D$ (its O.9.1),
+but radial degree on either chart is blind to derivative factors. The scalar
+descendant $(\partial^2)^3[(\Tr F^2)^3]$ has canonical dimension $18$ yet
+radial degree $6$ on the associated-graded chart and $3$ on the trace chart,
+so both norm-below-two extractors \emph{fix} it --- and an explicit two-cell
+zero-boundary sixth-difference witness evaluates to $-6$, so the retained
+operator is nonzero. Both survivors therefore fail to implement the
+dimension-$\leq16$ projection of F.4.2, independently of the choice of
+quotient basis (\texttt{not\_associatedRadialImplementsCanonicalCutoff},
+\texttt{not\_independentRadialImplementsCanonicalCutoff}).
+\emph{Integration-by-parts/block incompatibility:} v14's local norm (F.3)
+lives on ordinary functions on a finite block retaining boundary data, while
+both relation branches identify integrated total derivatives with zero. The
+dimension-$6$ descendant $\partial^2\Tr(F^2)$ is gauge invariant and
+evaluates to $1$ on an explicit three-plaquette block field (a purely
+quadratic associated-grade witness gives the same value, so higher Taylor
+terms are not the cause). An ordinary block-functional realization would have
+to send one quotient class to both the zero function and a nonzero boundary
+descendant; the faithful transfer sockets --- exact-Wilson, pure
+associated-graded, and every RG-compatible extension --- are therefore
+uninhabited under both relation policies. Consequently no corrected recursion
+constant propagates from the constructions above into the bootstrap. The
+obstruction is structural rather than informational: supplying the omitted
+dimension-$16$ coordinates or conditioning matrices cannot make either
+extractor into the canonical $(F,D)$ projection. A viable replacement needs a
+derivative-aware filtration whose truncation provably agrees with
+$2\cdot\#F+\#D$, together with a boundary-aware complex that retains
+total-derivative descendants on each block as boundary cochains and imposes
+integration by parts only at global recombination; constructing exactly that
+replacement is the current object of this formalization.
+
+\paragraph{The actual-lattice census cannot be Lorentz-only.}
+The derivative-aware boundary-cochain repair makes the filtration and local
+boundary bookkeeping explicit, but a further obstruction appears before its
+coordinate basis or dual jets can be supplied. Appendix~O.9.3 enumerates only
+Lorentz-invariant complete contractions. The exact finite-spacing Wilson
+lattice has only hypercubic symmetry, and the module
+\texttt{SU2LatticeFDCensusNoGo} supplies a gauge-invariant canonical-dimension
+$8$ observable whose fourth Cartan jet is
+\[
+  6\bigl(F_{01}^{4}+F_{02}^{4}+F_{03}^{4}
+      +F_{12}^{4}+F_{13}^{4}+F_{23}^{4}\bigr).
+\]
+An explicit rational orthogonal rotation changes its normalized quartic value
+from $1$ to $337/625$. Hence no finite span of the $O(4)$-invariant O.9.3 jets
+contains it. The necessary spanning core, the O.9.2 off-shell certificate, and
+the F.4.3 on-shell certificate are all formally uninhabited. The witness is
+derivative-free, so changing EOM, Bianchi, integration-by-parts, trace,
+Cayley--Hamilton, or boundary-cochain reduction policies cannot repair this
+same-target symmetry mismatch. The result is already an $N=2$ counterexample
+to an architecture asserted uniformly for $\mathrm{SU}(N)$. It is not a no-go
+for a hypercubic-complete basis or for a controlled continuum projection.
+
 \paragraph{The finite gaps are real but Clay-irrelevant.}
 The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
 they are abelian, single-link, strong-coupling, and finite. They exemplify the
@@ -562,6 +718,67 @@ as open, and sharpened others into theorems:
     (\texttt{z2\_continuumMassGap\_of\_reconstructionMachine}).
 \end{itemize}
 
+\subsection*{Machine-checked in the third round}
+
+A third round moved from schematic carriers to the exact $\mathrm{SU}(2)$,
+$b=2$ Wilson block (\S\ref{sec:honest}) and decided the extraction stage on
+it:
+
+\begin{itemize}
+  \item \textbf{Hard truncation refuted intrinsically.} The Cayley--Hamilton
+    relation $a^3b-4a^4+a^5=0$, with monomial dimensions $(16,16,20)$ and the
+    explicit $-32$ evaluation, proves representative-wise canonical truncation
+    is not well-defined on the evaluated trace-word quotient
+    (\texttt{SU2CayleyHamiltonTruncationObstruction}).
+  \item \textbf{Exact norm-below-two extractors constructed.} The
+    $21$-coordinate associated-graded jet chart has extraction constant
+    $131071/65536$ and the one-plaquette trace quotient has $31/16$, both
+    certified with explicit bases, identity jet matrices, and biorthogonal
+    duals; the conditional ledger value $90832203/40960\approx2217.6$ closes
+    the two-source bootstrap at depth $16$ and fails at depth $15$
+    (\texttt{SU2AssociatedGradedExtraction},
+    \texttt{SU2IndependentTraceBasis}).
+  \item \textbf{A certified dimension separation.} The full graded chart has
+    dimension $12{,}875{,}774{,}670$ and admits no linear equivalence onto any
+    space of dimension $\leq1851$, so v14's schematic operator count requires
+    an invariant quotient the manuscript does not construct
+    (\texttt{SU2AssociatedGradedExtractionDecision}).
+  \item \textbf{The $(F,D)$ transfer socket is uninhabited as written.} The
+    dimension-$18$/radial-degree-$6$ descendant and the
+    integration-by-parts/block witness $\partial^2\Tr(F^2)$ jointly refute the
+    faithful transfer sockets for both relation policies and all
+    RG-compatible extensions
+    (\texttt{v14\_fullFD\_quotientTransfer\_noGo}).
+\end{itemize}
+
+\subsection*{Machine-checked in the fourth round}
+
+A fourth round constructed the derivative-aware boundary-cochain scaffold and
+then decided whether its dimension-$16$ coordinate socket could be filled by
+the manuscript's Lorentz-only operator census:
+
+\begin{itemize}
+  \item \textbf{The repaired filtration and boundary bookkeeping are
+    mechanical.} The canonical-dimension filtration, boundary-aware cochain
+    coordinates, coefficient projection, and conditional scalar bootstrap are
+    machine-checked. Their analytic Wilson-RG factors remain explicit inputs.
+  \item \textbf{The actual-lattice O.9 census is refuted at dimension $8$.}
+    The exact $\mathrm{SU}(2)$ Wilson observable, Cartan chart, fourth-jet
+    calculation, and rational rotation witness prove that the hypercubic
+    quartic jet is not Lorentz invariant
+    (\texttt{SU2LatticeFDCensusNoGo}).
+  \item \textbf{Both relation branches and six same-target variants are
+    closed.} Neither the off-shell O.9.2 policy nor the on-shell F.4.3 policy
+    admits a complete Lorentz-only certificate. EOM, Bianchi/IBP,
+    cyclic/multitrace, $\mathrm{SU}(2)$ Cayley--Hamilton, and postponed-IBP
+    variants share the same uninhabited spanning core.
+  \item \textbf{The live fork is explicit.} One must either enumerate an
+    $H(4)$-complete finite-spacing basis and rederive its duals and constants,
+    or prove a Symanzik/continuum projection with quantitative decay of the
+    Lorentz-breaking artifact coordinates. No numerical factor transfers
+    automatically from the refuted census.
+\end{itemize}
+
 \subsection*{The remaining inputs}
 
 With the arithmetic and structural skeleton closed, the route now rests on the
@@ -576,13 +793,26 @@ three different situations.
     weighted cumulant-generation estimate, rooted tree-graph factor, and
     basis/dual-jet conditioning are not proved on the actual map. Regrouping
     connected families by union has norm one; the factor $14$ is the local
-    rooted branching count, not a total-contact bound. \emph{What settles it:}
-    first select one source-faithful relation policy and exact block quotient
-    (or label the choice as a repaired construction), then supply the actual
-    dimension-$16$ lattice Wilson representatives, quotient basis, and dual
-    jets, prove their uniform conditioning, and prove the weighted Wilson
-    cumulant/tree estimate in the same norm. The resulting actual constant can
-    then be checked against $C\,b^{\,3-\dmax}\leq1/3$.
+    rooted branching count, not a total-contact bound. The third round
+    sharpened what a derivation must overcome: representative-wise truncation
+    is refuted intrinsically, exact norm-below-two extractors exist on the
+    corrected charts, and the transfer of any such extractor to the canonical
+    $(F,D)$ space is refuted by the derivative-blindness and
+    integration-by-parts/block obstructions. \emph{What settles it:} construct
+    a derivative-aware filtration whose truncation provably agrees with
+    canonical dimension $2\cdot\#F+\#D$, together with a boundary-aware
+    complex retaining total-derivative descendants per block and imposing
+    integration by parts only at global recombination. The fourth round
+    constructed that mechanical scaffold but proved that its actual-lattice
+    coordinate census cannot use only O.9.3's Lorentz scalars. \emph{What
+    settles it now:} enumerate and certify an $H(4)$-complete basis through
+    dimension $16$, with exact duals and conditioning, or supply a quantitative
+    continuum/Symanzik projection controlling every discarded
+    Lorentz-breaking coordinate; then prove the norm-below-two estimate, the
+    weighted Wilson cumulant/tree estimate, and the Wilson-RG intertwining law
+    on the same object.
+    The resulting actual constant can then be checked against
+    $C\,b^{\,3-\dmax}\leq1/3$.
   \item \textbf{Which support recurrence the glue satisfies.}
     \emph{Status: v14 asserts both branches of a now-proven dichotomy in
     different places.} \emph{What settles it:} one paragraph identifying the
@@ -646,9 +876,25 @@ analytic-factor obstructions, and conditional depth arithmetic),
 (gap $\Leftrightarrow$ clustering and the discharged finite continuum gate),
 \texttt{ToyRGMap} (the dynamical realization and depth-15 escape), and
 \texttt{Q8StrongCouplingGap} / \texttt{Q8TransferClustering} (the non-abelian
-instance) --- all in the same namespace, all axiom-guarded to
-$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with no
-\texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
+instance); and, from the third round,
+\texttt{SU2WilsonBlockPilot} (the exact $\mathrm{SU}(2)$ block, tree gauge,
+co-tree coordinates, and fixed-boundary Haar reference integral),
+\texttt{SU2CayleyHamiltonTruncationObstruction} (the intrinsic non-descent
+witness), \texttt{SU2MajorantRepairDecision} (the sealed truncation-repair
+decision), \texttt{SU2AssociatedGradedExtraction} /
+\texttt{SU2AssociatedGradedExtractionDecision} (the graded jet basis, its
+exact extraction constant, and the dimension separation from the schematic
+count), \texttt{SU2IndependentTraceBasis} (the one-plaquette normal form and
+its extraction constant), and \texttt{V14FDQuotientTransferNoGo} (the
+derivative-blindness and integration-by-parts/block obstructions and the
+uninhabited transfer sockets); and, from the fourth round,
+\texttt{V14BoundaryCochainComplex}, \texttt{V14BoundaryCochainExtraction}, and
+\texttt{V14BoundaryCochainBootstrap} (the derivative-aware boundary-cochain
+scaffold and its conditional arithmetic), together with
+\texttt{SU2LatticeFDCensusNoGo} (the exact hypercubic quartic witness and the
+off-shell/on-shell Lorentz-census no-go) --- all in the same namespace, all axiom-guarded
+to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
+no \texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
 Reconstruction} (v14).
 
