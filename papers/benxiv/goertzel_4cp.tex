@@ -114,11 +114,11 @@ Machine-checked outright (no \texttt{sorry}; axioms $\subseteq
 \{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$): finite
 encoded-model audits of the keystone $\LKR$ property (Lemma~8.14) and two-color
 \emph{transparency} (Lemma~8.15), together with completeness of the 192-state
-incidence enumeration --- graph-level Kempe-step soundness remains a named open
-obligation; a proper-subspace strictness theorem against a larger unrestricted
+incidence enumeration --- graph-level Kempe-step soundness remains open; a
+proper-subspace strictness theorem against a larger unrestricted
 boundary-zero chain space, with four uniform peel oracles refuted and
 conditional need-based span infrastructure --- v23's actual cycle-space
-inclusion (Theorem~4.9) remains a named open target; and a length-2/3
+inclusion (Theorem~4.9) remains open; and a length-2/3
 radial-closing-edge fiber census for \S9.2 Step~3 --- the manuscript's
 all-outer-stub, arbitrary-length statement remains open. The Gate-2 composition
 (Lemmas~8.18/8.19) is \emph{reduced} --- the manuscript's own pointwise Step-1
@@ -139,12 +139,28 @@ face-collar redesign) is open. We make no claim about the Four-Color Theorem
 --- which is of course a theorem, via the Appel--Haken and
 Robertson--Sanders--Seymour--Thomas computer-assisted proofs. The
 human-readable v23 route remains \emph{open}, with its foundational layer
-audited in an encoded model whose graph fidelity is the named next obligation,
-and its most dangerous assembly seam pinned down as broken in that model. A
-companion scope note records the v24 working material: its total-curvature
-identity is proved, its at-most-twelve pentagon budget requires an explicit
-scope gate, and Trail Completability with its L1--L10 dependency package is the
-live conditional target.
+audited in an encoded model, and its most dangerous assembly seam pinned down
+as broken in that model.
+
+A third development round turned to the v24 working material (\emph{Deserts,
+Pivots, and the Necklace}), which replaces v23's \S6--7. The v24 validation
+toolchain and its numerical claims were reproduced independently: the $5412$
+and $31704$ annular censuses with their Kempe fibers, the fullerene bases,
+the pentagon seals, the desert and strand specimens --- including the
+$688$-edge strand refuting the package's own Short Strand Conjecture --- and
+the GWCO exact base through twelve. On the structural side the development
+now carries a rotation-system Tait-coloring layer with exact facial linear
+algebra; the all-face discrete Gauss--Bonnet identity
+(\texttt{totalFaceCurvature\_eq\_twelve}); a proved \emph{weighted} pentagon
+budget correcting the package's at-most-twelve pentagon count; the
+locked-pentagon necklace assembly with singleton-strand forcing; a hexagonal
+corridor theory (rung classification, clean width-four slabs, oriented
+interfaces, Tait transfer, a sharp chirality barrier); congruence-correct
+corridor and tube-ring pumping; and a framed-trail layer with
+square/digon/rotor fiber calculi. The route's endgame --- fusion chains,
+chiral monodromy, Trail Completability with its L1--L10 dependency package,
+and a proved Short-Strand replacement --- remains open; the corridor and
+pumping infrastructure is the active replacement search.
 \end{abstract}
 
 \tableofcontents
@@ -607,6 +623,90 @@ development already proves cyclic-five-edge-connectivity for concrete graphs (an
 refutes it for others), so discharging or refuting it \emph{for the escape collar}
 is a reachable next question --- the honest current frontier of the S4 salvage.
 
+\section{The v24 route: deserts, pivots, and the necklace}
+\label{sec:v24}
+
+Goertzel's v24 working package (July 2026) replaces v23's \S6--7 with a new
+architecture: pentagonal \emph{pivots}, hexagonal \emph{deserts}, a
+\emph{necklace} decomposition of the sphere relative to the twelve pentagons,
+winding and monodromy invariants along corridors, and a final \emph{Trail
+Completability} target from which the minimal-counterexample contradiction is
+to follow, conditional on a dependency chain L1--L10. The package proposes a
+universal Short Strand Conjecture and then refutes it itself with a
+$688$-edge, reach-$40$ strand, so the route requires a replacement bound.
+This section records what the formalization has established of this route so
+far; the formalization targets combinatorial rotation systems throughout, not
+topological planarity.
+
+\paragraph{Independent reproduction of the validation toolchain.} Every
+numerical claim consumed from the package was recomputed independently before
+use: the annular censuses ($5412$ and $31704$) with their Kempe fibers, the
+fullerene finite bases, the pentagon finite seals, tube seed growth, the
+desert and strand specimens (including the Short-Strand refuter), Goldberg
+normal-form specimens, and the GWCO exact base through twelve. A recurrent
+tube-ring transfer theorem replaces the package's Pascal-triangle
+extrapolation (\texttt{GoertzelV24TubeRingTransfer}).
+
+\paragraph{Rotation systems and facial linear algebra.} A Tait-coloring
+layer is built over rotation systems, with each edge's two faces identified,
+face simplicity reduced to two-sidedness, facial dual connectedness, and the
+exact facial linear algebra: facial boundary rank, primal cycle-space rank,
+the equality of the facial span with the cycle space, and the face winding
+classification (\texttt{GoertzelV24FaceBoundaryLinearAlgebra},
+\texttt{GoertzelV24OrbitFaceCycleSpaceEquality},
+\texttt{GoertzelV24WindingClassification}).
+
+\paragraph{Curvature.} The all-face discrete Gauss--Bonnet identity is
+proved from rotation-system data alone: the total face curvature
+$\sum_f\,(6-\ell(f))$ equals $12$ (\texttt{totalFaceCurvature\_eq\_twelve} in
+\texttt{GoertzelV24CurvatureScope}). The package's \emph{at-most-twelve
+pentagon} step, which is false as stated under minimum face size five, is
+corrected by a proved \emph{weighted} pentagon budget charging faces by
+$6-\ell(f)$; the fullerene hexagonal bulk is derived on orbit faces, and
+curvature-to-bulk corridor bounds connect the budget to corridor extraction
+(\texttt{GoertzelV24OrbitFaceCurvatureBulk}, \texttt{GoertzelV24BulkCorridor}).
+
+\paragraph{Necklace and corridors.} The locked-pentagon necklace is
+assembled and the singleton necklace strand forced
+(\texttt{GoertzelV24Necklace}). A hexagonal corridor theory is developed:
+defect-free corridor neighborhoods extracted from geodesic face paths; an
+internal rung classification with induced rung chains and the exclusion of
+adjacent induced rungs; clean width-four slabs with oriented interfaces and
+the matching of consecutive interfaces; Tait transfer across slabs with
+finite color-transition alphabets and color-state words; and a sharp
+chirality barrier under which transfer across a chiral reversal forces the
+melted state (\texttt{GoertzelV24CleanHexCorridor},
+\texttt{GoertzelV24HexFaceRungType}, \texttt{GoertzelV24OrientedHexSlab},
+\texttt{GoertzelV24HexCorridorColorTransfer},
+\texttt{GoertzelV24HexCorridorChiralityBarrier}).
+
+\paragraph{Pumping.} The corridor acceptance language is proved periodic and
+corridor pumping congruence-correct; with the recurrent tube-ring transfer
+these are the working tools of the Short-Strand replacement search
+(\texttt{GoertzelV24CorridorPumping}).
+
+\paragraph{Framed trails and local fiber calculi.} The framed-trail layer
+proves completion semantics and defect freedom --- the unique admissible
+missing color and the characterization of proper trail extensions
+(\texttt{missingColorAt\_is\_unique\_admissible},
+\texttt{hasMatchingDefectColors\_iff\_exists\_properTrailExtensionColor} in
+\texttt{GoertzelV24FramedTrail}) --- supported by exact local calculi: the
+square fiber table with its realized Kempe switch and local and
+compositional profile identities, the digon Kempe rung, rotor local color
+routes, and the two-edge-cut color parity (\texttt{GoertzelV24Square}\,%
+/\texttt{SquareKempe}/\texttt{SquareComposition}, \texttt{GoertzelV24Digon},
+\texttt{GoertzelV24Rotor}, \texttt{GoertzelV24TwoEdgeCut}).
+
+\paragraph{In progress and open.} Current work extracts exact cut profiles
+(vertex-side, boundary-face, all-face) and graph-derived corridor cut
+profiles with splice observables, bounding face fragments by interface
+width. The endgame of the route is open: the fusion-chain and
+chiral-monodromy composition, Trail Completability itself, the L1--L10
+dependency chain into the minimal-counterexample contradiction, and a proved
+Short-Strand replacement. The v23-era collar obligations are taken up only
+where this route consumes them. Nothing in this section claims the
+Four-Color Theorem or the completion of the v24 route.
+
 \section{Status and scope: machine-checked, reduced, and open}
 \label{sec:status}
 
@@ -641,8 +741,7 @@ Lemmas~8.14 and 8.15, together with completeness of the 192-state incidence
 enumeration; unrestricted-oracle strictness and conditional need-based Pillar~A
 infrastructure (with four uniform peel oracles refuted); and the length-2/3
 radial-closing-edge S2 census. The corresponding graph move-soundness, actual
-v23 $\Wz(H)$ inclusion, and manuscript S2 statement remain named open
-obligations. All with no \texttt{sorry} and axioms
+v23 $\Wz(H)$ inclusion, and manuscript S2 statement remain open. All with no \texttt{sorry} and axioms
 $\subseteq\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$.
 
 \paragraph{Reduced to one pin.} Gate-2 (Lemmas~8.18/8.19): the manuscript's
@@ -657,14 +756,12 @@ actual-collar cut-lift obligation remains open. In the encoded model this
 lowers the odds that the v23 route completes \emph{as written}; its salvage is
 open.
 
-\paragraph{v24 scope.} For the v24 route, the total face-curvature identity is
-proved under explicit cubic spherical incidence and Euler data. The claimed
-at-most-twelve pentagon budget is false under minimum face size five and
-requires the stated fullerene or zero-negative-curvature scope gate. The Short
-Strand addendum is recorded as externally refuted; the kernel-checked datum by
-itself refutes the old bound~4. Trail Completability, the L1--L10 dependency
-package, the actual-collar cut lift, and effective GWCO threshold coverage
-remain open.
+\paragraph{v24 scope.} See \S\ref{sec:v24}. The validation toolchain and
+censuses are independently reproduced; the all-face curvature identity and
+the corrected \emph{weighted} pentagon budget are proved; the
+necklace/corridor, pumping, and framed-trail layers are in the tree; the
+endgame (fusion chains, chiral monodromy, Trail Completability, L1--L10, and
+a proved Short-Strand replacement) is open.
 
 \paragraph{Open (the non-finite heart).} Steps S1, S3, S5--S9: the realization of
 abstract chains as actual collars, the wide-annulus peeling, the interface to
@@ -692,7 +789,10 @@ its need-based repair are \texttt{FrontierGeometric}, \texttt{GoalAudit}, and
 S2 bridge is \texttt{GoertzelLemma818ClosedCollarS2Bridge}; the S4 counterexample
 and the refuted two-sided-avoidance repair are
 \texttt{GoertzelLemma818TwoLayerEscape} and
-\texttt{GoertzelLemma818TwoSidedAvoidance}. Lean listings are ASCII
+\texttt{GoertzelLemma818TwoSidedAvoidance}. The v24 route of \S\ref{sec:v24}
+is the \texttt{GoertzelV24*} module family (roughly sixty modules; the primary
+mathematical source is the v24 working package \emph{Deserts, Pivots, and the
+Necklace}, July 2026). Lean listings are ASCII
 transliterations of the source declarations (the sources are normative); every
 headline was checked with \texttt{\#print axioms}. Per-declaration source links
 are omitted pending publication of the development tree.
