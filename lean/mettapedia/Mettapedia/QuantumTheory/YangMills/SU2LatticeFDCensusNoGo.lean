@@ -634,6 +634,22 @@ def censusConstructionVerdict
     (_ : CensusConstructionVariant) : CensusConstructionVerdict :=
   .obstructedByHypercubicQuartic
 
+/-- Necessary spanning certificate shared by every enumerated same-target
+variant.  The variants alter relation reduction or boundary handling, but all
+retain O.9.3's Lorentz-scalar census restriction. -/
+abbrev CensusConstructionVariant.SpanningCertificate
+    (_ : CensusConstructionVariant)
+    (Operator : Type*) [Fintype Operator] :=
+  O9WilsonCensusSpanningCore Operator
+
+/-- Every enumerated reasonable same-target construction variant is
+uninhabited, not merely labelled obstructed in an audit table. -/
+theorem no_censusConstructionVariant_spanningCertificate
+    (variant : CensusConstructionVariant)
+    (Operator : Type*) [Fintype Operator] :
+    ¬ Nonempty (variant.SpanningCertificate Operator) :=
+  no_O9WilsonCensusSpanningCore Operator
+
 /-- All same-target variants are closed by the same derivative-free symmetry
 obstruction.  Bianchi, IBP, EOM, trace, and Cayley--Hamilton choices cannot turn
 a non-Lorentz-invariant polynomial into a Lorentz scalar. -/
@@ -667,14 +683,18 @@ theorem ymMove7_dimension16WilsonCoordinate_terminalNoGo :
         .f43OnShell Operator)) ∧
     (∀ variant,
       censusConstructionVerdict variant =
-        .obstructedByHypercubicQuartic) := by
+        .obstructedByHypercubicQuartic) ∧
+    (∀ (variant : CensusConstructionVariant)
+        (Operator : Type) [Fintype Operator],
+      ¬ Nonempty (variant.SpanningCertificate Operator)) := by
   exact ⟨su2HypercubicQuarticCanonicalDimension_eq_eight,
     su2HypercubicQuarticWilsonObservable_gaugeInvariant,
     hypercubicQuarticJet_not_lorentzInvariant,
     su2HypercubicQuarticWilsonObservable_fourthCartanJet,
     no_faithfulDimension16WilsonCoordinateCertificate_offShell,
     no_faithfulDimension16WilsonCoordinateCertificate_onShell,
-    every_censusConstructionVariant_obstructed⟩
+    every_censusConstructionVariant_obstructed,
+    no_censusConstructionVariant_spanningCertificate⟩
 
 end SU2LatticeFDCensusNoGo
 end YangMills
