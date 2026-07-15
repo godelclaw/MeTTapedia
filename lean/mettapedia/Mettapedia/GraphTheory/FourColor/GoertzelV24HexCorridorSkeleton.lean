@@ -6,11 +6,13 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24HexCorridorSkeleton
 
 open GoertzelV24BulkCorridor
+open GoertzelV24BoundedDegreePath
 open GoertzelV24CyclicFiveFaceIntersections
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24SharedFacesTwoEdgeSeparator
 open GoertzelV24CurvatureScope
 open GoertzelV24SimpleGraphFaceDualConnectedness
 open SimpleGraphDartRotation
@@ -33,6 +35,11 @@ structure OrbitHexCorridorSkeleton (RS : RotationSystem V E)
   consecutive_adjacent : ∀ left right,
     right.val = left.val + 1 →
       (interiorDualGraph (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).Adj
+          (faceAt left) (faceAt right)
+  separated_not_adjacent : ∀ left right,
+    left.val + 1 < right.val →
+      ¬ (interiorDualGraph (orbitFaceBoundary RS)
         (Finset.univ : Finset (OrbitFace RS))).Adj
           (faceAt left) (faceAt right)
 
@@ -144,6 +151,98 @@ theorem OrbitHexCorridorSkeleton.rungEdge_eq_of_shared
     (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS)) hunique
       (corridor.consecutive_adjacent step.left step.right rfl) hshared
 
+/-- In a two-sided quotient-face model, distinct corridor steps have distinct
+canonical rung edges. If two rungs were equal, the exact pair of faces incident
+to that edge would identify the corresponding adjacent index pairs, either in
+the same order or reversed; the reversed order contradicts successor
+arithmetic. -/
+theorem OrbitHexCorridorSkeleton.rungEdge_injective
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    (corridor : OrbitHexCorridorSkeleton RS corridorLength)
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))) :
+    Function.Injective (corridor.rungEdge hunique) := by
+  intro left right hedge
+  have hleftStepNe : left.left ≠ left.right := by
+    intro heq
+    have hval := congrArg Fin.val heq
+    simp only [CorridorStep.right_val] at hval
+    omega
+  have hrightStepNe : right.left ≠ right.right := by
+    intro heq
+    have hval := congrArg Fin.val heq
+    simp only [CorridorStep.right_val] at hval
+    omega
+  have hleftFaces :
+      (corridor.faceAt left.left).1 ≠ (corridor.faceAt left.right).1 := by
+    intro hface
+    exact hleftStepNe (corridor.faceAt_injective (Subtype.ext hface))
+  have hrightFaces :
+      (corridor.faceAt right.left).1 ≠ (corridor.faceAt right.right).1 := by
+    intro hface
+    exact hrightStepNe (corridor.faceAt_injective (Subtype.ext hface))
+  have hleftPair := orbitFace_incidentFaces_eq_pair_of_mem RS htwoSided
+    hleftFaces (corridor.rungEdge hunique left)
+      (corridor.rungEdge_mem_left hunique left)
+      (corridor.rungEdge_mem_right hunique left)
+  have hrightPair := orbitFace_incidentFaces_eq_pair_of_mem RS htwoSided
+    hrightFaces (corridor.rungEdge hunique right)
+      (corridor.rungEdge_mem_left hunique right)
+      (corridor.rungEdge_mem_right hunique right)
+  have hpairs :
+      ({(corridor.faceAt left.left).1,
+          (corridor.faceAt left.right).1} : Finset (OrbitFace RS)) =
+        {(corridor.faceAt right.left).1,
+          (corridor.faceAt right.right).1} := by
+    calc
+      ({(corridor.faceAt left.left).1,
+          (corridor.faceAt left.right).1} : Finset (OrbitFace RS)) =
+          Finset.univ.filter fun face : OrbitFace RS =>
+            corridor.rungEdge hunique left ∈ orbitFaceBoundary RS face :=
+        hleftPair.symm
+      _ = Finset.univ.filter fun face : OrbitFace RS =>
+            corridor.rungEdge hunique right ∈ orbitFaceBoundary RS face := by
+        rw [hedge]
+      _ = {(corridor.faceAt right.left).1,
+          (corridor.faceAt right.right).1} := hrightPair
+  have hleftIndexCases :
+      left.left = right.left ∨ left.left = right.right := by
+    have hmem : (corridor.faceAt left.left).1 ∈
+        ({(corridor.faceAt right.left).1,
+          (corridor.faceAt right.right).1} : Finset (OrbitFace RS)) := by
+      rw [← hpairs]
+      simp
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hmem
+    exact hmem.imp
+      (fun h => corridor.faceAt_injective (Subtype.ext h))
+      (fun h => corridor.faceAt_injective (Subtype.ext h))
+  have hrightIndexCases :
+      left.right = right.left ∨ left.right = right.right := by
+    have hmem : (corridor.faceAt left.right).1 ∈
+        ({(corridor.faceAt right.left).1,
+          (corridor.faceAt right.right).1} : Finset (OrbitFace RS)) := by
+      rw [← hpairs]
+      simp
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hmem
+    exact hmem.imp
+      (fun h => corridor.faceAt_injective (Subtype.ext h))
+      (fun h => corridor.faceAt_injective (Subtype.ext h))
+  rcases hleftIndexCases with hsameLeft | hreversedLeft
+  · cases left with
+    | mk leftIndex leftRange =>
+        cases right with
+        | mk rightIndex rightRange =>
+            simp only at hsameLeft
+            cases hsameLeft
+            rfl
+  · rcases hrightIndexCases with hreversedRight | hsameRight
+    · have hleftVal := congrArg Fin.val hreversedLeft
+      have hrightVal := congrArg Fin.val hreversedRight
+      simp only [CorridorStep.right_val] at hleftVal hrightVal
+      omega
+    · exact False.elim (hleftStepNe (hreversedLeft.trans hsameRight.symm))
+
 /-- An all-hex block whose exported index bound lies on a simple dual path
 gives a genuine corridor skeleton rather than a clamped `getVert` sample. -/
 def OrbitHexCorridorSkeleton.ofPathBlock
@@ -151,7 +250,11 @@ def OrbitHexCorridorSkeleton.ofPathBlock
       AmbientFace (Finset.univ : Finset (OrbitFace RS))}
     (path : (interiorDualGraph (orbitFaceBoundary RS)
       (Finset.univ : Finset (OrbitFace RS))).Walk start finish)
-    (hpath : path.IsPath) (corridorLength : Nat)
+    (hpath : path.IsPath)
+    (hgeodesic : path.length =
+      (interiorDualGraph (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).dist start finish)
+    (corridorLength : Nat)
     (hpositionBound : 13 * corridorLength ≤ path.length + 1)
     (block : Fin 13)
     (hhexagonal : ∀ offset : Fin corridorLength,
@@ -208,6 +311,28 @@ def OrbitHexCorridorSkeleton.ofPathBlock
         (path.getVert (block.val * corridorLength + left.val))
         (path.getVert ((block.val * corridorLength + left.val) + 1)) at hadj
     simpa only [hsuccessor, Nat.add_assoc] using hadj
+  separated_not_adjacent := by
+    intro left right hseparated
+    have hleftBound :
+        (corridorBlockIndex (defectBudget := 12) block left).val ≤
+          path.length := by
+      have hindex := (corridorBlockIndex
+        (defectBudget := 12) block left).isLt
+      omega
+    have hrightBound :
+        (corridorBlockIndex (defectBudget := 12) block right).val ≤
+          path.length := by
+      have hindex := (corridorBlockIndex
+        (defectBudget := 12) block right).isLt
+      omega
+    apply not_adj_getVert_of_length_eq_dist_of_add_one_lt
+      path hgeodesic
+      (corridorBlockIndex (defectBudget := 12) block left).val
+      (corridorBlockIndex (defectBudget := 12) block right).val
+      hleftBound hrightBound
+    change block.val * corridorLength + left.val + 1 <
+      block.val * corridorLength + right.val
+    omega
 
 /-- Structural fullerene L1 up to its explicitly separated finite local
 classification: sufficiently many quotient faces force an incidence-level
@@ -222,12 +347,12 @@ theorem orbitFaceFullerene_exists_hexCorridorSkeleton
     (hlarge : 7 ^ (13 * corridorLength - 1) <
       Fintype.card (OrbitFace RS)) :
     Nonempty (OrbitHexCorridorSkeleton RS corridorLength) := by
-  obtain ⟨start, finish, path, hpath, _hgeodesic, hpositionBound,
+  obtain ⟨start, finish, path, hpath, hgeodesic, hpositionBound,
       block, hhexagonal⟩ :=
     orbitFaceFullerene_exists_allHexagonalGeodesicBlock
       RS hsphere htwoSided hfullerene hprimal hrotation
         corridorLength hpositive hlarge
-  exact ⟨OrbitHexCorridorSkeleton.ofPathBlock RS path hpath
+  exact ⟨OrbitHexCorridorSkeleton.ofPathBlock RS path hpath hgeodesic
     corridorLength hpositionBound block hhexagonal⟩
 
 /-- For a graph-backed cellular fullerene in cyclically 5-edge-connected
@@ -246,11 +371,15 @@ theorem orbitFaceFullerene_exists_hexCorridorSkeleton_with_uniqueRungs
     (hlarge : 7 ^ (13 * corridorLength - 1) <
       Fintype.card (OrbitFace data.toRotationSystem)) :
     ∃ corridor : OrbitHexCorridorSkeleton data.toRotationSystem corridorLength,
-      ∀ step : CorridorStep corridorLength, ∃! edge,
-        edge ∈ sharedInteriorEdges
+      ∃ hunique : PairwiseUniqueSharedInteriorEdges
           (orbitFaceBoundary data.toRotationSystem)
-          (Finset.univ : Finset (OrbitFace data.toRotationSystem))
-          (corridor.faceAt step.left).1 (corridor.faceAt step.right).1 := by
+          (Finset.univ : Finset (OrbitFace data.toRotationSystem)),
+        (∀ step : CorridorStep corridorLength, ∃! edge,
+          edge ∈ sharedInteriorEdges
+            (orbitFaceBoundary data.toRotationSystem)
+            (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+            (corridor.faceAt step.left).1 (corridor.faceAt step.right).1) ∧
+        Function.Injective (corridor.rungEdge hunique) := by
   have hprimal :
       (rotationPrimalGraph data.toRotationSystem).Connected := by
     rw [rotationPrimalGraph_toRotationSystem_eq]
@@ -264,7 +393,9 @@ theorem orbitFaceFullerene_exists_hexCorridorSkeleton_with_uniqueRungs
       (OrbitSphericalCubicMapData.ofSphericalCubicMapData
         data.toRotationSystem hsphere)
       hrotation hcyclicFive
-  exact ⟨corridor, fun step => corridor.existsUnique_rungEdge hunique step⟩
+  exact ⟨corridor, hunique,
+    fun step => corridor.existsUnique_rungEdge hunique step,
+    corridor.rungEdge_injective htwoSided hunique⟩
 
 end
 
