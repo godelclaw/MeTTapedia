@@ -83,6 +83,20 @@ theorem placedHexColorWord_castPosition_toColor
   congr 2
 
 @[simp]
+theorem placedHexColorWord_incoming_toColor
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C) :
+    (placedHexColorWord placement C hC placement.incomingPosition6).toColor =
+      C (corridor.rungEdge hunique interior.incoming) := by
+  rw [placedHexColorWord_toColor,
+    placementPositionOfSix_incomingPosition6, placement.incoming_edge]
+
+@[simp]
 theorem placedHexColorWord_outgoing_toColor
     {RS : RotationSystem V E} {corridorLength : Nat}
     {corridor : OrbitHexCorridorSkeleton RS corridorLength}
@@ -156,6 +170,23 @@ def hexCyclicPred (position : Fin 6) : Fin 6 :=
 theorem hexCyclicPred_succ_modEq (position : Fin 6) :
     position.val ≡ (hexCyclicPred position).val + 1 [MOD 6] := by
   fin_cases position <;> decide
+
+/-- The next canonical corridor interior begins at the current outgoing
+rung. -/
+theorem nextCorridorInterior_incoming_eq_outgoing
+    {corridorLength : Nat} (interior : CorridorInterior corridorLength)
+    (hnext : interior.center.val + 2 < corridorLength) :
+    (nextCorridorInterior interior hnext).incoming = interior.outgoing := by
+  have hleft : (nextCorridorInterior interior hnext).incoming.left =
+      interior.outgoing.left := by
+    simp [nextCorridorInterior, CorridorInterior.incoming,
+      CorridorInterior.outgoing]
+  cases hright : (nextCorridorInterior interior hnext).incoming with
+  | mk rightLeft rightProof =>
+    cases hleftStep : interior.outgoing with
+    | mk leftLeft leftProof =>
+      simp only [hright, hleftStep, CorridorStep.mk.injEq] at hleft ⊢
+      exact hleft
 
 /-- The incoming dart of any placement of the next corridor face is exactly
 the alpha-opposite of the outgoing dart of the current placement. -/
@@ -380,10 +411,9 @@ theorem hexSlabColorStateOfPlacement_valid
       placement hcubic hrotation htwoSided,
     placedHexColorWord_isProper placement hcubic hrotation C hC⟩
 
-/-- Finite two-corner transition test between raw six-slot slab states.
-It records exactly the two retained positions flanking the source's outgoing
-rung and their forced target colors. -/
-def FlankingTaitColorTransition
+/-- The two-corner color constraints between raw six-slot slab states. These
+constraints alone do not identify the shared rung color. -/
+def FlankingTaitCornerCompatibility
     (source target : HexSlabColorState) : Prop :=
   source.Valid ∧ target.Valid ∧
     ∃ sourceBefore sourceAfter targetBefore targetAfter : Fin 6,
@@ -403,6 +433,101 @@ def FlankingTaitColorTransition
         (source.color source.outgoing).toColor +
           (source.color sourceAfter).toColor
   deriving Decidable
+
+/-- Finite transition test between adjacent six-slot slab states. In
+addition to the forced corner colors, it requires equality on the rung shared
+by the two slabs. -/
+def FlankingTaitColorTransition
+    (source target : HexSlabColorState) : Prop :=
+  FlankingTaitCornerCompatibility source target ∧
+    target.color target.incoming = source.color source.outgoing
+  deriving Decidable
+
+private def thirdStrandColor : StrandColor → StrandColor → StrandColor
+  | .a, .b | .b, .a => .c
+  | .a, .c | .c, .a => .b
+  | .b, .c | .c, .b => .a
+  | color, _ => color
+
+private def freshStrandColor : StrandColor → StrandColor → StrandColor
+  | .a, .a => .b
+  | .b, .b => .c
+  | .c, .c => .a
+  | .a, .b | .b, .a => .c
+  | .a, .c | .c, .a => .b
+  | .b, .c | .c, .b => .a
+
+/-- Construct an intermediate abstract hex state from the three colors around
+the source output and the three colors around the target input. Separation
+two is used when a forced flank agrees; otherwise opposite rungs keep the two
+forced triples disjoint. -/
+private def middleBoundaryState
+    (sourceBefore sourceOutgoing sourceAfter
+      targetBefore targetIncoming targetAfter : StrandColor) :
+    HexSlabColorState :=
+  let sourceNext := thirdStrandColor sourceBefore sourceOutgoing
+  let sourcePrevious := thirdStrandColor sourceOutgoing sourceAfter
+  let targetPrevious := thirdStrandColor targetBefore targetIncoming
+  let targetNext := thirdStrandColor targetIncoming targetAfter
+  if sourceNext = targetPrevious then
+    ⟨0, 2, ![sourceOutgoing, sourceNext, targetIncoming, targetNext,
+      freshStrandColor targetNext sourcePrevious, sourcePrevious]⟩
+  else if sourcePrevious = targetNext then
+    ⟨0, 4, ![sourceOutgoing, sourceNext,
+      freshStrandColor sourceNext targetPrevious, targetPrevious,
+      targetIncoming, sourcePrevious]⟩
+  else
+    ⟨0, 3, ![sourceOutgoing, sourceNext, targetPrevious, targetIncoming,
+      targetNext, sourcePrevious]⟩
+
+private theorem middleBoundaryState_spec
+    (sourceBefore sourceOutgoing sourceAfter
+      targetBefore targetIncoming targetAfter : StrandColor) :
+    sourceBefore ≠ sourceOutgoing →
+    sourceOutgoing ≠ sourceAfter →
+    targetIncoming ≠ targetBefore →
+    targetAfter ≠ targetIncoming →
+    (let middle := middleBoundaryState sourceBefore sourceOutgoing sourceAfter
+      targetBefore targetIncoming targetAfter;
+      middle.Valid ∧
+      middle.color middle.incoming = sourceOutgoing ∧
+      (middle.color (cyclicSucc middle.incoming)).toColor =
+        sourceBefore.toColor + sourceOutgoing.toColor ∧
+      (middle.color (hexCyclicPred middle.incoming)).toColor =
+        sourceOutgoing.toColor + sourceAfter.toColor ∧
+      middle.color middle.outgoing = targetIncoming ∧
+      targetBefore.toColor =
+        (middle.color (hexCyclicPred middle.outgoing)).toColor +
+          (middle.color middle.outgoing).toColor ∧
+      targetAfter.toColor =
+        (middle.color middle.outgoing).toColor +
+          (middle.color (cyclicSucc middle.outgoing)).toColor) := by
+  fin_cases sourceBefore <;> fin_cases sourceOutgoing <;>
+    fin_cases sourceAfter <;> fin_cases targetBefore <;>
+    fin_cases targetIncoming <;> fin_cases targetAfter <;>
+    decide
+
+@[simp]
+theorem cyclicSucc_hexCyclicPred (position : Fin 6) :
+    cyclicSucc (hexCyclicPred position) = position := by
+  fin_cases position <;> rfl
+
+private theorem canonicalFlankingPositions_of_validRungs
+    (incoming outgoing : Fin 6) (hne : incoming ≠ outgoing)
+    (hnonadjacent : hexRungType incoming outgoing ≠ HexRungType.adjacent) :
+    hexCyclicPred outgoing ≠ cyclicSucc outgoing ∧
+    cyclicSucc incoming ≠ hexCyclicPred incoming ∧
+    hexCyclicPred outgoing ∈ hexSidePositions incoming outgoing ∧
+    cyclicSucc outgoing ∈ hexSidePositions incoming outgoing ∧
+    cyclicSucc incoming ∈ hexSidePositions incoming outgoing ∧
+    hexCyclicPred incoming ∈ hexSidePositions incoming outgoing ∧
+    outgoing.val ≡ (hexCyclicPred outgoing).val + 1 [MOD 6] ∧
+    (cyclicSucc outgoing).val ≡ outgoing.val + 1 [MOD 6] ∧
+    (cyclicSucc incoming).val ≡ incoming.val + 1 [MOD 6] ∧
+    incoming.val ≡ (hexCyclicPred incoming).val + 1 [MOD 6] := by
+  fin_cases incoming <;> fin_cases outgoing <;>
+    norm_num [hexSidePositions, hexRungType, hexCyclicDistance,
+      hexForwardDistance, hexCyclicPred, cyclicSucc, Nat.ModEq] at *
 
 theorem fin6_eq_cyclicSucc_of_modEq (left right : Fin 6)
     (hsuccessor : right.val ≡ left.val + 1 [MOD 6]) :
@@ -444,7 +569,7 @@ theorem flankingTaitColorTransition_no_direct_chiral_reversal
     (htransition : FlankingTaitColorTransition source target) :
     (windingScore source.color = 6 → windingScore target.color ≠ -6) ∧
       (windingScore source.color = -6 → windingScore target.color ≠ 6) := by
-  rcases htransition with
+  rcases htransition.1 with
     ⟨hsourceValid, htargetValid,
       sourceBefore, sourceAfter, targetBefore, targetAfter,
       _hsourcePositionsNe, _htargetPositionsNe,
@@ -485,6 +610,7 @@ theorem flankingTaitColorTransition_no_direct_chiral_reversal
           htargetNegative targetAfter,
         by simpa only [htargetBeforePosition] using
           htargetNegative target.incoming⟩
+
   · intro hsourceScore htargetScore
     have hsourceNegative : IsNegativeChiral source.color :=
       (proper_hexagon_windingScore_eq_neg_six_iff_negativeChiral source.color
@@ -504,6 +630,111 @@ theorem flankingTaitColorTransition_no_direct_chiral_reversal
           htargetPositive targetAfter,
         by simpa only [htargetBeforePosition] using
           htargetPositive target.incoming⟩
+
+/-- Every admitted finite transition respects the shared rung represented by
+the source output and target input slots. -/
+theorem flankingTaitColorTransition_sharedRungColor
+    (source target : HexSlabColorState)
+    (htransition : FlankingTaitColorTransition source target) :
+    target.color target.incoming = source.color source.outgoing := by
+  exact htransition.2
+
+/-- Source state for the finite counterexample showing that corner
+compatibility alone does not enforce the shared-edge color. -/
+def spuriousSharedRungSource : HexSlabColorState :=
+  ⟨0, 2, ![.b, .a, .b, .a, .b, .a]⟩
+
+/-- Target state satisfying both corner equations while assigning a different
+color to the shared incoming rung. -/
+def spuriousSharedRungTarget : HexSlabColorState :=
+  ⟨0, 2, ![.a, .c, .a, .b, .a, .c]⟩
+
+theorem spuriousSharedRung_cornerCompatible :
+    FlankingTaitCornerCompatibility spuriousSharedRungSource
+      spuriousSharedRungTarget := by
+  decide
+
+theorem spuriousSharedRung_colors_ne :
+    spuriousSharedRungTarget.color spuriousSharedRungTarget.incoming ≠
+      spuriousSharedRungSource.color spuriousSharedRungSource.outgoing := by
+  decide
+
+/-- The old corner-only test admitted a transition that cannot represent two
+adjacent colored slabs. -/
+theorem spuriousSharedRung_not_transition :
+    ¬ FlankingTaitColorTransition spuriousSharedRungSource
+      spuriousSharedRungTarget := by
+  intro htransition
+  exact spuriousSharedRung_colors_ne htransition.2
+
+/-- The corrected abstract slab-state relation is complete after two steps:
+every valid source state reaches every valid target state through a valid
+intermediate state. Consequently the local color-state relation by itself
+cannot retain a long-corridor obstruction; such an obstruction must use
+additional interface, cap, or exterior-identification data. -/
+theorem flankingTaitColorTransition_twoStep_complete
+    (source target : HexSlabColorState)
+    (hsource : source.Valid) (htarget : target.Valid) :
+    ∃ middle : HexSlabColorState,
+      FlankingTaitColorTransition source middle ∧
+        FlankingTaitColorTransition middle target := by
+  let sourceBefore := hexCyclicPred source.outgoing
+  let sourceAfter := cyclicSucc source.outgoing
+  let targetBefore := cyclicSucc target.incoming
+  let targetAfter := hexCyclicPred target.incoming
+  let middle := middleBoundaryState
+    (source.color sourceBefore) (source.color source.outgoing)
+      (source.color sourceAfter) (target.color targetBefore)
+      (target.color target.incoming) (target.color targetAfter)
+  have hsourceBeforeNe : source.color sourceBefore ≠
+      source.color source.outgoing := by
+    simpa [sourceBefore] using hsource.2.2 (hexCyclicPred source.outgoing)
+  have hsourceAfterNe : source.color source.outgoing ≠
+      source.color sourceAfter := by
+    simpa [sourceAfter] using hsource.2.2 source.outgoing
+  have htargetBeforeNe : target.color target.incoming ≠
+      target.color targetBefore := by
+    simpa [targetBefore] using htarget.2.2 target.incoming
+  have htargetAfterNe : target.color targetAfter ≠
+      target.color target.incoming := by
+    simpa [targetAfter] using htarget.2.2 (hexCyclicPred target.incoming)
+  have hmiddle := middleBoundaryState_spec
+    (source.color sourceBefore) (source.color source.outgoing)
+      (source.color sourceAfter) (target.color targetBefore)
+      (target.color target.incoming) (target.color targetAfter)
+      hsourceBeforeNe hsourceAfterNe htargetBeforeNe htargetAfterNe
+  change middle.Valid ∧ _ at hmiddle
+  have hsourcePositions := canonicalFlankingPositions_of_validRungs
+    source.incoming source.outgoing hsource.1 hsource.2.1
+  have hmiddlePositions := canonicalFlankingPositions_of_validRungs
+    middle.incoming middle.outgoing hmiddle.1.1 hmiddle.1.2.1
+  have htargetPositions := canonicalFlankingPositions_of_validRungs
+    target.incoming target.outgoing htarget.1 htarget.2.1
+  refine ⟨middle, ?_, ?_⟩
+  · refine ⟨?_, hmiddle.2.1⟩
+    refine ⟨hsource, hmiddle.1, sourceBefore, sourceAfter,
+      cyclicSucc middle.incoming, hexCyclicPred middle.incoming,
+      hsourcePositions.1, hmiddlePositions.2.1,
+      hsourcePositions.2.2.1, hsourcePositions.2.2.2.1,
+      hmiddlePositions.2.2.2.2.1, hmiddlePositions.2.2.2.2.2.1,
+      hsourcePositions.2.2.2.2.2.2.1,
+      hsourcePositions.2.2.2.2.2.2.2.1,
+      hmiddlePositions.2.2.2.2.2.2.2.2.1,
+      hmiddlePositions.2.2.2.2.2.2.2.2.2, ?_, ?_⟩
+    · exact hmiddle.2.2.1
+    · exact hmiddle.2.2.2.1
+  · refine ⟨?_, hmiddle.2.2.2.2.1.symm⟩
+    refine ⟨hmiddle.1, htarget, hexCyclicPred middle.outgoing,
+      cyclicSucc middle.outgoing, targetBefore, targetAfter,
+      hmiddlePositions.1, htargetPositions.2.1,
+      hmiddlePositions.2.2.1, hmiddlePositions.2.2.2.1,
+      htargetPositions.2.2.2.2.1, htargetPositions.2.2.2.2.2.1,
+      hmiddlePositions.2.2.2.2.2.2.1,
+      hmiddlePositions.2.2.2.2.2.2.2.1,
+      htargetPositions.2.2.2.2.2.2.2.2.1,
+      htargetPositions.2.2.2.2.2.2.2.2.2, ?_, ?_⟩
+    · exact hmiddle.2.2.2.2.2.1
+    · exact hmiddle.2.2.2.2.2.2
 
 /-- Consecutive real placements in a clean induced hex corridor satisfy the
 finite flanking transition test. The finite witnesses are extracted from the
@@ -610,6 +841,15 @@ theorem flankingTaitColorTransition_of_consecutivePlacements
       nextPlacement_incoming_after_afterCornerPosition hcubic hrotation
         htwoSided hunique leftInterior hnext leftPlacement rightPlacement
           rightAfter hrightAfterEdge
+  have hsharedRungColor :
+      placedHexColorWord rightPlacement C hC
+          rightPlacement.incomingPosition6 =
+        placedHexColorWord leftPlacement C hC
+          leftPlacement.outgoingPosition6 := by
+    apply StrandColor.toColor_injective
+    rw [placedHexColorWord_incoming_toColor,
+      placedHexColorWord_outgoing_toColor,
+      nextCorridorInterior_incoming_eq_outgoing]
   have hbeforeColor :
       (placedHexColorWord rightPlacement C hC rightBefore6).toColor =
         (placedHexColorWord leftPlacement C hC leftBefore6.1).toColor +
@@ -660,6 +900,7 @@ theorem flankingTaitColorTransition_of_consecutivePlacements
         rw [placedHexColorWord_outgoing_toColor,
           placedHexColorWord_toColor]
         rfl
+  refine ⟨?_, hsharedRungColor⟩
   refine ⟨hleftValid, hrightValid, leftBefore6.1, leftAfter6.1,
     rightBefore6, rightAfter6, hleftBeforeAfter6, hrightBeforeAfter6,
     leftBefore6.2, leftAfter6.2, hrightBeforeMem, hrightAfterMem,
@@ -706,6 +947,14 @@ theorem card_hexSlabColorState : Fintype.card HexSlabColorState = 26244 := by
   have hcolor : Fintype.card StrandColor = 3 := by decide
   rw [hcolor]
   norm_num
+
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 2000000 in
+/-- Exactly 1,188 raw slab states have non-adjacent distinct rungs and a
+proper cyclic boundary coloring. -/
+theorem card_validHexSlabColorState :
+    Fintype.card {state : HexSlabColorState // state.Valid} = 1188 := by
+  decide
 
 end
 

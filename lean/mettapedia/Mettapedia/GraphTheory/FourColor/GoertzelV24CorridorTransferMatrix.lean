@@ -115,6 +115,24 @@ theorem relationalTransferMatrix_pow_pos_iff
   rw [transferCount_pos_iff_exactRelationalTransfer]
   simp only [relationalTransferMatrix_pos_iff]
 
+/-- Every valid-to-valid entry of the squared abstract slab transfer matrix
+is positive. This is the matrix form of two-step completeness and records
+that the unaugmented local color profile has no obstruction beyond one
+step. -/
+theorem validHexSlab_transferCount_two_pos
+    (source target : HexSlabColorState)
+    (hsource : source.Valid) (htarget : target.Valid) :
+    0 < transferCount
+      (relationalTransferMatrix FlankingTaitColorTransition)
+      2 source target := by
+  apply (relationalTransferMatrix_pow_pos_iff
+    FlankingTaitColorTransition 2 source target).2
+  rcases flankingTaitColorTransition_twoStep_complete
+    source target hsource htarget with ⟨middle, hfirst, hsecond⟩
+  exact ExactRelationalTransfer.succ hfirst
+    (ExactRelationalTransfer.succ hsecond
+      (ExactRelationalTransfer.zero target))
+
 /-- The deterministic reachable-profile computation is exactly the support
 of the relational transfer matrix applied to the initial profiles. -/
 theorem mem_reachableProfilesAfter_iff_transferCount_pos
