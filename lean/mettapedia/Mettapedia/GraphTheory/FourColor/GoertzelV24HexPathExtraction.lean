@@ -118,6 +118,7 @@ theorem connectedSixFaceDual_exists_allHexagonalGeodesicBlock
         path.IsPath ∧
           path.length =
             (interiorDualGraph faceBoundary allFaces).dist start finish ∧
+          (defectBudget + 1) * blockLength ≤ path.length + 1 ∧
           ∃ block : Fin (defectBudget + 1),
             ∀ offset : Fin blockLength,
               (faceBoundary
@@ -136,7 +137,8 @@ theorem connectedSixFaceDual_exists_allHexagonalGeodesicBlock
   obtain ⟨block, hblock⟩ := exists_allHexagonalBlock_on_path
     faceBoundary allFaces path hpath defectBudget blockLength
       hblockLength hpositionCount hdefects
-  exact ⟨start, finish, path, hpath, hgeodesic, block, hblock⟩
+  exact ⟨start, finish, path, hpath, hgeodesic,
+    hpositionCount, block, hblock⟩
 
 end GoertzelV24HexPathExtraction
 

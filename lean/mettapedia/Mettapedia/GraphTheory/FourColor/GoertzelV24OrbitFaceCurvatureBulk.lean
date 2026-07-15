@@ -156,6 +156,7 @@ theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
           path.length =
             (interiorDualGraph (orbitFaceBoundary RS)
               (Finset.univ : Finset (OrbitFace RS))).dist start finish ∧
+          13 * blockLength ≤ path.length + 1 ∧
           ∃ block : Fin 13,
             ∀ offset : Fin blockLength,
               (orbitFaceBoundary RS
