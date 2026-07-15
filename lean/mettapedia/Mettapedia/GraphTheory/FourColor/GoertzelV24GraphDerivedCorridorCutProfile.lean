@@ -118,6 +118,8 @@ def GraphCorridorCutData.profile
       (data.portEdge left) (data.portEdge right)
   faceContinues left right :=
     decide (data.fragmentFace left = data.fragmentFace right)
+  fragmentContainsPort fragment port :=
+    decide (data.portEdge port ∈ data.regionalFragmentEdges fragment)
   faceLengthCap := data.cappedRegionalFaceLength
 
 @[simp]
@@ -164,6 +166,19 @@ theorem GraphCorridorCutData.profile_faceContinues_eq_true_iff
     (left right : Fin faceFragmentCount) :
     (data.profile C hC).faceContinues left right = true ↔
       data.fragmentFace left = data.fragmentFace right := by
+  simp [GraphCorridorCutData.profile]
+
+@[simp]
+theorem GraphCorridorCutData.profile_fragmentContainsPort_eq_true_iff
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (data : GraphCorridorCutData RS crossingEdgeCount terminalCount
+      faceFragmentCount)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (fragment : Fin faceFragmentCount)
+    (port : CorridorPort crossingEdgeCount terminalCount) :
+    (data.profile C hC).fragmentContainsPort fragment port = true ↔
+      data.portEdge port ∈ data.regionalFragmentEdges fragment := by
   simp [GraphCorridorCutData.profile]
 
 @[simp]
@@ -260,6 +275,26 @@ theorem faceContinues_eq_of_profiles_eq
     ← right.profile_faceContinues_eq_true_iff C₂ hC₂]
   have hvalues := congrFun (congrFun
     (congrArg CorridorCutProfile.faceContinues hprofiles) first) second
+  simp [hvalues]
+
+/-- Equality of graph-derived profiles preserves which actual port edges lie
+in each corresponding regional face fragment. -/
+theorem fragmentContainsPort_iff_of_profiles_eq
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (left right : GraphCorridorCutData RS crossingEdgeCount terminalCount
+      faceFragmentCount)
+    (C₁ C₂ : RS.EdgeColoring Color)
+    (hC₁ : RS.IsTaitEdgeColoring C₁) (hC₂ : RS.IsTaitEdgeColoring C₂)
+    (hprofiles : left.profile C₁ hC₁ = right.profile C₂ hC₂)
+    (fragment : Fin faceFragmentCount)
+    (port : CorridorPort crossingEdgeCount terminalCount) :
+    left.portEdge port ∈ left.regionalFragmentEdges fragment ↔
+      right.portEdge port ∈ right.regionalFragmentEdges fragment := by
+  rw [← left.profile_fragmentContainsPort_eq_true_iff C₁ hC₁,
+    ← right.profile_fragmentContainsPort_eq_true_iff C₂ hC₂]
+  have hvalues := congrFun (congrFun
+    (congrArg CorridorCutProfile.fragmentContainsPort hprofiles) fragment) port
   simp [hvalues]
 
 /-- Equality of graph-derived profiles preserves every capped partial face

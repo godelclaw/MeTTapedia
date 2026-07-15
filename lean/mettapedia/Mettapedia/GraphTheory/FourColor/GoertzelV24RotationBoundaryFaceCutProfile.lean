@@ -296,6 +296,43 @@ theorem vertexSetBoundaryGraphCutData_fragment_touches_crossing
   exact (boundaryRegionalFragmentAt RS (vertexSetCrossingEdges RS inside)
     (vertexSetRegionEdges RS inside) fragment).2.2
 
+/-- On the canonical boundary profile, the new incidence matrix is exactly
+membership of the enumerated crossing edge in the actual open face fragment. -/
+theorem vertexSetBoundaryGraphCutData_profile_fragmentContainsPort_iff
+    (RS : RotationSystem V E) (inside : Finset V)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (fragment : Fin (Fintype.card (BoundaryRegionalFragment RS
+      (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside))))
+    (crossing : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    ((vertexSetBoundaryGraphCutData RS inside).profile C hC).fragmentContainsPort
+        fragment (.inl crossing) = true ↔
+      vertexSetCrossingEdgeAt RS inside crossing ∈
+        (vertexSetBoundaryGraphCutData RS inside).fragmentEdges fragment := by
+  rw [GraphCorridorCutData.profile_fragmentContainsPort_eq_true_iff]
+  rw [GraphCorridorCutData.regionalFragmentEdges_eq_of_fragmentsOnFaceInRegion
+    (vertexSetBoundaryGraphCutData RS inside)
+    (vertexSetBoundaryGraphCutData_fragmentsOnFaceInRegion RS inside)]
+  rfl
+
+/-- Every open face fragment in the canonical boundary profile contains at
+least one actual crossing port. -/
+theorem vertexSetBoundaryGraphCutData_profile_fragmentContainsPort_nonempty
+    (RS : RotationSystem V E) (inside : Finset V)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (fragment : Fin (Fintype.card (BoundaryRegionalFragment RS
+      (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)))) :
+    ∃ crossing : Fin (Fintype.card (VertexSetCrossingEdge RS inside)),
+      ((vertexSetBoundaryGraphCutData RS inside).profile C hC).fragmentContainsPort
+        fragment (.inl crossing) = true := by
+  rcases vertexSetBoundaryGraphCutData_fragment_touches_crossing RS inside
+      fragment with ⟨edge, hedgeFragment, hedgeCrossing⟩
+  rcases exists_vertexSetCrossingEdgeAt_eq RS inside hedgeCrossing with
+    ⟨crossing, hcrossing⟩
+  refine ⟨crossing,
+    (vertexSetBoundaryGraphCutData_profile_fragmentContainsPort_iff
+      RS inside C hC fragment crossing).2 ?_⟩
+  simpa only [hcrossing] using hedgeFragment
+
 /-- The boundary-local face-field count is controlled solely by the actual
 crossing-port count. -/
 theorem vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount
