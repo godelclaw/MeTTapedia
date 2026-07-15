@@ -1,15 +1,19 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCurvatureBulk
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicFiveFaceIntersections
 
 namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24HexCorridorSkeleton
 
 open GoertzelV24BulkCorridor
+open GoertzelV24CyclicFiveFaceIntersections
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24CurvatureScope
+open GoertzelV24SimpleGraphFaceDualConnectedness
+open SimpleGraphDartRotation
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
@@ -225,6 +229,42 @@ theorem orbitFaceFullerene_exists_hexCorridorSkeleton
         corridorLength hpositive hlarge
   exact ⟨OrbitHexCorridorSkeleton.ofPathBlock RS path hpath
     corridorLength hpositionBound block hhexagonal⟩
+
+/-- For a graph-backed cellular fullerene in cyclically 5-edge-connected
+normal form, a sufficiently large graph supplies both a hexagonal corridor
+skeleton and the computed unique-shared-edge property needed for canonical
+rungs. -/
+theorem orbitFaceFullerene_exists_hexCorridorSkeleton_with_uniqueRungs
+    {G : SimpleGraph V} [DecidableRel G.Adj] (data : Data G)
+    (hsphere : SphericalCubicMapData data.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hfullerene : OrbitFaceFullerene data.toRotationSystem)
+    (hconnected : G.Connected)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    (hcyclicFive : CyclicallyFiveEdgeConnected G)
+    (corridorLength : Nat) (hpositive : 0 < corridorLength)
+    (hlarge : 7 ^ (13 * corridorLength - 1) <
+      Fintype.card (OrbitFace data.toRotationSystem)) :
+    ∃ corridor : OrbitHexCorridorSkeleton data.toRotationSystem corridorLength,
+      ∀ step : CorridorStep corridorLength, ∃! edge,
+        edge ∈ sharedInteriorEdges
+          (orbitFaceBoundary data.toRotationSystem)
+          (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+          (corridor.faceAt step.left).1 (corridor.faceAt step.right).1 := by
+  have hprimal :
+      (rotationPrimalGraph data.toRotationSystem).Connected := by
+    rw [rotationPrimalGraph_toRotationSystem_eq]
+    exact hconnected
+  obtain ⟨corridor⟩ := orbitFaceFullerene_exists_hexCorridorSkeleton
+    data.toRotationSystem hsphere htwoSided hfullerene hprimal hrotation
+      corridorLength hpositive hlarge
+  have hunique :=
+    pairwiseUniqueSharedInteriorEdges_of_cyclicallyFiveEdgeConnected
+    data htwoSided hconnected
+      (OrbitSphericalCubicMapData.ofSphericalCubicMapData
+        data.toRotationSystem hsphere)
+      hrotation hcyclicFive
+  exact ⟨corridor, fun step => corridor.existsUnique_rungEdge hunique step⟩
 
 end
 

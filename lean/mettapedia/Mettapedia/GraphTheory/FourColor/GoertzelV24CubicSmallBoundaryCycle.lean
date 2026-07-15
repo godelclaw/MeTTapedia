@@ -8,7 +8,7 @@ namespace GoertzelV24CubicSmallBoundaryCycle
 open SimpleGraph
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
-  {G : SimpleGraph V} [DecidableRel G.Adj]
+  {G : SimpleGraph V} [DecidableRel G.Adj] [LocallyFinite G]
 
 noncomputable section
 
@@ -23,10 +23,6 @@ def InternalSideDart (G : SimpleGraph V) (side : V → Prop) :=
 /-- Oriented graph edges leaving a chosen side. -/
 def CrossingSideDart (G : SimpleGraph V) (side : V → Prop) :=
   {dart : G.Dart // side dart.fst ∧ ¬ side dart.snd}
-
-noncomputable instance sideVertexFintype (side : V → Prop) :
-    Fintype {vertex : V // side vertex} :=
-  Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
 
 noncomputable instance sideDartFintype (G : SimpleGraph V) [DecidableRel G.Adj]
     (side : V → Prop) : Fintype (SideDart G side) := by
@@ -109,16 +105,21 @@ def internalSideDartEquivInduceDart (G : SimpleGraph V) (side : V → Prop) :
 /-- In a cubic graph, the number of darts starting on a side is three times
 the number of vertices on that side. -/
 theorem card_sideDart_eq_three_mul
-    (hregular : G.IsRegularOfDegree 3) (side : V → Prop) :
+    (hregular : G.IsRegularOfDegree 3) (side : V → Prop)
+    [Fintype {vertex : V // side vertex}] :
     Fintype.card (SideDart G side) =
       3 * Fintype.card {vertex : V // side vertex} := by
+  letI : (vertex : {vertex : V // side vertex}) →
+      Fintype (G.neighborSet vertex.1) := fun vertex =>
+    (inferInstance : LocallyFinite G) vertex.1
   rw [Fintype.card_congr (sideDartEquivSigmaNeighbor G side),
     Fintype.card_sigma]
   simp_rw [G.card_neighborSet_eq_degree, hregular.degree_eq]
   simp [mul_comm]
 
 /-- The internal side-dart count is twice the number of induced side edges. -/
-theorem card_internalSideDart_eq_twice_card_edges (side : V → Prop) :
+theorem card_internalSideDart_eq_twice_card_edges (side : V → Prop)
+    [Fintype ↑({vertex | side vertex} : Set V)] :
     Fintype.card (InternalSideDart G side) =
       2 * (G.induce {vertex | side vertex}).edgeFinset.card := by
   rw [Fintype.card_congr (internalSideDartEquivInduceDart G side)]
@@ -171,6 +172,12 @@ theorem hasCycleOnSide_of_cubic_of_connected_induce_of_crossing_le_two
     (hcrossingRemoved : ∀ dart : CrossingSideDart G side,
       (⟨dart.1.edge, dart.1.edge_mem⟩ : G.edgeSet) ∈ removed) :
     HasCycleOnSide G side := by
+  let sideFintype : Fintype {vertex : V // side vertex} :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  letI sideSubtypeFintype : Fintype {vertex : V // side vertex} :=
+    sideFintype
+  letI sideSetFintype : Fintype ↑({vertex | side vertex} : Set V) :=
+    sideFintype
   by_contra hnoCycle
   have hsideAcyclic : (G.induce {vertex | side vertex}).IsAcyclic := by
     intro vertex cycle hcycle
@@ -196,13 +203,14 @@ theorem hasCycleOnSide_of_cubic_of_connected_induce_of_crossing_le_two
     (G := G) side
   have hcrossingCard := card_crossingSideDart_le_card_removed
     side removed hcrossingRemoved
-  have hsidePositive : 0 < Fintype.card {vertex : V // side vertex} :=
+  have hsidePositive :
+      0 < Fintype.card {vertex : V // side vertex} :=
     Fintype.card_pos_iff.mpr ⟨⟨hsideNonempty.choose,
       hsideNonempty.choose_spec⟩⟩
   have hsameSideCard :
       Fintype.card ↑({vertex | side vertex} : Set V) =
-        Fintype.card {vertex : V // side vertex} :=
-    Fintype.card_congr (Equiv.refl _)
+        Fintype.card {vertex : V // side vertex} := by
+    rfl
   omega
 
 end
