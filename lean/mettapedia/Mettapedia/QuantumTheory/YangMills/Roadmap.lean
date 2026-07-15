@@ -102,8 +102,8 @@ def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 0
   itvUpperPercent := 1
   progressPercent := 100
-  evidence := "currentYangMillsFDQuotientTransferNoGo_packet refutes the v14 ordinary block-functional socket. currentYangMillsPostponedIBPRepair_packet constructs the replacement's algebraic core: exact two-block H0 recovery, explicit cancellation of the dimension-six witness, a derivative-aware constant-one coordinate projection, and conditional depth-fifteen arithmetic. boundaryCochainRouteMatrix keeps the full census, Wilson analytic coordinate transfer, repaired-norm fluctuation/cumulant bounds, and RG intertwining open."
-  nextObligation := "Construct the complete dimension-sixteen Wilson census and analytic dual jets on the cochain space, then prove the F.3 norm transfer, unchanged fluctuation/cumulant estimates, and actual Wilson RG intertwining before assigning C_true."
+  evidence := "currentYangMillsFDQuotientTransferNoGo_packet refutes the v14 ordinary block-functional socket. currentYangMillsPostponedIBPRepair_packet constructs the replacement's algebraic core: exact two-block H0 recovery, explicit cancellation of the dimension-six witness, a derivative-aware coordinate projection with factor one in coefficient-l1 and in F.3's coefficient-sup branch after coordinatization, and conditional depth-fifteen arithmetic. boundaryCochainRouteMatrix keeps the full census, Wilson-functional-to-coordinate transfer, repaired-norm fluctuation/cumulant bounds, and RG intertwining open."
+  nextObligation := "Construct the complete dimension-sixteen Wilson census and analytic dual jets on the cochain space, then prove the Wilson-functional-to-coordinate transfer, unchanged fluctuation/cumulant estimates, and actual Wilson RG intertwining before assigning C_true."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/

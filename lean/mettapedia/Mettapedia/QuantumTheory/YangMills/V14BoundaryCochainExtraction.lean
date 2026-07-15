@@ -11,13 +11,15 @@ radial field-amplitude degree.  In particular, the dimension-six
 the cutoff, while the dimension-eighteen scalar witness from MOVE 5 is
 removed.
 
-The norm in this module is deliberately labeled: it is coefficient `ℓ¹` on
-the already-coordinatized bulk-plus-boundary space.  In that repaired norm the
-coordinate basis, coordinate-evaluation duals, and dimension cutoff have
-certified constant one.  This is not yet a theorem transferring the exact
-Wilson analytic norm of F.3 into these coordinates.  Such a transfer requires
-genuine Wilson representatives and analytic dual jets for the manuscript's
-full, presently schematic dimension-sixteen census.
+Two norm statements are proved on the already-coordinatized
+bulk-plus-boundary space.  The first is coefficient `ℓ¹`, used by the existing
+finite-matrix transfer machinery.  The second is the literal coefficient-sup
+branch of F.3's stated local norm: every coefficient bounded by `C` remains
+bounded by `1·C` after extraction.  Both constants are one.  This is not yet a
+theorem transferring an arbitrary Wilson analytic functional into these
+coordinates.  Such a transfer requires genuine Wilson representatives and
+analytic dual jets for the manuscript's full, presently schematic
+dimension-sixteen census.
 -/
 
 set_option autoImplicit false
@@ -148,6 +150,31 @@ theorem coefficientL1_canonicalDimensionProjection_le
   intro coordinate _
   by_cases h : dimension coordinate ≤ cutoff <;>
     simp [canonicalDimensionProjection, h]
+
+/-- Pointwise formulation of the coefficient-sup branch of the manuscript's
+local analytic norm. -/
+def HasManuscriptCoefficientSupBound
+    {Coordinate : Type*} (coefficients : Coordinate → ℝ) (C : ℝ) : Prop :=
+  ∀ coordinate, |coefficients coordinate| ≤ C
+
+/-- **Manuscript coefficient-sup bound.**  The canonical-dimension cutoff has
+operator factor one for the coefficient-sup norm named in F.3.  The theorem
+starts after Wilson analytic functions have been expressed in the repaired
+coordinates; construction of that expression for the full census remains a
+separate transfer obligation. -/
+theorem canonicalDimensionProjection_coefficientSup_le
+    {Coordinate : Type*}
+    (dimension : Coordinate → ℕ) (cutoff : ℕ)
+    [DecidablePred (fun c : Coordinate => dimension c ≤ cutoff)]
+    (coefficients : Coordinate → ℝ) {C : ℝ}
+    (hC : 0 ≤ C)
+    (hbound : HasManuscriptCoefficientSupBound coefficients C) :
+    HasManuscriptCoefficientSupBound
+      (canonicalDimensionProjection dimension cutoff coefficients) (1 * C) := by
+  intro coordinate
+  by_cases hlow : dimension coordinate ≤ cutoff
+  · simpa [canonicalDimensionProjection, hlow] using hbound coordinate
+  · simp [canonicalDimensionProjection, hlow, hC]
 
 /-! ## The repaired `F,D` coordinates used by the exact two-block pilot -/
 
@@ -306,6 +333,18 @@ theorem boundaryCochainProjection16_norm_le
     coefficientL1_canonicalDimensionProjection_le
       BoundaryCochainCoordinate.canonicalDimension 16 coefficients
 
+theorem boundaryCochainProjection16_manuscriptCoefficientSup_le
+    (coefficients : BoundaryCochainCoordinate → ℝ) {C : ℝ}
+    (hC : 0 ≤ C)
+    (hbound : HasManuscriptCoefficientSupBound coefficients C) :
+    HasManuscriptCoefficientSupBound
+      (boundaryCochainProjection16 coefficients)
+      (repairedBoundaryCochainExtractionConstant * C) := by
+  simpa [boundaryCochainProjection16,
+    repairedBoundaryCochainExtractionConstant] using
+    canonicalDimensionProjection_coefficientSup_le
+      BoundaryCochainCoordinate.canonicalDimension 16 coefficients hC hbound
+
 /-- Constructed certificate for the repaired coordinate extraction.  It
 contains no claim that the F.3 analytic norm has already been transferred to
 these coordinates. -/
@@ -322,6 +361,11 @@ structure RepairedBoundaryCochainExtractionCertificate : Prop where
     coefficientL1 (boundaryCochainProjection16 coefficients) ≤
       repairedBoundaryCochainExtractionConstant *
         coefficientL1 coefficients
+  manuscriptCoefficientSupBound : ∀ coefficients {C},
+    0 ≤ C → HasManuscriptCoefficientSupBound coefficients C →
+      HasManuscriptCoefficientSupBound
+        (boundaryCochainProjection16 coefficients)
+        (repairedBoundaryCochainExtractionConstant * C)
   carriesMove5Descendant :
     boundaryCochainProjection16 move5BoundaryCochainVector =
       move5BoundaryCochainVector
@@ -332,6 +376,7 @@ theorem repairedBoundaryCochainExtractionCertificate :
     RepairedBoundaryCochainExtractionCertificate := by
   refine ⟨canonicalCoordinateJetMatrix_eq_one,
     ?_, boundaryCochainProjection16_norm_le,
+    boundaryCochainProjection16_manuscriptCoefficientSup_le,
     boundaryCochainProjection16_fixes_move5Vector,
     boundaryCochainProjection16_kills_highDerivative⟩
   intro coefficients

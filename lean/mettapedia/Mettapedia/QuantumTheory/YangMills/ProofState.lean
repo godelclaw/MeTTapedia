@@ -545,7 +545,7 @@ def yangMillsPostponedIBPRepairNode : YangMillsProofNode where
   id := "yang-mills.rg.postponed-ibp-boundary-cochain"
   status := .checked
   truthValue := ⟨100, 98⟩
-  evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with repaired coefficient-l1 constant one. V14BoundaryCochainBootstrap propagates the unchanged numerical factor boundaries conditionally and records the full census, F.3 norm transfer, repaired-norm fluctuation/cumulant bounds, and Wilson RG intertwining as open rows."
+  evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with constant one both for coefficient-l1 and for F.3's coefficient-sup branch after coordinatization. V14BoundaryCochainBootstrap propagates the unchanged numerical factor boundaries conditionally and records the full census, Wilson-functional-to-coordinate transfer, repaired-norm fluctuation/cumulant bounds, and Wilson RG intertwining as open rows."
   nextObligation := "Enumerate the full dimension-sixteen F,D census with actual Wilson representatives, construct analytic Wilson-to-cochain dual jets, and prove the unchanged fluctuation/cumulant bounds and RG intertwining in the repaired norm."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
