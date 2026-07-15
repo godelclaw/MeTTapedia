@@ -342,9 +342,49 @@ theorem wilsonAction_treeGaugeFix (β : ℝ) (U : BlockLinkField) :
 
 abbrev BoundaryField := BoundaryLink → SU2
 abbrev InternalField := InternalLink → SU2
+abbrev CoTreeField := CoTreeLink → SU2
 
 def assembleField (V : BoundaryField) (A : InternalField) : BlockLinkField :=
   fun e => if h : e.IsBoundary then V ⟨e, h⟩ else A ⟨e, h⟩
+
+/-- Internal field reconstructed from the seven co-tree coordinates, with the
+single tree link fixed to the identity. -/
+def treeGaugeInternalField (C : CoTreeField) : InternalField :=
+  fun e => if h : e ∈ internalSpanningTree then 1 else C ⟨e, h⟩
+
+/-- Exact group-valued tree-gauge coordinates: prescribed public boundary
+links and one `SU(2)` coordinate for each of the seven co-tree links. -/
+def treeGaugeCoordinateField
+    (V : BoundaryField) (C : CoTreeField) : BlockLinkField :=
+  assembleField V (treeGaugeInternalField C)
+
+theorem treeGaugeCoordinateField_boundary
+    (V : BoundaryField) (C : CoTreeField) (e : BoundaryLink) :
+    treeGaugeCoordinateField V C e.1 = V e := by
+  simp [treeGaugeCoordinateField, assembleField, e.2]
+
+theorem treeGaugeInternalField_treeLink (C : CoTreeField) :
+    treeGaugeInternalField C treeLink = 1 := by
+  simp [treeGaugeInternalField, internalSpanningTree]
+
+theorem treeGaugeCoordinateField_treeLink
+    (V : BoundaryField) (C : CoTreeField) :
+    treeGaugeCoordinateField V C treeBlockLink = 1 := by
+  rw [treeGaugeCoordinateField]
+  simp only [assembleField, dif_neg treeBlockLink_internal]
+  change treeGaugeInternalField C treeLink = 1
+  exact treeGaugeInternalField_treeLink C
+
+theorem treeGaugeInternalField_coTree
+    (C : CoTreeField) (e : CoTreeLink) :
+    treeGaugeInternalField C e.1 = C e := by
+  simp [treeGaugeInternalField, e.2]
+
+theorem treeGaugeCoordinateField_coTree
+    (V : BoundaryField) (C : CoTreeField) (e : CoTreeLink) :
+    treeGaugeCoordinateField V C e.1.1 = C e := by
+  simp [treeGaugeCoordinateField, assembleField, e.1.2,
+    treeGaugeInternalField_coTree]
 
 instance internalFieldVolumeIsProbability :
     IsProbabilityMeasure (volume : Measure InternalField) := inferInstance
