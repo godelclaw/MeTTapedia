@@ -35,7 +35,7 @@ theorem exactFlankingTransfer_positiveToNegative_hasZeroWinding
       norm_num at hfinish
   | @succ tailLength source next target hstep htail ih =>
       have hnextProper : IsProperCyclicColorWord next.color :=
-        hstep.2.1.2.2
+        hstep.1.2.1.2.2
       have hnextClass := proper_hexagon_windingScore next.color hnextProper
       have hnextNotNegative : windingScore next.color ≠ -6 :=
         (flankingTaitColorTransition_no_direct_chiral_reversal
@@ -71,7 +71,7 @@ theorem exactFlankingTransfer_negativeToPositive_hasZeroWinding
       norm_num at hfinish
   | @succ tailLength source next target hstep htail ih =>
       have hnextProper : IsProperCyclicColorWord next.color :=
-        hstep.2.1.2.2
+        hstep.1.2.1.2.2
       have hnextClass := proper_hexagon_windingScore next.color hnextProper
       have hnextNotPositive : windingScore next.color ≠ 6 :=
         (flankingTaitColorTransition_no_direct_chiral_reversal
