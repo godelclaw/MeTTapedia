@@ -61,6 +61,8 @@ example :
 #print axioms move5Witness_handled_by_postponedIBP
 #print axioms canonicalCoordinateJetMatrix_eq_one
 #print axioms coefficientL1_canonicalDimensionProjection_le
+#print axioms canonicalDimensionProjection_coefficientSup_le
+#print axioms boundaryCochainProjection16_manuscriptCoefficientSup_le
 #print axioms boundaryCochainProjection16_fixes_move5Vector
 #print axioms boundaryCochainProjection16_kills_highDerivative
 #print axioms repairedBoundaryCochainExtractionCertificate
