@@ -200,6 +200,71 @@ theorem card_dualWalkCrossingEdges_eq_length_of_isPath
         hunique walk hpath),
     Finset.card_univ, Fintype.card_fin]
 
+/-- The face cell between two consecutive crossings of a dual walk. Endpoint
+faces are excluded, so the carrier has `length - 1` elements. -/
+def dualWalkIntermediateFace
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    {start finish : AmbientFace allFaces}
+    (walk : (interiorDualGraph faceBoundary allFaces).Walk start finish)
+    (step : Fin (walk.length - 1)) : AmbientFace allFaces :=
+  walk.getVert (step.val + 1)
+
+/-- A simple dual path visits distinct intermediate face cells. This gives
+the cells of the transversal their path order without choosing geometric
+arcs inside the faces. -/
+theorem dualWalkIntermediateFace_injective_of_isPath
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    {start finish : AmbientFace allFaces}
+    (walk : (interiorDualGraph faceBoundary allFaces).Walk start finish)
+    (hpath : walk.IsPath) :
+    Function.Injective (dualWalkIntermediateFace faceBoundary allFaces walk) := by
+  intro first second hfaces
+  have hfaces' :
+      walk.getVert (first.val + 1) = walk.getVert (second.val + 1) := by
+    simpa [dualWalkIntermediateFace] using hfaces
+  have hpositions : first.val + 1 = second.val + 1 :=
+    hpath.getVert_injOn
+      (by simp only [Set.mem_setOf_eq]; omega)
+      (by simp only [Set.mem_setOf_eq]; omega)
+      hfaces'
+  apply Fin.ext
+  omega
+
+/-- Each intermediate face cell contains its incoming and outgoing primal
+crossing edges, and those two crossings are distinct on a simple dual path. -/
+theorem dualWalkIntermediateFace_contains_distinct_crossings_of_isPath
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (hall : ∀ edge,
+      totalIncidenceCount faceBoundary allFaces edge ≤ 2)
+    (hunique : PairwiseUniqueSharedInteriorEdges faceBoundary allFaces)
+    {start finish : AmbientFace allFaces}
+    (walk : (interiorDualGraph faceBoundary allFaces).Walk start finish)
+    (hpath : walk.IsPath) (step : Fin (walk.length - 1)) :
+    let incoming : Fin walk.length := ⟨step.val, by omega⟩
+    let outgoing : Fin walk.length := ⟨step.val + 1, by omega⟩
+    dualWalkCrossingEdge faceBoundary allFaces hunique walk incoming ∈
+        faceBoundary (dualWalkIntermediateFace faceBoundary allFaces walk step).1 ∧
+      dualWalkCrossingEdge faceBoundary allFaces hunique walk outgoing ∈
+        faceBoundary (dualWalkIntermediateFace faceBoundary allFaces walk step).1 ∧
+      dualWalkCrossingEdge faceBoundary allFaces hunique walk incoming ≠
+        dualWalkCrossingEdge faceBoundary allFaces hunique walk outgoing := by
+  dsimp only
+  have hnext : step.val + 1 < walk.length := by omega
+  have hcontains :=
+    consecutive_dualWalkCrossingEdges_share_intermediateFace
+      faceBoundary allFaces hunique walk step.val hnext
+  refine ⟨hcontains.1, hcontains.2, ?_⟩
+  have hindex :
+      (⟨step.val, by omega⟩ : Fin walk.length) ≠
+        (⟨step.val + 1, hnext⟩ : Fin walk.length) := by
+    intro heq
+    have hvalue : step.val = step.val + 1 :=
+      congrArg (fun index : Fin walk.length => index.val) heq
+    exact (Nat.ne_of_lt (Nat.lt_succ_self step.val)) hvalue
+  exact (dualWalkCrossingEdge_injective_of_isPath
+    faceBoundary allFaces hall hunique walk hpath).ne
+      hindex
+
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
 

@@ -94,6 +94,21 @@ theorem regionalTrackedConnectivity_comm
   · rintro ⟨hright, hleft, hcolorRight, hcolorLeft, hreach⟩
     exact ⟨hleft, hright, hcolorLeft, hcolorRight, hreach.symm⟩
 
+/-- Regional tracked connectivity is transitive. Together with symmetry and
+the guarded diagonal theorem, this makes the computed matrix a partial
+equivalence relation whose support is exactly the tracked regional edges. -/
+theorem regionalTrackedConnectivity_trans
+    (RS : RotationSystem V E) (region : Finset E) (C : E → Color)
+    (pair : TrackedColorPair) (left middle right : E)
+    (hleftMiddle :
+      regionalTrackedConnectivity RS region C pair left middle = true)
+    (hmiddleRight :
+      regionalTrackedConnectivity RS region C pair middle right = true) :
+    regionalTrackedConnectivity RS region C pair left right = true := by
+  rw [regionalTrackedConnectivity_eq_true_iff] at hleftMiddle hmiddleRight ⊢
+  exact ⟨hleftMiddle.1, hmiddleRight.2.1, hleftMiddle.2.2.1,
+    hmiddleRight.2.2.2.1, hleftMiddle.2.2.2.2.trans hmiddleRight.2.2.2.2⟩
+
 /-- The diagonal entry records exactly whether the edge belongs to the
 region and carries one of the tracked colors. -/
 theorem regionalTrackedConnectivity_self_eq_true_iff
