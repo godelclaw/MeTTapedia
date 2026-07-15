@@ -231,6 +231,7 @@ deriving DecidableEq, Fintype, Repr
 inductive BoundaryCochainRouteStatus where
   | constructed
   | parametricUntilCensusEnumerated
+  | sameTargetRefuted
   | openAnalyticTransfer
 deriving DecidableEq, Repr
 
@@ -242,7 +243,7 @@ def boundaryCochainRouteStatus :
   | .derivativeAwareFiltration => .constructed
   | .coordinateBasisAndDuals => .constructed
   | .repairedCoefficientNormConstant => .constructed
-  | .fullDimensionSixteenCensus => .parametricUntilCensusEnumerated
+  | .fullDimensionSixteenCensus => .sameTargetRefuted
   | .wilsonAnalyticCoordinateTransfer => .openAnalyticTransfer
   | .fluctuationBoundInRepairedNorm => .openAnalyticTransfer
   | .cumulantBoundInRepairedNorm => .openAnalyticTransfer
@@ -257,7 +258,7 @@ def boundaryCochainRouteMatrix :
   , (.derivativeAwareFiltration, .constructed)
   , (.coordinateBasisAndDuals, .constructed)
   , (.repairedCoefficientNormConstant, .constructed)
-  , (.fullDimensionSixteenCensus, .parametricUntilCensusEnumerated)
+  , (.fullDimensionSixteenCensus, .sameTargetRefuted)
   , (.wilsonAnalyticCoordinateTransfer, .openAnalyticTransfer)
   , (.fluctuationBoundInRepairedNorm, .openAnalyticTransfer)
   , (.cumulantBoundInRepairedNorm, .openAnalyticTransfer)

@@ -44,6 +44,9 @@ example : Fintype.card BoundaryCochainLow16 = 13 :=
 example : RepairedBoundaryCochainExtractionCertificate :=
   repairedBoundaryCochainExtractionCertificate
 
+example : boundaryCochainRouteStatus .fullDimensionSixteenCensus =
+    .sameTargetRefuted := rfl
+
 example :
     repairedBoundaryCochainRecursionBudget = (5544 : ℝ) / 5 :=
   repairedBoundaryCochainRecursionBudget_eq
