@@ -114,17 +114,46 @@ theorem plaquetteCenteredDoubleTrace_gaugeAct
 `a³b`, `a⁴`, and `a⁵`, respectively. -/
 abbrev TraceRelationMonomial := Fin 3
 
+/-- Closed primitive catalog used by the relation.  These are construction
+forms, not extensible records carrying caller-selected dimensions. -/
+inductive CenteredTracePrimitive where
+  | fundamental
+  | twiceWound
+deriving DecidableEq, Fintype, Repr
+
+/-- Both centered trace words begin with a quadratic field-strength term in
+their small-plaquette expansion. -/
+def CenteredTracePrimitive.fieldStrengthFactors :
+    CenteredTracePrimitive → ℕ
+  | .fundamental => 2
+  | .twiceWound => 2
+
+/-- Field strength has canonical dimension two. -/
+def fieldStrengthCanonicalDimension : ℕ := 2
+
+/-- Primitive dimension derived from construction form. -/
+def CenteredTracePrimitive.canonicalDimension
+    (primitive : CenteredTracePrimitive) : ℕ :=
+  primitive.fieldStrengthFactors * fieldStrengthCanonicalDimension
+
+theorem centeredTracePrimitive_dimensions :
+    CenteredTracePrimitive.fundamental.canonicalDimension = 4 ∧
+    CenteredTracePrimitive.twiceWound.canonicalDimension = 4 := by
+  decide
+
 /-- Powers of the fundamental and twice-wound trace coordinates. -/
 def traceRelationPowers : TraceRelationMonomial → ℕ × ℕ
   | 0 => (3, 1)
   | 1 => (4, 0)
   | 2 => (5, 0)
 
-/-- Each centered trace primitive begins with two field-strength factors and
-therefore has canonical dimension `2 * 2 = 4`.  Monomial dimension is derived
-additively from its powers; it is not a caller-supplied label. -/
+/-- Monomial dimension is derived additively from the powers and the closed
+primitive catalog; it is not a caller-supplied label. -/
 def traceRelationCanonicalDimension (m : TraceRelationMonomial) : ℕ :=
-  4 * (traceRelationPowers m).1 + 4 * (traceRelationPowers m).2
+  (traceRelationPowers m).1 *
+      CenteredTracePrimitive.fundamental.canonicalDimension +
+    (traceRelationPowers m).2 *
+      CenteredTracePrimitive.twiceWound.canonicalDimension
 
 theorem traceRelationCanonicalDimensions :
     traceRelationCanonicalDimension 0 = 16 ∧
@@ -188,7 +217,10 @@ theorem evaluate_truncatedCayleyHamiltonRelation
   simp [evaluateTraceRelationCoefficients,
     traceRelationTruncateThrough16, traceRelationCanonicalDimension,
     traceRelationPowers, cayleyHamiltonRelationCoefficients,
-    evaluateTraceRelationMonomial, Fin.sum_univ_three]
+    evaluateTraceRelationMonomial, Fin.sum_univ_three,
+    CenteredTracePrimitive.canonicalDimension,
+    CenteredTracePrimitive.fieldStrengthFactors,
+    fieldStrengthCanonicalDimension]
   ring
 
 /-! ## Semantic quotient and intrinsic non-descent -/

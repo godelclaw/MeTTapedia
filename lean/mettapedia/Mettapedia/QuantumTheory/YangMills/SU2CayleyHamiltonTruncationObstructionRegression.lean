@@ -29,6 +29,7 @@ example :
 #print axioms centeredDoubleTrace_conjugation
 #print axioms plaquetteCenteredTrace_gaugeAct
 #print axioms plaquetteCenteredDoubleTrace_gaugeAct
+#print axioms centeredTracePrimitive_dimensions
 #print axioms traceRelationCanonicalDimensions
 #print axioms evaluateTraceRelationMonomial_gaugeAct
 #print axioms evaluate_cayleyHamiltonRelation
