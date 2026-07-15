@@ -99,12 +99,40 @@ $1$. This does not transfer from v14's range-only specification of
 $P_{\mathrm{ext}}$: a skew projection onto the same low-coordinate range has
 arbitrarily large coefficient norm. We prove the correct transfer theorem from
 explicit basis and dual-jet matrices with their column-sum conditioning bounds,
-but v14 does not provide those data for the dimension-$16$ action sector.
+but v14 does not provide those data for the dimension-$16$ action sector. A
+direct source reconciliation shows that they cannot be reconstructed uniquely
+from the present text: Appendix~F.4 uses equations of motion to identify the
+operator space, while Appendix~O.9 explicitly retains EOM operators in an
+off-shell basis; neither section supplies lattice Wilson representatives or a
+quotient basis, and Appendix~I's explicit dual jets stop at the distinct
+dimension-$4$ observable sector.
 Likewise, regrouping connected families by union support has norm $1$; the
 factor $14$ is exactly a \emph{local rooted branching count}
 $2(2\cdot4-1)$, not a bound on the total contacts of two extended polymers.
 The fluctuation big-$O$ and weighted cumulant-generation estimates also require
 quantitative proofs on the actual Wilson RG map.
+
+A third machine-checked round works on the exact $\mathrm{SU}(2)$, $b=2$
+Wilson block with normalized Haar measure and decides the extraction stage
+from three sides. (i)~Representative-wise hard truncation is not well-defined
+on the actual trace-word quotient: for the centered trace words
+$a=2-\Tr(U)$ and $b=2-\Tr(U^2)$, Cayley--Hamilton forces $a^3b-4a^4+a^5=0$
+with monomial canonical dimensions $16$, $16$, $20$; truncation at $16$
+deletes only $a^5$, and the truncated expression evaluates to $-32$ on the
+holonomy $\mathrm{diag}(i,-i)$ while the exact expression vanishes
+identically. (ii)~Two corrected constructions nevertheless carry exact
+norm-below-two extractors --- the full associated-graded jet chart
+($131071/65536<2$) and the one-plaquette trace quotient ($31/16<2$); with
+Appendix~O's other factors kept unchanged, the resulting conditional constant
+$90832203/40960\approx2217.6$ closes the two-source bootstrap at depth $16$
+and fails at depth $15$. (iii)~Neither survivor transfers to v14's canonical
+$(F,D)$ operator space: a dimension-$18$ scalar descendant has radial degree
+only $6$ (resp.\ $3$), so both extractors retain it, and the dimension-$6$
+descendant $\partial^2\Tr(F^2)$ is zero in the manuscript's
+integration-by-parts quotient yet has a nonzero gauge-invariant realization
+on an explicit three-plaquette block. The transfer socket required before any
+Wilson-RG intertwiner is therefore uninhabited as written, under both the
+on-shell and off-shell relation policies.
 
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
@@ -469,8 +497,111 @@ constructs an idempotent skew projection onto the same low-coordinate range
 that violates the bound $2$. The positive transfer theorem
 \texttt{coefficientL1\_basisJetProjection\_le} shows exactly what would suffice:
 explicit basis and dual-jet matrices whose coefficient-column bounds multiply.
-Those action-sector matrices and uniform bounds are absent from v14. Hence the
+The construction attempt is certified in
+\texttt{Dimension16WilsonExtractionCertificate}: F.4's on-shell relation
+policy and O.9's off-shell policy disagree already on the displayed
+dimension-$6$ divergence-square operator; the exact block quotient, lattice
+representatives, finite basis, dimension-$16$ dual jets, biorthogonality, and
+conditioning matrices are not supplied. Appendix~I's explicit jets concern
+the separate observable projection $P^{\mathrm{obs}}_{\leq4}$. Hence the
 extraction component is not a standing erratum repair, and $C_1$ is not derived.
+
+\paragraph{Hard truncation does not descend to the actual trace-word quotient.}
+The third round replaces schematic carriers by the exact object: the
+$\mathrm{SU}(2)$, $b=2$ Wilson block with normalized Haar measure --- $81$
+vertices, $216$ positive links of which $8$ are internal, $216$ plaquettes,
+an internal spanning tree with $7$ co-tree links, exact boundary-plus-co-tree
+coordinates, the gauge action, the normalized Wilson potential, and the
+fixed-boundary product-Haar reference integral with its logarithmic effective
+block action (modules \texttt{SU2WilsonBlockPilot},
+\texttt{SU2MajorantRepairDecision}). On this object the question ``is
+canonical-dimension truncation even well-defined on the gauge-invariant
+quotient?'' has a negative, intrinsic answer. For any $U\in\mathrm{SU}(2)$
+the Cayley--Hamilton identity gives $\Tr(U^2)=\Tr(U)^2-2$; writing
+$a=2-\Tr(U)$ and $b=2-\Tr(U^2)$ (each of canonical dimension $4$), the exact
+relation $b=4a-a^2$ yields
+\[
+  a^3b-4a^4+a^5 \;=\; 0,
+\]
+whose three monomials have construction-derived canonical dimensions $16$,
+$16$, $20$. Truncation through dimension $16$ deletes only $a^5$; on the
+explicit holonomy $\mathrm{diag}(i,-i)$ the truncated expression evaluates to
+$-32$, while the exact left-hand side vanishes on every field. Hence the
+semantic kernel is not stable under representative-wise hard truncation, no
+function on the evaluated trace-word quotient agrees with that truncation,
+and the corresponding descended extraction certificate is uninhabited
+(module \texttt{SU2CayleyHamiltonTruncationObstruction}). The witness uses
+only the Cayley--Hamilton relation --- no equations-of-motion quotient and no
+boundary-extension convention --- so it applies to both of v14's relation
+policies, and it refutes any uniform-in-$N$ architecture that requires
+representative-wise hard truncation of redundant Wilson trace words.
+
+\paragraph{Corrected constructions do carry norm-below-two extractors.}
+Truncation is, of course, definable on a \emph{chosen basis}, and the third
+round constructs the two natural repairs exactly. The full associated-graded
+jet chart on the gauge-fixed block ($7$ co-tree links, $3$ Lie coordinates
+each, hence $21$ coordinates) carries the symmetric-monomial basis of jets
+through total degree $16$, with identity jet matrix and biorthogonal
+coefficient duals; radial Taylor extraction at radius ratio $1/2$ has the
+exact operator constant
+$\sum_{d=0}^{16}2^{-d}=131071/65536<2$
+(modules \texttt{SU2AssociatedGradedExtraction},
+\texttt{SU2AssociatedGradedExtractionDecision}). Independently, the evaluated
+one-plaquette trace algebra is exactly a one-variable polynomial algebra: the
+normal-form theorem $b=4a-a^2$ (proved semantically complete via an infinite
+Cayley-rotation family) gives the basis $1,a,a^2,a^3,a^4$ through dimension
+$16$, with extraction constant $\sum_{d=0}^{4}2^{-d}=31/16<2$ (module
+\texttt{SU2IndependentTraceBasis}). Keeping Appendix~O's other factors
+unchanged, the associated-graded constant yields the conditional ledger value
+\[
+  C_{\mathrm{proposed}}
+  \;=\; \tfrac{90832203}{40960} \;\approx\; 2217.583 \;<\; 2224,
+\]
+whose two-source gain at depth $16$ is
+$90832203/335544320\approx0.2707<1/3$, while depth $15$ does not close. This
+is conditional bookkeeping: the fluctuation, cumulant, and recombination
+factors remain unproved on the actual map. Two exact theorems keep these
+constructions honestly separated from v14's object: the full graded chart has
+dimension $12{,}875{,}774{,}670$ and admits no linear equivalence onto any
+coordinate space of dimension at most $1851$, so the manuscript's schematic
+count requires a genuine invariant quotient that v14 does not construct; and
+the radial norm used here is a precise repair, not provably the manuscript's
+intended multivariate norm.
+
+\paragraph{Neither survivor transfers to the canonical $(F,D)$ space.}
+The transfer question is then decided negatively by two independent
+machine-checked obstructions (module \texttt{V14FDQuotientTransferNoGo},
+headline \texttt{v14\_fullFD\_quotientTransfer\_noGo}). \emph{Derivative
+blindness:} v14 counts canonical dimension as $2\cdot\#F+\#D$ (its O.9.1),
+but radial degree on either chart is blind to derivative factors. The scalar
+descendant $(\partial^2)^3[(\Tr F^2)^3]$ has canonical dimension $18$ yet
+radial degree $6$ on the associated-graded chart and $3$ on the trace chart,
+so both norm-below-two extractors \emph{fix} it --- and an explicit two-cell
+zero-boundary sixth-difference witness evaluates to $-6$, so the retained
+operator is nonzero. Both survivors therefore fail to implement the
+dimension-$\leq16$ projection of F.4.2, independently of the choice of
+quotient basis (\texttt{not\_associatedRadialImplementsCanonicalCutoff},
+\texttt{not\_independentRadialImplementsCanonicalCutoff}).
+\emph{Integration-by-parts/block incompatibility:} v14's local norm (F.3)
+lives on ordinary functions on a finite block retaining boundary data, while
+both relation branches identify integrated total derivatives with zero. The
+dimension-$6$ descendant $\partial^2\Tr(F^2)$ is gauge invariant and
+evaluates to $1$ on an explicit three-plaquette block field (a purely
+quadratic associated-grade witness gives the same value, so higher Taylor
+terms are not the cause). An ordinary block-functional realization would have
+to send one quotient class to both the zero function and a nonzero boundary
+descendant; the faithful transfer sockets --- exact-Wilson, pure
+associated-graded, and every RG-compatible extension --- are therefore
+uninhabited under both relation policies. Consequently no corrected recursion
+constant propagates from the constructions above into the bootstrap. The
+obstruction is structural rather than informational: supplying the omitted
+dimension-$16$ coordinates or conditioning matrices cannot make either
+extractor into the canonical $(F,D)$ projection. A viable replacement needs a
+derivative-aware filtration whose truncation provably agrees with
+$2\cdot\#F+\#D$, together with a boundary-aware complex that retains
+total-derivative descendants on each block as boundary cochains and imposes
+integration by parts only at global recombination; constructing exactly that
+replacement is the current object of this formalization.
 
 \paragraph{The finite gaps are real but Clay-irrelevant.}
 The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
@@ -517,7 +648,11 @@ as open, and sharpened others into theorems:
     column-sum theorem transfers through explicit basis and dual jets; v14 does
     not provide these for $P_{\mathrm{ext}}\leq16$, and a skew-projection
     counterexample proves that no bound follows from the range alone
-    (\texttt{ExtendedExtractionTransfer}).
+    (\texttt{ExtendedExtractionTransfer}). The source-certificate audit further
+    proves that F.4 and O.9 select different EOM relation policies and records
+    the absent lattice representatives, quotient basis, dimension-$16$ jets,
+    biorthogonality, and conditioning rows
+    (\texttt{Dimension16WilsonExtractionCertificate}).
   \item \textbf{The support-growth dichotomy.} The two collar-growth statements
     the manuscript makes are inequivalent, and both branches are now tight
     theorems: a coarsen-then-thicken recurrence $r_{j+1}\leq r_j/b + A$ yields
@@ -546,6 +681,39 @@ as open, and sharpened others into theorems:
     (\texttt{z2\_continuumMassGap\_of\_reconstructionMachine}).
 \end{itemize}
 
+\subsection*{Machine-checked in the third round}
+
+A third round moved from schematic carriers to the exact $\mathrm{SU}(2)$,
+$b=2$ Wilson block (\S\ref{sec:honest}) and decided the extraction stage on
+it:
+
+\begin{itemize}
+  \item \textbf{Hard truncation refuted intrinsically.} The Cayley--Hamilton
+    relation $a^3b-4a^4+a^5=0$, with monomial dimensions $(16,16,20)$ and the
+    explicit $-32$ evaluation, proves representative-wise canonical truncation
+    is not well-defined on the evaluated trace-word quotient
+    (\texttt{SU2CayleyHamiltonTruncationObstruction}).
+  \item \textbf{Exact norm-below-two extractors constructed.} The
+    $21$-coordinate associated-graded jet chart has extraction constant
+    $131071/65536$ and the one-plaquette trace quotient has $31/16$, both
+    certified with explicit bases, identity jet matrices, and biorthogonal
+    duals; the conditional ledger value $90832203/40960\approx2217.6$ closes
+    the two-source bootstrap at depth $16$ and fails at depth $15$
+    (\texttt{SU2AssociatedGradedExtraction},
+    \texttt{SU2IndependentTraceBasis}).
+  \item \textbf{A certified dimension separation.} The full graded chart has
+    dimension $12{,}875{,}774{,}670$ and admits no linear equivalence onto any
+    space of dimension $\leq1851$, so v14's schematic operator count requires
+    an invariant quotient the manuscript does not construct
+    (\texttt{SU2AssociatedGradedExtractionDecision}).
+  \item \textbf{The $(F,D)$ transfer socket is uninhabited as written.} The
+    dimension-$18$/radial-degree-$6$ descendant and the
+    integration-by-parts/block witness $\partial^2\Tr(F^2)$ jointly refute the
+    faithful transfer sockets for both relation policies and all
+    RG-compatible extensions
+    (\texttt{v14\_fullFD\_quotientTransfer\_noGo}).
+\end{itemize}
+
 \subsection*{The remaining inputs}
 
 With the arithmetic and structural skeleton closed, the route now rests on the
@@ -560,10 +728,19 @@ three different situations.
     weighted cumulant-generation estimate, rooted tree-graph factor, and
     basis/dual-jet conditioning are not proved on the actual map. Regrouping
     connected families by union has norm one; the factor $14$ is the local
-    rooted branching count, not a total-contact bound. \emph{What settles it:}
-    supply the dimension-$16$ invariant basis and dual jets, prove their
-    uniform conditioning, and prove the weighted Wilson cumulant/tree estimate
-    in the same norm. The resulting actual constant can then be checked against
+    rooted branching count, not a total-contact bound. The third round
+    sharpened what a derivation must overcome: representative-wise truncation
+    is refuted intrinsically, exact norm-below-two extractors exist on the
+    corrected charts, and the transfer of any such extractor to the canonical
+    $(F,D)$ space is refuted by the derivative-blindness and
+    integration-by-parts/block obstructions. \emph{What settles it:} construct
+    a derivative-aware filtration whose truncation provably agrees with
+    canonical dimension $2\cdot\#F+\#D$, together with a boundary-aware
+    complex retaining total-derivative descendants per block and imposing
+    integration by parts only at global recombination; then prove the
+    norm-below-two estimate, the uniform conditioning, the weighted Wilson
+    cumulant/tree estimate, and the Wilson-RG intertwining law on that object.
+    The resulting actual constant can then be checked against
     $C\,b^{\,3-\dmax}\leq1/3$.
   \item \textbf{Which support recurrence the glue satisfies.}
     \emph{Status: v14 asserts both branches of a now-proven dichotomy in
@@ -616,6 +793,9 @@ gating); and, from the second round,
 \texttt{WilsonBlockMajorant} (the concrete finite Wilson-polynomial realization),
 \texttt{ExtendedExtractionTransfer} (the range-only obstruction and explicit
 basis/dual-jet transfer theorem),
+\texttt{Dimension16WilsonExtractionCertificate} (the F.4/O.9 relation-policy
+mismatch, checked source transfer table, and obstructed as-written coordinate
+certificate),
 \texttt{WilsonPolymerRecombination} (norm-one union regrouping, the total-contact
 counterexample, and the rooted interpretation of $14$),
 \texttt{WilsonExtractionRecombinationConstant} (the two ledger calculations,
@@ -625,9 +805,20 @@ analytic-factor obstructions, and conditional depth arithmetic),
 (gap $\Leftrightarrow$ clustering and the discharged finite continuum gate),
 \texttt{ToyRGMap} (the dynamical realization and depth-15 escape), and
 \texttt{Q8StrongCouplingGap} / \texttt{Q8TransferClustering} (the non-abelian
-instance) --- all in the same namespace, all axiom-guarded to
-$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with no
-\texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
+instance); and, from the third round,
+\texttt{SU2WilsonBlockPilot} (the exact $\mathrm{SU}(2)$ block, tree gauge,
+co-tree coordinates, and fixed-boundary Haar reference integral),
+\texttt{SU2CayleyHamiltonTruncationObstruction} (the intrinsic non-descent
+witness), \texttt{SU2MajorantRepairDecision} (the sealed truncation-repair
+decision), \texttt{SU2AssociatedGradedExtraction} /
+\texttt{SU2AssociatedGradedExtractionDecision} (the graded jet basis, its
+exact extraction constant, and the dimension separation from the schematic
+count), \texttt{SU2IndependentTraceBasis} (the one-plaquette normal form and
+its extraction constant), and \texttt{V14FDQuotientTransferNoGo} (the
+derivative-blindness and integration-by-parts/block obstructions and the
+uninhabited transfer sockets) --- all in the same namespace, all axiom-guarded
+to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
+no \texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
 Reconstruction} (v14).
 
