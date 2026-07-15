@@ -8,6 +8,7 @@ import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
 import Mettapedia.QuantumTheory.YangMills.V14BoundaryCochainBootstrap
+import Mettapedia.QuantumTheory.YangMills.SU2LatticeFDCensusNoGo
 
 /-!
 # Yang-Mills proof state
@@ -29,6 +30,7 @@ open V14FDQuotientTransferNoGo
 open V14BoundaryCochainComplex
 open V14BoundaryCochainExtraction
 open V14BoundaryCochainBootstrap
+open SU2LatticeFDCensusNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -537,7 +539,7 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   status := .refuted
   truthValue := ⟨0, 99⟩
   evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-18 scalar derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
-  nextObligation := "The postponed-IBP pilot now supplies the derivative-aware complex and coordinate extraction. Complete the full dimension-sixteen Wilson census, transfer the F.3 analytic norm to its cochain coordinates, and prove fluctuation/cumulant estimates plus Wilson RG intertwining on that same repaired object before assigning an actual C_true."
+  nextObligation := "The postponed-IBP pilot supplies the derivative-aware complex, but YM MOVE 7 refutes the requested identification of an actual Wilson-lattice census with O.9's Lorentz-only census. Choose and state a new target: either a hypercubic-complete lattice census, or a separately proved continuum/Symanzik projection with controlled Lorentz-breaking remainder, before resuming analytic conditioning or assigning an actual C_true."
 
 /-- Constructed algebraic/mechanical part of the postponed-IBP repair.  The
 full Wilson analytic and RG transfer remains open. -/
@@ -545,8 +547,18 @@ def yangMillsPostponedIBPRepairNode : YangMillsProofNode where
   id := "yang-mills.rg.postponed-ibp-boundary-cochain"
   status := .checked
   truthValue := ⟨100, 98⟩
-  evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with constant one both for coefficient-l1 and for F.3's coefficient-sup branch after coordinatization. V14BoundaryCochainBootstrap propagates the unchanged numerical factor boundaries conditionally and records the full census, Wilson-functional-to-coordinate transfer, repaired-norm fluctuation/cumulant bounds, and Wilson RG intertwining as open rows."
-  nextObligation := "Enumerate the full dimension-sixteen F,D census with actual Wilson representatives, construct analytic Wilson-to-cochain dual jets, and prove the unchanged fluctuation/cumulant bounds and RG intertwining in the repaired norm."
+  evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with constant one in coefficient-l1 and in F.3's coefficient-sup branch after coordinatization. YM MOVE 7 then proves that the requested actual-lattice O.9 coordinate completion is impossible already at canonical dimension eight: an exact SU(2) Wilson observable has a hypercubic quartic jet outside every Lorentz-scalar span."
+  nextObligation := "Preserve the boundary-cochain repair, but do not build dual jets for the impossible same-target census. First replace the target by either a hypercubic-complete lattice census or a proved continuum/Symanzik quotient; only then restate the analytic conditioning, fluctuation/cumulant, and Wilson RG intertwining obligations."
+
+/-- Terminal decision for the requested O.9/F.4.3 actual-lattice coordinate
+campaign.  The no-go is SU(2)-scoped and occurs at canonical dimension eight,
+before basis reduction, dual jets, or conditioning. -/
+def yangMillsDimension16O9WilsonCensusNode : YangMillsProofNode where
+  id := "yang-mills.rg.dimension16-o9-wilson-census"
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  evidence := "ymMove7_dimension16WilsonCoordinate_terminalNoGo constructs the exact SU(2) Cartan link chart, proves that the actual normalized Wilson observable has fourth jet 6 times the hypercubic quartic, exhibits an orthogonal rotation changing that jet from 1 to 337/625, and refutes every finite O.9 Lorentz-scalar spanning census under both off-shell and on-shell relation policies and all enumerated same-target variants."
+  nextObligation := "Treat a hypercubic-complete lattice census or a controlled continuum/Symanzik projection as a new route. Neither may inherit the old dual-jet conditioning or bootstrap constants without a fresh same-object proof."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -627,6 +639,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsSameConstantLowerEvenExtractionNode
   , yangMillsExtractionConstantErratumNode
   , yangMillsPostponedIBPRepairNode
+  , yangMillsDimension16O9WilsonCensusNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -655,6 +668,10 @@ theorem yangMillsExtractionConstantErratumNode_refuted :
 
 theorem yangMillsPostponedIBPRepairNode_checked :
     yangMillsPostponedIBPRepairNode.status = .checked := by
+  rfl
+
+theorem yangMillsDimension16O9WilsonCensusNode_refuted :
+    yangMillsDimension16O9WilsonCensusNode.status = .refuted := by
   rfl
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
@@ -719,9 +736,10 @@ theorem currentYangMillsExtractionConstantAdjudication_packet :
       fun _ hD =>
         not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD⟩
 
-/-- The source-level dimension-sixteen construction attempt terminates at a
-checked underdetermination: the relation policies disagree, the coordinate
-certificate is incomplete, and the advertised bound is not derived. -/
+/-- The earlier source-only audit remains true: the relation policies
+disagree, the supplied coordinate certificate is incomplete, and the
+advertised bound is not derived.  It is superseded as a campaign verdict by
+the stronger SU(2) actual-lattice symmetry no-go. -/
 theorem currentYangMillsDimension16CoordinateCertificate_packet :
     (¬ V14Dimension16SourceCertificateComplete) ∧
       v14F4RelationPolicy ≠ v14O9RelationPolicy ∧

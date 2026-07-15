@@ -19,6 +19,7 @@ open V14FDQuotientTransferNoGo
 open V14BoundaryCochainComplex
 open V14BoundaryCochainExtraction
 open V14BoundaryCochainBootstrap
+open SU2LatticeFDCensusNoGo
 
 theorem constructive_qft_node_constructive_gate_uncleared_regression :
     yangMillsConstructiveQFTNode.status = .constructiveGateUncleared :=
@@ -35,6 +36,19 @@ theorem extraction_constant_erratum_node_refuted_regression :
 theorem postponed_ibp_repair_node_checked_regression :
     yangMillsPostponedIBPRepairNode.status = .checked :=
   yangMillsPostponedIBPRepairNode_checked
+
+theorem dimension_sixteen_o9_wilson_census_node_refuted_regression :
+    yangMillsDimension16O9WilsonCensusNode.status = .refuted :=
+  yangMillsDimension16O9WilsonCensusNode_refuted
+
+theorem dimension_sixteen_o9_wilson_census_terminal_regression
+    (Operator : Type*) [Fintype Operator] :
+    (¬ Nonempty (FaithfulDimension16WilsonCoordinateCertificate
+      .o9OffShell Operator)) ∧
+    (¬ Nonempty (FaithfulDimension16WilsonCoordinateCertificate
+      .f43OnShell Operator)) :=
+  ⟨no_faithfulDimension16WilsonCoordinateCertificate_offShell Operator,
+    no_faithfulDimension16WilsonCoordinateCertificate_onShell Operator⟩
 
 theorem continuum_os_conditional_scaffold_node_checked_regression :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked :=
