@@ -131,8 +131,11 @@ theorem exists_allFaceRegionalFragmentAt_eq
     (AllFaceRegionalFragment RS region)).symm_apply_apply fragment
 
 /-- Full graph-derived cut data for a finite vertex side: actual crossing
-edges and every connected partial-face occurrence are both computed from the
-rotation system. -/
+edges and every connected regional face occurrence are both computed from the
+rotation system. This is an exact all-face over-encoding, not the bounded
+pumping profile: faces wholly internal to the vertex side are retained here.
+`vertexSetBoundaryGraphCutData` filters this carrier to fragments that actually
+touch the cut. -/
 def vertexSetAllFacesGraphCutData
     (RS : RotationSystem V E) (inside : Finset V) :
     GraphCorridorCutData RS
