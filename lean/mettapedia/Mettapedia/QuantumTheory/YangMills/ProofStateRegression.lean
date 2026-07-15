@@ -15,6 +15,8 @@ namespace QuantumTheory
 namespace YangMills
 namespace ProofStateRegression
 
+open V14FDQuotientTransferNoGo
+
 theorem constructive_qft_node_constructive_gate_uncleared_regression :
     yangMillsConstructiveQFTNode.status = .constructiveGateUncleared :=
   yangMillsConstructiveQFTNode_constructiveGateUncleared
@@ -72,6 +74,17 @@ info: 'Mettapedia.QuantumTheory.YangMills.currentYangMillsDimension16CoordinateC
 -/
 #guard_msgs in
 #print axioms currentYangMillsDimension16CoordinateCertificate_packet
+
+theorem current_fd_quotient_transfer_no_go_packet_regression :
+    (¬ AssociatedRadialImplementsCanonicalCutoff) ∧
+      (¬ IndependentRadialImplementsCanonicalCutoff) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .offShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .offShell)) :=
+  currentYangMillsFDQuotientTransferNoGo_packet
+
+#print axioms currentYangMillsFDQuotientTransferNoGo_packet
 
 theorem current_extraction_constant_hypothetical_threshold_packet_regression :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →

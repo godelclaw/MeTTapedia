@@ -30,6 +30,7 @@ import Mettapedia.QuantumTheory.YangMills.Roadmap
 import Mettapedia.QuantumTheory.YangMills.SupportGrowth
 import Mettapedia.QuantumTheory.YangMills.ToyRGMap
 import Mettapedia.QuantumTheory.YangMills.TransferGapClustering
+import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
 import Mettapedia.QuantumTheory.YangMills.WilsonBlockMajorant
 import Mettapedia.QuantumTheory.YangMills.WilsonExtractionRecombinationConstant
 import Mettapedia.QuantumTheory.YangMills.WilsonPolymerRecombination

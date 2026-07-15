@@ -17,6 +17,8 @@ namespace Mettapedia
 namespace QuantumTheory
 namespace YangMills
 
+open V14FDQuotientTransferNoGo
+
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
   | finiteLatticeStrongCouplingGap
@@ -99,8 +101,8 @@ def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 0
   itvUpperPercent := 1
   progressPercent := 100
-  evidence := "currentYangMillsExtractionConstantAdjudication_packet records the explicit projection and contact countermodels and both manuscript ledgers. currentYangMillsDimension16CoordinateCertificate_packet records the source-level construction obstruction: F.4 and O.9 choose different EOM policies, while the actual lattice representatives, quotient basis, dimension-16 dual jets, biorthogonality, and conditioning certificate are absent."
-  nextObligation := "Obtain a source clarification or state an explicit repaired action-sector quotient and block convention; only then construct the actual Wilson basis/dual jets and prove rooted cumulant generation before assigning C_true."
+  evidence := "currentYangMillsExtractionConstantAdjudication_packet records the explicit projection and contact countermodels and both manuscript ledgers. currentYangMillsFDQuotientTransferNoGo_packet records the stronger construction verdict: the associated and independent survivor extractors are blind to derivative contributions to canonical dimension, while the common integration-by-parts quotient cannot realize ordinary block functions with boundary descendants under either EOM policy."
+  nextObligation := "A new route must construct a derivative-aware filtered extraction together with a boundary-cochain realization, or retain descendants until after global recombination. It must then prove exact quotient semantics, conditioning, and actual Wilson RG compatibility before assigning C_true."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -216,6 +218,8 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
         entry.status = .refuted ∧
         entry.progressPercent = 100 ∧
         ¬ V14Dimension16SourceCertificateComplete ∧
+        ¬ AssociatedRadialImplementsCanonicalCutoff ∧
+        ¬ IndependentRadialImplementsCanonicalCutoff ∧
         ¬ V14LiteralExtractionRecombinationClaims ∧
         f5DisplayedConstantAtBlockTwo = 33152 ∧
         proposedMajorantLedgerConstant = (5544 : ℝ) / 5 := by
@@ -225,6 +229,8 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
       rfl,
       rfl,
       not_v14Dimension16SourceCertificateComplete,
+      not_associatedRadialImplementsCanonicalCutoff,
+      not_independentRadialImplementsCanonicalCutoff,
       not_v14LiteralExtractionRecombinationClaims,
       f5DisplayedConstantAtBlockTwo_eq,
       proposedMajorantLedgerConstant_eq⟩
