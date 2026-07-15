@@ -522,6 +522,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSkeleton
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexFaceRungType
 import Mettapedia.GraphTheory.FourColor.GoertzelV24InducedHexCorridorTypes
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CleanHexCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSlab
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DependencyLedger
 import Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorPumping
