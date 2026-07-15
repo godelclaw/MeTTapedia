@@ -130,7 +130,7 @@ def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
   itvUpperPercent := 100
   progressPercent := 100
   evidence := "currentYangMillsCompletionSteelman_packet records the refuted as-written constant, the audited blueprint, the norm-one Wilson realization, and the remaining support, two-marked, KP/RP, and actual Wilson RG obligations."
-  nextObligation := "Derive the actual Wilson constant, then prove FirstLoadBearingYangMillsCompletionInput with support, two-marked, KP, and reflection-positivity inputs instantiated."
+  nextObligation := "First replace the refuted Lorentz-only actual-lattice census by a hypercubic-complete basis or a proved continuum/Symanzik projection. Derive the actual Wilson constant on that replacement, then prove FirstLoadBearingYangMillsCompletionInput with support, two-marked, KP, and reflection-positivity inputs instantiated."
 
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where

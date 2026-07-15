@@ -574,7 +574,7 @@ def yangMillsCompletionSteelmanNode : YangMillsProofNode where
   status := .checked
   truthValue := ⟨100, 94⟩
   evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The v14 extraction/recombination constant is refuted as written, the July blueprint is audited guidance, and support, two-marked identity, KP/RP, and the actual Wilson RG recursion remain explicit construction obligations."
-  nextObligation := "Supply the actual Wilson basis/dual-jet conditioning and rooted cumulant-generation estimate, then prove FirstLoadBearingYangMillsCompletionInput with support, two-marked identity, KP convergence, and Wilson reflection positivity instantiated."
+  nextObligation := "Replace the refuted actual-lattice Lorentz-only census by either a hypercubic-complete basis or a proved continuum/Symanzik projection, then certify its dual-jet conditioning and rooted cumulant-generation estimate before proving FirstLoadBearingYangMillsCompletionInput with support, two-marked identity, KP convergence, and Wilson reflection positivity instantiated."
 
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where

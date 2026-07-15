@@ -254,9 +254,9 @@ def recombinationConstantSteelmanRow : CompletionSteelmanRow where
   label := "Extraction/recombination constant"
   verdict := .refutedOrInconsistent
   evidence :=
-    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; polymerActivityMajorant_recombineByUnion_le proves union regrouping has norm one; fourteen_lt_contactStrip_rail_contacts refutes the literal total-contact reading of 14; the fluctuation big-O and raw cumulant-count pins show the other Appendix-O numerals require quantitative analytic estimates."
+    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. The later SU(2) lattice census audit refutes identifying the actual hypercubic Wilson sector with O.9's Lorentz-only census already at canonical dimension eight. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; the fluctuation big-O and raw cumulant-count pins show the other Appendix-O numerals require quantitative analytic estimates."
   nextObligation :=
-    "Specify the dimension<=16 invariant basis and dual jets, prove their uniform conditioning, and prove the rooted cumulant-generation/tree-graph bound in the same majorant norm. Then multiply those actual-map factors and rerun the parameterized depth theorem."
+    "Choose a replacement target: a hypercubic-complete lattice basis, or a separately proved continuum/Symanzik projection with a controlled Lorentz-breaking remainder. Then construct its dual jets, certify conditioning, and re-prove the rooted cumulant-generation/tree-graph bound in the same actual-map norm before rerunning the depth theorem."
 
 def supportRecurrenceSteelmanRow : CompletionSteelmanRow where
   item := 2
