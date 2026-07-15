@@ -501,6 +501,7 @@ import Mettapedia.GraphTheory.FourColor.Goal
 import Mettapedia.GraphTheory.FourColor.PillarASmallerSpace
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CurvatureScope
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BulkCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedDegreePath
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DependencyLedger
 import Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorPumping
