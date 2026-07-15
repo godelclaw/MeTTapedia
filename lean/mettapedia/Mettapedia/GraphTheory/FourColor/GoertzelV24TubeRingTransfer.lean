@@ -198,6 +198,205 @@ def TubeRingStep (source target : TubeFrontierState) : Prop :=
   ∃ choice : TubeRingChoice, IsTubeRingSuccessor source target choice
   deriving Decidable
 
+/-- Three colors are pairwise distinct. This is local Tait properness at a
+cubic vertex. -/
+def PairwiseDistinct3 (first second third : StrandColor) : Prop :=
+  first ≠ second ∧ first ≠ third ∧ second ≠ third
+  deriving Decidable
+
+/-- The middle edge in the left slot at each split vertex. -/
+def firstLeft : Fin 5 → Fin 10 := ![0, 1, 5, 7, 3]
+
+/-- The middle edge in the right slot at each split vertex. -/
+def firstRight : Fin 5 → Fin 10 := ![2, 4, 6, 8, 9]
+
+theorem middleFirst_firstLeft (vertex : Fin 5) :
+    middleFirst (firstLeft vertex) = vertex := by fin_cases vertex <;> decide
+
+theorem middleFirst_firstRight (vertex : Fin 5) :
+    middleFirst (firstRight vertex) = vertex := by fin_cases vertex <;> decide
+
+theorem middleSlot_firstLeft (vertex : Fin 5) :
+    middleSlot (firstLeft vertex) = false := by fin_cases vertex <;> decide
+
+theorem middleSlot_firstRight (vertex : Fin 5) :
+    middleSlot (firstRight vertex) = true := by fin_cases vertex <;> decide
+
+/-- Properness of the three incident colors at all ten internal vertices of
+one ring. -/
+def TubeRingChoice.LocallyTait
+    (source : TubeFrontierState) (choice : TubeRingChoice) : Prop :=
+  (∀ vertex,
+    PairwiseDistinct3
+      (source.color vertex)
+      (middleColor source choice (firstLeft vertex))
+      (middleColor source choice (firstRight vertex))) ∧
+  ∀ vertex,
+    PairwiseDistinct3
+      (middleColor source choice (secondLeft vertex))
+      (middleColor source choice (secondRight vertex))
+      (newColor source choice (secondNew vertex))
+
+theorem complement_pairwiseDistinct (color : StrandColor) :
+    PairwiseDistinct3 color (firstComplement color) (secondComplement color) := by
+  cases color <;> decide
+
+theorem complement_pairwiseDistinct_swap (color : StrandColor) :
+    PairwiseDistinct3 color (secondComplement color) (firstComplement color) := by
+  cases color <;> decide
+
+theorem split_pairwiseDistinct (color : StrandColor) (choice : Bool) :
+    PairwiseDistinct3 color
+      (if choice = false then firstComplement color else secondComplement color)
+      (if choice = true then firstComplement color else secondComplement color) := by
+  cases choice
+  · simpa using complement_pairwiseDistinct color
+  · simpa using complement_pairwiseDistinct_swap color
+
+theorem thirdColor_pairwiseDistinct {left right : StrandColor}
+    (hne : left ≠ right) :
+    PairwiseDistinct3 left right (thirdColor left right) := by
+  cases left <;> cases right <;> simp_all [PairwiseDistinct3, thirdColor]
+
+/-- Merge validity plus the explicit complementary split construction proves
+proper Tait coloring at every internal vertex of the ring. -/
+theorem TubeRingChoice.locallyTait_of_valid
+    (source : TubeFrontierState) (choice : TubeRingChoice)
+    (hvalid : choice.Valid source) : choice.LocallyTait source := by
+  constructor
+  · intro vertex
+    simpa [middleColor, middleFirst_firstLeft, middleFirst_firstRight,
+      middleSlot_firstLeft, middleSlot_firstRight] using
+      split_pairwiseDistinct (source.color vertex) (choice vertex)
+  · intro vertex
+    have hne := hvalid vertex
+    have hproper := thirdColor_pairwiseDistinct hne
+    fin_cases vertex <;>
+      simpa [newColor, newSecond, secondNew] using hproper
+
+theorem IsTubeRingSuccessor.locallyTait
+    {source target : TubeFrontierState} {choice : TubeRingChoice}
+    (hsuccessor : IsTubeRingSuccessor source target choice) :
+    choice.LocallyTait source :=
+  choice.locallyTait_of_valid source hsuccessor.2.1
+
+/-- One coloring of a whole glued tube corridor. Frontier levels are stored
+once, so adjacent ring certificates agree on every shared edge by
+construction. -/
+structure TubeCorridorTaitColoring (rings : Nat)
+    (start finish : TubeFrontierState) where
+  frontierState : Fin (rings + 1) → TubeFrontierState
+  ringChoice : Fin rings → TubeRingChoice
+  first_state : frontierState 0 = start
+  last_state : frontierState (Fin.last rings) = finish
+  successor : ∀ ring,
+    IsTubeRingSuccessor
+      (frontierState ring.castSucc)
+      (frontierState ring.succ)
+      (ringChoice ring)
+
+/-- An exact path of genuine ring transfers assembles into one corridor
+coloring with shared frontier colors and tracked terminal identities. -/
+theorem exactTransfer_exists_taitColoring
+    {rings : Nat} {start finish : TubeFrontierState}
+    (transfer : ExactRelationalTransfer TubeRingStep rings start finish) :
+    Nonempty (TubeCorridorTaitColoring rings start finish) := by
+  induction transfer with
+  | zero profile =>
+      exact ⟨{
+        frontierState := fun _ => profile
+        ringChoice := Fin.elim0
+        first_state := rfl
+        last_state := rfl
+        successor := fun ring => Fin.elim0 ring
+      }⟩
+  | @succ length start next finish hstep _tail ih =>
+      obtain ⟨choice, hchoice⟩ := hstep
+      obtain ⟨tailColoring⟩ := ih
+      exact ⟨{
+        frontierState := Fin.cases start tailColoring.frontierState
+        ringChoice := Fin.cases choice tailColoring.ringChoice
+        first_state := rfl
+        last_state := by
+          change tailColoring.frontierState (Fin.last length) = finish
+          exact tailColoring.last_state
+        successor := by
+          intro ring
+          refine Fin.cases ?_ (fun index => ?_) ring
+          · change IsTubeRingSuccessor start
+              (tailColoring.frontierState 0) choice
+            rw [tailColoring.first_state]
+            exact hchoice
+          · change IsTubeRingSuccessor
+              (tailColoring.frontierState index.castSucc)
+              (tailColoring.frontierState index.succ)
+              (tailColoring.ringChoice index)
+            exact tailColoring.successor index
+      }⟩
+
+/-- Shared frontier edges and internal middle edges of a glued tube corridor. -/
+abbrev TubeCorridorEdge (rings : Nat) :=
+  (Fin (rings + 1) × Fin 5) ⊕ (Fin rings × Fin 10)
+
+def TubeCorridorTaitColoring.edgeColor
+    {rings : Nat} {start finish : TubeFrontierState}
+    (coloring : TubeCorridorTaitColoring rings start finish) :
+    TubeCorridorEdge rings → StrandColor
+  | .inl (level, position) => (coloring.frontierState level).color position
+  | .inr (ring, edge) =>
+      middleColor (coloring.frontierState ring.castSucc)
+        (coloring.ringChoice ring) edge
+
+/-- Properness of the assembled edge-coloring at all internal cubic vertices
+of all rings. -/
+def TubeCorridorTaitColoring.LocallyTait
+    {rings : Nat} {start finish : TubeFrontierState}
+    (coloring : TubeCorridorTaitColoring rings start finish) : Prop :=
+  ∀ ring,
+    (∀ vertex,
+      PairwiseDistinct3
+        (coloring.edgeColor (.inl (ring.castSucc, vertex)))
+        (coloring.edgeColor (.inr (ring, firstLeft vertex)))
+        (coloring.edgeColor (.inr (ring, firstRight vertex)))) ∧
+    ∀ vertex,
+      PairwiseDistinct3
+        (coloring.edgeColor (.inr (ring, secondLeft vertex)))
+        (coloring.edgeColor (.inr (ring, secondRight vertex)))
+        (coloring.edgeColor (.inl (ring.succ, secondNew vertex)))
+
+/-- Every assembled corridor certificate is a proper Tait coloring at every
+internal cubic vertex, including vertices adjacent to shared frontiers. -/
+theorem TubeCorridorTaitColoring.locallyTait
+    {rings : Nat} {start finish : TubeFrontierState}
+    (coloring : TubeCorridorTaitColoring rings start finish) :
+    coloring.LocallyTait := by
+  intro ring
+  have hsuccessor := coloring.successor ring
+  have hlocal := hsuccessor.locallyTait
+  constructor
+  · intro vertex
+    exact hlocal.1 vertex
+  · intro vertex
+    have hcolor := hsuccessor.2.2.2.1 (secondNew vertex)
+    change PairwiseDistinct3
+      (middleColor (coloring.frontierState ring.castSucc)
+        (coloring.ringChoice ring) (secondLeft vertex))
+      (middleColor (coloring.frontierState ring.castSucc)
+        (coloring.ringChoice ring) (secondRight vertex))
+      ((coloring.frontierState ring.succ).color (secondNew vertex))
+    rw [hcolor]
+    exact hlocal.2 vertex
+
+/-- Exact relational composition therefore produces an assembled coloring
+whose local Tait properness is part of the conclusion. -/
+theorem exactTransfer_exists_locallyTaitColoring
+    {rings : Nat} {start finish : TubeFrontierState}
+    (transfer : ExactRelationalTransfer TubeRingStep rings start finish) :
+    ∃ coloring : TubeCorridorTaitColoring rings start finish,
+      coloring.LocallyTait := by
+  obtain ⟨coloring⟩ := exactTransfer_exists_taitColoring transfer
+  exact ⟨coloring, coloring.locallyTait⟩
+
 /-- The first of the two alternating ten-state recurrent frontier sets. -/
 def recurrentPhaseAState : Fin 10 → TubeFrontierState := ![
   ⟨![.a, .a, .a, .b, .c], ![2, 1, 0, 3]⟩,
@@ -278,9 +477,43 @@ theorem recurrentTube_periodicCorridorPumpingWithCongruence :
     (fun _ : RecurrentTubeProfile => True)
     RecurrentTubeRingStep recurrentTubeRingStep_isSerial
 
+/-- The good cap word `(a,a,a,b,c)` with the four tracked terminals in cap
+boundary order. -/
+def goodTubeCapState : TubeFrontierState :=
+  ⟨![.a, .a, .a, .b, .c], ![0, 1, 2, 3]⟩
+
+theorem goodTubeCapState_valid : goodTubeCapState.Valid := by decide
+
+/-- Reflection from cap boundary order to the normalized ring coordinates. -/
+def goodTubeCapReflection : Fin 5 ≃ Fin 5 where
+  toFun := ![0, 4, 3, 2, 1]
+  invFun := ![0, 4, 3, 2, 1]
+  left_inv := by intro position; fin_cases position <;> rfl
+  right_inv := by intro position; fin_cases position <;> rfl
+
+/-- Reindex a frontier state without changing its colors or terminal
+identities. -/
+def TubeFrontierState.reindex
+    (state : TubeFrontierState) (coordinates : Fin 5 ≃ Fin 5) :
+    TubeFrontierState where
+  color position := state.color (coordinates.symm position)
+  terminal index := coordinates (state.terminal index)
+
 /-- The canonical good seed after rotating the cap frontier into the
 normalized ring coordinates. -/
 def normalizedTubeSeed : TubeFrontierState := recurrentPhaseBState 5
+
+/-- The declared recurrent seed is exactly the reflected good cap word, with
+all four original terminal identities preserved. -/
+theorem goodTubeCapState_reindex_eq_normalizedTubeSeed :
+    goodTubeCapState.reindex goodTubeCapReflection = normalizedTubeSeed := by
+  unfold TubeFrontierState.reindex goodTubeCapState goodTubeCapReflection
+    normalizedTubeSeed recurrentPhaseBState
+  congr 1
+  · funext position
+    fin_cases position <;> rfl
+  · funext terminal
+    fin_cases terminal <;> rfl
 
 /-- Four genuine normalized ring extensions return the canonical seed state.
 This is the concrete period detected by the alternating recurrent subsystem. -/
@@ -309,6 +542,23 @@ theorem normalizedTubeSeed_periodicPadding (repetitions : Nat) :
     ExactRelationalTransfer TubeRingStep (repetitions * 4)
       normalizedTubeSeed normalizedTubeSeed :=
   normalizedTubeSeed_fourRingReturn.repeat repetitions
+
+/-- The four-ring return is one proper edge-coloring of the whole glued tube,
+not merely four unrelated local witnesses. -/
+theorem normalizedTubeSeed_fourRingTaitColoring :
+    ∃ coloring : TubeCorridorTaitColoring 4
+        normalizedTubeSeed normalizedTubeSeed,
+      coloring.LocallyTait :=
+  exactTransfer_exists_locallyTaitColoring normalizedTubeSeed_fourRingReturn
+
+/-- Every multiple of four rings admits a proper glued tube coloring that
+starts and ends at the reflected good cap state. -/
+theorem normalizedTubeSeed_periodicTaitColoring (repetitions : Nat) :
+    ∃ coloring : TubeCorridorTaitColoring (repetitions * 4)
+        normalizedTubeSeed normalizedTubeSeed,
+      coloring.LocallyTait :=
+  exactTransfer_exists_locallyTaitColoring
+    (normalizedTubeSeed_periodicPadding repetitions)
 
 /-- Concrete corrected L2 statement for the normalized `(5,0)` tube seed:
 the exact return lengths contain the congruence class `0 mod 4`. -/
