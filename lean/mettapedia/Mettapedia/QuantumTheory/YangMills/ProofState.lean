@@ -532,7 +532,7 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   id := "yang-mills.rg.extraction-constant-erratum"
   status := .refuted
   truthValue := ⟨0, 99⟩
-  evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-17 derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
+  evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-18 scalar derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
   nextObligation := "Any replacement must grade spacetime derivatives separately from radial field degree and either retain boundary descendants, use a proved boundary-coboundary quotient, or postpone integration by parts until global recombination. Only after that new transfer object is constructed can basis conditioning and the rooted actual-map cumulant estimate define a Wilson RG constant."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
