@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBoundaryFaceCutProfile
 import Mettapedia.GraphTheory.FourColorObstruction
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusWitnessRegression
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusGeometryRegression
