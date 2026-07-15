@@ -109,6 +109,29 @@ theorem regionalTrackedConnectivity_trans
   exact ⟨hleftMiddle.1, hmiddleRight.2.1, hleftMiddle.2.2.1,
     hmiddleRight.2.2.2.1, hleftMiddle.2.2.2.2.trans hmiddleRight.2.2.2.2⟩
 
+/-- Nontrivial reachability in a regional tracked graph supplies the endpoint
+guards used by the Boolean connectivity matrix. -/
+theorem regionalTrackedConnectivity_eq_true_of_reachable_of_ne
+    (RS : RotationSystem V E) (region : Finset E) (C : E → Color)
+    (pair : TrackedColorPair) (left right : E)
+    (hleft : left ∈ region) (hright : right ∈ region) (hne : left ≠ right)
+    (hreach : (regionalTrackedEdgeGraph RS region C
+      (trackedColorPairColors pair).1
+      (trackedColorPairColors pair).2).Reachable left right) :
+    regionalTrackedConnectivity RS region C pair left right = true := by
+  let tracked := regionalTrackedEdgeGraph RS region C
+    (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
+  have hleftSupport : left ∈ tracked.support :=
+    SimpleGraph.mem_support_of_reachable hne hreach
+  have hrightSupport : right ∈ tracked.support :=
+    SimpleGraph.mem_support_of_reachable hne.symm hreach.symm
+  rcases (SimpleGraph.mem_support tracked).1 hleftSupport with
+    ⟨leftNeighbor, hleftAdj⟩
+  rcases (SimpleGraph.mem_support tracked).1 hrightSupport with
+    ⟨rightNeighbor, hrightAdj⟩
+  rw [regionalTrackedConnectivity_eq_true_iff]
+  exact ⟨hleft, hright, hleftAdj.1.2.1, hrightAdj.1.2.1, hreach⟩
+
 /-- The diagonal entry records exactly whether the edge belongs to the
 region and carries one of the tracked colors. -/
 theorem regionalTrackedConnectivity_self_eq_true_iff
