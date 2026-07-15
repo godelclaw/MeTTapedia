@@ -135,6 +135,35 @@ theorem exists_geodesicPath_length_ge_of_pow_lt_card
     G degreeBound hdegree root pathLength
   omega
 
+/-- Nonconsecutive vertices of a geodesic walk are not adjacent. An adjacency
+would shorten the subwalk between the two positions to one edge, contradicting
+the fact that every subwalk of a shortest walk is itself shortest. -/
+theorem not_adj_getVert_of_length_eq_dist_of_add_one_lt
+    {G : SimpleGraph Vertex} {start finish : Vertex}
+    (path : G.Walk start finish)
+    (hgeodesic : path.length = G.dist start finish)
+    (left right : Nat) (hleft : left ≤ path.length)
+    (hright : right ≤ path.length) (hseparated : left + 1 < right) :
+    ¬ G.Adj (path.getVert left) (path.getVert right) := by
+  intro hadj
+  let segment := (path.drop left).take (right - left)
+  have hsegmentSubwalk : segment.IsSubwalk path :=
+    (Walk.isSubwalk_take (path.drop left) (right - left)).trans
+      (Walk.isSubwalk_drop path left)
+  have hsegmentGeodesic :=
+    SimpleGraph.length_eq_dist_of_subwalk hgeodesic hsegmentSubwalk
+  have hsegmentLength : segment.length = right - left := by
+    simp only [segment, Walk.take_length, Walk.drop_length]
+    omega
+  have hsegmentFinish :
+      (path.drop left).getVert (right - left) = path.getVert right := by
+    rw [Walk.drop_getVert]
+    congr 1
+    omega
+  rw [hsegmentLength, hsegmentFinish,
+    SimpleGraph.dist_eq_one_iff_adj.mpr hadj] at hsegmentGeodesic
+  omega
+
 section FaceIncidence
 
 variable {Face Edge : Type*} [Fintype Face] [DecidableEq Face]
