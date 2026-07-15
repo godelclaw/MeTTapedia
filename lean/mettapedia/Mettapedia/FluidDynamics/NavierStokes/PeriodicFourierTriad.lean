@@ -213,7 +213,7 @@ theorem p_add_q_eq_k : p + q = k := by
 
 /-- All six retained modes are nonzero. -/
 theorem zero_not_mem_triadSupport : (0 : Wavevector) ∉ triadSupport := by
-  native_decide
+  decide
 
 /-- Exact support of the explicit field. -/
 theorem triadVelocity_eq_zero_of_not_mem
@@ -232,19 +232,19 @@ theorem triadVelocity_reality (m : Wavevector) :
   by_cases hp : m = p
   · subst m
     ext i
-    fin_cases i <;> simp [triadVelocity, p, q, k, a]
+    fin_cases i <;> simp [triadVelocity, p, a]
   by_cases hnp : m = -p
   · subst m
     ext i
-    fin_cases i <;> simp [triadVelocity, p, q, k, a]
+    fin_cases i <;> simp [triadVelocity, p, a]
   by_cases hq : m = q
   · subst m
     ext i
-    fin_cases i <;> simp [triadVelocity, p, q, k, b]
+    fin_cases i <;> simp [triadVelocity, p, q, b]
   by_cases hnq : m = -q
   · subst m
     ext i
-    fin_cases i <;> simp [triadVelocity, p, q, k, b]
+    fin_cases i <;> simp [triadVelocity, p, q, b]
   by_cases hk : m = k
   · subst m
     ext i
@@ -297,7 +297,7 @@ theorem triadVelocity_divergenceFree
 /-- The squared wave numbers are `1,1,2` on the positive triad. -/
 theorem triad_modeSquares :
     modeSquareNat p = 1 ∧ modeSquareNat q = 1 ∧ modeSquareNat k = 2 := by
-  native_decide
+  decide
 
 /-- The two low inputs generate the transverse high coefficient `c` before
 the common Fourier phase and Leray projection are applied. -/
@@ -380,7 +380,7 @@ theorem triad_projectedNonlinearity_neg_q :
 /-- The exact low shell is `{±p,±q}`. -/
 theorem triad_lowModes_one :
     lowModes triadSupport 1 = {p, -p, q, -q} := by
-  native_decide
+  decide
 
 /-- The high pair receives a strictly positive nonlinear energy rate. -/
 theorem triad_high_nonlinearEnergyRate :
@@ -398,7 +398,7 @@ theorem triad_high_nonlinearEnergyRate :
     norm_num [coefficientHermitian, triadVelocity, p, q, k, c,
       Fin.sum_univ_succ]
   have hmem : k ∉ ({-k} : Finset Wavevector) := by
-    native_decide
+    decide
   unfold nonlinearEnergyRate
   rw [Finset.sum_insert hmem, Finset.sum_singleton, hpos, hneg]
   norm_num
@@ -430,9 +430,9 @@ theorem triad_low_nonlinearEnergyRate :
     rw [triad_projectedNonlinearity_neg_q]
     norm_num [coefficientHermitian, triadVelocity, p, q, k, b, c,
       Fin.sum_univ_succ]
-  have hp0 : p ∉ ({-p, q, -q} : Finset Wavevector) := by native_decide
-  have hnp0 : -p ∉ ({q, -q} : Finset Wavevector) := by native_decide
-  have hq0 : q ∉ ({-q} : Finset Wavevector) := by native_decide
+  have hp0 : p ∉ ({-p, q, -q} : Finset Wavevector) := by decide
+  have hnp0 : -p ∉ ({q, -q} : Finset Wavevector) := by decide
+  have hq0 : q ∉ ({-q} : Finset Wavevector) := by decide
   rw [triad_lowModes_one]
   unfold nonlinearEnergyRate
   rw [Finset.sum_insert hp0, Finset.sum_insert hnp0,
@@ -478,11 +478,11 @@ theorem triad_global_nonlinearEnergyRate :
     rw [triad_projectedNonlinearity_neg_k]
     norm_num [coefficientHermitian, triadVelocity, p, q, k, c,
       Fin.sum_univ_succ]
-  have hp0 : p ∉ ({-p, q, -q, k, -k} : Finset Wavevector) := by native_decide
-  have hnp0 : -p ∉ ({q, -q, k, -k} : Finset Wavevector) := by native_decide
-  have hq0 : q ∉ ({-q, k, -k} : Finset Wavevector) := by native_decide
-  have hnq0 : -q ∉ ({k, -k} : Finset Wavevector) := by native_decide
-  have hk0 : k ∉ ({-k} : Finset Wavevector) := by native_decide
+  have hp0 : p ∉ ({-p, q, -q, k, -k} : Finset Wavevector) := by decide
+  have hnp0 : -p ∉ ({q, -q, k, -k} : Finset Wavevector) := by decide
+  have hq0 : q ∉ ({-q, k, -k} : Finset Wavevector) := by decide
+  have hnq0 : -q ∉ ({k, -k} : Finset Wavevector) := by decide
+  have hk0 : k ∉ ({-k} : Finset Wavevector) := by decide
   unfold nonlinearEnergyRate
   simp only [triadSupport] at hp hnp hq hnq hk hnk ⊢
   rw [Finset.sum_insert hp0, Finset.sum_insert hnp0,
