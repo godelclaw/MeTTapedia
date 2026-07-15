@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceTwoSided
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexPathExtraction
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -8,6 +8,7 @@ namespace GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FaceOrbitPartitionBridge
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24HexPathExtraction
 open GoertzelV24BulkCorridor
 open GoertzelV24CurvatureScope
@@ -33,13 +34,6 @@ def OrbitSphericalCubicMapData.ofSphericalCubicMapData
   euler := by
     rw [card_orbitFace_eq_faceCycleLengths_card]
     exact h.euler
-
-/-- No facial cycle repeats an underlying edge. This is the exact local
-simplicity fact needed to identify facial-walk length with boundary-support
-size. -/
-def OrbitFaceBoundarySimple (RS : RotationSystem V E) : Prop :=
-  ∀ face : OrbitFace RS,
-    (orbitFaceBoundary RS face).card = (orbitFaceDarts RS face).card
 
 /-- Fullerene scope on actual facial cycles. -/
 def OrbitFaceFullerene (RS : RotationSystem V E) : Prop :=
@@ -148,7 +142,7 @@ dual path carrying `L` consecutive hexagons. The remaining geometry is to
 expose the corresponding primal ladder patch. -/
 theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
     (RS : RotationSystem V E) (hsphere : SphericalCubicMapData RS)
-    (hsimple : OrbitFaceBoundarySimple RS)
+    (htwoSided : OrbitFacesTwoSided RS)
     (hfullerene : OrbitFaceFullerene RS)
     (hprimal : (rotationPrimalGraph RS).Connected)
     (hrotation : VertexRotationCyclic RS)
@@ -168,6 +162,7 @@ theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
                 (path.getVert
                   (corridorBlockIndex
                     (defectBudget := 12) block offset).val).1).card = 6 := by
+  have hsimple := orbitFaceBoundarySimple_of_twoSided RS htwoSided
   have hfaceSize : ∀ face ∈ (Finset.univ : Finset (OrbitFace RS)),
       (orbitFaceBoundary RS face).card ≤ 6 := by
     intro face _
