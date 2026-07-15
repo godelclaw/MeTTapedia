@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitPartitionBridge
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexPathExtraction
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -7,6 +7,7 @@ namespace GoertzelV24OrbitFaceCurvatureBulk
 
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FaceOrbitPartitionBridge
+open GoertzelV24FaceDualConnectedness
 open GoertzelV24HexPathExtraction
 open GoertzelV24BulkCorridor
 open GoertzelV24CurvatureScope
@@ -140,17 +141,17 @@ theorem orbitFaceDefectSet_card_eq_twelve_of_fullerene
     hdefectCurvature.symm.trans hcurvature
   exact_mod_cast this
 
-/-- Structural fullerene L1 theorem on a rotation system. Once the quotient
-facial dual is connected, more than `7^(13L-1)` faces force a geodesic dual
-path carrying `L` consecutive hexagons. The remaining geometry is to expose
-the corresponding primal ladder patch. -/
+/-- Structural fullerene L1 theorem on a rotation system. Connectedness of the
+computed primal graph and genuine cyclic vertex rotations derive the required
+quotient-dual connectedness. More than `7^(13L-1)` faces then force a geodesic
+dual path carrying `L` consecutive hexagons. The remaining geometry is to
+expose the corresponding primal ladder patch. -/
 theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
     (RS : RotationSystem V E) (hsphere : SphericalCubicMapData RS)
     (hsimple : OrbitFaceBoundarySimple RS)
     (hfullerene : OrbitFaceFullerene RS)
-    (hconnected :
-      (interiorDualGraph (orbitFaceBoundary RS)
-        (Finset.univ : Finset (OrbitFace RS))).Connected)
+    (hprimal : (rotationPrimalGraph RS).Connected)
+    (hrotation : VertexRotationCyclic RS)
     (blockLength : Nat) (hblockLength : 0 < blockLength)
     (hlarge : 7 ^ (13 * blockLength - 1) < Fintype.card (OrbitFace RS)) :
     ∃ start finish : AmbientFace (Finset.univ : Finset (OrbitFace RS)),
@@ -177,6 +178,8 @@ theorem orbitFaceFullerene_exists_allHexagonalGeodesicBlock
     rw [orbitFaceDefectSet_card_eq_twelve_of_fullerene
       RS (OrbitSphericalCubicMapData.ofSphericalCubicMapData RS hsphere)
         hsimple hfullerene]
+  have hconnected := orbitFaceInteriorDual_connected
+    RS hsphere.cubic hprimal hrotation
   simpa using
     connectedSixFaceDual_exists_allHexagonalGeodesicBlock
       (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))
