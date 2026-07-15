@@ -29,6 +29,14 @@ example (β : ℝ) (U : BlockLinkField) :
 example (U : BlockLinkField) : treeGaugeFix U treeBlockLink = 1 :=
   treeGaugeFix_treeLink U
 
+example (V : BoundaryField) (C : CoTreeField) :
+    treeGaugeCoordinateField V C treeBlockLink = 1 :=
+  treeGaugeCoordinateField_treeLink V C
+
+example (V : BoundaryField) (C : CoTreeField) (e : CoTreeLink) :
+    treeGaugeCoordinateField V C e.1.1 = C e :=
+  treeGaugeCoordinateField_coTree V C e
+
 example (V : BoundaryField) : blockPartition 0 V = 1 :=
   blockPartition_zero V
 
@@ -42,6 +50,9 @@ example (V : BoundaryField) : blockPartition 0 V = 1 :=
 #print axioms wilsonAction_gaugeAct
 #print axioms treeGaugeFix_treeLink
 #print axioms wilsonAction_treeGaugeFix
+#print axioms treeGaugeCoordinateField_boundary
+#print axioms treeGaugeCoordinateField_treeLink
+#print axioms treeGaugeCoordinateField_coTree
 #print axioms blockPartition_zero
 
 end SU2WilsonBlockPilotRegression
