@@ -13,9 +13,9 @@ derivative represents zero.  These two requirements are incompatible without
 an additional boundary-cochain target.
 
 The obstruction below is evaluated on the actual `SU(2)`, `b = 2` Wilson
-block.  On three adjacent plaquettes, the centered second finite difference
-of the Wilson density is the lattice representative of the displayed
-dimension-six total derivative `∂₀² Tr(F²)`.  It is gauge invariant and is
+block.  On profiles varying in one block direction, the centered second finite
+difference of the Wilson density is the restriction of the scalar
+dimension-six total derivative `∂² Tr(F²)`.  It is gauge invariant and is
 nonzero on an explicit special-unitary link field.  The two-element source
 slice quotients that total derivative to zero, exactly as integration by
 parts requires.  Consequently no map from that quotient to ordinary
@@ -28,9 +28,10 @@ because such a socket first requires the impossible block realization.
 
 There is a second obstruction before quotient realization.  Both surviving
 MOVE-4 extractors grade by radial field-amplitude degree.  Canonical `F,D`
-dimension also counts spacetime derivatives.  An explicit fifth finite
-difference of a dimension-twelve cubic action jet has canonical dimension
-seventeen, but radial degrees six (associated grade) and three (centered trace).
+dimension also counts spacetime derivatives.  The one-direction restriction
+of the scalar descendant `(∂²)³[(Tr F²)³]` is an explicit sixth finite
+difference of a dimension-twelve cubic action jet and has canonical dimension
+eighteen, but radial degrees six (associated grade) and three (centered trace).
 Both survivor extractors therefore fix this operator instead of removing it.
 They cannot be Ben's canonical-dimension-sixteen projection even after one
 chooses an `F,D` quotient basis.
@@ -131,8 +132,9 @@ def actionProfile (U : BlockLinkField) (i : Fin 3) : ℝ :=
   plaquettePotential U (ibpProfilePlaquette i)
 
 /-- Centered second finite difference of the dimension-four Wilson density.
-This is the finite-block representative of `∂₀² Tr(F²)`, a dimension-six
-integrated total derivative in the `F,D` catalog. -/
+On profiles varying only in the zeroth direction, this is the finite-block
+restriction of `∂² Tr(F²)`, a scalar dimension-six integrated total
+derivative in the `F,D` catalog. -/
 def actionLaplacianDensity (U : BlockLinkField) : ℝ :=
   actionProfile U 2 - 2 * actionProfile U 1 + actionProfile U 0
 
@@ -171,8 +173,8 @@ def homogeneousActionJet
     (A : ThreePlaquetteActionJet) (i : Fin 3) : ℂ :=
   (A i) ^ 2
 
-/-- Pure degree-two associated-graded representative of
-`∂₀² Tr(F²)` on the three actual plaquette positions. -/
+/-- Pure degree-two associated-graded one-direction restriction of the scalar
+descendant `∂² Tr(F²)` on the three actual plaquette positions. -/
 def homogeneousActionLaplacian
     (A : ThreePlaquetteActionJet) : ℂ :=
   homogeneousActionJet A 2 - 2 * homogeneousActionJet A 1 +
@@ -231,22 +233,22 @@ def complexIteratedDifference : ℕ → (Fin 2 → ℂ) → (Fin 2 → ℂ)
   | 0, f => f
   | n + 1, f => complexFiniteDifference (complexIteratedDifference n f)
 
-/-- Pure associated-graded version of five derivatives of a
-dimension-twelve cubic action density.  It has radial log-field degree six,
-but canonical dimension `12 + 5 = 17`. -/
+/-- Pure associated-graded one-direction restriction of the scalar descendant
+`(∂²)³[(Tr F²)³]`.  It has radial log-field degree six, but canonical
+dimension `12 + 6 = 18`. -/
 def associatedHighDerivativeJet (A : Fin 2 → ℂ) : ℂ :=
-  complexIteratedDifference 5 (fun i => (A i) ^ 6) 0
+  complexIteratedDifference 6 (fun i => (A i) ^ 6) 0
 
-/-- Independent centered-trace version of the same operator.  Its trace
-coordinate degree is three, but its five derivatives again give canonical
-dimension seventeen. -/
+/-- Independent centered-trace version of the same scalar descendant.  Its
+trace-coordinate degree is three, but its six derivatives again give
+canonical dimension eighteen. -/
 def independentHighDerivativeJet (a : Fin 2 → ℂ) : ℂ :=
-  complexIteratedDifference 5 (fun i => (a i) ^ 3) 0
+  complexIteratedDifference 6 (fun i => (a i) ^ 3) 0
 
-def highDerivativeCanonicalDimension : ℕ := 12 + 5
+def highDerivativeCanonicalDimension : ℕ := 12 + 6
 
 theorem highDerivativeCanonicalDimension_eq :
-    highDerivativeCanonicalDimension = 17 := by rfl
+    highDerivativeCanonicalDimension = 18 := by rfl
 
 theorem highDerivativeCanonicalDimension_gt_sixteen :
     16 < highDerivativeCanonicalDimension := by decide
@@ -272,18 +274,18 @@ def highDerivativeJetWitness : Fin 2 → ℂ
   | 1 => 1
 
 theorem associatedHighDerivativeJet_witness :
-    associatedHighDerivativeJet highDerivativeJetWitness = 5 := by
+    associatedHighDerivativeJet highDerivativeJetWitness = -6 := by
   norm_num [associatedHighDerivativeJet, complexIteratedDifference,
     complexFiniteDifference, complexZeroBoundaryShift,
     highDerivativeJetWitness]
 
 theorem independentHighDerivativeJet_witness :
-    independentHighDerivativeJet highDerivativeJetWitness = 5 := by
+    independentHighDerivativeJet highDerivativeJetWitness = -6 := by
   norm_num [independentHighDerivativeJet, complexIteratedDifference,
     complexFiniteDifference, complexZeroBoundaryShift,
     highDerivativeJetWitness]
 
-/-- Radial degree-six extraction retains the canonical-dimension-seventeen
+/-- Radial degree-six extraction retains the canonical-dimension-eighteen
 associated-graded operator exactly. -/
 theorem radialExtraction16_fixes_associatedHighDerivativeJet
     (A : Fin 2 → ℂ) :
@@ -302,7 +304,7 @@ theorem radialExtraction16_fixes_associatedHighDerivativeJet
   simp
 
 /-- The independent trace extractor retains the same canonical-dimension-
-seventeen operator because its trace-coordinate radial degree is only three. -/
+eighteen operator because its trace-coordinate radial degree is only three. -/
 theorem independentRadialExtraction_fixes_highDerivativeJet
     (a : Fin 2 → ℂ) :
     (∑ d ∈ Finset.range 5,
@@ -345,7 +347,7 @@ theorem not_associatedRadialImplementsCanonicalCutoff :
   norm_num at hw
 
 /-- **Independent-survivor obstruction.**  Trace-coordinate degree four is
-also blind to the five derivative indices. -/
+also blind to the six contracted derivative indices. -/
 theorem not_independentRadialImplementsCanonicalCutoff :
     ¬ IndependentRadialImplementsCanonicalCutoff := by
   intro h
@@ -519,7 +521,7 @@ theorem v14FDTransferDecisionMatrix_agrees
   cases row <;> decide
 
 /-- **YM MOVE 5 decision.**  Both survivor extractors retain a canonical-
-dimension-seventeen derivative operator.  Independently, the common
+dimension-eighteen scalar derivative operator.  Independently, the common
 dimension-six IBP relation has nonzero exact-Wilson and pure-jet block
 realizations.  Hence neither EOM policy admits the ordinary block-functional
 transfer socket required before an RG intertwining map can be formed. -/
