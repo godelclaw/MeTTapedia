@@ -89,6 +89,39 @@ theorem orbitFace_totalIncidenceCount_eq_two_of_twoSided
   have hle := orbitFace_totalIncidenceCount_le_two RS edge
   omega
 
+/-- Under two-sidedness, the complete set of quotient faces incident to an
+edge is exactly the pair represented by its two opposite darts. -/
+theorem orbitFace_incidentFaces_eq_dartSide_pair
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (dart : RS.D) :
+    (Finset.univ.filter fun face : OrbitFace RS =>
+      RS.edgeOf dart ∈ orbitFaceBoundary RS face) =
+      {dartOrbitFace RS dart, dartOrbitFace RS (RS.alpha dart)} := by
+  let left := dartOrbitFace RS dart
+  let right := dartOrbitFace RS (RS.alpha dart)
+  have hleft : RS.edgeOf dart ∈ orbitFaceBoundary RS left :=
+    edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS dart
+  have hright : RS.edgeOf dart ∈ orbitFaceBoundary RS right := by
+    change RS.edgeOf dart ∈
+      orbitFaceBoundary RS (dartOrbitFace RS (RS.alpha dart))
+    simpa [RS.edge_alpha] using
+      edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS (RS.alpha dart)
+  have hsubset : ({left, right} : Finset (OrbitFace RS)) ⊆
+      Finset.univ.filter fun face : OrbitFace RS =>
+        RS.edgeOf dart ∈ orbitFaceBoundary RS face := by
+    intro face hface
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hface
+    rcases hface with rfl | rfl <;> simp [hleft, hright]
+  have hincidentCard :
+      (Finset.univ.filter fun face : OrbitFace RS =>
+        RS.edgeOf dart ∈ orbitFaceBoundary RS face).card = 2 := by
+    exact orbitFace_totalIncidenceCount_eq_two_of_twoSided
+      RS htwoSided (RS.edgeOf dart)
+  have hpairCard : ({left, right} : Finset (OrbitFace RS)).card = 2 := by
+    simp [left, right, htwoSided dart]
+  apply (Finset.eq_of_subset_of_card_le hsubset ?_).symm
+  rw [hincidentCard, hpairCard]
+
 end GoertzelV24OrbitFaceTwoSided
 
 end Mettapedia.GraphTheory.FourColor
