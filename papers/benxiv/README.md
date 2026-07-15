@@ -1,6 +1,6 @@
 # Ben Goertzel proof-attempt formalization index
 
-Last synchronized: 2026-07-14.
+Last synchronized: 2026-07-16.
 
 This is the living index for MeTTapedia's formal review of Ben Goertzel's proof
 attempts concerning the Four-Color Theorem, P versus NP, three-dimensional
@@ -20,7 +20,7 @@ stored in structure fields or passed as named premises.
 | Four Color, v23 | Annular difference spanning; CAP5-free radius-one locality; execution of mixed Kempe switches through Penrose–Kauffman operators and local reachability on a canonical three-cell collar | Encoded local audits and substantial composition machinery are checked. Graph-fidelity and global assembly obligations remain open; an encoded-model seam failure refutes the collar-to-ambient reinterpretation as written in that model. This does not challenge the already-established Four-Color Theorem. | [source](goertzel_4cp.tex), [PDF](goertzel_4cp.pdf) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
 | Navier–Stokes, v7 | Lift Navier–Stokes to heat flow on `SDiff(T³)`, apply a Cole–Hopf transform, push the gradient down at the identity, and control Beale–Kato–Majda through identity carré-du-champ energy | The original local adjoint hypothesis H1 is refuted in a normalized Fourier shear model. A stochastic-Lagrangian repair has a checked conditional BKM skeleton, but its pancake closure requires the still-open pointwise scale-local strain budget `ScaleLocalPancakeStrainBudget`. | [source](goertzel_ns.tex), [PDF](goertzel_ns.pdf) |
-| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's action-sector coordinate certificate cannot be reconstructed from the source as written: F.4 and O.9 use different EOM policies, while the dimension-16 lattice basis and dual jets are absent. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail. Support, weighted Wilson/KP estimates, reflection positivity on the same family, and continuum OS construction remain open. | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
+| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | Exact extraction repairs and a derivative-aware boundary-cochain scaffold are checked, but the actual-lattice O.9/F.4 coordinate target is refuted: an explicit SU(2) canonical-dimension-8 Wilson jet is hypercubic-invariant and not O(4)-invariant, so no Lorentz-only census spans the finite-spacing lattice sector. The live repair is an H(4)-complete census or a quantitative continuum/Symanzik projection. All analytic Wilson-RG, KP, and continuum/OS inputs remain open. | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
 
 ## Four-Color route
 
@@ -100,14 +100,26 @@ The formalization now distinguishes three different statements:
    and weighted analytic estimates have not been supplied. F.4's on-shell
    reduction and O.9's off-shell census do not define the same coordinate space.
 
+A later exact SU(2) witness decides the proposed Lorentz-only coordinate target.
+The sum of squared Wilson plaquette potentials has canonical dimension 8 and
+fourth Cartan jet proportional to
+`F01^4 + F02^4 + F03^4 + F12^4 + F13^4 + F23^4`. An explicit rational
+orthogonal rotation changes its value from `1` to `337/625`. The jet is an
+actual hypercubic lattice invariant but not an O(4) scalar, whereas every span
+of O.9.3's Lorentz contractions remains O(4)-invariant. Thus neither the
+off-shell nor on-shell relation policy admits a complete Lorentz-only census
+for the actual finite-spacing lattice.
+
 Range alone does not control a projection norm. Union-support recombination is
 norm one, while `14` is a rooted local branching count rather than a universal
 contact bound. The F.5 and Appendix-O factor ledgers disagree, and neither
-derives `C_true`. The next substantive work is to obtain a source clarification
-or state an explicit repaired relation quotient and block convention, then
-construct its dimension-16 Wilson representatives, quotient basis, and dual
-jets and prove the connected Wilson cumulant/KP bound in the same norm—not to
-add another scalar endpoint wrapper.
+derives `C_true`. The next substantive work is to enumerate a
+certificate-producing H(4)-complete finite-spacing basis through dimension 16,
+including the Lorentz-breaking artifact sector, and rederive its exact duals
+and conditioning. The alternative is a separately proved continuum/Symanzik
+projection with quantitative control of every discarded artifact. Only after
+one of those constructions is sealed can the connected Wilson cumulant/KP
+bound be proved in the same norm.
 
 ## Status discipline
 
