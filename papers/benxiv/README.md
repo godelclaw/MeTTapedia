@@ -20,7 +20,7 @@ stored in structure fields or passed as named premises.
 | Four Color, v23 | Annular difference spanning; CAP5-free radius-one locality; execution of mixed Kempe switches through Penrose–Kauffman operators and local reachability on a canonical three-cell collar | Encoded local audits and substantial composition machinery are checked. Graph-fidelity and global assembly obligations remain open; an encoded-model seam failure refutes the collar-to-ambient reinterpretation as written in that model. This does not challenge the already-established Four-Color Theorem. | [source](goertzel_4cp.tex), [PDF](goertzel_4cp.pdf) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
 | Navier–Stokes, v7 | Lift Navier–Stokes to heat flow on `SDiff(T³)`, apply a Cole–Hopf transform, push the gradient down at the identity, and control Beale–Kato–Majda through identity carré-du-champ energy | The original local adjoint hypothesis H1 is refuted in a normalized Fourier shear model. A stochastic-Lagrangian repair has a checked conditional BKM skeleton, but its pancake closure requires the still-open pointwise scale-local strain budget `ScaleLocalPancakeStrainBudget`. | [source](goertzel_ns.tex), [PDF](goertzel_ns.pdf) |
-| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | Exact extraction repairs and a derivative-aware boundary-cochain scaffold are checked, but the actual-lattice O.9/F.4 coordinate target is refuted: an explicit SU(2) canonical-dimension-8 Wilson jet is hypercubic-invariant and not O(4)-invariant, so no Lorentz-only census spans the finite-spacing lattice sector. The live repair is an H(4)-complete census or a quantitative continuum/Symanzik projection. All analytic Wilson-RG, KP, and continuum/OS inputs remain open. | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
+| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | Exact extraction repairs and a derivative-aware boundary-cochain scaffold are checked, but the actual-lattice O.9/F.4 target is refuted by a hypercubic, non-O(4) Wilson jet. A complete four-coordinate H(4) Cartan quartic basis and identity dual chart are now certified; the fixed-width dimension-16 extension is separately refuted because inactive padding is incompatible with a faithful invertible census. The live repair is unpadded/dependent F,D syntax (or a padding quotient), or a quantitative continuum/Symanzik projection. All analytic Wilson-RG, KP, and continuum/OS inputs remain open. | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
 
 ## Four-Color route
 
@@ -113,9 +113,14 @@ for the actual finite-spacing lattice.
 Range alone does not control a projection norm. Union-support recombination is
 norm one, while `14` is a rooted local branching count rather than a universal
 contact bound. The F.5 and Appendix-O factor ledgers disagree, and neither
-derives `C_true`. The next substantive work is to enumerate a
-certificate-producing H(4)-complete finite-spacing basis through dimension 16,
-including the Lorentz-breaking artifact sector, and rederive its exact duals
+derives `C_true`. The derivative-free Cartan quartic restriction now has a
+certificate-producing four-element H(4) basis, exact representative duals,
+and identity conditioning. The attempted fixed-width extension through
+dimension 16 is not faithful: inactive padding creates distinct raw points
+with identical active syntax, and no invertible exact census can make every
+basis column padding-invariant. The next substantive work is therefore to
+construct finite unpadded/dependent F,D syntax or a checked padding quotient,
+then enumerate the full H(4)-stable relation quotient and rederive its duals
 and conditioning. The alternative is a separately proved continuum/Symanzik
 projection with quantitative control of every discarded artifact. Only after
 one of those constructions is sealed can the connected Wilson cumulant/KP

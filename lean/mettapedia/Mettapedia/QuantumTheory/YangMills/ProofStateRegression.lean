@@ -20,6 +20,8 @@ open V14BoundaryCochainComplex
 open V14BoundaryCochainExtraction
 open V14BoundaryCochainBootstrap
 open SU2LatticeFDCensusNoGo
+open V14HypercubicQuarticCensus
+open V14HypercubicFDCensusPaddingNoGo
 
 theorem constructive_qft_node_constructive_gate_uncleared_regression :
     yangMillsConstructiveQFTNode.status = .constructiveGateUncleared :=
@@ -40,6 +42,33 @@ theorem postponed_ibp_repair_node_checked_regression :
 theorem dimension_sixteen_o9_wilson_census_node_refuted_regression :
     yangMillsDimension16O9WilsonCensusNode.status = .refuted :=
   yangMillsDimension16O9WilsonCensusNode_refuted
+
+theorem hypercubic_quartic_census_node_checked_regression :
+    yangMillsHypercubicQuarticCensusNode.status = .checked :=
+  yangMillsHypercubicQuarticCensusNode_checked
+
+theorem hypercubic_dimension_sixteen_padded_census_node_refuted_regression :
+    yangMillsHypercubicDimension16PaddedCensusNode.status = .refuted :=
+  yangMillsHypercubicDimension16PaddedCensusNode_refuted
+
+theorem hypercubic_quartic_basis_packet_regression :
+    (∀ coordinate : Fin 4,
+      IsHypercubicQuarticCoefficient (quarticOrbitBasis coordinate)) ∧
+    (fun dualCoordinate basisCoordinate : Fin 4 =>
+      quarticDual dualCoordinate (quarticOrbitBasis basisCoordinate)) =
+      fun dualCoordinate basisCoordinate =>
+        if basisCoordinate = dualCoordinate then 1 else 0 := by
+  exact ⟨quarticOrbitBasis_invariant,
+    quartic_conditioning_matrix_identity⟩
+
+theorem hypercubic_dimension_sixteen_padding_no_go_regression :
+    ¬ ∃ (Coordinate : Type) (_ : Fintype Coordinate)
+        (_ : DecidableEq Coordinate)
+        (certificate : V14HypercubicFDCensus.ExactCensusCertificate Coordinate),
+      ∀ coordinate : Coordinate,
+        IsPaddingInvariant (fun monomial =>
+          certificate.basisToRaw monomial coordinate) :=
+  faithful_dimension16_exactCensus_uninhabited
 
 theorem dimension_sixteen_o9_wilson_census_terminal_regression
     (Operator : Type*) [Fintype Operator] :
