@@ -11,12 +11,12 @@ namespace QuantumTheory
 namespace YangMills
 namespace SU2MajorantRepairDecisionRegression
 
-open SU2CanonicalTruncationObstruction
+open SU2CayleyHamiltonTruncationObstruction
 open SU2MajorantRepairDecision
 
 example : Fintype.card DecisionField = 16 := decisionField_count
 example : decisionMatrix.length = 16 := decisionMatrix_length
-example : ¬ CanonicalTruncationDescends := descendedExtraction_obstructed
+example : ¬ TraceCanonicalTruncationDescends := descendedExtraction_obstructed
 example : ¬ HasCompletedMajorantConstantLedger :=
   no_completedMajorantConstantLedger
 

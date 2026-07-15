@@ -1,10 +1,10 @@
 import Mettapedia.QuantumTheory.YangMills.SU2WilsonBlockPilot
 
 /-!
-# Canonical truncation does not descend on the evaluated `SU(2)` block
+# Boundary-extension truncation regression on the evaluated `SU(2)` block
 
-This module decides the quotient-extraction stage of the coefficient-majorant
-repair on the exact `SU(2)`, `b = 2` Wilson block.  It uses two adjacent
+This module records an auxiliary boundary-convention regression on the exact
+`SU(2)`, `b = 2` Wilson block.  It uses two adjacent
 plaquette positions and the forward finite difference with fixed-boundary zero
 extension.  The zero extension is the minimal block-local convention after
 subtracting the fixed boundary value from the fluctuation coordinate.
@@ -15,12 +15,14 @@ whose terms have canonical dimensions `15`, `16`, and `17` when applied to the
 cubic Wilson density of base dimension `12`.  Hard truncation through dimension
 `16` deletes the last term, but an explicit special-unitary link field makes
 the surviving expression nonzero.  Consequently truncation is not an
-operator on the quotient by evaluated Wilson relations.
+operator on the quotient induced by this zero-extension convention.
 
-This is an obstruction to the direct block-only truncation repair.  It does
-not rule out changing the carrier by adding a derivative collar, or truncating
-an associated-graded jet algebra before evaluation; either change is a
-different construction and must supply its own descent theorem.
+This boundary-induced relation is not the manuscript-facing decision theorem:
+the manuscript does not itself select zero extension for its plaquette-log
+operator coordinates.  The intrinsic decision is instead supplied by
+`SU2CayleyHamiltonTruncationObstruction`, using the exact trace relation that
+the off-shell policy explicitly requires.  This module remains useful as a
+regression for any future block-local zero-extension implementation.
 -/
 
 set_option autoImplicit false
@@ -248,16 +250,16 @@ theorem truncatedRelation_not_semantically_zero :
 /-- A descended truncation would be a function on semantic quotient classes
 whose value on every coefficient representative is represented by its hard
 canonical truncation. -/
-def CanonicalTruncationDescends : Prop :=
+def ZeroBoundaryTruncationDescends : Prop :=
   ∃ P : EvaluatedWilsonQuotient → EvaluatedWilsonQuotient,
     ∀ c : DerivativeCoefficients,
       P (quotientClass c) = quotientClass (truncateThrough16 c)
 
-/-- **Decisive quotient obstruction.**  Canonical-dimension truncation through
-dimension sixteen is not well-defined on the evaluated Wilson quotient of the
-exact block, even on the finite derivative slice above. -/
-theorem canonicalTruncation_does_not_descend :
-    ¬ CanonicalTruncationDescends := by
+/-- Under the selected zero-extension convention, canonical-dimension
+truncation through dimension sixteen is not well-defined on the induced
+evaluated quotient. -/
+theorem zeroBoundaryTruncation_does_not_descend :
+    ¬ ZeroBoundaryTruncationDescends := by
   rintro ⟨P, hP⟩
   have hrelation :
       quotientClass orderFiveRelationCoefficients = quotientClass 0 :=
@@ -279,7 +281,7 @@ theorem canonicalTruncation_does_not_descend :
 
 /-- Equivalent kernel-stability statement: a semantic zero relation is sent
 to a nonzero semantic class by hard canonical truncation. -/
-theorem semanticKernel_not_stable_under_truncation :
+theorem zeroBoundarySemanticKernel_not_stable_under_truncation :
     ¬ (∀ c : DerivativeCoefficients,
       SemanticallyEquivalent c 0 →
         SemanticallyEquivalent (truncateThrough16 c) 0) := by

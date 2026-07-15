@@ -1,7 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.SU2CanonicalTruncationObstruction
 
 /-!
-# Regressions for the `SU(2)` canonical-truncation obstruction
+# Regressions for the `SU(2)` zero-boundary truncation convention
 -/
 
 set_option autoImplicit false
@@ -14,14 +14,14 @@ namespace SU2CanonicalTruncationObstructionRegression
 open SU2CanonicalTruncationObstruction
 
 example :
-    ¬ CanonicalTruncationDescends :=
-  canonicalTruncation_does_not_descend
+    ¬ ZeroBoundaryTruncationDescends :=
+  zeroBoundaryTruncation_does_not_descend
 
 example :
     ¬ (∀ c : DerivativeCoefficients,
       SemanticallyEquivalent c 0 →
         SemanticallyEquivalent (truncateThrough16 c) 0) :=
-  semanticKernel_not_stable_under_truncation
+  zeroBoundarySemanticKernel_not_stable_under_truncation
 
 example :
     evaluateCoefficients
@@ -41,8 +41,8 @@ example :
 #print axioms orderFiveRelation_semantically_zero
 #print axioms truncatedRelation_nonzero_on_witness
 #print axioms truncatedRelation_not_semantically_zero
-#print axioms canonicalTruncation_does_not_descend
-#print axioms semanticKernel_not_stable_under_truncation
+#print axioms zeroBoundaryTruncation_does_not_descend
+#print axioms zeroBoundarySemanticKernel_not_stable_under_truncation
 
 end SU2CanonicalTruncationObstructionRegression
 end YangMills
