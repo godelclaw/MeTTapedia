@@ -209,13 +209,21 @@ theorem su2MajorantRepairDecision_sealed :
     Fintype.card InternalLink = 8 ∧
     Fintype.card CoTreeLink = 7 ∧
     (∀ U : BlockLinkField, treeGaugeFix U treeBlockLink = 1) ∧
+    (∀ (V : BoundaryField) (C : CoTreeField),
+      treeGaugeCoordinateField V C treeBlockLink = 1) ∧
+    evaluateTraceRelationCoefficients
+        (traceRelationTruncateThrough16 cayleyHamiltonRelationCoefficients)
+        SU2CanonicalTruncationObstruction.witnessField
+        (SU2CanonicalTruncationObstruction.profilePlaquette 1) = -32 ∧
     TraceSemanticallyEquivalent cayleyHamiltonRelationCoefficients 0 ∧
     (¬ TraceCanonicalTruncationDescends) ∧
     (∀ V : BoundaryField, effectiveBlockAction 0 V = 0) ∧
     (¬ HasCompletedMajorantConstantLedger) ∧
     decisionMatrix.length = 16 := by
   refine ⟨blockVertex_count, internalLink_count, coTreeLink_count,
-    treeGaugeFix_treeLink, cayleyHamiltonRelation_semantically_zero,
+    treeGaugeFix_treeLink, treeGaugeCoordinateField_treeLink,
+    truncatedCayleyHamiltonRelation_witness,
+    cayleyHamiltonRelation_semantically_zero,
     cayleyHamiltonTruncation_does_not_descend,
     effectiveBlockAction_zero, no_completedMajorantConstantLedger,
     decisionMatrix_length⟩
