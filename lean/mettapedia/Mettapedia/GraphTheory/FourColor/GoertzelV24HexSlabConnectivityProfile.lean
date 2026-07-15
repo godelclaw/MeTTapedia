@@ -253,6 +253,7 @@ def placedHexBoundaryCutProfile
     | .inl _, .inr impossible => Fin.elim0 impossible
     | .inr impossible, _ => Fin.elim0 impossible
   faceContinues impossible := Fin.elim0 impossible
+  fragmentContainsPort impossible := Fin.elim0 impossible
   faceLengthCap impossible := Fin.elim0 impossible
 
 @[simp]

@@ -22,10 +22,11 @@ abbrev CorridorPort (crossingEdgeCount terminalCount : Nat) :=
   Fin crossingEdgeCount ⊕ Fin terminalCount
 
 /-- A finite over-encoding of the data needed to splice equal corridor
-sections. Connectivity and face continuation are stored as complete Boolean
-matrices. Actual graph profiles occupy the valid subset, but including invalid
-matrices gives a conservative finite bound without assuming validity as a
-free proposition field. `Fin 6` stores a partial face length capped at five. -/
+sections. Connectivity, face continuation, and fragment-to-port incidence are
+stored as complete Boolean matrices. Actual graph profiles occupy the valid
+subset, but including invalid matrices gives a conservative finite bound
+without assuming validity as a free proposition field. `Fin 6` stores a
+partial face length capped at five. -/
 structure CorridorCutProfile
     (crossingEdgeCount terminalCount faceFragmentCount : Nat) where
   edgeColor : Fin crossingEdgeCount → StrandColor
@@ -35,6 +36,9 @@ structure CorridorCutProfile
       CorridorPort crossingEdgeCount terminalCount → Bool
   faceContinues :
     Fin faceFragmentCount → Fin faceFragmentCount → Bool
+  fragmentContainsPort :
+    Fin faceFragmentCount →
+      CorridorPort crossingEdgeCount terminalCount → Bool
   faceLengthCap : Fin faceFragmentCount → Fin 6
   deriving DecidableEq
 
@@ -46,11 +50,15 @@ private def corridorCutProfileEquiv
           CorridorPort crossingEdgeCount terminalCount →
           CorridorPort crossingEdgeCount terminalCount → Bool) ×
         (Fin faceFragmentCount → Fin faceFragmentCount → Bool) ×
+        (Fin faceFragmentCount →
+          CorridorPort crossingEdgeCount terminalCount → Bool) ×
         (Fin faceFragmentCount → Fin 6)) where
   toFun profile :=
     (profile.edgeColor, profile.strandConnected,
-      profile.faceContinues, profile.faceLengthCap)
-  invFun data := ⟨data.1, data.2.1, data.2.2.1, data.2.2.2⟩
+      profile.faceContinues, profile.fragmentContainsPort,
+      profile.faceLengthCap)
+  invFun data :=
+    ⟨data.1, data.2.1, data.2.2.1, data.2.2.2.1, data.2.2.2.2⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
@@ -69,6 +77,8 @@ def corridorCutProfileCount
     (2 ^ ((crossingEdgeCount + terminalCount) *
       (crossingEdgeCount + terminalCount))) ^ 3 *
     2 ^ (faceFragmentCount * faceFragmentCount) *
+    2 ^ (faceFragmentCount *
+      (crossingEdgeCount + terminalCount)) *
     6 ^ faceFragmentCount
 
 /-- L7 profile finiteness with an exact count for the chosen over-encoding. -/

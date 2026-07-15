@@ -257,13 +257,15 @@ theorem placedHexCenterPrefixGraphCutData_profile_eq
   unfold GraphCorridorCutData.profile placedHexCenterPrefixGraphCutData
     placedHexCenterPrefixCutProfile placedHexBoundaryCutProfile
   rw [CorridorCutProfile.mk.injEq]
-  refine ⟨rfl, ?_, ?_, ?_⟩
+  refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · funext pair left right
     rcases left with left | impossible
     · rcases right with right | impossible
       · rfl
       · exact Fin.elim0 impossible
     · exact Fin.elim0 impossible
+  · funext impossible
+    exact Fin.elim0 impossible
   · funext impossible
     exact Fin.elim0 impossible
   · funext impossible
