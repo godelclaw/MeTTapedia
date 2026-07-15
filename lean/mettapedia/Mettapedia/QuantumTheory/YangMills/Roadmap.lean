@@ -19,6 +19,7 @@ namespace YangMills
 
 open V14FDQuotientTransferNoGo
 open V14BoundaryCochainBootstrap
+open SU2LatticeFDCensusNoGo
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -102,8 +103,8 @@ def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 0
   itvUpperPercent := 1
   progressPercent := 100
-  evidence := "currentYangMillsFDQuotientTransferNoGo_packet refutes the v14 ordinary block-functional socket. currentYangMillsPostponedIBPRepair_packet constructs the replacement's algebraic core: exact two-block H0 recovery, explicit cancellation of the dimension-six witness, a derivative-aware coordinate projection with factor one in coefficient-l1 and in F.3's coefficient-sup branch after coordinatization, and conditional depth-fifteen arithmetic. boundaryCochainRouteMatrix keeps the full census, Wilson-functional-to-coordinate transfer, repaired-norm fluctuation/cumulant bounds, and RG intertwining open."
-  nextObligation := "Construct the complete dimension-sixteen Wilson census and analytic dual jets on the cochain space, then prove the Wilson-functional-to-coordinate transfer, unchanged fluctuation/cumulant estimates, and actual Wilson RG intertwining before assigning C_true."
+  evidence := "currentYangMillsFDQuotientTransferNoGo_packet refutes the v14 ordinary block-functional socket, and currentYangMillsPostponedIBPRepair_packet constructs the replacement's algebraic core. YM MOVE 7 decisively refutes the requested completion: on an exact SU(2) Cartan link chart, a canonical-dimension-eight Wilson observable has a hypercubic quartic jet outside every finite O.9 Lorentz-scalar span, for both relation policies and every enumerated same-target variant."
+  nextObligation := "Do not continue the impossible actual-lattice Lorentz-only census. State a new route using either a hypercubic-complete lattice basis or a separately justified continuum/Symanzik projection, then re-prove dual-jet conditioning and all analytic/RG estimates on that new same object."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -222,6 +223,9 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
         ¬ AssociatedRadialImplementsCanonicalCutoff ∧
         ¬ IndependentRadialImplementsCanonicalCutoff ∧
         ¬ V14LiteralExtractionRecombinationClaims ∧
+        (∀ (Operator : Type) [Fintype Operator],
+          ¬ Nonempty (FaithfulDimension16WilsonCoordinateCertificate
+            .o9OffShell Operator)) ∧
         f5DisplayedConstantAtBlockTwo = 33152 ∧
         proposedMajorantLedgerConstant = (5544 : ℝ) / 5 := by
   refine ⟨yangMillsExtractionConstantErratumRoadmapEntry, ?_⟩
@@ -233,6 +237,7 @@ theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
       not_associatedRadialImplementsCanonicalCutoff,
       not_independentRadialImplementsCanonicalCutoff,
       not_v14LiteralExtractionRecombinationClaims,
+      no_faithfulDimension16WilsonCoordinateCertificate_offShell,
       f5DisplayedConstantAtBlockTwo_eq,
       proposedMajorantLedgerConstant_eq⟩
 
