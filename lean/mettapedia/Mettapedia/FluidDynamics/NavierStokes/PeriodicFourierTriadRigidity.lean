@@ -90,6 +90,16 @@ theorem realScale_triad_high_viscousQuadratic (lambda : ℝ) :
     triadVelocity, p, q, k, c, Fin.sum_univ_succ, Complex.normSq_apply]
   ring
 
+/-- Even after all six modes are charged, the total viscous form remains
+quadratic in amplitude. -/
+theorem realScale_triad_total_viscousQuadratic (lambda : ℝ) :
+    viscousQuadratic triadSupport (realScale lambda triadVelocity) =
+      20 * lambda ^ 2 := by
+  norm_num [viscousQuadratic, coefficientEnergy, modeSquareNat, realScale,
+    triadSupport, triadVelocity, p, q, k, a, b, c,
+    Fin.sum_univ_succ, Complex.normSq_apply]
+  ring
+
 /-- The proposed weakest static rigidity statement on the exact support: a
 single amplitude-independent constant makes viscosity dominate every positive
 instantaneous cutoff flux among supported, real, divergence-free fields.
@@ -103,7 +113,7 @@ def PointwiseViscousFluxRigidity (C nu : ℝ) : Prop :=
     (∀ m, u (-m) = fun i => conj (u m i)) →
     (∀ m ∈ triadSupport, modeDot m (u m) = 0) →
     outwardFlux triadSupport (lowModes triadSupport 1) u ≤
-      C * nu * viscousQuadratic {k, -k} u
+      C * nu * viscousQuadratic triadSupport u
 
 /-- Every real amplitude multiple of the witness remains an admissible exact
 trigonometric polynomial for `PointwiseViscousFluxRigidity`. -/
@@ -128,7 +138,7 @@ theorem no_pointwiseViscousFluxRigidity
     (C nu : ℝ) (hC : 0 ≤ C) (hnu : 0 < nu) :
     ¬ PointwiseViscousFluxRigidity C nu := by
   intro hrigid
-  let lambda : ℝ := 2 * C * nu + 1
+  let lambda : ℝ := 5 * C * nu + 1
   have hlambda : 0 < lambda := by
     dsimp [lambda]
     positivity
@@ -136,8 +146,8 @@ theorem no_pointwiseViscousFluxRigidity
   have hbound := hrigid (realScale lambda triadVelocity)
     hsupport hreality hdiv
   rw [realScale_triad_cutoffFlux,
-    realScale_triad_high_viscousQuadratic] at hbound
-  have hscale : 2 * C * nu < lambda := by
+    realScale_triad_total_viscousQuadratic] at hbound
+  have hscale : 5 * C * nu < lambda := by
     dsimp [lambda]
     linarith
   nlinarith [sq_pos_of_pos hlambda]
