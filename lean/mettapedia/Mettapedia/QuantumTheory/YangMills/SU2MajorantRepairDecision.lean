@@ -1,5 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlack
-import Mettapedia.QuantumTheory.YangMills.SU2CanonicalTruncationObstruction
+import Mettapedia.QuantumTheory.YangMills.SU2CayleyHamiltonTruncationObstruction
 import Mettapedia.QuantumTheory.YangMills.WilsonPolymerRecombination
 
 /-!
@@ -32,7 +32,7 @@ namespace YangMills
 namespace SU2MajorantRepairDecision
 
 open SU2WilsonBlockPilot
-open SU2CanonicalTruncationObstruction
+open SU2CayleyHamiltonTruncationObstruction
 
 /-! ## The actual Haar block map and block-specific recombination -/
 
@@ -82,7 +82,7 @@ out the advertised product and least-even-depth arithmetic without assuming
 any analytic factor. -/
 structure MajorantConstantLedgerCertified
     (L : MajorantConstantLedgerData) : Prop where
-  extractionDescends : CanonicalTruncationDescends
+  extractionDescends : TraceCanonicalTruncationDescends
   extractionConstant : L.C_extract = 1
   trueConstant :
     L.C_true =
@@ -103,7 +103,7 @@ extraction has been explicitly refuted. -/
 theorem no_completedMajorantConstantLedger :
     ¬ HasCompletedMajorantConstantLedger := by
   rintro ⟨L, hL⟩
-  exact canonicalTruncation_does_not_descend hL.extractionDescends
+  exact cayleyHamiltonTruncation_does_not_descend hL.extractionDescends
 
 /-! ## Complete sixteen-row transfer/obstruction matrix -/
 
@@ -191,14 +191,14 @@ theorem decisionMatrix_agrees_with_status :
   cases field <;> decide
 
 theorem filtrationCompatibility_obstructed :
-    ¬ (∀ c : DerivativeCoefficients,
-      SemanticallyEquivalent c 0 →
-        SemanticallyEquivalent (truncateThrough16 c) 0) :=
-  semanticKernel_not_stable_under_truncation
+    ¬ (∀ c : TraceRelationCoefficients,
+      TraceSemanticallyEquivalent c 0 →
+        TraceSemanticallyEquivalent (traceRelationTruncateThrough16 c) 0) :=
+  traceSemanticKernel_not_stable_under_truncation
 
 theorem descendedExtraction_obstructed :
-    ¬ CanonicalTruncationDescends :=
-  canonicalTruncation_does_not_descend
+    ¬ TraceCanonicalTruncationDescends :=
+  cayleyHamiltonTruncation_does_not_descend
 
 /-- **Machine-checked decision seal.**  It packages only the source theorems
 behind the positive and negative rows: exact geometry/tree gauge/evaluation,
@@ -209,15 +209,14 @@ theorem su2MajorantRepairDecision_sealed :
     Fintype.card InternalLink = 8 ∧
     Fintype.card CoTreeLink = 7 ∧
     (∀ U : BlockLinkField, treeGaugeFix U treeBlockLink = 1) ∧
-    wilsonDensity12Profile witnessField = sampleProfile ∧
-    SemanticallyEquivalent orderFiveRelationCoefficients 0 ∧
-    (¬ CanonicalTruncationDescends) ∧
+    TraceSemanticallyEquivalent cayleyHamiltonRelationCoefficients 0 ∧
+    (¬ TraceCanonicalTruncationDescends) ∧
     (∀ V : BoundaryField, effectiveBlockAction 0 V = 0) ∧
     (¬ HasCompletedMajorantConstantLedger) ∧
     decisionMatrix.length = 16 := by
   refine ⟨blockVertex_count, internalLink_count, coTreeLink_count,
-    treeGaugeFix_treeLink, witness_wilsonDensity12Profile,
-    orderFiveRelation_semantically_zero, canonicalTruncation_does_not_descend,
+    treeGaugeFix_treeLink, cayleyHamiltonRelation_semantically_zero,
+    cayleyHamiltonTruncation_does_not_descend,
     effectiveBlockAction_zero, no_completedMajorantConstantLedger,
     decisionMatrix_length⟩
 
