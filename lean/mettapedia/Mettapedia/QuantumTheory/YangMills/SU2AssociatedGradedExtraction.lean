@@ -1,11 +1,14 @@
 import Mettapedia.QuantumTheory.YangMills.SU2WilsonBlockPilot
 import Mathlib.Algebra.MvPolynomial.Funext
+import Mathlib.Algebra.MvPolynomial.Polynomial
+import Mathlib.Analysis.Calculus.Deriv.Polynomial
 import Mathlib.Analysis.Complex.Liouville
 import Mathlib.Data.Nat.Choose.Sum
 import Mathlib.Data.Sym.Card
 import Mathlib.Data.Finsupp.Multiset
 import Mathlib.LinearAlgebra.Basis.Basic
 import Mathlib.RingTheory.MvPolynomial.Basic
+import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import Mathlib.Tactic
 
 /-!
@@ -206,6 +209,70 @@ parameter one. -/
 def radialExtraction16 (f : ℂ → ℂ) : ℂ :=
   ∑ d ∈ Finset.range 17, radialJetCoefficient d f
 
+/-- Iterated analytic differentiation of a polynomial evaluation agrees
+exactly with iterated formal differentiation. -/
+theorem iteratedDeriv_polynomial_eval
+    (p : Polynomial ℂ) (d : ℕ) :
+    iteratedDeriv d (fun z : ℂ => p.eval z) =
+      fun z => (Polynomial.derivative^[d] p).eval z := by
+  induction d generalizing p with
+  | zero => simp
+  | succ d ih =>
+      rw [iteratedDeriv_succ, ih]
+      funext z
+      simpa only [Function.iterate_succ_apply'] using
+        ((Polynomial.derivative^[d] p).hasDerivAt z).deriv
+
+/-- On an actual polynomial radial slice, the analytic jet functional is
+literally coefficient extraction. -/
+theorem radialJetCoefficient_polynomial_eval
+    (p : Polynomial ℂ) (d : ℕ) :
+    radialJetCoefficient d (fun z : ℂ => p.eval z) = p.coeff d := by
+  rw [radialJetCoefficient, iteratedDeriv_polynomial_eval]
+  change (d.factorial : ℂ)⁻¹ *
+      (Polynomial.derivative^[d] p).eval 0 = p.coeff d
+  rw [← Polynomial.coeff_zero_eq_eval_zero,
+    Polynomial.coeff_iterate_derivative]
+  simp only [zero_add, Nat.descFactorial_self]
+  rw [nsmul_eq_mul]
+  have hfac : (d.factorial : ℂ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero d
+  field_simp
+
+/-- Restriction of a multivariate block polynomial to the radial line through
+`A`, represented as an actual one-variable polynomial. -/
+def blockRadialPolynomial
+    (p : MvPolynomial BlockLogCoordinate ℂ) (A : BlockLogField) :
+    Polynomial ℂ :=
+  MvPolynomial.eval₂Hom Polynomial.C
+    (fun i => Polynomial.C (A i) * Polynomial.X) p
+
+theorem blockRadialPolynomial_eval
+    (p : MvPolynomial BlockLogCoordinate ℂ)
+    (A : BlockLogField) (z : ℂ) :
+    (blockRadialPolynomial p A).eval z =
+      MvPolynomial.eval (z • A) p := by
+  rw [blockRadialPolynomial]
+  simp only [MvPolynomial.coe_eval₂Hom,
+    MvPolynomial.polynomial_eval_eval₂,
+    Polynomial.eval_C_mul, Polynomial.eval_X]
+  congr 1
+  · ext c
+    simp
+  · funext i
+    simp [smul_eq_mul, mul_comm]
+
+/-- Radial extraction of a polynomial is exactly truncation of its
+one-variable coefficient sequence through degree sixteen. -/
+theorem radialExtraction16_polynomial_eval
+    (p : Polynomial ℂ) :
+    radialExtraction16 (fun z : ℂ => p.eval z) =
+      ∑ d ∈ Finset.range 17, p.coeff d := by
+  rw [radialExtraction16]
+  apply Finset.sum_congr rfl
+  intro d _
+  exact radialJetCoefficient_polynomial_eval p d
+
 /-- The exact geometric-series constant at radius ratio `1/2`. -/
 def manuscriptSupExtractionConstant16 : ℝ :=
   (131071 : ℝ) / 65536
@@ -271,6 +338,12 @@ theorem norm_radialExtraction16_le
 with the exact group-valued boundary field left as a parameter. -/
 abbrev BlockAnalyticFunctional := BoundaryField → BlockLogField → ℂ
 
+/-- Polynomial functionals on the exact block chart, uniform in the boundary
+parameter.  These are the algebraic core of the associated-graded repair. -/
+def blockPolynomialAnalyticFunctional
+    (p : MvPolynomial BlockLogCoordinate ℂ) : BlockAnalyticFunctional :=
+  fun _ A => MvPolynomial.eval A p
+
 /-- Coordinatewise closed polydisk in the complexified co-tree chart. -/
 def InBlockPolydisk (r : ℝ) (A : BlockLogField) : Prop :=
   ∀ i : BlockLogCoordinate, ‖A i‖ ≤ r
@@ -302,6 +375,45 @@ structure BlockRadialHInfinityAtHalf
 def blockAssociatedGradedExtraction16
     (F : BlockAnalyticFunctional) : BlockAnalyticFunctional :=
   fun V A => radialExtraction16 (blockRadialSlice F V A)
+
+/-- On an actual block polynomial, the analytic extractor is exactly the
+degree-sixteen coefficient truncation of its radial polynomial.  This theorem
+connects the certified algebraic jet basis to the Cauchy norm estimate. -/
+theorem blockAssociatedGradedExtraction16_polynomial_eq
+    (p : MvPolynomial BlockLogCoordinate ℂ)
+    (V : BoundaryField) (A : BlockLogField) :
+    blockAssociatedGradedExtraction16
+        (blockPolynomialAnalyticFunctional p) V A =
+      ∑ d ∈ Finset.range 17, (blockRadialPolynomial p A).coeff d := by
+  unfold blockAssociatedGradedExtraction16 blockRadialSlice
+    blockPolynomialAnalyticFunctional
+  rw [show (fun z : ℂ => MvPolynomial.eval (z • A) p) =
+      fun z : ℂ => (blockRadialPolynomial p A).eval z by
+    funext z
+    exact (blockRadialPolynomial_eval p A z).symm]
+  exact radialExtraction16_polynomial_eval _
+
+/-- The extractor fixes every block polynomial whose radial degree is at most
+sixteen.  This is the reproduction law required of the associated-graded
+projection; the grade condition is stated explicitly rather than inferred
+from v14's unenumerated continuum quotient. -/
+theorem blockAssociatedGradedExtraction16_fixes_polynomial
+    (p : MvPolynomial BlockLogCoordinate ℂ)
+    (V : BoundaryField) (A : BlockLogField)
+    (hdegree : (blockRadialPolynomial p A).natDegree ≤ 16) :
+    blockAssociatedGradedExtraction16
+        (blockPolynomialAnalyticFunctional p) V A =
+      MvPolynomial.eval A p := by
+  rw [blockAssociatedGradedExtraction16_polynomial_eq]
+  calc
+    ∑ d ∈ Finset.range 17, (blockRadialPolynomial p A).coeff d =
+        ∑ d ∈ Finset.range 17,
+          (blockRadialPolynomial p A).coeff d * (1 : ℂ) ^ d := by simp
+    _ = (blockRadialPolynomial p A).eval 1 :=
+      (Polynomial.eval_eq_sum_range'
+        (Nat.lt_succ_iff.mpr hdegree) 1).symm
+    _ = MvPolynomial.eval A p := by
+      simpa using blockRadialPolynomial_eval p A 1
 
 /-- **Uniform exact-block headline.**  For every actual boundary field `V`,
 the associated-graded extraction has the same strict norm-two certificate.
