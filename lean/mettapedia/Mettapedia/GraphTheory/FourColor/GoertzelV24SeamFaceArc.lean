@@ -51,6 +51,17 @@ theorem firstPositiveHitTime_hits
   exact (Nat.find_spec
     (exists_positive_pow_hit perm hit root hroot)).2
 
+theorem firstPositiveHitTime_le_of_hit
+    {A : Type*} [Fintype A] [DecidableEq A]
+    (perm : Equiv.Perm A) (hit : A → Prop) (root : A)
+    (hroot : hit root) {step : Nat}
+    (hstepPos : 0 < step) (hstepHit : hit ((perm ^ step) root)) :
+    firstPositiveHitTime perm hit root hroot ≤ step := by
+  classical
+  unfold firstPositiveHitTime
+  exact Nat.find_min' (exists_positive_pow_hit perm hit root hroot)
+    ⟨hstepPos, hstepHit⟩
+
 /-- No strict positive prefix of the canonical return arc meets the marked
 set. This is the minimality fact that makes the arc canonical. -/
 theorem not_hit_before_firstPositiveHitTime
