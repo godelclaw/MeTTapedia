@@ -1,0 +1,919 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+}
+\lstset{style=lean}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\Kpoly}{K^{\mathrm{poly}}}
+\newcommand{\MY}{M(Y)}
+\newcommand{\FF}{\mathbb{F}_2}
+\newcommand{\Gap}{\mathrm{Gap}}
+\newcommand{\StarSW}{(\star_{\mathrm{SW}})}
+
+\title{A Quantale-Weakness Route to $\mathrm{P}\neq\mathrm{NP}$\\
+via CD Evidence Normalization and\\
+Gauge-Buffered Locked Ensembles:\\
+\large A Machine-Checked Formalization Companion}
+\author{The MeTTapedia formalization effort}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+This is a living formalization companion to Ben Goertzel's current-best
+$\mathrm{P}$ versus $\mathrm{NP}$ manuscript, \emph{A Quantale-Weakness Route to
+$\mathrm{P}\neq\mathrm{NP}$ via CD Evidence Normalization and Gauge-Buffered
+Locked Ensembles} (v13, April 2026). That manuscript is a re-architecture of the
+earlier Switching-by-Weakness route (v12): it discards the ``short computation is
+local'' midpoint and replaces it with an \emph{evidence-accounting} one. The
+proof is a single clash in polytime-capped conditional description length
+$\Kpoly(\MY\mid Y)$ on an efficiently samplable family of SAT instances $Y$ whose
+every witness carries the same global readout message $\MY$: under
+$\mathrm{P}=\mathrm{NP}$ a self-reduction gives $\Kpoly(\MY\mid Y)=O(1)$, while an
+unconditional lower bound argues $\Kpoly(\MY\mid Y)\ge\eta t$. The lower bound
+treats computation as an evidence-producing process: predictive advantage becomes
+constructible-dual (CD) evidence skew, then pairwise distinctions between
+message-opposite worlds; a normalization theorem forces every target-relevant
+non-neutral trace leaf to be a safe-buffer or a hidden-gauge observation; an
+\emph{atomic evidence budget} then caps the total advantage at $o(t)$ across the
+selected coordinates, which with boundary-law mixing yields product small-success
+$2^{-\Omega(t)}$ and, by compression-from-success, the linear incompressibility.
+
+We record what the MeTTapedia Lean development has machine-checked of this route,
+and we are scrupulous about a distinction that a naive axiom audit would blur:
+the development contains \emph{no} \texttt{sorry}, \texttt{axiom},
+\texttt{native\_decide}, or placeholder in its proof terms, and every headline
+reduces to Lean's standard base
+$\{\texttt{propext},\allowbreak\ \texttt{Classical.choice},\allowbreak\
+\texttt{Quot.sound}\}$; but the \emph{open} content of the route is carried
+\emph{in the types}, as interface-hypothesis fields of structures and as named
+\texttt{Prop} obligations passed as hypotheses. Consequently a clean
+\texttt{\#print axioms} on the central clash theorem certifies \emph{the
+implication, not the conclusion}. We label every result as unconditional,
+conditional on Ben's named interface hypotheses, or open, and we foreground the
+places where the formalization \emph{refutes} a stated step (including one of the
+manuscript's own scaled constructions, proved inadmissible) rather than
+discharging it. The latest source reconciliation gives a sharper verdict than
+an open terminal node: the complete nonempty faithful-M4 construction target is
+machine-checked \emph{uninhabited}. D.8 message rigidity, D.31 neutrality of the
+complete public-template syntax, D.48's opposite-phase coupling, Definition~7.4
+/ Hypothesis~7.5 support-wide pair-neutrality, and full public observability are
+jointly inconsistent. This obstruction uses none of the four analytic frontier
+packages and cannot be repaired merely by changing the lock family.
+\textbf{OURS:} the most direct remaining repair --- classify the target-bearing
+public syntax as charged while retaining D.48, support-wide neutrality of the
+uncharged catalog, full observability, and D.8 rigidity --- is now closed as
+well.  Every exact phase coupling carries charged-public disagreement mass one
+at each target coordinate, hence exactly $|S|$ over a target set $S$; no
+$o(|S|)$ localization is possible under those premises. We make no claim about
+$\mathrm{P}$ versus $\mathrm{NP}$, which remains open. Appendices record the
+superseded v12 route --- whose calibration step this companion's predecessor was
+devoted to obstructing --- and a graveyard of disproven sub-routes, with their
+history.
+\end{abstract}
+
+\tableofcontents
+
+\section{Orientation: what this document is}
+\label{sec:orientation}
+
+A companion of this kind exists to grow alongside a formalization, not to freeze a
+single verdict. It has three jobs. First, to distill the \emph{current-best}
+version of Ben Goertzel's proof --- the v13 evidence-accounting route --- as a
+faithful mathematical spine (\S\ref{sec:route}). Second, to record what the Lean
+development has actually checked of that spine, with an honest ledger separating
+what holds unconditionally from what holds only modulo the manuscript's interface
+hypotheses (\S\S\ref{sec:honesty}--\ref{sec:instantiation}). Third, to keep the
+history of obstructions and reroutings --- the counterexamples the formalization
+found and how the route moved around them --- both inline where they bear on the
+argument (\S\ref{sec:obstructions}) and, for wholly superseded paths, in
+appendices (Appendices~\ref{app:v12}--\ref{app:graveyard}).
+
+The reader should keep one structural fact in view throughout. The manuscript's
+proof is abstract-then-concrete: an evidence calculus and a budget theorem are
+proved \emph{from} a stated interface that a concrete ensemble must satisfy, and
+the concrete gauge-buffered locked ensemble is the object that must satisfy all of
+those interface hypotheses at once. The formalization mirrors exactly this shape.
+Its strongest verified content is therefore of two kinds: genuinely unconditional
+theorems about the calculus (normalization, bookkeeping, and a battery of
+counterexamples that kill specific over-strong readings), and conditional
+\emph{implications} that assemble the interface into the clash. The genuine open
+mathematics --- the concentration and hardness inputs the ensemble must supply ---
+is named precisely and left open.
+
+\section{The current-best route (v13)}
+\label{sec:route}
+
+We follow the manuscript's own notation and numbering. What is preserved from v12
+is only the outer skeleton --- the polytime-capped weakness object $\Kpoly$, the
+Compression-from-Success bridge, and the self-reduction upper bound under
+$\mathrm{P}=\mathrm{NP}$; everything between them is new.
+
+\subsection{The $\Kpoly$ upper--lower clash}
+\label{sec:clash}
+
+The cost object (v13 \S2.1--2.2, Def.~2.2) is polytime-capped conditional
+description length $\Kpoly(x\mid y)$: the length of the shortest program that
+outputs $x$ from $y$ within a fixed polynomial time bound. The construction builds
+an efficiently samplable family of public SAT instances $Y$ with a polynomial-time
+witness relation $R(Y,W)$; every satisfying witness carries a \emph{readout
+message} $M(W)\in\{0,1\}^{r_t}$, $r_t=\Omega(t)$, $t=\Theta(m)$, and the ensemble
+enforces the \emph{single-message promise} (v13 \S1.1, Prop.~4.10):
+\[
+  R(Y,W)=1 \ \wedge\ R(Y,W')=1 \ \Longrightarrow\ M(W)=M(W'),
+\]
+so $\MY$ is well-defined on the support even though the witness is \emph{not}
+unique. The proof is the clash of two bounds on $\Kpoly(\MY\mid Y)$:
+\begin{itemize}
+  \item \textbf{Upper bound, conditional on $\mathrm{P}=\mathrm{NP}$}
+        (v13 \S11 / Prop.~2.17, Thm.~11.10): if $\mathrm{P}=\mathrm{NP}$, the
+        bit-fixing SAT self-reduction finds \emph{some} satisfying $W$ in
+        polynomial time, and the fixed readout returns $M(W)=\MY$; this is one
+        fixed constant-length program, so $\Kpoly(\MY\mid Y)=O(1)$ pointwise on
+        the support. Uniqueness of witness is not needed --- the single-message
+        promise makes any witness sufficient (Rmk.~11.17).
+  \item \textbf{Lower bound, unconditional over the ensemble}
+        (v13 \S10 / Thm.~10.9): for every fixed polynomial clock exponent $D$,
+        after choosing ensemble parameters for that $D$, there are constants
+        $\eta,\kappa>0$ with
+        $\Pr[\,\Kpoly_{(D)}(\MY\mid Y)\ge\eta t\,]\ge 1-2^{-\kappa t}$.
+  \item \textbf{The clash} (v13 Thm.~11.14 / Cor.~11.15): assume
+        $\mathrm{P}=\mathrm{NP}$; it supplies a fixed solver exponent $D^\ast$.
+        Instantiate the ensemble at $D^\ast$. For large $t$,
+        $\eta^\ast t > c_{\mathrm{up}}$, yet the same instance must satisfy both
+        $\Kpoly\ge\eta^\ast t$ and $\Kpoly\le c_{\mathrm{up}}$: contradiction,
+        hence $\mathrm{P}\neq\mathrm{NP}$.
+\end{itemize}
+The clocked constants (e.g.\ a safe radius $R_{\mathrm{safe}}=c(D^\ast)\log m$) are
+allowed to depend on the alleged solver's exponent $D^\ast$; the manuscript
+defends this (Rmks.~11.16--11.19) on the ground that under $\mathrm{P}=\mathrm{NP}$
+the exponent $D^\ast$ is one fixed finite constant, instantiated before
+$m,t\to\infty$.
+
+\subsection{The gauge-buffered locked ensemble}
+\label{sec:ensemble}
+
+The ensemble (v13 \S4) replaces v12's masked-and-isolated USAT / Valiant--Vazirani
+construction. A regioned public geometry $G_m$ (Def.~4.1) partitions sites into
+neutral, buffer, locked, gauge, and readout regions. The public instance
+$Y=(Y_{\mathrm{neu}},Y_{\mathrm{buf}},Y_{\mathrm{lock}})$ (Def.~4.2) exposes
+neutral template syntax, the public law of a strictly-positive high-temperature
+\emph{buffer}, and the public template of the locked global-message layer --- and
+crucially contains \emph{no} raw witness values, no hidden gauge values, and
+\emph{no} public atom of the form $M_a=b$ (no planted message tag). Hidden sites
+(Def.~4.3) carry a raw representative $x$, a hidden \emph{gauge} vector $g$, and
+the gauge-invariant quotient $z$, tied by $z_v=x_v\oplus g_v$. The verifier
+(Def.~4.8) conjoins locked-layer acceptance, the gauge equations, buffer
+acceptance, readout consistency, and the Tseitin/CNF gadgets; it has a uniform
+poly-size CNF realization $F_Y$ (Thm.~4.13). The gauge group $(\FF)^V$ acts by
+$s\cdot(x,g,z,\xi,M)=(x\oplus s,\,g\oplus s,\,z,\,\xi,\,M)$, fixing $Y$, $R$, and
+$M$ (Lemma~4.15); the \emph{hidden-gauge product law} (Hyp.~4.17) keeps unexposed
+gauge coordinates independent fair bits, giving the guessing bound
+$\Pr[\hat g_J=g_J\mid Y,h]\le 2^{-|J|}$ (Cor.~4.19). A \emph{legal safe probe}
+reads few buffer sites far from the locked/gauge/readout regions (Def.~4.25);
+under buffer contraction / Dobrushin uniqueness (Hyp.~4.27) the soft-buffer
+max-qSSM bound (Thm.~4.29) makes polynomially many probes leak only $o(1)$
+(Cor.~4.30). Thm.~4.31 exports the interface: samplable $Y/F_Y$; poly-time $R$;
+message $M\in\{0,1\}^{r_t}$; single-message promise; gauge action; hidden-gauge
+product law; atom completeness (Hyp.~4.22); and max-qSSM.
+
+\subsection{The evidence-accounting midpoint}
+\label{sec:midpoint}
+
+The weight of the proof sits on a new midpoint (v13 \S1.2):
+\[
+  \text{advantage}\ \Longrightarrow\ \text{CD evidence skew}\ \Longrightarrow\
+  \text{atomic pair-distinctions}\ \Longrightarrow\ \text{safe leakage}+\text{gauge rank}.
+\]
+Its components, in order: \textbf{(\S3)} for a target bit $B_j$ with opposite
+fibers, a transcript's positive/negative masses encode predictive advantage as
+\emph{evidence skew}, and the phase gap
+$\Gap_j(A_j)=\tfrac12\bigl|\Pr[A_j=1\mid B_j=1]-\Pr[A_j=1\mid B_j=0]\bigr|$ equals
+the CD skew (Lemma~3.20). \textbf{(\S5)} the CD evidence normal form (CD-ENF,
+Thm.~5.17) leaves only three non-neutral leaf classes --- neutral, safe-buffer,
+hidden-gauge --- and gauge faithfulness (Thm.~5.20, Cor.~5.21) forbids using the
+quotient identity $z_v=x_v\oplus g_v$ as a canonical-gauge shortcut: any
+target-relevant use normalizes to raw gauge support and is \emph{charged}. This is
+the technical heart that replaces v12's calibration/involution step.
+\textbf{(\S6)} CD trace capture (Thm.~6.15) telescopes an observer's evidence
+trace, bounding the output phase gap by half the total atomic derivative along the
+trace: internal computation creates no new pair-distinctions; advantage enters
+only when a primitive atom separates two previously undistinguished opposite
+worlds. \textbf{(\S7.7)} the \emph{Atomic Evidence Budget} (Thm.~7.23) combines
+these with atom-level bounds --- neutral leaves contribute $0$, safe leaves are
+bounded by $Q_{\mathrm{tot}}\,\varepsilon_{\mathrm{step}}(m)$ (max-qSSM), gauge
+leaves by a gauge-rank entropy $\mathrm{rank}_G$ --- to give
+$\sum_{j\in S}\Gap_j(A_j)=o(|S|)$ (Cor.~7.26). \textbf{(\S8)} boundary-law mixing
+(Thm.~8.10) makes the pivot-visible surface near-random. \textbf{(\S9)} combining
+the budget with mixing yields product small-success
+$\Pr[A_S=B_S]\le 2^{-\Omega(t)}$ over the $\Omega(t)$ switched coordinates
+(Thms.~9.18/9.19) --- the average-case unpredictability of the message
+coordinates that the whole route reduces to. \textbf{(\S2.2 / App.~A.17)}
+Compression-from-Success turns that exponential small-success into the linear
+$\Kpoly\ge\Omega(t)$ lower bound of \S10.
+
+A self-imposed correctness check (Rmk.~13.11), ``no hidden use of locality,''
+forbids any module from re-importing the very step --- v12's
+Switching-by-Weakness / calibration via the involution $T_i$ --- that the v13
+pivot was designed to eliminate. This is a candid signal of where the earlier
+route was fragile; Appendix~\ref{app:v12} records what the formalization found
+there.
+
+\subsection{What the manuscript claims, and what it leaves open}
+The manuscript claims $\mathrm{P}\neq\mathrm{NP}$ unconditionally by contradiction
+(Thm.~1.1). $\mathrm{P}=\mathrm{NP}$ is assumed only for contradiction, supplying
+the fixed exponent $D^\ast$. Everything else is discharged \emph{from} the
+ensemble-interface hypotheses of Thm.~4.31, which a concrete construction must
+satisfy simultaneously; the manuscript is explicit (Rmk.~13.6, milestone M4) that
+exhibiting one concrete gauge-buffered locked ensemble satisfying all of them at
+once --- single-message promise, SAT realization, atom completeness, gauge
+faithfulness, hidden-gauge product law, max-qSSM, bounded gauge incidence,
+\emph{and} boundary-law mixing --- is the remaining weight of the proof. Two
+contraction hypotheses (boundary posterior contraction, Hyp.~8.5; buffer
+contraction, Hyp.~4.27) are offered explicitly as ``prove-or-import.'' The
+public-input/neutrality tension is acknowledged as the pivot's pressure point
+(Rmk.~4.5): the observer may read the entire public $Y$, and on the single-message
+support the target bit is a mathematical function of $Y$, so the claim that
+full public-input access normalizes to \emph{neutral} context --- with any
+target-relevant use \emph{charged} --- is a genuine structural assumption of the
+ensemble, not a cosmetic restriction.
+
+\section{How honesty is encoded in the formalization}
+\label{sec:honesty}
+
+Before listing results we fix the reading protocol, because it is the crux of an
+honest audit of this route.
+
+\paragraph{No placeholders in proof terms.} A scan of the entire PNP development
+finds \emph{no} \texttt{axiom}, \texttt{sorry}, \texttt{admit},
+\texttt{native\_decide}, \texttt{opaque}, or \texttt{:= True} placeholder in code.
+Every headline theorem we cite was checked with \texttt{\#print axioms} and
+reduces to a subset of Lean's standard base
+$\{\texttt{propext},\ \texttt{Classical.choice},\ \texttt{Quot.sound}\}$ --- some
+to just $\{\texttt{propext}\}$ or $\{\texttt{propext},\ \texttt{Quot.sound}\}$.
+
+\paragraph{The open content lives in the types.} The route's open steps are
+carried not as Lean axioms but as \emph{hypotheses}: as assumption fields of a
+\texttt{structure}, and as named \texttt{def \dots : Prop} obligations passed in as
+arguments. Consequently, a clean axiom print on a \emph{conditional} theorem
+certifies that the \emph{implication} is validly proved, and says nothing about
+whether the hypotheses hold. Throughout this document we therefore tag each result
+with one of four statuses:
+\begin{description}
+  \item[\textnormal{(a) unconditional}] proved outright (standard axioms, no
+        interface hypotheses);
+  \item[\textnormal{(b) conditional}] a proved implication from named interface
+        hypotheses, or a theorem over a \texttt{structure} carrying assumption
+        fields --- ``machine-checked modulo Ben's interface hypotheses'';
+  \item[\textnormal{(c) asserted \texttt{Prop}}] a named \texttt{Prop} obligation
+        used only as a hypothesis --- no Lean axiom, but analytically open;
+  \item[\textnormal{(d) open frontier}] named in doc-comments, not yet a Lean
+        statement.
+\end{description}
+The route's own itinerary is recorded as data in \texttt{Roadmap.lean}, whose
+terminal node \texttt{pnp.global-separation} is \texttt{openBackground} at
+progress $0\%$: \emph{no final separation theorem is asserted}. Several earlier
+nodes are marked \texttt{blockedByCounterexample} --- the formalization
+\emph{refutes} the stated step rather than overclaiming it; those refutations are
+themselves unconditional theorems (\S\ref{sec:instantiation},
+Appendix~\ref{app:graveyard}).
+
+\section{The evidence spine, formalized (Phases A--D)}
+\label{sec:spine}
+
+The four phases below are all present in the settled core of the formalization. We give the
+load-bearing statement of each and its status.
+
+\subsection{Phase B: the CD evidence normal form (unconditional)}
+The cleanest genuine win of the spine. \texttt{V13CDENF} defines a raw evidence
+syntax whose leaves are exactly neutral / safe-buffer / hidden-gauge, with
+\emph{no} observer-output constructor, and proves that the recursive normalizer
+preserves semantics (v13 \S5--6, App.~C.7).
+\begin{lstlisting}
+theorem CDENF_semantics
+    (S : EvidenceSemantics Omega Neutral Safe Gauge)
+    (E : RawEvidence Neutral Safe Gauge) :
+    S.SatNormal (CDENF E) = S.SatRaw E
+\end{lstlisting}
+\textbf{Status (a), unconditional}, axioms $\{\texttt{propext},\
+\texttt{Quot.sound}\}$ (it does not even need \texttt{Classical.choice}). That the
+raw syntax has no opaque observer-output atom is a structural design choice that
+makes the three-leaf classification exhaustive by construction; observer outputs
+must be expanded through an interface carrying its own semantics theorem
+(\texttt{observerToCDENF\_sat}, status (b)).
+
+\subsection{Phase A: the finite evidence spine (conditional)}
+\texttt{V13EvidenceSpine} works over a finite rational law (no measure theory),
+defines the target \texttt{Gap} of an observer, and bounds it by half a
+derivative sum.
+\begin{lstlisting}
+theorem phaseA_gap_le_half_derivative_sum
+    (C : EvidenceSpineBound mu B T g Pair Stage Branch) :
+    Gap mu B T g <= (1/2 : Rat) * C.telescoping.derivativeSum
+\end{lstlisting}
+\textbf{Status (b), conditional}: the \texttt{EvidenceSpineBound} structure carries
+the capture inequality (\texttt{capturesGap}) and the telescoping bound
+(\texttt{sep\_le\_derivativeSum}) as \emph{assumption fields}; the theorem
+assembles them. The two-point toy witnesses are unconditional but trivial. This is
+the \S3/\S6 telescoping architecture in place, not a concrete-ensemble estimate.
+
+\subsection{Phase C: the gauge-buffered locked interface (conditional)}
+\texttt{V13GaugeBufferedLockedInterface} states the ensemble interface as a
+nine-field structure over the Phase-A/B objects --- single-message promise,
+hidden-gauge product, no public target tags, atom completeness, gauge
+faithfulness, safe-qSSM, bounded gauge incidence, boundary mixing, admissible
+histories --- and proves three ledger-coherence consequences (e.g.\ that an
+admissible history is not target-measurable, and that boundary mixing blocks pivot
+sufficiency). \textbf{Status (b)}: all three are derived \emph{from} the nine
+assumption fields. A two-point toy jointly inhabits all nine fields (status (a),
+but trivial): it certifies the interface is \emph{consistent / non-vacuous}, not
+that any scaled ensemble satisfies it. The manuscript's quantitative estimates
+(max-qSSM, gauge-rank) appear here only as abstract budget fields.
+
+\subsection{Phase D: the upper--lower clash, as a conditional object}
+\label{sec:phaseD}
+\texttt{V13ConditionalClash} assembles Phases~A--D into the clash \emph{as an
+implication}. It reuses the checked lower-bound plumbing and isolates the two
+genuinely open analytic inputs as their own structures: a
+\texttt{CompressionStarSWHardness} field (the average-case witness-bit hardness
+transfer, $\StarSW$) and a \texttt{SelfReductionUpperHypothesis} field (the
+$\mathrm{P}=\mathrm{NP}$ constant-length decoder).
+\begin{lstlisting}
+theorem v13_upperLowerClash
+    (L : GaugeBufferedLockedInterface ...)
+    (P : ParameterRecord L) :
+    UpperLowerClash L P
+\end{lstlisting}
+\textbf{Status (b), conditional --- and this is the crux of the whole audit.} The
+theorem is a proved implication from the nine-field ledger $L$ plus a
+\texttt{ParameterRecord} that \emph{bundles the two explicitly self-flagged open
+inputs}. Its own audit tags exactly those two of seven fields \texttt{.openInput}.
+Because the lower chain forces $\eta\le\Kpoly$ while the upper hypothesis asserts
+$\Kpoly<\eta$, a \texttt{ParameterRecord} is jointly contradictory --- so the
+theorem encodes the \emph{clash architecture}, not an unconditional falsehood or a
+separation. Its clean axiom print certifies the implication is valid; it does
+\emph{not} certify $\mathrm{P}\neq\mathrm{NP}$.
+
+\paragraph{A naming caution.} The module \texttt{PNPv13AtomicEvidenceBudget}
+formalizes the \emph{charged-occurrence bookkeeping} that the \S7.9 interface
+export demands --- the no-double-counting / no-omission discipline that any such
+coordinate sum must obey --- together with concrete obstruction countermodels. It
+does \emph{not} prove the manuscript's quantitative Theorem~7.23 ($o(t)$ budget);
+the safe-leakage and gauge-rank estimates live only as abstract interface fields.
+The bookkeeping algebra itself is unconditional:
+\begin{lstlisting}
+theorem coordinateSummedCost_le_atomBudget_of_noDoubleCounting
+    (hno : S.NoDoubleCounting) : S.coordinateSummedCost <= S.atomBudget
+theorem noDoubleCounting_iff_allPositiveCostAtomsCharged_of_coordinateSummedCost_eq_atomBudget
+    (heq : S.coordinateSummedCost = S.atomBudget) :
+    S.NoDoubleCounting <-> S.AllPositiveCostAtomsCharged
+\end{lstlisting}
+and a companion module exhibits a finite surface where a double-counted atom and
+an omitted atom \emph{cancel}, so aggregate budget equality holds while both
+structural failures persist --- a machine-checked warning that the aggregate
+budget alone certifies neither side condition.
+
+\subsection{The interface as a finite consistency suite}
+\label{sec:interface}
+The manuscript itself flags the pressure point (Rmk.~4.5): on the single-message
+support the target bit $B_j=\ell_j(\MY)$ is a mathematical function of the full
+public instance $Y$, so $B_j=f_j(Y)$. The full public input therefore
+\emph{cannot} be classified neutral; only a target-blind public skeleton
+$Y_{\mathrm{neu}}$ can, and every target-relevant use of the remaining
+$Y_{\mathrm{chg}}$ must normalize to charged safe-buffer or hidden-gauge evidence.
+This is the decisive soundness condition of the whole route --- and it is the one
+a formalization can pin down finitely, before any concentration estimate. The
+development enforces it as a suite of finite consistency lemmas over the interface,
+each an unconditional theorem:
+\begin{itemize}
+  \item message-opposite coupled pairs must agree on a target-blind skeleton, not
+        on the full $Y$: same-full-$Y$ opposite pairs are empty (single-message),
+        so any statement pairing opposite messages at fixed $Y$ is vacuous;
+  \item a pair-neutral atom family cannot generate the target
+        ($B_j=g(N(\omega))$ with $N$ pair-neutral forbids a nontrivial
+        message-opposite coupling) --- the neutral skeleton must be target-blind;
+  \item the full public input carries derivative mass: if $B_j=f_j(Y)$ then every
+        message-opposite coupling puts unit mass on public-bit disagreements, so
+        $Y$ cannot be folded into the neutral class;
+  \item the full $\sigma$-field $\sigma(Y)$ is not admissible conditioning for the
+        current coordinate: a $C$-measurable balanced bit cannot have
+        $\Pr[B_j=1\mid C]=\tfrac12$ on positive-probability atoms, so an
+        admissible history may contain only a target-blind projection of $Y$;
+  \item a boundary summary that is \emph{sufficient} for $B_j$ forces mixing error
+        $\ge\tfrac12$, so the pivot summary must be genuinely non-sufficient;
+  \item no opaque run-atom: the raw evidence syntax has \emph{no}
+        observer-output constructor, so an arbitrary polynomial-time computation
+        cannot be inserted as one uncharged primitive --- it must expand through
+        the interface and be normalized by CD-ENF (\S\ref{sec:spine}).
+\end{itemize}
+These are the finite obligations a concrete ensemble must satisfy, and they are the
+checkable core of the interface: they say precisely where the scaled Phase-E family
+failed (\S\ref{sec:inadmissible}), and they are what a candidate ensemble must
+pass rather than assume. What they do \emph{not} supply are the quantitative
+estimates --- max-qSSM, gauge-rank entropy, boundary-law mixing --- which remain
+interface hypotheses (\S\ref{sec:scope}).
+
+\subsection{OURS: the charged-public repair has a linear budget}
+\label{sec:charged-public}
+
+The preceding inconsistency uses D.31's classification of the complete public
+catalog as neutral.  The direct repair is to split that same catalog into
+pair-neutral primitives and primitives with charged expansions.  This does
+remove the literal contradiction, but it exposes a quantitative obstruction.
+For the exact D.48 coupling $\Gamma_j$ at target coordinate $j$, let
+\[
+  D_j=\{(\omega_0,\omega_1):
+    \text{some charged public primitive has different values at }
+    \omega_0,\omega_1\}.
+\]
+This is the ordinary union of charged-primitive disagreement events; its
+definition contains no target predicate.  Exact phase marginals give
+$B_j(\omega_0)\ne B_j(\omega_1)$ with $\Gamma_j$-probability one.  On any
+positive-mass pair outside $D_j$, every charged primitive agrees by definition
+and every neutral primitive agrees by the retained Definition~7.4 condition.
+Full-catalog observability then makes the public instances equal, and D.8
+public-fiber rigidity makes the target bits equal, a contradiction.  Therefore
+\[
+  \Gamma_j(D_j)=1,
+  \qquad
+  \sum_{j\in S}\Gamma_j(D_j)=|S|.
+\]
+Lean proves the pointwise identity, its finite-set sum, and the strict corollary
+that no coefficient $c<1$ upper-bounds the total on a nonempty $S$:
+\begin{lstlisting}
+theorem v13D48_chargedPublicDisagreementMass_eq_one :
+    chargedPublicDisagreementMass D48 theta m t j = 1
+theorem v13D48_chargedPublicDisagreementTotal_eq_card :
+    chargedPublicDisagreementTotal D48 theta m t S = S.card
+theorem v13D48_chargedPublicDisagreementTotal_not_subunit :
+    c < 1 -> S.Nonempty ->
+    not (chargedPublicDisagreementTotal D48 theta m t S <= c * S.card)
+\end{lstlisting}
+
+This is an internal consistency and budget theorem for the displayed coupling
+architecture.  It supplies no circuit lower bound, oracle separation, or
+arithmetized lower bound, and therefore makes no claim to cross the
+relativization, natural-proofs, or algebrization barriers.  Its force is the
+narrower one proved above: every construction retaining the listed premises
+pays the same linear charged-public term.
+
+A resumable exact transport census supplied the finite verdict before the
+general proof.  It exhausts all nonconstant Boolean targets and charged masks
+through three public bits: 2,092 candidate target/mask pairs, of which 530 admit
+the exact conditional phase marginals together with neutral-fiber agreement.
+None has optimum below one; the minimum is sharp, while the largest optimum in
+the census is $12/7$.  Integral primal flows and the coefficient-one dual
+certificate are checked independently in Lean in dimensions one, two, and
+three.  The strongest localization canary reuses one charged atom for every
+target: the number of distinct charged atoms stays one, but the
+coordinate-summed mass is still exactly $|S|$.  Paying that atom only once would
+discard the coordinate multiplicity already isolated by the atomic-budget
+no-double-counting theorem.
+
+Thus changing D.31 alone cannot repair the advertised $o(|S|)$ Atomic Evidence
+Budget.  A surviving route must alter another structural premise, absorb a
+linear public term and replace the lower-bound architecture, or obtain its
+sublinear estimate from a genuinely different quantity.
+
+\section{The concrete instantiation: Phase E, the observer ladder, and a
+refuted family}
+\label{sec:instantiation}
+
+The manuscript's remaining weight is the concrete ensemble. The formalization's
+Phase-E work is where it is most valuably \emph{negative}, and the honesty
+protocol of \S\ref{sec:honesty} earns its keep.
+
+\subsection{A concrete smoke test that works}
+\texttt{V13PhaseEConcrete} builds a genuine four-world locked unit-CNF instance
+with an isolation row, proves it has a unique witness, and exhibits a real nonzero
+target gap $\Gap=\tfrac12$ (a finite \texttt{norm\_num} fact over the four
+worlds). All nine interface obligations are discharged one by one on this instance
+--- \textbf{status (a)}, but explicitly a smoke test: the caveats note that scaled
+max-qSSM and scaled boundary-law mixing remain separate obligations.
+
+\subsection{A scaled family, proved inadmissible}
+\label{sec:inadmissible}
+\texttt{V13PhaseEScaled} attempts a parameterized hard family --- and proves its
+own construction broken. The public input sets the locked target tag equal to the
+target itself, so a single public coordinate determines the target:
+\begin{lstlisting}
+theorem phaseEScaled_familyInadmissible_publicTargetTag (m k : Nat) :
+    exists coordinate : PhaseEScaledPublic m k -> Bool,
+      forall omega,
+        coordinate (phaseEScaledPublicInput omega) = phaseEScaledTarget omega
+\end{lstlisting}
+\textbf{Status (a), unconditional} (axioms $\{\texttt{propext}\}$). This violates
+the manuscript's own ``no public target tags'' requirement (Hyp.~4.21), so the
+family's obligation map re-tags all nine fields \emph{inadmissible}. The lesson,
+carried forward as a design rule: a candidate ensemble must be pinned by theorem to
+carry no uncharged target-bearing public atom, or it silently prints the answer.
+
+\subsection{The observer ladder}
+\texttt{V13ObserverLadder} climbs the scaled family and records, at each rung, a
+machine-checked fact --- most of them negative. A $q=1$ observer that reads the
+public target-lock wins with probability $1$
+(\texttt{phaseEScaled\_targetLockObserver\_success\_eq\_one}); target-blind juntas
+and parities sit at exactly $\tfrac12$; the full random-switching lift is
+\emph{pinned, not proved}, as \texttt{PhaseEScaledSwitchingStatementNeeded}
+(status (c)); and hardness is proved \emph{equivalent} to the open $\StarSW$
+half-bound:
+\begin{lstlisting}
+theorem phaseEScaled_payloadDomination_iff_starSW ... :
+    CoarseDominationAll payloadSummary target decoderSuccess slack
+      <-> StarSW decoderSuccess slack
+\end{lstlisting}
+This equivalence is the honest localization: on this family, ``a local rule
+dominates every decoder'' is not weaker than the average-case hardness one is
+trying to prove --- it is the same statement.
+
+\subsection{The linear replacement route, and a lesson from formalization}
+\label{sec:truefirst}
+After the scaled family was proved inadmissible, a concrete linear-algebra testbed
+was opened (the Roadmap ties it under \texttt{v13RealRungOne*} /
+\texttt{v13ObserverLadder}): public instance $(A,\,Ax)$ over $\FF^m$ with $A$ a
+certified invertible linear map, and a family of row-query observers on it. Two
+success bounds hold \textbf{unconditionally} on this route (axioms
+$\{\texttt{propext},\ \texttt{Classical.choice},\ \texttt{Quot.sound}\}$), using a
+crude one-time union-bound constant:
+\begin{lstlisting}
+-- sequential q-row observers:
+--   uniformSequentialQRowSuccess observer i0 <= 1/2 + 4*(2^q - 1)/2^m
+-- no-target bit-junta observers:
+--   NoTargetBitJuntaSuccess i0 observer <= 1/2 + 4*2^j/2^m
+\end{lstlisting}
+A fixed-map parity observer's success obeys an exact trichotomy --- $1$, $0$, or
+exactly $\tfrac12$ (status (a)). The \emph{sharp} $1/2+2^q/2^m$ bound for general
+causal row queries is open for $q\ge 2$ (a fan of asserted \texttt{Prop} counting
+obligations, status (c)/(d)); the $q\le 1$ cases are discharged, and a
+machine-checked \emph{negative} shows the sharp bound is \emph{false} for a
+target-row-reading observer at $m=2$, which is exactly why the construction restricts to
+the no-target event.
+
+This route is also where the formalization taught us something about
+\emph{stating} events. The natural step-indexed ``first coset hit at step $t$''
+event, used as a counting target, turned out to be \emph{false as stated}: it
+carried no ``no earlier hit'' clause, so an observer that re-reads a row over a
+prefix that already generates the target makes \emph{every} world in the prefix
+class hit. The refutation is an explicit constructed observer, not an abstract
+objection:
+\begin{lstlisting}
+def rowShearGeneratedRereadObserver (i0 : Fin m) (hm : 1 < m) :
+    SequentialRowObserver m 3 where
+  chooseRow transcript :=
+    match transcript.length with
+    | 0 => i0
+    | 1 => finSpare i0 hm
+    | _ + 2 => i0
+  decideFromTranscript := fun _ => 0
+-- ...ConditionedCountingBound_not_of_generated_reread_prefix_gap :
+--   not (ConditionedCountingBound i0 observer)     -- status (a), a refutation
+\end{lstlisting}
+The repair restores the missing minimality: the corrected \emph{true-first} event
+adds ``no coset hit at any earlier step,'' and with that clause the conditioned,
+packing, and counting bounds all close \emph{unconditionally}. The crown counting
+lemma is a conditioned replay of a two-row shear embedding applied at the hit row;
+because the shear fixes the already-read rows, the conditioning is free and the
+constants land exactly. The refuted step-indexed surfaces are kept in the
+development, documented against their refuting theorems, because a refutation of a
+plausible statement is itself a finding. With the corrected event, these bounds
+assemble into an unconditional closure of ``rung one'' on both samplers --- a
+unified success $\le\tfrac12+\varepsilon$ headline with an explicit rung ledger ---
+and the route's separation endpoint follows from an $\StarSW$ hardness input by an
+implication whose axiom print is \emph{empty}: pure plumbing, asserting no
+separation. (This is the concrete-instantiation frontier; the evidence spine of
+\S\ref{sec:spine} is the more settled core.)
+
+\subsection{The linear gauge-CNF regression carrier and the faithful M4 specification}
+\label{sec:realM4}
+The current \texttt{V15RealLinearCNFEnsemble} and
+\texttt{V15SmallSingleMessageCNFEnsemble} are frozen regression carriers, not the
+manuscript's M4 ensemble.  The general linear carrier unit-locks the decoded witness
+coordinates and has one free Boolean gauge coordinate.  It is useful for testing
+generic SAT/readout, gauge-action, and bit-fixing machinery, but it has no regioned
+neutral/buffer/locked/gauge/readout geometry and cannot supply the growing gauge
+entropy or buffer law used by the analytic argument.
+
+Its principal manuscript-facing result is negative.  When the full concrete
+Appendix-I formula syntax is public, that syntax determines the target and the
+readout.  Accordingly,
+\texttt{v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula\_noPublicTargetTags\_obstruction}
+and
+\texttt{v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula\_noPublicReadoutTags\_obstruction}
+prove that the no-public-tag disciplines \emph{fail} on this carrier.  A theorem for
+a deliberately smaller neutral skeleton does not repair the full-syntax failure.
+Likewise, the carrier's Appendix-D-shaped read predicate asserts
+\texttt{message = targetBit}; its resulting \texttt{PublicMessageInvariant} is
+premise-baking and is not evidence that D.8 was constructed from bounded-arity
+lock/readout constraints.
+
+The manuscript-facing work uses one common size- and clock-indexed ensemble.
+\texttt{V13FaithfulQuantitativeFrontiers} states the
+conditional hidden-gauge product law, a nontrivial indexed finite gauge action,
+full-public-syntax coverage, max-qSSM, finite-set bounded incidence together with
+the simultaneous Atomic Evidence Budget, conditional boundary mixing, the
+fixed-clock Theorem-10.9 probability bound, and the Section-11 upper side on the
+same object at $D^\ast$.  \texttt{PNPv13FaithfulM4Spec} states the five-region
+Appendix-D/I type layer, the $x/g/z$ quotient equations and uniform gauge lift,
+lock/readout and buffer predicates, legal probes, sampler support, compatible
+couplings, and uniform CNF compilation. The concrete regioned scaffold proves
+sampler mechanics, quotient equations, D.30 full-syntax coverage, a positive-rank
+free gauge action, quotient-conditioned uniform lift, and the exact adaptive
+hidden-gauge product law for every legal prefix and unsupported finite coordinate
+set.
+
+The scaffold's free XOR connector refutes D.8 by two supported completions with
+different messages. A broader search and a machine-checked affine theorem close
+the free-linear lock family; full-rank public parity systems make the message
+algebraically recoverable, while small synthesized CNFs merely bake the desired
+message into public syntax. These findings motivated a final reconciliation of
+the exact Appendix-D and Section-7 roles rather than another carrier search.
+
+The exact faithful target now also records three requirements used by the
+neutral-zero step: Appendix~D.31 neutrality of every primitive obtained solely
+from public template syntax, extensional observability of the advertised full
+public catalog, and Definition~7.4 / Hypothesis~7.5 pair-neutrality on every pair
+in the support of the D.48 opposite-phase coupling. A nonempty switched-target
+guard prevents vacuous satisfaction. Lean proves
+\begin{lstlisting}
+theorem v13M4OpenConstructionObligations_uninhabited :
+    not (Nonempty (V13M4OpenConstructionObligations E G C Primitive CNFVar))
+\end{lstlisting}
+The proof chooses a positive-mass D.48 coupling pair. Exact marginals place both
+endpoints in sampler support. D.31 and Definition~7.4 make every complete public
+valuation equal; full-catalog observability makes the public instances equal;
+D.8 then makes the designated message coordinate equal. The opposite-phase
+marginals make that same coordinate unequal, a contradiction.
+
+This no-go is independent of lock arity, linearity, geometry, buffer behavior,
+gauge action, and all four analytic packages.  Charging public syntax contrary
+to D.31 is the direct consistency repair, but the OURS result in
+\S\ref{sec:charged-public} proves that its D.48 charged-disagreement term is
+exactly linear, not $o(|S|)$.  A viable revision must therefore weaken D.8,
+change the D.48 phase coupling, replace the Section-7 support-wide neutrality
+rule, abandon full public observability, or replace the lower-bound architecture
+so that it does not require a sublinear charged-public term. The observability
+option conflicts with the stated observer model. The four analytic packages ---
+max-qSSM; bounded incidence plus the Atomic Evidence Budget; conditional
+boundary mixing; and fixed-clock global message incompressibility --- remain
+open mathematics, but they cannot inhabit the jointly inconsistent mechanical
+interface without such a route revision.
+
+\section{Obstructions and reroutings}
+\label{sec:obstructions}
+
+The move from v12 to v13 was not cosmetic; it routed around a specific, now
+machine-checked obstruction. We record the live reroutings here; the superseded
+v12 route in full is Appendix~\ref{app:v12}.
+
+\paragraph{The calibration defect, and the kernel-flip repair.} v12's calibration
+(Lemma~4.8 / App.~A.17) needed, at a fixed local input, exchangeability of the
+witness bit under a promise-preserving involution $T_i$. \texttt{tiInputMap} sends
+the third coordinate $b\mapsto b\oplus a_i$, so it fixes the full input
+\emph{iff} the column $a_i$ is zero
+(\texttt{tiInputMap\_eq\_self\_iff\_zeroColumn}), a vanishing $m^{-\Theta(1)}$
+fraction of columns (\texttt{not\_calibrationFullInputPreservation\_on\_nonzeroColumns},
+status (a)). The repair that strengthens the step is a \emph{kernel-flip}
+involution: flip the witness by a kernel vector $w\in\ker(A)$ with $w_i=1$; this
+toggles the target bit while fixing $b$ (since $Aw=0$) and the rest of the local
+statistic, giving \emph{exact} neutrality, expressed as a cardinality-preserving
+pairing of the two witness-bit fibers:
+\begin{lstlisting}
+theorem kernelFlip_exactNeutrality_card
+    (hw : IsKernelVector A w) (hwi : w i = 1) :
+    Fintype.card (KernelBitFiber A b i 0)
+      = Fintype.card (KernelBitFiber A b i 1)
+\end{lstlisting}
+Exact neutrality removes the broken calibration lemma outright and makes the
+associated sparsification stack unnecessary.
+
+\paragraph{The No-Threading impossibility.} Any hope of \emph{enriching} a single
+local statistic to be simultaneously neutral and sufficient is blocked, and for a
+logical rather than analytic reason: the target bit is a deterministic function of
+the instance, so a sufficient statistic pins it to $\{0,1\}$, which neutrality
+forbids from equalling $\tfrac12$.
+\begin{lstlisting}
+theorem noThreadingLemma (phi : Phi) :
+    not (Neutral u x /\ Sufficient u x)
+\end{lstlisting}
+\textbf{Status (a).} Because the obstruction is logical, no concentration or
+log-Sobolev inequality can ever supply the missing domination; this is the
+structural reason the hardness input $\StarSW$ cannot be made a free lemma, and
+part of why v13 abandons the locality midpoint entirely.
+
+\paragraph{The steelman conditional.} The repaired abstract implication consumes
+two premise packages: kernel-flip neutrality plus the open $\StarSW$ hardness
+input, and a \texttt{PNPConditionalFramework} supplying pivot independence,
+compression from success, and the self-reduction clash.
+\begin{lstlisting}
+theorem pnp_steelman_starSW_frameworkBundle_conditional
+    (hKernel : KernelFlipNeutrality F)
+    (hSW : StarSWAverageCaseWitnessBitHardness F) :
+    F.pNeNPClaim
+\end{lstlisting}
+\texttt{pnpSteelmanFrameworkPremiseBundleAudit} lists the three non-$\StarSW$
+framework premises.  \textbf{Status (b), conditional}: the composition theorem is
+axiom-free, but it proves none of those premises and asserts no unconditional
+separation.  A future concrete theorem must establish every premise on the same
+faithful M4 ensemble.  ($\StarSW$ itself is not weaker than the target: it is
+contradicted in the $\mathrm{P}=\mathrm{NP}$ regime and is equivalent, on the
+ensemble, to the separation --- which is why No-Threading forbids deriving it for
+free.)
+
+\section{Status, scope, and the open frontier}
+\label{sec:scope}
+
+\paragraph{Machine-checked unconditionally.} The syntactic CD-ENF
+semantics-preservation theorem (not the open real-execution primitive expansion)
+(\S\ref{sec:spine}); the atomic-evidence \emph{bookkeeping} algebra and its
+cancellation/exactness countermodels; non-vacuity of the nine-field interface; the
+Phase-E \emph{negatives} (the scaled family is inadmissible; the observer ladder
+stops at a $q=1$ target-lock counterexample; hardness $\Leftrightarrow\StarSW$);
+the Roadmap-node refutations of stated readout and calibration steps; and, on the
+linear route, the two crude-constant success bounds, the parity trichotomy, the
+public-surface certificate, the $q\le1$ causal cases, and the true-first counting
+close.
+
+\paragraph{Machine-checked only modulo explicit premise bundles.} The legacy
+Phase-A theorem is a conditional certificate eliminator; the faithful Phase-A
+record still requires normalized exact phase marginals, actual-trace capture, and
+the refinement comparison.  The Phase-C coherence lemmas use the legacy thin
+interface.  The \textbf{Phase-D upper--lower clash} is an implication from the full
+\texttt{ParameterRecord}, which supplies the phase budget, lower framework, kernel
+neutrality, $\StarSW$ transfer, and the incompatible Section-11 upper premise.
+These are reduction skeletons, not a separation.
+
+The no-target sequential result is \emph{not} conditional on the former pinned
+counting proposition.  \texttt{V13RealLinear\_rungLedger} records unconditional
+half-plus-epsilon bounds for both the adjusted no-target sequential sampler and the
+bit-junta sampler, together with unconditional Crux-2; only the
+$\StarSW$--framework endgame remains conditional.  Separately, the faithful
+quantitative frontiers remain open statement records. The complete faithful
+Appendix-D/I target is no longer merely uninhabited by known constructions: its
+nonempty form is refuted by
+\texttt{v13M4OpenConstructionObligations\_uninhabited}.
+
+\paragraph{Route revision required.} Before the analytic frontiers can be a
+same-object completion program, at least one of D.8, D.48, Definition~7.4 /
+Hypothesis~7.5, or full public observability must be revised and the affected
+lower-bound argument reproved.  Revising D.31 alone to charge the remaining
+public syntax restores consistency but, by \S\ref{sec:charged-public}, forces a
+coefficient-one linear disagreement budget and does not restore Theorem~7.23's
+$o(|S|)$ conclusion. Independently open work includes the sharp $2^q/2^m$
+causal counting bounds for $q\ge2$, the random-switching lift
+\texttt{PhaseEScaledSwitchingStatementNeeded}, the $\StarSW$ average-case
+hardness input, and the boundary/buffer contraction hypotheses.
+
+\paragraph{$\mathrm{P}$ versus $\mathrm{NP}$ remains open.} We make no claim in
+either direction. The value of the formalization is the verified plumbing and the
+exact localization of the open inputs, together with a body of machine-checked
+counterexamples that keep specific over-strong readings of the route honest. The
+latest result proves that no nonempty object can simultaneously satisfy the exact
+joint faithful target as currently stated; the manuscript architecture must change
+before a concrete ensemble can close it.
+
+\section*{Provenance}
+\addcontentsline{toc}{section}{Provenance}
+The manuscript distilled in \S\ref{sec:route} is Ben Goertzel, \emph{A
+Quantale-Weakness Route to $\mathrm{P}\neq\mathrm{NP}$ via CD Evidence
+Normalization and Gauge-Buffered Locked Ensembles} (v13, 20 April 2026), which
+supersedes the earlier \emph{$\mathrm{P}\neq\mathrm{NP}$: A Non-Relativizing Proof
+via Quantale Weakness and Geometric Complexity} (v12, 9 October 2025) discussed in
+Appendix~\ref{app:v12}. The formalization is work of the MeTTapedia formalization
+effort. The v13 evidence spine (Phases~A--D), Phase-E instantiation, and observer
+ladder are the modules \texttt{V13EvidenceSpine}, \texttt{V13CDENF},
+\texttt{V13GaugeBufferedLockedInterface}, \texttt{PNPv13AtomicEvidenceBudget},
+\texttt{V13ConditionalClash}, \texttt{V13PhaseEConcrete},
+\texttt{V13PhaseEScaled}, and \texttt{V13ObserverLadder}, with the itinerary in
+\texttt{Roadmap.lean}; the v12 obstruction is \texttt{PostSwitchInputObstruction};
+the steelman conditional and its inputs are \texttt{PNPSteelmanConditional},
+\texttt{KernelFlipInvolution}, and \texttt{NoThreadingLemma}; the linear
+replacement route is the \texttt{V13RealRungOne*} / \texttt{V13RealRungTwoBitJunta}
+family; the frozen legacy staging spine and linear CNF regression/obstruction
+carrier are \texttt{V15RealEnsembleSpine} and
+\texttt{V15RealLinearCNFEnsemble}.  The faithful manuscript-facing statement layers
+are \texttt{V13FaithfulQuantitativeFrontiers} and
+\texttt{PNPv13FaithfulM4Spec}; the adaptive counting and final faithful-interface
+verdict are in \texttt{V13FaithfulM4AdaptiveGaugeProduct},
+\texttt{V13FaithfulM4CouplingObstruction}, and the non-vacuous
+\texttt{V13M4OpenConstructionObligations} target.  The OURS charged-public
+verdict and its finite primal/dual checker are
+\texttt{PNPv13ChargedPublicBudgetObstruction} and
+\texttt{PNPv13ChargedPublicBudgetFiniteCertificates}. Lean listings
+are ASCII transliterations of the source declarations
+(the sources are normative); every headline was checked with \texttt{\#print
+axioms}. Per-declaration source links are omitted pending publication of the
+development tree.
+
+\appendix
+
+\section{The superseded v12 route: a machine-checked obstruction in the
+calibration step}
+\label{app:v12}
+
+The v12 manuscript separated $\mathrm{P}$ from $\mathrm{NP}$ by a
+Switching-by-Weakness normal form (Thm.~4.2) that reduces every short global
+decoder, after a short wrapper, to an $O(\log m)$-local per-block rule on the
+post-switch input $u_i=(z,a_i,b)$ --- $z$ a sign-invariant feature, $(a_i,b)$
+Valiant--Vazirani labels with $a_i=Ae_i$ --- on a masked-random Unique-SAT
+ensemble; neutrality (Thm.~5.1) and template sparsification (Thm.~5.10) pin each
+local rule near $\tfrac12$; independence across $\Theta(m)$ blocks gives per-program
+success $2^{-\Omega(t)}$ and hence $\Kpoly\ge\eta t$, clashing with a constant
+self-reduction upper bound under $\mathrm{P}=\mathrm{NP}$. The load-bearing step
+was the \emph{calibration}/success-domination link (Lemma~4.8; App.~A.5,
+Lemma~A.17), which derived exchangeability of the witness bit at a fixed $u$ from a
+promise-preserving involution $T_i$.
+
+The formalization (\texttt{PostSwitchInputObstruction}) found that $T_i$ acts by
+$b\mapsto b\oplus a_i$: it preserves the reduced projection $(z,a_i)$ always
+(\texttt{invariantProjection\_tiInputMap}) but the full input $(z,a_i,b)$
+\emph{iff} $a_i=0$ (\texttt{tiInputMap\_eq\_self\_iff\_zeroColumn}), so the
+fixed-$u$ exchangeability holds only on a vanishing $2^{-k}=m^{-\Theta(1)}$
+fraction of columns. A finite two-point success-domination counterexample
+(\texttt{finite\_successDomination\_counterexample}, axioms
+$\{\texttt{propext},\ \texttt{Quot.sound}\}$) shows a $u$-measurable comparator
+cannot dominate a global decoder merely by sharing the local input. The natural
+repair --- coarsening to the $T_i$-invariant projection $(z,a_i)$ --- was proved
+\emph{circular}: on that neutral interface, success domination is equivalent to the
+average-case hardness it must prove (it renames the target). These are the
+findings the v13 re-architecture routes around by discarding the locality midpoint;
+the kernel-flip repair and the No-Threading impossibility of \S\ref{sec:obstructions}
+are the constructive residue that carries into the v13 steelman conditional.
+
+\section{A graveyard of disproven sub-routes}
+\label{app:graveyard}
+
+Each entry is a route or reading that was tried and closed; several are themselves
+machine-checked theorems (that a stated property \emph{fails}).
+
+\begin{description}
+  \item[Fixed-input calibration via $T_i$ (v12).] Dead as stated: the involution
+        moves $b$ off the fixed fiber on every nonzero column
+        (Appendix~\ref{app:v12}). Superseded by the kernel-flip involution, which
+        gives exact neutrality.
+  \item[Coarse / reduced-projection repair.] Circular: on a neutral interface,
+        ``every decoder is dominated by the best local rule'' is equivalent to
+        $\StarSW$ (a two-point witness makes coarse-domination demonstrably fail).
+        A closed door, not a weakening.
+  \item[Analytic-concentration closure.] Retired by No-Threading: the obstruction
+        to a neutral-and-sufficient statistic is logical, so no hypercontractivity
+        or log-Sobolev device can close it.
+  \item[Per-map capacity counting.] Arithmetically dead: a single adversarial map
+        can host a constant fraction of hitting worlds, so the required smallness
+        lives in the map \emph{ensemble}, not in any one map; the closure runs
+        through a per-prefix partition and a \emph{conditioned} one-row density
+        instead.
+  \item[Surrogate-ERM ``distillation'' of domination.] Relativizes, hence (by
+        Baker--Gill--Solovay) cannot establish a class-separating switching step;
+        symmetrization projects onto an $\approx m$-bit invariant algebra, far
+        richer than the $O(\log m)$-bit local statistic where neutrality lives.
+  \item[H{\aa}stad-style $p$-random bit restriction.] Wrong tool for this family:
+        the public bits are parities of hidden bits at a fixed witness, so random
+        bit-fixing leaves live parities and the switching-lemma hypothesis fails;
+        rerouted to gauge-compensation.
+  \item[The naive $2^q/2^m$ row-observer constant.] Refuted at $m=2$ by a
+        target-row observer; repaired to the honest
+        $\tfrac12+4(2^q-1)/2^m$ crude-constant bound.
+  \item[The scaled Phase-E hard family.] Proved \emph{inadmissible} --- a single
+        public coordinate determines the target (\S\ref{sec:inadmissible}); the
+        family prints the answer. Retained as a design rule: pin no-public-target-tag
+        by theorem, or the ensemble is void.
+  \item[Token-ledger false starts.] An early formalization tracked the argument as
+        status \emph{tokens} with no representation of the actual SAT / Kolmogorov
+        / measure objects; disavowed as proof content and replaced by the finite
+        evidence calculus grounded in the manuscript's objects. Lesson carried
+        forward: never let a family be chosen that carries the answer as a public
+        tag, and demand admissibility by theorem.
+\end{description}
+
+\end{document}
