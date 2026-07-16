@@ -584,6 +584,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCapBridge
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutNormalization
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceIntersections
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalHexCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Square
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareProfile
