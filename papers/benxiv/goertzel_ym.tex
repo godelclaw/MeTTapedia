@@ -154,8 +154,12 @@ derivative-free Cartan quartic carrier, all $126$ monomials are classified by
 signed $H(4)$ orbit certificates. Exactly four admissible orbit basis
 functions remain; evaluation at their representatives gives four duals and
 the identity conditioning matrix, and every hypercubic-covariant rational
-quartic coefficient function is reconstructed from them. The attempted
-dimension-$16$ extension then reaches a different terminal obstruction: its
+quartic coefficient function is reconstructed from them. The exact Wilson
+fourth jet has coordinate vector $(6,0,0,0)$ in this basis. The subspace of
+curvature observables invariant under every $O(4)$ transformation is proper,
+and the pure-fourth Wilson polynomial is a nonzero class in the corresponding
+Lorentz-breaking quotient. The attempted dimension-$16$
+extension then reaches a different terminal obstruction: its
 fixed-width raw carrier retains inactive padding as part of equality. Two
 distinct encodings with zero active fields and derivatives have identical
 active syntax. Any basis faithful to active syntax must give them equal rows,
@@ -668,6 +672,12 @@ hypercubic covariance law, their representative evaluations form the
 $4\times4$ identity, and they reconstruct every invariant rational
 coefficient function. This is a complete result for the derivative-free
 Cartan quartic restriction, not for the noncommutative $(F,D)$ quotient.
+The actual gauge-invariant Wilson observable has exact fourth derivative equal
+to the polynomial realization of coordinate vector $(6,0,0,0)$. Moreover, the
+curvature observables invariant under every orthogonal spacetime matrix form a
+proper linear subspace, and this pure-fourth polynomial defines a nonzero
+class in the quotient by that subspace. Thus the Lorentz-breaking artifact is a
+coordinate-level theorem, not merely an external rotation counterexample.
 
 The fixed-width full carrier cannot supply that extension faithfully.
 Inactive field and derivative slots are mathematically padding but remain
@@ -839,6 +849,11 @@ The first branch of the live fork was pursued directly:
     supplies exact duals, and the conditioning matrix is the identity
     (\texttt{V14HypercubicQuarticCensusCertificate},
     \texttt{V14HypercubicQuarticBasis}).
+  \item \textbf{The actual Wilson and artifact coordinates are certified.}
+    The Wilson fourth jet is exactly coordinate vector $(6,0,0,0)$. The
+    $O(4)$-invariant function subspace is proper, and the pure-fourth
+    polynomial is nonzero in its quotient
+    (\texttt{V14HypercubicQuarticWilsonBridge}).
   \item \textbf{The padded dimension-$16$ extension is refuted.} Two distinct
     fixed-width encodings of the empty active syntax differ only in inactive
     padding. Any active-syntax-faithful basis gives them equal rows, which is
@@ -974,7 +989,9 @@ off-shell/on-shell Lorentz-census no-go); and, from the fifth round,
 \texttt{V14HypercubicFDCensus} (the signed $H(4)$ action and finite raw
 surface), \texttt{V14HypercubicQuarticCensusCertificate} and
 \texttt{V14HypercubicQuarticBasis} (the complete unpadded Cartan quartic
-census, duals, and identity conditioning), and
+census, duals, and identity conditioning),
+\texttt{V14HypercubicQuarticWilsonBridge} (the exact Wilson coordinate vector
+and nonzero $O(4)$-artifact quotient class), and
 \texttt{V14HypercubicFDCensusPaddingNoGo} (the uninhabited faithful padded
 dimension-$16$ exact census) --- all in the same namespace, all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with

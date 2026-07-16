@@ -77,7 +77,9 @@ theorem actualWilsonFourthJet_eq_pureFourthCoordinate
 
 /-! ## O(4)-invariant subspace and the artifact quotient -/
 
-/-- Quartic functions invariant under every orthogonal spacetime matrix. -/
+/-- Curvature observables invariant under every orthogonal spacetime matrix.
+The distinguished representative below is homogeneous quartic, but the
+ambient function type is intentionally not restricted to polynomial syntax. -/
 def o4InvariantQuarticSubspace :
     Submodule ℝ (CartanCurvature → ℝ) where
   carrier := {observable | ∀ R : Matrix (Fin 4) (Fin 4) ℝ,
@@ -102,8 +104,8 @@ theorem hypercubicQuarticJet_not_mem_o4InvariantSubspace :
     (hinvariant mixingRotation mixingRotation_orthogonal
       planeZeroOneCurvature)
 
-/-- The O(4)-invariant quartic-function subspace is strictly smaller than the
-ambient function space. -/
+/-- The O(4)-invariant curvature-observable subspace is strictly smaller than
+the ambient function space. -/
 theorem o4InvariantQuarticSubspace_strict :
     o4InvariantQuarticSubspace < ⊤ := by
   rw [lt_top_iff_ne_top]
@@ -122,7 +124,7 @@ theorem hypercubicQuarticJet_nonzero :
   norm_num at hvalue
 
 /-- The pure-fourth Wilson coordinate defines a nonzero Lorentz-breaking
-artifact class modulo all O(4)-invariant quartic functions. -/
+artifact class modulo all O(4)-invariant curvature observables. -/
 theorem pureFourthArtifactClass_nonzero :
     o4InvariantQuarticSubspace.mkQ hypercubicQuarticJet ≠ 0 := by
   change Submodule.Quotient.mk hypercubicQuarticJet ≠ 0

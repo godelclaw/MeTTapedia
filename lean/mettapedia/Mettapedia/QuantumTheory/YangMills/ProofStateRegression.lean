@@ -21,6 +21,7 @@ open V14BoundaryCochainExtraction
 open V14BoundaryCochainBootstrap
 open SU2LatticeFDCensusNoGo
 open V14HypercubicQuarticCensus
+open V14HypercubicQuarticWilsonBridge
 open V14HypercubicFDCensusPaddingNoGo
 
 theorem constructive_qft_node_constructive_gate_uncleared_regression :
@@ -60,6 +61,22 @@ theorem hypercubic_quartic_basis_packet_regression :
         if basisCoordinate = dualCoordinate then 1 else 0 := by
   exact ⟨quarticOrbitBasis_invariant,
     quartic_conditioning_matrix_identity⟩
+
+theorem hypercubic_quartic_wilson_artifact_packet_regression :
+    IsHypercubicQuarticCoefficient wilsonQuarticCensusCoefficient ∧
+    (∀ coordinate : Fin 4,
+      quarticDual coordinate wilsonQuarticCensusCoefficient =
+        if coordinate = 0 then 6 else 0) ∧
+    (∀ F : SU2LatticeFDCensusNoGo.CartanCurvature,
+      iteratedDeriv 4
+          (fun t : ℝ =>
+            SU2LatticeFDCensusNoGo.su2HypercubicQuarticWilsonObservable
+              (SU2LatticeFDCensusNoGo.cartanLinkChart t F)) 0 =
+        pureFourthOrbitPolynomial 6 F) ∧
+    o4InvariantQuarticSubspace < ⊤ ∧
+    o4InvariantQuarticSubspace.mkQ
+      SU2LatticeFDCensusNoGo.hypercubicQuarticJet ≠ 0 :=
+  quarticWilson_hypercubicArtifact_packet
 
 theorem hypercubic_dimension_sixteen_padding_no_go_regression :
     ¬ ∃ (Coordinate : Type) (_ : Fintype Coordinate)

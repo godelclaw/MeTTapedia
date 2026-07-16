@@ -21,6 +21,7 @@ open V14FDQuotientTransferNoGo
 open V14BoundaryCochainBootstrap
 open SU2LatticeFDCensusNoGo
 open V14HypercubicQuarticCensus
+open V14HypercubicQuarticWilsonBridge
 open V14HypercubicFDCensusPaddingNoGo
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
@@ -120,7 +121,7 @@ def yangMillsHypercubicCensusDecisionRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 0
   itvUpperPercent := 1
   progressPercent := 100
-  evidence := "The unpadded dimension-eight quartic carrier has four certified H(4)-covariant basis functions and identity conditioning. For the full fixed-width carrier, faithful_dimension16_exactCensus_uninhabited proves that active-syntax fidelity is incompatible with the ExactCensusCertificate right inverse because inactive padding creates distinct duplicate encodings."
+  evidence := "The unpadded dimension-eight quartic carrier has four certified H(4)-covariant basis functions and identity conditioning. Its actual Wilson coordinate vector is (6,0,0,0), and the pure-fourth polynomial is a nonzero class modulo the proper O(4)-invariant subspace. For the full fixed-width carrier, faithful_dimension16_exactCensus_uninhabited proves that active-syntax fidelity is incompatible with the ExactCensusCertificate right inverse because inactive padding creates distinct duplicate encodings."
   nextObligation := "Construct a finite unpadded/dependent F,D syntax (or a checked padding quotient), prove the H(4) action and relation rows descend, and only then rerun the signed-orbit census and exact conditioning through dimension sixteen."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
@@ -264,6 +265,8 @@ theorem currentYangMillsRoadmap_records_hypercubic_census_decision :
       yangMillsHypercubicCensusDecisionRoadmapEntry.progressPercent = 100 ∧
       (∀ coordinate : Fin 4,
         IsHypercubicQuarticCoefficient (quarticOrbitBasis coordinate)) ∧
+      o4InvariantQuarticSubspace < ⊤ ∧
+      o4InvariantQuarticSubspace.mkQ hypercubicQuarticJet ≠ 0 ∧
       (¬ ∃ (Coordinate : Type) (_ : Fintype Coordinate)
           (_ : DecidableEq Coordinate)
           (certificate : V14HypercubicFDCensus.ExactCensusCertificate Coordinate),
@@ -271,6 +274,8 @@ theorem currentYangMillsRoadmap_records_hypercubic_census_decision :
           IsPaddingInvariant (fun monomial =>
             certificate.basisToRaw monomial coordinate)) := by
   exact ⟨rfl, rfl, quarticOrbitBasis_invariant,
+    o4InvariantQuarticSubspace_strict,
+    pureFourthArtifactClass_nonzero,
     faithful_dimension16_exactCensus_uninhabited⟩
 
 theorem currentYangMillsRoadmap_records_continuum_os_conditional :
