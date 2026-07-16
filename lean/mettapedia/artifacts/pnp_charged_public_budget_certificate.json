@@ -1,0 +1,209 @@
+{
+  "census": [
+    {
+      "admissible_transports": 2,
+      "candidate_pairs_checked": 4,
+      "case_digest_sha256": "96913116d0b9cf5e7aa702e533a8699eb1471c27ec99e64268abbe6c1805ad89",
+      "charged_masks_per_table": 2,
+      "maximum_optimum": "1",
+      "minimum_optimum": "1",
+      "n": 1,
+      "sharp_transports": 2,
+      "truth_tables_checked": 2
+    },
+    {
+      "admissible_transports": 22,
+      "candidate_pairs_checked": 56,
+      "case_digest_sha256": "0583c775f004054738728d3efd55988ebac4808c09ab53dfe91a8ca2a1a7d82d",
+      "charged_masks_per_table": 4,
+      "maximum_optimum": "4/3",
+      "minimum_optimum": "1",
+      "n": 2,
+      "sharp_transports": 14,
+      "truth_tables_checked": 14
+    },
+    {
+      "admissible_transports": 506,
+      "candidate_pairs_checked": 2032,
+      "case_digest_sha256": "198f32d83ce46c5f0d4d0bbb84c72e478319eb0960869438af81c35e47586323",
+      "charged_masks_per_table": 8,
+      "maximum_optimum": "12/7",
+      "minimum_optimum": "1",
+      "n": 3,
+      "sharp_transports": 226,
+      "truth_tables_checked": 254
+    }
+  ],
+  "schema": "pnp-charged-public-budget-certificate-v1",
+  "shared_localization_family": [
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 1,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 1
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 2,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 2
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 3,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 3
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 4,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 4
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 5,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 5
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 6,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 6
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 7,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 7
+    },
+    {
+      "charged_bit_count": 1,
+      "coordinate_summed_optimum": 8,
+      "distinct_charged_atoms": 1,
+      "per_target_optimum": 1,
+      "public_bit_count": 1,
+      "target_count": 8
+    }
+  ],
+  "sharp_certificates": [
+    {
+      "charged_mask": 1,
+      "dual_left_potential": 1,
+      "dual_numerator": 1,
+      "dual_right_potential": 0,
+      "flow": [
+        {
+          "amount": 1,
+          "left": 1,
+          "right": 0
+        }
+      ],
+      "left_worlds": [
+        1
+      ],
+      "n": 1,
+      "neutral_mask": 0,
+      "objective_denominator": 1,
+      "objective_numerator": 1,
+      "right_worlds": [
+        0
+      ],
+      "scale": 1,
+      "target_table": 1
+    },
+    {
+      "charged_mask": 2,
+      "dual_left_potential": 1,
+      "dual_numerator": 4,
+      "dual_right_potential": 0,
+      "flow": [
+        {
+          "amount": 2,
+          "left": 2,
+          "right": 0
+        },
+        {
+          "amount": 2,
+          "left": 3,
+          "right": 1
+        }
+      ],
+      "left_worlds": [
+        2,
+        3
+      ],
+      "n": 2,
+      "neutral_mask": 1,
+      "objective_denominator": 4,
+      "objective_numerator": 4,
+      "right_worlds": [
+        0,
+        1
+      ],
+      "scale": 4,
+      "target_table": 3
+    },
+    {
+      "charged_mask": 4,
+      "dual_left_potential": 1,
+      "dual_numerator": 16,
+      "dual_right_potential": 0,
+      "flow": [
+        {
+          "amount": 4,
+          "left": 4,
+          "right": 0
+        },
+        {
+          "amount": 4,
+          "left": 5,
+          "right": 1
+        },
+        {
+          "amount": 4,
+          "left": 6,
+          "right": 2
+        },
+        {
+          "amount": 4,
+          "left": 7,
+          "right": 3
+        }
+      ],
+      "left_worlds": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "n": 3,
+      "neutral_mask": 3,
+      "objective_denominator": 16,
+      "objective_numerator": 16,
+      "right_worlds": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scale": 16,
+      "target_table": 15
+    }
+  ]
+}
