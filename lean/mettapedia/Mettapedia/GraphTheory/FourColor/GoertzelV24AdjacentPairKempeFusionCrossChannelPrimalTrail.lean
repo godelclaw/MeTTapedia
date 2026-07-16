@@ -152,7 +152,7 @@ theorem EvenKempeFusionLens.lastJunction_ne_leftDefect_of_cTerminal
 
 /-- A nonempty first cross channel lifts all the way to a nontrivial primal
 trail between the opposite boundary defects 0 and 2. -/
-theorem EvenKempeFusionLens.exists_bcPrimalTrail
+theorem EvenKempeFusionLens.exists_bcPrimalTrail_with_routeSupport
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
     (lens01 : data.EvenKempeFusionLens C a b c 0 1)
@@ -165,7 +165,10 @@ theorem EvenKempeFusionLens.exists_bcPrimalTrail
       lens23.cRoute.ambientPath.support)
     (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
     ∃ trail : G.Walk (data.defectVertex 0) (data.defectVertex 2),
-      trail.IsTrail ∧ 0 < trail.length := by
+      trail.IsTrail ∧ 0 < trail.length ∧
+        trail.edges ⊆
+          (lens01.bRoute.ambientPath.support ++
+            lens23.cRoute.ambientPath.support).map Subtype.val := by
   rcases lens01.exists_bcPrimalCoherentCrossPath lens23
       hab hac hbc hnonempty with
     ⟨joined, hpath, hcoherent, hpositive, hsupport⟩
@@ -200,7 +203,7 @@ theorem EvenKempeFusionLens.exists_bcPrimalTrail
   let trail := joined.cappedPrimalLift hpositive hcoherent
     (data.defectVertex 0) (data.defectVertex 2)
     hstartMem hendMem hstartNe hendNe
-  refine ⟨trail, ?_, ?_⟩
+  refine ⟨trail, ?_, ?_, ?_⟩
   · dsimp only [trail]
     exact joined.cappedPrimalLift_isTrail_of_isPath
       hpositive hcoherent hpath
@@ -209,10 +212,38 @@ theorem EvenKempeFusionLens.exists_bcPrimalTrail
   · dsimp only [trail]
     rw [joined.cappedPrimalLift_length]
     omega
+  · dsimp only [trail]
+    rw [joined.cappedPrimalLift_edges_eq_map_support
+      hpositive hcoherent
+      (data.defectVertex 0) (data.defectVertex 2)
+      hstartMem hendMem hstartNe hendNe]
+    intro edge hedge
+    rcases List.mem_map.mp hedge with ⟨source, hsource, rfl⟩
+    exact List.mem_map.mpr ⟨source, hsupport hsource, rfl⟩
+
+/-- Support-forgetting form of the first cross-channel primal trail. -/
+theorem EvenKempeFusionLens.exists_bcPrimalTrail
+    {data : DegreeTwoBoundaryData G 4}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    (lens01 : data.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : data.EvenKempeFusionLens C a b c 2 3)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
+    ∃ trail : G.Walk (data.defectVertex 0) (data.defectVertex 2),
+      trail.IsTrail ∧ 0 < trail.length := by
+  rcases lens01.exists_bcPrimalTrail_with_routeSupport lens23
+      hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨trail, htrail, hpositive, _hsupport⟩
+  exact ⟨trail, htrail, hpositive⟩
 
 /-- The second cross channel gives the complementary opposite-port primal
 trail. -/
-theorem EvenKempeFusionLens.exists_cbPrimalTrail
+theorem EvenKempeFusionLens.exists_cbPrimalTrail_with_routeSupport
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
     (lens01 : data.EvenKempeFusionLens C a b c 0 1)
@@ -225,7 +256,10 @@ theorem EvenKempeFusionLens.exists_cbPrimalTrail
       lens23.cRoute.ambientPath.support)
     (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
     ∃ trail : G.Walk (data.defectVertex 0) (data.defectVertex 2),
-      trail.IsTrail ∧ 0 < trail.length := by
+      trail.IsTrail ∧ 0 < trail.length ∧
+        trail.edges ⊆
+          (lens01.cRoute.ambientPath.support ++
+            lens23.bRoute.ambientPath.support).map Subtype.val := by
   rcases lens01.exists_cbPrimalCoherentCrossPath lens23
       hab hac hbc hnonempty with
     ⟨joined, hpath, hcoherent, hpositive, hsupport⟩
@@ -260,7 +294,7 @@ theorem EvenKempeFusionLens.exists_cbPrimalTrail
   let trail := joined.cappedPrimalLift hpositive hcoherent
     (data.defectVertex 0) (data.defectVertex 2)
     hstartMem hendMem hstartNe hendNe
-  refine ⟨trail, ?_, ?_⟩
+  refine ⟨trail, ?_, ?_, ?_⟩
   · dsimp only [trail]
     exact joined.cappedPrimalLift_isTrail_of_isPath
       hpositive hcoherent hpath
@@ -269,6 +303,34 @@ theorem EvenKempeFusionLens.exists_cbPrimalTrail
   · dsimp only [trail]
     rw [joined.cappedPrimalLift_length]
     omega
+  · dsimp only [trail]
+    rw [joined.cappedPrimalLift_edges_eq_map_support
+      hpositive hcoherent
+      (data.defectVertex 0) (data.defectVertex 2)
+      hstartMem hendMem hstartNe hendNe]
+    intro edge hedge
+    rcases List.mem_map.mp hedge with ⟨source, hsource, rfl⟩
+    exact List.mem_map.mpr ⟨source, hsupport hsource, rfl⟩
+
+/-- Support-forgetting form of the complementary cross-channel trail. -/
+theorem EvenKempeFusionLens.exists_cbPrimalTrail
+    {data : DegreeTwoBoundaryData G 4}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    (lens01 : data.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : data.EvenKempeFusionLens C a b c 2 3)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
+    ∃ trail : G.Walk (data.defectVertex 0) (data.defectVertex 2),
+      trail.IsTrail ∧ 0 < trail.length := by
+  rcases lens01.exists_cbPrimalTrail_with_routeSupport lens23
+      hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨trail, htrail, hpositive, _hsupport⟩
+  exact ⟨trail, htrail, hpositive⟩
 
 end
 
