@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16AlphaReduction
 import Mathlib.LinearAlgebra.Finsupp.LSum
+import Mathlib.RepresentationTheory.Basic
 
 /-!
 # Equivariant sparse relation rows on the dimension-sixteen carrier
@@ -30,6 +31,7 @@ namespace YangMills
 namespace HypercubicDimension16RelationEquivariance
 
 open V14HypercubicFDCensus
+open HypercubicRawFDCharacterCensus
 open HypercubicRawFDDimension16Census
 open HypercubicDimension16AlphaReduction
 
@@ -57,6 +59,128 @@ def signedRelationAction (h : Hypercubic4) :
         (coefficient *
           exactDimension16DerivativeAlphaReducedTensorSign h carrier) := by
   simp [signedRelationAction, mul_comm]
+
+@[simp] theorem exactDimension16DerivativeAlphaReducedAct_one
+    (carrier : RelationCarrier) :
+    exactDimension16DerivativeAlphaReducedAct 1 carrier = carrier := by
+  rcases carrier with ⟨fieldCount, sector⟩
+  apply congrArg (fun reduced : DerivativeAlphaReducedSector fieldCount.1
+      (dimension16DerivativeCount fieldCount) =>
+    (⟨fieldCount, reduced⟩ : RelationCarrier))
+  apply DerivativeAlphaReducedSector.ext
+  · rfl
+  · funext slot
+    simp [derivativeAlphaReducedSectorAct, hypercubic_one_def]
+  · funext slot
+    simp [derivativeAlphaReducedSectorAct, hypercubic_one_def]
+  · apply OrderedDerivativeWord.ext
+    · rfl
+    · funext position
+      simp [derivativeAlphaReducedSectorAct, orderedDerivativeWordAct,
+        hypercubic_one_def]
+
+theorem exactDimension16DerivativeAlphaReducedAct_mul
+    (left right : Hypercubic4) (carrier : RelationCarrier) :
+    exactDimension16DerivativeAlphaReducedAct (left * right) carrier =
+      exactDimension16DerivativeAlphaReducedAct left
+        (exactDimension16DerivativeAlphaReducedAct right carrier) := by
+  rcases carrier with ⟨fieldCount, sector⟩
+  apply congrArg (fun reduced : DerivativeAlphaReducedSector fieldCount.1
+      (dimension16DerivativeCount fieldCount) =>
+    (⟨fieldCount, reduced⟩ : RelationCarrier))
+  apply DerivativeAlphaReducedSector.ext
+  · rfl
+  · funext slot
+    rfl
+  · funext slot
+    rfl
+  · apply OrderedDerivativeWord.ext
+    · rfl
+    · funext position
+      rfl
+
+@[simp] theorem exactDimension16DerivativeAlphaReducedTensorSign_one
+    (carrier : RelationCarrier) :
+    exactDimension16DerivativeAlphaReducedTensorSign 1 carrier = 1 := by
+  rcases carrier with ⟨fieldCount, sector⟩
+  simp [exactDimension16DerivativeAlphaReducedTensorSign,
+    derivativeAlphaReducedSectorTensorSign, hypercubic_one_def]
+
+theorem exactDimension16DerivativeAlphaReducedTensorSign_mul
+    (left right : Hypercubic4) (carrier : RelationCarrier) :
+    exactDimension16DerivativeAlphaReducedTensorSign (left * right) carrier =
+      exactDimension16DerivativeAlphaReducedTensorSign right carrier *
+        exactDimension16DerivativeAlphaReducedTensorSign left
+          (exactDimension16DerivativeAlphaReducedAct right carrier) := by
+  rcases carrier with ⟨fieldCount, sector⟩
+  simp only [exactDimension16DerivativeAlphaReducedTensorSign,
+    derivativeAlphaReducedSectorTensorSign, hypercubic_mul_def,
+    Hypercubic4.axisSign_compose, Finset.prod_mul_distrib,
+    exactDimension16DerivativeAlphaReducedAct,
+    derivativeAlphaReducedSectorAct, orderedDerivativeWordAct]
+  ac_rfl
+
+@[simp] theorem signedRelationAction_one (value : RelationSpace) :
+    signedRelationAction 1 value = value := by
+  induction value using Finsupp.induction_linear with
+  | zero => simp
+  | add left right hleft hright =>
+      calc
+        signedRelationAction 1 (left + right) =
+            signedRelationAction 1 left +
+              signedRelationAction 1 right :=
+          (signedRelationAction 1).map_add left right
+        _ = left + right := congrArg₂ (fun x y => x + y) hleft hright
+  | single carrier coefficient =>
+      rw [signedRelationAction_single,
+        exactDimension16DerivativeAlphaReducedAct_one,
+        exactDimension16DerivativeAlphaReducedTensorSign_one]
+      simp
+
+theorem signedRelationAction_mul (left right : Hypercubic4)
+    (value : RelationSpace) :
+    signedRelationAction (left * right) value =
+      signedRelationAction left (signedRelationAction right value) := by
+  induction value using Finsupp.induction_linear with
+  | zero => simp
+  | add first second hfirst hsecond =>
+      calc
+        signedRelationAction (left * right) (first + second) =
+            signedRelationAction (left * right) first +
+              signedRelationAction (left * right) second :=
+          (signedRelationAction (left * right)).map_add first second
+        _ = signedRelationAction left (signedRelationAction right first) +
+              signedRelationAction left
+                (signedRelationAction right second) :=
+          congrArg₂ (fun x y => x + y) hfirst hsecond
+        _ = signedRelationAction left
+              (signedRelationAction right first +
+                signedRelationAction right second) :=
+          ((signedRelationAction left).map_add
+            (signedRelationAction right first)
+            (signedRelationAction right second)).symm
+        _ = signedRelationAction left
+              (signedRelationAction right (first + second)) := by
+          rw [(signedRelationAction right).map_add]
+  | single carrier coefficient =>
+      rw [signedRelationAction_single, signedRelationAction_single,
+        signedRelationAction_single,
+        exactDimension16DerivativeAlphaReducedAct_mul,
+        exactDimension16DerivativeAlphaReducedTensorSign_mul]
+      congr 1
+      ring
+
+/-- The signed action on the exact carrier is a rational representation of
+the literal hypercubic group. -/
+def signedRelationRepresentation :
+    Representation ℚ Hypercubic4 RelationSpace where
+  toFun := signedRelationAction
+  map_one' := by
+    apply LinearMap.ext
+    exact signedRelationAction_one
+  map_mul' left right := by
+    apply LinearMap.ext
+    exact signedRelationAction_mul left right
 
 /-! ## Field antisymmetry -/
 

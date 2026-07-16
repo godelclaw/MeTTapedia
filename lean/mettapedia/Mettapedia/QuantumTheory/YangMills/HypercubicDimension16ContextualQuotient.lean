@@ -1329,6 +1329,50 @@ theorem normalizeExactContextual_signed_equivariant
       rw [mul_smul,
         normalizeExactContextualBasis_signed_equivariant h carrier]
 
+@[simp] theorem signedExactOrientedLocalAction_one
+    (value : ExactOrientedLocalSpace) :
+    signedExactOrientedLocalAction 1 value = value := by
+  obtain ⟨source, rfl⟩ := normalizeExactContextual_surjective value
+  rw [← normalizeExactContextual_signed_equivariant,
+    signedRelationAction_one]
+
+theorem signedExactOrientedLocalAction_mul
+    (left right : Hypercubic4) (value : ExactOrientedLocalSpace) :
+    signedExactOrientedLocalAction (left * right) value =
+      signedExactOrientedLocalAction left
+        (signedExactOrientedLocalAction right value) := by
+  obtain ⟨source, rfl⟩ := normalizeExactContextual_surjective value
+  calc
+    signedExactOrientedLocalAction (left * right)
+        (normalizeExactContextual source) =
+      normalizeExactContextual
+        (signedRelationAction (left * right) source) :=
+          (normalizeExactContextual_signed_equivariant
+            (left * right) source).symm
+    _ = normalizeExactContextual
+        (signedRelationAction left
+          (signedRelationAction right source)) := by
+      rw [signedRelationAction_mul]
+    _ = signedExactOrientedLocalAction left
+        (normalizeExactContextual
+          (signedRelationAction right source)) :=
+      normalizeExactContextual_signed_equivariant left _
+    _ = signedExactOrientedLocalAction left
+        (signedExactOrientedLocalAction right
+          (normalizeExactContextual source)) := by
+      rw [normalizeExactContextual_signed_equivariant]
+
+/-- Rational representation on the exact antisymmetry/localization quotient. -/
+def signedExactOrientedLocalRepresentation :
+    Representation ℚ Hypercubic4 ExactOrientedLocalSpace where
+  toFun := signedExactOrientedLocalAction
+  map_one' := by
+    apply LinearMap.ext
+    exact signedExactOrientedLocalAction_one
+  map_mul' left right := by
+    apply LinearMap.ext
+    exact signedExactOrientedLocalAction_mul left right
+
 end HypercubicDimension16ContextualQuotient
 end YangMills
 end QuantumTheory
