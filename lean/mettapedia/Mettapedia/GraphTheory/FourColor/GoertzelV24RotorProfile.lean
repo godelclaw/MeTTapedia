@@ -182,6 +182,57 @@ theorem rotorLineProfile_eq_contractedVertexProfile
   · exact False.elim (hab hab0)
   · exact h
 
+/-- Boundary words that are proper at the cubic vertex obtained by
+contracting the facial triangle. -/
+def RotorBoundaryWord.Compatible (w : RotorBoundaryWord) : Prop :=
+  (∀ i, w i ≠ 0) ∧ w 0 ≠ w 1 ∧ w 0 ≠ w 2 ∧ w 1 ≠ w 2
+  deriving Decidable
+
+/-- The forced triangle coloring: `xy,xz,yz` receive the colors of the
+opposite exterior edges `z,y,x`. -/
+def canonicalRotorInternalColoring
+    (w : RotorBoundaryWord) : RotorInternalColoring := fun i =>
+  if i = 0 then w 2 else if i = 1 then w 1 else w 0
+
+def rotorExtensions (w : RotorBoundaryWord) : Finset RotorInternalColoring :=
+  Finset.univ.filter fun x => RotorLocalTait w x
+
+private theorem rotorExtensions_eq_singleton_check :
+    ∀ w : RotorBoundaryWord,
+      ¬ w.Compatible ∨
+        rotorExtensions w = {canonicalRotorInternalColoring w} := by
+  decide
+
+/-- A proper contracted-vertex boundary has exactly the canonical one
+extension across the facial triangle. This is the finite coloring-fiber
+bijection underlying triangle contraction. -/
+theorem rotorExtensions_eq_singleton
+    (w : RotorBoundaryWord) (hw : w.Compatible) :
+    rotorExtensions w = {canonicalRotorInternalColoring w} := by
+  exact (rotorExtensions_eq_singleton_check w).resolve_left
+    (not_not_intro hw)
+
+def rotorExtensionProfileMultiset
+    (w : RotorBoundaryWord) (a b : Color) : Multiset RotorTrackedProfile :=
+  (rotorExtensions w).val.map fun x => rotorLineTrackedProfile w x a b
+
+/-- The unique rotor extension contributes exactly the contracted-vertex
+profile. -/
+theorem rotorExtensionProfileMultiset_eq_singleton
+    (w : RotorBoundaryWord) (a b : Color)
+    (hw : w.Compatible) (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) :
+    rotorExtensionProfileMultiset w a b =
+      {contractedVertexTrackedProfile w a b} := by
+  have hmem : canonicalRotorInternalColoring w ∈ rotorExtensions w := by
+    rw [rotorExtensions_eq_singleton w hw]
+    simp
+  have hLocal : RotorLocalTait w (canonicalRotorInternalColoring w) :=
+    (Finset.mem_filter.mp hmem).2
+  unfold rotorExtensionProfileMultiset
+  rw [rotorExtensions_eq_singleton w hw]
+  simp [rotorLineProfile_eq_contractedVertexProfile
+    w (canonicalRotorInternalColoring w) a b hLocal ha hb hab]
+
 /-- A local portal profile embedded in a finite common interface. -/
 def finitePortalProfileOnInterface {P B : Type*}
     (localProfile : P -> P -> Bool) : Sum P B -> Sum P B -> Bool :=
@@ -295,6 +346,28 @@ theorem composeFinitePortalProfile_congr_local
     composeFinitePortalProfile external localProfile =
       composeFinitePortalProfile external replacementProfile := by
   rw [hprofile]
+
+def rotorComposedExtensionProfileMultiset
+    {B : Type*} [Fintype B] [DecidableEq B]
+    (external : Sum (Fin 3) B -> Sum (Fin 3) B -> Bool)
+    (w : RotorBoundaryWord) (a b : Color) :
+    Multiset (Sum (Fin 3) B -> Sum (Fin 3) B -> Bool) :=
+  (rotorExtensionProfileMultiset w a b).map
+    (composeFinitePortalProfile external)
+
+/-- After composition with every finite exterior, the facial triangle's
+unique coloring contributes exactly the contracted-vertex profile once. -/
+theorem rotorComposedExtensionProfileMultiset_eq_singleton
+    {B : Type*} [Fintype B] [DecidableEq B]
+    (external : Sum (Fin 3) B -> Sum (Fin 3) B -> Bool)
+    (w : RotorBoundaryWord) (a b : Color)
+    (hw : w.Compatible) (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) :
+    rotorComposedExtensionProfileMultiset external w a b =
+      {composeFinitePortalProfile external
+        (contractedVertexTrackedProfile w a b)} := by
+  unfold rotorComposedExtensionProfileMultiset
+  rw [rotorExtensionProfileMultiset_eq_singleton w a b hw ha hb hab]
+  simp
 
 namespace RotationSystem
 
