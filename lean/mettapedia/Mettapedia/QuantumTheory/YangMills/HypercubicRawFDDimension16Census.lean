@@ -161,6 +161,43 @@ def dimension16AxisAssignmentEquiv (fieldCount : Fin 9) :
       (Equiv.piCongrLeft (fun _ : Fin 16 => Axis)
         (dimension16AxisSlotEquiv fieldCount))
 
+/-- Reindexing the active spacetime slots commutes with the literal
+hypercubic action. -/
+theorem dimension16AxisAssignmentEquiv_act
+    (h : Hypercubic4) (fieldCount : Fin 9)
+    (axes : UnpaddedAxisAssignment fieldCount.1
+      (dimension16DerivativeCount fieldCount)) :
+    dimension16AxisAssignmentEquiv fieldCount
+        { fieldFirst := fun slot => h.perm (axes.fieldFirst slot)
+          fieldSecond := fun slot => h.perm (axes.fieldSecond slot)
+          derivativeAxis := fun slot => h.perm (axes.derivativeAxis slot) } =
+      axisTensorAssignmentAct h
+        (dimension16AxisAssignmentEquiv fieldCount axes) := by
+  funext slot
+  obtain ⟨source, rfl⟩ :=
+    (dimension16AxisSlotEquiv fieldCount).surjective slot
+  rcases source with ((first | second) | derivative) <;>
+    simp [dimension16AxisAssignmentEquiv,
+      unpaddedAxisAssignmentEquivSum, axisTensorAssignmentAct,
+      Equiv.piCongrLeft_apply_apply]
+
+/-- Reindexing also preserves the product of all active tensor signs. -/
+theorem dimension16AxisAssignmentEquiv_sign
+    (h : Hypercubic4) (fieldCount : Fin 9)
+    (axes : UnpaddedAxisAssignment fieldCount.1
+      (dimension16DerivativeCount fieldCount)) :
+    axisTensorAssignmentSign h
+        (dimension16AxisAssignmentEquiv fieldCount axes) =
+      (∏ slot, Hypercubic4.axisSign h (axes.fieldFirst slot)) *
+        (∏ slot, Hypercubic4.axisSign h (axes.fieldSecond slot)) *
+          ∏ slot, Hypercubic4.axisSign h
+            (axes.derivativeAxis slot) := by
+  unfold axisTensorAssignmentSign
+  rw [← (dimension16AxisSlotEquiv fieldCount).prod_comp]
+  simp [dimension16AxisAssignmentEquiv,
+    unpaddedAxisAssignmentEquivSum, Equiv.piCongrLeft_apply_apply,
+    Fintype.prod_sum_type]
+
 /-- Trace order, derivative order, and derivative ownership at exact
 canonical dimension sixteen. -/
 abbrev Dimension16FDLayout :=
@@ -262,6 +299,104 @@ def exactDimension16UnpaddedCarrierEquiv :
         rcases layout with ⟨trace, derivatives⟩
         simp }
 
+/-- Restriction of the literal unpadded action to the exact-dimension
+subtype. -/
+def exactDimension16UnpaddedAct (h : Hypercubic4)
+    (monomial : ExactDimension16UnpaddedRawFDMonomial) :
+    ExactDimension16UnpaddedRawFDMonomial :=
+  ⟨monomial.1.act h, monomial.2⟩
+
+/-- The separated carrier action fixes layout data and renames only the
+sixteen active spacetime axes. -/
+def dimension16RawAxisCarrierAct (h : Hypercubic4)
+    (carrier : Dimension16RawAxisCarrier) :
+    Dimension16RawAxisCarrier :=
+  (carrier.1, axisTensorAssignmentAct h carrier.2)
+
+/-- A canonical exact sector maps back to the corresponding literal
+dimension-sixteen monomial. -/
+theorem exactDimension16MonomialSectorEquiv_symm_apply
+    (fieldCount : Fin 9)
+    (sector : UnpaddedFDSector fieldCount.1
+      (dimension16DerivativeCount fieldCount)) :
+    exactDimension16MonomialSectorEquiv.symm ⟨fieldCount, sector⟩ =
+      ⟨⟨dimension16Shape fieldCount, sector⟩,
+        dimension16Shape_canonicalDimension fieldCount⟩ := by
+  rfl
+
+def dimension16SectorAct (h : Hypercubic4)
+    (sector : (fieldCount : Fin 9) ×'
+      UnpaddedFDSector fieldCount.1
+        (dimension16DerivativeCount fieldCount)) :
+    (fieldCount : Fin 9) ×'
+      UnpaddedFDSector fieldCount.1
+        (dimension16DerivativeCount fieldCount) :=
+  ⟨sector.1,
+    { trace := sector.2.trace
+      derivatives := sector.2.derivatives
+      axes :=
+        { fieldFirst := fun slot => h.perm (sector.2.axes.fieldFirst slot)
+          fieldSecond := fun slot => h.perm (sector.2.axes.fieldSecond slot)
+          derivativeAxis := fun slot =>
+            h.perm (sector.2.axes.derivativeAxis slot) } }⟩
+
+@[simp] theorem exactDimension16UnpaddedAct_symm_apply
+    (h : Hypercubic4)
+    (sector : (fieldCount : Fin 9) ×'
+      UnpaddedFDSector fieldCount.1
+        (dimension16DerivativeCount fieldCount)) :
+    exactDimension16UnpaddedAct h
+        (exactDimension16MonomialSectorEquiv.symm sector) =
+      exactDimension16MonomialSectorEquiv.symm
+        (dimension16SectorAct h sector) := by
+  rcases sector with ⟨fieldCount, ⟨trace, derivatives, axes⟩⟩
+  rw [exactDimension16MonomialSectorEquiv_symm_apply,
+    exactDimension16MonomialSectorEquiv_symm_apply]
+  rfl
+
+theorem tensorSign_exactDimension16MonomialSectorEquiv_symm_apply
+    (h : Hypercubic4) (fieldCount : Fin 9)
+    (sector : UnpaddedFDSector fieldCount.1
+      (dimension16DerivativeCount fieldCount)) :
+    (exactDimension16MonomialSectorEquiv.symm
+        ⟨fieldCount, sector⟩).1.tensorSign h =
+      (∏ slot, Hypercubic4.axisSign h (sector.axes.fieldFirst slot)) *
+        (∏ slot, Hypercubic4.axisSign h (sector.axes.fieldSecond slot)) *
+          ∏ slot, Hypercubic4.axisSign h
+            (sector.axes.derivativeAxis slot) := by
+  rw [exactDimension16MonomialSectorEquiv_symm_apply]
+  rfl
+
+/-- The carrier equivalence is equivariant for the actual unpadded
+hypercubic action. -/
+theorem exactDimension16UnpaddedCarrierEquiv_act
+    (h : Hypercubic4)
+    (monomial : ExactDimension16UnpaddedRawFDMonomial) :
+    exactDimension16UnpaddedCarrierEquiv
+        (exactDimension16UnpaddedAct h monomial) =
+      dimension16RawAxisCarrierAct h
+        (exactDimension16UnpaddedCarrierEquiv monomial) := by
+  obtain ⟨sector, rfl⟩ :=
+    exactDimension16MonomialSectorEquiv.symm.surjective monomial
+  simp [exactDimension16UnpaddedCarrierEquiv,
+    dimension16RawAxisCarrierAct, dimension16SectorAct,
+    dimension16AxisAssignmentEquiv_act]
+
+/-- The carrier equivalence preserves the literal product of active tensor
+signs. -/
+theorem exactDimension16UnpaddedCarrierEquiv_tensorSign
+    (h : Hypercubic4)
+    (monomial : ExactDimension16UnpaddedRawFDMonomial) :
+    monomial.1.tensorSign h =
+      axisTensorAssignmentSign h
+        (exactDimension16UnpaddedCarrierEquiv monomial).2 := by
+  obtain ⟨sector, rfl⟩ :=
+    exactDimension16MonomialSectorEquiv.symm.surjective monomial
+  rcases sector with ⟨fieldCount, ⟨trace, derivatives, axes⟩⟩
+  rw [tensorSign_exactDimension16MonomialSectorEquiv_symm_apply]
+  simp [exactDimension16UnpaddedCarrierEquiv,
+    dimension16AxisAssignmentEquiv_sign]
+
 abbrev Dimension16RawCoefficients :=
   Dimension16RawAxisCarrier → ℚ
 
@@ -284,6 +419,107 @@ def dimension16RawInvariantSubmodule
   smul_mem' := by
     intro scalar coefficients hcoefficients layout
     exact Submodule.smul_mem _ scalar (hcoefficients layout)
+
+/-- Rational coefficients on the literal exact-dimension subtype of the
+unpadded syntax. -/
+abbrev ExactDimension16UnpaddedRawFDCoefficients :=
+  ExactDimension16UnpaddedRawFDMonomial → ℚ
+
+/-- Scalar or pseudoscalar covariance stated directly on the actual unpadded
+action and its active tensor sign. -/
+def exactDimension16UnpaddedInvariantSubmodule
+    (parity : ContractionParity) :
+    Submodule ℚ ExactDimension16UnpaddedRawFDCoefficients where
+  carrier := {coefficients |
+    ∀ h monomial,
+      coefficients (exactDimension16UnpaddedAct h monomial) =
+        parity.character h * monomial.1.tensorSign h *
+          coefficients monomial}
+  zero_mem' := by
+    intro h monomial
+    simp
+  add_mem' := by
+    intro left right hleft hright h monomial
+    simp [hleft h monomial, hright h monomial]
+    ring
+  smul_mem' := by
+    intro scalar coefficients hcoefficients h monomial
+    simp [hcoefficients h monomial]
+    ring
+
+/-- Equivariance and sign preservation identify literal unpadded covariance
+with one rank-sixteen invariant tensor fiber per active layout. -/
+def exactDimension16UnpaddedInvariantEquiv
+    (parity : ContractionParity) :
+    exactDimension16UnpaddedInvariantSubmodule parity ≃ₗ[ℚ]
+      dimension16RawInvariantSubmodule parity where
+  toFun coefficients :=
+    ⟨fun carrier => coefficients.1
+        (exactDimension16UnpaddedCarrierEquiv.symm carrier), by
+      intro layout
+      apply (axisTensorCoefficient_fixed_iff_covariant parity 16 _).2
+      intro h assignment
+      let raw : Dimension16RawAxisCarrier := (layout, assignment)
+      let monomial : ExactDimension16UnpaddedRawFDMonomial :=
+        exactDimension16UnpaddedCarrierEquiv.symm raw
+      have hpreimage :
+          exactDimension16UnpaddedCarrierEquiv.symm
+              (dimension16RawAxisCarrierAct h raw) =
+            exactDimension16UnpaddedAct h monomial := by
+        apply exactDimension16UnpaddedCarrierEquiv.injective
+        rw [exactDimension16UnpaddedCarrierEquiv.apply_symm_apply,
+          exactDimension16UnpaddedCarrierEquiv_act,
+          exactDimension16UnpaddedCarrierEquiv.apply_symm_apply]
+      change coefficients.1
+          (exactDimension16UnpaddedCarrierEquiv.symm
+            (layout, axisTensorAssignmentAct h assignment)) =
+        axisTensorWeight parity h assignment *
+          coefficients.1
+            (exactDimension16UnpaddedCarrierEquiv.symm
+              (layout, assignment))
+      change coefficients.1
+          (exactDimension16UnpaddedCarrierEquiv.symm
+            (dimension16RawAxisCarrierAct h raw)) = _
+      rw [hpreimage, coefficients.2 h monomial]
+      unfold axisTensorWeight
+      rw [exactDimension16UnpaddedCarrierEquiv_tensorSign]
+      simp [monomial, raw]⟩
+  invFun fibers :=
+    ⟨fun monomial =>
+        fibers.1 (exactDimension16UnpaddedCarrierEquiv monomial), by
+      intro h monomial
+      let raw := exactDimension16UnpaddedCarrierEquiv monomial
+      have hcovariant :=
+        (axisTensorCoefficient_fixed_iff_covariant parity 16
+          (fun assignment => fibers.1 (raw.1, assignment))).1
+            (fibers.2 raw.1) h raw.2
+      change fibers.1
+          (exactDimension16UnpaddedCarrierEquiv
+            (exactDimension16UnpaddedAct h monomial)) =
+        parity.character h * monomial.1.tensorSign h *
+          fibers.1 (exactDimension16UnpaddedCarrierEquiv monomial)
+      rw [exactDimension16UnpaddedCarrierEquiv_act]
+      change fibers.1 (raw.1,
+          axisTensorAssignmentAct h raw.2) = _
+      rw [hcovariant]
+      unfold axisTensorWeight
+      rw [exactDimension16UnpaddedCarrierEquiv_tensorSign]⟩
+  left_inv coefficients := by
+    apply Subtype.ext
+    funext monomial
+    simp
+  right_inv fibers := by
+    apply Subtype.ext
+    funext carrier
+    simp
+  map_add' left right := by
+    apply Subtype.ext
+    funext carrier
+    rfl
+  map_smul' scalar coefficients := by
+    apply Subtype.ext
+    funext carrier
+    rfl
 
 /-- Currying by the inert layout coordinate is an exact linear equivalence
 between the full raw invariant space and a finite product of tensor-invariant
@@ -322,6 +558,16 @@ theorem finrank_dimension16RawInvariantSubmodule
   rw [(dimension16RawInvariantEquiv parity).finrank_eq,
     Module.finrank_pi_fintype]
   simp
+
+theorem finrank_exactDimension16UnpaddedInvariantSubmodule
+    (parity : ContractionParity) :
+    Module.finrank ℚ
+        (exactDimension16UnpaddedInvariantSubmodule parity) =
+      Fintype.card Dimension16FDLayout *
+        Module.finrank ℚ
+          (axisTensorInvariantSubmodule parity 16) := by
+  rw [(exactDimension16UnpaddedInvariantEquiv parity).finrank_eq,
+    finrank_dimension16RawInvariantSubmodule]
 
 theorem scalar_rank16_tensorMultiplicity :
     Module.finrank ℚ
@@ -362,6 +608,28 @@ theorem pseudoscalar_dimension16_rawInvariantCount :
   rw [finrank_dimension16RawInvariantSubmodule,
     card_dimension16FDLayout, dimension16LayoutMultiplicity_exact,
     pseudoscalar_rank16_tensorMultiplicity]
+
+/-- The scalar count on the literal exact-dimension unpadded covariance
+submodule. -/
+theorem scalar_dimension16_exactUnpaddedInvariantCount :
+    Module.finrank ℚ
+      (exactDimension16UnpaddedInvariantSubmodule
+        ContractionParity.scalar) =
+      119988480745781344800 := by
+  rw [(exactDimension16UnpaddedInvariantEquiv
+      ContractionParity.scalar).finrank_eq]
+  exact scalar_dimension16_rawInvariantCount
+
+/-- The pseudoscalar count on the literal exact-dimension unpadded covariance
+submodule. -/
+theorem pseudoscalar_dimension16_exactUnpaddedInvariantCount :
+    Module.finrank ℚ
+      (exactDimension16UnpaddedInvariantSubmodule
+        ContractionParity.pseudoscalar) =
+      119929915854943027200 := by
+  rw [(exactDimension16UnpaddedInvariantEquiv
+      ContractionParity.pseudoscalar).finrank_eq]
+  exact pseudoscalar_dimension16_rawInvariantCount
 
 /-- The exact dimension-sixteen raw monomial carrier count, before taking
 hypercubic invariants or imposing relations. -/
