@@ -102,28 +102,28 @@ private theorem port_pairwise_ne (data : AdjacentPairData G)
   exact hne (data.portInjective heq)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-private theorem first_adj_port_zero (data : AdjacentPairData G) :
+theorem first_adj_port_zero (data : AdjacentPairData G) :
     G.Adj data.firstVertex (data.portVertex 0) := by
   simpa using (show data.portVertex 0 ∈ G.neighborSet data.firstVertex by
     rw [data.firstNeighbors]
     simp)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-private theorem first_adj_port_one (data : AdjacentPairData G) :
+theorem first_adj_port_one (data : AdjacentPairData G) :
     G.Adj data.firstVertex (data.portVertex 1) := by
   simpa using (show data.portVertex 1 ∈ G.neighborSet data.firstVertex by
     rw [data.firstNeighbors]
     simp)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-private theorem second_adj_port_two (data : AdjacentPairData G) :
+theorem second_adj_port_two (data : AdjacentPairData G) :
     G.Adj data.secondVertex (data.portVertex 2) := by
   simpa using (show data.portVertex 2 ∈ G.neighborSet data.secondVertex by
     rw [data.secondNeighbors]
     simp)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-private theorem second_adj_port_three (data : AdjacentPairData G) :
+theorem second_adj_port_three (data : AdjacentPairData G) :
     G.Adj data.secondVertex (data.portVertex 3) := by
   simpa using (show data.portVertex 3 ∈ G.neighborSet data.secondVertex by
     rw [data.secondNeighbors]
