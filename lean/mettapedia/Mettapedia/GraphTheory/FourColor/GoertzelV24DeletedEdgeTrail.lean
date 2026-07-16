@@ -21,17 +21,6 @@ abbrev DeletedEdgeGraph (G : SimpleGraph V) (u v : V) : SimpleGraph V :=
 local instance ambientEdgeSetDecidableEq : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
-local instance ambientEdgeSetFintype : Fintype G.edgeSet :=
-  Fintype.ofFinite G.edgeSet
-
-local instance deletedEdgeSetFintype (u v : V) :
-    Fintype (DeletedEdgeGraph G u v).edgeSet :=
-  Fintype.ofFinite (DeletedEdgeGraph G u v).edgeSet
-
-local instance graphNeighborSetFintype (H : SimpleGraph V) (vertex : V) :
-    Fintype (H.neighborSet vertex) :=
-  Fintype.ofFinite (H.neighborSet vertex)
-
 /-- The two marked defects of a deleted edge, in endpoint order. -/
 def deletedEdgeDefectVertex (u v : V) : Fin 2 → V :=
   fun i => if i = 0 then u else v
@@ -49,7 +38,8 @@ theorem deletedEdgeDefectVertex_one (u v : V) :
 /-- A graph-side deleted-edge frame with no frozen edges. It is the widest
 Kempe-move domain attached canonically to a removed edge; annular applications
 may replace the three structural finsets while keeping the same defects. -/
-def unrestrictedDeletedEdgeFrame (G : SimpleGraph V) (u v : V) :
+def unrestrictedDeletedEdgeFrame (G : SimpleGraph V) [DecidableRel G.Adj]
+    (u v : V) :
     FramedTrailData (DeletedEdgeGraph G u v) where
   innerContainerEdges := ∅
   outerContainerEdges := ∅
@@ -59,14 +49,14 @@ def unrestrictedDeletedEdgeFrame (G : SimpleGraph V) (u v : V) :
 
 @[simp]
 theorem unrestrictedDeletedEdgeFrame_defectVertex
-    (G : SimpleGraph V) (u v : V) :
+    (G : SimpleGraph V) [DecidableRel G.Adj] (u v : V) :
     (unrestrictedDeletedEdgeFrame G u v).defectVertex =
       deletedEdgeDefectVertex u v := rfl
 
 /-- The incident-edge finset has Mathlib's graph degree as its cardinality.
 This local copy keeps the deleted-edge bridge independent of the flow layer. -/
-private theorem incidentEdgeFinset_card_eq_degree_local
-    {H : SimpleGraph V} [Fintype H.edgeSet] (vertex : V) :
+theorem incidentEdgeFinset_card_eq_degree
+    {H : SimpleGraph V} [DecidableRel H.Adj] (vertex : V) :
     (incidentEdgeFinset H vertex).card = H.degree vertex := by
   have hmap :
       (incidentEdgeFinset H vertex).map
@@ -129,11 +119,11 @@ theorem unrestrictedDeletedEdgeFrame_wellFormed {u v : V}
   have huvNe : u ≠ v := huv.ne
   have hdegreeG : ∀ vertex : V, G.degree vertex = 3 := by
     intro vertex
-    rw [← incidentEdgeFinset_card_eq_degree_local (H := G)]
+    rw [← incidentEdgeFinset_card_eq_degree (H := G)]
     exact hcubic vertex
   have hleft :
       (incidentEdgeFinset (DeletedEdgeGraph G u v) u).card = 2 := by
-    rw [incidentEdgeFinset_card_eq_degree_local]
+    rw [incidentEdgeFinset_card_eq_degree]
     change ((DeletedEdgeGraph G u v).neighborFinset u).card = 2
     rw [neighborFinset_deletedEdgeGraph_left huv,
       Finset.card_erase_of_mem]
@@ -141,7 +131,7 @@ theorem unrestrictedDeletedEdgeFrame_wellFormed {u v : V}
     · simpa using huv
   have hright :
       (incidentEdgeFinset (DeletedEdgeGraph G u v) v).card = 2 := by
-    rw [incidentEdgeFinset_card_eq_degree_local]
+    rw [incidentEdgeFinset_card_eq_degree]
     change ((DeletedEdgeGraph G u v).neighborFinset v).card = 2
     rw [neighborFinset_deletedEdgeGraph_right huv,
       Finset.card_erase_of_mem]
@@ -160,7 +150,7 @@ theorem unrestrictedDeletedEdgeFrame_wellFormed {u v : V}
       simpa using hvertex 0
     have hvertexV : vertex ≠ v := by
       simpa using hvertex 1
-    rw [incidentEdgeFinset_card_eq_degree_local]
+    rw [incidentEdgeFinset_card_eq_degree]
     change ((DeletedEdgeGraph G u v).neighborFinset vertex).card = 3
     rw [neighborFinset_deletedEdgeGraph_of_ne hvertexU hvertexV]
     exact hdegreeG vertex
