@@ -9,19 +9,22 @@ namespace Mettapedia.GraphTheory.FourColor
 
 namespace SquareReductionSide
 
-/-- The first endpoint at each of the two seam positions. -/
+/-- The first endpoint at each of the two seam positions.  The endpoints are
+ordered along one arc of the square boundary, rather than merely choosing the
+numerically first endpoint of each pair.  Thus both square reductions use the
+same positive cyclic boundary order in the planar-bond constructor. -/
 def leftPort (side : SquareReductionSide) (step : Fin 2) : Fin 4 :=
   if side = .join01_23 then
-    if step = 0 then 0 else 2
+    if step = 0 then 1 else 2
   else
-    if step = 0 then 1 else 3
+    if step = 0 then 0 else 1
 
-/-- The second endpoint at each of the two seam positions. -/
+/-- The matching endpoint on the oppositely ordered boundary arc. -/
 def rightPort (side : SquareReductionSide) (step : Fin 2) : Fin 4 :=
   if side = .join01_23 then
-    if step = 0 then 1 else 3
+    if step = 0 then 0 else 3
   else
-    if step = 0 then 2 else 0
+    if step = 0 then 3 else 2
 
 theorem leftPort_injective (side : SquareReductionSide) :
     Function.Injective side.leftPort := by
@@ -53,28 +56,28 @@ theorem compatible_iff_pair_colors
     · rintro ⟨hzero, hone⟩ step
       fin_cases step
       · simpa [leftPort, rightPort, SquareReductionSide.join01_23,
-          SquareReductionSide.join12_30] using hzero
+          SquareReductionSide.join12_30] using hzero.symm
       · simpa [leftPort, rightPort, SquareReductionSide.join01_23,
           SquareReductionSide.join12_30] using hone
     · intro h
       constructor
       · simpa [leftPort, rightPort, SquareReductionSide.join01_23,
-          SquareReductionSide.join12_30] using h (0 : Fin 2)
+          SquareReductionSide.join12_30] using (h (0 : Fin 2)).symm
       · simpa [leftPort, rightPort, SquareReductionSide.join01_23,
           SquareReductionSide.join12_30] using h (1 : Fin 2)
   · constructor
     · rintro ⟨hzero, hone⟩ step
       fin_cases step
       · simpa [leftPort, rightPort, SquareReductionSide.join01_23,
-          SquareReductionSide.join12_30] using hzero
+          SquareReductionSide.join12_30] using hone.symm
       · simpa [leftPort, rightPort, SquareReductionSide.join01_23,
-          SquareReductionSide.join12_30] using hone
+          SquareReductionSide.join12_30] using hzero
     · intro h
       have hzero := h (0 : Fin 2)
       have hone := h (1 : Fin 2)
       simpa [SquareReductionSide.Compatible, leftPort, rightPort,
         SquareReductionSide.join01_23,
-        SquareReductionSide.join12_30] using And.intro hzero hone
+        SquareReductionSide.join12_30] using And.intro hone hzero.symm
 
 end SquareReductionSide
 
