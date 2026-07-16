@@ -488,6 +488,208 @@ theorem EvenKempeFusionLens.fusionChain_portSpanningCircuit_or_leftDefectShorter
       lens.exists_leftDefect_shorterPrimalCircuit_of_fusionSiteCount_pos
         hdata hab hac hbc hpositive⟩
 
+/-- Reverse an even Kempe port route, exchanging its two boundary ports. -/
+def EvenKempePortPath.reverse
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b : Color}
+    {left right : Fin portCount}
+    (route : data.EvenKempePortPath C a b left right) :
+    data.EvenKempePortPath C a b right left where
+  leftEdge := route.rightEdge
+  rightEdge := route.leftEdge
+  leftIncident := route.rightIncident
+  rightIncident := route.leftIncident
+  leftColor := route.rightColor
+  rightColor := route.leftColor
+  path := route.path.reverse
+  isPath := route.path.isPath_reverse_iff.mpr route.isPath
+  evenLength := by
+    simpa only [SimpleGraph.Walk.length_reverse] using route.evenLength
+
+/-- Reversing a port route reverses its ambient line-graph path. -/
+theorem EvenKempePortPath.reverse_ambientPath
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b : Color}
+    {left right : Fin portCount}
+    (route : data.EvenKempePortPath C a b left right) :
+    route.reverse.ambientPath = route.ambientPath.reverse := by
+  exact (SimpleGraph.Walk.reverse_map
+    (SimpleGraph.Embedding.induce
+      (G := G.lineGraph) (C.bicoloredSet a b)).toHom
+    route.path).symm
+
+/-- Reversal preserves membership in the ambient route support. -/
+theorem EvenKempePortPath.mem_reverse_ambientPath_support_iff
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b : Color}
+    {left right : Fin portCount}
+    (route : data.EvenKempePortPath C a b left right)
+    (edge : G.edgeSet) :
+    edge ∈ route.reverse.ambientPath.support ↔
+      edge ∈ route.ambientPath.support := by
+  have hsupport :
+      route.reverse.ambientPath.support =
+        route.ambientPath.reverse.support :=
+    congrArg SimpleGraph.Walk.support route.reverse_ambientPath
+  rw [hsupport]
+  simp only [SimpleGraph.Walk.support_reverse, List.mem_reverse]
+
+/-- Reverse a fusion lens, exchanging its left and right boundary ports. -/
+def EvenKempeFusionLens.reverse
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    data.EvenKempeFusionLens C a b c right left where
+  bRoute := lens.bRoute.reverse
+  cRoute := lens.cRoute.reverse
+  leftConnector := lens.rightConnector
+  rightConnector := lens.leftConnector
+  sharedColor := by
+    intro edge hb hc
+    apply lens.sharedColor edge
+    · rcases hb with ⟨hcolor, hmem⟩
+      exact ⟨hcolor, by
+        simpa only [EvenKempePortPath.reverse,
+          SimpleGraph.Walk.support_reverse, List.mem_reverse] using hmem⟩
+    · rcases hc with ⟨hcolor, hmem⟩
+      exact ⟨hcolor, by
+        simpa only [EvenKempePortPath.reverse,
+          SimpleGraph.Walk.support_reverse, List.mem_reverse] using hmem⟩
+
+/-- Lens reversal preserves the underlying set of fusion sites. -/
+theorem EvenKempeFusionLens.reverse_bFusionSites_perm
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.reverse.bFusionSites.Perm lens.bFusionSites := by
+  apply (List.perm_ext_iff_of_nodup
+    lens.reverse.bFusionSites_nodup lens.bFusionSites_nodup).2
+  intro edge
+  rw [lens.reverse.mem_bFusionSites_iff, lens.mem_bFusionSites_iff]
+  change
+    (edge ∈ lens.bRoute.reverse.ambientPath.support ∧
+      edge ∈ lens.cRoute.reverse.ambientPath.support) ↔
+    edge ∈ lens.bRoute.ambientPath.support ∧
+      edge ∈ lens.cRoute.ambientPath.support
+  rw [lens.bRoute.mem_reverse_ambientPath_support_iff,
+    lens.cRoute.mem_reverse_ambientPath_support_iff]
+
+/-- In particular, lens reversal preserves the number of fusion sites. -/
+@[simp] theorem EvenKempeFusionLens.reverse_fusionSiteCount
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.reverse.fusionSiteCount = lens.fusionSiteCount := by
+  change lens.reverse.bFusionSites.length = lens.bFusionSites.length
+  exact lens.reverse_bFusionSites_perm.length_eq
+
+/-- Lens reversal also preserves the total closed-lens length. -/
+@[simp] theorem EvenKempeFusionLens.reverse_closedWalk_length
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.reverse.closedWalk.length = lens.closedWalk.length := by
+  rw [lens.reverse.closedWalk_length, lens.closedWalk_length]
+  simp only [EvenKempeFusionLens.reverse, EvenKempePortPath.reverse,
+    SimpleGraph.Walk.length_reverse]
+
+/-- A nonempty fusion chain also has a strictly shorter primal circuit
+through its right boundary defect, by applying the leftmost construction to
+the reversed lens. -/
+theorem EvenKempeFusionLens.exists_rightDefect_shorterPrimalCircuit_of_fusionSiteCount_pos
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hcount : 0 < lens.fusionSiteCount) :
+    ∃ (start : V) (circuit : G.Walk start start),
+      circuit.IsCircuit ∧
+      circuit.length < lens.closedWalk.length ∧
+      data.defectVertex right ∈ circuit.support := by
+  have hreverseCount : 0 < lens.reverse.fusionSiteCount := by
+    simpa only [lens.reverse_fusionSiteCount] using hcount
+  rcases lens.reverse.exists_leftDefect_shorterPrimalCircuit_of_fusionSiteCount_pos
+      hdata hab hac hbc hreverseCount with
+    ⟨start, circuit, hcircuit, hlength, hdefect⟩
+  exact ⟨start, circuit, hcircuit,
+    by simpa only [lens.reverse_closedWalk_length] using hlength,
+    hdefect⟩
+
+/-- Thus every nonempty fusion chain supplies strict primal circuits anchored
+at both of its boundary ports. -/
+theorem EvenKempeFusionLens.exists_endpointDefect_shorterPrimalCircuits_of_fusionSiteCount_pos
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hcount : 0 < lens.fusionSiteCount) :
+    (∃ (start : V) (circuit : G.Walk start start),
+      circuit.IsCircuit ∧
+      circuit.length < lens.closedWalk.length ∧
+      data.defectVertex left ∈ circuit.support) ∧
+    (∃ (start : V) (circuit : G.Walk start start),
+      circuit.IsCircuit ∧
+      circuit.length < lens.closedWalk.length ∧
+      data.defectVertex right ∈ circuit.support) :=
+  ⟨lens.exists_leftDefect_shorterPrimalCircuit_of_fusionSiteCount_pos
+      hdata hab hac hbc hcount,
+    lens.exists_rightDefect_shorterPrimalCircuit_of_fusionSiteCount_pos
+      hdata hab hac hbc hcount⟩
+
+/-- Symmetric boundary-sensitive fusion descent.  With no fusion sites, one
+equal-length circuit spans both ports.  With any fusion site, strict shorter
+circuits are available at each endpoint. -/
+theorem EvenKempeFusionLens.fusionChain_portSpanningCircuit_or_endpointDefectShorterCircuits
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hleftRight : left ≠ right) :
+    (lens.fusionSiteCount = 0 ∧
+      ∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧
+        circuit.length = lens.closedWalk.length ∧
+        circuit.edges = lens.closedWalk.support.tail.map Subtype.val ∧
+        data.defectVertex left ∈ circuit.support ∧
+        data.defectVertex right ∈ circuit.support) ∨
+    (0 < lens.fusionSiteCount ∧
+      (∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧
+        circuit.length < lens.closedWalk.length ∧
+        data.defectVertex left ∈ circuit.support) ∧
+      (∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧
+        circuit.length < lens.closedWalk.length ∧
+        data.defectVertex right ∈ circuit.support)) := by
+  by_cases hzero : lens.fusionSiteCount = 0
+  · exact Or.inl ⟨hzero,
+      lens.exists_portSpanning_primalCircuit_of_fusionSiteCount_eq_zero
+        hdata hab hac hleftRight hzero⟩
+  · have hpositive : 0 < lens.fusionSiteCount := Nat.pos_of_ne_zero hzero
+    exact Or.inr ⟨hpositive,
+      lens.exists_endpointDefect_shorterPrimalCircuits_of_fusionSiteCount_pos
+        hdata hab hac hbc hpositive⟩
+
 end
 
 end GoertzelV24FourDefectBoundary.DegreeTwoBoundaryData
