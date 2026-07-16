@@ -182,7 +182,17 @@ invariant coefficient spaces have dimensions
 $119{,}988{,}480{,}745{,}781{,}344{,}800$ and
 $119{,}929{,}915{,}854{,}943{,}027{,}200$. These are exact raw-carrier
 dimensions before antisymmetry, Bianchi, EOM, integration by parts, trace,
-or Cayley--Hamilton rows, not a physical operator basis. On the separately
+or Cayley--Hamilton rows, not a physical operator basis. After the exact
+derivative-localization, field-strength antisymmetry, and field-label
+quotients, ordinary permutation conjugacy classes give a second exact
+character calculation: the resulting finite local-word orbit carrier has
+scalar and pseudoscalar $H(4)$ invariant multiplicities
+$246{,}136{,}792$ and $246{,}121{,}092$. The proof identifies every
+permutation-partition fiber with its ordinary conjugacy class and cancels its
+class cardinality against the centralizer factor, so no representative or
+padding convention enters these values. They still precede Bianchi, EOM,
+IBP, commutator, tracelessness, and matrix trace relations and are not a
+physical operator basis. On the separately
 complete derivative-free Cartan octic sector, $1287$ monomials reduce to
 $17$ signed-orbit coordinates with exact duals and identity conditioning.
 The actual Wilson eighth jet occupies only the pure-octic coordinate, with
@@ -1236,14 +1246,22 @@ claim that the manuscript already contains the needed census.
     literal fixed-decoration subtype is explicitly equivalent to the
     budget-stable dependent carrier, with exact preservation of the full
     tensor-sign product.  Consequently its signed fixed-decoration character
-    is exactly the recursive partition character.  The outstanding finite
-    identity is thereby confined to equivariant conjugacy transport from an
-    arbitrary field permutation to these canonical blocks and the associated
-    centralizer/conjugacy-class cancellation.  Thus
-    $2.46\times10^8$ remains a
-    machine-checked target for an
-    explicit projected column architecture, but is not yet a certified column
-    count or compression wall
+    is exactly the recursive partition character.  The conjugacy step is now
+    closed as well.  The displayed positive partitions through eight fields
+    are proved to be exactly the standard integer partitions; each has a
+    concrete disjoint-cycle representative with the advertised cycle
+    partition.  The fiber of the standard partition map on actual field
+    permutations is explicitly equivalent to the corresponding ordinary
+    conjugacy class.  The decoration character and centralizer cardinality
+    are constant on that fiber, and the standard class-cardinality times
+    centralizer-cardinality identity cancels the field factorial over
+    $\mathbb Q$.  Hence the actual signed orbit character equals the recursive
+    cycle-partition character for every $H(4)$ element and every nonempty
+    field sector through eight.  The scalar and pseudoscalar values
+    $246{,}136{,}792$ and $246{,}121{,}092$ are therefore exact invariant
+    dimensions of this intermediate quotient.  They impose none of the
+    remaining physical relations and are neither a physical-basis count nor a
+    compression wall
     (\texttt{HypercubicDimension16CompressionCensus},
     \texttt{HypercubicDimension16CompressionReplayCertificate},
     \texttt{HypercubicDimension16CompressionSectorCertificate},
@@ -1259,7 +1277,13 @@ claim that the manuscript already contains the needed census.
     \texttt{HypercubicDimension16LocalLetterCharacter},
     \texttt{HypercubicDimension16CycleSeedCharacter},
     \texttt{HypercubicDimension16CycleFamilyCharacter},
-    \texttt{HypercubicDimension16FixedCycleFamilyCarrier}).
+    \texttt{HypercubicDimension16FixedCycleFamilyCarrier},
+    \texttt{HypercubicDimension16CycleBlockDecoration},
+    \texttt{HypercubicDimension16PermutationDecorationTransport},
+    \texttt{HypercubicDimension16PermutationFixedSector},
+    \texttt{HypercubicDimension16PermutationConjugacy},
+    \texttt{HypercubicDimension16PartitionRepresentatives},
+    \texttt{HypercubicDimension16ConjugacyCompression}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1295,9 +1319,8 @@ claim that the manuscript already contains the needed census.
     equivariant.  The cross-sector covariant-commutator, traceless
     anticommutator, and fundamental multitrace rows are now also equivariant.
     The cycle-index census supplies a literal-group evaluation of its formal
-    expression.  Its proposed local-word data, commuting actions, orbit
-    quotient, and sign descent now have a concrete finite realization, but no
-    theorem yet identifies the orbit character with the expression.  The
+    expression.  Its local-word data, commuting actions, orbit quotient, and
+    sign descent now have a concrete finite realization.  The
     global-to-local derivative map is now an equivariant surjection, and a
     direct head-matching theorem identifies the full semantic kernel with the
     equivalence closure of the literal adjacent different-owner generators.
@@ -1326,10 +1349,13 @@ claim that the manuscript already contains the needed census.
     realized literally as decorations on a recursive disjoint union of finite
     blocks under blockwise rotation; the explicit equivalence preserves the
     full signed weight, so its fixed-decoration character is the same
-    partition character.  Only equivariant conjugacy transport from each
-    actual relabeling permutation into that carrier, followed by the
-    centralizer/conjugacy-class cancellation, remains before equality with the
-    cycle-index expression.
+    partition character.  Canonical block representatives now realize every
+    standard integer partition through eight fields, each actual relabeling
+    permutation is conjugate to its selected representative, and the exact
+    partition-fiber equivalence reduces the Burnside sum to ordinary
+    conjugacy classes.  Class cardinality cancels centralizer cardinality and
+    the field factorial, proving equality of the actual orbit character and
+    the cycle-index expression in every sector.
     The joint
     sectorwise physical rank and quotient conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
@@ -1494,7 +1520,15 @@ equivalence and exact tensor-sign product), together with
 \texttt{HypercubicDimension16FixedCycleFamilyCarrier} (the dependent
 positive-cycle-list assembly and exact residual-degree character), and
 \texttt{HypercubicDimension16CycleBlockDecoration} (the concrete disjoint-cycle
-permutation, fixed-decoration equivalence, and signed character identity) --- all
+permutation, fixed-decoration equivalence, and signed character identity),
+together with \texttt{HypercubicDimension16PermutationDecorationTransport},
+\texttt{HypercubicDimension16PermutationFixedSector},
+\texttt{HypercubicDimension16PermutationConjugacy},
+\texttt{HypercubicDimension16PartitionRepresentatives}, and
+\texttt{HypercubicDimension16ConjugacyCompression} (transport to arbitrary
+field permutations, exact partition representatives, conjugacy-fiber
+regrouping, factorial cancellation, and equality with the actual orbit
+character) --- all
 in the same namespace,
 all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
