@@ -556,6 +556,29 @@ theorem boundaryDartOfCrossingEdge_edgeOf
   Classical.choose_spec
     (RS.exists_boundaryDart_edgeOf_of_mem_vertexSideEdgeBoundary side he)
 
+/-- The computed edge boundary is unchanged when the chosen vertex side is
+replaced by its finite complement. -/
+theorem vertexSideEdgeBoundary_compl (side : Finset V) :
+    RS.vertexSideEdgeBoundary sideᶜ = RS.vertexSideEdgeBoundary side := by
+  ext e
+  simp only [RS.mem_vertexSideEdgeBoundary_iff]
+  have hcomp :
+      (RS.endpoints e ∩ sideᶜ).card =
+        2 - (RS.endpoints e ∩ side).card := by
+    have heq : RS.endpoints e ∩ sideᶜ =
+        RS.endpoints e \ (RS.endpoints e ∩ side) := by
+      ext v
+      simp
+    rw [heq, Finset.card_sdiff_of_subset Finset.inter_subset_left,
+      RS.endpoints_card_two]
+  have hle : (RS.endpoints e ∩ side).card ≤ 2 := by
+    calc
+      (RS.endpoints e ∩ side).card ≤ (RS.endpoints e).card :=
+        Finset.card_le_card Finset.inter_subset_left
+      _ = 2 := RS.endpoints_card_two e
+  rw [hcomp]
+  omega
+
 /-- Exact two-edge-cut routing: for every second nonzero color, the two cut
 portals are connected through either chosen vertex side in the corresponding
 bicolored dart graph. The cut-edge color equality and the through-route are
@@ -604,6 +627,57 @@ theorem twoEdgeCut_bicolored_portals_reachable
   have hProjected := RS.sideDartTrackedGraph_reachable_edgeOf
     (fun v => v ∈ side) C (C e) other hDart
   simpa [left, right, RS.edge_alpha] using hProjected
+
+/-- Matched-pair form of the two-cut routing theorem: the same two cut edges
+are joined by certified bicolored routes through both complementary vertex
+sides. -/
+theorem twoEdgeCut_bicolored_portals_reachable_bothSides
+    (hCubic : RS.IsCubic)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (side : Finset V) {e f : E} (hne : e ≠ f)
+    (hboundary : RS.vertexSideEdgeBoundary side = {e, f})
+    (other : Color) (hother : other ≠ 0) (hneColor : C e ≠ other) :
+    C e = C f ∧
+    ∃ leftSide rightSide : BoundaryDart RS (fun v => v ∈ side),
+    ∃ leftComplement rightComplement :
+        BoundaryDart RS (fun v => v ∈ sideᶜ),
+      RS.edgeOf leftSide.1.1 = e ∧
+      RS.edgeOf rightSide.1.1 = f ∧
+      RS.edgeOf leftComplement.1.1 = e ∧
+      RS.edgeOf rightComplement.1.1 = f ∧
+      (RS.sideDartTrackedGraph (fun v => v ∈ side) C (C e) other).Reachable
+        (RS.alpha leftSide.1.1) (RS.alpha rightSide.1.1) ∧
+      (RS.sideDartTrackedGraph (fun v => v ∈ sideᶜ) C (C e) other).Reachable
+        (RS.alpha leftComplement.1.1) (RS.alpha rightComplement.1.1) := by
+  classical
+  have hcomplement : RS.vertexSideEdgeBoundary sideᶜ = {e, f} := by
+    rw [RS.vertexSideEdgeBoundary_compl side, hboundary]
+  let heSide : e ∈ RS.vertexSideEdgeBoundary side := by rw [hboundary]; simp
+  let hfSide : f ∈ RS.vertexSideEdgeBoundary side := by rw [hboundary]; simp
+  let heComplement : e ∈ RS.vertexSideEdgeBoundary sideᶜ := by
+    rw [hcomplement]
+    simp
+  let hfComplement : f ∈ RS.vertexSideEdgeBoundary sideᶜ := by
+    rw [hcomplement]
+    simp
+  let leftSide := RS.boundaryDartOfCrossingEdge side e heSide
+  let rightSide := RS.boundaryDartOfCrossingEdge side f hfSide
+  let leftComplement :=
+    RS.boundaryDartOfCrossingEdge sideᶜ e heComplement
+  let rightComplement :=
+    RS.boundaryDartOfCrossingEdge sideᶜ f hfComplement
+  have hsideRoute := RS.twoEdgeCut_bicolored_portals_reachable
+    hCubic C hC side hne hboundary other hother hneColor
+  have hcomplementRoute := RS.twoEdgeCut_bicolored_portals_reachable
+    hCubic C hC sideᶜ hne hcomplement other hother hneColor
+  refine ⟨hsideRoute.1, leftSide, rightSide, leftComplement, rightComplement,
+    ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simp [leftSide]
+  · simp [rightSide]
+  · simp [leftComplement]
+  · simp [rightComplement]
+  · simpa [leftSide, rightSide] using hsideRoute.2.1
+  · simpa [leftComplement, rightComplement] using hcomplementRoute.2.1
 
 end RotationSystem
 

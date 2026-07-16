@@ -208,6 +208,30 @@ theorem digonProfileMultiplicityTwo
   · exact False.elim (hab hab0)
   · exact h
 
+def digonComposedExtensionProfileMultiset
+    {B : Type*} [Fintype B] [DecidableEq B]
+    (external : Sum (Fin 2) B -> Sum (Fin 2) B -> Bool)
+    (w : DigonBoundaryWord) (a b : Color) :
+    Multiset (Sum (Fin 2) B -> Sum (Fin 2) B -> Bool) :=
+  (digonExtensionProfileMultiset w a b).map
+    (composeFinitePortalProfile external)
+
+/-- Digon suppression is an exact factor of two after composition with every
+finite exterior profile, not only at the isolated local interface. -/
+theorem digonComposedExtensionProfileMultiset_eq_pair
+    {B : Type*} [Fintype B] [DecidableEq B]
+    (external : Sum (Fin 2) B -> Sum (Fin 2) B -> Bool)
+    (w : DigonBoundaryWord) (a b : Color)
+    (hw : w.Compatible) (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) :
+    digonComposedExtensionProfileMultiset external w a b =
+      {composeFinitePortalProfile external
+          (suppressedDigonTrackedProfile w a b),
+        composeFinitePortalProfile external
+          (suppressedDigonTrackedProfile w a b)} := by
+  unfold digonComposedExtensionProfileMultiset
+  rw [digonProfileMultiplicityTwo w a b hw ha hb hab]
+  simp [suppressedDigonProfileMultiset]
+
 namespace RotationSystem
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
