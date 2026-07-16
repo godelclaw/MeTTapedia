@@ -781,14 +781,16 @@ module.}
 \textsc{Ours.} The signed hypercubic action is extended linearly from the
 alpha-reduced basis, with the complete active tensor sign attached to each
 basis vector.  Three sparse row families are constructed on this module:
-uniform field-label renaming, swaps of ordered derivative positions owned by
-different field factors, and
+uniform field-label renaming, swaps of adjacent ordered derivative positions
+owned by different field factors, and
 \(F_{\mu\nu}+F_{\nu\mu}=0\).  Each family is proved to intertwine exactly with
 the signed $H(4)$ action
 (\texttt{HypercubicDimension16RelationEquivariance}).  The derivative-shuffle
-row carries an explicit different-owner condition.  Positions owned by the
-same field are never identified by a shuffle, since their exchange requires
-the curvature term in the covariant-derivative commutator.  These are
+site carries explicit adjacency and different-owner conditions.  The
+adjacency condition prevents a nonlocal transposition from reversing hidden
+same-owner derivatives.  Positions owned by the same field are never
+identified by a shuffle, since their exchange requires the curvature term in
+the covariant-derivative commutator.  These are
 equivariance and sparsity theorems; their joint rank has not yet been inferred
 from the row labels.
 
@@ -1117,7 +1119,8 @@ claim that the manuscript already contains the needed census.
     $21{,}606{,}911{,}019{,}319{,}296$
     (\texttt{HypercubicDimension16AlphaReduction}).
   \item \textbf{The first sparse relation operators are equivariant.}
-    Uniform field-label renaming, different-owner derivative shuffles, and
+    Uniform field-label renaming, adjacent different-owner derivative
+    shuffles, and
     field-strength antisymmetry are explicit rational rows on the same free
     module.  Their signed $H(4)$ intertwining laws are proved before any rank
     claim; same-owner derivative swaps are excluded
@@ -1175,7 +1178,7 @@ claim that the manuscript already contains the needed census.
     $15$ (\texttt{HypercubicDimension16BoundarySymanzik}).
   \item \textbf{The frontier is explicit.} The raw character theorem imposes
     none of the physical relation rows.  The derivative-label alpha quotient
-    removes one purely syntactic redundancy.  Field-label alpha,
+    removes one purely syntactic redundancy.  Field-label alpha, adjacent
     different-owner derivative shuffle, and antisymmetry rows are now
     equivariant.  Innermost Bianchi and on-shell EOM rows are also equivariant,
     and globally outermost integrated IBP plus traceless one-cycle rows are
