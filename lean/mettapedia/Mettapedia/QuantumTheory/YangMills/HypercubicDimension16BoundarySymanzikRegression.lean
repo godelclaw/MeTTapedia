@@ -36,6 +36,7 @@ example :
   leastDepth_honestDimension16_packet
 
 #print axioms normalizedSU2CartanWilsonDensity_eighthJet
+#print axioms normalizedSU2CartanWilsonDensity_tendsto_quadratic
 #print axioms actualWilsonDimension16SymanzikCoordinate_eq
 #print axioms normalizedSU2CartanWilsonDensity_rotation_error
 #print axioms honestOcticBoundaryH0_finrank
