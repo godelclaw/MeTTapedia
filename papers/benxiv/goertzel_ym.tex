@@ -1200,8 +1200,16 @@ claim that the manuscript already contains the needed census.
     already-defined position-indexed antisymmetry and adjacent-shuffle rows;
     its quotient is the free module on trace layouts, oriented-plane
     assignments, and owner-local derivative words.  The combined map also
-    intertwines the literal signed $H(4)$ actions.  Field-label orbit
-    realization remains.  Thus $2.46\times10^8$ remains a
+    intertwines the literal signed $H(4)$ actions.  That exact fixed-sector
+    target is now explicitly equivalent to the finite labeled local-word
+    carrier: finite derivative functions and owner-local lists are related by
+    inverse maps, the trace permutation and oriented planes are preserved,
+    and the equivalence intertwines field relabeling and the signed $H(4)$
+    action, including its tensor sign.  It therefore descends to an explicit
+    equivalence of the genuine field-label orbit quotients.  The remaining
+    gap is the Burnside character theorem identifying this now-proved orbit
+    carrier with the displayed cycle-index expression.  Thus
+    $2.46\times10^8$ remains a
     machine-checked target for an
     explicit projected column architecture, but is not yet a certified column
     count or compression wall
@@ -1213,7 +1221,8 @@ claim that the manuscript already contains the needed census.
     \texttt{HypercubicDimension16ShuffleQuotient},
     \texttt{HypercubicDimension16ShuffleLinearQuotient},
     \texttt{HypercubicDimension16AntisymmetryQuotient},
-    \texttt{HypercubicDimension16ContextualQuotient}).
+    \texttt{HypercubicDimension16ContextualQuotient},
+    \texttt{HypercubicDimension16OrbitCarrierBridge}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1263,7 +1272,11 @@ claim that the manuscript already contains the needed census.
     Its equivariant assembly with the trace context and derivative-shuffle
     quotient is now exact on the dependent dimension-$16$ carrier, where the
     pre-existing position-indexed rows span the full combined kernel.  The
-    field-relabel orbit-character realization remains.
+    resulting fixed-sector target is now explicitly equivalent to the finite
+    labeled local-word carrier, compatibly with field relabeling, the signed
+    $H(4)$ action, and tensor sign; this equivalence descends to the genuine
+    field-label orbit quotients.  Only the Burnside character identity with
+    the cycle-index expression remains at this stage.
     The joint
     sectorwise physical rank and quotient conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
@@ -1413,7 +1426,11 @@ certificate and exact active-carrier counts), together with
 \texttt{HypercubicDimension16CompressionSectorCertificate}, and
 \texttt{HypercubicDimension16CompressionSemanticBridge} (the fourteen-class
 cycle-index target, literal-group replay, exact Reynolds values, and
-class-average semantic bridge) --- all in the same namespace,
+class-average semantic bridge), together with
+\texttt{HypercubicDimension16ContextualQuotient} and
+\texttt{HypercubicDimension16OrbitCarrierBridge} (the exact contextual
+relation quotient and its equivariant identification with the finite
+field-label orbit carrier) --- all in the same namespace,
 all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
 no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
