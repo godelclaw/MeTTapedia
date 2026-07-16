@@ -46,6 +46,22 @@ theorem exists_validColorPair_containing_of_ne_zero
         Or.inl rfl, Or.inl rfl⟩
   · exact ⟨x, y, ⟨hx, hy, hxy⟩, Or.inl rfl, Or.inr rfl⟩
 
+/-- If a sum lies in a valid two-color pair, at least one summand lies in
+that pair. -/
+theorem validColorPair_summand_selected_of_sum_selected :
+    ∀ a b : Color, ValidColorPair a b →
+      ∀ x y : Color,
+        (x + y = a ∨ x + y = b) →
+          (x = a ∨ x = b) ∨ (y = a ∨ y = b) := by
+  intro a b hab x y
+  fin_cases a <;> fin_cases b <;> fin_cases x <;> fin_cases y
+  all_goals
+    first
+    | exact (hab.1 rfl).elim
+    | exact (hab.2.1 rfl).elim
+    | exact (hab.2.2 rfl).elim
+    | decide
+
 /-- Swapping two distinct nonzero Tait colors is an additive symmetry of the
 Klein four color group. -/
 def validColorPairSwapAddEquiv (a b : Color) (hab : ValidColorPair a b) :
@@ -73,6 +89,35 @@ def KempeComponentMeetsPort {portCount : Nat}
   ∃ edge : G.edgeSet,
     edge ∈ incidentEdgeFinset G (data.defectVertex port) ∧
       edge ∈ C.kempeComponentSet a b K
+
+/-- If a degree-two port requests one of the selected colors, some component
+of that bicolored graph actually touches the port. -/
+theorem exists_kempeComponentMeetsPort_of_colorWord_selected
+    {portCount : Nat}
+    (data : DegreeTwoBoundaryData G portCount)
+    (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) {a b : Color}
+    (hab : ValidColorPair a b)
+    (port : Fin portCount)
+    (hselected : data.colorWord C port = a ∨ data.colorWord C port = b) :
+    ∃ K : (C.bicoloredSubgraph a b).ConnectedComponent,
+      data.KempeComponentMeetsPort C a b K port := by
+  rcases Finset.card_eq_two.mp (hdata.2.1 port) with
+    ⟨first, second, hne, hincident⟩
+  have hsum : C first + C second = a ∨ C first + C second = b := by
+    simpa [colorWord, vertexKirchhoffSum, hincident, hne] using hselected
+  rcases validColorPair_summand_selected_of_sum_selected
+      a b hab (C first) (C second) hsum with hfirst | hsecond
+  · let K := (C.bicoloredSubgraph a b).connectedComponentMk
+      ⟨first, hfirst⟩
+    refine ⟨K, first, ?_, C.mem_kempeComponentSet_self hfirst⟩
+    rw [hincident]
+    simp
+  · let K := (C.bicoloredSubgraph a b).connectedComponentMk
+      ⟨second, hsecond⟩
+    refine ⟨K, second, ?_, C.mem_kempeComponentSet_self hsecond⟩
+    rw [hincident]
+    simp
 
 theorem edge_mem_kempeComponent_of_meetsPort_of_incident_of_bicolored
     {portCount : Nat}
