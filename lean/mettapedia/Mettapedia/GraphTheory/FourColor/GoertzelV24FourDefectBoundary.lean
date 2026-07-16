@@ -77,6 +77,43 @@ theorem DegreeTwoBoundaryData.colorWord_ne_zero {portCount : Nat}
     data.colorWord C port ≠ 0 := by
   exact vertexKirchhoffSum_ne_zero_of_card_two C _ (hdata.2.1 port)
 
+/-- The requested color at a degree-two boundary port differs from both
+colors already incident there. -/
+theorem DegreeTwoBoundaryData.colorWord_ne_incidentColor
+    {portCount : Nat}
+    (data : DegreeTwoBoundaryData G portCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (port : Fin portCount) (edge : G.edgeSet)
+    (hedge : edge ∈ incidentEdgeFinset G (data.defectVertex port)) :
+    data.colorWord C port ≠ C edge := by
+  rcases Finset.card_eq_two.mp (hdata.2.1 port) with
+    ⟨first, second, hne, hset⟩
+  have hfirstMem : first ∈
+      incidentEdgeFinset G (data.defectVertex port) := by
+    rw [hset]
+    simp
+  have hsecondMem : second ∈
+      incidentEdgeFinset G (data.defectVertex port) := by
+    rw [hset]
+    simp
+  have hfirstVertex : data.defectVertex port ∈ (first.1 : Sym2 V) := by
+    simpa [incidentEdgeFinset] using hfirstMem
+  have hsecondVertex : data.defectVertex port ∈ (second.1 : Sym2 V) := by
+    simpa [incidentEdgeFinset] using hsecondMem
+  have hcolors : C first ≠ C second :=
+    C.valid ((SimpleGraph.lineGraph_adj_iff_exists).2
+      ⟨hne, data.defectVertex port, hfirstVertex, hsecondVertex⟩)
+  have hword : data.colorWord C port = C first + C second := by
+    simp [DegreeTwoBoundaryData.colorWord, vertexKirchhoffSum, hset, hne]
+  have hthird := third_color_properties (hC first) (hC second) hcolors
+  rw [hset] at hedge
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hedge
+  rcases hedge with rfl | rfl
+  · rw [hword]
+    exact hthird.2.1
+  · rw [hword]
+    exact hthird.2.2
+
 /-- Boundary parity for an arbitrary number of degree-two ports: the sum of
 all requested colors is zero. -/
 theorem DegreeTwoBoundaryData.sum_colorWord_eq_zero {portCount : Nat}

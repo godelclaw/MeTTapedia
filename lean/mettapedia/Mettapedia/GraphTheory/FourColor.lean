@@ -574,6 +574,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FourDefectBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairBoundary
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairInsertion
 import Mettapedia.GraphTheory.FourColor.RotationSystemEdgeColoring
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Digon
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor
