@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
 
@@ -10,6 +10,7 @@ open SimpleGraph
 open SimpleGraphDartRotation
 open GoertzelV24DeletedEdgeTrail
 open GoertzelV24FramedTrail
+open GoertzelV24TwoDefectParity
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24TwoEdgeCutMinimality
 
@@ -77,6 +78,25 @@ theorem graphBackedVertexMinimalTaitCounterexample_not_graphTaitColorable
         IsTaitEdgeColoring G coloring := by
   rw [← rotationSystemTaitColorable_iff_graphTaitColorable graphData]
   exact minimal.notColorable
+
+/-- A graph-backed vertex-minimal Tait counterexample has no Tait-colorable
+one-edge deletion. Indeed, two-defect parity would extend any such coloring
+back across the deleted edge. -/
+theorem graphBackedVertexMinimalTaitCounterexample_deletedEdge_not_taitColorable
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {u v : V} (huv : G.Adj u v) :
+    ¬ ∃ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
+        IsTaitEdgeColoring (DeletedEdgeGraph G u v) C := by
+  rintro ⟨C, hC⟩
+  exact
+    (graphBackedVertexMinimalTaitCounterexample_not_graphTaitColorable
+      graphData minimal)
+      (exists_taitColoring_of_deletedEdgeColoring
+        huv
+        (incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
+          graphData minimal.spherical.cubic)
+        C hC)
 
 /-- Any colored one-edge deletion of a graph-backed minimal counterexample
 is an actual non-completable framed trail, even with every retained edge
