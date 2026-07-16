@@ -170,6 +170,50 @@ theorem semanticShuffleEquivalent_generatedVector
   exact listShuffleGeneratedEquivalent_liftVector
     left.toList right.toList left.toList_length right.toList_length hlist
 
+/-- Every list-splice presentation of one literal vector step is the swap of
+two concrete adjacent `Fin` positions.  This is the bridge back to the sparse
+position-indexed relation operator. -/
+theorem isAdjacentDifferentOwnerSwap_exists_positions
+    {fieldCount derivativeCount : ℕ}
+    (left right : GlobalOwnedAxisWord fieldCount derivativeCount)
+    (hstep : IsAdjacentDifferentOwnerSwap left right) :
+    ∃ (firstPosition secondPosition : Fin derivativeCount),
+      firstPosition.1 + 1 = secondPosition.1 ∧
+      (left.get firstPosition).1 ≠ (left.get secondPosition).1 ∧
+      right = List.Vector.ofFn
+        (left.get ∘ Equiv.swap firstPosition secondPosition) := by
+  rcases hstep with
+    ⟨headEntries, tailEntries, first, second, hdifferent, hleft, hright⟩
+  have hlength : headEntries.length + 2 + tailEntries.length =
+      derivativeCount := by
+    have := left.toList_length
+    rw [hleft] at this
+    simp at this
+    omega
+  have hnext : headEntries.length + 1 < derivativeCount := by omega
+  let firstPosition : Fin derivativeCount :=
+    ⟨headEntries.length, by omega⟩
+  let secondPosition : Fin derivativeCount :=
+    ⟨headEntries.length + 1, hnext⟩
+  have hfirst : left.get firstPosition = first := by
+    rw [List.Vector.get_eq_get_toList]
+    simp [firstPosition, hleft]
+  have hsecond : left.get secondPosition = second := by
+    rw [List.Vector.get_eq_get_toList]
+    simp [secondPosition, hleft]
+  have hswap := list_ofFn_adjacent_swap left.get headEntries.length hnext
+  have hofFn : List.ofFn left.get = left.toList := by
+    have hvector := congrArg List.Vector.toList (List.Vector.ofFn_get left)
+    simpa only [List.Vector.toList_ofFn] using hvector
+  rw [hofFn, hleft, hfirst, hsecond] at hswap
+  have htarget : List.Vector.ofFn
+      (left.get ∘ Equiv.swap firstPosition secondPosition) = right := by
+    apply List.Vector.eq
+    rw [List.Vector.toList_ofFn, hswap, hright]
+    simp
+  exact ⟨firstPosition, secondPosition, rfl, by simpa [hfirst, hsecond],
+    htarget.symm⟩
+
 /-! ## Generated chains give exactly the linear kernel -/
 
 theorem generatedVector_difference_mem
