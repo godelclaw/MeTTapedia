@@ -752,6 +752,30 @@ Cayley--Hamilton remain explicit quotient rows. Thus this theorem completes
 the genuine raw-carrier census, but not the noncommutative physical operator
 basis or its dual chart.
 
+\paragraph{Our first syntactic quotient removes derivative labels exactly.}
+\textsc{Ours.} The active derivative slots in the raw carrier are labeled,
+whereas an operator depends only on the ordered derivative word.  Interpreting
+\texttt{derivativeOrder} explicitly as the map from ordered positions to
+active labels separates every raw derivative presentation into a label
+permutation and the owner--axis datum at each ordered position.  Equality of
+the latter data is proved equivalent to a unique relabeling of the active
+derivative slots.  Consequently the actual quotient of the original exact
+dimension-$16$ subtype is linearly represented by ordered derivative words;
+no canonical representative is assumed.
+
+This alpha quotient commutes with the literal $H(4)$ action and preserves the
+product of all active tensor signs.  Before any physical identity is imposed,
+the layout multiplicity falls from $5{,}361{,}612{,}271{,}200$ to
+$5{,}030{,}751$, and the corresponding carrier has exactly
+$21{,}606{,}911{,}019{,}319{,}296$ elements
+(\texttt{HypercubicDimension16AlphaReduction}).  Field-label alpha
+equivalence and the standard field antisymmetry, Bianchi, EOM, integration by
+parts, covariant-derivative commutator, trace, and $\mathrm{SU}(2)$
+Cayley--Hamilton identities remain to be imposed.  The commutator identity is
+listed separately because $[D_\mu,D_\nu]X=[F_{\mu\nu},X]$ is necessary to
+identify noncommuting derivative words and is not supplied by Bianchi or
+integration by parts.
+
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
 \textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
@@ -976,6 +1000,15 @@ claim that the manuscript already contains the needed census.
     $23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$
     (\texttt{HypercubicUnpaddedFDSyntax},
     \texttt{HypercubicRawFDDimension16Census}).
+  \item \textbf{Derivative-label alpha equivalence is quotiented exactly.}
+    The raw derivative order is separated into a disposable active-label
+    permutation and the owner--axis word indexed by ordered positions.
+    Equality of ordered words is equivalent to a unique relabeling; the
+    quotient of the original exact carrier is explicitly equivalent to the
+    reduced carrier, equivariant under $H(4)$, and tensor-sign preserving.
+    Its exact layout and carrier counts are $5{,}030{,}751$ and
+    $21{,}606{,}911{,}019{,}319{,}296$
+    (\texttt{HypercubicDimension16AlphaReduction}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1003,13 +1036,14 @@ claim that the manuscript already contains the needed census.
     bounds, the resulting budget is $5544/5$ and the least closing depth is
     $15$ (\texttt{HypercubicDimension16BoundarySymanzik}).
   \item \textbf{The frontier is explicit.} The raw character theorem imposes
-    none of the physical relation rows, while the quantitative restoration
-    theorem is restricted to bounded constant Cartan curvature. Neither is a
-    uniform interacting Symanzik theorem. A physical dimension-$16$ basis
-    requires an equivariant quotient by the explicit antisymmetry, Bianchi,
-    EOM, integration-by-parts, trace, and Cayley--Hamilton maps; constructive
-    Yang--Mills additionally requires a continuum measure, OS reconstruction,
-    and a positive spectral gap.
+    none of the physical relation rows.  The derivative-label alpha quotient
+    removes one purely syntactic redundancy, but field-label alpha equivalence
+    and the antisymmetry, Bianchi, EOM, integration-by-parts,
+    covariant-commutator, trace, and Cayley--Hamilton maps remain.  The
+    quantitative restoration theorem is restricted to bounded constant
+    Cartan curvature and is not a uniform interacting Symanzik theorem.
+    Constructive Yang--Mills additionally requires a continuum measure, OS
+    reconstruction, and a positive spectral gap.
 \end{itemize}
 
 \subsection*{The remaining inputs}
