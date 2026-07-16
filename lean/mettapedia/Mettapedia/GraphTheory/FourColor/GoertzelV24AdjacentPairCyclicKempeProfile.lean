@@ -38,6 +38,7 @@ structure CyclicKempeProfile
     data.secondVertex).EdgeColoring Color
   isTaitColoring : IsTaitEdgeColoring
     (DeletedAdjacentPairGraph G data.firstVertex data.secondVertex) coloring
+  boundaryWellFormed : data.degreeTwoBoundaryData.WellFormed
   reductionCompatible : SquareReductionSide.join01_23.Compatible
     (data.degreeTwoBoundaryData.colorWord coloring)
   firstColor : Color
@@ -106,6 +107,7 @@ theorem exists_rotationOrdered_cyclicKempeProfile
     portsCyclic := horder
     coloring := C
     isTaitColoring := hC
+    boundaryWellFormed := hwell
     reductionCompatible := hcompatible
     firstColor := a
     secondColor := b
