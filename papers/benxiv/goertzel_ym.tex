@@ -1207,8 +1207,14 @@ claim that the manuscript already contains the needed census.
     and the equivalence intertwines field relabeling and the signed $H(4)$
     action, including its tensor sign.  It therefore descends to an explicit
     equivalence of the genuine field-label orbit quotients.  The remaining
-    gap is the Burnside character theorem identifying this now-proved orbit
-    carrier with the displayed cycle-index expression.  Thus
+    character is now defined independently as the tensor-sign-weighted sum
+    over fixed points of the literal $H(4)$ action on that orbit carrier.  A
+    general weighted twisted Burnside theorem, proved by transporter counting
+    and orbit--stabilizer, specializes here to show that the labeled twisted
+    fixed-point numerator is exactly $f!$ times this actual orbit character.
+    The remaining gap is the finite cycle-factorization theorem identifying
+    that labeled numerator with $f!$ times the displayed cycle-index
+    expression.  Thus
     $2.46\times10^8$ remains a
     machine-checked target for an
     explicit projected column architecture, but is not yet a certified column
@@ -1222,7 +1228,9 @@ claim that the manuscript already contains the needed census.
     \texttt{HypercubicDimension16ShuffleLinearQuotient},
     \texttt{HypercubicDimension16AntisymmetryQuotient},
     \texttt{HypercubicDimension16ContextualQuotient},
-    \texttt{HypercubicDimension16OrbitCarrierBridge}).
+    \texttt{HypercubicDimension16OrbitCarrierBridge},
+    \texttt{WeightedOrbitBurnside},
+    \texttt{HypercubicDimension16OrbitCharacter}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1275,8 +1283,11 @@ claim that the manuscript already contains the needed census.
     resulting fixed-sector target is now explicitly equivalent to the finite
     labeled local-word carrier, compatibly with field relabeling, the signed
     $H(4)$ action, and tensor sign; this equivalence descends to the genuine
-    field-label orbit quotients.  Only the Burnside character identity with
-    the cycle-index expression remains at this stage.
+    field-label orbit quotients.  The signed fixed-point character of that
+    quotient is now defined directly, and a weighted Burnside theorem
+    identifies its factorial multiple with the labeled twisted fixed-point
+    sum.  Only the cycle-factorization of that labeled sum, and hence its
+    equality with the cycle-index expression, remains at this stage.
     The joint
     sectorwise physical rank and quotient conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
@@ -1430,7 +1441,10 @@ class-average semantic bridge), together with
 \texttt{HypercubicDimension16ContextualQuotient} and
 \texttt{HypercubicDimension16OrbitCarrierBridge} (the exact contextual
 relation quotient and its equivariant identification with the finite
-field-label orbit carrier) --- all in the same namespace,
+field-label orbit carrier), and \texttt{WeightedOrbitBurnside} with
+\texttt{HypercubicDimension16OrbitCharacter} (the general weighted quotient
+identity and its specialization to the actual signed orbit character) --- all
+in the same namespace,
 all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
 no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
