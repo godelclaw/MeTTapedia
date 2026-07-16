@@ -776,6 +776,22 @@ listed separately because $[D_\mu,D_\nu]X=[F_{\mu\nu},X]$ is necessary to
 identify noncommuting derivative words and is not supplied by Bianchi or
 integration by parts.
 
+\paragraph{Our initial relation rows are equivariant on the same free
+module.}
+\textsc{Ours.} The signed hypercubic action is extended linearly from the
+alpha-reduced basis, with the complete active tensor sign attached to each
+basis vector.  Three sparse row families are constructed on this module:
+uniform field-label renaming, swaps of ordered derivative positions owned by
+different field factors, and
+\(F_{\mu\nu}+F_{\nu\mu}=0\).  Each family is proved to intertwine exactly with
+the signed $H(4)$ action
+(\texttt{HypercubicDimension16RelationEquivariance}).  The derivative-shuffle
+row carries an explicit different-owner condition.  Positions owned by the
+same field are never identified by a shuffle, since their exchange requires
+the curvature term in the covariant-derivative commutator.  These are
+equivariance and sparsity theorems; their joint rank has not yet been inferred
+from the row labels.
+
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
 \textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
@@ -1009,6 +1025,12 @@ claim that the manuscript already contains the needed census.
     Its exact layout and carrier counts are $5{,}030{,}751$ and
     $21{,}606{,}911{,}019{,}319{,}296$
     (\texttt{HypercubicDimension16AlphaReduction}).
+  \item \textbf{The first sparse relation operators are equivariant.}
+    Uniform field-label renaming, different-owner derivative shuffles, and
+    field-strength antisymmetry are explicit rational rows on the same free
+    module.  Their signed $H(4)$ intertwining laws are proved before any rank
+    claim; same-owner derivative swaps are excluded
+    (\texttt{HypercubicDimension16RelationEquivariance}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1037,9 +1059,11 @@ claim that the manuscript already contains the needed census.
     $15$ (\texttt{HypercubicDimension16BoundarySymanzik}).
   \item \textbf{The frontier is explicit.} The raw character theorem imposes
     none of the physical relation rows.  The derivative-label alpha quotient
-    removes one purely syntactic redundancy, but field-label alpha equivalence
-    and the antisymmetry, Bianchi, EOM, integration-by-parts,
-    covariant-commutator, trace, and Cayley--Hamilton maps remain.  The
+    removes one purely syntactic redundancy.  Field-label alpha,
+    different-owner derivative shuffle, and antisymmetry rows are now
+    equivariant, but their joint rank and the Bianchi, EOM,
+    integration-by-parts, covariant-commutator, trace, and Cayley--Hamilton
+    maps remain.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
