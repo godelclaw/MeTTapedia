@@ -991,6 +991,19 @@ theorem fixedBudgetedCycleCarrierCharacter_eq_fixedCycleFamilyCharacter
 
 /-! ## Signed fixed-decoration character on arbitrary finite labels -/
 
+/-- Signed contribution of one indexed decoration, with a single named
+decision procedure shared by all character decompositions. -/
+def indexedDecorationWeight
+    {Label : Type*} [Fintype Label]
+    (h : Hypercubic4) (rename : Equiv.Perm Label)
+    (derivativeBudget targetDegree : ℕ)
+    (letters : Label → LocalFieldLetter derivativeBudget) : ℚ := by
+  classical
+  exact
+    if IsTwistedIndexedDecoration h rename derivativeBudget targetDegree letters
+    then ∏ label, (letters label).tensorSign h
+    else 0
+
 /-- Signed fixed-point sum of local-word decorations on an arbitrary finite
 label type.  The derivative budget is separated from the exact target degree
 so recursive block decompositions do not silently change the letter type. -/
@@ -1001,9 +1014,7 @@ def indexedDecorationCharacter
   classical
   exact
     ∑ letters : Label → LocalFieldLetter derivativeBudget,
-      if IsTwistedIndexedDecoration h rename derivativeBudget targetDegree letters
-      then ∏ label, (letters label).tensorSign h
-      else 0
+      indexedDecorationWeight h rename derivativeBudget targetDegree letters
 
 /-- Specialization to the displayed disjoint-cycle rotation. -/
 def cycleBlockDecorationCharacter (h : Hypercubic4)
@@ -1026,6 +1037,7 @@ theorem cycleBlockDecorationCharacter_eq_fixedSum
         ∏ label, (decoration.1 label).tensorSign h := by
   classical
   unfold cycleBlockDecorationCharacter indexedDecorationCharacter
+    indexedDecorationWeight
   calc
     (∑ letters : CycleBlockLabel parts → LocalFieldLetter derivativeBudget,
         if IsTwistedIndexedDecoration h (cycleBlockRotation parts)
@@ -1087,10 +1099,12 @@ theorem cycleBlockDecorationCharacter_nil
   by_cases targetZero : targetDegree = 0
   · subst targetDegree
     simp [cycleBlockDecorationCharacter, indexedDecorationCharacter,
+      indexedDecorationWeight,
       IsTwistedIndexedDecoration, CycleBlockLabel, cycleBlockRotation]
   · have zeroTarget : ¬ 0 = targetDegree := fun equality =>
       targetZero equality.symm
     simp [cycleBlockDecorationCharacter, indexedDecorationCharacter,
+      indexedDecorationWeight,
       IsTwistedIndexedDecoration, CycleBlockLabel, cycleBlockRotation,
       targetZero, zeroTarget]
 
