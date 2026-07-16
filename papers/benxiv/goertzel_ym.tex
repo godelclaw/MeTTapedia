@@ -829,6 +829,28 @@ rows identify conjugate labeled presentations
 (\texttt{HypercubicDimension16IBPTraceRelations}).  Higher
 $\mathrm{SU}(2)$ trace identities remain separate.
 
+\paragraph{Our covariant-derivative commutator is an exact cross-sector
+row.}
+\textsc{Ours.} A site consists of two consecutive positions in the ordered
+derivative word of a single field letter; derivatives belonging to other
+field letters may occur between them in the global word.  The construction
+removes precisely those two positions while retaining the relative order of
+their complement, adds a curvature letter with the two derivative axes, and
+inserts it immediately before or after the selected field in the same trace
+cycle.  The resulting four-term row is
+\[
+ D_aD_bX-D_bD_aX-F_{ab}X+XF_{ab}=0.
+\]
+Both curvature insertions have the same canonical dimension as the two
+derivative terms.  The trace-cycle insertion equations, dimension identity,
+complement-order embedding, active tensor sign, and signed $H(4)$
+intertwining law are proved exactly
+(\texttt{HypercubicDimension16CovariantCommutator}).  Thus no same-field
+derivative swap is imposed without its curvature commutator.  This theorem
+constructs the relation operator; it does not infer its rank or the rank of
+the combined quotient.  Higher $\mathrm{SU}(2)$ trace identities remain
+separate.
+
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
 \textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
@@ -1079,6 +1101,13 @@ claim that the manuscript already contains the needed census.
     derivative position, and a one-cycle of the trace permutation is killed
     by tracelessness.  Both row families are signed-$H(4)$ equivariant
     (\texttt{HypercubicDimension16IBPTraceRelations}).
+  \item \textbf{The covariant-derivative commutator crosses sectors
+    honestly.} Two consecutive derivatives of one field word are removed in
+    complement order, an $F_{ab}$ letter is inserted on either side of that
+    field in its trace cycle, and the four-term commutator row preserves
+    canonical dimension and active tensor sign.  Its signed-$H(4)$
+    intertwining law is checked
+    (\texttt{HypercubicDimension16CovariantCommutator}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1111,8 +1140,9 @@ claim that the manuscript already contains the needed census.
     different-owner derivative shuffle, and antisymmetry rows are now
     equivariant.  Innermost Bianchi and on-shell EOM rows are also equivariant,
     and globally outermost integrated IBP plus traceless one-cycle rows are
-    equivariant, but the joint rank and the covariant-commutator and higher
-    Cayley--Hamilton trace maps remain.  The
+    equivariant.  The cross-sector covariant-commutator row is now also
+    equivariant, but the joint rank and the higher Cayley--Hamilton trace maps
+    remain.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
