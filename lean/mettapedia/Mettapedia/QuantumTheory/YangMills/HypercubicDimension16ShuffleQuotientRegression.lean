@@ -22,6 +22,19 @@ theorem oneOwner_degreeFourteen_semantic_card :
   rw [card_oneOwnerSemanticShuffleQuotient]
   norm_num
 
+theorem oneOwner_degreeFourteen_generated_card :
+    Fintype.card (GeneratedShuffleQuotient 1 14) = 268435456 := by
+  rw [Fintype.card_congr (generatedShuffleQuotientEquivLocal 1 14),
+    card_oneOwnerLocalAxisWordFamily]
+  norm_num
+
+theorem adjacent_generators_are_exact
+    {fieldCount derivativeCount : ℕ}
+    (left right : GlobalOwnedAxisWord fieldCount derivativeCount) :
+    GeneratedShuffleEquivalent left right ↔
+      localize left = localize right :=
+  generatedShuffleEquivalent_iff_semanticShuffleEquivalent left right
+
 theorem localization_hypercubic_equivariant
     {fieldCount derivativeCount : ℕ} (h : Hypercubic4)
     (word : GlobalOwnedAxisWord fieldCount derivativeCount) :
@@ -40,6 +53,10 @@ theorem every_existing_shuffle_row_is_sound
           (dimension16DerivativeCount carrier.1)
           (swapDerivativePositions carrier.2 site.left site.right).derivativeWord) :=
   derivativeShuffleSite_localize_eq site
+
+#print axioms ownerAxisProjection_eq_listShuffleGeneratedEquivalent
+#print axioms generatedShuffleEquivalent_iff_semanticShuffleEquivalent
+#print axioms generatedShuffleQuotientEquivLocal
 
 end HypercubicDimension16ShuffleQuotientRegression
 end YangMills
