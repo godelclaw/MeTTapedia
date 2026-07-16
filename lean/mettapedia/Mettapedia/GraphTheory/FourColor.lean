@@ -573,7 +573,10 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail
 import Mettapedia.GraphTheory.FourColor.RotationSystemEdgeColoring
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Digon
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RotorProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DigonProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCut
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutRouting
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Square
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareProfile
