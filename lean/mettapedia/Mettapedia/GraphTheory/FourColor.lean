@@ -582,6 +582,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCapGeometry
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationEdgeBridge
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCapBridge
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutNormalization
 import Mettapedia.GraphTheory.FourColor.GoertzelV24Square
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareProfile
