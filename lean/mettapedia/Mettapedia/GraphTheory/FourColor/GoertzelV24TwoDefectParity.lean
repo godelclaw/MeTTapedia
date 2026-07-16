@@ -48,6 +48,21 @@ theorem sum_vertexKirchhoffSum_eq_zero (color : G.edgeSet → Color) :
       rw [Sym2.card_toFinset_of_not_isDiag edge.1 hnondiag]
       simp [two_mul]
 
+/-- If every vertex outside a selected boundary has zero Kirchhoff sum,
+then the total Kirchhoff sum on that boundary is zero. -/
+theorem sum_vertexKirchhoffSum_on_boundary_eq_zero
+    (color : G.edgeSet → Color) (boundary : Finset V)
+    (hinterior : ∀ vertex ∉ boundary,
+      vertexKirchhoffSum G color vertex = 0) :
+    ∑ vertex ∈ boundary, vertexKirchhoffSum G color vertex = 0 := by
+  calc
+    ∑ vertex ∈ boundary, vertexKirchhoffSum G color vertex =
+        ∑ vertex : V, vertexKirchhoffSum G color vertex := by
+      apply Finset.sum_subset (by simp)
+      intro vertex _huniv hvertex
+      exact hinterior vertex hvertex
+    _ = 0 := sum_vertexKirchhoffSum_eq_zero color
+
 private theorem three_distinct_nonzero_sum_eq_zero
     {first second third : Color}
     (hfirst : first ≠ 0) (hsecond : second ≠ 0) (hthird : third ≠ 0)
