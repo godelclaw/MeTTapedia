@@ -1,0 +1,34 @@
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceEvaluation
+
+/-!
+# Regression checks for matrix trace evaluation
+
+The implemented traceless, adjacent-anticommutator, and fundamental trace
+rows are checked against ordinary two-by-two matrix-index contraction.
+-/
+
+set_option autoImplicit false
+noncomputable section
+
+namespace Mettapedia
+namespace QuantumTheory
+namespace YangMills
+namespace HypercubicDimension16TraceEvaluationRegression
+
+open HypercubicDimension16TraceEvaluation
+
+#print axioms tracePermutationContraction_relabel
+#print axioms tracePermutationContraction_fixedPoint
+#print axioms tracePermutationContraction_fundamental_rewire
+#print axioms tracePermutationContraction_anticommutator_rewire
+#print axioms tracePermutationContraction_traceAnticommutatorSite
+#print axioms tracePermutationContraction_fundamentalTraceSite
+#print axioms relationSpaceTraceEvaluation_tracelessLetterRow
+#print axioms relationSpaceTraceEvaluation_traceAnticommutatorRow
+#print axioms relationSpaceTraceEvaluation_fundamentalTraceRow
+#print axioms orbitPlaneTraceEvaluation_mk
+
+end HypercubicDimension16TraceEvaluationRegression
+end YangMills
+end QuantumTheory
+end Mettapedia

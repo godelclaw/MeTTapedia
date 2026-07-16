@@ -1410,8 +1410,18 @@ claim that the manuscript already contains the needed census.
     descended operator is block upper-bidiagonal by field count.  On the
     genuine eight-field, zero-derivative orbit module, the signed Reynolds
     projector and literal character bridge now prove that the scalar
-    invariant target has dimension $11{,}654$.  The joint blockwise physical
-    rank and quotient conditioning remain.  The
+    invariant target has dimension $11{,}654$.  Ordinary two-by-two
+    matrix-index contraction is now proved invariant under simultaneous
+    field relabeling and therefore descends to the genuine orbit carrier.
+    On the implemented pre-quotient sparse module, the singleton traceless
+    rows, adjacent anticommutator rows, and all six rewires of every
+    fundamental trace row are proved to lie in the kernel of this ordinary
+    matrix semantics.  The anticommutator proof uses polarized
+    Cayley--Hamilton entrywise; the fundamental proof is the vanishing
+    alternating $3\times3$ minor with only two matrix-index columns.  These
+    theorems certify soundness of the implemented trace rows, not completeness
+    of their span.  The joint blockwise physical rank and quotient
+    conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
@@ -1447,7 +1457,9 @@ three different situations.
     relation quotient.  Equivariant sparse maps for antisymmetry, Bianchi,
     on-shell EOM, integrated-by-parts, the covariant-derivative commutator,
     tracelessness, and the fundamental $2\times2$ trace identity are now
-    constructed on that carrier.  \emph{What settles it:} certify their joint
+    constructed on that carrier.  Ordinary two-by-two matrix semantics now
+    annihilates the implemented traceless, adjacent-anticommutator, and
+    fundamental trace rows exactly.  \emph{What settles it:} certify their joint
     sectorwise rank and a dual basis of the resulting quotient without
     replacing the relations by a desired answer; and extend the classical
     constant-Cartan $O(a^4)$ estimate to uniform interacting Wilson
@@ -1575,7 +1587,9 @@ rows, its signed $H(4)$ representation and intertwining law, and the descended
 physical-relation operator with invariant range), and
 \texttt{HypercubicDimension16PhysicalRelationBlocks} (the exact
 source/successor field-sector support and its descent through both quotient
-maps), and
+maps), \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
+contraction, field-relabel descent, and exact kernel theorems for the three
+implemented trace-relation families), and
 \texttt{WeightedOrbitBurnside} with
 \texttt{HypercubicDimension16OrbitCharacter} (the general weighted quotient
 identity and its specialization to the actual signed orbit character),
