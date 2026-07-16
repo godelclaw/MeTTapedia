@@ -238,6 +238,29 @@ private theorem sum_if_eq_sum_fixedSubtype
     _ = ∑ item : {item // fixed item}, weight item.1 := by
       exact Finset.sum_subtype _ (by simp) weight
 
+theorem exactCycleFamilyCharacter_eq_fixedFamilySum
+    (h : Hypercubic4) (cyclePredecessor derivativeCount : ℕ)
+    [Fintype (FixedExactCycleFamily h cyclePredecessor derivativeCount)] :
+    exactCycleFamilyCharacter h cyclePredecessor derivativeCount =
+      ∑ family : FixedExactCycleFamily h cyclePredecessor derivativeCount,
+        exactCycleFamilyTensorSign h family.1 := by
+  classical
+  unfold exactCycleFamilyCharacter
+  calc
+    (∑ family : Fin (cyclePredecessor + 1) →
+          ExactLocalFieldLetter derivativeCount,
+        if IsExactTwistedCycleFamily h family then
+          exactCycleFamilyTensorSign h family
+        else 0) =
+      ∑ family ∈
+          (Finset.univ.filter (IsExactTwistedCycleFamily h)),
+        exactCycleFamilyTensorSign h family := by
+      exact (Finset.sum_filter (IsExactTwistedCycleFamily h)
+        (exactCycleFamilyTensorSign h)).symm
+    _ = ∑ family : FixedExactCycleFamily h cyclePredecessor derivativeCount,
+          exactCycleFamilyTensorSign h family.1 := by
+      exact Finset.sum_subtype _ (by simp) _
+
 /-- The literal signed character of a complete positive relabeling cycle is
 the signed fixed-point character of one exact seed under `h` to the cycle
 length. -/
