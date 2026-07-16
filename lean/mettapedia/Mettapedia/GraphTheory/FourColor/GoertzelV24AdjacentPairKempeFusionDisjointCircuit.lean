@@ -264,6 +264,18 @@ theorem lineGraphJunctionAt_cons_nil
   exact SimpleGraph.Walk.lineGraphJunctionAt_cons_zero hadj
     SimpleGraph.Walk.nil
 
+/-- Every selected primal junction occurs on the canonical primal lift. -/
+theorem lineGraphJunctionAt_mem_primalLift_support
+    {first : G.edgeSet}
+    (walk : G.lineGraph.Walk first first)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherentClosed)
+    (position : Fin walk.length) :
+    walk.lineGraphJunctionAt position ∈
+      (walk.primalLift hpositive hcoherent).support := by
+  rw [walk.primalLift_support, SimpleGraph.Walk.primalJunctionSupport]
+  simp
+
 end SimpleGraph.Walk
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -642,6 +654,67 @@ theorem EvenKempeFusionLens.closedWalk_eq_openLensBody_append_leftClosingStep
     ← SimpleGraph.Walk.cons_append,
     SimpleGraph.Walk.append_assoc]
 
+/-- The junction where the first route crosses to the reversed second route
+is the right boundary connector vertex. -/
+theorem EvenKempeFusionLens.openLensBody_rightConnectorJunction
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.openLensBody.lineGraphJunctionAt
+        ⟨lens.bRoute.ambientPath.length, by
+          rw [lens.openLensBody_length]
+          omega⟩ =
+      SimpleGraph.lineGraphCommonVertex lens.rightConnector := by
+  have hrightPositive : 0 < lens.rightConnectedCReturn.length := by
+    rw [lens.rightConnectedCReturn_length]
+    omega
+  have hmapped := lens.bRoute.ambientPath.lineGraphJunctionAt_append_right
+    lens.rightConnectedCReturn ⟨0, hrightPositive⟩
+  have hfirst :
+      lens.rightConnectedCReturn.lineGraphJunctionAt
+          ⟨0, hrightPositive⟩ =
+        SimpleGraph.lineGraphCommonVertex lens.rightConnector := by
+    simpa only [EvenKempeFusionLens.rightConnectedCReturn] using
+      SimpleGraph.Walk.lineGraphJunctionAt_cons_zero
+        lens.rightConnector lens.cRoute.ambientPath.reverse
+  simpa only [EvenKempeFusionLens.openLensBody, Nat.add_zero] using
+    hmapped.trans hfirst
+
+/-- The same right-connector junction occurs at that coordinate in the
+complete closed lens. -/
+theorem EvenKempeFusionLens.closedWalk_rightConnectorJunction
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.closedWalk.lineGraphJunctionAt
+        ⟨lens.bRoute.ambientPath.length, by
+          rw [lens.closedWalk_eq_openLensBody_append_leftClosingStep,
+            SimpleGraph.Walk.length_append,
+            lens.openLensBody_length]
+          omega⟩ =
+      SimpleGraph.lineGraphCommonVertex lens.rightConnector := by
+  let returnWalk := SimpleGraph.Walk.cons lens.rightConnector
+    (lens.cRoute.ambientPath.reverse.append
+      (SimpleGraph.Walk.cons lens.leftConnector.symm
+        SimpleGraph.Walk.nil))
+  have hreturnPositive : 0 < returnWalk.length := by
+    dsimp only [returnWalk]
+    simp
+  have hmapped := lens.bRoute.ambientPath.lineGraphJunctionAt_append_right
+    returnWalk ⟨0, hreturnPositive⟩
+  have hfirst : returnWalk.lineGraphJunctionAt
+      ⟨0, hreturnPositive⟩ =
+      SimpleGraph.lineGraphCommonVertex lens.rightConnector := by
+    dsimp only [returnWalk]
+    exact SimpleGraph.Walk.lineGraphJunctionAt_cons_zero
+      lens.rightConnector _
+  simpa only [EvenKempeFusionLens.closedWalk, returnWalk, Nat.add_zero] using
+    hmapped.trans hfirst
+
 /-- Distinct boundary ports give distinct primal connector junctions. -/
 theorem EvenKempeFusionLens.leftConnectorVertex_ne_rightConnectorVertex
     {portCount : Nat}
@@ -674,6 +747,49 @@ theorem EvenKempeFusionLens.leftClosingStep_junction_eq_connectorVertex
       position = SimpleGraph.lineGraphCommonVertex lens.leftConnector
   rw [SimpleGraph.Walk.lineGraphJunctionAt_cons_nil]
   exact SimpleGraph.lineGraphCommonVertex_symm lens.leftConnector
+
+/-- The final junction of the complete lens is the left boundary connector
+vertex. -/
+theorem EvenKempeFusionLens.closedWalk_lastJunction_eq_leftConnectorVertex
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.closedWalk.lineGraphJunctionAt
+        ⟨lens.closedWalk.length - 1,
+          Nat.sub_lt (by have := lens.closedWalk_two_le_length; omega)
+            Nat.zero_lt_one⟩ =
+      SimpleGraph.lineGraphCommonVertex lens.leftConnector := by
+  let closing := lens.leftClosingStep
+  let tailWalk := lens.cRoute.ambientPath.reverse.append closing
+  let returnWalk := SimpleGraph.Walk.cons lens.rightConnector tailWalk
+  have hclosingPositive : 0 < closing.length := by
+    dsimp only [closing]
+    rw [lens.leftClosingStep_length]
+    omega
+  have htailPositive : 0 < tailWalk.length := by
+    dsimp only [tailWalk]
+    simp only [SimpleGraph.Walk.length_append]
+    omega
+  have hreturnPositive : 0 < returnWalk.length := by
+    dsimp only [returnWalk]
+    simp
+  have hclosedLast :=
+    SimpleGraph.Walk.lineGraphJunctionAt_append_last_of_right_pos
+      lens.bRoute.ambientPath returnWalk hreturnPositive
+  have hreturnLast :=
+    SimpleGraph.Walk.lineGraphJunctionAt_cons_last_of_pos
+      lens.rightConnector tailWalk htailPositive
+  have htailLast :=
+    SimpleGraph.Walk.lineGraphJunctionAt_append_last_of_right_pos
+      lens.cRoute.ambientPath.reverse closing hclosingPositive
+  have hclosingLast := lens.leftClosingStep_junction_eq_connectorVertex
+    ⟨closing.length - 1,
+      Nat.sub_lt hclosingPositive Nat.zero_lt_one⟩
+  simpa only [EvenKempeFusionLens.closedWalk,
+      EvenKempeFusionLens.leftClosingStep, closing, tailWalk, returnWalk] using
+    hclosedLast.trans (hreturnLast.trans (htailLast.trans hclosingLast))
 
 /-- The one-step closing walk is internally primal-coherent. -/
 theorem EvenKempeFusionLens.leftClosingStep_isPrimalCoherent
@@ -848,6 +964,53 @@ theorem EvenKempeFusionLens.closedWalk_isPrimalCoherentClosed
       ⟨lens.leftClosingStep.length - 1,
         Nat.sub_lt hclosingPositive Nat.zero_lt_one⟩).symm.trans hsame
 
+/-- Both boundary connector vertices occur on the canonical primal lift of
+the full lens. -/
+theorem EvenKempeFusionLens.connectorVertices_mem_closedWalk_primalLift_support
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hpositive : 0 < lens.closedWalk.length)
+    (hcoherent : lens.closedWalk.IsPrimalCoherentClosed) :
+    SimpleGraph.lineGraphCommonVertex lens.leftConnector ∈
+        (lens.closedWalk.primalLift hpositive hcoherent).support ∧
+      SimpleGraph.lineGraphCommonVertex lens.rightConnector ∈
+        (lens.closedWalk.primalLift hpositive hcoherent).support := by
+  constructor
+  · rw [← lens.closedWalk_lastJunction_eq_leftConnectorVertex]
+    exact lens.closedWalk.lineGraphJunctionAt_mem_primalLift_support
+      hpositive hcoherent
+        ⟨lens.closedWalk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩
+  · rw [← lens.closedWalk_rightConnectorJunction]
+    exact lens.closedWalk.lineGraphJunctionAt_mem_primalLift_support
+      hpositive hcoherent
+        ⟨lens.bRoute.ambientPath.length, by
+          rw [lens.closedWalk_length,
+            lens.bRoute.ambientPath_length]
+          omega⟩
+
+/-- Thus the canonical primal lift contains the actual left and right
+boundary defect vertices. -/
+theorem EvenKempeFusionLens.defectVertices_mem_closedWalk_primalLift_support
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hpositive : 0 < lens.closedWalk.length)
+    (hcoherent : lens.closedWalk.IsPrimalCoherentClosed) :
+    data.defectVertex left ∈
+        (lens.closedWalk.primalLift hpositive hcoherent).support ∧
+      data.defectVertex right ∈
+        (lens.closedWalk.primalLift hpositive hcoherent).support := by
+  simpa only [lens.leftConnectorVertex_eq_defectVertex,
+    lens.rightConnectorVertex_eq_defectVertex] using
+      lens.connectorVertices_mem_closedWalk_primalLift_support
+        hpositive hcoherent
+
 /-- Every well-formed lens between distinct boundary ports contains a
 primal cycle no longer than the complete lens, independently of how often
 the two bicolored routes meet. -/
@@ -890,6 +1053,238 @@ theorem EvenKempeFusionLens.fusionChain_base_or_strictly_shorterCircuit
   · exact Or.inl ⟨hzero,
       lens.exists_primalCycle_length_le_closedWalk
         hdata hab hac hleftRight⟩
+  · have hpositive : 0 < lens.fusionSiteCount := Nat.pos_of_ne_zero hzero
+    exact Or.inr ⟨hpositive,
+      lens.exists_shorter_primalCircuit_of_fusionSiteCount_pos
+        hdata hab hac hbc hpositive⟩
+
+/-- The open lens body lists the first route followed by the reversed
+second route; the right connector contributes no additional line vertex. -/
+theorem EvenKempeFusionLens.openLensBody_support
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right) :
+    lens.openLensBody.support =
+      lens.bRoute.ambientPath.support ++
+        lens.cRoute.ambientPath.support.reverse := by
+  simp [EvenKempeFusionLens.openLensBody,
+    EvenKempeFusionLens.rightConnectedCReturn,
+    SimpleGraph.Walk.support_append]
+
+/-- With no fusion site, the open body is a simple line-graph path: its
+two route supports are individually simple and mutually disjoint. -/
+theorem EvenKempeFusionLens.openLensBody_isPath_of_fusionSiteCount_eq_zero
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hzero : lens.fusionSiteCount = 0) :
+    lens.openLensBody.IsPath := by
+  apply SimpleGraph.Walk.IsPath.mk'
+  rw [lens.openLensBody_support]
+  apply List.Nodup.append
+    lens.bRoute.ambientPath_isPath.support_nodup
+    (List.nodup_reverse.mpr
+      lens.cRoute.ambientPath_isPath.support_nodup)
+  have hsites : lens.bFusionSites = [] := by
+    apply List.eq_nil_of_length_eq_zero
+    exact hzero
+  have hdisjoint :=
+    (lens.bFusionSites_eq_nil_iff_disjoint).1 hsites
+  simpa using hdisjoint
+
+/-- Distinct boundary ports force at least one of the two routes to move;
+otherwise the left and right connectors would join the same pair of primal
+edges and hence have the same common endpoint. -/
+theorem EvenKempeFusionLens.one_lt_openLensBody_length
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed) (hleftRight : left ≠ right) :
+    1 < lens.openLensBody.length := by
+  by_contra hlength
+  have hbZero : lens.bRoute.ambientPath.length = 0 := by
+    rw [lens.openLensBody_length] at hlength
+    omega
+  have hcZero : lens.cRoute.ambientPath.length = 0 := by
+    rw [lens.openLensBody_length] at hlength
+    omega
+  have hbEndpoints :
+      lens.bRoute.leftEdge.1 = lens.bRoute.rightEdge.1 :=
+    lens.bRoute.ambientPath.eq_of_length_eq_zero hbZero
+  have hcEndpoints :
+      lens.cRoute.leftEdge.1 = lens.cRoute.rightEdge.1 :=
+    lens.cRoute.ambientPath.eq_of_length_eq_zero hcZero
+  apply lens.leftConnectorVertex_ne_rightConnectorVertex hdata hleftRight
+  apply SimpleGraph.lineGraphCommonVertex_unique
+  · simpa only [← hbEndpoints] using
+      SimpleGraph.lineGraphCommonVertex_mem_left lens.leftConnector
+  · simpa only [← hcEndpoints] using
+      SimpleGraph.lineGraphCommonVertex_mem_right lens.leftConnector
+
+/-- A zero-fusion lens is itself a simple cycle in the line graph.  This
+retains the full two-route boundary geometry, rather than extracting an
+unlocated subcycle from a self-intersecting lift. -/
+theorem EvenKempeFusionLens.closedWalk_isCycle_of_fusionSiteCount_eq_zero
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed) (hleftRight : left ≠ right)
+    (hzero : lens.fusionSiteCount = 0) :
+    lens.closedWalk.IsCycle := by
+  have hbodyPath : lens.openLensBody.IsPath :=
+    lens.openLensBody_isPath_of_fusionSiteCount_eq_zero hzero
+  have hclosingPath : lens.leftClosingStep.IsPath := by
+    simpa only [EvenKempeFusionLens.leftClosingStep] using
+      SimpleGraph.Walk.IsPath.of_adj lens.leftConnector.symm
+  have hbodyStartNotMem :
+      lens.bRoute.leftEdge.1 ∉ lens.openLensBody.support.tail := by
+    have hnodup := hbodyPath.support_nodup
+    rw [← lens.openLensBody.cons_tail_support] at hnodup
+    exact (List.nodup_cons.mp hnodup).1
+  have hdisjoint : lens.openLensBody.support.tail.Disjoint
+      lens.leftClosingStep.support.tail := by
+    rw [List.disjoint_left]
+    intro edge hbody hclosing
+    have hedge : edge = lens.bRoute.leftEdge.1 := by
+      simpa [EvenKempeFusionLens.leftClosingStep] using hclosing
+    subst edge
+    exact hbodyStartNotMem hbody
+  rw [lens.closedWalk_eq_openLensBody_append_leftClosingStep]
+  exact hbodyPath.isCycle_append hclosingPath hdisjoint
+    (Or.inl (lens.one_lt_openLensBody_length hdata hleftRight))
+
+/-- The zero-fusion base therefore lifts without loss to a primal circuit
+of exactly the lens length, traversing precisely the primal edges named by
+the cyclic line-graph support. -/
+theorem EvenKempeFusionLens.exists_primalCircuit_length_eq_closedWalk_of_fusionSiteCount_eq_zero
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed) (hab : a ≠ b) (hac : a ≠ c)
+    (hleftRight : left ≠ right)
+    (hzero : lens.fusionSiteCount = 0) :
+    ∃ (start : V) (circuit : G.Walk start start),
+      circuit.IsCircuit ∧
+      circuit.length = lens.closedWalk.length ∧
+      circuit.edges = lens.closedWalk.support.tail.map Subtype.val := by
+  have hpositive : 0 < lens.closedWalk.length := by
+    have htwo := lens.closedWalk_two_le_length
+    omega
+  have hcoherent :=
+    lens.closedWalk_isPrimalCoherentClosed hdata hab hac hleftRight
+  have hcycle := lens.closedWalk_isCycle_of_fusionSiteCount_eq_zero
+    hdata hleftRight hzero
+  let circuit := lens.closedWalk.primalLift hpositive hcoherent
+  exact ⟨lens.closedWalk.lineGraphJunctionAt ⟨0, hpositive⟩,
+    circuit,
+    lens.closedWalk.primalLift_isCircuit_of_isCycle
+      hpositive hcoherent hcycle,
+    lens.closedWalk.primalLift_length hpositive hcoherent,
+    lens.closedWalk.primalLift_edges_eq_map_tail_support
+      hpositive hcoherent⟩
+
+/-- In the fusion-free case the equal-length circuit is genuinely
+port-spanning: both boundary defect vertices remain on its support. -/
+theorem EvenKempeFusionLens.exists_portSpanning_primalCircuit_of_fusionSiteCount_eq_zero
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed) (hab : a ≠ b) (hac : a ≠ c)
+    (hleftRight : left ≠ right)
+    (hzero : lens.fusionSiteCount = 0) :
+    ∃ (start : V) (circuit : G.Walk start start),
+      circuit.IsCircuit ∧
+      circuit.length = lens.closedWalk.length ∧
+      circuit.edges = lens.closedWalk.support.tail.map Subtype.val ∧
+      data.defectVertex left ∈ circuit.support ∧
+      data.defectVertex right ∈ circuit.support := by
+  have hpositive : 0 < lens.closedWalk.length := by
+    have htwo := lens.closedWalk_two_le_length
+    omega
+  have hcoherent :=
+    lens.closedWalk_isPrimalCoherentClosed hdata hab hac hleftRight
+  have hcycle := lens.closedWalk_isCycle_of_fusionSiteCount_eq_zero
+    hdata hleftRight hzero
+  let circuit := lens.closedWalk.primalLift hpositive hcoherent
+  have hdefects := lens.defectVertices_mem_closedWalk_primalLift_support
+    hpositive hcoherent
+  exact ⟨lens.closedWalk.lineGraphJunctionAt ⟨0, hpositive⟩,
+    circuit,
+    lens.closedWalk.primalLift_isCircuit_of_isCycle
+      hpositive hcoherent hcycle,
+    lens.closedWalk.primalLift_length hpositive hcoherent,
+    lens.closedWalk.primalLift_edges_eq_map_tail_support
+      hpositive hcoherent,
+    hdefects.1,
+    hdefects.2⟩
+
+/-- Exact circuit-valued fusion descent: the empty fusion chain lifts the
+entire lens to an equal-length primal circuit, while every nonempty chain
+contracts to a strictly shorter primal circuit. -/
+theorem EvenKempeFusionLens.fusionChain_equalCircuit_or_strictly_shorterCircuit
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hleftRight : left ≠ right) :
+    (lens.fusionSiteCount = 0 ∧
+      ∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧
+        circuit.length = lens.closedWalk.length ∧
+        circuit.edges = lens.closedWalk.support.tail.map Subtype.val) ∨
+    (0 < lens.fusionSiteCount ∧
+      ∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧ circuit.length < lens.closedWalk.length) := by
+  by_cases hzero : lens.fusionSiteCount = 0
+  · exact Or.inl ⟨hzero,
+      lens.exists_primalCircuit_length_eq_closedWalk_of_fusionSiteCount_eq_zero
+        hdata hab hac hleftRight hzero⟩
+  · have hpositive : 0 < lens.fusionSiteCount := Nat.pos_of_ne_zero hzero
+    exact Or.inr ⟨hpositive,
+      lens.exists_shorter_primalCircuit_of_fusionSiteCount_pos
+        hdata hab hac hbc hpositive⟩
+
+/-- Boundary-sensitive fusion descent: an empty fusion chain preserves the
+whole lens as an equal-length circuit through both designated defect vertices;
+a nonempty fusion chain contracts to a strictly shorter primal circuit. -/
+theorem EvenKempeFusionLens.fusionChain_portSpanningCircuit_or_strictlyShorterCircuit
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (hdata : data.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hleftRight : left ≠ right) :
+    (lens.fusionSiteCount = 0 ∧
+      ∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧
+        circuit.length = lens.closedWalk.length ∧
+        circuit.edges = lens.closedWalk.support.tail.map Subtype.val ∧
+        data.defectVertex left ∈ circuit.support ∧
+        data.defectVertex right ∈ circuit.support) ∨
+    (0 < lens.fusionSiteCount ∧
+      ∃ (start : V) (circuit : G.Walk start start),
+        circuit.IsCircuit ∧ circuit.length < lens.closedWalk.length) := by
+  by_cases hzero : lens.fusionSiteCount = 0
+  · exact Or.inl ⟨hzero,
+      lens.exists_portSpanning_primalCircuit_of_fusionSiteCount_eq_zero
+        hdata hab hac hleftRight hzero⟩
   · have hpositive : 0 < lens.fusionSiteCount := Nat.pos_of_ne_zero hzero
     exact Or.inr ⟨hpositive,
       lens.exists_shorter_primalCircuit_of_fusionSiteCount_pos
