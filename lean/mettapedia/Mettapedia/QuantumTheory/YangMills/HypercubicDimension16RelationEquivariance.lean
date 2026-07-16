@@ -209,37 +209,53 @@ theorem swapExactDerivativePositions_tensorSign (h : Hypercubic4)
     (fun position => Hypercubic4.axisSign h
       (sector.derivativeWord.axisAtPosition position))]
 
-/-- A shuffle row is valid only when the two positions belong to different
-field factors.  Same-owner swaps are intentionally absent. -/
-def derivativeShuffleRow (carrier : RelationCarrier)
-    (left right : Fin (dimension16DerivativeCount carrier.1)) :
-    RelationSpace :=
-  Finsupp.single carrier 1 -
-    Finsupp.single (swapExactDerivativePositions carrier left right) 1
+/-- Literal adjacency in the global ordered derivative word.  The condition is
+essential: exchanging nonadjacent different-owner positions can reverse two
+same-owner derivatives lying between them. -/
+def AreAdjacentDerivativePositions {count : ℕ}
+    (left right : Fin count) : Prop :=
+  left.1 + 1 = right.1 ∨ right.1 + 1 = left.1
 
-theorem derivativeShuffle_owner_condition_preserved (h : Hypercubic4)
-    (carrier : RelationCarrier)
-    (left right : Fin (dimension16DerivativeCount carrier.1)) :
+/-- A valid shuffle site consists of adjacent positions owned by different
+field factors. -/
+structure DerivativeShuffleSite (carrier : RelationCarrier) where
+  left : Fin (dimension16DerivativeCount carrier.1)
+  right : Fin (dimension16DerivativeCount carrier.1)
+  adjacent : AreAdjacentDerivativePositions left right
+  different :
     carrier.2.derivativeWord.ownerAtPosition left ≠
-        carrier.2.derivativeWord.ownerAtPosition right ↔
-      (exactDimension16DerivativeAlphaReducedAct h carrier).2.derivativeWord.ownerAtPosition
-          left ≠
-        (exactDimension16DerivativeAlphaReducedAct h carrier).2.derivativeWord.ownerAtPosition
-          right := by
-  rfl
+      carrier.2.derivativeWord.ownerAtPosition right
 
-/-- Every valid different-owner derivative shuffle is equivariant. -/
+def DerivativeShuffleSite.act (h : Hypercubic4)
+    {carrier : RelationCarrier} (site : DerivativeShuffleSite carrier) :
+    DerivativeShuffleSite
+      (exactDimension16DerivativeAlphaReducedAct h carrier) where
+  left := site.left
+  right := site.right
+  adjacent := site.adjacent
+  different := site.different
+
+@[simp] theorem DerivativeShuffleSite.act_left (h : Hypercubic4)
+    {carrier : RelationCarrier} (site : DerivativeShuffleSite carrier) :
+    (site.act h).left = site.left := rfl
+
+@[simp] theorem DerivativeShuffleSite.act_right (h : Hypercubic4)
+    {carrier : RelationCarrier} (site : DerivativeShuffleSite carrier) :
+    (site.act h).right = site.right := rfl
+
+/-- Sparse row exchanging one valid adjacent different-owner pair. -/
+def derivativeShuffleRow {carrier : RelationCarrier}
+    (site : DerivativeShuffleSite carrier) : RelationSpace :=
+  Finsupp.single carrier 1 -
+    Finsupp.single
+      (swapExactDerivativePositions carrier site.left site.right) 1
+
+/-- Every valid adjacent different-owner derivative shuffle is equivariant. -/
 theorem derivativeShuffleRow_equivariant (h : Hypercubic4)
-    (carrier : RelationCarrier)
-    (left right : Fin (dimension16DerivativeCount carrier.1))
-    (_hdifferent :
-      carrier.2.derivativeWord.ownerAtPosition left ≠
-        carrier.2.derivativeWord.ownerAtPosition right) :
-    signedRelationAction h (derivativeShuffleRow carrier left right) =
+    {carrier : RelationCarrier} (site : DerivativeShuffleSite carrier) :
+    signedRelationAction h (derivativeShuffleRow site) =
       exactDimension16DerivativeAlphaReducedTensorSign h carrier •
-        derivativeShuffleRow
-          (exactDimension16DerivativeAlphaReducedAct h carrier)
-          left right := by
+        derivativeShuffleRow (site.act h) := by
   simp [derivativeShuffleRow, swapExactDerivativePositions_act,
     swapExactDerivativePositions_tensorSign]
   rw [smul_sub]
