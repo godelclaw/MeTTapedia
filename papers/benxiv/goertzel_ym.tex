@@ -1226,10 +1226,14 @@ claim that the manuscript already contains the needed census.
     for every positive $r$, a family of actual local letters satisfying the
     one-step relabeling/$h$ equation is explicitly equivalent to one seed
     fixed by $h^r$, and the product of its $r$ one-step tensor signs is proved
-    to be the tensor sign of $h^r$ on that seed.  What remains is the global
-    assembly of these equivalences over a disjoint-cycle presentation of an
-    actual field permutation, followed by the centralizer/conjugacy-class
-    cancellation.  Thus
+    to be the tensor sign of $h^r$ on that seed.  These literal families are
+    now assembled over every positive cycle list in a second dependent
+    carrier: zero-length cycles are uninhabited, exact residual derivative
+    degree is retained, and its complete signed weight sum is proved equal to
+    both the cycle-seed character and the recursive partition character.  What
+    remains is the equivariant transport from decorations fixed by an actual
+    field permutation to this disjoint-cycle carrier, followed by the
+    centralizer/conjugacy-class cancellation.  Thus
     $2.46\times10^8$ remains a
     machine-checked target for an
     explicit projected column architecture, but is not yet a certified column
@@ -1248,7 +1252,8 @@ claim that the manuscript already contains the needed census.
     \texttt{HypercubicDimension16OrbitCharacter},
     \texttt{HypercubicDimension16LocalLetterCharacter},
     \texttt{HypercubicDimension16CycleSeedCharacter},
-    \texttt{HypercubicDimension16CycleFamilyCharacter}).
+    \texttt{HypercubicDimension16CycleFamilyCharacter},
+    \texttt{HypercubicDimension16FixedCycleFamilyCarrier}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1309,8 +1314,11 @@ claim that the manuscript already contains the needed census.
     equal to the recursive partition character.  On one positive cycle, the
     literal family fixed by the relabeling/$h$ equation is now explicitly
     equivalent to the powered fixed seed with exact preservation of the full
-    tensor-sign product.  Only the global assembly over the disjoint cycles of
-    each actual relabeling permutation, followed by the
+    tensor-sign product.  A dependent positive-cycle-list carrier now performs
+    the full assembly with exact residual derivative degree, and its signed
+    sum is exactly the recursive partition character.  Only the equivariant
+    transport from each actual relabeling permutation into that carrier,
+    followed by the
     centralizer/conjugacy-class cancellation, remains before equality with the
     cycle-index expression.
     The joint
@@ -1473,7 +1481,9 @@ together with \texttt{HypercubicDimension16LocalLetterCharacter} and
 \texttt{HypercubicDimension16CycleSeedCharacter} (the exact local cycle
 factor and its dependent derivative-degree convolution), and
 \texttt{HypercubicDimension16CycleFamilyCharacter} (the one-cycle fixed-family
-equivalence and exact tensor-sign product) --- all
+equivalence and exact tensor-sign product), together with
+\texttt{HypercubicDimension16FixedCycleFamilyCarrier} (the dependent
+positive-cycle-list assembly and exact residual-degree character) --- all
 in the same namespace,
 all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
