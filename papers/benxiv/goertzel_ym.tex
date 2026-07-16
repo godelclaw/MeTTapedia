@@ -170,6 +170,31 @@ finite-spacing construction must use an unpadded dependent syntax or an
 explicit padding quotient before relation rows and dimension-$16$ duals are
 meaningful.
 
+\textsc{Ours:} the unpadded dimension-$16$ replacement is now constructed
+and connected by an explicit equivalence to the exact-dimension subtype of
+the active $(F,D)$ syntax. Its raw carrier has
+$23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$ elements. Character averaging
+over all $384$ signed coordinate permutations gives rank-$16$ invariant
+tensor multiplicities $22{,}379{,}179$ (scalar) and $22{,}368{,}256$
+(pseudoscalar); after the exact
+$5{,}361{,}612{,}271{,}200$ trace/derivative layouts are included, the raw
+invariant coefficient spaces have dimensions
+$119{,}988{,}480{,}745{,}781{,}344{,}800$ and
+$119{,}929{,}915{,}854{,}943{,}027{,}200$. These are exact raw-carrier
+dimensions before antisymmetry, Bianchi, EOM, integration by parts, trace,
+or Cayley--Hamilton rows, not a physical operator basis. On the separately
+complete derivative-free Cartan octic sector, $1287$ monomials reduce to
+$17$ signed-orbit coordinates with exact duals and identity conditioning.
+The actual Wilson eighth jet occupies only the pure-octic coordinate, with
+Symanzik coefficient $-a^{12}/20160$. For bounded constant Cartan curvature,
+the normalized Wilson density differs from its $O(4)$-invariant quadratic
+term by at most $(5/8)a^4M^4$ and converges to that term as $a\to0$. The
+two-block boundary-cochain lift retains extraction constant $1$; carrying the
+three still-conditional analytic factors gives budget $5544/5$, whose
+two-source arithmetic closes first at depth $15$. This is a quantitative
+tree-level constant-Cartan restoration theorem, not an interacting
+Symanzik theorem or a constructive continuum limit.
+
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
 polymer estimates, Wilson reflection positivity, and continuum/OS construction
@@ -692,6 +717,73 @@ Cayley--Hamilton reduction. It does not show that an $H(4)$ basis cannot
 exist. It shows that the next construction must first replace the raw carrier
 by an unpadded/dependent syntax or quotient padding explicitly.
 
+\paragraph{Our unpadded raw character census is exact through dimension
+$16$.}
+\textsc{Ours.} The replacement uses dependent active field and derivative
+slots, so no inactive coordinate enters equality. An explicit equivalence
+identifies its canonical-dimension-$16$ subtype with a separated presentation
+consisting of an active trace/derivative layout and a rank-$16$ spacetime-axis
+assignment; it commutes with the literal hypercubic action and preserves the
+product of all active tensor signs. The induced linear equivalence identifies
+the scalar and pseudoscalar covariance submodules on the original syntax with
+the counted invariant fibers. The exact layout multiplicity is
+$5{,}361{,}612{,}271{,}200$, and the complete raw carrier has
+$23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$ elements.
+
+The standard signed four-vector representation of the literal $384$-element
+hypercubic group is constructed over $\mathbb{Q}$. Reynolds-character
+averaging, with all $24\times16$ group elements replayed by kernel-checked
+certificate blocks, gives the scalar multiplicities
+\[
+ (1,0,1,0,4,0,31,0,379,0,5611,0,87979,0,
+   1400491,0,22379179)
+\]
+and pseudoscalar multiplicities
+\[
+ (0,0,0,0,1,0,20,0,336,0,5440,0,87296,0,
+   1397760,0,22368256)
+\]
+at tensor ranks $0$ through $16$. Since the layout coordinate is inert under
+$H(4)$, the rank-$16$ values imply exact raw invariant-space dimensions
+$119{,}988{,}480{,}745{,}781{,}344{,}800$ and
+$119{,}929{,}915{,}854{,}943{,}027{,}200$. No relation is manufactured by
+the count: field antisymmetry, Bianchi, EOM, integration by parts, trace, and
+Cayley--Hamilton remain explicit quotient rows. Thus this theorem completes
+the genuine raw-carrier census, but not the noncommutative physical operator
+basis or its dual chart.
+
+\paragraph{Our quantitative restoration theorem is tree-level and
+constant-Cartan.}
+\textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
+monomials and exactly $17$ signed $H(4)$ orbit coordinates. Representative
+evaluation supplies exact duals and the identity conditioning matrix, hence
+analysis and synthesis both have coefficient-sup factor one. For the actual
+$\mathrm{SU}(2)$ Cartan link field, the normalized Wilson eighth jet is
+\[
+  -2a^{12}\sum_{\mu<\nu}F_{\mu\nu}^{8},
+\]
+so division by $8!$ leaves only the pure-octic coordinate, equal to
+$-a^{12}/20160$. If $|F_{\mu\nu}|\leq M$ and
+$|a^2F_{\mu\nu}|\leq1$, the actual six-plaquette density obeys
+\[
+ \left|\mathcal W_a(F)-\sum_{\mu<\nu}F_{\mu\nu}^{2}\right|
+ \leq \frac58 a^4M^4,
+\]
+and therefore converges to the $O(4)$-invariant quadratic density along every
+eventually positive lattice-spacing net tending to zero. The corresponding
+two-block rotation error is at most $(5/2)a^4M^4$.
+
+The $17$ coordinates lift to the postponed-integration-by-parts boundary
+complex; shared-boundary coboundaries cancel under global recombination, and
+the degree-zero quotient retains rank $17$. The newly derived extraction
+factor is exactly one. Keeping the fluctuation, cumulant, and recombination
+bounds as explicit hypotheses gives the conditional recursion budget
+$5544/5$; the two-source bootstrap then closes at depth $15$ and fails at
+every depth at most $14$. None of these statements constructs an interacting
+continuum measure, proves uniform Symanzik estimates for quantum
+correlators, verifies Osterwalder--Schrader reconstruction, or proves a mass
+gap.
+
 \paragraph{The finite gaps are real but Clay-irrelevant.}
 The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
 they are abelian, single-link, strong-coupling, and finite. They exemplify the
@@ -860,11 +952,64 @@ The first branch of the live fork was pursued directly:
     incompatible with the right-inverse identity required by
     \texttt{ExactCensusCertificate}
     (\texttt{V14HypercubicFDCensusPaddingNoGo}).
-  \item \textbf{The corrected next object is exact.} Replace the padded raw
-    carrier by finite unpadded/dependent $(F,D)$ syntax, or form a checked
-    padding quotient on which the $H(4)$ action and all relation rows descend.
-    Then enumerate the full signed orbits and relation quotient through
-    dimension $16$. No dimension-$8$ constant transfers automatically.
+  \item \textbf{The corrected carrier is specified without padding.} The
+    obstruction identifies finite unpadded/dependent $(F,D)$ syntax, or a
+    checked padding quotient, as the required carrier on which the $H(4)$
+    action and relation rows must descend. No dimension-$8$ constant transfers
+    automatically. The unpadded construction and its raw character census are
+    supplied in the results below; the relation quotient remains separate.
+\end{itemize}
+
+\subsection*{Machine-checked on the unpadded dimension-$16$ carrier}
+
+All constructions in this subsection are ours and are independent of any
+claim that the manuscript already contains the needed census.
+
+\begin{itemize}
+  \item \textbf{The counted carrier is the actual active syntax.} Exact
+    dimension-$16$ shapes are classified by $f\in\{0,\ldots,8\}$ with
+    $d=16-2f$. A checked equivalence identifies the corresponding subtype of
+    the unpadded raw $(F,D)$ syntax with the separated layout--rank-$16$
+    tensor presentation, preserves the literal action and tensor sign, and
+    induces a linear equivalence on the covariance submodules. Its exact
+    cardinality is
+    $23{,}027{,}949{,}358{,}636{,}282{,}675{,}200$
+    (\texttt{HypercubicUnpaddedFDSyntax},
+    \texttt{HypercubicRawFDDimension16Census}).
+  \item \textbf{The complete raw $H(4)$ character multiplicities are
+    certified.} The standard signed-axis representation, all $384$ trace and
+    determinant values, Reynolds projector, and rank-$0$--$16$ character
+    averages are checked. At rank $16$ the scalar and pseudoscalar tensor
+    multiplicities are $22{,}379{,}179$ and $22{,}368{,}256$; multiplication
+    by the exact active-layout count gives the raw invariant-space dimensions
+    displayed above (\texttt{HypercubicRawFDCharacterCensus},
+    \texttt{HypercubicRawFDCharacterCertificate}).
+  \item \textbf{The Cartan octic chart has exact conditioning.} The $1287$
+    derivative-free monomials split into $17$ surviving signed orbits and
+    negative-stabilizer orbits. The orbit indicators, representative duals,
+    reconstruction theorem, and $17\times17$ identity matrix are certified
+    (\texttt{HypercubicDimension16CartanCensus},
+    \texttt{HypercubicDimension16CartanCertificate},
+    \texttt{HypercubicDimension16CartanBasis}).
+  \item \textbf{The Wilson coefficient and classical restoration rate are
+    derived on that chart.} Only the pure-octic coordinate is populated, with
+    coefficient $-a^{12}/20160$. The actual Cartan link observable converges
+    to its quadratic $O(4)$-invariant density with the explicit uniform bound
+    $(5/8)a^4M^4$
+    (\texttt{HypercubicWilsonSymanzikRestoration}).
+  \item \textbf{Boundary recombination retains factor one.} The $17$
+    coordinates define a rank-$17$ degree-zero boundary-cochain quotient;
+    shared-boundary currents cancel exactly. Under the three named analytic
+    bounds, the resulting budget is $5544/5$ and the least closing depth is
+    $15$ (\texttt{HypercubicDimension16BoundarySymanzik}).
+  \item \textbf{The frontier is explicit.} The raw character theorem imposes
+    none of the physical relation rows, while the quantitative restoration
+    theorem is restricted to bounded constant Cartan curvature. Neither is a
+    uniform interacting Symanzik theorem. A physical dimension-$16$ basis
+    requires an equivariant quotient by the explicit antisymmetry, Bianchi,
+    EOM, integration-by-parts, trace, and Cayley--Hamilton maps; constructive
+    Yang--Mills additionally requires a continuum measure, OS reconstruction,
+    and a positive spectral gap.
 \end{itemize}
 
 \subsection*{The remaining inputs}
@@ -886,24 +1031,18 @@ three different situations.
     is refuted intrinsically, exact norm-below-two extractors exist on the
     corrected charts, and the transfer of any such extractor to the canonical
     $(F,D)$ space is refuted by the derivative-blindness and
-    integration-by-parts/block obstructions. \emph{What settles it:} construct
-    a derivative-aware filtration whose truncation provably agrees with
-    canonical dimension $2\cdot\#F+\#D$, together with a boundary-aware
-    complex retaining total-derivative descendants per block and imposing
-    integration by parts only at global recombination. The fourth round
-    constructed that mechanical scaffold but proved that its actual-lattice
-    coordinate census cannot use only O.9.3's Lorentz scalars. The fifth round
-    completed the unpadded Cartan quartic $H(4)$ basis and identity dual chart,
-    but proved that the fixed-width dimension-$16$ raw carrier cannot support
-    a faithful invertible census because inactive padding remains observable.
-    \emph{What settles it now:} construct a finite unpadded/dependent $(F,D)$
-    syntax or a checked padding quotient, prove that the $H(4)$ action and the
-    explicit relation rows descend, and certify its basis and conditioning
-    through dimension $16$; alternatively supply a quantitative
-    continuum/Symanzik projection controlling every discarded
-    Lorentz-breaking coordinate. Then prove the norm-below-two estimate, the
-    weighted Wilson cumulant/tree estimate, and the Wilson-RG intertwining law
-    on the same object.
+    integration-by-parts/block obstructions. Our derivative-aware boundary
+    complex and unpadded raw carrier now repair those two representational
+    defects. The complete raw character census determines the invariant-space
+    dimensions, and the Cartan octic restriction supplies exact duals and
+    factor-one conditioning. Neither result imposes the full noncommutative
+    relation quotient. \emph{What settles it:} construct equivariant linear
+    maps for antisymmetry, Bianchi, EOM, integration by parts, trace, and
+    Cayley--Hamilton on the actual unpadded invariant space; certify the rank
+    and dual basis of their quotient without replacing the relations by a
+    desired answer; and extend the classical constant-Cartan $O(a^4)$ estimate
+    to uniform interacting Wilson observables. Then prove the weighted Wilson
+    cumulant/tree estimate and Wilson-RG intertwining law on that same object.
     The resulting actual constant can then be checked against
     $C\,b^{\,3-\dmax}\leq1/3$.
   \item \textbf{Which support recurrence the glue satisfies.}
@@ -993,10 +1132,26 @@ census, duals, and identity conditioning),
 \texttt{V14HypercubicQuarticWilsonBridge} (the exact Wilson coordinate vector
 and nonzero $O(4)$-artifact quotient class), and
 \texttt{V14HypercubicFDCensusPaddingNoGo} (the uninhabited faithful padded
-dimension-$16$ exact census) --- all in the same namespace, all axiom-guarded
+dimension-$16$ exact census); and, from our unpadded dimension-$16$
+construction, \texttt{HypercubicUnpaddedFDSyntax} (active dependent syntax),
+\texttt{HypercubicDimension16CartanCensus},
+\texttt{HypercubicDimension16CartanCertificate}, and
+\texttt{HypercubicDimension16CartanBasis} (the $1287$-monomial Cartan octic
+census, $17$ orbit coordinates, duals, and identity conditioning),
+\texttt{HypercubicWilsonSymanzikRestoration} and
+\texttt{HypercubicDimension16BoundarySymanzik} (the actual Wilson coordinate,
+classical $O(a^4)$ restoration bound, boundary lift, factor-one extraction,
+and conditional depth arithmetic), and
+\texttt{HypercubicRawFDCharacterCensus},
+\texttt{HypercubicRawFDCharacterCertificate}, and
+\texttt{HypercubicRawFDDimension16Census} (the complete raw $H(4)$ character
+certificate and exact active-carrier counts) --- all in the same namespace,
+all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
-no \texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
+no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
-Reconstruction} (v14).
+Reconstruction} (v14); constructions explicitly labeled ours are independent
+formal repairs or tests, not claims about content already present in that
+manuscript.
 
 \end{document}

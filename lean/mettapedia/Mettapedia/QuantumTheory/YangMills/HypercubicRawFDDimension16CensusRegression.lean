@@ -36,6 +36,18 @@ example : Module.finrank ℚ
       119929915854943027200 :=
   pseudoscalar_dimension16_rawInvariantCount
 
+example : Module.finrank ℚ
+    (exactDimension16UnpaddedInvariantSubmodule
+      ContractionParity.scalar) =
+      119988480745781344800 :=
+  scalar_dimension16_exactUnpaddedInvariantCount
+
+example : Module.finrank ℚ
+    (exactDimension16UnpaddedInvariantSubmodule
+      ContractionParity.pseudoscalar) =
+      119929915854943027200 :=
+  pseudoscalar_dimension16_exactUnpaddedInvariantCount
+
 example : Fintype.card Dimension16RawAxisCarrier =
     23027949358636282675200 :=
   dimension16_rawCarrierCount
@@ -53,7 +65,12 @@ example : Fintype.card ExactDimension16UnpaddedRawFDMonomial =
 #print axioms pseudoscalar_dimension16_rawInvariantCount
 #print axioms dimension16_rawCarrierCount
 #print axioms exactDimension16UnpaddedCarrierEquiv
+#print axioms exactDimension16UnpaddedCarrierEquiv_act
+#print axioms exactDimension16UnpaddedCarrierEquiv_tensorSign
 #print axioms exactDimension16_unpaddedRawCarrierCount
+#print axioms exactDimension16UnpaddedInvariantEquiv
+#print axioms scalar_dimension16_exactUnpaddedInvariantCount
+#print axioms pseudoscalar_dimension16_exactUnpaddedInvariantCount
 
 end HypercubicRawFDDimension16CensusRegression
 end YangMills
