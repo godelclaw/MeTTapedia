@@ -792,6 +792,25 @@ the curvature term in the covariant-derivative commutator.  These are
 equivariance and sparsity theorems; their joint rank has not yet been inferred
 from the row labels.
 
+\paragraph{Our Bianchi and on-shell EOM rows respect derivative order.}
+\textsc{Ours.} Ordered derivative positions are read from outermost to
+innermost.  A derivative is eligible for Bianchi or EOM reduction only when it
+is innermost among the positions owned by its field factor.  The predicate is
+preserved by $H(4)$.  On such a context the three-term row
+\[
+ D_aF_{bc}+D_bF_{ca}+D_cF_{ab}
+\]
+and the contracted on-shell row
+\[
+ \sum_{\mu=1}^{4}D_\mu F_{\mu\nu}
+\]
+are constructed explicitly and proved equivariant for the same signed action
+(\texttt{HypercubicDimension16DifferentialRelations}).  The EOM rows belong
+only to the on-shell policy.  The innermost condition is essential: moving
+either identity through deeper derivatives without curvature commutators
+would change the represented operator.  No rank or completeness claim is
+deduced merely from these formulas.
+
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
 \textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
@@ -1031,6 +1050,12 @@ claim that the manuscript already contains the needed census.
     module.  Their signed $H(4)$ intertwining laws are proved before any rank
     claim; same-owner derivative swaps are excluded
     (\texttt{HypercubicDimension16RelationEquivariance}).
+  \item \textbf{Bianchi and EOM preserve noncommuting derivative order.}
+    The cyclic Bianchi row and the contracted on-shell EOM row are supplied
+    only at an innermost derivative of the selected field word.  Their signed
+    $H(4)$ intertwining laws are checked, and EOM remains disabled in the
+    off-shell policy
+    (\texttt{HypercubicDimension16DifferentialRelations}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1061,9 +1086,9 @@ claim that the manuscript already contains the needed census.
     none of the physical relation rows.  The derivative-label alpha quotient
     removes one purely syntactic redundancy.  Field-label alpha,
     different-owner derivative shuffle, and antisymmetry rows are now
-    equivariant, but their joint rank and the Bianchi, EOM,
-    integration-by-parts, covariant-commutator, trace, and Cayley--Hamilton
-    maps remain.  The
+    equivariant.  Innermost Bianchi and on-shell EOM rows are also equivariant,
+    but the joint rank and the integration-by-parts, covariant-commutator,
+    trace, and Cayley--Hamilton maps remain.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
