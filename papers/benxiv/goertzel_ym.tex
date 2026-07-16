@@ -1230,9 +1230,15 @@ claim that the manuscript already contains the needed census.
     now assembled over every positive cycle list in a second dependent
     carrier: zero-length cycles are uninhabited, exact residual derivative
     degree is retained, and its complete signed weight sum is proved equal to
-    both the cycle-seed character and the recursive partition character.  What
-    remains is the equivariant transport from decorations fixed by an actual
-    field permutation to this disjoint-cycle carrier, followed by the
+    both the cycle-seed character and the recursive partition character.  Our
+    concrete disjoint-cycle carrier takes the recursive sum of the finite
+    blocks displayed by that list and rotates each block by one step.  Its
+    literal fixed-decoration subtype is explicitly equivalent to the
+    budget-stable dependent carrier, with exact preservation of the full
+    tensor-sign product.  Consequently its signed fixed-decoration character
+    is exactly the recursive partition character.  The outstanding finite
+    identity is thereby confined to equivariant conjugacy transport from an
+    arbitrary field permutation to these canonical blocks and the associated
     centralizer/conjugacy-class cancellation.  Thus
     $2.46\times10^8$ remains a
     machine-checked target for an
@@ -1316,9 +1322,12 @@ claim that the manuscript already contains the needed census.
     equivalent to the powered fixed seed with exact preservation of the full
     tensor-sign product.  A dependent positive-cycle-list carrier now performs
     the full assembly with exact residual derivative degree, and its signed
-    sum is exactly the recursive partition character.  Only the equivariant
-    transport from each actual relabeling permutation into that carrier,
-    followed by the
+    sum is exactly the recursive partition character.  The carrier is now
+    realized literally as decorations on a recursive disjoint union of finite
+    blocks under blockwise rotation; the explicit equivalence preserves the
+    full signed weight, so its fixed-decoration character is the same
+    partition character.  Only equivariant conjugacy transport from each
+    actual relabeling permutation into that carrier, followed by the
     centralizer/conjugacy-class cancellation, remains before equality with the
     cycle-index expression.
     The joint
@@ -1483,7 +1492,9 @@ factor and its dependent derivative-degree convolution), and
 \texttt{HypercubicDimension16CycleFamilyCharacter} (the one-cycle fixed-family
 equivalence and exact tensor-sign product), together with
 \texttt{HypercubicDimension16FixedCycleFamilyCarrier} (the dependent
-positive-cycle-list assembly and exact residual-degree character) --- all
+positive-cycle-list assembly and exact residual-degree character), and
+\texttt{HypercubicDimension16CycleBlockDecoration} (the concrete disjoint-cycle
+permutation, fixed-decoration equivalence, and signed character identity) --- all
 in the same namespace,
 all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
