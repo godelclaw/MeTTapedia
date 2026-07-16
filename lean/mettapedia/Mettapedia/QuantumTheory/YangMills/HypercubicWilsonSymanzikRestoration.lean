@@ -21,6 +21,7 @@ set_option autoImplicit false
 noncomputable section
 
 open scoped BigOperators Matrix.Norms.Elementwise
+open Topology
 
 namespace Mettapedia
 namespace QuantumTheory
@@ -383,6 +384,60 @@ theorem normalizedCartanWilsonDensity_error
     _ = (5 / 8 : ℝ) * a ^ 4 * M ^ 4 := by
       simp
       ring
+
+/-- The same six-plaquette estimate on the actual link-field observable. -/
+theorem normalizedSU2CartanWilsonDensity_error
+    {a M : ℝ} (ha : 0 < a) (hM : 0 ≤ M)
+    (F : CartanCurvature)
+    (hcomponent : ∀ plane : OrientedPlane,
+      |F plane.first plane.second| ≤ M)
+    (hsmall : ∀ plane : OrientedPlane,
+      |a ^ 2 * F plane.first plane.second| ≤ 1) :
+    |normalizedSU2CartanWilsonDensity a F - cartanQuadraticDensity F| ≤
+      (5 / 8 : ℝ) * a ^ 4 * M ^ 4 := by
+  rw [normalizedSU2CartanWilsonDensity_eq]
+  exact normalizedCartanWilsonDensity_error ha hM F hcomponent hsmall
+
+/-- Quantitative scaling limit along any positive lattice-spacing net tending
+to zero.  The fixed component bound supplies the eventually valid small-field
+chart; the rate is the explicit `O(a⁴)` estimate above. -/
+theorem normalizedSU2CartanWilsonDensity_tendsto_quadratic
+    {ι : Type*} {l : Filter ι} (a : ι → ℝ)
+    (ha : Filter.Tendsto a l (𝓝 0))
+    (hpositive : ∀ᶠ i in l, 0 < a i)
+    {M : ℝ} (hM : 0 ≤ M) (F : CartanCurvature)
+    (hcomponent : ∀ plane : OrientedPlane,
+      |F plane.first plane.second| ≤ M) :
+    Filter.Tendsto
+      (fun i => normalizedSU2CartanWilsonDensity (a i) F) l
+      (𝓝 (cartanQuadraticDensity F)) := by
+  have hscaleT : Filter.Tendsto (fun i => a i ^ 2 * M) l (𝓝 0) := by
+    simpa using Filter.Tendsto.mul_const M (ha.pow 2)
+  have hscale : ∀ᶠ i in l, a i ^ 2 * M ≤ 1 :=
+    ((tendsto_order.1 hscaleT).2 1 zero_lt_one).mono fun _ hi => hi.le
+  have hboundT :
+      Filter.Tendsto (fun i => (5 / 8 : ℝ) * a i ^ 4 * M ^ 4) l
+        (𝓝 0) := by
+    have ht : Filter.Tendsto
+        (fun i => ((5 / 8 : ℝ) * M ^ 4) * a i ^ 4) l (𝓝 0) := by
+      simpa using
+        Filter.Tendsto.const_mul ((5 / 8 : ℝ) * M ^ 4) (ha.pow 4)
+    exact ht.congr' (Filter.Eventually.of_forall fun i => by ring)
+  apply tendsto_iff_norm_sub_tendsto_zero.2
+  have habsT : Filter.Tendsto
+      (fun i =>
+        |normalizedSU2CartanWilsonDensity (a i) F -
+          cartanQuadraticDensity F|) l (𝓝 0) := by
+    apply squeeze_zero'
+    · exact Filter.Eventually.of_forall fun _ => abs_nonneg _
+    · filter_upwards [hpositive, hscale] with i hpos hsmallScale
+      exact normalizedSU2CartanWilsonDensity_error hpos hM F hcomponent
+        (fun plane => by
+          rw [abs_mul, abs_of_nonneg (sq_nonneg (a i))]
+          exact (mul_le_mul_of_nonneg_left (hcomponent plane)
+            (sq_nonneg (a i))).trans hsmallScale)
+    · exact hboundT
+  simpa [Real.norm_eq_abs] using habsT
 
 /-! ## Orthogonal invariance of the continuum term -/
 
