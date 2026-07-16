@@ -10,6 +10,7 @@ import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
 import Mettapedia.QuantumTheory.YangMills.V14BoundaryCochainBootstrap
 import Mettapedia.QuantumTheory.YangMills.SU2LatticeFDCensusNoGo
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticBasis
+import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticWilsonBridge
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 
 /-!
@@ -34,6 +35,7 @@ open V14BoundaryCochainExtraction
 open V14BoundaryCochainBootstrap
 open SU2LatticeFDCensusNoGo
 open V14HypercubicQuarticCensus
+open V14HypercubicQuarticWilsonBridge
 open V14HypercubicFDCensusPaddingNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -569,7 +571,7 @@ def yangMillsHypercubicQuarticCensusNode : YangMillsProofNode where
   id := "yang-mills.rg.hypercubic-quartic-census"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "V14HypercubicQuarticCensusCertificate classifies all 126 quartic monomials into four admissible signed H(4) orbits and seven killed orbit classes. V14HypercubicQuarticBasis constructs the four covariant orbit basis functions, representative-evaluation duals, identity conditioning matrix, reconstruction, and coordinate independence."
+  evidence := "V14HypercubicQuarticCensusCertificate classifies all 126 quartic monomials into four admissible signed H(4) orbits and seven killed orbit classes. V14HypercubicQuarticBasis constructs the four covariant orbit basis functions, representative-evaluation duals, identity conditioning matrix, reconstruction, and coordinate independence. V14HypercubicQuarticWilsonBridge identifies the actual Wilson coefficient vector as (6,0,0,0), realizes its exact fourth jet, and proves the O(4)-invariant subspace is proper with a nonzero pure-fourth artifact quotient class."
   nextObligation := "Use this as the unpadded dimension-eight regression anchor only. It does not include noncommutative color/trace syntax, derivatives, or the dimension-sixteen relation quotient."
 
 /-- Terminal decision for the current fixed-width dimension-sixteen raw
