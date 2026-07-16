@@ -1,0 +1,144 @@
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionCensus
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock0
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock1
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock2
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock3
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock4
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock5
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock6
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock7
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock8
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock9
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock10
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock11
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock12
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock13
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock14
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock15
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock16
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock17
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock18
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock19
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock20
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock21
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock22
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CompressionReplayCertificateBlock23
+
+/-!
+# Exhaustive replay of the fourteen hypercubic power-trace classes
+
+These certificates check every one of the `24 * 16 = 384` literal signed
+permutations.  The power traces through degree sixteen, orientation character,
+and class multiplicities are all replayed from the literal action.
+-/
+
+set_option autoImplicit false
+set_option maxHeartbeats 8000000
+noncomputable section
+
+namespace Mettapedia
+namespace QuantumTheory
+namespace YangMills
+namespace HypercubicDimension16CompressionCensus
+
+theorem decodedPowerTraceReplayCheckAt_certificate
+    (permutation : Fin 24) :
+    decodedPowerTraceReplayCheckAt permutation = true := by
+  fin_cases permutation
+  · exact decodedPowerTraceReplayCheckAt_certificate_block0
+  · exact decodedPowerTraceReplayCheckAt_certificate_block1
+  · exact decodedPowerTraceReplayCheckAt_certificate_block2
+  · exact decodedPowerTraceReplayCheckAt_certificate_block3
+  · exact decodedPowerTraceReplayCheckAt_certificate_block4
+  · exact decodedPowerTraceReplayCheckAt_certificate_block5
+  · exact decodedPowerTraceReplayCheckAt_certificate_block6
+  · exact decodedPowerTraceReplayCheckAt_certificate_block7
+  · exact decodedPowerTraceReplayCheckAt_certificate_block8
+  · exact decodedPowerTraceReplayCheckAt_certificate_block9
+  · exact decodedPowerTraceReplayCheckAt_certificate_block10
+  · exact decodedPowerTraceReplayCheckAt_certificate_block11
+  · exact decodedPowerTraceReplayCheckAt_certificate_block12
+  · exact decodedPowerTraceReplayCheckAt_certificate_block13
+  · exact decodedPowerTraceReplayCheckAt_certificate_block14
+  · exact decodedPowerTraceReplayCheckAt_certificate_block15
+  · exact decodedPowerTraceReplayCheckAt_certificate_block16
+  · exact decodedPowerTraceReplayCheckAt_certificate_block17
+  · exact decodedPowerTraceReplayCheckAt_certificate_block18
+  · exact decodedPowerTraceReplayCheckAt_certificate_block19
+  · exact decodedPowerTraceReplayCheckAt_certificate_block20
+  · exact decodedPowerTraceReplayCheckAt_certificate_block21
+  · exact decodedPowerTraceReplayCheckAt_certificate_block22
+  · exact decodedPowerTraceReplayCheckAt_certificate_block23
+
+theorem decodedOrientationReplayCheckAt_certificate
+    (permutation : Fin 24) :
+    decodedOrientationReplayCheckAt permutation = true := by
+  fin_cases permutation
+  · exact decodedOrientationReplayCheckAt_certificate_block0
+  · exact decodedOrientationReplayCheckAt_certificate_block1
+  · exact decodedOrientationReplayCheckAt_certificate_block2
+  · exact decodedOrientationReplayCheckAt_certificate_block3
+  · exact decodedOrientationReplayCheckAt_certificate_block4
+  · exact decodedOrientationReplayCheckAt_certificate_block5
+  · exact decodedOrientationReplayCheckAt_certificate_block6
+  · exact decodedOrientationReplayCheckAt_certificate_block7
+  · exact decodedOrientationReplayCheckAt_certificate_block8
+  · exact decodedOrientationReplayCheckAt_certificate_block9
+  · exact decodedOrientationReplayCheckAt_certificate_block10
+  · exact decodedOrientationReplayCheckAt_certificate_block11
+  · exact decodedOrientationReplayCheckAt_certificate_block12
+  · exact decodedOrientationReplayCheckAt_certificate_block13
+  · exact decodedOrientationReplayCheckAt_certificate_block14
+  · exact decodedOrientationReplayCheckAt_certificate_block15
+  · exact decodedOrientationReplayCheckAt_certificate_block16
+  · exact decodedOrientationReplayCheckAt_certificate_block17
+  · exact decodedOrientationReplayCheckAt_certificate_block18
+  · exact decodedOrientationReplayCheckAt_certificate_block19
+  · exact decodedOrientationReplayCheckAt_certificate_block20
+  · exact decodedOrientationReplayCheckAt_certificate_block21
+  · exact decodedOrientationReplayCheckAt_certificate_block22
+  · exact decodedOrientationReplayCheckAt_certificate_block23
+
+theorem decodedPowerTraceClassAt_certificate
+    (permutation : Fin 24) (reflectionMask : Fin 16) :
+    decodedPowerTraceClassAt permutation reflectionMask =
+      expectedPowerTraceClassAt permutation reflectionMask := by
+  fin_cases permutation
+  · exact decodedPowerTraceClassAt_certificate_block0 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block1 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block2 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block3 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block4 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block5 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block6 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block7 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block8 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block9 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block10 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block11 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block12 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block13 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block14 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block15 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block16 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block17 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block18 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block19 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block20 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block21 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block22 reflectionMask
+  · exact decodedPowerTraceClassAt_certificate_block23 reflectionMask
+
+theorem decodedClassMultiplicity_certificate
+    (traceClass : PowerTraceClass) :
+    decodedClassMultiplicity traceClass = classMultiplicity traceClass := by
+  unfold decodedClassMultiplicity decodedClassMultiplicityAt
+  simp_rw [decodedPowerTraceClassAt_certificate]
+  fin_cases traceClass <;>
+    norm_num [sumFin24Nat, sumFin16Nat, expectedPowerTraceClassAt,
+      expectedPowerTraceClassRows, classMultiplicity]
+
+end HypercubicDimension16CompressionCensus
+end YangMills
+end QuantumTheory
+end Mettapedia
