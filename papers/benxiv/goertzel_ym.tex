@@ -1193,10 +1193,15 @@ claim that the manuscript already contains the needed census.
     intertwines the signed $H(4)$ actions.  More generally, for every finite
     family of field slots the product normalization has kernel exactly the
     span of the literal slotwise antisymmetry rows, with an explicit quotient
-    equivalence to oriented-plane assignments.  This simultaneous theorem is
-    still context-free: assembling it equivariantly with the trace data and
-    the derivative-shuffle quotient on the exact dimension-$16$ carrier
-    remains.  Thus $2.46\times10^8$ remains a
+    equivalence to oriented-plane assignments.  The antisymmetry and linear
+    shuffle theorems are now assembled while retaining the actual trace
+    layout and then lifted through the dependent dimension-$16$ union.  On
+    that exact carrier, the combined kernel is precisely the span of the
+    already-defined position-indexed antisymmetry and adjacent-shuffle rows;
+    its quotient is the free module on trace layouts, oriented-plane
+    assignments, and owner-local derivative words.  The combined map also
+    intertwines the literal signed $H(4)$ actions.  Field-label orbit
+    realization remains.  Thus $2.46\times10^8$ remains a
     machine-checked target for an
     explicit projected column architecture, but is not yet a certified column
     count or compression wall
@@ -1207,7 +1212,8 @@ claim that the manuscript already contains the needed census.
     \texttt{HypercubicDimension16LocalWordCarrier},
     \texttt{HypercubicDimension16ShuffleQuotient},
     \texttt{HypercubicDimension16ShuffleLinearQuotient},
-    \texttt{HypercubicDimension16AntisymmetryQuotient}).
+    \texttt{HypercubicDimension16AntisymmetryQuotient},
+    \texttt{HypercubicDimension16ContextualQuotient}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1254,9 +1260,10 @@ claim that the manuscript already contains the needed census.
     The single-letter field-antisymmetry quotient is now exact and signed
     $H(4)$-equivariant.  Its product lift over every finite family of field
     slots is also exact: the literal slotwise rows span the full kernel.
-    Equivariant assembly with the trace context and derivative-shuffle
-    quotient on the exact carrier, and the orbit-character realization,
-    remain.
+    Its equivariant assembly with the trace context and derivative-shuffle
+    quotient is now exact on the dependent dimension-$16$ carrier, where the
+    pre-existing position-indexed rows span the full combined kernel.  The
+    field-relabel orbit-character realization remains.
     The joint
     sectorwise physical rank and quotient conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
