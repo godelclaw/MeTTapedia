@@ -176,6 +176,46 @@ local instance adjacentTerminalPathRetainedVertexSetDecidableEq
   Subtype.instDecidableEq
 
 /-- A constant four-port word in an uncolorable cubic ambient graph forces
+the exact same-side reachability partition for every valid color pair
+containing that constant request. -/
+theorem hasSameSideKempeReachabilityProfile_of_constant_colorWord
+    (data : AdjacentPairData G)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (hnotColorable :
+      ¬ ∃ ambientColoring : G.EdgeColoring Color,
+          IsTaitEdgeColoring G ambientColoring)
+    (C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color)
+    (hC : IsTaitEdgeColoring
+      (DeletedAdjacentPairGraph G data.firstVertex data.secondVertex) C)
+    {a b : Color} (hab : ValidColorPair a b)
+    (hconstant : ∀ port : Fin 4,
+      data.degreeTwoBoundaryData.colorWord C port = a) :
+    data.degreeTwoBoundaryData.HasSameSideKempeReachabilityProfile
+      C a b := by
+  let boundary := data.degreeTwoBoundaryData
+  have hwell := data.degreeTwoBoundaryData_wellFormed hcubic
+  have hselected : ∀ port : Fin 4,
+      boundary.colorWord C port = a ∨ boundary.colorWord C port = b :=
+    fun port => Or.inl (hconstant port)
+  have hpaired : ∀ K : (C.bicoloredSubgraph a b).ConnectedComponent,
+      (boundary.KempeComponentMeetsPort C a b K 0 ↔
+        boundary.KempeComponentMeetsPort C a b K 1) ∧
+      (boundary.KempeComponentMeetsPort C a b K 2 ↔
+        boundary.KempeComponentMeetsPort C a b K 3) := by
+    intro K
+    exact ⟨
+      data.kempeComponentMeetsPort_zero_iff_one_of_selected_request
+        hcubic hnotColorable C hC hab K (Or.inl (hconstant 0)),
+      data.kempeComponentMeetsPort_two_iff_three_of_selected_request
+        hcubic hnotColorable C hC hab K (Or.inl (hconstant 2))⟩
+  have hprofile : boundary.HasTwoSameSideKempeCutProfile C a b :=
+    boundary.exists_two_sameSide_kempeComponents
+      hwell C hab hselected hpaired
+  exact boundary.hasSameSideKempeReachabilityProfile_of_twoComponentProfile
+    C a b hprofile
+
+/-- A constant four-port word in an uncolorable cubic ambient graph forces
 two same-side simple terminal paths of even length for every valid pair
 containing that constant request. -/
 theorem exists_two_even_simpleKempePortPaths_of_constant_colorWord
@@ -213,27 +253,10 @@ theorem exists_two_even_simpleKempePortPaths_of_constant_colorWord
         path.IsPath ∧ Even path.length) := by
   let boundary := data.degreeTwoBoundaryData
   have hwell := data.degreeTwoBoundaryData_wellFormed hcubic
-  have hselected : ∀ port : Fin 4,
-      boundary.colorWord C port = a ∨ boundary.colorWord C port = b :=
-    fun port => Or.inl (hconstant port)
-  have hpaired : ∀ K : (C.bicoloredSubgraph a b).ConnectedComponent,
-      (boundary.KempeComponentMeetsPort C a b K 0 ↔
-        boundary.KempeComponentMeetsPort C a b K 1) ∧
-      (boundary.KempeComponentMeetsPort C a b K 2 ↔
-        boundary.KempeComponentMeetsPort C a b K 3) := by
-    intro K
-    exact ⟨
-      data.kempeComponentMeetsPort_zero_iff_one_of_selected_request
-        hcubic hnotColorable C hC hab K (Or.inl (hconstant 0)),
-      data.kempeComponentMeetsPort_two_iff_three_of_selected_request
-        hcubic hnotColorable C hC hab K (Or.inl (hconstant 2))⟩
-  have hprofile : boundary.HasTwoSameSideKempeCutProfile C a b :=
-    boundary.exists_two_sameSide_kempeComponents
-      hwell C hab hselected hpaired
   have hreachability :
       boundary.HasSameSideKempeReachabilityProfile C a b :=
-    boundary.hasSameSideKempeReachabilityProfile_of_twoComponentProfile
-      C a b hprofile
+    data.hasSameSideKempeReachabilityProfile_of_constant_colorWord
+      hcubic hnotColorable C hC hab hconstant
   have hconnected01 : boundary.KempePortsConnected C a b 0 1 :=
     (hreachability 0 1).2 (by simp)
   have hconnected23 : boundary.KempePortsConnected C a b 2 3 :=
