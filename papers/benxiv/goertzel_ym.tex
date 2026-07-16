@@ -848,8 +848,40 @@ intertwining law are proved exactly
 (\texttt{HypercubicDimension16CovariantCommutator}).  Thus no same-field
 derivative swap is imposed without its curvature commutator.  This theorem
 constructs the relation operator; it does not infer its rank or the rank of
-the combined quotient.  Higher $\mathrm{SU}(2)$ trace identities remain
-separate.
+the combined quotient.  The higher $\mathrm{SU}(2)$ trace identities are
+supplied next as independent row schemas.
+
+\paragraph{Our $\mathrm{SU}(2)$ trace rows include genuine multitrace
+rewiring.}
+\textsc{Ours.} For traceless $2\times2$ matrices the polarized
+Cayley--Hamilton identity
+\[
+ AB+BA=\Tr(AB)I
+\]
+is proved over an arbitrary commutative ring, together with its trace-context
+form
+\[
+ \Tr(UABV)+\Tr(UBAV)=\Tr(AB)\Tr(UV).
+\]
+On the finite carrier, the right-hand side is constructed by splitting the
+adjacent $A,B$ letters into a two-cycle and reconnecting the remaining trace
+word.  The three changed permutation edges are proved explicitly.
+
+Adjacent splitting alone does not visibly generate identities which join
+several trace cycles.  Accordingly, for every injection of three cut labels
+we also construct the standard six-term fundamental $2\times2$ trace row
+\[
+ \Tr A\Tr B\Tr C-\Tr(AB)\Tr C-\Tr(AC)\Tr B-\Tr(BC)\Tr A
+ +\Tr(ABC)+\Tr(ACB)=0.
+\]
+The identity is proved by matrix evaluation, while its carrier realization is
+the signed sum over the identity, three transpositions, and two three-cycles
+acting on the selected outgoing trace edges.  Thus its terms honestly join
+and split cyclic and multitrace layouts.  Both row families preserve every
+axis assignment and active tensor sign and are signed-$H(4)$ equivariant
+(\texttt{HypercubicDimension16SU2TraceRelations}).  These are relation and
+equivariance theorems; no joint rank or quotient conditioning is inferred
+from the schemas alone.
 
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
@@ -1108,6 +1140,13 @@ claim that the manuscript already contains the needed census.
     canonical dimension and active tensor sign.  Its signed-$H(4)$
     intertwining law is checked
     (\texttt{HypercubicDimension16CovariantCommutator}).
+  \item \textbf{The $\mathrm{SU}(2)$ trace identities rewire the actual trace
+    permutation.} The traceless anticommutator row splits an adjacent pair
+    into a two-cycle and reconnects its context.  The six-term fundamental
+    $2\times2$ trace row additionally joins and splits distinct cycles through
+    three selected edges.  Both semantic matrix identities and both signed
+    $H(4)$ intertwining laws are checked
+    (\texttt{HypercubicDimension16SU2TraceRelations}).
   \item \textbf{The complete raw $H(4)$ character multiplicities are
     certified.} The standard signed-axis representation, all $384$ trace and
     determinant values, Reynolds projector, and rank-$0$--$16$ character
@@ -1140,9 +1179,9 @@ claim that the manuscript already contains the needed census.
     different-owner derivative shuffle, and antisymmetry rows are now
     equivariant.  Innermost Bianchi and on-shell EOM rows are also equivariant,
     and globally outermost integrated IBP plus traceless one-cycle rows are
-    equivariant.  The cross-sector covariant-commutator row is now also
-    equivariant, but the joint rank and the higher Cayley--Hamilton trace maps
-    remain.  The
+    equivariant.  The cross-sector covariant-commutator, traceless
+    anticommutator, and fundamental multitrace rows are now also equivariant.
+    The joint sectorwise rank and quotient conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
@@ -1173,12 +1212,14 @@ three different situations.
     defects. The complete raw character census determines the invariant-space
     dimensions, and the Cartan octic restriction supplies exact duals and
     factor-one conditioning. Neither result imposes the full noncommutative
-    relation quotient. \emph{What settles it:} construct equivariant linear
-    maps for antisymmetry, Bianchi, EOM, integration by parts, trace, and
-    Cayley--Hamilton on the actual unpadded invariant space; certify the rank
-    and dual basis of their quotient without replacing the relations by a
-    desired answer; and extend the classical constant-Cartan $O(a^4)$ estimate
-    to uniform interacting Wilson observables. Then prove the weighted Wilson
+    relation quotient.  Equivariant sparse maps for antisymmetry, Bianchi,
+    on-shell EOM, integrated-by-parts, the covariant-derivative commutator,
+    tracelessness, and the fundamental $2\times2$ trace identity are now
+    constructed on that carrier.  \emph{What settles it:} certify their joint
+    sectorwise rank and a dual basis of the resulting quotient without
+    replacing the relations by a desired answer; and extend the classical
+    constant-Cartan $O(a^4)$ estimate to uniform interacting Wilson
+    observables. Then prove the weighted Wilson
     cumulant/tree estimate and Wilson-RG intertwining law on that same object.
     The resulting actual constant can then be checked against
     $C\,b^{\,3-\dmax}\leq1/3$.
