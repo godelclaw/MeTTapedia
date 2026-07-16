@@ -1146,6 +1146,29 @@ claim that the manuscript already contains the needed census.
     antisymmetry/derivative-localization quotient.  This is an equivariance
     and assembly theorem, not yet a physical-rank claim
     (\texttt{HypercubicDimension16PhysicalRelationOperator}).
+  \item \textbf{The physical-relation operator reaches the genuine
+    field-label orbit carrier.} Our ordinary simultaneous field-permutation
+    quotient of the oriented local carrier is lifted to a rational linear
+    map.  Explicit simultaneous-renaming difference rows span exactly its
+    kernel, and the induced quotient is linearly equivalent to the orbit
+    module.  Its signed $H(4)$ action is a representation, the quotient map
+    intertwines the contextual and orbit actions, and composing it with the
+    joint physical-relation operator leaves an invariant image.  Thus the
+    operator target is now the same literal finite orbit carrier whose
+    character was counted above; no sectorwise rank or conditioning is
+    inferred here
+    (\texttt{HypercubicDimension16PhysicalOrbitOperator}).
+  \item \textbf{The descended operator has an exact sparse field-sector
+    band.} Our source-field function is defined on every standard relation
+    generator.  Every raw row is supported in that field sector, except that
+    the two curvature-insertion terms of the covariant commutator lie in the
+    successor sector.  Explicit rational field filters commute with both the
+    contextual normalization and the simultaneous field-relabel quotient.
+    Consequently each column of the physical operator on the genuine orbit
+    carrier is supported in its source sector and, when present, its immediate
+    successor.  This is a block upper-bidiagonal incidence theorem, not a rank
+    or conditioning result
+    (\texttt{HypercubicDimension16PhysicalRelationBlocks}).
   \item \textbf{Bianchi and EOM preserve noncommuting derivative order.}
     The cyclic Bianchi row and the contracted on-shell EOM row are supplied
     only at an innermost derivative of the selected field word.  Their signed
@@ -1370,8 +1393,13 @@ claim that the manuscript already contains the needed census.
     The standard rows are now assembled into a single policy-indexed linear
     operator, before and after the exact contextual quotient.  Both actions
     are genuine rational $H(4)$ representations, the operator is equivariant,
-    and its range is invariant.  The joint sectorwise physical rank and
-    quotient conditioning remain.  The
+    and its range is invariant.  The normalized operator now descends
+    exactly and equivariantly to the genuine field-label orbit carrier: the
+    literal simultaneous-renaming rows are its full kernel and its range is
+    again invariant.  The raw rows are now proved source/successor supported,
+    and exact field filters commute through both normalizations, so the
+    descended operator is block upper-bidiagonal by field count.  The joint
+    blockwise physical rank and quotient conditioning remain.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
@@ -1527,6 +1555,13 @@ field-label orbit carrier),
 \texttt{HypercubicDimension16PhysicalRelationOperator} (the off-shell/on-shell
 joint standard-relation operator, its rational $H(4)$ intertwining law, and
 its invariant range before and after contextual normalization), and
+\texttt{HypercubicDimension16PhysicalOrbitOperator} (the ordinary field-label
+quotient map, exact identification of its kernel with the explicit renaming
+rows, its signed $H(4)$ representation and intertwining law, and the descended
+physical-relation operator with invariant range), and
+\texttt{HypercubicDimension16PhysicalRelationBlocks} (the exact
+source/successor field-sector support and its descent through both quotient
+maps), and
 \texttt{WeightedOrbitBurnside} with
 \texttt{HypercubicDimension16OrbitCharacter} (the general weighted quotient
 identity and its specialization to the actual signed orbit character),
