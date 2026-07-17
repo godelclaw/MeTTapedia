@@ -169,6 +169,8 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer
       path.IsPath ∧
         (cross : Sym2 (retainedVertexSet data.firstVertex
           data.secondVertex)) ∉ path.edges ∧
+        crossFaceCoordinate coordinate
+            (pair.crossFaceDifferenceProfile (centralEdge data)) ≠ 0 ∧
         (∀ candidate : Fin 2,
           crossFaceCoordinate coordinate
               (pair.crossFaceDifferenceProfile
@@ -194,7 +196,7 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer
       _hendpoint⟩
   have hfirst := (hfirstExact firstIndex).2 rfl
   have hsecond := (hsecondExact secondIndex).2 rfl
-  exact ⟨coordinate, firstIndex, secondIndex, path, hpath, hcross,
+  exact ⟨coordinate, firstIndex, secondIndex, path, hpath, hcross, hcentral,
     hfirstExact, hsecondExact, hcycle,
     pair.centralReturnCoordinateParity_eq_one coordinate firstIndex
       secondIndex hcentral hfirst hsecond,
@@ -308,7 +310,7 @@ theorem EvenKempeFusionLens.exists_bcExactCrossSideClosedTransfer_of_rejected_of
     ⟨pair, _hprefixEdges, _hsuffixEdges⟩
   rcases pair.exists_exactCrossSideClosedTransfer minimal with
     ⟨coordinate, firstIndex, secondIndex, path, hpath, hcross,
-      _hfirstExact, _hsecondExact, hcycle, hparity,
+      _hcentral, _hfirstExact, _hsecondExact, hcycle, hparity,
       _hreturnApply, _hclosed⟩
   exact ⟨pair, coordinate, firstIndex, secondIndex, path, hpath, hcross,
     hcycle, hparity,
@@ -364,7 +366,7 @@ theorem EvenKempeFusionLens.exists_cbExactCrossSideClosedTransfer_of_rejected_of
     ⟨pair, _hprefixEdges, _hsuffixEdges⟩
   rcases pair.exists_exactCrossSideClosedTransfer minimal with
     ⟨coordinate, firstIndex, secondIndex, path, hpath, hcross,
-      _hfirstExact, _hsecondExact, hcycle, hparity,
+      _hcentral, _hfirstExact, _hsecondExact, hcycle, hparity,
       _hreturnApply, _hclosed⟩
   exact ⟨pair, coordinate, firstIndex, secondIndex, path, hpath, hcross,
     hcycle, hparity,
