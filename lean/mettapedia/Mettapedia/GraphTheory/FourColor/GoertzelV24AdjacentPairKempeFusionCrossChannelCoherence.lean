@@ -60,6 +60,110 @@ theorem EvenKempePortPath.secondPrefixToCrossSite_length_pos
   exact edge_ne_of_color_eq_of_color_eq_of_ne C second.leftColor
     (first.color_eq_first_of_crossSite second hbc site) hac.symm
 
+/-- A cross site occurs strictly before the first route's terminal edge. -/
+theorem EvenKempePortPath.firstSuffixFromCrossSite_length_pos
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (hab : a ≠ b) (hbc : b ≠ c) (site : first.CrossSite second) :
+    0 < (first.firstSuffixFromCrossSite second site).length := by
+  apply SimpleGraph.Walk.not_nil_iff_lt_length.mp
+  apply SimpleGraph.Walk.not_nil_of_ne
+  exact edge_ne_of_color_eq_of_color_eq_of_ne C
+    (first.color_eq_first_of_crossSite second hbc site)
+    first.rightColor hab
+
+/-- The same strictness holds on the second route. -/
+theorem EvenKempePortPath.secondSuffixFromCrossSite_length_pos
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (hac : a ≠ c) (hbc : b ≠ c) (site : first.CrossSite second) :
+    0 < (first.secondSuffixFromCrossSite second site).length := by
+  apply SimpleGraph.Walk.not_nil_iff_lt_length.mp
+  apply SimpleGraph.Walk.not_nil_of_ne
+  exact edge_ne_of_color_eq_of_color_eq_of_ne C
+    (first.color_eq_first_of_crossSite second hbc site)
+    second.rightColor hac
+
+/-- The presence of a strict first suffix makes the complete first route
+positive as well. -/
+theorem EvenKempePortPath.firstAmbientPath_length_pos_of_crossSite
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (hab : a ≠ b) (hbc : b ≠ c) (site : first.CrossSite second) :
+    0 < first.ambientPath.length :=
+  lt_of_lt_of_le
+    (first.firstSuffixFromCrossSite_length_pos second hab hbc site)
+    (first.ambientPath.length_dropUntil_le_length site.2.1)
+
+/-- The presence of a strict second suffix makes the complete second route
+positive as well. -/
+theorem EvenKempePortPath.secondAmbientPath_length_pos_of_crossSite
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (hac : a ≠ c) (hbc : b ≠ c) (site : first.CrossSite second) :
+    0 < second.ambientPath.length :=
+  lt_of_lt_of_le
+    (first.secondSuffixFromCrossSite_length_pos second hac hbc site)
+    (second.ambientPath.length_dropUntil_le_length site.2.2)
+
+/-- A first-route cross suffix remains a simple line-graph path. -/
+theorem EvenKempePortPath.firstSuffixFromCrossSite_isPath
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.firstSuffixFromCrossSite second site).IsPath :=
+  first.ambientPath_isPath.dropUntil site.2.1
+
+/-- A second-route cross suffix remains a simple line-graph path. -/
+theorem EvenKempePortPath.secondSuffixFromCrossSite_isPath
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.secondSuffixFromCrossSite second site).IsPath :=
+  second.ambientPath_isPath.dropUntil site.2.2
+
+/-- The first cross suffix uses only edges of its ambient route. -/
+theorem EvenKempePortPath.firstSuffixFromCrossSite_support_subset
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.firstSuffixFromCrossSite second site).support ⊆
+      first.ambientPath.support :=
+  first.ambientPath.support_dropUntil_subset_support site.2.1
+
+/-- The second cross suffix uses only edges of its ambient route. -/
+theorem EvenKempePortPath.secondSuffixFromCrossSite_support_subset
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.secondSuffixFromCrossSite second site).support ⊆
+      second.ambientPath.support :=
+  second.ambientPath.support_dropUntil_subset_support site.2.2
+
 /-- Every first-route prefix is internally primal-coherent. -/
 theorem EvenKempePortPath.firstPrefixToCrossSite_isPrimalCoherent
     {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
@@ -106,6 +210,182 @@ theorem EvenKempePortPath.secondPrefixToCrossSite_reverse_isPrimalCoherent
         first.secondPrefixToCrossSite_support_subset second site hprefix
       exact (second.mem_ambientPath_support_iff edge).1 hambient |>.1)
     (position := position) hposition
+
+/-- Every first-route suffix is internally primal-coherent. -/
+theorem EvenKempePortPath.firstSuffixFromCrossSite_isPrimalCoherent
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.firstSuffixFromCrossSite second site).IsPrimalCoherent := by
+  intro position hposition
+  apply SimpleGraph.Walk.lineGraphJunctionAt_ne_succ_of_bicolored
+    (C := C) (a := a) (b := b)
+    (walk := first.firstSuffixFromCrossSite second site)
+    (hpath := first.firstSuffixFromCrossSite_isPath second site)
+    (hcolors := by
+      intro edge hedge
+      have hambient : edge ∈ first.ambientPath.support :=
+        first.firstSuffixFromCrossSite_support_subset second site hedge
+      exact (first.mem_ambientPath_support_iff edge).1 hambient |>.1)
+    (position := position) hposition
+
+/-- Every second-route suffix is internally primal-coherent. -/
+theorem EvenKempePortPath.secondSuffixFromCrossSite_isPrimalCoherent
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.secondSuffixFromCrossSite second site).IsPrimalCoherent := by
+  intro position hposition
+  apply SimpleGraph.Walk.lineGraphJunctionAt_ne_succ_of_bicolored
+    (C := C) (a := a) (b := c)
+    (walk := first.secondSuffixFromCrossSite second site)
+    (hpath := first.secondSuffixFromCrossSite_isPath second site)
+    (hcolors := by
+      intro edge hedge
+      have hambient : edge ∈ second.ambientPath.support :=
+        first.secondSuffixFromCrossSite_support_subset second site hedge
+      exact (second.mem_ambientPath_support_iff edge).1 hambient |>.1)
+    (position := position) hposition
+
+/-- A positive first suffix has the same final primal junction as the
+complete first route. -/
+theorem EvenKempePortPath.firstSuffixFromCrossSite_lastJunction
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (hab : a ≠ b) (hbc : b ≠ c) (site : first.CrossSite second) :
+    (first.firstSuffixFromCrossSite second site).lineGraphJunctionAt
+        ⟨(first.firstSuffixFromCrossSite second site).length - 1,
+          Nat.sub_lt
+            (n := (first.firstSuffixFromCrossSite second site).length)
+            (m := 1)
+            (first.firstSuffixFromCrossSite_length_pos second hab hbc site)
+            Nat.zero_lt_one⟩ =
+      first.ambientPath.lineGraphJunctionAt
+        ⟨first.ambientPath.length - 1,
+          Nat.sub_lt (n := first.ambientPath.length) (m := 1)
+            (first.firstAmbientPath_length_pos_of_crossSite
+              second hab hbc site)
+            Nat.zero_lt_one⟩ := by
+  let initial := first.firstPrefixToCrossSite second site
+  let suffix := first.firstSuffixFromCrossSite second site
+  have hsuffixPositive : 0 < suffix.length :=
+    first.firstSuffixFromCrossSite_length_pos second hab hbc site
+  have hroute : initial.append suffix = first.ambientPath :=
+    first.firstPrefix_append_firstSuffix second site
+  have hlength : first.ambientPath.length = initial.length + suffix.length := by
+    have := congrArg SimpleGraph.Walk.length hroute
+    simpa only [SimpleGraph.Walk.length_append] using this.symm
+  have hpenultimate :
+      suffix.getVert (suffix.length - 1) =
+        first.ambientPath.getVert (first.ambientPath.length - 1) := by
+    calc
+      suffix.getVert (suffix.length - 1) =
+          (initial.append suffix).getVert
+            (initial.length + (suffix.length - 1)) := by
+        rw [SimpleGraph.Walk.getVert_append, if_neg (by omega)]
+        simp only [Nat.add_sub_cancel_left]
+      _ = first.ambientPath.getVert
+            (initial.length + (suffix.length - 1)) := by
+        rw [hroute]
+      _ = first.ambientPath.getVert
+            (first.ambientPath.length - 1) := by
+        congr 1
+        omega
+  symm
+  apply SimpleGraph.lineGraphCommonVertex_unique
+  · have hmem := first.ambientPath.lineGraphJunctionAt_mem_left
+      ⟨first.ambientPath.length - 1, by omega⟩
+    change first.ambientPath.lineGraphJunctionAt
+        ⟨first.ambientPath.length - 1, by omega⟩ ∈
+      ((suffix.getVert (suffix.length - 1)).1 : Sym2 V)
+    rw [hpenultimate]
+    exact hmem
+  · have hmem := first.ambientPath.lineGraphJunctionAt_mem_right
+      ⟨first.ambientPath.length - 1, by omega⟩
+    have hsuffixLast : suffix.length - 1 + 1 = suffix.length := by omega
+    have hambientLast : first.ambientPath.length - 1 + 1 =
+        first.ambientPath.length := by omega
+    change first.ambientPath.lineGraphJunctionAt
+        ⟨first.ambientPath.length - 1, by omega⟩ ∈
+      ((suffix.getVert (suffix.length - 1 + 1)).1 : Sym2 V)
+    rw [hsuffixLast, SimpleGraph.Walk.getVert_length]
+    simpa only [hambientLast, SimpleGraph.Walk.getVert_length] using hmem
+
+/-- A positive second suffix has the same final primal junction as the
+complete second route. -/
+theorem EvenKempePortPath.secondSuffixFromCrossSite_lastJunction
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (hac : a ≠ c) (hbc : b ≠ c) (site : first.CrossSite second) :
+    (first.secondSuffixFromCrossSite second site).lineGraphJunctionAt
+        ⟨(first.secondSuffixFromCrossSite second site).length - 1,
+          Nat.sub_lt
+            (n := (first.secondSuffixFromCrossSite second site).length)
+            (m := 1)
+            (first.secondSuffixFromCrossSite_length_pos second hac hbc site)
+            Nat.zero_lt_one⟩ =
+      second.ambientPath.lineGraphJunctionAt
+        ⟨second.ambientPath.length - 1,
+          Nat.sub_lt (n := second.ambientPath.length) (m := 1)
+            (first.secondAmbientPath_length_pos_of_crossSite
+              second hac hbc site)
+            Nat.zero_lt_one⟩ := by
+  let initial := first.secondPrefixToCrossSite second site
+  let suffix := first.secondSuffixFromCrossSite second site
+  have hsuffixPositive : 0 < suffix.length :=
+    first.secondSuffixFromCrossSite_length_pos second hac hbc site
+  have hroute : initial.append suffix = second.ambientPath :=
+    first.secondPrefix_append_secondSuffix second site
+  have hlength : second.ambientPath.length = initial.length + suffix.length := by
+    have := congrArg SimpleGraph.Walk.length hroute
+    simpa only [SimpleGraph.Walk.length_append] using this.symm
+  have hpenultimate :
+      suffix.getVert (suffix.length - 1) =
+        second.ambientPath.getVert (second.ambientPath.length - 1) := by
+    calc
+      suffix.getVert (suffix.length - 1) =
+          (initial.append suffix).getVert
+            (initial.length + (suffix.length - 1)) := by
+        rw [SimpleGraph.Walk.getVert_append, if_neg (by omega)]
+        simp only [Nat.add_sub_cancel_left]
+      _ = second.ambientPath.getVert
+            (initial.length + (suffix.length - 1)) := by
+        rw [hroute]
+      _ = second.ambientPath.getVert
+            (second.ambientPath.length - 1) := by
+        congr 1
+        omega
+  symm
+  apply SimpleGraph.lineGraphCommonVertex_unique
+  · have hmem := second.ambientPath.lineGraphJunctionAt_mem_left
+      ⟨second.ambientPath.length - 1, by omega⟩
+    change second.ambientPath.lineGraphJunctionAt
+        ⟨second.ambientPath.length - 1, by omega⟩ ∈
+      ((suffix.getVert (suffix.length - 1)).1 : Sym2 V)
+    rw [hpenultimate]
+    exact hmem
+  · have hmem := second.ambientPath.lineGraphJunctionAt_mem_right
+      ⟨second.ambientPath.length - 1, by omega⟩
+    have hsuffixLast : suffix.length - 1 + 1 = suffix.length := by omega
+    have hambientLast : second.ambientPath.length - 1 + 1 =
+        second.ambientPath.length := by omega
+    change second.ambientPath.lineGraphJunctionAt
+        ⟨second.ambientPath.length - 1, by omega⟩ ∈
+      ((suffix.getVert (suffix.length - 1 + 1)).1 : Sym2 V)
+    rw [hsuffixLast, SimpleGraph.Walk.getVert_length]
+    simpa only [hambientLast, SimpleGraph.Walk.getVert_length] using hmem
 
 /-- If the two prefix junctions use opposite endpoints of the cross edge,
 the uncontracted cross splice is primal-coherent. -/
