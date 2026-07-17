@@ -1,0 +1,827 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{url}
+\usepackage[breaklinks,colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newcommand{\code}[1]{\nolinkurl{#1}}
+\newcommand{\WM}{\mathrm{WM}}
+\newcommand{\FCA}{\mathrm{FCA}}
+\newcommand{\Pow}{\mathcal{P}}
+\newcommand{\lowerrel}{\underline{I}}
+\newcommand{\upperrel}{\overline{I}}
+\newcommand{\yes}{\mathsf{T}}
+\newcommand{\no}{\mathsf{F}}
+\newcommand{\unknown}{\mathsf{U}}
+\newcommand{\missing}{\mathsf{M}}
+
+\input{generated/wm_fca_benchmark/results.tex}
+
+\title{World-Model Formal Concept Analysis:\\
+Exact Recovery, Provenance-Safe Revision, and Contextual Envelopes}
+\author{Zar Goertzel}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Formal Concept Analysis (FCA) extracts concepts, implications, and a concept
+lattice from a binary object--attribute relation. Real knowledge stores are
+usually less obliging: an incidence can be false, unobserved, explicitly
+indeterminate, duplicated by a pipeline, revised, or later forgotten. We
+present a world-model (WM) formulation in which the primary object is a finite
+state of provenance-stamped observations and classical FCA is an exact late
+projection. The implementation runs natively in CeTTa and supports immutable
+revision, forgetting, cell-level explanations, source/dependence-group gates,
+bounded concept and implication enumeration, and robust/permissive incidence
+envelopes. A Lean~4 development proves exact order-isomorphic recovery of
+classical FCA, duplicate-idempotent revision, disjoint revision/forgetting
+laws, dependence-group invariance, and contextual-envelope obligations without
+\code{sorry}, wishlist stubs, or new axioms.
+
+We first establish exact parity on \WMFCAExactContextCount{} finite contexts,
+covering published examples, a 13-context Mizar family, and FCApy controlled
+random contexts. The checked artifacts comprise \WMFCAExactConceptCount{}
+concepts, \WMFCAExactBasisCount{} canonical implications, and
+\WMFCAExactCoverCount{} cover edges. A further \WMFCAQueryContextCount{} wider
+contexts, including the $403\times67$ Bob Ross matrix, supply
+\WMFCAQueryCount{} exact extent/closure queries without unbounded lattice
+enumeration. We then run a frozen \WMFCACaseCount{}-case corruption study.
+Dependence-aware WM projections are invariant to correlated copies
+in every case, while raw/source counting is invariant in only a
+\WMFCARawCopyInvariantRate{} fraction of cases. A permissive WM point
+projection improves the descriptive mean recovery of cells, concepts,
+implications, and covers over the crisp single-source projection; a robust
+projection does worse, showing that the WM degrees of freedom are substantive
+rather than uniformly beneficial.
+The robust/permissive envelope raises cell and closure coverage at the explicit
+cost of nonzero interval width; its midpoint also has lower Brier score and ECE
+than the crisp hard forecast in every frozen corruption stratum. This scores
+the midpoint as a point forecast; it does not establish calibration of the
+set-valued interval.
+In a separately frozen incomplete-context comparison, the permissive WM
+projection achieves better descriptive-mean point and structural recovery than
+both the lower and upper completions. The completion interval, however, has higher
+cell coverage and lower midpoint Brier score and ECE than the narrower WM
+envelope. Thus the experiment exposes a coverage--width tradeoff rather than a
+uniform winner.
+The study is descriptive, not an inferential significance claim, and uses
+synthetic corruption rather than a natural-domain uncertainty corpus.
+\end{abstract}
+
+\section{Introduction}
+
+Formal Concept Analysis begins with a formal context $K=(G,M,I)$: objects $G$,
+attributes $M$, and a binary incidence relation $I\subseteq G\times M$
+\cite{wille1982,ganterwille1999}. From the Galois connection
+\[
+  A'=\{m\in M:\forall g\in A,\ gIm\},\qquad
+  B'=\{g\in G:\forall m\in B,\ gIm\},
+\]
+it derives concepts $(A,B)$ satisfying $A'=B$ and $B'=A$, attribute
+implications, and a complete concept lattice. This is an exact and useful
+theory once $I$ is fixed. The difficult step in an evidential system is often
+the condition \emph{once $I$ is fixed}.
+
+A missing database cell is not a negative observation. Two reports can be
+nominally distinct but descend from the same experiment. An observation can be
+retracted without invalidating unrelated evidence. Different admissible
+extraction policies can induce different crisp relations, and a query may need
+the range across those policies rather than one prematurely selected matrix.
+Encoding all of these cases directly as Boolean incidence loses information
+before concept formation begins.
+
+We therefore put a small world-model calculus in front of classical FCA.
+States, revision, forgetting, query, and explanation are primary. A gate
+projects one evidence profile into a crisp relation only when an exact FCA
+artifact is requested. A family of admissible models yields lower (robust) and
+upper (permissive) relations. The formulation is deliberately not restricted
+to PLN truth values: counts, four-valued observations, interval evidence, or
+other ordered evidence carriers can instantiate the interface.
+
+The contributions are:
+\begin{enumerate}
+  \item a finite provenance-state semantics with immutable revision and
+        forgetting, distinct false, unknown, and missing statuses, and
+        dependence-aware extraction;
+  \item native CeTTa operations for exact FCA projection, bounded
+        NextClosure-style enumeration, canonical implications, cover edges,
+        packed scale contexts, and cell-level provenance explanations;
+  \item Lean proofs connecting the state semantics to classical FCA and
+        establishing revision, forgetting, deduplication, dependence, and
+        contextual-envelope laws;
+  \item exact parity against independent FCA oracles on
+        \WMFCAExactContextCount{} enumeration contexts and
+        \WMFCAQueryContextCount{} wider query contexts; and
+  \item a frozen corruption study that separates point-recovery quality,
+        interval coverage/width, and invariance to duplicated evidence,
+        together with a separately frozen lower/upper-completion FCA
+        comparison.
+\end{enumerate}
+
+The central result is not that one WM gate is always superior. It is that
+classical FCA is recovered exactly when the state is complete and the model
+family is a singleton, while richer state and model structure can be retained
+and tested when those assumptions do not hold.
+
+\section{From observations to formal contexts}
+\label{sec:semantics}
+
+\subsection{Provenance states}
+
+Let $S$ be a finite type of stamps. A provenance catalog fixes, for every
+$s\in S$, its source, declared dependence group, and query-local evidence
+contribution:
+\[
+  C_{\mathrm{src}}:S\to\mathit{Source},\qquad
+  C_{\mathrm{grp}}:S\to\mathit{Group},\qquad
+  C_{\mathrm{obs}}:S\times G\times M\to E .
+\]
+A stamp denotes immutable content. Reusing a stamp with conflicting source,
+group, or observation is therefore unrepresentable in the formal model and
+rejected by the runtime.
+
+A state $W\in\Pow_{\mathrm{fin}}(S)$ is the set of active stamps. For an
+additive evidence carrier $E$,
+\[
+  e_W(g,m)=\sum_{s\in W} C_{\mathrm{obs}}(s,g,m).
+\]
+Revision and forgetting are
+\[
+  \operatorname{Revise}(W,\Delta)=W\cup\Delta,\qquad
+  \operatorname{Forget}(D,W)=W\setminus D.
+\]
+Union makes exact replay idempotent. Additivity is asserted only for disjoint
+stamp sets:
+\[
+  W\cap\Delta=\varnothing
+  \Longrightarrow
+  e_{W\cup\Delta}=e_W+e_\Delta .
+\]
+This guard is important. Treating idempotent union as an additive monoid would
+silently count a replayed observation twice.
+
+The executable carrier specializes observations to four statuses:
+$\{\yes,\no,\unknown,\missing\}$. $\no$ is an observed negative;
+$\unknown$ is an explicit indeterminate report; $\missing$ means the state
+contains no applicable observation. Explanations return the contributing
+stamps with source and group metadata rather than only the projected bit.
+
+\subsection{Gates and exact FCA projection}
+
+An evidence gate $q:E\to\{\mathrm{false},\mathrm{true}\}$ induces
+\[
+  I_{W,q}(g,m)\quad\Longleftrightarrow\quad q(e_W(g,m)).
+\]
+The implementation includes exact four-status extraction and thresholds over
+positive observations, distinct sources, and distinct dependence groups.
+Classical FCA is then applied to $I_{W,q}$, not redefined. In particular, the
+Lean map \code{formedConceptOrderIsoCrispConcept} is an order isomorphism
+between exact formed concepts and the standard FCA concept carrier for the
+same gated relation. Thus the WM lane is a conservative extension, not a
+competing notion of crisp concept.
+
+Dependence groups alter what is counted. Let
+\[
+  \Gamma_W(g,m)=
+  \{C_{\mathrm{grp}}(s):s\in W,\ C_{\mathrm{obs}}(s,g,m)\neq0\}.
+\]
+The group-count statistic is $|\Gamma_W(g,m)|$. If every group contributed by
+$\Delta$ is already represented in $W$ at every cell, then
+\[
+  |\Gamma_{W\cup\Delta}(g,m)|=|\Gamma_W(g,m)|
+\]
+and every FCA family extracted through a group-count threshold is unchanged.
+This is a semantic guarantee about a declared dependence partition; it does
+not prove that the declaration itself is scientifically correct.
+
+\subsection{Contextual envelopes}
+
+A contextual model $\theta=(\mu_\theta,q_\theta)$ contains an evidence profile
+and a gate. For a nonempty admissible family $\Theta$, define
+\[
+\begin{aligned}
+  \lowerrel(g,m)
+    &\Longleftrightarrow \forall\theta\in\Theta,\
+      q_\theta(\mu_\theta(g,m)),\\
+  \upperrel(g,m)
+    &\Longleftrightarrow \exists\theta\in\Theta,\
+      q_\theta(\mu_\theta(g,m)).
+\end{aligned}
+\]
+Then $\lowerrel\subseteq\upperrel$. We call the pair an incidence envelope.
+It supports robust and permissive FCA queries without treating an unobserved
+cell as false. For $\Theta=\{\theta\}$, both relations reduce exactly to
+$I_\theta$, and both concept-family projections reduce to ordinary FCA on that
+relation.
+
+The envelope is intentionally a relation-level construction. The concept
+family of $\lowerrel$ is not generally the set-theoretic intersection of the
+concept families of all $\theta$, and similarly for $\upperrel$. Making the
+aggregation point explicit prevents an invalid interchange between Galois
+closure and model-family quantification.
+
+\section{Implementation and formal assurance}
+\label{sec:implementation}
+
+\subsection{Native CeTTa execution}
+
+The public implementation is a CeTTa library consumed by a benchmark suite.
+Small contexts use transparent MeTTa definitions as differential
+specifications. Scale contexts use validated packed binary rows and native
+operations for:
+\begin{itemize}
+  \item row and event-state construction;
+  \item status, evidence, source, group, and explanation queries;
+  \item immutable revise/remember/forget operations;
+  \item column-index construction and batched extent/closure queries;
+  \item replayable closure, implication, and concept certificates, retaining
+        the indexed state, gate, query, intermediate extent, and closure, and
+        exposing the exact finite boundary of consulted cells; and
+  \item closed-intent enumeration, Duquenne--Guigues canonical bases, and
+        Hasse cover edges under explicit output/step bounds.
+\end{itemize}
+
+The bounds are part of the semantic contract: exhausting a bound fails loudly
+rather than returning a prefix as a complete lattice. Contexts with at most
+10 attributes are assigned to exact enumeration in the scale protocol. Wider
+contexts are query-only. This is not a claim that a general MeTTa runtime
+should outperform specialized FCA software.
+
+An earlier recursive state/query path was replaced by bounded native carriers.
+No benchmark in this paper uses the retired expansion of a large packed matrix
+into one interpreted term per cell. Malformed rows, invalid statuses,
+out-of-universe observations, conflicting stamp reuse, and exceeded bounds
+have negative tests in addition to ordinary positive examples.
+
+\subsection{Lean obligations}
+
+The new Lean module builds on the existing FCA recovery bridge. Its primary
+definitions are a finite stamp set, immutable catalog, union revision, set
+difference forgetting, group support, exact concept-family extraction, and a
+contextual envelope. The audited theorems include:
+\begin{itemize}
+  \item \code{revise_self}, \code{revise_comm}, and \code{revise_assoc};
+  \item \code{forget_revision_of_disjoint} and
+        \code{evidence_forget_revision_of_disjoint};
+  \item \code{evidence_revise_of_disjoint}, exposing rather than hiding the
+        freshness condition;
+  \item \code{groupCountConceptFamily_revise_eq_left_of_groups_subset};
+  \item \code{finiteConceptFamily_forget_revision_of_disjoint};
+  \item the robust-to-permissive implication, singleton reductions, and
+        contextual-envelope validity; and
+  \item positive and negative executable canaries distinguishing a correlated
+        stamp, an independent group, and an exact duplicate.
+\end{itemize}
+
+The module contains no \code{sorry}, \code{theorem_wanted}, or declared axiom.
+Kernel dependency inspection of the load-bearing theorems reports only Lean's
+standard \code{propext}, \code{Classical.choice}, and \code{Quot.sound} where
+needed. A native-evaluation canary was deliberately replaced by an ordinary
+kernel proof, so no native-decision trust axiom remains in the audited claims.
+These theorems formalize the abstract state and projection laws; they are not a
+formal verification of the C runtime.
+
+\section{Exact validation}
+\label{sec:exact}
+
+\subsection{Datasets and independent oracles}
+
+The exact suite contains three families:
+\begin{enumerate}
+  \item six published FCA examples: Planets, Living Beings, Animals, Binary
+        Relations, Tea Lady, and Music;
+  \item 13 contexts extracted from a pinned Mizar family; and
+  \item nine 10-attribute controlled-random contexts reproduced from the
+        FCApy benchmark generator \cite{fcapy}.
+\end{enumerate}
+Planets is checked against the published \texttt{fcaR} concepts and
+implications \cite{fcar}. The remaining exact contexts are reconstructed by a
+lectic NextClosure implementation, an independently ordered level-wise
+implementation, and the \texttt{concepts} FCA package; lattice neighbors are
+also compared. Inputs and dependency versions are content-addressed.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Exact-enumeration validation. Artifact columns are totals within a
+family; every concept, canonical implication, and cover edge is compared as a
+set, not only by count.}
+\label{tab:exact}
+\begin{tabular}{lrrrrr}
+\toprule
+Family & Contexts & Object $\times$ attribute range &
+Concepts & Basis & Covers\\
+\midrule
+\WMFCAExactValidationRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+The \WMFCAQueryContextCount{} wider contexts, including the FiveThirtyEight Bob Ross matrix
+\cite{bobross}, are not silently omitted. They have a separately frozen
+query protocol containing the empty and full attribute sets, every singleton,
+fixed prefixes, and fixed adjacent pairs. Direct set-intersection oracles and
+\texttt{concepts} agree on all extents and closures.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Query-only scale validation. Maximum size is the largest context in
+the family; no complete lattice is claimed for these cases.}
+\label{tab:query}
+\begin{tabular}{lrrr}
+\toprule
+Family & Contexts & Maximum size & Exact queries\\
+\midrule
+\WMFCAQueryValidationRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Revision and forgetting}
+
+The event protocol contains 14 operations: forgetting and restoring a packed
+stamp, repeating the same stamp, adding and removing a conflict, adding and
+removing explicit unknown evidence, corroboration, a multi-observation
+revision, and scoped forgetting by group, source, context, and cell. Both a
+$30\times30$ random context and Bob Ross are checked at the initial state and
+after every event, yielding \WMFCAEventPrefixCount{} prefix states. At each
+prefix,
+\[
+  Q(\operatorname{foldUpdates}(W_0,e_1,\ldots,e_t))
+  =
+  Q(\operatorname{buildFresh}(\operatorname{survivors}_t))
+\]
+for the frozen status, evidence, provenance, extent, and closure queries.
+Independent direct queries also agree with \texttt{concepts}. This validates
+incremental semantics against fresh recomputation; it does not prove an
+asymptotic update advantage.
+
+\subsection{Staged ergonomics measurement}
+
+A small receipt-backed campaign measures only fixtures whose golden outputs
+were already validated. Each case has one warm-up and five measured process invocations; an
+invocation is retained only when its output is byte-identical to the expected
+output. Timings include process startup, parsing, native execution, and golden
+validation. They are therefore end-to-end observations on one machine, not
+kernel-only timings or comparisons with specialized FCA engines.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Descriptive native-runtime ergonomics. Rates have different work
+units by row and should not be compared across rows.}
+\label{tab:ergonomics}
+\begin{tabular}{llrrc}
+\toprule
+Case & Work per invocation & Median ms & Units/s & Golden\\
+\midrule
+\WMFCAErgonomicsRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+The recorded campaign peak child RSS is \WMFCAErgonomicsPeakMiB{} MiB. The
+public WM/FCA library has \WMFCALibraryLines{} lines
+(\WMFCALibraryBytes{} bytes), \WMFCALibraryTypeDeclarations{} type
+declarations, and \WMFCALibraryEquations{} equations. The certificate gate
+covers \WMFCACertificateCoverageCount{} named positive, negative, tamper, cell
+boundary, history, and typed-wrapper behaviors. These counts measure source
+and test surface, not semantic complexity. The complete environment, input,
+binary, runner, protocol, program, expected-output, and library hashes are in
+receipt \WMFCAErgonomicsReceiptHash.
+
+\section{Frozen corruption study}
+\label{sec:corruption}
+
+\subsection{Protocol}
+
+The protocol was frozen before the complete run and is identified by
+\WMFCAProtocolHash. It crosses:
+\begin{itemize}
+  \item \WMFCACorruptionContextCount{} FCApy contexts with 10 attributes and
+        10, 30, or 100 objects at densities 0.1, 0.5, and 0.9;
+  \item \WMFCASeedCount{} deterministic seeds;
+  \item missingness rates $\{\WMFCAMissingRates\}$;
+  \item bit-flip rates $\{\WMFCAFlipRates\}$; and
+  \item an explicit unknown rate of \WMFCAUnknownRate.
+\end{itemize}
+The Cartesian product contains \WMFCACaseCount{} cases. Each case has a
+primary layer, an exact matrix copy from a distinct nominal source in the same
+dependence group, and an independently corrupted layer in another group.
+
+Six models were fixed:
+\begin{description}
+  \item[Crisp single source] at least one positive in the primary layer.
+  \item[Raw majority (2)] at least two positive observation packets.
+  \item[Source majority (2)] at least two nominal positive sources.
+  \item[WM permissive] at least one positive dependence group.
+  \item[WM robust] at least two positive dependence groups.
+  \item[WM exact consensus] at least one positive and no observed negative
+        across the selected layers.
+\end{description}
+No model was selected or tuned after inspecting outcomes. For every case,
+CeTTa evaluates the layer projections and checks them against the independent
+orchestrator, giving \WMFCAAssertionCount{} native semantic assertions.
+
+Point projections are scored against the uncorrupted context by cell F1,
+held-out closure exactness, concept-set F1, canonical-basis F1, and cover-edge
+F1. The contextual family is scored by cell and closure coverage together
+with interval width. Exact duplicate and correlated-copy invariance are
+separate metrics.
+
+\paragraph{Incomplete-context extension.}
+After the main WM study, but before executing this comparator, we froze a
+parameter-free lower/upper-completion extension over the same
+\WMFCACaseCount{} source cases. In the epistemic incomplete-context view, each
+cell is positive, negative, or unknown, and a completion replaces unknown
+values by definite ones \cite{chacongomez2026}. We use only the primary
+evidence layer: the lower completion maps unknown and missing cells to false,
+and the upper completion maps them to true; both preserve known positive and
+negative observations. The source layer is reconstructed and must match the
+original receipt exactly before it is scored. Observed bit flips remain
+observations in both completions.
+
+Both completion relations are scored separately on the same point and
+structural metrics. We do not treat their concept families, implication bases,
+or closures as set-valued intervals: relation inclusion does not in general
+make those derived families nested. The extension has no fitted parameter,
+model selection, or post-result tuning and is identified by
+\WMFCAIncompleteProtocolHash.
+
+\subsection{Point recovery}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{Descriptive means across all \WMFCACaseCount{} frozen cases. The
+robust model is substantially worse; the permissive and exact-consensus models
+are better on these averages. No significance test is implied.}
+\label{tab:model-results}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Cell F1 & Closure exact & Basis F1 & Concept F1 & Cover F1\\
+\midrule
+\WMFCAModelResultRows
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The raw- and source-majority rows equal the crisp row because the duplicated
+primary matrix supplies their second positive vote. This equality is not a
+desirable robustness result: removing the correlated copy changes these
+projections in almost every case.
+
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{Frozen incomplete-context comparison on the same
+\WMFCACaseCount{} cases. Each completion is evaluated as its own crisp
+relation; no concept-family interval is implied.}
+\label{tab:incomplete-baselines}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Cell F1 & Closure exact & Basis F1 & Concept F1 & Cover F1\\
+\midrule
+\WMFCAIncompleteBaselineRows
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The lower completion is exactly the crisp single-source projection: both
+retain observed positives and map negative, unknown, and missing cells to
+non-incidence. A standard incomplete-context construction thus independently
+recovers the conservative baseline. The WM permissive projection has
+higher descriptive mean recovery than both completions on every metric in
+Table~\ref{tab:incomplete-baselines}; the next subsection shows that this point
+advantage does not dominate the interval comparison.
+
+Table~\ref{tab:permissive-delta} shows paired descriptive differences for the
+permissive group model. A win/tie/loss is computed per frozen case, so the
+positive means do not hide that concept and implication recovery sometimes
+worsens.
+
+\begin{table}[t]
+\centering
+\small
+\caption{WM permissive minus crisp single-source. W/T/L denotes paired cases.}
+\label{tab:permissive-delta}
+\begin{tabular}{lrr}
+\toprule
+Metric & Mean difference & W/T/L\\
+\midrule
+\WMFCAPermissiveDeltaRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Envelopes and provenance invariance}
+
+The three WM incidence projections (permissive, robust, and exact consensus)
+form the evaluated envelope. Coverage is the fraction of true cell labels or
+true closure memberships contained in the lower/upper interval. Width is the
+corresponding average binary width (normalized for closures).
+
+\begin{table}[t]
+\centering
+\small
+\caption{Contextual-envelope coverage and sharpness. Higher coverage is
+purchased with explicit width; this table is not a point-accuracy comparison.}
+\label{tab:envelope}
+\begin{tabular}{lrrrr}
+\toprule
+Target & Crisp coverage & WM coverage & Gain & Mean width\\
+\midrule
+\WMFCAEnvelopeRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+The coverage gain is positive in every frozen missingness and flip-rate
+stratum, but a wider interval can achieve coverage mechanically. The
+scientific object is therefore the coverage--width pair, not coverage alone.
+This experiment does not establish optimal sharpness or calibration of the
+set-valued interval.
+
+The main protocol also preregistered Brier score and expected calibration error
+(ECE). For this point-scoring view only, an incidence interval $[l,u]$ is
+mapped to its midpoint $(l+u)/2\in\{0,0.5,1\}$. The separately frozen
+completion comparator uses the same map, while the crisp baseline emits hard
+zero/one forecasts. Table~\ref{tab:calibration} averages the case-level scores;
+lower Brier and ECE, higher coverage, and lower width are desirable but need
+not be attained by the same method.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Cell-level point forecasts and interval coverage/width. Brier and ECE
+score interval midpoints; they do not establish calibration of the set-valued
+intervals.}
+\label{tab:calibration}
+\begin{tabular}{lrrrrr}
+\toprule
+Forecast & Support & Brier & ECE & Coverage & Width\\
+\midrule
+\WMFCACalibrationRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+The WM-minus-crisp differences in midpoint Brier score and ECE are
+negative---the midpoint forecast scores better---in each of the
+\WMFCACalibrationStratumCount{} separately frozen missingness and flip-rate
+strata. This is descriptive evidence that the disagreement state carries
+useful uncertainty information. It is not an inferential comparison, and
+midpoint calibration does not imply coverage calibration for the interval.
+The lower/upper-completion midpoint has lower Brier score and ECE and its
+interval covers more cells than the WM family, but it is also wider. The fixed
+comparison therefore supports no claim that either interval uniformly
+dominates the other.
+
+Every model is invariant to replaying an evidence layer with the same identity:
+the observed rate is \WMFCADuplicateInvariantRate. The two dependence-group
+models are invariant to removing the distinct-source correlated copy at rate
+\WMFCAGroupCopyInvariantRate. Raw and source-counting thresholds have rate
+\WMFCARawCopyInvariantRate. This ablation isolates the benefit of preserving a
+declared dependence structure: nominal source multiplicity is not allowed to
+masquerade as independent support.
+
+\section{What the WM layer contributes}
+\label{sec:discussion}
+
+\paragraph{Conservative exactness.}
+When observations are complete and one extraction model is fixed, WM/FCA
+reconstructs ordinary FCA exactly. This is supported both by the Lean order
+isomorphism and by full artifact parity over the exact suite.
+
+\paragraph{Reversible evidence state.}
+Every cell judgment can be traced to active stamps, and forgetting has a
+precise meaning: recompute from the surviving evidence. The lifecycle tests
+exercise negative, unknown, missing, conflicting, duplicated, and
+foreign-context observations rather than only monotone addition. Query-specific
+closure certificates retain both stages of the Galois derivation: the queried
+attributes, their extent, and the resulting closure. Implication and concept
+certificates compose this object with the proposition being checked and its
+Boolean result. Verification recomputes the two stages from the retained
+immutable index, while an explanation query exposes active stamped observations
+for exactly the cells consulted by the derivation. Positive, negative, and
+tampered certificates are tested. Event-backed states also retain their update
+history; snapshot states explicitly report that no history was supplied.
+
+\paragraph{Dependence-aware projection.}
+The corruption ablation gives a direct counterexample to treating two nominal
+sources as two independent observations. Group-count gates remain unchanged
+under the declared correlated copy; raw and source-counting gates do not. The
+formal theorem gives the same result for arbitrary finite states satisfying
+the group-subset premise.
+
+\paragraph{Model-family answers.}
+Robust/permissive relations expose uncertainty that a single matrix suppresses.
+Here the envelope covers more true cells and closures, with its width reported.
+The point results also show why the family should not be collapsed by fiat:
+the robust two-group gate loses badly, while the permissive and exact-consensus
+gates improve the descriptive averages.
+
+These contributions use the WM calculus rather than a fixed PLN rule set. PLN
+evidence values can instantiate the evidence carrier and supply additional
+deduction or revision rules, but none is required for the conservative FCA
+projection or the provenance-state laws.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\begin{enumerate}
+  \item The corruption data are synthetic perturbations of controlled-random
+        contexts. They isolate missingness, flips, dependence, and unknowns,
+        but do not establish utility in a natural scientific domain.
+  \item The analysis is post-run descriptive. The protocol froze models and
+        hypotheses, but did not freeze a sampling model, confidence interval,
+        or significance test. We therefore report no $p$-values or inferential
+        confidence intervals.
+  \item Dependence groups are supplied by the modeller. Invariance is exact
+        conditional on the grouping; discovering or validating the groups is
+        outside the current experiment.
+  \item The envelope comparison does not optimize the coverage--width frontier.
+        It includes a fixed lower/upper incomplete-context comparator, but not
+        a tuned fuzzy, rough, or graded-possibility FCA method. Brier and ECE
+        evaluate only interval midpoints as point forecasts, not calibration
+        of the set-valued intervals.
+  \item Exact lattice enumeration is restricted by a frozen attribute bound.
+        Wider cases validate exact queries only. We make no general
+        performance claim against specialized FCA engines.
+  \item Lean proves the abstract semantics and FCA bridge, while runtime
+        equivalence is established by executable differential tests. The C
+        implementation is not extracted from Lean and is not end-to-end
+        verified.
+  \item The query certificates are replayable state-carrying objects, not
+        minimal cryptographic or independently checkable proof terms. They can
+        expose every consulted cell and its active observations on demand, but
+        do not eagerly materialize those explanations. Snapshot states cannot
+        reconstruct an update history that was not supplied; event-backed
+        states retain one explicitly.
+\end{enumerate}
+
+\section{Reproducibility}
+\label{sec:reproducibility}
+
+The runtime artifacts live under \code{benchmarks/wm_fca} in the CeTTa
+repository \cite{cetta}. The main protocol is
+\code{corruption_protocol.json}; the compressed run receipt and descriptive
+analysis are under \code{results}. The staged runtime measurements use
+\code{ergonomics_protocol.json} and a separate receipt under \code{results}.
+The corruption receipt artifact hash is
+\WMFCAReceiptHash, and its decompressed content hash is
+\WMFCAReceiptContentHash. The incomplete-context extension is identified by
+\WMFCAIncompleteProtocolHash; its receipt artifact and content hashes are
+\WMFCAIncompleteReceiptHash{} and \WMFCAIncompleteReceiptContentHash.
+Exact and query oracles pin source commits, input hashes, dependency versions,
+matrix semantics, and oracle agreement.
+
+The Lean source is
+\code{Mettapedia/Logic/ConceptOntology/WMFCA.lean} in MeTTapedia
+\cite{mettapedia}. Paper tables are emitted by
+\code{papers/generate_wm_fca_benchmark_tables.py}. The generator independently
+replays both the corruption and incomplete-context analyzers from their pinned
+compressed receipts and requires exact JSON equality with the checked-in
+analyses. It also checks the protocol hashes, complete and identical case
+universes, exact lower-completion/crisp equality, cross-analysis WM means,
+oracle schemas and agreement, event-prefix cardinality, and every referenced
+field. For the ergonomics table it checks the runner, library, program,
+golden-output, and protocol hashes and rederives each reported rate from its
+median. A missing or drifted field aborts generation. Thus no numeric table
+entry in this paper is silently defaulted or hand-transcribed.
+
+\section{Related work}
+
+FCA originates with Wille \cite{wille1982}; the standard mathematical and
+algorithmic treatment is Ganter and Wille \cite{ganterwille1999}. Fuzzy Galois
+connections and fuzzy FCA replace Boolean incidence by graded relations
+\cite{belohlavek1999}, while interval-valued FCA represents lower and upper
+membership degrees \cite{djouadi2009}. The present construction differs in
+where uncertainty lives: a provenance state and a family of evidence
+extraction models precede the crisp relation. Fuzzy or interval evidence can
+nevertheless be used inside the same interface.
+
+Epistemic incomplete contexts distinguish positive, negative, and unknown
+incidences and study possible complete contexts obtained by resolving the
+unknown cells \cite{chacongomez2026}. Our fixed lower/upper-completion
+comparator instantiates that established boundary on exactly the same
+corrupted primary layers as the WM models. The WM envelope instead ranges over
+explicit evidence profiles and extraction gates, so its bounds need not equal
+the extremal completions of one partial matrix.
+
+The WM formulation is aligned with imprecise-probability practice in retaining
+a family of admissible precise models instead of prematurely selecting one
+\cite{walley1991}. Its exact FCA projection and credal concept carriers extend
+the type-theoretic development in \cite{credalconcept}. CeTTa supplies the
+native MeTTa execution substrate; Lean~4 supplies the proof-checked semantic
+bridge \cite{lean4}.
+
+\section{Conclusion}
+
+World-model FCA can retain observation status, provenance, dependence,
+revision, forgetting, and model uncertainty without sacrificing classical
+FCA. The crisp theory is recovered exactly as a singleton late projection.
+The runtime reconstructs independently computed concepts, implications, and
+lattice covers; wider contexts remain safely query-bounded; incremental
+updates match fresh recomputation; and the Lean development proves the
+corresponding abstract laws.
+
+The frozen corruption study provides a first nontrivial use of the additional
+degrees of freedom. Dependence-aware gates eliminate correlated-copy
+inflation exactly. Permissive and exact-consensus projections improve several
+descriptive recovery metrics, while the robust projection worsens them.
+Contextual envelopes improve coverage with an explicit width cost, and their
+midpoint point forecasts improve Brier score and ECE in every frozen
+missingness and flip-rate stratum. Against the fixed incomplete-context
+baseline, WM permissive has better point and structural recovery, whereas the
+completion interval has better cell coverage and midpoint calibration at
+greater width. These results validate the machinery and isolate its behavior,
+but they do not establish interval calibration or natural-domain superiority.
+The next scientific step is a preregistered partial-observation dataset in
+which provenance and dependence are externally meaningful, together with a
+coverage--sharpness comparison against graded uncertain-FCA methods.
+
+\begin{thebibliography}{99}
+
+\bibitem{wille1982}
+R.~Wille.
+\newblock Restructuring lattice theory: an approach based on hierarchies of concepts.
+\newblock In \emph{Ordered Sets}, pp. 445--470. Reidel, 1982.
+
+\bibitem{ganterwille1999}
+B.~Ganter and R.~Wille.
+\newblock \emph{Formal Concept Analysis: Mathematical Foundations}.
+\newblock Springer, 1999.
+
+\bibitem{belohlavek1999}
+R.~Belohlavek.
+\newblock Fuzzy Galois connections.
+\newblock \emph{Mathematical Logic Quarterly}, 45(4):497--504, 1999.
+
+\bibitem{djouadi2009}
+Y.~Djouadi and H.~Prade.
+\newblock Interval-valued fuzzy formal concept analysis.
+\newblock In \emph{ISMIS 2009}, LNCS 5722, pp. 592--601. Springer, 2009.
+
+\bibitem{chacongomez2026}
+F.~Chac\'on-G\'omez, M.~E.~Cornejo, D.~Dubois, J.~Medina, and H.~Prade.
+\newblock Handling incomplete information in formal concept analysis---a
+possibilistic approach.
+\newblock \emph{Computational and Applied Mathematics}, 45:171, 2026.
+\newblock \url{https://doi.org/10.1007/s40314-025-03440-3}.
+
+\bibitem{walley1991}
+P.~Walley.
+\newblock \emph{Statistical Reasoning with Imprecise Probabilities}.
+\newblock Chapman \& Hall, 1991.
+
+\bibitem{fcar}
+M\'alaga FCA Group.
+\newblock Concept lattices with \texttt{fcaR}: the Planets context.
+\newblock \url{https://malaga-fca-group.github.io/fcaR/articles/concept_lattice.html}.
+
+\bibitem{fcapy}
+E.~Dudyrev.
+\newblock FCApy benchmarks.
+\newblock \url{https://github.com/EgorDudyrev/FCApy_benchmarks}.
+
+\bibitem{bobross}
+FiveThirtyEight.
+\newblock A statistical analysis of the work of Bob Ross.
+\newblock \url{https://github.com/fivethirtyeight/data/tree/master/bob-ross}.
+
+\bibitem{lean4}
+L.~de Moura and S.~Ullrich.
+\newblock The Lean 4 theorem prover and programming language.
+\newblock In \emph{CADE 28}, LNCS 12699, pp. 625--635. Springer, 2021.
+
+\bibitem{credalconcept}
+Z.~Goertzel.
+\newblock Credal concept formation in dependent type theory:
+FCA recovery, Walley conjugacy, and a Mizar benchmark.
+\newblock MeTTapedia working paper, 2026.
+
+\bibitem{cetta}
+CeTTa contributors.
+\newblock CeTTa: a C implementation of MeTTa.
+\newblock \url{https://github.com/godelclaw/CeTTa}.
+
+\bibitem{mettapedia}
+Mettapedia contributors.
+\newblock MeTTapedia formalization library.
+\newblock \url{https://github.com/godelclaw/MeTTapedia}.
+
+\end{thebibliography}
+
+\end{document}
