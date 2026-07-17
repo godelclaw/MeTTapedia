@@ -406,6 +406,21 @@ theorem sparseRowValid_cons_iff {entry : Nat × ExactFraction}
       FractionValid entry.2 ∧ SparseRowValid remaining := by
   simp [SparseRowValid]
 
+theorem fractionValid_coefficientAt {row : ExactSparseRow}
+    (hrow : SparseRowValid row) (column : Nat) :
+    FractionValid (coefficientAt column row) := by
+  induction row with
+  | nil => exact fractionValid_zero
+  | cons entry remaining inductionHypothesis =>
+      have hentry := sparseRowValid_head hrow
+      have hremaining := sparseRowValid_tail hrow
+      simp only [coefficientAt]
+      split
+      · exact hentry
+      · split
+        · exact fractionValid_zero
+        · exact inductionHypothesis hremaining
+
 theorem sparseRowValid_addAt {column : Nat} {delta : ExactFraction}
     {row : ExactSparseRow} (hdelta : FractionValid delta)
     (hrow : SparseRowValid row) :

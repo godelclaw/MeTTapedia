@@ -918,12 +918,20 @@ scalar multiplication.  Validity is preserved by every one of these
 operations under the explicit nonzero-denominator hypotheses
 (\texttt{HypercubicDimension16TraceRankSemantics}).
 
-This is not yet the physical-rank theorem.  The checked ranges must still be
-lifted through generic echelon soundness to simultaneous linear
-independence, the pivot/free partition must be related to that rank, and
-every encoded row must be identified with the descended physical trace
-operator.  In particular, the number $98$ is not yet asserted here as the
-dimension or conditioning of the physical quotient.
+The forty-six checked ranges are now assembled into one typed witness for
+every selected row.  The normalized rows have pairwise distinct maximal
+pivots and are therefore linearly independent.  Strong induction through the
+exact replay proves that every normalized row lies in the span of the selected
+raw rows.  Since both indexed families have $11{,}556$ members, the selected
+raw rows themselves are linearly independent over $\mathbb Q$, and their
+rational span has finrank exactly $11{,}556$
+(\texttt{HypercubicDimension16TraceRankTheorem}).
+
+This is still not the physical-quotient theorem.  The pivot/free partition
+must be transported to the finite $11{,}654$-coordinate ambient module, and
+every encoded row must be identified with an exhaustive family of rows of the
+descended physical trace operator.  In particular, the number $98$ is not yet
+asserted here as the dimension or conditioning of the physical quotient.
 
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
