@@ -200,6 +200,20 @@ theorem exists_taitColoring_of_deletedEdgeColoring {u v : V}
       (unrestrictedDeletedEdgeFrame G u v)
       (unrestrictedDeletedEdgeFrame_wellFormed huv hcubic) C hC
 
+/-- Consequently, a non-Tait-colorable finite cubic graph has no
+Tait-colorable one-edge deletion. -/
+theorem deletedEdge_not_taitColorable_of_not_taitColorable {u v : V}
+    (huv : G.Adj u v)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (hnotColorable :
+      ¬ ∃ ambientColoring : G.EdgeColoring Color,
+          IsTaitEdgeColoring G ambientColoring) :
+    ¬ ∃ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
+        IsTaitEdgeColoring (DeletedEdgeGraph G u v) C := by
+  rintro ⟨C, hC⟩
+  exact hnotColorable
+    (exists_taitColoring_of_deletedEdgeColoring huv hcubic C hC)
+
 end
 
 end GoertzelV24TwoDefectParity
