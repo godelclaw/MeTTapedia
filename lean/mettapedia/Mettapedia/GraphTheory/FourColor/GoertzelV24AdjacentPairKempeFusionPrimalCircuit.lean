@@ -46,6 +46,41 @@ theorem supportInterval_getVert {u v : V}
   simp only [supportInterval, getVert_copy, take_getVert, drop_getVert]
   rw [Nat.min_eq_right hoffset]
 
+/-- The initial vertex of a simple walk does not reappear in its support
+tail. -/
+theorem IsPath.start_not_mem_support_tail {u v : V}
+    {path : G.Walk u v} (hpath : path.IsPath) :
+    u ∉ path.support.tail := by
+  have hnodup : (u :: path.support.tail).Nodup := by
+    rw [path.cons_tail_support]
+    exact hpath.support_nodup
+  exact (List.nodup_cons.mp hnodup).1
+
+/-- The terminal vertex of a simple walk does not occur in the support
+with both endpoints trimmed. -/
+theorem IsPath.end_not_mem_support_tail_dropLast {u v : V}
+    {path : G.Walk u v} (hpath : path.IsPath) :
+    v ∉ path.support.tail.dropLast := by
+  intro hmem
+  have htailNonempty : path.support.tail ≠ [] :=
+    List.ne_nil_of_mem (List.mem_of_mem_dropLast hmem)
+  have hlast : path.support.tail.getLast htailNonempty = v := by
+    have hsupportLast : path.support.getLast? = some v := by
+      rw [List.getLast?_eq_getLast_of_ne_nil (by simp), path.getLast_support]
+    have hconsLast := congrArg List.getLast? path.cons_tail_support
+    have htailLast : path.support.tail.getLast? = some v := by
+      calc
+        path.support.tail.getLast? =
+            (u :: path.support.tail).getLast? := by
+          simpa only [List.singleton_append] using
+            (List.getLast?_append_of_ne_nil [u] htailNonempty).symm
+        _ = path.support.getLast? := hconsLast
+        _ = some v := hsupportLast
+    rw [List.getLast?_eq_getLast_of_ne_nil htailNonempty] at htailLast
+    exact Option.some.inj htailLast
+  have hne := hpath.support_nodup.tail.rel_dropLast_getLast hmem
+  exact hne hlast.symm
+
 /-- Internal steps of a simple bicolored line-graph path are
 primal-coherent. If two successive junctions coincided, the path vertices
 two steps apart would be adjacent primal edges of the same color. -/
@@ -880,6 +915,92 @@ theorem EvenKempeFusionLens.eq_endpoint_of_mem_bFusionOrderInterval_of_mem_cSupp
     right
     exact hfusionValue.symm.trans
       (lens.bFusionSupportOrderEmbedding_preserves_edge second)
+
+/-- Between consecutive fusion positions on the second route, a common
+route edge in the corresponding reversed interval is one of its endpoints. -/
+theorem EvenKempeFusionLens.eq_endpoint_of_mem_cFusionOrderInterval_of_mem_bSupport
+    {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {left right : Fin portCount}
+    (lens : data.EvenKempeFusionLens C a b c left right)
+    (first second : Fin lens.fusionSiteCount)
+    (hadjacent :
+      (finCongr lens.fusionSites_length_eq
+          (lens.fusionMonodromy second)).val + 1 =
+        (finCongr lens.fusionSites_length_eq
+          (lens.fusionMonodromy first)).val)
+    (hcOrder : lens.cFusionSupportOrderEmbedding
+        (finCongr lens.fusionSites_length_eq
+          (lens.fusionMonodromy second)) <
+      lens.cFusionSupportOrderEmbedding
+        (finCongr lens.fusionSites_length_eq
+          (lens.fusionMonodromy first)))
+    {edge : G.edgeSet}
+    (hcInterval : edge ∈
+      (lens.cFusionOrderInterval first second hcOrder).support)
+    (hbSupport : edge ∈ lens.bRoute.ambientPath.support) :
+    edge = lens.fusionSupportEdgeAt first ∨
+      edge = lens.fusionSupportEdgeAt second := by
+  let firstC : Fin lens.cFusionSites.length :=
+    finCongr lens.fusionSites_length_eq (lens.fusionMonodromy second)
+  let secondC : Fin lens.cFusionSites.length :=
+    finCongr lens.fusionSites_length_eq (lens.fusionMonodromy first)
+  have hcSupport : edge ∈ lens.cRoute.ambientPath.support :=
+    lens.cFusionOrderInterval_support_subset first second hcOrder hcInterval
+  have hfusion : edge ∈ lens.cFusionSites :=
+    (lens.mem_cFusionSites_iff edge).2 ⟨hcSupport, hbSupport⟩
+  rcases List.get_of_mem hfusion with ⟨fusionPosition, hfusionValue⟩
+  have hcRawInterval : edge ∈
+      (lens.cRoute.ambientPath.supportInterval
+        (lens.cFusionSupportOrderEmbedding firstC)
+        (lens.cFusionSupportOrderEmbedding secondC) hcOrder.le).support := by
+    simpa only [firstC, secondC,
+      EvenKempeFusionLens.cFusionOrderInterval,
+      SimpleGraph.Walk.support_copy, SimpleGraph.Walk.support_reverse,
+      List.mem_reverse] using hcInterval
+  rcases lens.cRoute.ambientPath.exists_support_position_of_mem_supportInterval
+      (lens.cFusionSupportOrderEmbedding firstC)
+      (lens.cFusionSupportOrderEmbedding secondC) hcOrder.le hcRawInterval with
+    ⟨ambientPosition, hfirstAmbient, hambientSecond, hambientValue⟩
+  have hembeddingPosition :
+      lens.cFusionSupportOrderEmbedding fusionPosition = ambientPosition := by
+    apply (lens.cRoute.ambientPath_isPath.support_nodup.get_inj_iff).1
+    calc
+      lens.cRoute.ambientPath.support.get
+          (lens.cFusionSupportOrderEmbedding fusionPosition) =
+          lens.cFusionSites.get fusionPosition :=
+        (lens.cFusionSupportOrderEmbedding_preserves_edge
+          fusionPosition).symm
+      _ = edge := hfusionValue
+      _ = lens.cRoute.ambientPath.support.get ambientPosition :=
+        hambientValue.symm
+  have hfirstFusion : firstC ≤ fusionPosition := by
+    apply (lens.cFusionSupportOrderEmbedding.le_iff_le).1
+    simpa only [hembeddingPosition] using hfirstAmbient
+  have hfusionSecond : fusionPosition ≤ secondC := by
+    apply (lens.cFusionSupportOrderEmbedding.le_iff_le).1
+    simpa only [hembeddingPosition] using hambientSecond
+  have hpositionValueCases : fusionPosition.val = firstC.val ∨
+      fusionPosition.val = secondC.val := by
+    change firstC.val ≤ fusionPosition.val at hfirstFusion
+    change fusionPosition.val ≤ secondC.val at hfusionSecond
+    have hadjacent' : firstC.val + 1 = secondC.val := by
+      simpa only [firstC, secondC] using hadjacent
+    omega
+  rcases hpositionValueCases with hfirstValue | hsecondValue
+  · have hposition : fusionPosition = firstC := Fin.ext hfirstValue
+    subst fusionPosition
+    right
+    exact hfusionValue.symm.trans
+      ((lens.cFusionSupportOrderEmbedding_preserves_edge firstC).trans
+        (lens.support_get_fusionMonodromy_eq second).symm)
+  · have hposition : fusionPosition = secondC := Fin.ext hsecondValue
+    subst fusionPosition
+    left
+    exact hfusionValue.symm.trans
+      ((lens.cFusionSupportOrderEmbedding_preserves_edge secondC).trans
+        (lens.support_get_fusionMonodromy_eq first).symm)
 
 /-- The two oppositely directed inversion intervals have disjoint support
 tails when the first-route fusion positions are consecutive. -/

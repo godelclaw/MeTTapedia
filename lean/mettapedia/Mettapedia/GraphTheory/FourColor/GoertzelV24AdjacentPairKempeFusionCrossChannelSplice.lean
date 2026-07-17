@@ -49,6 +49,28 @@ def EvenKempePortPath.secondPrefixToCrossSite
     G.lineGraph.Walk second.leftEdge.1 site.1 :=
   second.ambientPath.takeUntil site.1 site.2.2
 
+/-- The remainder of the first route beginning at a selected cross site. -/
+def EvenKempePortPath.firstSuffixFromCrossSite
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    G.lineGraph.Walk site.1 first.rightEdge.1 :=
+  first.ambientPath.dropUntil site.1 site.2.1
+
+/-- The remainder of the second route beginning at the same cross site. -/
+def EvenKempePortPath.secondSuffixFromCrossSite
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    G.lineGraph.Walk site.1 second.rightEdge.1 :=
+  second.ambientPath.dropUntil site.1 site.2.2
+
 /-- Follow the first prefix into a cross site and the second prefix backward
 out to its boundary port. -/
 def EvenKempePortPath.crossSplice
@@ -103,6 +125,220 @@ theorem EvenKempePortPath.secondPrefixToCrossSite_support_subset
     (first.secondPrefixToCrossSite second site).support ⊆
       second.ambientPath.support :=
   second.ambientPath.support_takeUntil_subset_support site.2.2
+
+/-- Prefix and suffix reconstruct the complete first route. -/
+theorem EvenKempePortPath.firstPrefix_append_firstSuffix
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.firstPrefixToCrossSite second site).append
+        (first.firstSuffixFromCrossSite second site) =
+      first.ambientPath :=
+  first.ambientPath.take_spec site.2.1
+
+/-- Prefix and suffix likewise reconstruct the complete second route. -/
+theorem EvenKempePortPath.secondPrefix_append_secondSuffix
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.secondPrefixToCrossSite second site).append
+        (first.secondSuffixFromCrossSite second site) =
+      second.ambientPath :=
+  second.ambientPath.take_spec site.2.2
+
+/-- Simplicity of the first route separates the prefix from the strict
+suffix after the selected site. -/
+theorem EvenKempePortPath.firstPrefix_disjoint_firstSuffix_tail
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.firstPrefixToCrossSite second site).support.Disjoint
+      (first.firstSuffixFromCrossSite second site).support.tail := by
+  have hnodup :
+      ((first.firstPrefixToCrossSite second site).support ++
+        (first.firstSuffixFromCrossSite second site).support.tail).Nodup := by
+    rw [← SimpleGraph.Walk.support_append,
+      first.firstPrefix_append_firstSuffix second site]
+    exact first.ambientPath_isPath.support_nodup
+  exact hnodup.disjoint
+
+/-- The same strict prefix--suffix separation holds on the second route. -/
+theorem EvenKempePortPath.secondPrefix_disjoint_secondSuffix_tail
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.secondPrefixToCrossSite second site).support.Disjoint
+      (first.secondSuffixFromCrossSite second site).support.tail := by
+  have hnodup :
+      ((first.secondPrefixToCrossSite second site).support ++
+        (first.secondSuffixFromCrossSite second site).support.tail).Nodup := by
+    rw [← SimpleGraph.Walk.support_append,
+      first.secondPrefix_append_secondSuffix second site]
+    exact second.ambientPath_isPath.support_nodup
+  exact hnodup.disjoint
+
+/-- If the selected site is the only common route edge, the strict first
+suffix is disjoint from the entire prefix splice. -/
+theorem EvenKempePortPath.firstSuffix_tail_disjoint_crossSplice_support
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second)
+    (hunique : ∀ edge : G.edgeSet,
+      edge ∈ first.ambientPath.support →
+      edge ∈ second.ambientPath.support → edge = site.1) :
+    (first.firstSuffixFromCrossSite second site).support.tail.Disjoint
+      (first.crossSplice second site).support := by
+  rw [List.disjoint_left]
+  intro edge hsuffix hsplice
+  rw [EvenKempePortPath.crossSplice,
+    SimpleGraph.Walk.support_append] at hsplice
+  rcases List.mem_append.mp hsplice with hfirstPrefix | hsecondReverseTail
+  · exact (List.disjoint_left.mp
+      (first.firstPrefix_disjoint_firstSuffix_tail second site))
+        hfirstPrefix hsuffix
+  · have hsecondPrefix : edge ∈
+        (first.secondPrefixToCrossSite second site).support := by
+      have hreverse : edge ∈
+          (first.secondPrefixToCrossSite second site).reverse.support :=
+        List.mem_of_mem_tail hsecondReverseTail
+      simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+        hreverse
+    have hfirstSupport : edge ∈ first.ambientPath.support :=
+      first.ambientPath.support_dropUntil_subset_support site.2.1
+        (List.mem_of_mem_tail hsuffix)
+    have hsecondSupport : edge ∈ second.ambientPath.support :=
+      first.secondPrefixToCrossSite_support_subset second site hsecondPrefix
+    have heq : edge = site.1 := hunique edge hfirstSupport hsecondSupport
+    have hsitePrefix : site.1 ∈
+        (first.firstPrefixToCrossSite second site).support :=
+      (first.firstPrefixToCrossSite second site).end_mem_support
+    exact (List.disjoint_left.mp
+      (first.firstPrefix_disjoint_firstSuffix_tail second site))
+        hsitePrefix (heq ▸ hsuffix)
+
+/-- Under the same unique-intersection hypothesis, the strict second suffix
+also avoids the complete prefix splice. -/
+theorem EvenKempePortPath.secondSuffix_tail_disjoint_crossSplice_support
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second)
+    (hunique : ∀ edge : G.edgeSet,
+      edge ∈ first.ambientPath.support →
+      edge ∈ second.ambientPath.support → edge = site.1) :
+    (first.secondSuffixFromCrossSite second site).support.tail.Disjoint
+      (first.crossSplice second site).support := by
+  rw [List.disjoint_left]
+  intro edge hsuffix hsplice
+  rw [EvenKempePortPath.crossSplice,
+    SimpleGraph.Walk.support_append] at hsplice
+  rcases List.mem_append.mp hsplice with hfirstPrefix | hsecondReverseTail
+  · have hfirstSupport : edge ∈ first.ambientPath.support :=
+      first.firstPrefixToCrossSite_support_subset second site hfirstPrefix
+    have hsecondSupport : edge ∈ second.ambientPath.support :=
+      second.ambientPath.support_dropUntil_subset_support site.2.2
+        (List.mem_of_mem_tail hsuffix)
+    have heq : edge = site.1 := hunique edge hfirstSupport hsecondSupport
+    have hsitePrefix : site.1 ∈
+        (first.secondPrefixToCrossSite second site).support :=
+      (first.secondPrefixToCrossSite second site).end_mem_support
+    exact (List.disjoint_left.mp
+      (first.secondPrefix_disjoint_secondSuffix_tail second site))
+        hsitePrefix (heq ▸ hsuffix)
+  · have hsecondPrefix : edge ∈
+        (first.secondPrefixToCrossSite second site).support := by
+      have hreverse : edge ∈
+          (first.secondPrefixToCrossSite second site).reverse.support :=
+        List.mem_of_mem_tail hsecondReverseTail
+      simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+        hreverse
+    exact (List.disjoint_left.mp
+      (first.secondPrefix_disjoint_secondSuffix_tail second site))
+        hsecondPrefix hsuffix
+
+/-- When the first cross-channel list has length at most one, a selected
+cross site is its unique common route edge. -/
+theorem EvenKempeFusionLens.bcCrossSite_eq_of_length_le_one
+    {data : DegreeTwoBoundaryData G 4}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    (lens01 : data.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : data.EvenKempeFusionLens C a b c 2 3)
+    (hcount : (lens01.bcCrossSites lens23).length ≤ 1)
+    (site : lens01.bRoute.CrossSite lens23.cRoute)
+    (edge : G.edgeSet)
+    (hfirst : edge ∈ lens01.bRoute.ambientPath.support)
+    (hsecond : edge ∈ lens23.cRoute.ambientPath.support) :
+    edge = site.1 := by
+  have hedge : edge ∈ lens01.bcCrossSites lens23 :=
+    (lens01.mem_bcCrossSites_iff lens23 edge).2 ⟨hfirst, hsecond⟩
+  have hsite : site.1 ∈ lens01.bcCrossSites lens23 :=
+    (lens01.mem_bcCrossSites_iff lens23 site.1).2 site.2
+  cases hlist : lens01.bcCrossSites lens23 with
+  | nil =>
+      rw [hlist] at hsite
+      simp at hsite
+  | cons head tail =>
+      have htail : tail = [] := by
+        cases tail with
+        | nil => rfl
+        | cons second rest =>
+            rw [hlist] at hcount
+            simp only [List.length_cons] at hcount
+            omega
+      subst tail
+      rw [hlist] at hedge hsite
+      simp only [List.mem_singleton] at hedge hsite
+      exact hedge.trans hsite.symm
+
+/-- The analogous uniqueness law for the complementary cross channel. -/
+theorem EvenKempeFusionLens.cbCrossSite_eq_of_length_le_one
+    {data : DegreeTwoBoundaryData G 4}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    (lens01 : data.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : data.EvenKempeFusionLens C a b c 2 3)
+    (hcount : (lens01.cbCrossSites lens23).length ≤ 1)
+    (site : lens01.cRoute.CrossSite lens23.bRoute)
+    (edge : G.edgeSet)
+    (hfirst : edge ∈ lens01.cRoute.ambientPath.support)
+    (hsecond : edge ∈ lens23.bRoute.ambientPath.support) :
+    edge = site.1 := by
+  have hedge : edge ∈ lens01.cbCrossSites lens23 :=
+    (lens01.mem_cbCrossSites_iff lens23 edge).2 ⟨hfirst, hsecond⟩
+  have hsite : site.1 ∈ lens01.cbCrossSites lens23 :=
+    (lens01.mem_cbCrossSites_iff lens23 site.1).2 site.2
+  cases hlist : lens01.cbCrossSites lens23 with
+  | nil =>
+      rw [hlist] at hsite
+      simp at hsite
+  | cons head tail =>
+      have htail : tail = [] := by
+        cases tail with
+        | nil => rfl
+        | cons second rest =>
+            rw [hlist] at hcount
+            simp only [List.length_cons] at hcount
+            omega
+      subst tail
+      rw [hlist] at hedge hsite
+      simp only [List.mem_singleton] at hedge hsite
+      exact hedge.trans hsite.symm
 
 /-- A nonempty route intersection has a site encountered first along the
 first route. Its first prefix contains no other edge of the second route. -/
