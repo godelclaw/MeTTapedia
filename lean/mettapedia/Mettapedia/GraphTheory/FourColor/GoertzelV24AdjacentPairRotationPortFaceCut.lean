@@ -13,20 +13,6 @@ open GoertzelV24WalkCycleParity
 open SimpleGraph
 open SimpleGraphDartRotation
 
-namespace GoertzelV24FaceOrbitIncidence
-
-variable {V E : Type*} [Fintype V] [DecidableEq V]
-  [Fintype E] [DecidableEq E]
-
-/-- Advancing by the face permutation does not change the quotient face. -/
-theorem dartOrbitFace_phi_eq (RS : RotationSystem V E) (dart : RS.D) :
-    dartOrbitFace RS (RS.phi dart) = dartOrbitFace RS dart := by
-  apply Quotient.sound
-  exact (Mettapedia.GraphTheory.EquivPermSameCycle.step_right
-    RS.phi dart).symm
-
-end GoertzelV24FaceOrbitIncidence
-
 namespace GoertzelV24AdjacentPairBoundary.AdjacentPairData
 
 variable {V : Type*} [Fintype V] [DecidableEq V]

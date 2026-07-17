@@ -26,6 +26,25 @@ noncomputable instance orbitFaceDecidableEq (RS : RotationSystem V E) :
 def dartOrbitFace (RS : RotationSystem V E) (dart : RS.D) : OrbitFace RS :=
   Quotient.mk (Equiv.Perm.SameCycle.setoid RS.phi) dart
 
+/-- Advancing by the face permutation does not change the quotient face. -/
+theorem dartOrbitFace_phi_eq (RS : RotationSystem V E) (dart : RS.D) :
+    dartOrbitFace RS (RS.phi dart) = dartOrbitFace RS dart := by
+  apply Quotient.sound
+  exact (Mettapedia.GraphTheory.EquivPermSameCycle.step_right
+    RS.phi dart).symm
+
+/-- Any finite number of face-permutation steps preserves the quotient
+face. -/
+theorem dartOrbitFace_phi_iterate_eq
+    (RS : RotationSystem V E) (steps : Nat) (dart : RS.D) :
+    dartOrbitFace RS ((RS.phi : RS.D → RS.D)^[steps] dart) =
+      dartOrbitFace RS dart := by
+  induction steps generalizing dart with
+  | zero => rfl
+  | succ steps ih =>
+      rw [Function.iterate_succ_apply]
+      exact (ih (RS.phi dart)).trans (dartOrbitFace_phi_eq RS dart)
+
 /-- Darts belonging to one facial-cycle class. -/
 noncomputable def orbitFaceDarts (RS : RotationSystem V E) (face : OrbitFace RS) :
     Finset RS.D :=
