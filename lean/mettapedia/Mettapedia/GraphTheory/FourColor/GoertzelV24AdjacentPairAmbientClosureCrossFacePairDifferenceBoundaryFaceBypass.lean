@@ -235,6 +235,15 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer_remoteF
                   minimal.vertexRotationCyclic) cross) coordinate) ∧
         (rejectedCrossCentralReturnClosedTransfer firstIndex secondIndex ≠
               Equiv.refl (Bool × Bool) →
+          (∀ port : Fin 4,
+            boundaryEdge (baseData.rotationOrderedData graphData
+                minimal.spherical.cubic minimal.vertexRotationCyclic) port ∉
+              orbitFaceBoundary graphData.toRotationSystem
+                (edgeCrossFaceCoordinateOrbitFace graphData
+                  (retainedEdgeToAmbientEdge
+                    (baseData.rotationOrderedData graphData
+                      minimal.spherical.cubic minimal.vertexRotationCyclic)
+                        cross) coordinate)) ∧
           ∃ (root : G.Dart)
               (hrootFst : root.fst ∈
                 retainedVertexSet baseData.firstVertex baseData.secondVertex)
@@ -294,6 +303,7 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer_remoteF
     · simpa using havoids.1 (1 : Fin 2)
     · simpa using havoids.2 (0 : Fin 2)
     · simpa using havoids.2 (1 : Fin 2)
+  refine ⟨hboundary, ?_⟩
   exact exists_retainedFaceBypass minimal
     (baseData.rotationOrderedData graphData minimal.spherical.cubic
       minimal.vertexRotationCyclic) cross
