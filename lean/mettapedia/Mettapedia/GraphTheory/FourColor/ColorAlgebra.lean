@@ -31,6 +31,20 @@ def purple : Color := (1, 1)
 @[simp] theorem zmod2_add_self (x : F2) : x + x = 0 := by
   fin_cases x <;> decide
 
+/-- Two binary scalars differ exactly when their sum is one. -/
+theorem f2_add_eq_one_iff_ne (left right : F2) :
+    left + right = 1 ↔ left ≠ right := by
+  constructor
+  · intro hsum heq
+    subst right
+    simp at hsum
+  · intro hne
+    fin_cases left <;> fin_cases right
+    · exact (hne rfl).elim
+    · exact zero_add _
+    · exact add_zero _
+    · exact (hne rfl).elim
+
 @[simp] theorem color_add_self (c : Color) : c + c = 0 := by
   ext <;> simp
 
