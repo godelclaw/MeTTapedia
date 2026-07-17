@@ -350,7 +350,8 @@ theorem CrossCentralExactFaceCutPair.exists_indexedCrossSide_coordinateSupportPo
       path.IsPath ∧
         (cross : Sym2 (retainedVertexSet data.firstVertex
           data.secondVertex)) ∉ path.edges ∧
-        (((pair.crossFaceDifferenceProfile
+        (((pair.crossFaceDifferenceProfile (centralEdge data)).1 ≠ 0 ∧
+            (pair.crossFaceDifferenceProfile
               (boundaryEdge data (secondSidePort secondIndex))).1 ≠ 0 ∧
             (pair.crossFaceDifferenceProfile
               (boundaryEdge data (firstSidePort firstIndex))).1 ≠ 0 ∧
@@ -360,7 +361,8 @@ theorem CrossCentralExactFaceCutPair.exists_indexedCrossSide_coordinateSupportPo
                 data.secondVertex)) ∈ path.edges →
                 (pair.crossFaceDifferenceProfile
                   (retainedEdgeToAmbientEdge data edge)).1 ≠ 0) ∨
-          ((pair.crossFaceDifferenceProfile
+          ((pair.crossFaceDifferenceProfile (centralEdge data)).2 ≠ 0 ∧
+            (pair.crossFaceDifferenceProfile
               (boundaryEdge data (secondSidePort secondIndex))).2 ≠ 0 ∧
             (pair.crossFaceDifferenceProfile
               (boundaryEdge data (firstSidePort firstIndex))).2 ≠ 0 ∧
@@ -396,13 +398,15 @@ theorem CrossCentralExactFaceCutPair.exists_indexedCrossSide_coordinateSupportPo
     simpa only [SimpleGraph.Walk.edges_reverse, List.mem_reverse] using
       hcrossReverse
   · rcases hcoordinate with hfirstCoordinate | hsecondCoordinate
-    · refine Or.inl ⟨hfirstCoordinate.1, hfirstCoordinate.2.1, ?_⟩
+    · refine Or.inl ⟨hfirstCoordinate.1, hfirstCoordinate.2.1,
+        hfirstCoordinate.2.2.1, ?_⟩
       intro edge hedge
-      apply hfirstCoordinate.2.2 edge
+      apply hfirstCoordinate.2.2.2 edge
       simpa only [SimpleGraph.Walk.edges_reverse, List.mem_reverse] using hedge
-    · refine Or.inr ⟨hsecondCoordinate.1, hsecondCoordinate.2.1, ?_⟩
+    · refine Or.inr ⟨hsecondCoordinate.1, hsecondCoordinate.2.1,
+        hsecondCoordinate.2.2.1, ?_⟩
       intro edge hedge
-      apply hsecondCoordinate.2.2 edge
+      apply hsecondCoordinate.2.2.2 edge
       simpa only [SimpleGraph.Walk.edges_reverse, List.mem_reverse] using hedge
 
 /-- The cross-face difference support path has one of the four indexed

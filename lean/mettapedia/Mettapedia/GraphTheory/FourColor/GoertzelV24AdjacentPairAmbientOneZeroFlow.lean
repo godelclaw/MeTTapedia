@@ -232,7 +232,7 @@ private theorem oneZeroAmbientChain_ne_of_distinct_at_retainedVertex
         subst secondPort
         exact False.elim (hne rfl)
 
-private theorem incidentEdgeFinset_firstVertex
+theorem incidentEdgeFinset_firstVertex
     (data : AdjacentPairData G) :
     incidentEdgeFinset G data.firstVertex =
       {centralEdge data, boundaryEdge data 0, boundaryEdge data 1} := by
@@ -251,7 +251,7 @@ private theorem incidentEdgeFinset_firstVertex
     · simp [boundaryEdge, boundaryEdgeValue]
     · simp [boundaryEdge, boundaryEdgeValue]
 
-private theorem incidentEdgeFinset_secondVertex
+theorem incidentEdgeFinset_secondVertex
     (data : AdjacentPairData G) :
     incidentEdgeFinset G data.secondVertex =
       {centralEdge data, boundaryEdge data 2, boundaryEdge data 3} := by
