@@ -294,6 +294,15 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer_remoteF
                   minimal.vertexRotationCyclic) cross) coordinate) ∧
         (rejectedCrossCentralReturnClosedTransfer firstIndex secondIndex ≠
               Equiv.refl (Bool × Bool) →
+          (∀ port : Fin 4,
+            boundaryEdge (baseData.rotationOrderedData graphData
+                minimal.spherical.cubic minimal.vertexRotationCyclic) port ∉
+              orbitFaceBoundary graphData.toRotationSystem
+                (edgeCrossFaceCoordinateOrbitFace graphData
+                  (retainedEdgeToAmbientEdge
+                    (baseData.rotationOrderedData graphData
+                      minimal.spherical.cubic minimal.vertexRotationCyclic)
+                        cross) coordinate)) ∧
           ∃ (firstRoot : V) (firstFusion : G.Walk firstRoot firstRoot)
               (secondRoot : V) (secondFusion : G.Walk secondRoot secondRoot),
             firstFusion.IsCycle ∧
@@ -336,15 +345,15 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer_remoteF
     hcycle, hparity, hsource, hnotCentral, ?_⟩
   intro hnontrivial
   rcases hremoteBypass hnontrivial with
-    ⟨root, hrootFst, hrootSnd, facePath, hrootEdge, _hrootFace,
-      hfacePath, hcrossFacePath, hfaceEdges⟩
+    ⟨hboundary, root, hrootFst, hrootSnd, facePath, hrootEdge,
+      _hrootFace, hfacePath, hcrossFacePath, hfaceEdges⟩
   rcases pair.exists_fusionCyclePair_of_retainedBypass
       hprefixCycle hsuffixCycle root hrootEdge hrootFst hrootSnd
         facePath hfacePath hcrossFacePath with
     ⟨firstRoot, firstFusion, secondRoot, secondFusion,
       hfirstCycle, hfirstCross, hfirstSupport,
       hsecondCycle, hsecondCross, hsecondSupport⟩
-  refine ⟨firstRoot, firstFusion, secondRoot, secondFusion,
+  refine ⟨hboundary, firstRoot, firstFusion, secondRoot, secondFusion,
     hfirstCycle, hfirstCross, ?_, hsecondCycle, hsecondCross, ?_⟩
   · intro edge hedge
     rcases hfirstSupport edge.1 hedge with hclosure | hbypass
