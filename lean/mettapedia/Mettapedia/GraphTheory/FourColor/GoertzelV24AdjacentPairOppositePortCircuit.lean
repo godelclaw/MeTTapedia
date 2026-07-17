@@ -83,6 +83,81 @@ theorem retainedWalkToAmbient_isPath
   exact SimpleGraph.Walk.map_isPath_of_injective
     Subtype.val_injective hwalk
 
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- No restored boundary edge can occur in a walk mapped from the retained
+induced graph. -/
+theorem boundaryEdgeValue_not_mem_retainedWalkToAmbient_edges
+    (data : AdjacentPairData G)
+    {left right : retainedVertexSet data.firstVertex data.secondVertex}
+    (walk : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk left right)
+    (port : Fin 4) :
+    GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue
+        data port ∉ (data.retainedWalkToAmbient walk).edges := by
+  intro hmem
+  rw [retainedWalkToAmbient, SimpleGraph.Walk.edges_map] at hmem
+  rcases List.mem_map.mp hmem with ⟨edge, _hedge, hedgeValue⟩
+  have hdeletedMem :
+      GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryDeletedVertex
+          data port ∈ edge.map data.retainedGraphHom := by
+    rw [hedgeValue]
+    rw [GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue_eq]
+    simp
+  rcases Sym2.mem_map.mp hdeletedMem with
+    ⟨retained, _hretainedMem, hvalue⟩
+  fin_cases port
+  · change retained.1 = data.firstVertex at hvalue
+    exact retained.2.1 hvalue
+  · change retained.1 = data.firstVertex at hvalue
+    exact retained.2.1 hvalue
+  · change retained.1 = data.secondVertex at hvalue
+    exact retained.2.2 hvalue
+  · change retained.1 = data.secondVertex at hvalue
+    exact retained.2.2 hvalue
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- The central return uses boundary ports `2` and `0`, with the central edge
+between them. -/
+theorem oppositePortCentralReturn_edges
+    (data : AdjacentPairData G) :
+    data.oppositePortCentralReturn.edges =
+      [GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue
+          data 2,
+        GoertzelV24AdjacentPairInsertion.AdjacentPairData.centralEdgeValue data,
+        GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue
+          data 0] := by
+  simp [oppositePortCentralReturn,
+    GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue,
+    GoertzelV24AdjacentPairInsertion.AdjacentPairData.centralEdgeValue,
+    Sym2.eq_swap]
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Among the four restored boundary edges, the central return uses exactly
+the opposite pair `0,2`. -/
+theorem boundaryEdgeValue_mem_oppositePortCentralReturn_edges_iff
+    (data : AdjacentPairData G) (port : Fin 4) :
+    GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue
+        data port ∈ data.oppositePortCentralReturn.edges ↔
+      port = 0 ∨ port = 2 := by
+  rw [data.oppositePortCentralReturn_edges]
+  simp only [List.mem_cons, List.not_mem_nil, or_false]
+  constructor
+  · intro hmem
+    rcases hmem with htwo | hcentral | hzero
+    · exact Or.inr
+        (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue_injective
+          data htwo)
+    · exact False.elim
+        (GoertzelV24AdjacentPairInsertion.AdjacentPairData.centralEdgeValue_ne_boundaryEdgeValue
+          data port hcentral.symm)
+    · exact Or.inl
+        (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue_injective
+          data hzero)
+  · intro hport
+    rcases hport with rfl | rfl
+    · exact Or.inr (Or.inr rfl)
+    · exact Or.inl rfl
+
 /-- Close a retained path from port `0` to port `2` through the central
 adjacent pair. -/
 def oppositePortClosure (data : AdjacentPairData G)
@@ -90,6 +165,35 @@ def oppositePortClosure (data : AdjacentPairData G)
       data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2)) :
     G.Walk (data.portVertex 0) (data.portVertex 0) :=
   (data.retainedWalkToAmbient path).append data.oppositePortCentralReturn
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- The opposite-port closure contains exactly boundary edges `0` and `2`;
+its retained arc contains none of the restored boundary edges. -/
+theorem boundaryEdgeValue_mem_oppositePortClosure_edges_iff
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (port : Fin 4) :
+    GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue
+        data port ∈ (data.oppositePortClosure path).edges ↔
+      port = 0 ∨ port = 2 := by
+  change GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue
+      data port ∈
+      ((data.retainedWalkToAmbient path).append
+        data.oppositePortCentralReturn).edges ↔ port = 0 ∨ port = 2
+  rw [SimpleGraph.Walk.edges_append, List.mem_append]
+  constructor
+  · intro hmem
+    rcases hmem with hretained | hreturn
+    · exact False.elim
+        (data.boundaryEdgeValue_not_mem_retainedWalkToAmbient_edges
+          path port hretained)
+    · exact (data.boundaryEdgeValue_mem_oppositePortCentralReturn_edges_iff
+        port).1 hreturn
+  · intro hport
+    exact Or.inr
+      ((data.boundaryEdgeValue_mem_oppositePortCentralReturn_edges_iff
+        port).2 hport)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- A simple retained path between opposite ports closes through the

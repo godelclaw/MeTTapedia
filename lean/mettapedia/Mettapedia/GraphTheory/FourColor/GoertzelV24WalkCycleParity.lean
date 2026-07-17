@@ -100,6 +100,7 @@ theorem walkEdgeParity_mem_f2CycleSpace_of_closed {vertex : V}
   funext other
   simp [zmod2_add_self]
 
+omit [Fintype V] [DecidableRel G.Adj] in
 /-- An edge absent from a walk has zero coordinate in its mod-two parity
 vector. -/
 theorem walkEdgeParity_apply_eq_zero_of_not_mem_edges
@@ -107,6 +108,31 @@ theorem walkEdgeParity_apply_eq_zero_of_not_mem_edges
     (hnot : edge.1 ∉ walk.edges) :
     walkEdgeParity walk edge = 0 := by
   simp [walkEdgeParity, List.count_eq_zero.2 hnot]
+
+omit [Fintype V] [DecidableRel G.Adj] in
+/-- A trail traverses every edge in its support exactly once, so its mod-two
+coordinate is one on every used edge. -/
+theorem walkEdgeParity_apply_eq_one_of_isTrail_of_mem_edges
+    {start finish : V} {walk : G.Walk start finish}
+    (htrail : walk.IsTrail) (edge : G.edgeSet)
+    (hmem : edge.1 ∈ walk.edges) :
+    walkEdgeParity walk edge = 1 := by
+  simp [walkEdgeParity, htrail.count_edges_eq_one hmem]
+
+omit [Fintype V] [DecidableRel G.Adj] in
+/-- The support of a trail is recovered exactly from its mod-two edge-parity
+vector. -/
+theorem walkEdgeParity_apply_eq_one_iff_mem_edges_of_isTrail
+    {start finish : V} {walk : G.Walk start finish}
+    (htrail : walk.IsTrail) (edge : G.edgeSet) :
+    walkEdgeParity walk edge = 1 ↔ edge.1 ∈ walk.edges := by
+  constructor
+  · intro hone
+    by_contra hnot
+    have hzero := walkEdgeParity_apply_eq_zero_of_not_mem_edges walk edge hnot
+    rw [hzero] at hone
+    exact zero_ne_one hone
+  · exact walkEdgeParity_apply_eq_one_of_isTrail_of_mem_edges htrail edge
 
 end
 
