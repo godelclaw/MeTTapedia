@@ -73,19 +73,23 @@ structure CyclicKempeProfile
         data.degreeTwoBoundaryData.KempeComponentMeetsPort
           coloring firstColor secondColor K 3
 
-/-- Every named adjacent pair in a graph-backed vertex-minimal
-counterexample admits a rotation-ordered cyclic Kempe profile. -/
-theorem exists_rotationOrdered_cyclicKempeProfile
+/-- The profile produced from an adjacent pair is carried by the literal
+rotation ordering, rather than merely by an existentially equal relabeling. -/
+theorem nonempty_rotationOrdered_cyclicKempeProfile
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (data : AdjacentPairData G) :
-    ∃ ordered : AdjacentPairData G,
-      ordered.firstVertex = data.firstVertex ∧
-      ordered.secondVertex = data.secondVertex ∧
-      Nonempty (CyclicKempeProfile graphData ordered) := by
-  rcases data.exists_cyclicallyOrdered_deletedColoring_join01_23_compatible
-      graphData minimal with
-    ⟨ordered, hfirst, hsecond, horder, C, hC, hcompatible⟩
+    Nonempty (CyclicKempeProfile graphData
+      (data.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)) := by
+  let ordered := data.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  have horder : ordered.PortsFollowCyclicDeletedBoundaryOrder graphData :=
+    data.rotationOrderedData_portsFollowCyclicDeletedBoundaryOrder graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic
+  rcases ordered.exists_deletedColoring_join01_23_compatible_of_order
+      graphData minimal horder with
+    ⟨C, hC, hcompatible⟩
   have hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3 :=
     incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
       graphData minimal.spherical.cubic
@@ -102,8 +106,7 @@ theorem exists_rotationOrdered_cyclicKempeProfile
       hwell C hab 0 hselectedZero with ⟨firstK, hfirstK⟩
   rcases ordered.degreeTwoBoundaryData.exists_kempeComponentMeetsPort_of_colorWord_selected
       hwell C hab 2 hselectedTwo with ⟨secondK, hsecondK⟩
-  refine ⟨ordered, hfirst, hsecond, ⟨?_⟩⟩
-  exact {
+  exact ⟨{
     portsCyclic := horder
     coloring := C
     isTaitColoring := hC
@@ -117,7 +120,22 @@ theorem exists_rotationOrdered_cyclicKempeProfile
     componentProfile := hcomponents
     firstLinkage := ⟨firstK, hfirstK, (hcomponents firstK).1.1 hfirstK⟩
     secondLinkage := ⟨secondK, hsecondK, (hcomponents secondK).2.1 hsecondK⟩
-  }
+  }⟩
+
+/-- Every named adjacent pair in a graph-backed vertex-minimal
+counterexample admits a rotation-ordered cyclic Kempe profile. -/
+theorem exists_rotationOrdered_cyclicKempeProfile
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (data : AdjacentPairData G) :
+    ∃ ordered : AdjacentPairData G,
+      ordered.firstVertex = data.firstVertex ∧
+      ordered.secondVertex = data.secondVertex ∧
+      Nonempty (CyclicKempeProfile graphData ordered) := by
+  let ordered := data.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  exact ⟨ordered, rfl, rfl,
+    data.nonempty_rotationOrdered_cyclicKempeProfile graphData minimal⟩
 
 end
 
