@@ -12,11 +12,12 @@ variable {V : Type u} {G : SimpleGraph V}
 contains a cycle no longer than the walk. The proof restricts to the finite
 subgraph traced by the walk: if that subgraph were acyclic, local
 nonbacktracking would force the closed walk to be a path. -/
-theorem exists_isCycle_length_le_of_edges_isChain_ne
+theorem exists_isCycle_length_le_edges_subset_of_edges_isChain_ne
     {start : V} (walk : G.Walk start start) (hpositive : 0 < walk.length)
     (hchain : walk.edges.IsChain (fun first second ↦ first ≠ second)) :
     ∃ (cycleStart : V) (cycle : G.Walk cycleStart cycleStart),
-      cycle.IsCycle ∧ cycle.length ≤ walk.length := by
+      cycle.IsCycle ∧ cycle.length ≤ walk.length ∧
+        cycle.edges ⊆ walk.edges := by
   let traced := walk.toSubgraph
   let lifted := walk.mapToSubgraph
   have hliftedChain :
@@ -50,7 +51,6 @@ theorem exists_isCycle_length_le_of_edges_isChain_ne
   let mappedCycle := cycle.map traced.hom
   have hmappedCycle : mappedCycle.IsCycle :=
     hcycle.map SimpleGraph.Subgraph.hom_injective
-  refine ⟨cycleStart.1, mappedCycle, hmappedCycle, ?_⟩
   have hedgeSubset : mappedCycle.edges ⊆ walk.edges := by
     intro edge hedge
     rw [SimpleGraph.Walk.edges_map] at hedge
@@ -60,11 +60,23 @@ theorem exists_isCycle_length_le_of_edges_isChain_ne
     exact (walk.mem_edges_toSubgraph).1 hedgeSet
   have hsubperm : mappedCycle.edges.Subperm walk.edges :=
     List.subperm_of_subset hmappedCycle.isTrail.edges_nodup hedgeSubset
+  refine ⟨cycleStart.1, mappedCycle, hmappedCycle, ?_, hedgeSubset⟩
   calc
     mappedCycle.length = mappedCycle.edges.length :=
       mappedCycle.length_edges.symm
     _ ≤ walk.edges.length := hsubperm.length_le
     _ = walk.length := walk.length_edges
+
+/-- Length-only projection of the support-preserving cycle extraction. -/
+theorem exists_isCycle_length_le_of_edges_isChain_ne
+    {start : V} (walk : G.Walk start start) (hpositive : 0 < walk.length)
+    (hchain : walk.edges.IsChain (fun first second ↦ first ≠ second)) :
+    ∃ (cycleStart : V) (cycle : G.Walk cycleStart cycleStart),
+      cycle.IsCycle ∧ cycle.length ≤ walk.length := by
+  rcases walk.exists_isCycle_length_le_edges_subset_of_edges_isChain_ne
+      hpositive hchain with
+    ⟨cycleStart, cycle, hcycle, hlength, _⟩
+  exact ⟨cycleStart, cycle, hcycle, hlength⟩
 
 /-- The edge list of the canonical primal lift is locally nonrepeating,
 because it is the mapped tail of a line-graph walk support. -/
@@ -81,6 +93,29 @@ theorem primalLift_edges_isChain_ne {edge : G.edgeSet}
         Subtype.val_injective.ne hadj.ne)
   exact lineWalk.isChain_adj_support.tail
 
+/-- Support-preserving primal cycle extraction: every output edge occurs
+in the cyclic line-graph support that was lifted. -/
+theorem exists_primal_isCycle_length_le_edges_subset_of_primalCoherentClosed
+    {edge : G.edgeSet} (lineWalk : G.lineGraph.Walk edge edge)
+    (hpositive : 0 < lineWalk.length)
+    (hcoherent : lineWalk.IsPrimalCoherentClosed) :
+    ∃ (cycleStart : V) (cycle : G.Walk cycleStart cycleStart),
+      cycle.IsCycle ∧ cycle.length ≤ lineWalk.length ∧
+        cycle.edges ⊆ lineWalk.support.tail.map Subtype.val := by
+  rcases
+      (lineWalk.primalLift hpositive hcoherent).exists_isCycle_length_le_edges_subset_of_edges_isChain_ne
+        (by simpa only [lineWalk.primalLift_length hpositive hcoherent] using
+          hpositive)
+        (lineWalk.primalLift_edges_isChain_ne hpositive hcoherent) with
+    ⟨cycleStart, cycle, hcycle, hlength, hsubset⟩
+  exact ⟨cycleStart, cycle, hcycle,
+    by
+      simpa only [lineWalk.primalLift_length hpositive hcoherent] using
+        hlength,
+    by
+      simpa only [lineWalk.primalLift_edges_eq_map_tail_support
+        hpositive hcoherent] using hsubset⟩
+
 /-- Every positive primal-coherent closed line-graph walk, even one with
 repeated line vertices, contains a primal cycle no longer than itself. -/
 theorem exists_primal_isCycle_length_le_of_primalCoherentClosed
@@ -89,13 +124,10 @@ theorem exists_primal_isCycle_length_le_of_primalCoherentClosed
     (hcoherent : lineWalk.IsPrimalCoherentClosed) :
     ∃ (cycleStart : V) (cycle : G.Walk cycleStart cycleStart),
       cycle.IsCycle ∧ cycle.length ≤ lineWalk.length := by
-  rcases exists_isCycle_length_le_of_edges_isChain_ne
-      (lineWalk.primalLift hpositive hcoherent)
-      (by simpa only [lineWalk.primalLift_length hpositive hcoherent] using
-        hpositive)
-      (lineWalk.primalLift_edges_isChain_ne hpositive hcoherent) with
-    ⟨cycleStart, cycle, hcycle, hlength⟩
-  exact ⟨cycleStart, cycle, hcycle, by
-    simpa only [lineWalk.primalLift_length hpositive hcoherent] using hlength⟩
+  rcases
+      lineWalk.exists_primal_isCycle_length_le_edges_subset_of_primalCoherentClosed
+        hpositive hcoherent with
+    ⟨cycleStart, cycle, hcycle, hlength, _⟩
+  exact ⟨cycleStart, cycle, hcycle, hlength⟩
 
 end SimpleGraph.Walk
