@@ -332,7 +332,8 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
         path.IsPath ∧
         (cross : Sym2 (retainedVertexSet data.firstVertex
           data.secondVertex)) ∉ path.edges ∧
-        (((pair.crossFaceDifferenceProfile
+        (((pair.crossFaceDifferenceProfile (centralEdge data)).1 ≠ 0 ∧
+            (pair.crossFaceDifferenceProfile
               (boundaryEdge data secondPort)).1 ≠ 0 ∧
             (pair.crossFaceDifferenceProfile
               (boundaryEdge data firstPort)).1 ≠ 0 ∧
@@ -342,7 +343,8 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
                 data.secondVertex)) ∈ path.edges →
                 (pair.crossFaceDifferenceProfile
                   (retainedEdgeToAmbientEdge data edge)).1 ≠ 0) ∨
-          ((pair.crossFaceDifferenceProfile
+          ((pair.crossFaceDifferenceProfile (centralEdge data)).2 ≠ 0 ∧
+            (pair.crossFaceDifferenceProfile
               (boundaryEdge data secondPort)).2 ≠ 0 ∧
             (pair.crossFaceDifferenceProfile
               (boundaryEdge data firstPort)).2 ≠ 0 ∧
@@ -403,6 +405,7 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
       exact hcoordinate cross hmem (congrArg Prod.snd hcross)
     exact ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
       hpath, hcrossAvoided, Or.inr ⟨by
+        simpa [difference] using hsecond, by
         simpa [difference] using hsecondBoundary, by
         simpa [difference] using hfirstBoundary, hcoordinate⟩⟩
   · rcases exists_crossSide_scalarSupportPortPath data
@@ -428,6 +431,7 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
       exact hcoordinate cross hmem (congrArg Prod.fst hcross)
     exact ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
       hpath, hcrossAvoided, Or.inl ⟨by
+        simpa [difference] using hfirst, by
         simpa [difference] using hsecondBoundary, by
         simpa [difference] using hfirstBoundary, hcoordinate⟩⟩
 
@@ -462,8 +466,8 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_differenceSupportPortPath
   rcases pair.exists_crossSide_coordinateSupportPortPath minimal with
     ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
       hpath, hcross,
-      ⟨hsecondBoundary, hfirstBoundary, hfirstCoordinate⟩ |
-      ⟨hsecondBoundary, hfirstBoundary, hsecondCoordinate⟩⟩
+      ⟨_hcentral, hsecondBoundary, hfirstBoundary, hfirstCoordinate⟩ |
+      ⟨_hcentral, hsecondBoundary, hfirstBoundary, hsecondCoordinate⟩⟩
   · refine ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
       hpath, hcross, ?_, ?_, ?_⟩
     · intro hzero
