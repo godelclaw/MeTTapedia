@@ -895,6 +895,26 @@ axis assignment and active tensor sign and are signed-$H(4)$ equivariant
 equivariance theorems; no joint rank or quotient conditioning is inferred
 from the schemas alone.
 
+\paragraph{Our sparse trace-rank replay is kernel checked, with its semantic
+bridge still separate.}
+\textsc{Ours.} A bounded exact enumeration on the genuine eight-field scalar
+orbit carrier selects $11{,}556$ integer trace-relation rows against the
+$11{,}654$ orbit coordinates, leaving $98$ candidate free columns.  The
+selected rows contain $25{,}379$ nonzero integer entries.  Exact elimination
+produces $27{,}568$ nonzero rational entries, uses only $675$ reductions by
+previous pivots in total, and uses at most $25$ such reductions for any one
+row.  The rational replay is split into forty-five $256$-row certificates and
+one $36$-row certificate.  Lean's kernel checks every reduction and every
+normalized row using explicit numerator--denominator arithmetic; no dense
+matrix is materialized and no evaluator axiom is used.
+
+This is presently an exact replay theorem, not yet the physical-rank theorem.
+The fraction-pair semantics in $\mathbb Q$, distinctness and completeness of
+the pivot/free partition, and the identification of every encoded row with
+the descended physical trace operator remain to be proved.  In particular,
+the number $98$ is not yet asserted here as the dimension or conditioning of
+the physical quotient.
+
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
 \textsc{Ours.} The derivative-free Cartan octic restriction contains $1287$
