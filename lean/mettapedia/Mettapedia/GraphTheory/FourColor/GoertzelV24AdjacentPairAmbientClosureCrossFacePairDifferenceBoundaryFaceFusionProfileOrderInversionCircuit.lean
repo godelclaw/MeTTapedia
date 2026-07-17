@@ -1210,6 +1210,9 @@ structure LocalizedOrderInversionPrimalCycle
   cycle : (DeletedAdjacentPairGraph G data.firstVertex
     data.secondVertex).Walk root root
   cycle_isCycle : cycle.IsCycle
+  cycle_edges_subset_closedLineGraphWalk :
+    cycle.edges ⊆
+      inversion.closedLineGraphWalk.support.tail.map Subtype.val
   cycle_length_add_two_le :
     cycle.length + 2 ≤
       (pair.prefixSharedEdgeInterval inversion.first inversion.second
@@ -1239,9 +1242,9 @@ theorem LocalizedSharedEdgePathIntervalInversion.exists_localizedOrderInversionP
   have hcoherent :=
     witness.closedLineGraphWalk_isPrimalCoherentClosed_of_endpointDarts_eq
       hfirstSame hsecondSame
-  rcases SimpleGraph.Walk.exists_primal_isCycle_length_le_of_primalCoherentClosed
+  rcases SimpleGraph.Walk.exists_primal_isCycle_length_le_edges_subset_of_primalCoherentClosed
       witness.closedLineGraphWalk hpositive hcoherent with
-    ⟨root, cycle, hcycle, hlength⟩
+    ⟨root, cycle, hcycle, hlength, hsubset⟩
   exact ⟨{
     inversion := witness
     first_dart_same := hfirstSame
@@ -1249,11 +1252,132 @@ theorem LocalizedSharedEdgePathIntervalInversion.exists_localizedOrderInversionP
     root := root
     cycle := cycle
     cycle_isCycle := hcycle
+    cycle_edges_subset_closedLineGraphWalk := hsubset
     cycle_length_add_two_le := by
       rw [witness.closedLineGraphWalk_length] at hlength
       have hprefixTwo := witness.two_le_prefix_interval_length
       have hsuffixTwo := witness.two_le_suffix_interval_length
       omega }⟩
+
+/-- The extracted cycle is a nonempty edge-simple primal circuit. -/
+theorem LocalizedOrderInversionPrimalCycle.cycle_isCircuit
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    (descent : LocalizedOrderInversionPrimalCycle pair oldCross face) :
+    descent.cycle.IsCircuit :=
+  descent.cycle_isCycle.isCircuit
+
+/-- The interval saving is also strict against the two complete source
+trails, which is the measure used by fusion-chain descent. -/
+theorem LocalizedOrderInversionPrimalCycle.cycle_length_lt_sourceTrails
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    (descent : LocalizedOrderInversionPrimalCycle pair oldCross face) :
+    descent.cycle.length <
+      pair.prefixTrail.length + pair.suffixTrail.length := by
+  have hprefixLe :
+      (pair.prefixSharedEdgeInterval descent.inversion.first
+        descent.inversion.second
+        descent.inversion.first_lt_second.le).length ≤
+          pair.prefixTrail.length := by
+    rw [pair.prefixSharedEdgeInterval_length]
+    have hposition :=
+      (pair.prefixSharedEdgePositionEmbedding
+        descent.inversion.second).isLt
+    have hlength := pair.prefixTrail.length_edges
+    omega
+  have hsuffixLe :
+      (pair.suffixReversedSharedEdgeInterval descent.inversion.first
+        descent.inversion.second
+        descent.inversion.suffix_order_reversed.le).length ≤
+          pair.suffixTrail.length := by
+    rw [pair.suffixReversedSharedEdgeInterval_length]
+    have hposition :=
+      (pair.suffixSharedEdgePositionEmbedding
+        (pair.sharedEdgeOrderEquiv descent.inversion.first)).isLt
+    have hlength := pair.suffixTrail.length_edges
+    omega
+  have hsave := descent.cycle_length_add_two_le
+  omega
+
+/-- Every extracted cycle edge comes from one of the two inverted primal
+intervals. -/
+theorem LocalizedOrderInversionPrimalCycle.cycle_edges_subset_intervals
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    (descent : LocalizedOrderInversionPrimalCycle pair oldCross face) :
+    descent.cycle.edges ⊆
+      (pair.prefixSharedEdgeInterval descent.inversion.first
+        descent.inversion.second
+        descent.inversion.first_lt_second.le).edges ++
+      (pair.suffixReversedSharedEdgeInterval descent.inversion.first
+        descent.inversion.second
+        descent.inversion.suffix_order_reversed.le).edges := by
+  intro edge hedge
+  have hclosed := descent.cycle_edges_subset_closedLineGraphWalk hedge
+  rw [LocalizedSharedEdgePathIntervalInversion.closedLineGraphWalk,
+    SimpleGraph.Walk.tail_support_append, List.map_append,
+    List.mem_append] at hclosed
+  rcases hclosed with hprefix | hsuffix
+  · apply List.mem_append_left
+    rcases List.mem_map.mp hprefix with
+      ⟨lineEdge, hlineEdge, hedge⟩
+    have hprefixFull : edge ∈
+        descent.inversion.prefixLineGraphPath.support.map Subtype.val :=
+      List.mem_map.mpr
+        ⟨lineEdge, List.mem_of_mem_tail hlineEdge, hedge⟩
+    rw [descent.inversion.prefixLineGraphPath_support_val] at hprefixFull
+    exact hprefixFull
+  · apply List.mem_append_right
+    rcases List.mem_map.mp hsuffix with
+      ⟨lineEdge, hlineEdge, hedge⟩
+    have hsuffixFull : edge ∈
+        descent.inversion.suffixReverseLineGraphPath.reverse.support.map
+          Subtype.val :=
+      List.mem_map.mpr
+        ⟨lineEdge, List.mem_of_mem_tail hlineEdge, hedge⟩
+    rw [SimpleGraph.Walk.support_reverse, List.map_reverse,
+      descent.inversion.suffixReverseLineGraphPath_support_val,
+      List.reverse_reverse] at hsuffixFull
+    exact hsuffixFull
+
+/-- Hence the complete source trails contain every edge of the strict
+primal circuit. -/
+theorem LocalizedOrderInversionPrimalCycle.cycle_edges_subset_sourceTrails
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    (descent : LocalizedOrderInversionPrimalCycle pair oldCross face) :
+    descent.cycle.edges ⊆
+      pair.prefixTrail.edges ++ pair.suffixTrail.edges := by
+  have hprefixSubwalk :
+      (pair.prefixSharedEdgeInterval descent.inversion.first
+        descent.inversion.second
+        descent.inversion.first_lt_second.le).IsSubwalk pair.prefixTrail := by
+    exact pair.prefixTrail.edgeInterval_isSubwalk _ _ _
+  have hsuffixSubwalk :
+      (pair.suffixReversedSharedEdgeInterval descent.inversion.first
+        descent.inversion.second
+        descent.inversion.suffix_order_reversed.le).IsSubwalk
+          pair.suffixTrail := by
+    exact pair.suffixTrail.edgeInterval_isSubwalk _ _ _
+  intro edge hedge
+  rcases List.mem_append.mp
+      (descent.cycle_edges_subset_intervals hedge) with
+    hprefix | hsuffix
+  · exact List.mem_append_left _ (hprefixSubwalk.edges_subset hprefix)
+  · exact List.mem_append_right _ (hsuffixSubwalk.edges_subset hsuffix)
 
 /-- Thus every order inversion is resolved either by a reversed-edge
 splice or by a strictly bounded primal cycle. -/
