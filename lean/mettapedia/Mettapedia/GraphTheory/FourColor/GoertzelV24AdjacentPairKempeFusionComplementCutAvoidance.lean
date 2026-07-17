@@ -349,6 +349,430 @@ theorem retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff
       ((retainedEdgeToAmbientEdge_mem_retainedWalkToAmbient_edges_iff data
         path edge).2 hpath)
 
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- If a retained path is supported in a specified line-edge list, then no
+other retained edge can enter its ambient opposite-port closure through the
+restored central return. -/
+theorem retainedEdgeToAmbientEdge_mem_support_of_mem_oppositePortClosure_edges
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (support : List (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (hsupport : path.edges ⊆ support.map Subtype.val)
+    (edge : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (hmem : (retainedEdgeToAmbientEdge data edge).1 ∈
+      (data.oppositePortClosure path).edges) :
+    edge ∈ support := by
+  have hpath :=
+    (retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff
+      data path edge).1 hmem
+  rcases List.mem_map.mp (hsupport hpath) with
+    ⟨source, hsource, hvalue⟩
+  have hsourceEq : source = edge := Subtype.ext hvalue
+  simpa only [hsourceEq] using hsource
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Contrapositive support form of the exact retained-edge profile. -/
+theorem retainedEdgeToAmbientEdge_not_mem_oppositePortClosure_edges_of_not_mem_support
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (support : List (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (hsupport : path.edges ⊆ support.map Subtype.val)
+    (edge : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (hnot : edge ∉ support) :
+    (retainedEdgeToAmbientEdge data edge).1 ∉
+      (data.oppositePortClosure path).edges := by
+  intro hmem
+  exact hnot
+    (retainedEdgeToAmbientEdge_mem_support_of_mem_oppositePortClosure_edges
+      data path support hsupport edge hmem)
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Away from one explicitly exceptional retained edge, an opposite-port
+closure has exactly the prescribed support.  The forward implication is the
+support bound on the retained path; the reverse implication is the certified
+coverage supplied by the coherent splice. -/
+theorem retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff_mem_support_of_ne
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (support : List (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (exception : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (hsupport : path.edges ⊆ support.map Subtype.val)
+    (hcoverage : ∀ edge ∈ support,
+      edge = exception ∨
+        (retainedEdgeToAmbientEdge data edge).1 ∈
+          (data.oppositePortClosure path).edges)
+    (edge : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (hne : edge ≠ exception) :
+    (retainedEdgeToAmbientEdge data edge).1 ∈
+        (data.oppositePortClosure path).edges ↔
+      edge ∈ support := by
+  constructor
+  · exact retainedEdgeToAmbientEdge_mem_support_of_mem_oppositePortClosure_edges
+      data path support hsupport edge
+  · intro hedge
+    rcases hcoverage edge hedge with heq | hmem
+    · exact False.elim (hne heq)
+    · exact hmem
+
+omit [Fintype V] [DecidableEq V] in
+/-- In a singleton `bc` cross channel, both strict route tails after the
+selected cross site lie outside every opposite-port closure whose retained
+path is supported in the corresponding prefix splice. -/
+theorem EvenKempeFusionLens.bcCrossSpliceSuffixes_not_mem_oppositePortClosure_edges
+    (data : AdjacentPairData G)
+    [retainedFintype : Fintype
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    [retainedDecidableEq : DecidableEq
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 0 1)
+    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 2 3)
+    (hcount : (lens01.bcCrossSites lens23).length ≤ 1)
+    (site : lens01.bRoute.CrossSite lens23.cRoute)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (hsupport : path.edges ⊆
+      (lens01.bRoute.crossSplice lens23.cRoute site).support.map
+        Subtype.val) :
+    (∀ edge ∈
+        (lens01.bRoute.firstSuffixFromCrossSite
+          lens23.cRoute site).support.tail,
+      (retainedEdgeToAmbientEdge data edge).1 ∉
+        (data.oppositePortClosure path).edges) ∧
+      (∀ edge ∈
+          (lens01.bRoute.secondSuffixFromCrossSite
+            lens23.cRoute site).support.tail,
+        (retainedEdgeToAmbientEdge data edge).1 ∉
+          (data.oppositePortClosure path).edges) := by
+  have hunique : ∀ edge,
+      edge ∈ lens01.bRoute.ambientPath.support →
+      edge ∈ lens23.cRoute.ambientPath.support → edge = site.1 :=
+    lens01.bcCrossSite_eq_of_length_le_one lens23 hcount site
+  have hfirstDisjoint :=
+    lens01.bRoute.firstSuffix_tail_disjoint_crossSplice_support
+      lens23.cRoute site hunique
+  have hsecondDisjoint :=
+    lens01.bRoute.secondSuffix_tail_disjoint_crossSplice_support
+      lens23.cRoute site hunique
+  constructor
+  · intro edge hedge
+    apply retainedEdgeToAmbientEdge_not_mem_oppositePortClosure_edges_of_not_mem_support
+      data path (lens01.bRoute.crossSplice lens23.cRoute site).support
+        hsupport edge
+    intro hsplice
+    exact (List.disjoint_left.mp hfirstDisjoint) hedge hsplice
+  · intro edge hedge
+    apply retainedEdgeToAmbientEdge_not_mem_oppositePortClosure_edges_of_not_mem_support
+      data path (lens01.bRoute.crossSplice lens23.cRoute site).support
+        hsupport edge
+    intro hsplice
+    exact (List.disjoint_left.mp hsecondDisjoint) hedge hsplice
+
+omit [Fintype V] [DecidableEq V] in
+/-- The complementary singleton `cb` channel has the same exact strict-tail
+avoidance profile. -/
+theorem EvenKempeFusionLens.cbCrossSpliceSuffixes_not_mem_oppositePortClosure_edges
+    (data : AdjacentPairData G)
+    [retainedFintype : Fintype
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    [retainedDecidableEq : DecidableEq
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 0 1)
+    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 2 3)
+    (hcount : (lens01.cbCrossSites lens23).length ≤ 1)
+    (site : lens01.cRoute.CrossSite lens23.bRoute)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (hsupport : path.edges ⊆
+      (lens01.cRoute.crossSplice lens23.bRoute site).support.map
+        Subtype.val) :
+    (∀ edge ∈
+        (lens01.cRoute.firstSuffixFromCrossSite
+          lens23.bRoute site).support.tail,
+      (retainedEdgeToAmbientEdge data edge).1 ∉
+        (data.oppositePortClosure path).edges) ∧
+      (∀ edge ∈
+          (lens01.cRoute.secondSuffixFromCrossSite
+            lens23.bRoute site).support.tail,
+        (retainedEdgeToAmbientEdge data edge).1 ∉
+          (data.oppositePortClosure path).edges) := by
+  have hunique : ∀ edge,
+      edge ∈ lens01.cRoute.ambientPath.support →
+      edge ∈ lens23.bRoute.ambientPath.support → edge = site.1 :=
+    lens01.cbCrossSite_eq_of_length_le_one lens23 hcount site
+  have hfirstDisjoint :=
+    lens01.cRoute.firstSuffix_tail_disjoint_crossSplice_support
+      lens23.bRoute site hunique
+  have hsecondDisjoint :=
+    lens01.cRoute.secondSuffix_tail_disjoint_crossSplice_support
+      lens23.bRoute site hunique
+  constructor
+  · intro edge hedge
+    apply retainedEdgeToAmbientEdge_not_mem_oppositePortClosure_edges_of_not_mem_support
+      data path (lens01.cRoute.crossSplice lens23.bRoute site).support
+        hsupport edge
+    intro hsplice
+    exact (List.disjoint_left.mp hfirstDisjoint) hedge hsplice
+  · intro edge hedge
+    apply retainedEdgeToAmbientEdge_not_mem_oppositePortClosure_edges_of_not_mem_support
+      data path (lens01.cRoute.crossSplice lens23.bRoute site).support
+        hsupport edge
+    intro hsplice
+    exact (List.disjoint_left.mp hsecondDisjoint) hedge hsplice
+
+omit [Fintype V] [DecidableEq V] in
+/-- A first cross channel supplies an exact closure profile: its selected
+splice is contained in the opposite-port closure, with the cross site as
+the only possible omission caused by coherent triangle contraction. -/
+theorem EvenKempeFusionLens.exists_bcOppositePortClosure_with_crossSpliceCoverage
+    (data : AdjacentPairData G)
+    [retainedFintype : Fintype
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    [retainedDecidableEq : DecidableEq
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 0 1)
+    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 2 3)
+    (hdata : data.degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.bRoute.CrossSite lens23.cRoute)
+        (path : (DeletedAdjacentPairGraph G data.firstVertex
+          data.secondVertex).Walk
+            (data.retainedPort 0) (data.retainedPort 2)),
+      path.IsTrail ∧ 0 < path.length ∧
+        path.edges ⊆
+          (lens01.bRoute.crossSplice lens23.cRoute site).support.map
+            Subtype.val ∧
+        path.edges ⊆
+          (lens01.bRoute.ambientPath.support ++
+            lens23.cRoute.ambientPath.support).map Subtype.val ∧
+        (∀ edge ∈
+          (lens01.bRoute.crossSplice lens23.cRoute site).support,
+          edge = site.1 ∨
+            (retainedEdgeToAmbientEdge data edge).1 ∈
+              (data.oppositePortClosure path).edges) := by
+  rcases lens01.exists_bcPrimalTrail_with_crossSpliceCoverage lens23
+      hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨site, path, htrail, hpositive, hspliceSupport, hsupport, hcoverage⟩
+  refine ⟨site, path, htrail, hpositive, hspliceSupport, hsupport, ?_⟩
+  intro edge hedge
+  rcases hcoverage edge hedge with hedgeSite | hedgePath
+  · exact Or.inl hedgeSite
+  · exact Or.inr
+      ((retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff
+        data path edge).2 hedgePath)
+
+omit [Fintype V] [DecidableEq V] in
+/-- The complementary cross channel has the same exact one-site closure
+profile. -/
+theorem EvenKempeFusionLens.exists_cbOppositePortClosure_with_crossSpliceCoverage
+    (data : AdjacentPairData G)
+    [retainedFintype : Fintype
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    [retainedDecidableEq : DecidableEq
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 0 1)
+    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 2 3)
+    (hdata : data.degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.cRoute.CrossSite lens23.bRoute)
+        (path : (DeletedAdjacentPairGraph G data.firstVertex
+          data.secondVertex).Walk
+            (data.retainedPort 0) (data.retainedPort 2)),
+      path.IsTrail ∧ 0 < path.length ∧
+        path.edges ⊆
+          (lens01.cRoute.crossSplice lens23.bRoute site).support.map
+            Subtype.val ∧
+        path.edges ⊆
+          (lens01.cRoute.ambientPath.support ++
+            lens23.bRoute.ambientPath.support).map Subtype.val ∧
+        (∀ edge ∈
+          (lens01.cRoute.crossSplice lens23.bRoute site).support,
+          edge = site.1 ∨
+            (retainedEdgeToAmbientEdge data edge).1 ∈
+              (data.oppositePortClosure path).edges) := by
+  rcases lens01.exists_cbPrimalTrail_with_crossSpliceCoverage lens23
+      hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨site, path, htrail, hpositive, hspliceSupport, hsupport, hcoverage⟩
+  refine ⟨site, path, htrail, hpositive, hspliceSupport, hsupport, ?_⟩
+  intro edge hedge
+  rcases hcoverage edge hedge with hedgeSite | hedgePath
+  · exact Or.inl hedgeSite
+  · exact Or.inr
+      ((retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff
+        data path edge).2 hedgePath)
+
+omit [Fintype V] [DecidableEq V] in
+/-- In the sparse nonempty `bc` branch, one obtains a complete one-site
+support profile: away from the cross site the exact closure cut is precisely
+the prefix splice, and both strict tails to the unused ports avoid the cut. -/
+theorem EvenKempeFusionLens.exists_bcOppositePortClosure_with_exactCrossSpliceProfile
+    (data : AdjacentPairData G)
+    [retainedFintype : Fintype
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    [retainedDecidableEq : DecidableEq
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 0 1)
+    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 2 3)
+    (hdata : data.degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hcount : (lens01.bcCrossSites lens23).length ≤ 1)
+    (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.bRoute.CrossSite lens23.cRoute)
+        (path : (DeletedAdjacentPairGraph G data.firstVertex
+          data.secondVertex).Walk
+            (data.retainedPort 0) (data.retainedPort 2)),
+      path.IsTrail ∧ 0 < path.length ∧
+        path.edges ⊆
+          (lens01.bRoute.crossSplice lens23.cRoute site).support.map
+            Subtype.val ∧
+        path.edges ⊆
+          (lens01.bRoute.ambientPath.support ++
+            lens23.cRoute.ambientPath.support).map Subtype.val ∧
+        (∀ edge,
+          edge ≠ site.1 →
+            ((retainedEdgeToAmbientEdge data edge).1 ∈
+                (data.oppositePortClosure path).edges ↔
+              edge ∈
+                (lens01.bRoute.crossSplice
+                  lens23.cRoute site).support)) ∧
+        (∀ edge ∈
+            (lens01.bRoute.firstSuffixFromCrossSite
+              lens23.cRoute site).support.tail,
+          (retainedEdgeToAmbientEdge data edge).1 ∉
+            (data.oppositePortClosure path).edges) ∧
+        (∀ edge ∈
+            (lens01.bRoute.secondSuffixFromCrossSite
+              lens23.cRoute site).support.tail,
+          (retainedEdgeToAmbientEdge data edge).1 ∉
+            (data.oppositePortClosure path).edges) := by
+  rcases EvenKempeFusionLens.exists_bcOppositePortClosure_with_crossSpliceCoverage
+      data lens01 lens23 hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨site, path, htrail, hpositive, hspliceSupport, hrouteSupport,
+      hcoverage⟩
+  have htails :=
+    EvenKempeFusionLens.bcCrossSpliceSuffixes_not_mem_oppositePortClosure_edges
+      data lens01 lens23 hcount site path hspliceSupport
+  refine ⟨site, path, htrail, hpositive, hspliceSupport, hrouteSupport,
+    ?_, htails.1, htails.2⟩
+  intro edge hne
+  exact retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff_mem_support_of_ne
+    data path (lens01.bRoute.crossSplice lens23.cRoute site).support
+      site.1 hspliceSupport hcoverage edge hne
+
+omit [Fintype V] [DecidableEq V] in
+/-- The sparse nonempty `cb` branch supplies the symmetric exact splice and
+strict-tail profile. -/
+theorem EvenKempeFusionLens.exists_cbOppositePortClosure_with_exactCrossSpliceProfile
+    (data : AdjacentPairData G)
+    [retainedFintype : Fintype
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    [retainedDecidableEq : DecidableEq
+      (retainedVertexSet data.firstVertex data.secondVertex)]
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 0 1)
+    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c 2 3)
+    (hdata : data.degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hcount : (lens01.cbCrossSites lens23).length ≤ 1)
+    (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.cRoute.CrossSite lens23.bRoute)
+        (path : (DeletedAdjacentPairGraph G data.firstVertex
+          data.secondVertex).Walk
+            (data.retainedPort 0) (data.retainedPort 2)),
+      path.IsTrail ∧ 0 < path.length ∧
+        path.edges ⊆
+          (lens01.cRoute.crossSplice lens23.bRoute site).support.map
+            Subtype.val ∧
+        path.edges ⊆
+          (lens01.cRoute.ambientPath.support ++
+            lens23.bRoute.ambientPath.support).map Subtype.val ∧
+        (∀ edge,
+          edge ≠ site.1 →
+            ((retainedEdgeToAmbientEdge data edge).1 ∈
+                (data.oppositePortClosure path).edges ↔
+              edge ∈
+                (lens01.cRoute.crossSplice
+                  lens23.bRoute site).support)) ∧
+        (∀ edge ∈
+            (lens01.cRoute.firstSuffixFromCrossSite
+              lens23.bRoute site).support.tail,
+          (retainedEdgeToAmbientEdge data edge).1 ∉
+            (data.oppositePortClosure path).edges) ∧
+        (∀ edge ∈
+            (lens01.cRoute.secondSuffixFromCrossSite
+              lens23.bRoute site).support.tail,
+          (retainedEdgeToAmbientEdge data edge).1 ∉
+            (data.oppositePortClosure path).edges) := by
+  rcases EvenKempeFusionLens.exists_cbOppositePortClosure_with_crossSpliceCoverage
+      data lens01 lens23 hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨site, path, htrail, hpositive, hspliceSupport, hrouteSupport,
+      hcoverage⟩
+  have htails :=
+    EvenKempeFusionLens.cbCrossSpliceSuffixes_not_mem_oppositePortClosure_edges
+      data lens01 lens23 hcount site path hspliceSupport
+  refine ⟨site, path, htrail, hpositive, hspliceSupport, hrouteSupport,
+    ?_, htails.1, htails.2⟩
+  intro edge hne
+  exact retainedEdgeToAmbientEdge_mem_oppositePortClosure_edges_iff_mem_support_of_ne
+    data path (lens01.cRoute.crossSplice lens23.bRoute site).support
+      site.1 hspliceSupport hcoverage edge hne
+
 omit [Fintype V] [DecidableEq V] in
 /-- A `c(0,1)` edge outside `b(0,1)` is outside every opposite-port
 closure whose retained path is supported in the `bc` cross channel. -/

@@ -160,8 +160,11 @@ theorem EvenKempePortPath.exists_primalCoherentCrossPath_of_leftmost
       joined.IsPath ∧ joined.IsPrimalCoherent ∧
         0 < joined.length ∧
         joined.length ≤ (first.crossSplice second site).length ∧
+        joined.support ⊆ (first.crossSplice second site).support ∧
         joined.support ⊆
-          first.ambientPath.support ++ second.ambientPath.support := by
+          first.ambientPath.support ++ second.ambientPath.support ∧
+        (∀ edge ∈ (first.crossSplice second site).support,
+          edge = site.1 ∨ edge ∈ joined.support) := by
   let firstPrefix := first.firstPrefixToCrossSite second site
   let secondReverse :=
     (first.secondPrefixToCrossSite second site).reverse
@@ -188,10 +191,13 @@ theorem EvenKempePortPath.exists_primalCoherentCrossPath_of_leftmost
         hfirstCoherent hsecondCoherent hfirstPositive hsecondPositive
         happendPath with
     ⟨joined, hjoinedPath, hjoinedCoherent, hjoinedPositive,
-      hjoinedLength, hjoinedSupport⟩
-  refine ⟨joined, hjoinedPath, hjoinedCoherent, hjoinedPositive, ?_, ?_⟩
+      hjoinedLength, hjoinedSupport, hjoinedCoverage⟩
+  refine ⟨joined, hjoinedPath, hjoinedCoherent, hjoinedPositive,
+    ?_, ?_, ?_, ?_⟩
   · simpa only [firstPrefix, secondReverse,
       EvenKempePortPath.crossSplice] using hjoinedLength
+  · simpa only [firstPrefix, secondReverse,
+      EvenKempePortPath.crossSplice] using hjoinedSupport
   · intro edge hedge
     have hsource := hjoinedSupport hedge
     rw [SimpleGraph.Walk.support_append, List.mem_append] at hsource
@@ -208,8 +214,44 @@ theorem EvenKempePortPath.exists_primalCoherentCrossPath_of_leftmost
       exact Or.inr
         (first.secondPrefixToCrossSite_support_subset second site
           hsecondPrefix)
+  · simpa only [firstPrefix, secondReverse,
+      EvenKempePortPath.crossSplice] using hjoinedCoverage
 
-/-- A nonempty first cross channel supplies a coherent opposite-port path. -/
+/-- A nonempty first cross channel supplies a coherent opposite-port path
+that covers its selected splice except possibly at the cross site itself. -/
+theorem EvenKempeFusionLens.exists_bcPrimalCoherentCrossPath_with_spliceCoverage
+    {data : DegreeTwoBoundaryData G 4}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    (lens01 : data.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : data.EvenKempeFusionLens C a b c 2 3)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.bRoute.CrossSite lens23.cRoute)
+        (joined : G.lineGraph.Walk
+          lens01.bRoute.leftEdge.1 lens23.cRoute.leftEdge.1),
+      joined.IsPath ∧ joined.IsPrimalCoherent ∧ 0 < joined.length ∧
+      joined.length ≤
+          (lens01.bRoute.crossSplice lens23.cRoute site).length ∧
+        joined.support ⊆
+          (lens01.bRoute.crossSplice lens23.cRoute site).support ∧
+        joined.support ⊆
+          lens01.bRoute.ambientPath.support ++
+            lens23.cRoute.ambientPath.support ∧
+        (∀ edge ∈
+          (lens01.bRoute.crossSplice lens23.cRoute site).support,
+          edge = site.1 ∨ edge ∈ joined.support) := by
+  rcases List.exists_mem_of_ne_nil _ hnonempty with ⟨edge, hedge⟩
+  have hcross := (lens01.mem_bcCrossSites_iff lens23 edge).1 hedge
+  rcases lens01.bRoute.exists_leftmostCrossSite lens23.cRoute
+      ⟨edge, hcross⟩ with ⟨site, hleftmost⟩
+  rcases lens01.bRoute.exists_primalCoherentCrossPath_of_leftmost
+      lens23.cRoute hab hac hbc site hleftmost with
+    ⟨joined, hpath, hcoherent, hpositive, hlength, hspliceSupport,
+      hsupport, hcoverage⟩
+  exact ⟨site, joined, hpath, hcoherent, hpositive, hlength,
+    hspliceSupport, hsupport, hcoverage⟩
+
+/-- Support-forgetting form of the first coherent cross-channel path. -/
 theorem EvenKempeFusionLens.exists_bcPrimalCoherentCrossPath
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -223,17 +265,47 @@ theorem EvenKempeFusionLens.exists_bcPrimalCoherentCrossPath
         joined.support ⊆
           lens01.bRoute.ambientPath.support ++
             lens23.cRoute.ambientPath.support := by
-  rcases List.exists_mem_of_ne_nil _ hnonempty with ⟨edge, hedge⟩
-  have hcross := (lens01.mem_bcCrossSites_iff lens23 edge).1 hedge
-  rcases lens01.bRoute.exists_leftmostCrossSite lens23.cRoute
-      ⟨edge, hcross⟩ with ⟨site, hleftmost⟩
-  rcases lens01.bRoute.exists_primalCoherentCrossPath_of_leftmost
-      lens23.cRoute hab hac hbc site hleftmost with
-    ⟨joined, hpath, hcoherent, hpositive, _, hsupport⟩
+  rcases lens01.exists_bcPrimalCoherentCrossPath_with_spliceCoverage
+      lens23 hab hac hbc hnonempty with
+    ⟨_site, joined, hpath, hcoherent, hpositive, _hlength,
+      _hspliceSupport, hsupport, _hcoverage⟩
   exact ⟨joined, hpath, hcoherent, hpositive, hsupport⟩
 
 /-- A nonempty second cross channel supplies the complementary coherent
-opposite-port path. -/
+opposite-port path together with the exact one-site splice defect. -/
+theorem EvenKempeFusionLens.exists_cbPrimalCoherentCrossPath_with_spliceCoverage
+    {data : DegreeTwoBoundaryData G 4}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    (lens01 : data.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : data.EvenKempeFusionLens C a b c 2 3)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.cRoute.CrossSite lens23.bRoute)
+        (joined : G.lineGraph.Walk
+          lens01.cRoute.leftEdge.1 lens23.bRoute.leftEdge.1),
+      joined.IsPath ∧ joined.IsPrimalCoherent ∧ 0 < joined.length ∧
+      joined.length ≤
+          (lens01.cRoute.crossSplice lens23.bRoute site).length ∧
+        joined.support ⊆
+          (lens01.cRoute.crossSplice lens23.bRoute site).support ∧
+        joined.support ⊆
+          lens01.cRoute.ambientPath.support ++
+            lens23.bRoute.ambientPath.support ∧
+        (∀ edge ∈
+          (lens01.cRoute.crossSplice lens23.bRoute site).support,
+          edge = site.1 ∨ edge ∈ joined.support) := by
+  rcases List.exists_mem_of_ne_nil _ hnonempty with ⟨edge, hedge⟩
+  have hcross := (lens01.mem_cbCrossSites_iff lens23 edge).1 hedge
+  rcases lens01.cRoute.exists_leftmostCrossSite lens23.bRoute
+      ⟨edge, hcross⟩ with ⟨site, hleftmost⟩
+  rcases lens01.cRoute.exists_primalCoherentCrossPath_of_leftmost
+      lens23.bRoute hac hab hbc.symm site hleftmost with
+    ⟨joined, hpath, hcoherent, hpositive, hlength, hspliceSupport,
+      hsupport, hcoverage⟩
+  exact ⟨site, joined, hpath, hcoherent, hpositive, hlength,
+    hspliceSupport, hsupport, hcoverage⟩
+
+/-- Support-forgetting form of the complementary coherent path. -/
 theorem EvenKempeFusionLens.exists_cbPrimalCoherentCrossPath
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -247,13 +319,10 @@ theorem EvenKempeFusionLens.exists_cbPrimalCoherentCrossPath
         joined.support ⊆
           lens01.cRoute.ambientPath.support ++
             lens23.bRoute.ambientPath.support := by
-  rcases List.exists_mem_of_ne_nil _ hnonempty with ⟨edge, hedge⟩
-  have hcross := (lens01.mem_cbCrossSites_iff lens23 edge).1 hedge
-  rcases lens01.cRoute.exists_leftmostCrossSite lens23.bRoute
-      ⟨edge, hcross⟩ with ⟨site, hleftmost⟩
-  rcases lens01.cRoute.exists_primalCoherentCrossPath_of_leftmost
-      lens23.bRoute hac hab hbc.symm site hleftmost with
-    ⟨joined, hpath, hcoherent, hpositive, _, hsupport⟩
+  rcases lens01.exists_cbPrimalCoherentCrossPath_with_spliceCoverage
+      lens23 hab hac hbc hnonempty with
+    ⟨_site, joined, hpath, hcoherent, hpositive, _hlength,
+      _hspliceSupport, hsupport, _hcoverage⟩
   exact ⟨joined, hpath, hcoherent, hpositive, hsupport⟩
 
 end

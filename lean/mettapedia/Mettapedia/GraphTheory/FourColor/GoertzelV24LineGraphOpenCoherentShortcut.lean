@@ -24,7 +24,9 @@ theorem exists_isPath_isPrimalCoherent_length_le_of_append_isPath
       joined.IsPath ∧ joined.IsPrimalCoherent ∧
         0 < joined.length ∧
         joined.length ≤ (left.append right).length ∧
-        joined.support ⊆ (left.append right).support := by
+        joined.support ⊆ (left.append right).support ∧
+        (∀ edge ∈ (left.append right).support,
+          edge = middle ∨ edge ∈ joined.support) := by
   let leftLast : Fin left.length :=
     ⟨left.length - 1,
       Nat.sub_lt hleftPositive Nat.zero_lt_one⟩
@@ -33,7 +35,7 @@ theorem exists_isPath_isPrimalCoherent_length_le_of_append_isPath
       left.lineGraphJunctionAt leftLast ≠
         right.lineGraphJunctionAt rightFirst
   · refine ⟨left.append right, happendPath, ?_, by simp; omega,
-      le_rfl, fun _ hedge ↦ hedge⟩
+      le_rfl, fun _ hedge ↦ hedge, fun _ hedge ↦ Or.inr hedge⟩
     apply hleftCoherent.append hrightCoherent
     intro hleftPositive' hrightPositive'
     simpa only [Subsingleton.elim hleftPositive' hleftPositive,
@@ -46,6 +48,9 @@ theorem exists_isPath_isPrimalCoherent_length_le_of_append_isPath
     have hrightNotNil : ¬right.Nil := by
       rw [SimpleGraph.Walk.not_nil_iff_lt_length]
       exact hrightPositive
+    have hleftNotNil : ¬left.Nil := by
+      rw [SimpleGraph.Walk.not_nil_iff_lt_length]
+      exact hleftPositive
     have happendSupportDisjoint :
         left.support.Disjoint right.support.tail := by
       have hnodup := happendPath.support_nodup
@@ -240,7 +245,32 @@ theorem exists_isPath_isPrimalCoherent_length_le_of_append_isPath
         exact Or.inr (by
           simpa only [right.support_tail_of_not_nil hrightNotNil] using
             hrightTailSupport)
+    have hjoinedSupportCoverage :
+        ∀ edge ∈ (left.append right).support,
+          edge = middle ∨ edge ∈ joined.support := by
+      intro edge hedge
+      rw [SimpleGraph.Walk.support_append, List.mem_append] at hedge
+      rcases hedge with hleft | hright
+      · by_cases hedgeMiddle : edge = middle
+        · exact Or.inl hedgeMiddle
+        · apply Or.inr
+          dsimp only [joined]
+          rw [SimpleGraph.Walk.support_append, List.mem_append]
+          apply Or.inl
+          rw [left.support_dropLast hleftNotNil]
+          apply List.mem_dropLast_of_mem_of_ne_getLast hleft
+          simpa only [SimpleGraph.Walk.getLast_support] using hedgeMiddle
+      · apply Or.inr
+        dsimp only [joined]
+        rw [SimpleGraph.Walk.support_append, List.mem_append]
+        apply Or.inr
+        have hrightTailSupport : edge ∈ right.tail.support := by
+          simpa only [right.support_tail_of_not_nil hrightNotNil] using
+            hright
+        simpa only [rightShortcut, SimpleGraph.Walk.support_cons,
+          List.tail_cons] using hrightTailSupport
     exact ⟨joined, hjoinedPath, hjoinedCoherent,
-      hjoinedPositive, hjoinedLength, hjoinedSupportSubset⟩
+      hjoinedPositive, hjoinedLength, hjoinedSupportSubset,
+      hjoinedSupportCoverage⟩
 
 end SimpleGraph.Walk
