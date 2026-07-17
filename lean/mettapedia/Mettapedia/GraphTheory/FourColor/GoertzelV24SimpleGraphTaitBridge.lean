@@ -88,15 +88,12 @@ theorem graphBackedVertexMinimalTaitCounterexample_deletedEdge_not_taitColorable
     {u v : V} (huv : G.Adj u v) :
     ¬ ∃ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
         IsTaitEdgeColoring (DeletedEdgeGraph G u v) C := by
-  rintro ⟨C, hC⟩
-  exact
+  exact deletedEdge_not_taitColorable_of_not_taitColorable
+    huv
+    (incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
+      graphData minimal.spherical.cubic)
     (graphBackedVertexMinimalTaitCounterexample_not_graphTaitColorable
       graphData minimal)
-      (exists_taitColoring_of_deletedEdgeColoring
-        huv
-        (incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
-          graphData minimal.spherical.cubic)
-        C hC)
 
 /-- Any colored one-edge deletion of a graph-backed minimal counterexample
 is an actual non-completable framed trail, even with every retained edge
