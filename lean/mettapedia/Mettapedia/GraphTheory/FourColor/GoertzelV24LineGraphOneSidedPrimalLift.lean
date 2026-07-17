@@ -6,6 +6,246 @@ universe u
 
 variable {V : Type u} {G : SimpleGraph V}
 
+/-- The endpoint of the first represented graph edge opposite the first
+primal junction of a positive line-graph walk. -/
+noncomputable def oppositeFirstJunctionVertex
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length) : V :=
+  Sym2.Mem.other (show walk.lineGraphJunctionAt ⟨0, hpositive⟩ ∈
+      (first.1 : Sym2 V) by
+    simpa only [getVert_zero] using
+      walk.lineGraphJunctionAt_mem_left ⟨0, hpositive⟩)
+
+/-- The opposite first-junction vertex still lies on the first represented
+edge. -/
+theorem oppositeFirstJunctionVertex_mem
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length) :
+    walk.oppositeFirstJunctionVertex hpositive ∈ (first.1 : Sym2 V) := by
+  unfold oppositeFirstJunctionVertex
+  exact Sym2.other_mem _
+
+/-- Simplicity of graph edges makes the chosen cap endpoint distinct from
+the first primal junction. -/
+theorem oppositeFirstJunctionVertex_ne
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length) :
+    walk.oppositeFirstJunctionVertex hpositive ≠
+      walk.lineGraphJunctionAt ⟨0, hpositive⟩ := by
+  unfold oppositeFirstJunctionVertex
+  apply G.edge_other_ne first.2
+
+/-- Canonical one-sided primal lift: delete the first represented cap edge,
+choose its endpoint opposite the first junction automatically, and retain
+the terminal cap edge. -/
+noncomputable def canonicalPrimalTailLift
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex) :
+    G.Walk (walk.lineGraphJunctionAt ⟨0, hpositive⟩) endVertex :=
+  let lift := walk.cappedPrimalLift hpositive hcoherent
+    (walk.oppositeFirstJunctionVertex hpositive) endVertex
+    (walk.oppositeFirstJunctionVertex_mem hpositive) hendMem
+    (walk.oppositeFirstJunctionVertex_ne hpositive) hendNe
+  lift.tail.copy
+    (walk.cappedPrimalLift_snd hpositive hcoherent
+      (walk.oppositeFirstJunctionVertex hpositive) endVertex
+      (walk.oppositeFirstJunctionVertex_mem hpositive) hendMem
+      (walk.oppositeFirstJunctionVertex_ne hpositive) hendNe)
+    rfl
+
+@[simp] theorem canonicalPrimalTailLift_length
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex) :
+    (walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).length = walk.length := by
+  simp only [canonicalPrimalTailLift, length_copy, tail, drop_length,
+    walk.cappedPrimalLift_length hpositive hcoherent
+      (walk.oppositeFirstJunctionVertex hpositive) endVertex
+      (walk.oppositeFirstJunctionVertex_mem hpositive) hendMem
+      (walk.oppositeFirstJunctionVertex_ne hpositive) hendNe]
+  omega
+
+/-- A canonical one-sided lift of a positive line-graph interval is
+nonempty. -/
+theorem canonicalPrimalTailLift_not_nil
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex) :
+    ¬(walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).Nil := by
+  apply not_nil_iff_lt_length.mpr
+  rw [walk.canonicalPrimalTailLift_length hpositive hcoherent
+    endVertex hendMem hendNe]
+  exact hpositive
+
+/-- Canonical one-sided lifting preserves trailhood of a line-graph path. -/
+theorem canonicalPrimalTailLift_isTrail_of_isPath
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (hpath : walk.IsPath)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex) :
+    (walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).IsTrail := by
+  rw [canonicalPrimalTailLift, isTrail_copy]
+  let lift := walk.cappedPrimalLift hpositive hcoherent
+    (walk.oppositeFirstJunctionVertex hpositive) endVertex
+    (walk.oppositeFirstJunctionVertex_mem hpositive) hendMem
+    (walk.oppositeFirstJunctionVertex_ne hpositive) hendNe
+  exact isTrail_of_isSubwalk lift.isSubwalk_rfl.tail
+    (walk.cappedPrimalLift_isTrail_of_isPath hpositive hcoherent hpath
+      (walk.oppositeFirstJunctionVertex hpositive) endVertex
+      (walk.oppositeFirstJunctionVertex_mem hpositive) hendMem
+      (walk.oppositeFirstJunctionVertex_ne hpositive) hendNe)
+
+/-- A canonical one-sided lift traverses exactly the strict line-graph
+suffix after its first represented edge. -/
+theorem canonicalPrimalTailLift_edges_eq_map_support_tail
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex) :
+    (walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).edges =
+      walk.support.tail.map Subtype.val := by
+  simp only [canonicalPrimalTailLift, edges_copy, tail, edges_drop,
+    walk.cappedPrimalLift_edges_eq_map_support hpositive hcoherent
+      (walk.oppositeFirstJunctionVertex hpositive) endVertex
+      (walk.oppositeFirstJunctionVertex_mem hpositive) hendMem
+      (walk.oppositeFirstJunctionVertex_ne hpositive) hendNe,
+    List.drop_one, List.map_tail]
+
+/-- The first lifted dart carries the first strict-suffix edge. -/
+theorem canonicalPrimalTailLift_firstDart_edge
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex)
+    (hnil : ¬(walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).Nil) :
+    ((walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).firstDart hnil).edge =
+      (walk.getVert 1).1 := by
+  let lifted := walk.canonicalPrimalTailLift hpositive hcoherent
+    endVertex hendMem hendNe
+  have htailLength : walk.support.tail.length = walk.length := by
+    have hsupportLength := congrArg List.length walk.cons_tail_support
+    rw [walk.length_support] at hsupportLength
+    simp only [List.length_cons] at hsupportLength
+    omega
+  have htailNonempty : walk.support.tail ≠ [] := by
+    intro hnilSupport
+    have := congrArg List.length hnilSupport
+    rw [htailLength] at this
+    simp only [List.length_nil] at this
+    omega
+  have hmapNonempty : walk.support.tail.map Subtype.val ≠ [] := by
+    intro hmap
+    exact htailNonempty (List.map_eq_nil_iff.mp hmap)
+  calc
+    (lifted.firstDart hnil).edge =
+        lifted.edges.head (edges_eq_nil.not.mpr hnil) :=
+      (lifted.edge_firstDart hnil).trans
+        (lifted.mk_start_snd_eq_head_edges hnil)
+    _ = (walk.support.tail.map Subtype.val).head (by
+        exact hmapNonempty) := by
+      dsimp only [lifted]
+      simp only [walk.canonicalPrimalTailLift_edges_eq_map_support_tail
+        hpositive hcoherent endVertex hendMem hendNe]
+    _ = (walk.support.tail.head htailNonempty).1 :=
+      List.head_map _
+    _ = (walk.getVert 1).1 := by
+      rw [List.head_eq_getElem_zero htailNonempty]
+      simpa only [List.getElem_tail] using
+        congrArg Subtype.val
+          (walk.getVert_eq_support_getElem (n := 1) (by omega)).symm
+
+/-- The last lifted dart carries the retained terminal cap edge. -/
+theorem canonicalPrimalTailLift_lastDart_edge
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (endVertex : V)
+    (hendMem : endVertex ∈ (last.1 : Sym2 V))
+    (hendNe : walk.lineGraphJunctionAt
+        ⟨walk.length - 1,
+          Nat.sub_lt hpositive Nat.zero_lt_one⟩ ≠ endVertex)
+    (hnil : ¬(walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).Nil) :
+    ((walk.canonicalPrimalTailLift hpositive hcoherent
+      endVertex hendMem hendNe).lastDart hnil).edge = last.1 := by
+  let lifted := walk.canonicalPrimalTailLift hpositive hcoherent
+    endVertex hendMem hendNe
+  have htailNonempty : walk.support.tail ≠ [] := by
+    intro hnilSupport
+    have htailLength : walk.support.tail.length = walk.length := by
+      have hsupportLength := congrArg List.length walk.cons_tail_support
+      rw [walk.length_support] at hsupportLength
+      simp only [List.length_cons] at hsupportLength
+      omega
+    have := congrArg List.length hnilSupport
+    rw [htailLength] at this
+    simp only [List.length_nil] at this
+    omega
+  have hmapNonempty : walk.support.tail.map Subtype.val ≠ [] := by
+    intro hmap
+    exact htailNonempty (List.map_eq_nil_iff.mp hmap)
+  calc
+    (lifted.lastDart hnil).edge =
+        lifted.edges.getLast (edges_eq_nil.not.mpr hnil) :=
+      (lifted.edge_lastDart hnil).trans
+        (lifted.mk_penultimate_end_eq_getLast_edges hnil)
+    _ = (walk.support.tail.map Subtype.val).getLast (by
+        exact hmapNonempty) := by
+      dsimp only [lifted]
+      simp only [walk.canonicalPrimalTailLift_edges_eq_map_support_tail
+        hpositive hcoherent endVertex hendMem hendNe]
+    _ = (walk.support.tail.getLast htailNonempty).1 :=
+      List.getLast_map _
+    _ = (walk.support.getLast walk.support_ne_nil).1 := by
+      rw [List.getLast_tail htailNonempty]
+    _ = last.1 := by
+      rw [walk.getLast_support]
+
 /-- Delete only the first cap edge from a capped primal lift. The result
 starts at the first line-graph junction and retains the terminal cap edge. -/
 noncomputable def cappedPrimalTailLift
