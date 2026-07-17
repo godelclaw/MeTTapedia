@@ -378,6 +378,86 @@ theorem EvenKempeFusionLens.rotationOrdered_cbCrossExitFaceTransferBit_eq_false_
       hcount site path hsupport minimal.spherical.cubic
       minimal.vertexRotationCyclic labels hexact hunused
 
+/-- A nonempty sparse `bc` channel supplies its own supported opposite-port
+trail, so the rejected state has no residual path hypothesis. -/
+theorem EvenKempeFusionLens.exists_rotationOrdered_bcCrossExitFaceTransferBit_eq_false_of_minimal
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : GoertzelV24AdjacentPairBoundary.AdjacentPairData G)
+    {C : (DeletedAdjacentPairGraph G
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).firstVertex
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 0 1)
+    (lens23 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 2 3)
+    (hdata : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hcount : (lens01.bcCrossSites lens23).length ≤ 1)
+    (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
+    ∃ site : lens01.bRoute.CrossSite lens23.cRoute,
+      EvenKempeFusionLens.bcCrossExitFaceTransferBit lens01 graphData lens23
+        hab hac hbc site = false := by
+  let ordered := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  rcases lens01.exists_bcPrimalTrail_with_crossSpliceCoverage lens23
+      hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨site, path, htrail, _hpositive, hsupport, _hrouteSupport, _hcoverage⟩
+  exact ⟨site,
+    EvenKempeFusionLens.rotationOrdered_bcCrossExitFaceTransferBit_eq_false_of_minimal
+      graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
+        hcDisjoint hcount site path htrail hsupport⟩
+
+/-- The symmetric nonempty sparse `cb` channel likewise produces a rejected
+state without an externally chosen trail. -/
+theorem EvenKempeFusionLens.exists_rotationOrdered_cbCrossExitFaceTransferBit_eq_false_of_minimal
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : GoertzelV24AdjacentPairBoundary.AdjacentPairData G)
+    {C : (DeletedAdjacentPairGraph G
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).firstVertex
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 0 1)
+    (lens23 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 2 3)
+    (hdata : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hcount : (lens01.cbCrossSites lens23).length ≤ 1)
+    (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
+    ∃ site : lens01.cRoute.CrossSite lens23.bRoute,
+      EvenKempeFusionLens.cbCrossExitFaceTransferBit lens01 graphData lens23
+        hab hac hbc site = false := by
+  let ordered := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  rcases lens01.exists_cbPrimalTrail_with_crossSpliceCoverage lens23
+      hdata hab hac hbc hbDisjoint hcDisjoint hnonempty with
+    ⟨site, path, htrail, _hpositive, hsupport, _hrouteSupport, _hcoverage⟩
+  exact ⟨site,
+    EvenKempeFusionLens.rotationOrdered_cbCrossExitFaceTransferBit_eq_false_of_minimal
+      graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
+        hcDisjoint hcount site path htrail hsupport⟩
+
 end
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData

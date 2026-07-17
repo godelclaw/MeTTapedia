@@ -154,6 +154,96 @@ theorem labels_eq_of_oppositeArms_of_transferBit_eq_true
   · exact (labels_eq_of_phi_sq_alpha_eq_of_not_cut
       RS labels cut hexact exitArm entryArm hreverse hexitNotCut).symm
 
+/-- If the central edge is in an exact cut and both prescribed arms avoid
+it, equal endpoint turns place the two arms on opposite cut sides. -/
+theorem labels_ne_of_oppositeArms_of_transferBit_eq_false
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : VertexRotationCyclic RS)
+    {A : Type*} (labels : OrbitFace RS → A) (cut : E → Prop)
+    (hexact : ∀ dart : RS.D,
+      labels (dartOrbitFace RS dart) ≠
+          labels (dartOrbitFace RS (RS.alpha dart)) ↔
+        cut (RS.edgeOf dart))
+    (central entryArm exitArm : RS.D)
+    (hentryBase : RS.vertOf entryArm = RS.vertOf central)
+    (hexitBase : RS.vertOf exitArm = RS.vertOf (RS.alpha central))
+    (hentryNe : central ≠ entryArm)
+    (hexitNe : RS.alpha central ≠ exitArm)
+    (htransfer :
+      RS.oppositeArmTransferBit central entryArm exitArm = false)
+    (hcentralCut : cut (RS.edgeOf central))
+    (hentryNotCut : ¬cut (RS.edgeOf entryArm))
+    (hexitNotCut : ¬cut (RS.edgeOf exitArm)) :
+    labels (dartOrbitFace RS entryArm) ≠
+      labels (dartOrbitFace RS exitArm) := by
+  have hcentralLabels :
+      labels (dartOrbitFace RS central) ≠
+        labels (dartOrbitFace RS (RS.alpha central)) :=
+    (hexact central).2 hcentralCut
+  have hturns :=
+    (RS.oppositeArmTransferBit_eq_false_iff
+      central entryArm exitArm).1 htransfer
+  cases hentryTurn : RS.orientedEdgeArmTurn central entryArm with
+  | false =>
+      cases hexitTurn :
+          RS.orientedEdgeArmTurn (RS.alpha central) exitArm with
+      | false =>
+          have hentryBack : RS.rho entryArm = central :=
+            RS.rho_arm_eq_central_of_orientedEdgeArmTurn_eq_false
+              hcubic hrotation central entryArm hentryBase hentryNe
+                hentryTurn
+          have hexitBack : RS.rho exitArm = RS.alpha central :=
+            RS.rho_arm_eq_central_of_orientedEdgeArmTurn_eq_false
+              hcubic hrotation (RS.alpha central) exitArm hexitBase
+                hexitNe hexitTurn
+          have hentryLabel :=
+            labels_eq_rho_of_not_cut RS labels cut hexact entryArm
+              hentryNotCut
+          have hexitLabel :=
+            labels_eq_rho_of_not_cut RS labels cut hexact exitArm
+              hexitNotCut
+          rw [hentryBack] at hentryLabel
+          rw [hexitBack] at hexitLabel
+          intro heq
+          exact hcentralLabels
+            (hentryLabel.symm.trans (heq.trans hexitLabel))
+      | true =>
+          simp [hentryTurn, hexitTurn] at hturns
+  | true =>
+      cases hexitTurn :
+          RS.orientedEdgeArmTurn (RS.alpha central) exitArm with
+      | false =>
+          simp [hentryTurn, hexitTurn] at hturns
+      | true =>
+          have hentryForward : RS.rho central = entryArm :=
+            (RS.orientedEdgeArmTurn_eq_true_iff central entryArm).1
+              hentryTurn
+          have hexitForward : RS.rho (RS.alpha central) = exitArm :=
+            (RS.orientedEdgeArmTurn_eq_true_iff
+              (RS.alpha central) exitArm).1 hexitTurn
+          have hentryLabel :
+              labels (dartOrbitFace RS entryArm) =
+                labels (dartOrbitFace RS (RS.alpha central)) := by
+            rw [← hentryForward]
+            exact congrArg labels
+              (dartOrbitFace_alpha_eq_dartOrbitFace_rho RS central).symm
+          have hexitLabel :
+              labels (dartOrbitFace RS exitArm) =
+                labels (dartOrbitFace RS central) := by
+            rw [← hexitForward]
+            calc
+              labels (dartOrbitFace RS (RS.rho (RS.alpha central))) =
+                  labels (dartOrbitFace RS
+                    (RS.alpha (RS.alpha central))) :=
+                congrArg labels
+                  (dartOrbitFace_alpha_eq_dartOrbitFace_rho
+                    RS (RS.alpha central)).symm
+              _ = labels (dartOrbitFace RS central) := by
+                rw [RS.alpha_involutive]
+          intro heq
+          exact hcentralLabels
+            (hexitLabel.symm.trans (heq.symm.trans hentryLabel))
+
 end RotationSystem
 
 end Mettapedia.GraphTheory.FourColor
