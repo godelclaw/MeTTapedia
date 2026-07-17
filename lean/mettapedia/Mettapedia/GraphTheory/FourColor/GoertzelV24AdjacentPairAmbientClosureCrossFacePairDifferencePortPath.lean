@@ -79,6 +79,8 @@ theorem exists_crossSide_retainedPortPath_of_central_cycle
       (secondPort = 2 ∨ secondPort = 3) ∧
         (firstPort = 0 ∨ firstPort = 1) ∧
         path.IsPath ∧
+        (boundaryEdge data secondPort : Sym2 V) ∈ cycle.edges ∧
+        (boundaryEdge data firstPort : Sym2 V) ∈ cycle.edges ∧
         (data.retainedWalkToAmbient path).edges ⊆ cycle.edges := by
   have hcentralValue :
       s(data.firstVertex, data.secondVertex) ∈ cycle.edges := by
@@ -249,8 +251,28 @@ theorem exists_crossSide_retainedPortPath_of_central_cycle
     rw [← oriented.cons_tail_eq horientedCycle.not_nil]
     simp only [SimpleGraph.Walk.edges_cons, List.mem_cons]
     exact Or.inr hedge
+  have hsecondBoundaryReturn :
+      (boundaryEdge data secondPort : Sym2 V) ∈ returnPath.edges := by
+    have hhead := returnPath.mk_start_snd_mem_edges hreturnNotNil
+    rcases hsecondSide with rfl | rfl
+    · simpa [boundaryEdge, boundaryEdgeValue, hsecondEndpoint] using hhead
+    · simpa [boundaryEdge, boundaryEdgeValue, hsecondEndpoint] using hhead
+  have hfirstBoundaryReturn :
+      (boundaryEdge data firstPort : Sym2 V) ∈ returnPath.edges := by
+    have hlast := returnPath.mk_penultimate_end_mem_edges hreturnNotNil
+    rcases hfirstSide with rfl | rfl
+    · simpa [boundaryEdge, boundaryEdgeValue, hpenultimateEq,
+        hfirstEndpoint, Sym2.eq_swap] using hlast
+    · simpa [boundaryEdge, boundaryEdgeValue, hpenultimateEq,
+        hfirstEndpoint, Sym2.eq_swap] using hlast
+  have hsecondBoundaryCycle :
+      (boundaryEdge data secondPort : Sym2 V) ∈ cycle.edges :=
+    (horientedEdges _).mp (hreturnEdges hsecondBoundaryReturn)
+  have hfirstBoundaryCycle :
+      (boundaryEdge data firstPort : Sym2 V) ∈ cycle.edges :=
+    (horientedEdges _).mp (hreturnEdges hfirstBoundaryReturn)
   refine ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-    hpath, ?_⟩
+    hpath, hsecondBoundaryCycle, hfirstBoundaryCycle, ?_⟩
   intro edge hedge
   rw [hambientPathEdges] at hedge
   exact (horientedEdges edge).mp (hreturnEdges (hmiddleEdges hedge))
@@ -273,6 +295,8 @@ theorem exists_crossSide_scalarSupportPortPath
       (secondPort = 2 ∨ secondPort = 3) ∧
         (firstPort = 0 ∨ firstPort = 1) ∧
         path.IsPath ∧
+        flow (boundaryEdge data secondPort) ≠ 0 ∧
+        flow (boundaryEdge data firstPort) ≠ 0 ∧
         ∀ edge : G.edgeSet,
           (edge : Sym2 V) ∈ (data.retainedWalkToAmbient path).edges →
             flow edge ≠ 0 := by
@@ -282,9 +306,10 @@ theorem exists_crossSide_scalarSupportPortPath
   rcases exists_crossSide_retainedPortPath_of_central_cycle data
       hcycle hcentralCycle with
     ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-      hpath, hpathSubset⟩
+      hpath, hsecondBoundary, hfirstBoundary, hpathSubset⟩
   refine ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-    hpath, ?_⟩
+    hpath, hcycleSupport (boundaryEdge data secondPort) hsecondBoundary,
+    hcycleSupport (boundaryEdge data firstPort) hfirstBoundary, ?_⟩
   intro edge hedge
   exact hcycleSupport edge (hpathSubset hedge)
 
@@ -307,18 +332,26 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
         path.IsPath ∧
         (cross : Sym2 (retainedVertexSet data.firstVertex
           data.secondVertex)) ∉ path.edges ∧
-        ((∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
-              data.secondVertex).edgeSet,
-            (edge : Sym2 (retainedVertexSet data.firstVertex
-              data.secondVertex)) ∈ path.edges →
-              (pair.crossFaceDifferenceProfile
-                (retainedEdgeToAmbientEdge data edge)).1 ≠ 0) ∨
-          (∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
-              data.secondVertex).edgeSet,
-            (edge : Sym2 (retainedVertexSet data.firstVertex
-              data.secondVertex)) ∈ path.edges →
-              (pair.crossFaceDifferenceProfile
-                (retainedEdgeToAmbientEdge data edge)).2 ≠ 0)) := by
+        (((pair.crossFaceDifferenceProfile
+              (boundaryEdge data secondPort)).1 ≠ 0 ∧
+            (pair.crossFaceDifferenceProfile
+              (boundaryEdge data firstPort)).1 ≠ 0 ∧
+            ∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
+                data.secondVertex).edgeSet,
+              (edge : Sym2 (retainedVertexSet data.firstVertex
+                data.secondVertex)) ∈ path.edges →
+                (pair.crossFaceDifferenceProfile
+                  (retainedEdgeToAmbientEdge data edge)).1 ≠ 0) ∨
+          ((pair.crossFaceDifferenceProfile
+              (boundaryEdge data secondPort)).2 ≠ 0 ∧
+            (pair.crossFaceDifferenceProfile
+              (boundaryEdge data firstPort)).2 ≠ 0 ∧
+            ∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
+                data.secondVertex).edgeSet,
+              (edge : Sym2 (retainedVertexSet data.firstVertex
+                data.secondVertex)) ∈ path.edges →
+                (pair.crossFaceDifferenceProfile
+                  (retainedEdgeToAmbientEdge data edge)).2 ≠ 0)) := by
   let difference : G.edgeSet → Color := pair.crossFaceDifferenceProfile
   have hdifference : IsGraphFlow G difference :=
     pair.crossFaceDifferenceProfile_isGraphFlow minimal
@@ -350,7 +383,7 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
     rcases exists_crossSide_scalarSupportPortPath data
         (fun edge => (difference edge).2) hsecondFlow hcubic hsecond with
       ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-        hpath, hsupport⟩
+        hpath, hsecondBoundary, hfirstBoundary, hsupport⟩
     have hcoordinate :
         ∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
             data.secondVertex).edgeSet,
@@ -369,11 +402,13 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
       intro hmem
       exact hcoordinate cross hmem (congrArg Prod.snd hcross)
     exact ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-      hpath, hcrossAvoided, Or.inr hcoordinate⟩
+      hpath, hcrossAvoided, Or.inr ⟨by
+        simpa [difference] using hsecondBoundary, by
+        simpa [difference] using hfirstBoundary, hcoordinate⟩⟩
   · rcases exists_crossSide_scalarSupportPortPath data
         (fun edge => (difference edge).1) hfirstFlow hcubic hfirst with
       ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-        hpath, hsupport⟩
+        hpath, hsecondBoundary, hfirstBoundary, hsupport⟩
     have hcoordinate :
         ∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
             data.secondVertex).edgeSet,
@@ -392,7 +427,9 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_coordinateSupportPortPath
       intro hmem
       exact hcoordinate cross hmem (congrArg Prod.fst hcross)
     exact ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-      hpath, hcrossAvoided, Or.inl hcoordinate⟩
+      hpath, hcrossAvoided, Or.inl ⟨by
+        simpa [difference] using hsecondBoundary, by
+        simpa [difference] using hfirstBoundary, hcoordinate⟩⟩
 
 /-- Forgetting which scalar coordinate supports the path gives a simple
 cross-side retained path of strict cross-face profile disagreements. -/
@@ -412,6 +449,10 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_differenceSupportPortPath
         path.IsPath ∧
         (cross : Sym2 (retainedVertexSet data.firstVertex
           data.secondVertex)) ∉ path.edges ∧
+        pair.crossFaceDifferenceProfile
+            (boundaryEdge data secondPort) ≠ 0 ∧
+        pair.crossFaceDifferenceProfile
+            (boundaryEdge data firstPort) ≠ 0 ∧
         ∀ edge : (DeletedAdjacentPairGraph G data.firstVertex
             data.secondVertex).edgeSet,
           (edge : Sym2 (retainedVertexSet data.firstVertex
@@ -420,13 +461,23 @@ theorem CrossCentralExactFaceCutPair.exists_crossSide_differenceSupportPortPath
               (retainedEdgeToAmbientEdge data edge) ≠ 0 := by
   rcases pair.exists_crossSide_coordinateSupportPortPath minimal with
     ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-      hpath, hcross, hfirstCoordinate | hsecondCoordinate⟩
+      hpath, hcross,
+      ⟨hsecondBoundary, hfirstBoundary, hfirstCoordinate⟩ |
+      ⟨hsecondBoundary, hfirstBoundary, hsecondCoordinate⟩⟩
   · refine ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-      hpath, hcross, ?_⟩
+      hpath, hcross, ?_, ?_, ?_⟩
+    · intro hzero
+      exact hsecondBoundary (congrArg Prod.fst hzero)
+    · intro hzero
+      exact hfirstBoundary (congrArg Prod.fst hzero)
     intro edge hedge hzero
     exact hfirstCoordinate edge hedge (congrArg Prod.fst hzero)
   · refine ⟨secondPort, firstPort, path, hsecondSide, hfirstSide,
-      hpath, hcross, ?_⟩
+      hpath, hcross, ?_, ?_, ?_⟩
+    · intro hzero
+      exact hsecondBoundary (congrArg Prod.snd hzero)
+    · intro hzero
+      exact hfirstBoundary (congrArg Prod.snd hzero)
     intro edge hedge hzero
     exact hsecondCoordinate edge hedge (congrArg Prod.snd hzero)
 
