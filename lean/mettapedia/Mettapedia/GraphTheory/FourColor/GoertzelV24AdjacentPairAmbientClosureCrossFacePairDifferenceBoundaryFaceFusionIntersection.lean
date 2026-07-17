@@ -122,6 +122,7 @@ theorem CrossCentralExactFaceCutPair.successorEdges_disjoint_or_exists_remoteFac
           data.secondVertex).edgeSet,
         edge.1 ∈ firstSuccessor.edges ∧
           edge.1 ∈ secondSuccessor.edges ∧
+          edge ≠ cross ∧
           retainedEdgeToAmbientEdge data edge ∈
             orbitFaceBoundary graphData.toRotationSystem face := by
   by_cases hdisjoint :
@@ -134,7 +135,11 @@ theorem CrossCentralExactFaceCutPair.successorEdges_disjoint_or_exists_remoteFac
     let edge : (DeletedAdjacentPairGraph G data.firstVertex
         data.secondVertex).edgeSet :=
       ⟨edgeValue, firstSuccessor.edges_subset_edgeSet hfirst⟩
-    refine ⟨edge, hfirst, hsecond, ?_⟩
+    have hne : edge ≠ cross := by
+      intro hedge
+      apply hfirstCross
+      exact congrArg Subtype.val hedge ▸ hfirst
+    refine ⟨edge, hfirst, hsecond, hne, ?_⟩
     exact pair.successorIntersection_mem_remoteFace face
       firstFusion hfirstSupport secondFusion hsecondSupport
         firstSuccessor hfirstCross hfirstSubset secondSuccessor
@@ -202,6 +207,7 @@ theorem CrossCentralExactFaceCutPair.fusionCyclePair_retainedCycle_or_successorP
             data.secondVertex).edgeSet,
           edge.1 ∈ firstSuccessor.edges ∧
             edge.1 ∈ secondSuccessor.edges ∧
+            edge ≠ cross ∧
             retainedEdgeToAmbientEdge data edge ∈
               orbitFaceBoundary graphData.toRotationSystem face) := by
   rcases pair.fusionCyclePair_resolution face hboundary
