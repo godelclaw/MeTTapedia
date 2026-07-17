@@ -587,6 +587,30 @@ theorem routeOrderedFusionFaceCrossing_facePairing
   rw [fusionArmReindexing_symm_routeOrderedFusionFaceCrossing]
   exact hpair
 
+/-- In route coordinates, the geometric crossing is literally the
+canonical finite crossing conjugated by signed fusion-arm reindexing. -/
+@[simp] theorem routeOrderedFusionFaceCrossing_fusionArmReindexing
+    (graphData : SimpleGraphDartRotation.Data G)
+    (data : AdjacentPairData G)
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color} {left right : Fin 4}
+    (lens : data.degreeTwoBoundaryData.EvenKempeFusionLens
+      C a b c left right)
+    (hab : a ≠ b) (hac : a ≠ c)
+    (state : (Fin lens.fusionSiteCount × Bool) × Bool) :
+    routeOrderedFusionFaceCrossing graphData data lens hab hac
+        (lens.fusionArmReindexing hab hac state) =
+      lens.fusionArmReindexing hab hac
+        (indexedFusionFaceCrossing
+          (bOrderedFusionFaceSymbol graphData data lens hab hac) state) := by
+  change lens.fusionArmReindexing hab hac
+      (indexedFusionFaceCrossing
+        (bOrderedFusionFaceSymbol graphData data lens hab hac)
+        ((lens.fusionArmReindexing hab hac).symm
+          (lens.fusionArmReindexing hab hac state))) = _
+  rw [(lens.fusionArmReindexing hab hac).symm_apply_apply]
+
 /-- Conjugating by signed route-order wiring preserves the involutive
 nature of the local face crossing. -/
 @[simp] theorem routeOrderedFusionFaceCrossing_involutive
