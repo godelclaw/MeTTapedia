@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionZeroFusionTransfer
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionDoubleRejectedCircuit
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionCrossChannelMultiplicityCircuit
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionCrossChannelTransferObstruction
 
@@ -28,7 +28,7 @@ attribute [local instance]
 two-lens interaction has an exact normal form.  Either cross multiplicity or
 an internal fusion site gives a strictly shorter primal circuit, the complete
 route containers are disjoint, or both lenses are simple zero-fusion cycles
-and one surviving cross has exactly the diagonal signed transfer. -/
+and exactly one cross channel survives with the diagonal signed transfer. -/
 theorem EvenKempeFusionLens.rejectedSparseCrossResolution
     (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)
@@ -64,7 +64,9 @@ theorem EvenKempeFusionLens.rejectedSparseCrossResolution
             circuit.length < lens01.cRoute.ambientPath.length +
               lens23.bRoute.ambientPath.length ∨
             circuit.length < lens01.closedWalk.length ∨
-            circuit.length < lens23.closedWalk.length)) ∨
+            circuit.length < lens23.closedWalk.length ∨
+            circuit.length < lens01.closedWalk.length +
+              lens23.closedWalk.length)) ∨
       (lens01.bRoute.ambientPath.support ++
           lens01.cRoute.ambientPath.support).Disjoint
         (lens23.bRoute.ambientPath.support ++
@@ -75,18 +77,20 @@ theorem EvenKempeFusionLens.rejectedSparseCrossResolution
         lens23.fusionSiteCount = 0 ∧
         lens01.closedWalk.IsCycle ∧
         lens23.closedWalk.IsCycle ∧
-        ((∃ site : lens01.bRoute.CrossSite lens23.cRoute,
-            EvenKempeFusionLens.bcCrossExitFaceTransferBit
-                lens01 graphData lens23 hab hac hbc site = false ∧
-              EvenKempeFusionLens.bcCombinedSignedTransfer
-                  lens01 graphData lens23 hab hac hbc site =
-                signedRoutePermutation true true) ∨
-          ∃ site : lens01.cRoute.CrossSite lens23.bRoute,
-            EvenKempeFusionLens.cbCrossExitFaceTransferBit
-                lens01 graphData lens23 hab hac hbc site = false ∧
-              EvenKempeFusionLens.cbCombinedSignedTransfer
-                  lens01 graphData lens23 hab hac hbc site =
-                signedRoutePermutation true true) := by
+        (((∃ site : lens01.bRoute.CrossSite lens23.cRoute,
+              EvenKempeFusionLens.bcCrossExitFaceTransferBit
+                  lens01 graphData lens23 hab hac hbc site = false ∧
+                EvenKempeFusionLens.bcCombinedSignedTransfer
+                    lens01 graphData lens23 hab hac hbc site =
+                  signedRoutePermutation true true) ∧
+            lens01.cbCrossSites lens23 = []) ∨
+          (lens01.bcCrossSites lens23 = [] ∧
+            ∃ site : lens01.cRoute.CrossSite lens23.bRoute,
+              EvenKempeFusionLens.cbCrossExitFaceTransferBit
+                  lens01 graphData lens23 hab hac hbc site = false ∧
+                EvenKempeFusionLens.cbCombinedSignedTransfer
+                    lens01 graphData lens23 hab hac hbc site =
+                  signedRoutePermutation true true)) := by
   rcases lens01.crossChannels_subsingleton_or_exists_shortPrimalCircuit
       lens23 hab hac hbc with hsparse | hcrossShort
   · by_cases hbcEmpty : lens01.bcCrossSites lens23 = []
@@ -118,7 +122,7 @@ theorem EvenKempeFusionLens.rejectedSparseCrossResolution
                 hdata (by decide) hzero01,
               lens23.closedWalk_isCycle_of_fusionSiteCount_eq_zero
                 hdata (by decide) hzero23,
-              Or.inr ⟨site, hfalse,
+              Or.inr ⟨hbcEmpty, site, hfalse,
                 EvenKempeFusionLens.cbCombinedSignedTransfer_eq_diagonal_of_rejected_of_fusionSiteCounts_eq_zero
                   graphData data lens01 lens23 hab hac hbc site hfalse
                     hzero01 hzero23⟩⟩
@@ -126,36 +130,64 @@ theorem EvenKempeFusionLens.rejectedSparseCrossResolution
             rcases lens23.exists_shorter_primalCircuit_of_fusionSiteCount_pos
                 hdata hab hac hbc (Nat.pos_of_ne_zero hzero23) with
               ⟨start, circuit, hcircuit, hshort⟩
-            exact ⟨start, circuit, hcircuit, Or.inr (Or.inr (Or.inr hshort))⟩
+            exact ⟨start, circuit, hcircuit,
+              Or.inr (Or.inr (Or.inr (Or.inl hshort)))⟩
         · left
           rcases lens01.exists_shorter_primalCircuit_of_fusionSiteCount_pos
               hdata hab hac hbc (Nat.pos_of_ne_zero hzero01) with
             ⟨start, circuit, hcircuit, hshort⟩
           exact ⟨start, circuit, hcircuit, Or.inr (Or.inr (Or.inl hshort))⟩
-    · rcases hrejectBc hsparse.1 hbcEmpty with ⟨site, hfalse⟩
-      by_cases hzero01 : lens01.fusionSiteCount = 0
-      · by_cases hzero23 : lens23.fusionSiteCount = 0
-        · right
-          right
-          exact ⟨hsparse, hzero01, hzero23,
-            lens01.closedWalk_isCycle_of_fusionSiteCount_eq_zero
-              hdata (by decide) hzero01,
-            lens23.closedWalk_isCycle_of_fusionSiteCount_eq_zero
-              hdata (by decide) hzero23,
-            Or.inl ⟨site, hfalse,
-              EvenKempeFusionLens.bcCombinedSignedTransfer_eq_diagonal_of_rejected_of_fusionSiteCounts_eq_zero
-                graphData data lens01 lens23 hab hac hbc site hfalse
-                  hzero01 hzero23⟩⟩
+    · by_cases hcbEmpty : lens01.cbCrossSites lens23 = []
+      · rcases hrejectBc hsparse.1 hbcEmpty with ⟨site, hfalse⟩
+        by_cases hzero01 : lens01.fusionSiteCount = 0
+        · by_cases hzero23 : lens23.fusionSiteCount = 0
+          · right
+            right
+            exact ⟨hsparse, hzero01, hzero23,
+              lens01.closedWalk_isCycle_of_fusionSiteCount_eq_zero
+                hdata (by decide) hzero01,
+              lens23.closedWalk_isCycle_of_fusionSiteCount_eq_zero
+                hdata (by decide) hzero23,
+              Or.inl ⟨⟨site, hfalse,
+                EvenKempeFusionLens.bcCombinedSignedTransfer_eq_diagonal_of_rejected_of_fusionSiteCounts_eq_zero
+                  graphData data lens01 lens23 hab hac hbc site hfalse
+                    hzero01 hzero23⟩, hcbEmpty⟩⟩
+          · left
+            rcases lens23.exists_shorter_primalCircuit_of_fusionSiteCount_pos
+                hdata hab hac hbc (Nat.pos_of_ne_zero hzero23) with
+              ⟨start, circuit, hcircuit, hshort⟩
+            exact ⟨start, circuit, hcircuit,
+              Or.inr (Or.inr (Or.inr (Or.inl hshort)))⟩
         · left
-          rcases lens23.exists_shorter_primalCircuit_of_fusionSiteCount_pos
-              hdata hab hac hbc (Nat.pos_of_ne_zero hzero23) with
+          rcases lens01.exists_shorter_primalCircuit_of_fusionSiteCount_pos
+              hdata hab hac hbc (Nat.pos_of_ne_zero hzero01) with
             ⟨start, circuit, hcircuit, hshort⟩
-          exact ⟨start, circuit, hcircuit, Or.inr (Or.inr (Or.inr hshort))⟩
-      · left
-        rcases lens01.exists_shorter_primalCircuit_of_fusionSiteCount_pos
-            hdata hab hac hbc (Nat.pos_of_ne_zero hzero01) with
-          ⟨start, circuit, hcircuit, hshort⟩
-        exact ⟨start, circuit, hcircuit, Or.inr (Or.inr (Or.inl hshort))⟩
+          exact ⟨start, circuit, hcircuit,
+            Or.inr (Or.inr (Or.inl hshort))⟩
+      · rcases hrejectBc hsparse.1 hbcEmpty with ⟨bcSite, hbcFalse⟩
+        rcases hrejectCb hsparse.2 hcbEmpty with ⟨cbSite, hcbFalse⟩
+        by_cases hzero01 : lens01.fusionSiteCount = 0
+        · by_cases hzero23 : lens23.fusionSiteCount = 0
+          · left
+            rcases EvenKempeFusionLens.exists_doubleRejectedCrossSpliceCircuit_of_zeroFusion
+                graphData data lens01 lens23 hdata hab hac hbc hbDisjoint
+                  hcDisjoint hsparse.1 hsparse.2 hzero01 hzero23 bcSite
+                    hbcFalse cbSite hcbFalse with
+              ⟨circuit, hcircuit, _hlength, hshort⟩
+            exact ⟨data.retainedPort 0, circuit, hcircuit,
+              Or.inr (Or.inr (Or.inr (Or.inr hshort)))⟩
+          · left
+            rcases lens23.exists_shorter_primalCircuit_of_fusionSiteCount_pos
+                hdata hab hac hbc (Nat.pos_of_ne_zero hzero23) with
+              ⟨start, circuit, hcircuit, hshort⟩
+            exact ⟨start, circuit, hcircuit,
+              Or.inr (Or.inr (Or.inr (Or.inl hshort)))⟩
+        · left
+          rcases lens01.exists_shorter_primalCircuit_of_fusionSiteCount_pos
+              hdata hab hac hbc (Nat.pos_of_ne_zero hzero01) with
+            ⟨start, circuit, hcircuit, hshort⟩
+          exact ⟨start, circuit, hcircuit,
+            Or.inr (Or.inr (Or.inl hshort))⟩
   · left
     rcases hcrossShort with hbcShort | hcbShort
     · rcases hbcShort with ⟨start, circuit, hcircuit, hshort⟩
@@ -194,7 +226,9 @@ theorem EvenKempeFusionLens.rotationOrdered_rejectedSparseCrossResolution_of_min
               circuit.length < lens01.cRoute.ambientPath.length +
                 lens23.bRoute.ambientPath.length ∨
               circuit.length < lens01.closedWalk.length ∨
-              circuit.length < lens23.closedWalk.length)) ∨
+              circuit.length < lens23.closedWalk.length ∨
+              circuit.length < lens01.closedWalk.length +
+                lens23.closedWalk.length)) ∨
         (lens01.bRoute.ambientPath.support ++
             lens01.cRoute.ambientPath.support).Disjoint
           (lens23.bRoute.ambientPath.support ++
@@ -205,18 +239,20 @@ theorem EvenKempeFusionLens.rotationOrdered_rejectedSparseCrossResolution_of_min
           lens23.fusionSiteCount = 0 ∧
           lens01.closedWalk.IsCycle ∧
           lens23.closedWalk.IsCycle ∧
-          ((∃ site : lens01.bRoute.CrossSite lens23.cRoute,
-              EvenKempeFusionLens.bcCrossExitFaceTransferBit
-                  lens01 graphData lens23 hab hac hbc site = false ∧
-                EvenKempeFusionLens.bcCombinedSignedTransfer
-                    lens01 graphData lens23 hab hac hbc site =
-                  signedRoutePermutation true true) ∨
-            ∃ site : lens01.cRoute.CrossSite lens23.bRoute,
-              EvenKempeFusionLens.cbCrossExitFaceTransferBit
-                  lens01 graphData lens23 hab hac hbc site = false ∧
-                EvenKempeFusionLens.cbCombinedSignedTransfer
-                    lens01 graphData lens23 hab hac hbc site =
-                  signedRoutePermutation true true) := by
+          (((∃ site : lens01.bRoute.CrossSite lens23.cRoute,
+                EvenKempeFusionLens.bcCrossExitFaceTransferBit
+                    lens01 graphData lens23 hab hac hbc site = false ∧
+                  EvenKempeFusionLens.bcCombinedSignedTransfer
+                      lens01 graphData lens23 hab hac hbc site =
+                    signedRoutePermutation true true) ∧
+              lens01.cbCrossSites lens23 = []) ∨
+            (lens01.bcCrossSites lens23 = [] ∧
+              ∃ site : lens01.cRoute.CrossSite lens23.bRoute,
+                EvenKempeFusionLens.cbCrossExitFaceTransferBit
+                    lens01 graphData lens23 hab hac hbc site = false ∧
+                  EvenKempeFusionLens.cbCombinedSignedTransfer
+                      lens01 graphData lens23 hab hac hbc site =
+                    signedRoutePermutation true true)) := by
   dsimp only
   intro C a b c lens01 lens23 hdata hab hac hbc hbDisjoint hcDisjoint
   apply EvenKempeFusionLens.rejectedSparseCrossResolution
