@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceRankCertificate
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceRankSemantics
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceRankTheorem
 
 /-! Regression guard for the exact sparse trace-rank replay. -/
 
@@ -16,6 +17,11 @@ example : rationalReplayCheck = true := rationalReplayCheck_certificate
 #print axioms rationalReplayCheck_certificate
 #print axioms HypercubicDimension16TraceRankSemantics.sparseRowValue_subtractScaled
 #print axioms HypercubicDimension16TraceRankSemantics.linearIndependent_of_distinct_maxSupport
+#print axioms HypercubicDimension16TraceRankTheorem.replaySelectedRow_certificate
+#print axioms HypercubicDimension16TraceRankTheorem.normalizedBasisVector_linearIndependent
+#print axioms HypercubicDimension16TraceRankTheorem.normalizedBasisVector_mem_selectedRawSpan
+#print axioms HypercubicDimension16TraceRankTheorem.selectedRawVector_linearIndependent
+#print axioms HypercubicDimension16TraceRankTheorem.selectedRawSpan_finrank
 
 end HypercubicDimension16TraceRankCertificate
 end YangMills
