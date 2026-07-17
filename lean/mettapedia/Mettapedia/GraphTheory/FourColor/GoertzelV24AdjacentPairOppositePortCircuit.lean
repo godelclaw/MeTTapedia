@@ -84,6 +84,19 @@ theorem retainedWalkToAmbient_isPath
     Subtype.val_injective hwalk
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Mapping into the ambient graph also preserves the weaker no-repeated-edge
+condition. -/
+theorem retainedWalkToAmbient_isTrail
+    (data : AdjacentPairData G)
+    {left right : retainedVertexSet data.firstVertex data.secondVertex}
+    {walk : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk left right}
+    (hwalk : walk.IsTrail) :
+    (data.retainedWalkToAmbient walk).IsTrail := by
+  exact SimpleGraph.Walk.map_isTrail_of_injective
+    Subtype.val_injective hwalk
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- No restored boundary edge can occur in a walk mapped from the retained
 induced graph. -/
 theorem boundaryEdgeValue_not_mem_retainedWalkToAmbient_edges
@@ -116,6 +129,28 @@ theorem boundaryEdgeValue_not_mem_retainedWalkToAmbient_edges
     exact retained.2.2 hvalue
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- The central restored edge cannot occur in a walk mapped from the retained
+induced graph. -/
+theorem centralEdgeValue_not_mem_retainedWalkToAmbient_edges
+    (data : AdjacentPairData G)
+    {left right : retainedVertexSet data.firstVertex data.secondVertex}
+    (walk : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk left right) :
+    GoertzelV24AdjacentPairInsertion.AdjacentPairData.centralEdgeValue data ∉
+      (data.retainedWalkToAmbient walk).edges := by
+  intro hmem
+  rw [retainedWalkToAmbient, SimpleGraph.Walk.edges_map] at hmem
+  rcases List.mem_map.mp hmem with ⟨edge, _hedge, hedgeValue⟩
+  have hdeletedMem : data.firstVertex ∈ edge.map data.retainedGraphHom := by
+    rw [hedgeValue]
+    change data.firstVertex ∈ s(data.firstVertex, data.secondVertex)
+    simp
+  rcases Sym2.mem_map.mp hdeletedMem with
+    ⟨retained, _hretainedMem, hvalue⟩
+  change retained.1 = data.firstVertex at hvalue
+  exact retained.2.1 hvalue
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- The central return uses boundary ports `2` and `0`, with the central edge
 between them. -/
 theorem oppositePortCentralReturn_edges
@@ -130,6 +165,31 @@ theorem oppositePortCentralReturn_edges
     GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryEdgeValue,
     GoertzelV24AdjacentPairInsertion.AdjacentPairData.centralEdgeValue,
     Sym2.eq_swap]
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every retained walk is edge-disjoint from the restored three-edge
+central return. -/
+theorem retainedWalkToAmbient_edges_disjoint_oppositePortCentralReturn
+    (data : AdjacentPairData G)
+    {left right : retainedVertexSet data.firstVertex data.secondVertex}
+    (walk : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk left right) :
+    (data.retainedWalkToAmbient walk).edges.Disjoint
+      data.oppositePortCentralReturn.edges := by
+  rw [List.disjoint_left]
+  intro edge hretained hreturn
+  rw [data.oppositePortCentralReturn_edges] at hreturn
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hreturn
+  rcases hreturn with htwo | hcentral | hzero
+  · subst edge
+    exact data.boundaryEdgeValue_not_mem_retainedWalkToAmbient_edges
+      walk 2 hretained
+  · subst edge
+    exact data.centralEdgeValue_not_mem_retainedWalkToAmbient_edges
+      walk hretained
+  · subst edge
+    exact data.boundaryEdgeValue_not_mem_retainedWalkToAmbient_edges
+      walk 0 hretained
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Among the four restored boundary edges, the central return uses exactly
@@ -165,6 +225,25 @@ def oppositePortClosure (data : AdjacentPairData G)
       data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2)) :
     G.Walk (data.portVertex 0) (data.portVertex 0) :=
   (data.retainedWalkToAmbient path).append data.oppositePortCentralReturn
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- A retained trail between opposite ports closes through the deleted pair
+to an ambient closed trail. Unlike simplicity, the trail condition is stable
+under the sparse cross-splice constructions used below. -/
+theorem oppositePortClosure_isTrail
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (hpath : path.IsTrail) :
+    (data.oppositePortClosure path).IsTrail := by
+  change ((data.retainedWalkToAmbient path).append
+    data.oppositePortCentralReturn).IsTrail
+  exact (SimpleGraph.Walk.isTrail_append
+    (data.retainedWalkToAmbient path) data.oppositePortCentralReturn).2
+      ⟨data.retainedWalkToAmbient_isTrail hpath,
+        data.oppositePortCentralReturn_isPath.isTrail,
+        data.retainedWalkToAmbient_edges_disjoint_oppositePortCentralReturn
+          path⟩
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- The opposite-port closure contains exactly boundary edges `0` and `2`;
