@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionRouteStateFaceCutTransport
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionOrientedFaceCutTransport
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -39,8 +39,9 @@ def routeOrderedFusionArmFaceLabel
     (routeOrderedFusionArmDart data lens hab hac state))
 
 /-- Generating edges of the cut-avoiding fusion-face network. They are
-the verified local crossing at one fusion edge and the two families of
-trimmed primal route segments between ordered fusion edges. -/
+the verified local crossings at one fusion edge and the two families of
+trimmed primal route segments between ordered fusion edges. The directed
+crossings expose the exact single arm traversed by each local face arc. -/
 inductive CutAvoidingFusionFaceStep
     (graphData : Data G)
     (data : AdjacentPairData G)
@@ -64,6 +65,28 @@ inductive CutAvoidingFusionFaceStep
       CutAvoidingFusionFaceStep graphData data lens hab hac cut
         state (routeOrderedFusionFaceCrossing
           graphData data lens hab hac state)
+  | entryCrossing
+      (position : Fin lens.fusionSiteCount)
+      (hnot : ¬cut (graphData.toRotationSystem.edgeOf
+        (routeOrderedFusionArmDart data lens hab hac
+          (routeOrderedFusionEntryOtherState
+            graphData data lens hab hac position)))) :
+      CutAvoidingFusionFaceStep graphData data lens hab hac cut
+        (routeOrderedFusionEntryOtherState
+          graphData data lens hab hac position)
+        (routeOrderedFusionExitTurnState
+          graphData data lens hab hac position)
+  | exitCrossing
+      (position : Fin lens.fusionSiteCount)
+      (hnot : ¬cut (graphData.toRotationSystem.edgeOf
+        (routeOrderedFusionArmDart data lens hab hac
+          (routeOrderedFusionExitOtherState
+            graphData data lens hab hac position)))) :
+      CutAvoidingFusionFaceStep graphData data lens hab hac cut
+        (routeOrderedFusionExitOtherState
+          graphData data lens hab hac position)
+        (routeOrderedFusionEntryTurnState
+          graphData data lens hab hac position)
   | bSegment
       (first second : Fin lens.fusionSiteCount)
       (hbOrder : lens.bFusionSupportOrderEmbedding first <
@@ -119,6 +142,16 @@ theorem routeOrderedFusionArmFaceLabel_eq_of_cutAvoidingFusionFaceStep
       exact routeOrderedFusionFaceCrossing_labels_eq_of_arms_not_cut
         graphData hcubic hrotation data lens hab hac hbc labels cut hexact
           state hstart hfinish
+  | entryCrossing position hnot =>
+      simpa [routeOrderedFusionArmFaceLabel] using
+        routeOrderedFusionEntryOtherFaceLabels_eq_exitTurn_of_not_cut
+          graphData hcubic hrotation data lens hab hac hbc labels cut hexact
+            position hnot
+  | exitCrossing position hnot =>
+      simpa [routeOrderedFusionArmFaceLabel] using
+        routeOrderedFusionExitOtherFaceLabels_eq_entryTurn_of_not_cut
+          graphData hcubic hrotation data lens hab hac hbc labels cut hexact
+            position hnot
   | bSegment first second hbOrder hnot =>
       exact EvenKempeFusionLens.bRouteStateFaceLabels_eq_of_not_cut
         data lens hab hac first second hbOrder graphData hcubic hrotation
