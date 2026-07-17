@@ -183,9 +183,68 @@ theorem rotationOrdered_unusedBoundaryFaces_ne_of_centralFaces_ne
       graphData hcubic hrotation]
   exact hcentral
 
-/-- A simple retained path between the canonically opposite ports produces
+/-- A retained trail between the canonically opposite ports produces
 an exact facial cut whose unused retained-side port faces have different
 labels. This packages the global sphere cut with the local cubic rotation. -/
+theorem exists_rotationOrdered_oppositePortClosure_exactFaceCut_of_minimal_of_isTrail
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (data : AdjacentPairData G)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk
+        ((data.rotationOrderedData graphData hcubic hrotation).retainedPort 0)
+        ((data.rotationOrderedData graphData hcubic hrotation).retainedPort 2))
+    (hpath : path.IsTrail) :
+    ∃ labels : OrbitFace graphData.toRotationSystem → F2,
+      orbitFaceBoundaryLinearMap graphData.toRotationSystem labels =
+          walkEdgeParity
+            ((data.rotationOrderedData graphData hcubic hrotation).oppositePortClosure
+              path) ∧
+        (∀ dart : graphData.toRotationSystem.D,
+          labels (dartOrbitFace graphData.toRotationSystem dart) ≠
+              labels (dartOrbitFace graphData.toRotationSystem
+                (graphData.toRotationSystem.alpha dart)) ↔
+            (graphData.toRotationSystem.edgeOf dart).1 ∈
+              ((data.rotationOrderedData graphData hcubic hrotation).oppositePortClosure
+                path).edges) ∧
+        (∀ port : Fin 4,
+          labels (dartOrbitFace graphData.toRotationSystem
+              (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+                (data.rotationOrderedData graphData hcubic hrotation) port)) ≠
+                labels (dartOrbitFace graphData.toRotationSystem
+                  (graphData.toRotationSystem.alpha
+                    (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+                      (data.rotationOrderedData graphData hcubic hrotation)
+                        port))) ↔
+            port = 0 ∨ port = 2) ∧
+        labels (dartOrbitFace graphData.toRotationSystem
+            data.rotationCentralDart) ≠
+          labels (dartOrbitFace graphData.toRotationSystem
+            (graphData.toRotationSystem.alpha data.rotationCentralDart)) ∧
+        labels (dartOrbitFace graphData.toRotationSystem
+            (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+              (data.rotationOrderedData graphData hcubic hrotation) 1)) ≠
+          labels (dartOrbitFace graphData.toRotationSystem
+            (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+              (data.rotationOrderedData graphData hcubic hrotation) 3)) := by
+  let ordered := data.rotationOrderedData graphData hcubic hrotation
+  rcases ordered.exists_oppositePortClosure_exactFaceCut_of_minimal_of_isTrail
+      graphData minimal path hpath with
+    ⟨labels, hlabels, hexact, hports, hcentral⟩
+  have hcentral' :
+      labels (dartOrbitFace graphData.toRotationSystem
+          data.rotationCentralDart) ≠
+        labels (dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha data.rotationCentralDart)) := by
+    simpa [ordered, rotationOrderedData, rotationCentralDart,
+      oppositePortCentralDart] using hcentral
+  exact ⟨labels, hlabels, hexact, hports, hcentral',
+    data.rotationOrdered_unusedBoundaryFaces_ne_of_centralFaces_ne
+      graphData hcubic hrotation labels hcentral'⟩
+
+/-- The simple-path specialization of the rotation-ordered trail cut. -/
 theorem exists_rotationOrdered_oppositePortClosure_exactFaceCut_of_minimal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -229,20 +288,8 @@ theorem exists_rotationOrdered_oppositePortClosure_exactFaceCut_of_minimal
           labels (dartOrbitFace graphData.toRotationSystem
             (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
               (data.rotationOrderedData graphData hcubic hrotation) 3)) := by
-  let ordered := data.rotationOrderedData graphData hcubic hrotation
-  rcases ordered.exists_oppositePortClosure_exactFaceCut_of_minimal
-      graphData minimal path hpath with
-    ⟨labels, hlabels, hexact, hports, hcentral⟩
-  have hcentral' :
-      labels (dartOrbitFace graphData.toRotationSystem
-          data.rotationCentralDart) ≠
-        labels (dartOrbitFace graphData.toRotationSystem
-          (graphData.toRotationSystem.alpha data.rotationCentralDart)) := by
-    simpa [ordered, rotationOrderedData, rotationCentralDart,
-      oppositePortCentralDart] using hcentral
-  exact ⟨labels, hlabels, hexact, hports, hcentral',
-    data.rotationOrdered_unusedBoundaryFaces_ne_of_centralFaces_ne
-      graphData hcubic hrotation labels hcentral'⟩
+  exact data.exists_rotationOrdered_oppositePortClosure_exactFaceCut_of_minimal_of_isTrail
+    graphData minimal hcubic hrotation path hpath.isTrail
 
 end
 

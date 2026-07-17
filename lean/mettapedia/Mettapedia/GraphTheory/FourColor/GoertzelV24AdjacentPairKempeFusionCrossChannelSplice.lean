@@ -126,6 +126,32 @@ theorem EvenKempePortPath.secondPrefixToCrossSite_support_subset
       second.ambientPath.support :=
   second.ambientPath.support_takeUntil_subset_support site.2.2
 
+/-- Every edge in a cross prefix splice lies on one of its two source
+routes. -/
+theorem EvenKempePortPath.crossSplice_support_subset_route_supports
+    {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
+    {C : G.EdgeColoring Color} {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin portCount}
+    (first : data.EvenKempePortPath C a b firstLeft firstRight)
+    (second : data.EvenKempePortPath C a c secondLeft secondRight)
+    (site : first.CrossSite second) :
+    (first.crossSplice second site).support ⊆
+      first.ambientPath.support ++ second.ambientPath.support := by
+  intro edge hmem
+  rw [EvenKempePortPath.crossSplice,
+    SimpleGraph.Walk.support_append] at hmem
+  apply List.mem_append.mpr
+  rcases List.mem_append.mp hmem with hfirst | hsecond
+  · exact Or.inl
+      (first.firstPrefixToCrossSite_support_subset second site hfirst)
+  · right
+    apply first.secondPrefixToCrossSite_support_subset second site
+    have hreverse : edge ∈
+        (first.secondPrefixToCrossSite second site).reverse.support :=
+      List.mem_of_mem_tail hsecond
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+      hreverse
+
 /-- Prefix and suffix reconstruct the complete first route. -/
 theorem EvenKempePortPath.firstPrefix_append_firstSuffix
     {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}

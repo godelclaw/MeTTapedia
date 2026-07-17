@@ -56,6 +56,15 @@ def oppositeArmTransferBit (RS : RotationSystem V E)
         RS.orientedEdgeArmTurn (RS.alpha central) exitArm := by
   exact Bool.xor_iff_ne
 
+@[simp] theorem oppositeArmTransferBit_eq_false_iff
+    (RS : RotationSystem V E) (central entryArm exitArm : RS.D) :
+    RS.oppositeArmTransferBit central entryArm exitArm = false ↔
+      RS.orientedEdgeArmTurn central entryArm =
+        RS.orientedEdgeArmTurn (RS.alpha central) exitArm := by
+  cases hentry : RS.orientedEdgeArmTurn central entryArm <;>
+    cases hexit : RS.orientedEdgeArmTurn (RS.alpha central) exitArm <;>
+    simp [oppositeArmTransferBit, hentry, hexit]
+
 /-- Opposite arms selected by unequal endpoint turns lie on one of the
 two explicit two-step face arcs across the central edge. -/
 theorem oppositeArm_phi_sq_alpha_pairing_of_transferBit_eq_true

@@ -197,6 +197,32 @@ theorem crossExitFaceTransferBit_eq_opposite_of_pairing_false
   rw [crossExitFaceTransferBit, hpairing]
   rfl
 
+/-- The rejected local state is exactly reversed endpoint pairing together
+with equal cyclic turns at the two ends of the cross edge. -/
+theorem crossExitFaceTransferBit_eq_false_iff_pairing_false_and_turns_eq
+    (data : AdjacentPairData G) (graphData : Data G)
+    {C : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    {firstLeft firstRight secondLeft secondRight : Fin 4}
+    (first : data.degreeTwoBoundaryData.EvenKempePortPath
+      C a b firstLeft firstRight)
+    (second : data.degreeTwoBoundaryData.EvenKempePortPath
+      C a c secondLeft secondRight)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (site : first.CrossSite second) :
+    crossExitFaceTransferBit data graphData first second
+        hab hac hbc site = false ↔
+      first.crossPairingBit second hab hac hbc site = false ∧
+        graphData.toRotationSystem.orientedEdgeArmTurn
+            (ambientFirstCrossDart data first second hab hbc site)
+            (ambientSecondCrossExitDart data first second hac hbc site) =
+          graphData.toRotationSystem.orientedEdgeArmTurn
+            (graphData.toRotationSystem.alpha
+              (ambientFirstCrossDart data first second hab hbc site))
+            (ambientFirstCrossExitDart data first second hab hbc site) := by
+  simp [crossExitFaceTransferBit, crossExitOppositeTransferBit]
+
 /-- If the local acceptance bit is true, exact-cut face labels on the two
 outgoing cross arms agree whenever both arm edges avoid the cut. -/
 theorem crossExitFaceLabels_eq_of_transferBit_eq_true

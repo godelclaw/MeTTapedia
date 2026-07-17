@@ -80,9 +80,54 @@ omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
       GoertzelV24AdjacentPairInsertion.AdjacentPairData.centralEdgeValue data :=
   rfl
 
-/-- An opposite-port path in a graph-backed vertex-minimal counterexample
+/-- An opposite-port trail in a graph-backed vertex-minimal counterexample
 closes to an exact face cut. In particular, the two quotient faces on the
 central edge receive different labels. -/
+theorem exists_oppositePortClosure_exactFaceCut_of_minimal_of_isTrail
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    (hpath : path.IsTrail) :
+    ∃ labels : OrbitFace graphData.toRotationSystem → F2,
+      orbitFaceBoundaryLinearMap graphData.toRotationSystem labels =
+          walkEdgeParity (data.oppositePortClosure path) ∧
+        (∀ dart : graphData.toRotationSystem.D,
+          labels (dartOrbitFace graphData.toRotationSystem dart) ≠
+              labels (dartOrbitFace graphData.toRotationSystem
+                (graphData.toRotationSystem.alpha dart)) ↔
+            (graphData.toRotationSystem.edgeOf dart).1 ∈
+              (data.oppositePortClosure path).edges) ∧
+        (∀ port : Fin 4,
+          labels (dartOrbitFace graphData.toRotationSystem
+              (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+                data port)) ≠
+                labels (dartOrbitFace graphData.toRotationSystem
+                  (graphData.toRotationSystem.alpha
+                    (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+                      data port))) ↔
+            port = 0 ∨ port = 2) ∧
+        labels (dartOrbitFace graphData.toRotationSystem
+            data.oppositePortCentralDart) ≠
+          labels (dartOrbitFace graphData.toRotationSystem
+            (graphData.toRotationSystem.alpha
+              data.oppositePortCentralDart)) := by
+  have hclosure := data.oppositePortClosure_isTrail path hpath
+  rcases exists_orbitFaceLabeling_ne_alpha_iff_mem_edges_of_minimal
+      graphData minimal (data.oppositePortClosure path) hclosure with
+    ⟨labels, hlabels, hexact⟩
+  refine ⟨labels, hlabels, hexact, ?_, ?_⟩
+  · intro port
+    rw [hexact
+      (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
+        data port)]
+    simpa using data.boundaryEdgeValue_mem_oppositePortClosure_edges_iff
+      path port
+  apply (hexact data.oppositePortCentralDart).2
+  simpa using data.centralEdgeValue_mem_oppositePortClosure_edges path
+
+/-- The path-specialized exact-cut wrapper follows from the trail theorem. -/
 theorem exists_oppositePortClosure_exactFaceCut_of_minimal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -113,19 +158,8 @@ theorem exists_oppositePortClosure_exactFaceCut_of_minimal
           labels (dartOrbitFace graphData.toRotationSystem
             (graphData.toRotationSystem.alpha
               data.oppositePortCentralDart)) := by
-  have hcycle := data.oppositePortClosure_isCycle path hpath
-  rcases exists_orbitFaceLabeling_ne_alpha_iff_mem_edges_of_minimal
-      graphData minimal (data.oppositePortClosure path) hcycle.isTrail with
-    ⟨labels, hlabels, hexact⟩
-  refine ⟨labels, hlabels, hexact, ?_, ?_⟩
-  · intro port
-    rw [hexact
-      (GoertzelV24AdjacentPairInsertion.AdjacentPairData.boundaryPortDart
-        data port)]
-    simpa using data.boundaryEdgeValue_mem_oppositePortClosure_edges_iff
-      path port
-  apply (hexact data.oppositePortCentralDart).2
-  simpa using data.centralEdgeValue_mem_oppositePortClosure_edges path
+  exact data.exists_oppositePortClosure_exactFaceCut_of_minimal_of_isTrail
+    graphData minimal path hpath.isTrail
 
 end
 
