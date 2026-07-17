@@ -927,11 +927,34 @@ raw rows themselves are linearly independent over $\mathbb Q$, and their
 rational span has finrank exactly $11{,}556$
 (\texttt{HypercubicDimension16TraceRankTheorem}).
 
-This is still not the physical-quotient theorem.  The pivot/free partition
-must be transported to the finite $11{,}654$-coordinate ambient module, and
-every encoded row must be identified with an exhaustive family of rows of the
-descended physical trace operator.  In particular, the number $98$ is not yet
-asserted here as the dimension or conditioning of the physical quotient.
+We also reran the sparse elimination independently modulo the two primes
+$1{,}000{,}000{,}007$ and $1{,}000{,}000{,}009$.  Each bounded run examined
+$5{,}455{,}784$ generated candidate rows and produced $11{,}556$ pivots with
+$27{,}568$ nonzero normalized-basis entries.  The prime-specific coefficients
+and reduction traces are stored separately in canonical increasing-support
+order.  Lean proves that both moduli are prime and distinct, checks the stored
+basis and trace shapes, and replays every one of the $11{,}556$ selected
+integer rows in forty-six chunks at each prime
+(\texttt{HypercubicDimension16TraceRankModularCertificate}).  These two
+prime-field replays are independent arithmetic audits.  The exact
+$\mathbb Q$ theorem above remains the semantic rank result, and the modular
+checks do not by themselves certify exhaustive generation of the physical
+relation operator.
+
+Every selected raw row is now proved to have support inside the finite
+$11{,}654$-coordinate ambient module.  Restriction to that module preserves
+linear independence, so rank--nullity gives dimension $98$ for the quotient by
+the selected-row span.  The $11{,}556$ normalized rows together with the $98$
+certified free coordinate vectors form a basis of the ambient module.  Their
+free images form a basis of the selected-row quotient, and the corresponding
+$98\times98$ analysis matrix is exactly the identity
+(\texttt{HypercubicDimension16TraceFiniteQuotient}).
+
+This is still not the physical-quotient theorem.  Every encoded row must be
+identified with an exhaustive family of rows of the descended physical trace
+operator.  Until that semantic and exhaustive bridge is proved, $98$ is the
+dimension and identity conditioning of the certified selected-row quotient,
+not an asserted dimension or conditioning of the physical quotient.
 
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
