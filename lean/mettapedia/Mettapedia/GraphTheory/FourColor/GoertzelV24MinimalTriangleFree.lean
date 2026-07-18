@@ -475,6 +475,19 @@ theorem exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
     graphData minimal hadj
       (no_common_neighbor_of_cyclicallyFive graphData minimal hcyclic hadj)
 
+/-- Every adjacent pair in cyclic five-edge-connected minimal normal form
+therefore carries the complete finite cyclic Kempe profile used by the
+fusion-chain transfer system. -/
+theorem exists_cyclicKempeTransferProfile_of_cyclicallyFive
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {first second : V} (hadj : G.Adj first second) :
+    HasCyclicKempeTransferProfile graphData first second := by
+  exact (exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
+    graphData minimal hcyclic hadj).hasCyclicKempeTransferProfile
+      graphData minimal
+
 end
 
 end GoertzelV24MinimalTriangleFree
