@@ -42,6 +42,47 @@ def colorWord {portCount : Nat}
     (C : G.EdgeColoring Color) : Fin portCount → Color :=
   fun port ↦ vertexKirchhoffSum G C (data.defectVertex port)
 
+/-- Relabel a degree-two boundary without changing its underlying graph or
+boundary vertices. -/
+def reindex {portCount : Nat}
+    (data : DegreeTwoBoundaryData G portCount)
+    (index : Equiv.Perm (Fin portCount)) :
+    DegreeTwoBoundaryData G portCount where
+  defectVertex := data.defectVertex ∘ index
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+@[simp]
+theorem reindex_defectVertex {portCount : Nat}
+    (data : DegreeTwoBoundaryData G portCount)
+    (index : Equiv.Perm (Fin portCount)) (port : Fin portCount) :
+    (data.reindex index).defectVertex port = data.defectVertex (index port) :=
+  rfl
+
+/-- Structural validity is invariant under relabeling the boundary ports. -/
+theorem WellFormed.reindex {portCount : Nat}
+    {data : DegreeTwoBoundaryData G portCount}
+    (hdata : data.WellFormed)
+    (index : Equiv.Perm (Fin portCount)) :
+    (data.reindex index).WellFormed := by
+  refine ⟨hdata.1.comp index.injective, ?_, ?_⟩
+  · intro port
+    exact hdata.2.1 (index port)
+  · intro vertex hvertex
+    apply hdata.2.2 vertex
+    intro port heq
+    apply hvertex (index.symm port)
+    change vertex = data.defectVertex (index (index.symm port))
+    rw [index.apply_symm_apply]
+    exact heq
+
+@[simp]
+theorem colorWord_reindex {portCount : Nat}
+    (data : DegreeTwoBoundaryData G portCount)
+    (index : Equiv.Perm (Fin portCount))
+    (C : G.EdgeColoring Color) (port : Fin portCount) :
+    (data.reindex index).colorWord C port = data.colorWord C (index port) :=
+  rfl
+
 end DegreeTwoBoundaryData
 
 /-- At a degree-two vertex of a Tait-colored graph, the Kirchhoff sum of the
