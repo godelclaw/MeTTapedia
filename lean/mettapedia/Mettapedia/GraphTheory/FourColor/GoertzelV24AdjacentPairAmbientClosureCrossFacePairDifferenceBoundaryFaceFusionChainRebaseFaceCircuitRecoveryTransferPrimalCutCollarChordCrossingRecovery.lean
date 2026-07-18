@@ -88,7 +88,7 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
                   crossingEdgeFinset G
                       (fun vertex => vertex ∈ component.supp) =
                     removed ∧
-                  HasCyclicallyOrderedCompatibleDeletedColoring
+                  HasCyclicKempeTransferProfile
                     graphData first second ∧
                   ∃ internalEdge : G.edgeSet,
                     ∃ leftFace rightFace : AmbientFace
@@ -239,7 +239,7 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
           hwalkLength hadj hpairBoundary
   dsimp only at hstars
   have htransfer :=
-    exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
+    exists_cyclicKempeTransferProfile_of_cyclicallyFive
       graphData minimal hcyclic hadj
   refine ⟨hrebaseLength, walk, hcycle, hdelete, hcutCard, ?_, hcentral,
     hboundary⟩

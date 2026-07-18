@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCyclicOrder
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCyclicKempeProfile
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -371,6 +371,32 @@ def HasCyclicallyOrderedCompatibleDeletedColoring
           deletedColoring ∧
         SquareReductionSide.join01_23.Compatible
           (ordered.degreeTwoBoundaryData.colorWord deletedColoring)
+
+/-- A named adjacent pair carries the complete finite cyclic Kempe profile
+used by the fusion-chain transfer system. -/
+def HasCyclicKempeTransferProfile
+    (graphData : Data G) (first second : V) : Prop :=
+  ∃ ordered : AdjacentPairData G,
+    ordered.firstVertex = first ∧
+    ordered.secondVertex = second ∧
+    Nonempty (CyclicKempeProfile graphData ordered)
+
+/-- The compatible rotation-ordered deletion package canonically upgrades,
+using minimal noncolorability, to the finite cyclic Kempe profile consumed
+by the fusion-chain machinery. -/
+theorem HasCyclicallyOrderedCompatibleDeletedColoring.hasCyclicKempeTransferProfile
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V}
+    (htransfer : HasCyclicallyOrderedCompatibleDeletedColoring
+      graphData first second) :
+    HasCyclicKempeTransferProfile graphData first second := by
+  rcases htransfer with
+    ⟨data, hfirst, hsecond, _horder, _coloring⟩
+  rcases data.exists_rotationOrdered_cyclicKempeProfile graphData minimal with
+    ⟨ordered, horderedFirst, horderedSecond, hprofile⟩
+  exact ⟨ordered, horderedFirst.trans hfirst,
+    horderedSecond.trans hsecond, hprofile⟩
 
 /-- The canonical adjacent-pair boundary enters the existing planar square
 reduction and supplies its exact compatible deleted coloring. -/
