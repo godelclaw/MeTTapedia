@@ -25,7 +25,62 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
-/-- The exact cross-side transfer witness, with the remote fusion pair
+/-- The active remote-face result of a compensated cross-side transfer. It
+contains the two support-certified fusion cycles and their complete retained
+cycle or localized fusion-chain resolution. -/
+structure CrossSideRemoteFusionChainResolution
+    (graphData : Data G) (data : AdjacentPairData G)
+    (cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet)
+    (pair : CrossCentralExactFaceCutPair graphData data cross)
+    (coordinate : Bool) where
+  boundary_avoids_coordinate_face :
+    ∀ port : Fin 4, boundaryEdge data port ∉
+      orbitFaceBoundary graphData.toRotationSystem
+        (edgeCrossFaceCoordinateOrbitFace graphData
+          (retainedEdgeToAmbientEdge data cross) coordinate)
+  firstRoot : V
+  firstFusion : G.Walk firstRoot firstRoot
+  firstFusion_isCycle : firstFusion.IsCycle
+  firstFusion_avoids_cross :
+    (retainedEdgeToAmbientEdge data cross).1 ∉ firstFusion.edges
+  firstFusion_support : ∀ edge : G.edgeSet,
+    edge.1 ∈ firstFusion.edges →
+      edge.1 ∈ (data.oppositePortClosure pair.prefixTrail).edges ∨
+        edge ∈ orbitFaceBoundary graphData.toRotationSystem
+          (edgeCrossFaceCoordinateOrbitFace graphData
+            (retainedEdgeToAmbientEdge data cross) coordinate)
+  secondRoot : V
+  secondFusion : G.Walk secondRoot secondRoot
+  secondFusion_isCycle : secondFusion.IsCycle
+  secondFusion_avoids_cross :
+    (retainedEdgeToAmbientEdge data cross).1 ∉ secondFusion.edges
+  secondFusion_support : ∀ edge : G.edgeSet,
+    edge.1 ∈ secondFusion.edges →
+      edge.1 ∈
+          (data.alternateOppositePortClosure pair.suffixTrail).edges ∨
+        edge ∈ orbitFaceBoundary graphData.toRotationSystem
+          (edgeCrossFaceCoordinateOrbitFace graphData
+            (retainedEdgeToAmbientEdge data cross) coordinate)
+  outcome :
+    (∃ (hroot : firstRoot ∈
+          retainedVertexSet data.firstVertex data.secondVertex)
+        (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+          data.secondVertex).Walk ⟨firstRoot, hroot⟩ ⟨firstRoot, hroot⟩),
+      retainedFusion.IsCycle ∧
+        data.retainedWalkToAmbient retainedFusion = firstFusion) ∨
+      (∃ (hroot : secondRoot ∈
+          retainedVertexSet data.firstVertex data.secondVertex)
+        (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+          data.secondVertex).Walk ⟨secondRoot, hroot⟩ ⟨secondRoot, hroot⟩),
+      retainedFusion.IsCycle ∧
+        data.retainedWalkToAmbient retainedFusion = secondFusion) ∨
+      Nonempty (LocalizedFusionSuccessorResolution pair
+        (edgeCrossFaceCoordinateOrbitFace graphData
+          (retainedEdgeToAmbientEdge data cross) coordinate)
+        firstFusion secondFusion)
+
+/-- The exact cross-side transfer witness, with the active remote branch
 resolved through the complete finite fusion-chain normal form. -/
 structure CrossSideRemoteFusionChainTransferWitness
     (graphData : Data G) (data : AdjacentPairData G)
@@ -59,45 +114,66 @@ structure CrossSideRemoteFusionChainTransferWitness
   resolution :
     rejectedCrossCentralReturnClosedTransfer firstIndex secondIndex ≠
         Equiv.refl (Bool × Bool) →
-      (∀ port : Fin 4, boundaryEdge data port ∉
-        orbitFaceBoundary graphData.toRotationSystem
-          (edgeCrossFaceCoordinateOrbitFace graphData
-            (retainedEdgeToAmbientEdge data cross) coordinate)) ∧
-      ∃ (firstRoot : V) (firstFusion : G.Walk firstRoot firstRoot)
-          (secondRoot : V) (secondFusion : G.Walk secondRoot secondRoot),
-        firstFusion.IsCycle ∧
-        (retainedEdgeToAmbientEdge data cross).1 ∉ firstFusion.edges ∧
-        (∀ edge : G.edgeSet, edge.1 ∈ firstFusion.edges →
-          edge.1 ∈ (data.oppositePortClosure pair.prefixTrail).edges ∨
-            edge ∈ orbitFaceBoundary graphData.toRotationSystem
-              (edgeCrossFaceCoordinateOrbitFace graphData
-                (retainedEdgeToAmbientEdge data cross) coordinate)) ∧
-        secondFusion.IsCycle ∧
-        (retainedEdgeToAmbientEdge data cross).1 ∉ secondFusion.edges ∧
-        (∀ edge : G.edgeSet, edge.1 ∈ secondFusion.edges →
-          edge.1 ∈
-              (data.alternateOppositePortClosure pair.suffixTrail).edges ∨
-            edge ∈ orbitFaceBoundary graphData.toRotationSystem
-              (edgeCrossFaceCoordinateOrbitFace graphData
-                (retainedEdgeToAmbientEdge data cross) coordinate)) ∧
-        ((∃ (hroot : firstRoot ∈
-              retainedVertexSet data.firstVertex data.secondVertex)
-            (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
-              data.secondVertex).Walk ⟨firstRoot, hroot⟩
-                ⟨firstRoot, hroot⟩),
-          retainedFusion.IsCycle ∧
-            data.retainedWalkToAmbient retainedFusion = firstFusion) ∨
-          (∃ (hroot : secondRoot ∈
-              retainedVertexSet data.firstVertex data.secondVertex)
-            (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
-              data.secondVertex).Walk ⟨secondRoot, hroot⟩
-                ⟨secondRoot, hroot⟩),
-          retainedFusion.IsCycle ∧
-            data.retainedWalkToAmbient retainedFusion = secondFusion) ∨
-          Nonempty (LocalizedFusionSuccessorResolution pair
-            (edgeCrossFaceCoordinateOrbitFace graphData
-              (retainedEdgeToAmbientEdge data cross) coordinate)
-            firstFusion secondFusion))
+      Nonempty (CrossSideRemoteFusionChainResolution graphData data cross
+        pair coordinate)
+
+/-- The active finite transfer state: the cross-side endpoints have the same
+index, so the compensated rejected-cross transfer is nonidentity and the
+stored remote fusion-chain resolution applies. -/
+structure CrossSideRemoteFusionChainActiveState
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    (witness : CrossSideRemoteFusionChainTransferWitness graphData data
+      cross pair) where
+  indices_eq : witness.firstIndex = witness.secondIndex
+  closedTransfer_ne_refl :
+    rejectedCrossCentralReturnClosedTransfer witness.firstIndex
+        witness.secondIndex ≠ Equiv.refl (Bool × Bool)
+
+/-- The compensated rejected-cross transfer has exactly two finite states.
+Mixed endpoint indices give the identity; equal indices activate the complete
+remote fusion-chain resolution. -/
+theorem CrossSideRemoteFusionChainTransferWitness.mixedIndices_or_activeState
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    (witness : CrossSideRemoteFusionChainTransferWitness graphData data
+      cross pair) :
+    (witness.firstIndex ≠ witness.secondIndex ∧
+        rejectedCrossCentralReturnClosedTransfer witness.firstIndex
+            witness.secondIndex = Equiv.refl (Bool × Bool)) ∨
+      Nonempty (CrossSideRemoteFusionChainActiveState witness) := by
+  by_cases hmixed : witness.firstIndex ≠ witness.secondIndex
+  · exact Or.inl ⟨hmixed,
+      (rejectedCrossCentralReturnClosedTransfer_eq_refl_iff
+        witness.firstIndex witness.secondIndex).2 hmixed⟩
+  · have heq : witness.firstIndex = witness.secondIndex :=
+      not_ne_iff.mp hmixed
+    have hnontrivial :
+        rejectedCrossCentralReturnClosedTransfer witness.firstIndex
+            witness.secondIndex ≠ Equiv.refl (Bool × Bool) := by
+      intro hidentity
+      exact hmixed
+        ((rejectedCrossCentralReturnClosedTransfer_eq_refl_iff
+          witness.firstIndex witness.secondIndex).1 hidentity)
+    exact Or.inr ⟨⟨heq, hnontrivial⟩⟩
+
+/-- An active finite state materializes the stored support-certified remote
+fusion-chain resolution. -/
+theorem CrossSideRemoteFusionChainActiveState.exists_resolution
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {witness : CrossSideRemoteFusionChainTransferWitness graphData data
+      cross pair}
+    (active : CrossSideRemoteFusionChainActiveState witness) :
+    Nonempty (CrossSideRemoteFusionChainResolution graphData data cross pair
+      witness.coordinate) :=
+  witness.resolution active.closedTransfer_ne_refl
 
 /-- A source exact-cut closure has a strict cycle descent when cycle bypass
 extracts a shorter simple cycle supported on either one of its two closed
@@ -174,9 +250,19 @@ theorem CrossCentralExactFaceCutPair.exists_exactCrossSideClosedTransfer_remoteF
     pair.fusionCyclePair_retainedCycle_or_fusionChainResolution minimal
       face hboundary firstFusion hfirstCycle hfirstCross hfirstSupport
       secondFusion hsecondCycle hsecondCross hsecondSupport
-  exact ⟨hboundary, firstRoot, firstFusion, secondRoot, secondFusion,
-    hfirstCycle, hfirstCross, hfirstSupport,
-    hsecondCycle, hsecondCross, hsecondSupport, houtcome⟩
+  exact ⟨{
+    boundary_avoids_coordinate_face := hboundary
+    firstRoot := firstRoot
+    firstFusion := firstFusion
+    firstFusion_isCycle := hfirstCycle
+    firstFusion_avoids_cross := hfirstCross
+    firstFusion_support := hfirstSupport
+    secondRoot := secondRoot
+    secondFusion := secondFusion
+    secondFusion_isCycle := hsecondCycle
+    secondFusion_avoids_cross := hsecondCross
+    secondFusion_support := hsecondSupport
+    outcome := houtcome }⟩
 
 /-- Every rotation-ordered exact rejected-cross pair has an unconditional
 descent normal form. A nonsimple source closure immediately yields a strict
