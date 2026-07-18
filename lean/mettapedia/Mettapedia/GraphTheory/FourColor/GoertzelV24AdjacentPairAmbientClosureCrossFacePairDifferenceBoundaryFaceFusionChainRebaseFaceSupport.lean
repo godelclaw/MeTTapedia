@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebasePumping
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CycleEdgeSupportRigidity
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -174,6 +175,67 @@ theorem CrossCentralExactFaceCertifiedRebaseStep.target_suffixClosure_edges_subs
     step.successors.suffixSuccessor step.resolution.secondFusion
     step.successors.suffix_ambient_edges_subset hone hthree
     step.secondFusion_mem_central
+
+/-- The target prefix closure and its first fusion cycle have exactly the
+same edge support. -/
+theorem CrossCentralExactFaceCertifiedRebaseStep.target_prefixClosure_mem_iff_firstFusion
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {source : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (step : CrossCentralExactFaceCertifiedRebaseStep graphData minimal
+      baseData source) (edge : Sym2 V) :
+    let data := baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic
+    edge ∈ (data.oppositePortClosure step.target.2.prefixTrail).edges ↔
+      edge ∈ step.resolution.firstFusion.edges := by
+  let data := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  change edge ∈
+      (data.oppositePortClosure step.target.2.prefixTrail).edges ↔
+    edge ∈ step.resolution.firstFusion.edges
+  have htarget :
+      (data.oppositePortClosure step.target.2.prefixTrail).IsCycle := by
+    change (data.oppositePortClosure
+      step.rebase.targetPair.prefixTrail).IsCycle
+    rw [step.rebase.target_prefixTrail]
+    exact step.successors.prefix_closure_isCycle
+  exact (isCycle_mem_edges_iff_of_subset
+    step.resolution.firstFusion_isCycle htarget
+      step.target_prefixClosure_edges_subset_firstFusion edge).symm
+
+/-- The target suffix closure and its second fusion cycle have exactly the
+same edge support. -/
+theorem CrossCentralExactFaceCertifiedRebaseStep.target_suffixClosure_mem_iff_secondFusion
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {source : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (step : CrossCentralExactFaceCertifiedRebaseStep graphData minimal
+      baseData source) (edge : Sym2 V) :
+    let data := baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic
+    edge ∈
+        (data.alternateOppositePortClosure step.target.2.suffixTrail).edges ↔
+      edge ∈ step.resolution.secondFusion.edges := by
+  let data := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  change edge ∈
+      (data.alternateOppositePortClosure step.target.2.suffixTrail).edges ↔
+    edge ∈ step.resolution.secondFusion.edges
+  have htarget : (data.alternateOppositePortClosure
+      step.target.2.suffixTrail).IsCycle := by
+    change (data.alternateOppositePortClosure
+      step.rebase.targetPair.suffixTrail).IsCycle
+    rw [step.rebase.target_suffixTrail]
+    exact step.successors.suffix_closure_isCycle
+  exact (isCycle_mem_edges_iff_of_subset
+    step.resolution.secondFusion_isCycle htarget
+      step.target_suffixClosure_edges_subset_secondFusion edge).symm
 
 /-- A certified target prefix can introduce retained edges only on the
 selected face. -/
