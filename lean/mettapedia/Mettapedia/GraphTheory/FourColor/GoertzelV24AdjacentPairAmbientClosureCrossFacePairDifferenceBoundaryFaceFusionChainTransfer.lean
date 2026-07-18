@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunSplice
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunVertexIntersection
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -176,6 +176,54 @@ theorem CrossSideRemoteFusionChainResolution.splice_outcome
   · rcases hsuccessors with ⟨successors⟩
     exact Or.inr (Or.inr ⟨successors, successors.finite_splice_outcome⟩)
 
+/-- The remote resolution with its successor branch resolved at every
+parallel-arm vertex intersection. -/
+def CrossSideRemoteFusionChainResolution.VertexOutcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {coordinate : Bool}
+    (resolution : CrossSideRemoteFusionChainResolution graphData data cross
+      pair coordinate) : Prop :=
+  (∃ (hroot : resolution.firstRoot ∈
+        retainedVertexSet data.firstVertex data.secondVertex)
+      (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk ⟨resolution.firstRoot, hroot⟩
+          ⟨resolution.firstRoot, hroot⟩),
+    retainedFusion.IsCycle ∧
+      data.retainedWalkToAmbient retainedFusion = resolution.firstFusion) ∨
+    (∃ (hroot : resolution.secondRoot ∈
+        retainedVertexSet data.firstVertex data.secondVertex)
+      (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk ⟨resolution.secondRoot, hroot⟩
+          ⟨resolution.secondRoot, hroot⟩),
+    retainedFusion.IsCycle ∧
+      data.retainedWalkToAmbient retainedFusion = resolution.secondFusion) ∨
+    (∃ successors : LocalizedFusionSuccessorResolution pair
+        (edgeCrossFaceCoordinateOrbitFace graphData
+          (retainedEdgeToAmbientEdge data cross) coordinate)
+        resolution.firstFusion resolution.secondFusion,
+      successors.VertexOutcome)
+
+/-- Every remote fusion-chain resolution realizes its vertex-refined
+outcome. -/
+theorem CrossSideRemoteFusionChainResolution.vertex_outcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {coordinate : Bool}
+    (resolution : CrossSideRemoteFusionChainResolution graphData data cross
+      pair coordinate) :
+    resolution.VertexOutcome := by
+  unfold CrossSideRemoteFusionChainResolution.VertexOutcome
+  rcases resolution.outcome with hfirst | hsecond | hsuccessors
+  · exact Or.inl hfirst
+  · exact Or.inr (Or.inl hsecond)
+  · rcases hsuccessors with ⟨successors⟩
+    exact Or.inr (Or.inr ⟨successors, successors.finite_vertex_outcome⟩)
+
 /-- The exact cross-side transfer witness, with the active remote branch
 resolved through the complete finite fusion-chain normal form. -/
 structure CrossSideRemoteFusionChainTransferWitness
@@ -302,6 +350,22 @@ theorem CrossSideRemoteFusionChainActiveState.exists_resolution_with_splice
       resolution.SpliceOutcome := by
   rcases active.exists_resolution with ⟨resolution⟩
   exact ⟨resolution, resolution.splice_outcome⟩
+
+/-- An active transfer state reaches a support-certified remote resolution
+together with its vertex-refined fusion-chain outcome. -/
+theorem CrossSideRemoteFusionChainActiveState.exists_resolution_with_vertex_outcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {witness : CrossSideRemoteFusionChainTransferWitness graphData data
+      cross pair}
+    (active : CrossSideRemoteFusionChainActiveState witness) :
+    ∃ resolution : CrossSideRemoteFusionChainResolution graphData data
+        cross pair witness.coordinate,
+      resolution.VertexOutcome := by
+  rcases active.exists_resolution with ⟨resolution⟩
+  exact ⟨resolution, resolution.vertex_outcome⟩
 
 /-- A source exact-cut closure has a strict cycle descent when cycle bypass
 extracts a shorter simple cycle supported on either one of its two closed
