@@ -219,6 +219,154 @@ theorem IsLengthMinimal.arcLength_lt_rebase_arcLength
     exact second.targetFace_ne_sourceFace
       (hsecondThird.trans hsourceEq.symm)
 
+/-- A rebase circuit carrying a shortest recovery circuit has at least
+four arcs.  In the digon case, strict containment leaves only a
+three-arc exception below four, and three-step rebase monodromy makes
+all selected faces equal. -/
+theorem IsLengthMinimal.four_le_rebase_arcLength
+    {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}
+    (hminimal : circuit.IsLengthMinimal) :
+    4 ≤ rebaseCircuit.arcLength := by
+  rcases hminimal.isDigon_or_isTriangle with hdigon | htriangle
+  · rcases hdigon with
+      ⟨second, hrest, _hfirstSecond, hsecondFirst⟩
+    have hcircuitLength : circuit.arcLength = 2 := by
+      simp [arcLength, hrest]
+    have hstrict := hminimal.arcLength_lt_rebase_arcLength
+    by_contra hnot
+    have hrebaseLength : rebaseCircuit.arcLength = 3 := by omega
+    have hfirstSelected :=
+      rebaseCircuit.selectedFace_eq_first_of_arcLength_eq_three
+        hrebaseLength circuit.first.recoveryArc
+        circuit.first.recoveryArc_mem_displayed
+    have hsecondSelected :=
+      rebaseCircuit.selectedFace_eq_first_of_arcLength_eq_three
+        hrebaseLength second.recoveryArc
+        second.recoveryArc_mem_displayed
+    have htargetEq : circuit.first.targetFace = second.targetFace := by
+      calc
+        circuit.first.targetFace =
+            circuit.first.recoveryArc.selectedFace :=
+          circuit.first.recoveryArc_selectedFace.symm
+        _ = rebaseCircuit.first.selectedFace := hfirstSelected
+        _ = second.recoveryArc.selectedFace := hsecondSelected.symm
+        _ = second.targetFace := second.recoveryArc_selectedFace
+    exact circuit.first.targetFace_ne_sourceFace
+      (htargetEq.trans hsecondFirst)
+  · rcases htriangle with
+      ⟨second, third, hrest, _hfirstSecond, _hsecondThird,
+        _hthirdFirst⟩
+    have hcircuitLength : circuit.arcLength = 3 := by
+      simp [arcLength, hrest]
+    have hstrict := hminimal.arcLength_lt_rebase_arcLength
+    omega
+
+/-- A shortest recovery digon leaves a gap of at least two positions
+inside its underlying rebase circuit. -/
+theorem IsLengthMinimal.arcLength_add_two_le_rebase_arcLength_of_isDigon
+    {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}
+    (hminimal : circuit.IsLengthMinimal)
+    (hdigon : circuit.IsDigon) :
+    circuit.arcLength + 2 ≤ rebaseCircuit.arcLength := by
+  rcases hdigon with ⟨second, hrest, _hfirstSecond, _hsecondFirst⟩
+  have hcircuitLength : circuit.arcLength = 2 := by
+    simp [arcLength, hrest]
+  have hfour := hminimal.four_le_rebase_arcLength
+  omega
+
+/-- Rebase positions claimed as restoring locations by a recovery
+circuit. -/
+noncomputable def claimedRebasePositions
+    (circuit : ClosureRecoveryFaceCircuit rebaseCircuit) :
+    Finset (Fin rebaseCircuit.arcLength) :=
+  Finset.univ.image circuit.restoringPositionAt
+
+/-- Rebase positions not claimed as restoring locations by a recovery
+circuit. -/
+noncomputable def unclaimedRebasePositions
+    (circuit : ClosureRecoveryFaceCircuit rebaseCircuit) :
+    Finset (Fin rebaseCircuit.arcLength) :=
+  circuit.claimedRebasePositionsᶜ
+
+@[simp]
+theorem mem_claimedRebasePositions_iff
+    (circuit : ClosureRecoveryFaceCircuit rebaseCircuit)
+    (position : Fin rebaseCircuit.arcLength) :
+    position ∈ circuit.claimedRebasePositions ↔
+      ∃ recoveryPosition : Fin circuit.arcLength,
+        circuit.restoringPositionAt recoveryPosition = position := by
+  classical
+  simp [claimedRebasePositions]
+
+@[simp]
+theorem mem_unclaimedRebasePositions_iff
+    (circuit : ClosureRecoveryFaceCircuit rebaseCircuit)
+    (position : Fin rebaseCircuit.arcLength) :
+    position ∈ circuit.unclaimedRebasePositions ↔
+      ∀ recoveryPosition : Fin circuit.arcLength,
+        circuit.restoringPositionAt recoveryPosition ≠ position := by
+  classical
+  simp [unclaimedRebasePositions]
+
+/-- Injectivity makes the number of claimed rebase positions exactly
+the length of a shortest recovery circuit. -/
+theorem IsLengthMinimal.card_claimedRebasePositions
+    {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}
+    (hminimal : circuit.IsLengthMinimal) :
+    circuit.claimedRebasePositions.card = circuit.arcLength := by
+  classical
+  calc
+    circuit.claimedRebasePositions.card =
+        (Finset.univ : Finset (Fin circuit.arcLength)).card :=
+      Finset.card_image_of_injective _
+        hminimal.restoringPositionAt_injective
+    _ = circuit.arcLength := by simp
+
+/-- The unclaimed carrier has the exact length difference between the
+rebase circuit and the shortest recovery circuit. -/
+theorem IsLengthMinimal.card_unclaimedRebasePositions
+    {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}
+    (hminimal : circuit.IsLengthMinimal) :
+    circuit.unclaimedRebasePositions.card =
+      rebaseCircuit.arcLength - circuit.arcLength := by
+  classical
+  rw [unclaimedRebasePositions, Finset.card_compl,
+    hminimal.card_claimedRebasePositions]
+  simp
+
+/-- A shortest recovery digon leaves at least two distinct unclaimed
+rebase positions. -/
+theorem IsLengthMinimal.two_le_card_unclaimedRebasePositions_of_isDigon
+    {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}
+    (hminimal : circuit.IsLengthMinimal)
+    (hdigon : circuit.IsDigon) :
+    2 ≤ circuit.unclaimedRebasePositions.card := by
+  rw [hminimal.card_unclaimedRebasePositions]
+  have hgap :=
+    hminimal.arcLength_add_two_le_rebase_arcLength_of_isDigon hdigon
+  omega
+
+/-- The two-position digon gap can be exposed as two concrete, distinct
+positions missed by every restoring map entry. -/
+theorem IsLengthMinimal.exists_two_unclaimed_rebasePositions_of_isDigon
+    {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}
+    (hminimal : circuit.IsLengthMinimal)
+    (hdigon : circuit.IsDigon) :
+    ∃ first second : Fin rebaseCircuit.arcLength,
+      first ≠ second ∧
+        (∀ recoveryPosition : Fin circuit.arcLength,
+          circuit.restoringPositionAt recoveryPosition ≠ first) ∧
+        (∀ recoveryPosition : Fin circuit.arcLength,
+          circuit.restoringPositionAt recoveryPosition ≠ second) := by
+  have hcard :=
+    hminimal.two_le_card_unclaimedRebasePositions_of_isDigon hdigon
+  have hone : 1 < circuit.unclaimedRebasePositions.card := by omega
+  rcases Finset.one_lt_card.mp hone with
+    ⟨first, hfirst, second, hsecond, hne⟩
+  exact ⟨first, second, hne,
+    (circuit.mem_unclaimedRebasePositions_iff first).mp hfirst,
+    (circuit.mem_unclaimedRebasePositions_iff second).mp hsecond⟩
+
 /-- Hence at least one underlying rebase position is not the restoring
 position of any recovery dependency. -/
 theorem IsLengthMinimal.exists_unclaimed_rebasePosition
@@ -227,18 +375,14 @@ theorem IsLengthMinimal.exists_unclaimed_rebasePosition
     ∃ position : Fin rebaseCircuit.arcLength,
       ∀ recoveryPosition : Fin circuit.arcLength,
         circuit.restoringPositionAt recoveryPosition ≠ position := by
-  have hcard : Fintype.card (Fin circuit.arcLength) <
-      Fintype.card (Fin rebaseCircuit.arcLength) := by
-    simpa using hminimal.arcLength_lt_rebase_arcLength
-  have hnotSurjective :
-      ¬ Function.Surjective circuit.restoringPositionAt := by
-    intro hsurjective
-    have hreverse := Fintype.card_le_of_surjective
-      circuit.restoringPositionAt hsurjective
+  have hnonempty : circuit.unclaimedRebasePositions.Nonempty := by
+    rw [← Finset.card_pos]
+    rw [hminimal.card_unclaimedRebasePositions]
+    have hstrict := hminimal.arcLength_lt_rebase_arcLength
     omega
-  rw [Function.Surjective] at hnotSurjective
-  push Not at hnotSurjective
-  exact hnotSurjective
+  rcases hnonempty with ⟨position, hposition⟩
+  exact ⟨position,
+    (circuit.mem_unclaimedRebasePositions_iff position).mp hposition⟩
 
 end ClosureRecoveryFaceCircuit
 
