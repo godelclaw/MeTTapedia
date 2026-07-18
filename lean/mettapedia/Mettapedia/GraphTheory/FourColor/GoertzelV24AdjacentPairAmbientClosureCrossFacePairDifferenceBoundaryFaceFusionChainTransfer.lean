@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunEndpointChiralResolution
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunEndpointSignedTransfer
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -379,6 +379,58 @@ theorem CrossSideRemoteFusionChainResolution.chiral_outcome
     exact Or.inr (Or.inr ⟨successors,
       successors.finite_chiral_outcome hcubic hrotation htwoSided⟩)
 
+/-- The remote resolution with every clean fusion-chain branch exposing
+its canonical nonidentity signed endpoint transfer. -/
+def CrossSideRemoteFusionChainResolution.SignedTransferOutcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {coordinate : Bool}
+    (resolution : CrossSideRemoteFusionChainResolution graphData data cross
+      pair coordinate) : Prop :=
+  (∃ (hroot : resolution.firstRoot ∈
+        retainedVertexSet data.firstVertex data.secondVertex)
+      (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk ⟨resolution.firstRoot, hroot⟩
+          ⟨resolution.firstRoot, hroot⟩),
+    retainedFusion.IsCycle ∧
+      data.retainedWalkToAmbient retainedFusion = resolution.firstFusion) ∨
+    (∃ (hroot : resolution.secondRoot ∈
+        retainedVertexSet data.firstVertex data.secondVertex)
+      (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk ⟨resolution.secondRoot, hroot⟩
+          ⟨resolution.secondRoot, hroot⟩),
+    retainedFusion.IsCycle ∧
+      data.retainedWalkToAmbient retainedFusion = resolution.secondFusion) ∨
+    (∃ successors : LocalizedFusionSuccessorResolution pair
+        (edgeCrossFaceCoordinateOrbitFace graphData
+          (retainedEdgeToAmbientEdge data cross) coordinate)
+        resolution.firstFusion resolution.secondFusion,
+      successors.SignedTransferOutcome)
+
+/-- Every remote resolution realizes the signed-transfer-refined outcome
+under ambient cubicity, cyclicity, and two-sidedness. -/
+theorem CrossSideRemoteFusionChainResolution.signedTransfer_outcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {coordinate : Bool}
+    (resolution : CrossSideRemoteFusionChainResolution graphData data cross
+      pair coordinate)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem) :
+    resolution.SignedTransferOutcome := by
+  unfold CrossSideRemoteFusionChainResolution.SignedTransferOutcome
+  rcases resolution.outcome with hfirst | hsecond | hsuccessors
+  · exact Or.inl hfirst
+  · exact Or.inr (Or.inl hsecond)
+  · rcases hsuccessors with ⟨successors⟩
+    exact Or.inr (Or.inr ⟨successors,
+      successors.finite_signedTransfer_outcome hcubic hrotation htwoSided⟩)
+
 /-- The exact cross-side transfer witness, with the active remote branch
 resolved through the complete finite fusion-chain normal form. -/
 structure CrossSideRemoteFusionChainTransferWitness
@@ -577,6 +629,26 @@ theorem CrossSideRemoteFusionChainActiveState.exists_resolution_with_chiral_outc
   rcases active.exists_resolution with ⟨resolution⟩
   exact ⟨resolution,
     resolution.chiral_outcome hcubic hrotation htwoSided⟩
+
+/-- An active transfer state reaches a support-certified remote resolution
+together with the signed-transfer-refined fusion-chain outcome. -/
+theorem CrossSideRemoteFusionChainActiveState.exists_resolution_with_signedTransfer_outcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {witness : CrossSideRemoteFusionChainTransferWitness graphData data
+      cross pair}
+    (active : CrossSideRemoteFusionChainActiveState witness)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem) :
+    ∃ resolution : CrossSideRemoteFusionChainResolution graphData data
+        cross pair witness.coordinate,
+      resolution.SignedTransferOutcome := by
+  rcases active.exists_resolution with ⟨resolution⟩
+  exact ⟨resolution,
+    resolution.signedTransfer_outcome hcubic hrotation htwoSided⟩
 
 /-- A source exact-cut closure has a strict cycle descent when cycle bypass
 extracts a shorter simple cycle supported on either one of its two closed
