@@ -88,6 +88,9 @@ structure LocalizedAlignedSharedEdgeProfile
   two_le_card : 2 ≤ pair.sharedEdges.card
   ordered_edges_eq :
     pair.prefixSharedEdgeOrder = pair.suffixSharedEdgeOrder
+  order_position_val_eq :
+    ∀ position : Fin pair.prefixSharedEdgeOrder.length,
+      (pair.sharedEdgeOrderEquiv position : Nat) = position
   darts_eq : ∀ position : Fin pair.prefixSharedEdgeOrder.length,
     pair.suffixSharedEdgeDart position =
       pair.prefixSharedEdgeDart position
@@ -118,6 +121,9 @@ theorem RetainedIntersectionExactFaceCutPair.nonempty_localizedAlignedSharedEdge
     two_le_card := htwo
     ordered_edges_eq :=
       pair.prefixSharedEdgeOrder_eq_suffixSharedEdgeOrder_of_sharedEdgeMonodromy_eq_refl
+        hunsigned
+    order_position_val_eq :=
+      pair.sharedEdgeOrderEquiv_val_eq_self_of_sharedEdgeMonodromy_eq_refl
         hunsigned
     darts_eq :=
       pair.suffixSharedEdgeDart_eq_prefixSharedEdgeDart_of_sharedEdgeSignedMonodromy_eq_refl
