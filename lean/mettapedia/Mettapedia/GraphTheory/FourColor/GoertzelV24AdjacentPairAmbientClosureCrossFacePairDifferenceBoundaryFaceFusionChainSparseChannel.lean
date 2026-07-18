@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainTransfer
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainClosedMonodromy
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionCrossChannelTransferObstruction
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -27,7 +27,7 @@ attribute [local instance]
 
 /-- A nonempty sparse `bc` channel in a rotation-ordered minimal
 counterexample has an unconditional exact normal form: strict source-cycle
-descent, or the complete remote fusion-chain resolution. -/
+descent, or the complete finite closed monodromy resolution. -/
 theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -64,9 +64,10 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_o
           (lens01.bRoute.crossSuffixSplice lens23.cRoute site).support.map
             Subtype.val ∧
         (CrossCentralSourceClosureCycleDescent pair ∨
-          Nonempty (CrossSideRemoteFusionChainTransferWitness graphData
-            (baseData.rotationOrderedData graphData minimal.spherical.cubic
-              minimal.vertexRotationCyclic) site.1 pair)) := by
+          (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
+              (baseData.rotationOrderedData graphData minimal.spherical.cubic
+                minimal.vertexRotationCyclic) site.1 pair,
+            witness.FiniteClosedMonodromyOutcome)) := by
   rcases EvenKempeFusionLens.exists_rotationOrdered_bcCrossExitFaceTransferBit_eq_false_of_minimal
       graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
         hcDisjoint hcount hnonempty with
@@ -74,11 +75,13 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_o
   rcases EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_rejected
       graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
         hcDisjoint hcount site hfalse with
-    ⟨pair, hprefix, hsuffix, houtcome⟩
-  exact ⟨site, pair, hprefix, hsuffix, houtcome⟩
+    ⟨pair, hprefix, hsuffix, _houtcome⟩
+  exact ⟨site, pair, hprefix, hsuffix,
+    pair.sourceClosureCycleDescent_or_exists_finiteClosedMonodromy
+      minimal baseData⟩
 
 /-- The symmetric nonempty sparse `cb` channel has the same unconditional
-source-cycle descent or complete remote fusion-chain resolution. -/
+source-cycle descent or complete finite closed monodromy resolution. -/
 theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -115,9 +118,10 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_o
           (lens01.cRoute.crossSuffixSplice lens23.bRoute site).support.map
             Subtype.val ∧
         (CrossCentralSourceClosureCycleDescent pair ∨
-          Nonempty (CrossSideRemoteFusionChainTransferWitness graphData
-            (baseData.rotationOrderedData graphData minimal.spherical.cubic
-              minimal.vertexRotationCyclic) site.1 pair)) := by
+          (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
+              (baseData.rotationOrderedData graphData minimal.spherical.cubic
+                minimal.vertexRotationCyclic) site.1 pair,
+            witness.FiniteClosedMonodromyOutcome)) := by
   rcases EvenKempeFusionLens.exists_rotationOrdered_cbCrossExitFaceTransferBit_eq_false_of_minimal
       graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
         hcDisjoint hcount hnonempty with
@@ -125,8 +129,10 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_o
   rcases EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_rejected
       graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
         hcDisjoint hcount site hfalse with
-    ⟨pair, hprefix, hsuffix, houtcome⟩
-  exact ⟨site, pair, hprefix, hsuffix, houtcome⟩
+    ⟨pair, hprefix, hsuffix, _houtcome⟩
+  exact ⟨site, pair, hprefix, hsuffix,
+    pair.sourceClosureCycleDescent_or_exists_finiteClosedMonodromy
+      minimal baseData⟩
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData
 
