@@ -25,19 +25,31 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+/-- Rotation-ordered adjacent-pair data selected by a minimal spherical
+counterexample. -/
+abbrev RotationOrderedMinimalPairData
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : AdjacentPairData G) : AdjacentPairData G :=
+  baseData.rotationOrderedData graphData minimal.spherical.cubic
+    minimal.vertexRotationCyclic
+
 /-- The irreducible single-cross residual of two sparse fusion lenses. Both
 lenses are zero-fusion simple cycles, the surviving rejected cross has the
-diagonal four-state transfer, and its exact splice pair reaches either strict
-source-cycle descent or the complete finite exact-rebase transition resolution. -/
+diagonal four-state transfer, and its exact splice pair reaches a certified
+stopping state unless it enters a nonempty closed certified rebase chain. -/
 structure SparseSingleCrossFusionChainResidual
-    (graphData : Data G) (data : AdjacentPairData G)
-    {C : (DeletedAdjacentPairGraph G data.firstVertex
-      data.secondVertex).EdgeColoring Color}
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : AdjacentPairData G)
+    {C : (DeletedAdjacentPairGraph G
+      (RotationOrderedMinimalPairData graphData minimal baseData).firstVertex
+      (RotationOrderedMinimalPairData graphData minimal baseData).secondVertex).EdgeColoring Color}
     {a b c : Color}
-    (lens01 : data.degreeTwoBoundaryData.EvenKempeFusionLens
-      C a b c 0 1)
-    (lens23 : data.degreeTwoBoundaryData.EvenKempeFusionLens
-      C a b c 2 3)
+    (lens01 : (RotationOrderedMinimalPairData graphData minimal
+      baseData).degreeTwoBoundaryData.EvenKempeFusionLens C a b c 0 1)
+    (lens23 : (RotationOrderedMinimalPairData graphData minimal
+      baseData).degreeTwoBoundaryData.EvenKempeFusionLens C a b c 2 3)
     (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c) where
   bcCrossCount : (lens01.bcCrossSites lens23).length ≤ 1
   cbCrossCount : (lens01.cbCrossSites lens23).length ≤ 1
@@ -47,7 +59,9 @@ structure SparseSingleCrossFusionChainResidual
   secondClosedWalk_isCycle : lens23.closedWalk.IsCycle
   channel :
     (∃ (site : lens01.bRoute.CrossSite lens23.cRoute)
-        (pair : CrossCentralExactFaceCutPair graphData data site.1),
+        (pair : CrossCentralExactFaceCutPair graphData
+          (RotationOrderedMinimalPairData graphData minimal baseData)
+          site.1),
       EvenKempeFusionLens.bcCrossExitFaceTransferBit
           lens01 graphData lens23 hab hac hbc site = false ∧
         EvenKempeFusionLens.bcCombinedSignedTransfer
@@ -60,12 +74,11 @@ structure SparseSingleCrossFusionChainResidual
         pair.suffixTrail.edges =
           (lens01.bRoute.crossSuffixSplice lens23.cRoute site).support.map
             Subtype.val ∧
-        (CrossCentralSourceClosureCycleDescent pair ∨
-          (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
-              data site.1 pair,
-            witness.FiniteRebaseTransitionOutcome))) ∨
+        pair.CertifiedRebasePumpingOutcome minimal baseData) ∨
       (∃ (site : lens01.cRoute.CrossSite lens23.bRoute)
-          (pair : CrossCentralExactFaceCutPair graphData data site.1),
+          (pair : CrossCentralExactFaceCutPair graphData
+            (RotationOrderedMinimalPairData graphData minimal baseData)
+            site.1),
         EvenKempeFusionLens.cbCrossExitFaceTransferBit
             lens01 graphData lens23 hab hac hbc site = false ∧
           EvenKempeFusionLens.cbCombinedSignedTransfer
@@ -78,10 +91,7 @@ structure SparseSingleCrossFusionChainResidual
           pair.suffixTrail.edges =
             (lens01.cRoute.crossSuffixSplice lens23.bRoute site).support.map
               Subtype.val ∧
-          (CrossCentralSourceClosureCycleDescent pair ∨
-            (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
-                data site.1 pair,
-              witness.FiniteRebaseTransitionOutcome)))
+          pair.CertifiedRebasePumpingOutcome minimal baseData)
 
 /-- The rotation-ordered sparse-cross theorem with its surviving diagonal
 four-state branch refined all the way to exact primal fusion chains. -/
@@ -120,8 +130,8 @@ theorem EvenKempeFusionLens.rotationOrdered_sparseCrossFusionChainResolution_of_
             lens01.cRoute.ambientPath.support).Disjoint
           (lens23.bRoute.ambientPath.support ++
             lens23.cRoute.ambientPath.support) ∨
-        Nonempty (SparseSingleCrossFusionChainResidual graphData data
-          lens01 lens23 hab hac hbc) := by
+        Nonempty (SparseSingleCrossFusionChainResidual graphData minimal
+          baseData lens01 lens23 hab hac hbc) := by
   dsimp only
   intro C a b c lens01 lens23 hdata hab hac hbc hbDisjoint hcDisjoint
   rcases EvenKempeFusionLens.rotationOrdered_rejectedSparseCrossResolution_of_minimal
@@ -148,16 +158,14 @@ theorem EvenKempeFusionLens.rotationOrdered_sparseCrossFusionChainResolution_of_
         ⟨pair, hprefix, hsuffix, _houtcome⟩
       exact Or.inl ⟨site, pair, hfalse, hdiagonal, hcbEmpty,
         hprefix, hsuffix,
-        pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
-          minimal baseData⟩
+        pair.certifiedRebasePumping_outcome minimal baseData⟩
     · rcases EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_rejected
           graphData minimal baseData lens01 lens23 hdata hab hac hbc
             hbDisjoint hcDisjoint hcounts.2 site hfalse with
         ⟨pair, hprefix, hsuffix, _houtcome⟩
       exact Or.inr ⟨site, pair, hfalse, hdiagonal, hbcEmpty,
         hprefix, hsuffix,
-        pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
-          minimal baseData⟩
+        pair.certifiedRebasePumping_outcome minimal baseData⟩
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData
 
