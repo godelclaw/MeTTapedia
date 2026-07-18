@@ -77,6 +77,77 @@ theorem IsPath.exists_cycle_of_incoming_outgoing_common_vertex
           (length_le_of_isSubwalk
             (outgoing.isSubwalk_takeUntil houtgoingVertex))
 
+omit [DecidableEq Vertex] in
+/-- A path vertex strictly after a cut index cannot occur in the support of
+the prefix ending at that cut. -/
+theorem IsPath.getVert_not_mem_support_take_of_lt
+    {start finish : Vertex} {walk : Graph.Walk start finish}
+    (hpath : walk.IsPath) {cut later : Nat} (hcutLater : cut < later)
+    (hlater : later ≤ walk.length) :
+    walk.getVert later ∉ (walk.take cut).support := by
+  intro hmem
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hmem with
+    ⟨position, hposition, hpositionLength⟩
+  have htakeLength : (walk.take cut).length ≤ cut := by
+    calc
+      (walk.take cut).length = (walk.take cut).edges.length :=
+        (walk.take cut).length_edges.symm
+      _ = (walk.edges.take cut).length := by
+        rw [SimpleGraph.Walk.edges_take]
+      _ ≤ cut := List.length_take_le cut walk.edges
+  have hpositionCut : position ≤ cut :=
+    hpositionLength.trans htakeLength
+  have hpositionFull : position ≤ walk.length := by
+    omega
+  have hvertices : walk.getVert position = walk.getVert later := by
+    rw [← hposition, SimpleGraph.Walk.take_getVert,
+      Nat.min_eq_right hpositionCut]
+  have hindices := hpath.getVert_injOn
+    (by simpa only [Set.mem_setOf_eq] using hpositionFull)
+    (by simpa only [Set.mem_setOf_eq] using hlater)
+    hvertices
+  omega
+
+omit [DecidableEq Vertex] in
+/-- Two separated pieces of a path, one ending before the other begins,
+have disjoint vertex supports. -/
+theorem IsPath.support_take_disjoint_support_drop_of_lt
+    {start finish : Vertex} {walk : Graph.Walk start finish}
+    (hpath : walk.IsPath) {left right : Nat} (hleftRight : left < right)
+    (hright : right ≤ walk.length) :
+    (walk.take left).support.Disjoint (walk.drop right).support := by
+  rw [List.disjoint_left]
+  intro vertex hleftVertex hrightVertex
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hleftVertex with
+    ⟨leftPosition, hleftPosition, hleftLength⟩
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hrightVertex with
+    ⟨rightPosition, hrightPosition, hrightLength⟩
+  have hleftPositionLe : leftPosition ≤ left := by
+    simpa only [SimpleGraph.Walk.take_length,
+      Nat.min_eq_left (hleftRight.le.trans hright)] using hleftLength
+  have hrightPositionLe : right + rightPosition ≤ walk.length := by
+    rw [SimpleGraph.Walk.drop_length] at hrightLength
+    omega
+  have hvertices :
+      walk.getVert leftPosition = walk.getVert (right + rightPosition) := by
+    calc
+      walk.getVert leftPosition =
+          (walk.take left).getVert leftPosition := by
+        rw [SimpleGraph.Walk.take_getVert,
+          Nat.min_eq_right hleftPositionLe]
+      _ = vertex := hleftPosition
+      _ = (walk.drop right).getVert rightPosition :=
+        hrightPosition.symm
+      _ = walk.getVert (right + rightPosition) := by
+        rw [SimpleGraph.Walk.drop_getVert]
+  have hindices := hpath.getVert_injOn
+    (by
+      simp only [Set.mem_setOf_eq]
+      omega)
+    (by simpa only [Set.mem_setOf_eq] using hrightPositionLe)
+    hvertices
+  omega
+
 end SimpleGraph.Walk
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -298,6 +369,154 @@ theorem LocalizedAlignedCommonRunSplice.suffixThroughTrunk_disjoint_prefixOutgoi
       splice.trunk.prefixOutgoingArm_disjoint_suffixTrail)
     hprefix (splice.suffixThroughTrunk_edges_subset hsuffix)
 
+/-- The split vertex does not occur on the prefix incoming arm. -/
+theorem LocalizedAlignedCommonRunSplice.split_not_mem_prefixIncoming_support
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) :
+    (pair.prefixSharedEdgeDart profile.lastRank).snd ∉
+      splice.trunk.prefixIncomingArm.support := by
+  have hpositions :
+      (pair.prefixSharedEdgePositionEmbedding profile.firstRank).val <
+        (pair.prefixSharedEdgePositionEmbedding profile.lastRank).val + 1 := by
+    have hlt := (pair.prefixSharedEdgePositionEmbedding.lt_iff_lt).2
+      profile.firstRank_lt_lastRank
+    omega
+  have hlater :
+      (pair.prefixSharedEdgePositionEmbedding profile.lastRank).val + 1 ≤
+        pair.prefixTrail.length := by
+    have hlt :=
+      (pair.prefixSharedEdgePositionEmbedding profile.lastRank).isLt
+    have hlength := pair.prefixTrail.length_edges
+    omega
+  have hnot := splice.prefix_isPath.getVert_not_mem_support_take_of_lt
+    hpositions hlater
+  intro hsplit
+  apply hnot
+  simpa only [LocalizedAlignedCommonRunTrunk.prefixIncomingArm,
+    SimpleGraph.Walk.support_copy,
+    RetainedIntersectionExactFaceCutPair.prefixSharedEdgeDart,
+    SimpleGraph.Walk.dartAtEdgePosition_snd] using hsplit
+
+/-- The split vertex does not occur on the suffix incoming arm. -/
+theorem LocalizedAlignedCommonRunSplice.split_not_mem_suffixIncoming_support
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) :
+    (pair.prefixSharedEdgeDart profile.lastRank).snd ∉
+      splice.trunk.suffixIncomingArm.support := by
+  have hpositions :
+      (pair.suffixSharedEdgePositionEmbedding
+          (pair.sharedEdgeOrderEquiv profile.firstRank)).val <
+        (pair.suffixSharedEdgePositionEmbedding
+          (pair.sharedEdgeOrderEquiv profile.lastRank)).val + 1 := by
+    have hlt := (pair.suffixSharedEdgePositionEmbedding.lt_iff_lt).2
+      (profile.sharedEdgeOrderEquiv_lt profile.firstRank_lt_lastRank)
+    omega
+  have hlater :
+      (pair.suffixSharedEdgePositionEmbedding
+          (pair.sharedEdgeOrderEquiv profile.lastRank)).val + 1 ≤
+        pair.suffixTrail.length := by
+    have hlt := (pair.suffixSharedEdgePositionEmbedding
+      (pair.sharedEdgeOrderEquiv profile.lastRank)).isLt
+    have hlength := pair.suffixTrail.length_edges
+    omega
+  have hnot := splice.suffix_isPath.getVert_not_mem_support_take_of_lt
+    hpositions hlater
+  intro hsplit
+  apply hnot
+  rw [LocalizedAlignedCommonRunTrunk.suffixIncomingArm,
+    SimpleGraph.Walk.support_copy] at hsplit
+  have hsplitVertex :
+      pair.suffixTrail.getVert
+          ((pair.suffixSharedEdgePositionEmbedding
+            (pair.sharedEdgeOrderEquiv profile.lastRank)).val + 1) =
+        (pair.prefixSharedEdgeDart profile.lastRank).snd := by
+    calc
+      pair.suffixTrail.getVert
+            ((pair.suffixSharedEdgePositionEmbedding
+              (pair.sharedEdgeOrderEquiv profile.lastRank)).val + 1) =
+          (pair.suffixSharedEdgeDart profile.lastRank).snd := by
+        simp only [
+          RetainedIntersectionExactFaceCutPair.suffixSharedEdgeDart,
+          SimpleGraph.Walk.dartAtEdgePosition_snd]
+      _ = (pair.prefixSharedEdgeDart profile.lastRank).snd :=
+        congrArg (fun dart ↦ dart.snd)
+          (profile.darts_eq profile.lastRank)
+  rw [hsplitVertex]
+  exact hsplit
+
+/-- The incoming and outgoing prefix arms have disjoint vertex supports. -/
+theorem LocalizedAlignedCommonRunSplice.prefixArms_support_disjoint
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) :
+    splice.trunk.prefixIncomingArm.support.Disjoint
+      splice.trunk.prefixOutgoingArm.support := by
+  have hpositions :
+      (pair.prefixSharedEdgePositionEmbedding profile.firstRank).val <
+        (pair.prefixSharedEdgePositionEmbedding profile.lastRank).val + 1 := by
+    have hlt := (pair.prefixSharedEdgePositionEmbedding.lt_iff_lt).2
+      profile.firstRank_lt_lastRank
+    omega
+  have hlater :
+      (pair.prefixSharedEdgePositionEmbedding profile.lastRank).val + 1 ≤
+        pair.prefixTrail.length := by
+    have hlt :=
+      (pair.prefixSharedEdgePositionEmbedding profile.lastRank).isLt
+    have hlength := pair.prefixTrail.length_edges
+    omega
+  simpa only [LocalizedAlignedCommonRunTrunk.prefixIncomingArm,
+    LocalizedAlignedCommonRunTrunk.prefixOutgoingArm,
+    SimpleGraph.Walk.support_copy] using
+      splice.prefix_isPath.support_take_disjoint_support_drop_of_lt
+        hpositions hlater
+
+/-- The incoming and outgoing suffix arms have disjoint vertex supports. -/
+theorem LocalizedAlignedCommonRunSplice.suffixArms_support_disjoint
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) :
+    splice.trunk.suffixIncomingArm.support.Disjoint
+      splice.trunk.suffixOutgoingArm.support := by
+  have hpositions :
+      (pair.suffixSharedEdgePositionEmbedding
+          (pair.sharedEdgeOrderEquiv profile.firstRank)).val <
+        (pair.suffixSharedEdgePositionEmbedding
+          (pair.sharedEdgeOrderEquiv profile.lastRank)).val + 1 := by
+    have hlt := (pair.suffixSharedEdgePositionEmbedding.lt_iff_lt).2
+      (profile.sharedEdgeOrderEquiv_lt profile.firstRank_lt_lastRank)
+    omega
+  have hlater :
+      (pair.suffixSharedEdgePositionEmbedding
+          (pair.sharedEdgeOrderEquiv profile.lastRank)).val + 1 ≤
+        pair.suffixTrail.length := by
+    have hlt := (pair.suffixSharedEdgePositionEmbedding
+      (pair.sharedEdgeOrderEquiv profile.lastRank)).isLt
+    have hlength := pair.suffixTrail.length_edges
+    omega
+  simpa only [LocalizedAlignedCommonRunTrunk.suffixIncomingArm,
+    LocalizedAlignedCommonRunTrunk.suffixOutgoingArm,
+    SimpleGraph.Walk.support_copy] using
+      splice.suffix_isPath.support_take_disjoint_support_drop_of_lt
+        hpositions hlater
+
 /-- A cycle extracted from an extra intersection of crossed arms, closed
 through the common trunk. -/
 inductive LocalizedCommonRunCrossedArmCycle
@@ -331,8 +550,8 @@ inductive LocalizedCommonRunCrossedArmCycle
         splice.suffixThroughTrunk.length +
           splice.trunk.prefixOutgoingArm.length)
 
-/-- In the clean crossed-arm state, either crossed pair can meet only at
-the common-trunk split vertex. -/
+/-- In the clean crossed-arm state, both crossed pairs have disjoint vertex
+supports. -/
 structure LocalizedCommonRunCleanCrossedArms
     {graphData : Data G} {data : AdjacentPairData G}
     {pair : RetainedIntersectionExactFaceCutPair graphData data}
@@ -341,18 +560,56 @@ structure LocalizedCommonRunCleanCrossedArms
     {face : OrbitFace graphData.toRotationSystem}
     {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
     (splice : LocalizedAlignedCommonRunSplice profile) where
-  prefixIncoming_suffixOutgoing_common_vertex : ∀ vertex,
-    vertex ∈ splice.trunk.prefixIncomingArm.support →
-      vertex ∈ splice.trunk.suffixOutgoingArm.support →
-      vertex = (pair.prefixSharedEdgeDart profile.lastRank).snd
-  suffixIncoming_prefixOutgoing_common_vertex : ∀ vertex,
-    vertex ∈ splice.trunk.suffixIncomingArm.support →
-      vertex ∈ splice.trunk.prefixOutgoingArm.support →
-      vertex = (pair.prefixSharedEdgeDart profile.lastRank).snd
+  prefixIncoming_suffixOutgoing_disjoint :
+    splice.trunk.prefixIncomingArm.support.Disjoint
+      splice.trunk.suffixOutgoingArm.support
+  suffixIncoming_prefixOutgoing_disjoint :
+    splice.trunk.suffixIncomingArm.support.Disjoint
+      splice.trunk.prefixOutgoingArm.support
+
+/-- The complete clean intersection matrix for a four-arm splice. Parallel
+incoming arms meet only at the merge, parallel outgoing arms meet only at
+the split, and all four remaining arm pairs have disjoint vertex supports. -/
+structure LocalizedCommonRunCleanFourArms
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) where
+  parallel : LocalizedCommonRunCleanParallelArms splice
+  crossed : LocalizedCommonRunCleanCrossedArms splice
+  prefixIncoming_prefixOutgoing_disjoint :
+    splice.trunk.prefixIncomingArm.support.Disjoint
+      splice.trunk.prefixOutgoingArm.support
+  suffixIncoming_suffixOutgoing_disjoint :
+    splice.trunk.suffixIncomingArm.support.Disjoint
+      splice.trunk.suffixOutgoingArm.support
+
+/-- Parallel and crossed cleanliness assemble into the complete six-pair
+intersection matrix. -/
+def LocalizedAlignedCommonRunSplice.toCleanFourArms
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile)
+    (parallel : LocalizedCommonRunCleanParallelArms splice)
+    (crossed : LocalizedCommonRunCleanCrossedArms splice) :
+    LocalizedCommonRunCleanFourArms splice where
+  parallel := parallel
+  crossed := crossed
+  prefixIncoming_prefixOutgoing_disjoint :=
+    splice.prefixArms_support_disjoint
+  suffixIncoming_suffixOutgoing_disjoint :=
+    splice.suffixArms_support_disjoint
 
 /-- Every four-arm splice either contains a support-certified cycle in
-a crossed arm pair, closed through the common trunk, or has no crossed
-intersection away from the split vertex. -/
+a crossed arm pair, closed through the common trunk, or both crossed arm
+pairs have disjoint vertex supports. -/
 theorem LocalizedAlignedCommonRunSplice.crossedArmCycle_or_clean
     {graphData : Data G} {data : AdjacentPairData G}
     {pair : RetainedIntersectionExactFaceCutPair graphData data}
@@ -406,12 +663,23 @@ theorem LocalizedAlignedCommonRunSplice.crossedArmCycle_or_clean
         LocalizedCommonRunCrossedArmCycle.suffixIncoming_prefixOutgoing
           root cycle hcycle hedges hlength⟩
     · exact Or.inr ⟨{
-        prefixIncoming_suffixOutgoing_common_vertex := hprefixSuffixClean
-        suffixIncoming_prefixOutgoing_common_vertex := by
+        prefixIncoming_suffixOutgoing_disjoint := by
+          rw [List.disjoint_left]
+          intro vertex hprefixVertex hsuffixVertex
+          have heq := hprefixSuffixClean vertex hprefixVertex hsuffixVertex
+          exact splice.split_not_mem_prefixIncoming_support
+            (heq ▸ hprefixVertex)
+        suffixIncoming_prefixOutgoing_disjoint := by
+          rw [List.disjoint_left]
           intro vertex hsuffixVertex hprefixVertex
-          by_contra hne
-          exact hsuffixPrefix
-            ⟨vertex, hsuffixVertex, hprefixVertex, hne⟩ }⟩
+          have heq :
+              vertex =
+                (pair.prefixSharedEdgeDart profile.lastRank).snd := by
+            by_contra hne
+            exact hsuffixPrefix
+              ⟨vertex, hsuffixVertex, hprefixVertex, hne⟩
+          exact splice.split_not_mem_suffixIncoming_support
+            (heq ▸ hsuffixVertex) }⟩
 
 /-- The fusion-chain normal form with both parallel and crossed arm
 intersections resolved. -/
@@ -432,8 +700,7 @@ inductive LocalizedFusionChainCrossedResolution
   | cleanFourArms
       (profile : LocalizedAlignedSharedEdgeProfile pair oldCross face)
       (splice : LocalizedAlignedCommonRunSplice profile)
-      (parallel : Nonempty (LocalizedCommonRunCleanParallelArms splice))
-      (crossed : Nonempty (LocalizedCommonRunCleanCrossedArms splice))
+      (clean : Nonempty (LocalizedCommonRunCleanFourArms splice))
   | alignedBubbleCycle
       (profile : LocalizedAlignedSharedEdgeProfile pair oldCross face)
       (bubble : Nonempty (LocalizedAlignedBubblePrimalCycle profile))
@@ -462,8 +729,10 @@ theorem LocalizedFusionChainVertexResolution.nonempty_crossedResolution
       rcases splice.crossedArmCycle_or_clean with cycle | crossed
       · exact ⟨LocalizedFusionChainCrossedResolution.crossedArmCycle
           profile splice cycle⟩
-      · exact ⟨LocalizedFusionChainCrossedResolution.cleanFourArms
-          profile splice parallel crossed⟩
+      · rcases parallel with ⟨parallel⟩
+        rcases crossed with ⟨crossed⟩
+        exact ⟨LocalizedFusionChainCrossedResolution.cleanFourArms
+          profile splice ⟨splice.toCleanFourArms parallel crossed⟩⟩
   | alignedBubbleCycle profile bubble =>
       exact ⟨LocalizedFusionChainCrossedResolution.alignedBubbleCycle
         profile bubble⟩
