@@ -25,6 +25,64 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- An opposite-port closure is supported by any walk containing its
+retained arc and all three restored return edges. -/
+theorem oppositePortClosure_edges_subset_of_retained_and_return
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 0) (data.retainedPort 2))
+    {root : V} (cycle : G.Walk root root)
+    (hpath : (data.retainedWalkToAmbient path).edges ⊆ cycle.edges)
+    (hzero : boundaryEdgeValue data 0 ∈ cycle.edges)
+    (htwo : boundaryEdgeValue data 2 ∈ cycle.edges)
+    (hcentral : centralEdgeValue data ∈ cycle.edges) :
+    (data.oppositePortClosure path).edges ⊆ cycle.edges := by
+  intro edge hedge
+  change edge ∈ ((data.retainedWalkToAmbient path).append
+    data.oppositePortCentralReturn).edges at hedge
+  rw [SimpleGraph.Walk.edges_append, List.mem_append] at hedge
+  rcases hedge with hedge | hedge
+  · exact hpath hedge
+  · have hreturn : edge ∈ data.oppositePortCentralReturn.edges := by
+      exact hedge
+    rw [data.oppositePortCentralReturn_edges] at hreturn
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hreturn
+    rcases hreturn with htwoEq | hcentralEq | hzeroEq
+    · simpa [htwoEq] using htwo
+    · simpa [hcentralEq] using hcentral
+    · simpa [hzeroEq] using hzero
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- An alternate opposite-port closure is supported by any walk containing
+its retained arc and all three restored return edges. -/
+theorem alternateOppositePortClosure_edges_subset_of_retained_and_return
+    (data : AdjacentPairData G)
+    (path : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).Walk (data.retainedPort 1) (data.retainedPort 3))
+    {root : V} (cycle : G.Walk root root)
+    (hpath : (data.retainedWalkToAmbient path).edges ⊆ cycle.edges)
+    (hone : boundaryEdgeValue data 1 ∈ cycle.edges)
+    (hthree : boundaryEdgeValue data 3 ∈ cycle.edges)
+    (hcentral : centralEdgeValue data ∈ cycle.edges) :
+    (data.alternateOppositePortClosure path).edges ⊆ cycle.edges := by
+  intro edge hedge
+  change edge ∈ ((data.retainedWalkToAmbient path).append
+    data.alternateOppositePortCentralReturnRetained).edges at hedge
+  rw [SimpleGraph.Walk.edges_append, List.mem_append] at hedge
+  rcases hedge with hedge | hedge
+  · exact hpath hedge
+  · have hreturn : edge ∈
+        data.alternateOppositePortCentralReturnRetained.edges := by
+      exact hedge
+    rw [data.alternateOppositePortCentralReturnRetained_edges,
+      data.alternateOppositePortCentralReturn_edges] at hreturn
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hreturn
+    rcases hreturn with hthreeEq | hcentralEq | honeEq
+    · simpa [hthreeEq] using hthree
+    · simpa [hcentralEq] using hcentral
+    · simpa [honeEq] using hone
+
 /-- The ambient face selected by a provenance-certified exact rebase. -/
 abbrev CrossCentralExactFaceCertifiedRebaseStep.selectedFace
     {graphData : Data G}
@@ -39,6 +97,83 @@ abbrev CrossCentralExactFaceCertifiedRebaseStep.selectedFace
     (retainedEdgeToAmbientEdge
       (baseData.rotationOrderedData graphData minimal.spherical.cubic
         minimal.vertexRotationCyclic) source.1) step.witness.coordinate
+
+/-- The complete target prefix closure remains edge-supported by the first
+fusion cycle selected by a provenance-certified rebase. -/
+theorem CrossCentralExactFaceCertifiedRebaseStep.target_prefixClosure_edges_subset_firstFusion
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {source : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (step : CrossCentralExactFaceCertifiedRebaseStep graphData minimal
+      baseData source) :
+    let data := baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic
+    (data.oppositePortClosure step.target.2.prefixTrail).edges ⊆
+      step.resolution.firstFusion.edges := by
+  let data := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  change (data.oppositePortClosure step.target.2.prefixTrail).edges ⊆
+    step.resolution.firstFusion.edges
+  have hsignature := oppositePortFusion_returnEdge_mem_iff data
+    source.2.prefixTrail step.selectedFace
+      step.resolution.boundary_avoids_coordinate_face
+      step.resolution.firstFusion step.resolution.firstFusion_isCycle
+      step.resolution.firstFusion_support
+  have hzero : boundaryEdgeValue data 0 ∈
+      step.resolution.firstFusion.edges :=
+    hsignature.1.2 step.firstFusion_mem_central
+  have htwo : boundaryEdgeValue data 2 ∈
+      step.resolution.firstFusion.edges :=
+    hsignature.2.2 step.firstFusion_mem_central
+  change (data.oppositePortClosure step.rebase.targetPair.prefixTrail).edges ⊆
+    step.resolution.firstFusion.edges
+  rw [step.rebase.target_prefixTrail]
+  exact oppositePortClosure_edges_subset_of_retained_and_return data
+    step.successors.prefixSuccessor step.resolution.firstFusion
+    step.successors.prefix_ambient_edges_subset hzero htwo
+    step.firstFusion_mem_central
+
+/-- The complete target suffix closure remains edge-supported by the second
+fusion cycle selected by a provenance-certified rebase. -/
+theorem CrossCentralExactFaceCertifiedRebaseStep.target_suffixClosure_edges_subset_secondFusion
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {source : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (step : CrossCentralExactFaceCertifiedRebaseStep graphData minimal
+      baseData source) :
+    let data := baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic
+    (data.alternateOppositePortClosure step.target.2.suffixTrail).edges ⊆
+      step.resolution.secondFusion.edges := by
+  let data := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  change (data.alternateOppositePortClosure
+    step.target.2.suffixTrail).edges ⊆ step.resolution.secondFusion.edges
+  have hsignature := alternateOppositePortFusion_returnEdge_mem_iff data
+    source.2.suffixTrail step.selectedFace
+      step.resolution.boundary_avoids_coordinate_face
+      step.resolution.secondFusion step.resolution.secondFusion_isCycle
+      step.resolution.secondFusion_support
+  have hone : boundaryEdgeValue data 1 ∈
+      step.resolution.secondFusion.edges :=
+    hsignature.1.2 step.secondFusion_mem_central
+  have hthree : boundaryEdgeValue data 3 ∈
+      step.resolution.secondFusion.edges :=
+    hsignature.2.2 step.secondFusion_mem_central
+  change (data.alternateOppositePortClosure
+    step.rebase.targetPair.suffixTrail).edges ⊆
+      step.resolution.secondFusion.edges
+  rw [step.rebase.target_suffixTrail]
+  exact alternateOppositePortClosure_edges_subset_of_retained_and_return data
+    step.successors.suffixSuccessor step.resolution.secondFusion
+    step.successors.suffix_ambient_edges_subset hone hthree
+    step.secondFusion_mem_central
 
 /-- A certified target prefix can introduce retained edges only on the
 selected face. -/
