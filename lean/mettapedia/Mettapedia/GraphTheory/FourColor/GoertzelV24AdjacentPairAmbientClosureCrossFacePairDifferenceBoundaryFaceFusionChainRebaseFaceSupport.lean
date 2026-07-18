@@ -237,6 +237,58 @@ theorem CrossCentralExactFaceCertifiedRebaseStep.target_suffixClosure_mem_iff_se
     step.resolution.secondFusion_isCycle htarget
       step.target_suffixClosure_edges_subset_secondFusion edge).symm
 
+/-- A certified target prefix closure can introduce ambient edges only on
+the selected face. -/
+theorem CrossCentralExactFaceCertifiedRebaseStep.target_prefixClosure_edge_mem_source_or_selectedFace
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {source : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (step : CrossCentralExactFaceCertifiedRebaseStep graphData minimal
+      baseData source)
+    (edge : G.edgeSet)
+    (hmem : edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).oppositePortClosure
+          step.target.2.prefixTrail).edges) :
+    edge.1 ∈
+        ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic).oppositePortClosure
+            source.2.prefixTrail).edges ∨
+      edge ∈ orbitFaceBoundary graphData.toRotationSystem
+        step.selectedFace := by
+  have hfusion : edge.1 ∈ step.resolution.firstFusion.edges :=
+    (step.target_prefixClosure_mem_iff_firstFusion edge.1).1 hmem
+  exact step.resolution.firstFusion_support edge hfusion
+
+/-- A certified target suffix closure can introduce ambient edges only on
+the selected face. -/
+theorem CrossCentralExactFaceCertifiedRebaseStep.target_suffixClosure_edge_mem_source_or_selectedFace
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {source : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (step : CrossCentralExactFaceCertifiedRebaseStep graphData minimal
+      baseData source)
+    (edge : G.edgeSet)
+    (hmem : edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).alternateOppositePortClosure
+          step.target.2.suffixTrail).edges) :
+    edge.1 ∈
+        ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic).alternateOppositePortClosure
+            source.2.suffixTrail).edges ∨
+      edge ∈ orbitFaceBoundary graphData.toRotationSystem
+        step.selectedFace := by
+  have hfusion : edge.1 ∈ step.resolution.secondFusion.edges :=
+    (step.target_suffixClosure_mem_iff_secondFusion edge.1).1 hmem
+  exact step.resolution.secondFusion_support edge hfusion
+
 /-- A certified target prefix can introduce retained edges only on the
 selected face. -/
 theorem CrossCentralExactFaceCertifiedRebaseStep.target_prefix_edge_mem_source_or_selectedFace
@@ -427,6 +479,62 @@ theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.cross_ne
       graphData minimal baseData face source target) :
     target.1 ≠ source.1 :=
   transition.to_transition.cross_ne
+
+/-- Off the fixed face, a transition's complete target prefix closure is
+contained in its complete source prefix closure. -/
+theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.target_prefixClosure_offFace_subset_source
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {face : OrbitFace graphData.toRotationSystem}
+    {source target : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (transition : CrossCentralExactFaceCertifiedRebaseTransitionOnFace
+      graphData minimal baseData face source target)
+    (edge : G.edgeSet)
+    (hoff : edge ∉ orbitFaceBoundary graphData.toRotationSystem face)
+    (hmem : edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).oppositePortClosure
+          target.2.prefixTrail).edges) :
+    edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).oppositePortClosure
+          source.2.prefixTrail).edges := by
+  rcases transition with ⟨step, rfl, hface⟩
+  rcases step.target_prefixClosure_edge_mem_source_or_selectedFace edge hmem with
+    hsource | hselected
+  · exact hsource
+  · exact False.elim (hoff (hface ▸ hselected))
+
+/-- Off the fixed face, a transition's complete target suffix closure is
+contained in its complete source suffix closure. -/
+theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.target_suffixClosure_offFace_subset_source
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {face : OrbitFace graphData.toRotationSystem}
+    {source target : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (transition : CrossCentralExactFaceCertifiedRebaseTransitionOnFace
+      graphData minimal baseData face source target)
+    (edge : G.edgeSet)
+    (hoff : edge ∉ orbitFaceBoundary graphData.toRotationSystem face)
+    (hmem : edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).alternateOppositePortClosure
+          target.2.suffixTrail).edges) :
+    edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).alternateOppositePortClosure
+          source.2.suffixTrail).edges := by
+  rcases transition with ⟨step, rfl, hface⟩
+  rcases step.target_suffixClosure_edge_mem_source_or_selectedFace edge hmem with
+    hsource | hselected
+  · exact hsource
+  · exact False.elim (hoff (hface ▸ hselected))
 
 /-- Off the fixed face, a transition's target prefix is contained in its
 source prefix. -/
