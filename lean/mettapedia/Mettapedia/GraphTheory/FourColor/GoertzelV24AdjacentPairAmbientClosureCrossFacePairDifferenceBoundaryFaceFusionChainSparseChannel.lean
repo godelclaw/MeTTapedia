@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseTransition
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebasePumping
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionCrossChannelTransferObstruction
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -80,6 +80,52 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_o
     pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
       minimal baseData⟩
 
+/-- A nonempty sparse `bc` channel reaches a certified stopping state under
+faithful rebasing, unless it reaches a nonempty closed certified rebase
+chain. -/
+theorem EvenKempeFusionLens.exists_rotationOrdered_bcCertifiedRebasePumpingOutcome_of_minimal
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : GoertzelV24AdjacentPairBoundary.AdjacentPairData G)
+    {C : (DeletedAdjacentPairGraph G
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).firstVertex
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 0 1)
+    (lens23 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 2 3)
+    (hdata : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hcount : (lens01.bcCrossSites lens23).length ≤ 1)
+    (hnonempty : lens01.bcCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.bRoute.CrossSite lens23.cRoute)
+        (pair : CrossCentralExactFaceCutPair graphData
+          (baseData.rotationOrderedData graphData minimal.spherical.cubic
+            minimal.vertexRotationCyclic) site.1),
+      pair.prefixTrail.edges =
+          (lens01.bRoute.crossSplice lens23.cRoute site).support.map
+            Subtype.val ∧
+        pair.suffixTrail.edges =
+          (lens01.bRoute.crossSuffixSplice lens23.cRoute site).support.map
+            Subtype.val ∧
+        pair.CertifiedRebasePumpingOutcome minimal baseData := by
+  rcases EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
+      graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
+        hcDisjoint hcount hnonempty with
+    ⟨site, pair, hprefix, hsuffix, _houtcome⟩
+  exact ⟨site, pair, hprefix, hsuffix,
+    pair.certifiedRebasePumping_outcome minimal baseData⟩
+
 /-- The symmetric nonempty sparse `cb` channel has the same unconditional
 source-cycle descent or complete finite exact-rebase transition resolution. -/
 theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
@@ -133,6 +179,51 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_o
   exact ⟨site, pair, hprefix, hsuffix,
     pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
       minimal baseData⟩
+
+/-- The symmetric sparse `cb` channel has the same finite certified
+stopping-or-closed-rebase-chain outcome. -/
+theorem EvenKempeFusionLens.exists_rotationOrdered_cbCertifiedRebasePumpingOutcome_of_minimal
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : GoertzelV24AdjacentPairBoundary.AdjacentPairData G)
+    {C : (DeletedAdjacentPairGraph G
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).firstVertex
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).secondVertex).EdgeColoring Color}
+    {a b c : Color}
+    (lens01 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 0 1)
+    (lens23 : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.EvenKempeFusionLens
+        C a b c 2 3)
+    (hdata : (baseData.rotationOrderedData graphData
+      minimal.spherical.cubic minimal.vertexRotationCyclic).degreeTwoBoundaryData.WellFormed)
+    (hab : a ≠ b) (hac : a ≠ c) (hbc : b ≠ c)
+    (hbDisjoint : lens01.bRoute.ambientPath.support.Disjoint
+      lens23.bRoute.ambientPath.support)
+    (hcDisjoint : lens01.cRoute.ambientPath.support.Disjoint
+      lens23.cRoute.ambientPath.support)
+    (hcount : (lens01.cbCrossSites lens23).length ≤ 1)
+    (hnonempty : lens01.cbCrossSites lens23 ≠ []) :
+    ∃ (site : lens01.cRoute.CrossSite lens23.bRoute)
+        (pair : CrossCentralExactFaceCutPair graphData
+          (baseData.rotationOrderedData graphData minimal.spherical.cubic
+            minimal.vertexRotationCyclic) site.1),
+      pair.prefixTrail.edges =
+          (lens01.cRoute.crossSplice lens23.bRoute site).support.map
+            Subtype.val ∧
+        pair.suffixTrail.edges =
+          (lens01.cRoute.crossSuffixSplice lens23.bRoute site).support.map
+            Subtype.val ∧
+        pair.CertifiedRebasePumpingOutcome minimal baseData := by
+  rcases EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
+      graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
+        hcDisjoint hcount hnonempty with
+    ⟨site, pair, hprefix, hsuffix, _houtcome⟩
+  exact ⟨site, pair, hprefix, hsuffix,
+    pair.certifiedRebasePumping_outcome minimal baseData⟩
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData
 
