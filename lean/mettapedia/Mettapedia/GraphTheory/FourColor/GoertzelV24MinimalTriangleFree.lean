@@ -1,6 +1,8 @@
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutAttachment
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RecoveredAdjacentPairData
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphTaitBridge
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -467,40 +469,11 @@ theorem exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (hcyclic : CyclicallyFiveEdgeConnected G)
     {first second : V} (hadj : G.Adj first second) :
-    ∃ ordered : AdjacentPairData G,
-      ordered.firstVertex = first ∧
-      ordered.secondVertex = second ∧
-      ordered.PortsFollowCyclicDeletedBoundaryOrder graphData ∧
-      ∃ deletedColoring :
-          (DeletedAdjacentPairGraph G ordered.firstVertex
-            ordered.secondVertex).EdgeColoring Color,
-        IsTaitEdgeColoring
-            (DeletedAdjacentPairGraph G ordered.firstVertex
-              ordered.secondVertex)
-            deletedColoring ∧
-          SquareReductionSide.join01_23.Compatible
-            (ordered.degreeTwoBoundaryData.colorWord deletedColoring) := by
-  rcases exists_cyclicallyOrdered_deletedColoring_of_no_common_neighbor
-      graphData minimal hadj
-        (no_common_neighbor_of_cyclicallyFive graphData minimal hcyclic hadj) with
-    ⟨ordered, hfirst, hsecond, horder, coloring, htait, hcompatible⟩
-  refine ⟨ordered, hfirst, hsecond, horder, coloring, htait, ?_⟩
-  have hFintype :
-      recoveredAdjacentPairRetainedVertexSetFintype
-          ordered.firstVertex ordered.secondVertex =
-        GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-          (Membership.mem (retainedVertexSet ordered.firstVertex
-            ordered.secondVertex)) :=
-    Subsingleton.elim _ _
-  have hDecidableEq :
-      recoveredAdjacentPairRetainedVertexSetDecidableEq
-          ordered.firstVertex ordered.secondVertex =
-        GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
-          (Membership.mem (retainedVertexSet ordered.firstVertex
-            ordered.secondVertex)) :=
-    Subsingleton.elim _ _
-  rw [hFintype, hDecidableEq] at hcompatible
-  exact hcompatible
+    HasCyclicallyOrderedCompatibleDeletedColoring
+      graphData first second := by
+  exact exists_cyclicallyOrdered_deletedColoring_of_no_common_neighbor
+    graphData minimal hadj
+      (no_common_neighbor_of_cyclicallyFive graphData minimal hcyclic hadj)
 
 end
 
