@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunEndpointSignedTransfer
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunPlanarFrame
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -431,6 +431,64 @@ theorem CrossSideRemoteFusionChainResolution.signedTransfer_outcome
     exact Or.inr (Or.inr ⟨successors,
       successors.finite_signedTransfer_outcome hcubic hrotation htwoSided⟩)
 
+/-- The remote resolution with every clean fusion-chain branch carrying
+the exact diagonal signed transfer. -/
+def CrossSideRemoteFusionChainResolution.DiagonalTransferOutcome
+    {graphData : Data G} {data : AdjacentPairData G}
+    {cross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData data cross}
+    {coordinate : Bool}
+    (resolution : CrossSideRemoteFusionChainResolution graphData data cross
+      pair coordinate) : Prop :=
+  (∃ (hroot : resolution.firstRoot ∈
+        retainedVertexSet data.firstVertex data.secondVertex)
+      (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk ⟨resolution.firstRoot, hroot⟩
+          ⟨resolution.firstRoot, hroot⟩),
+    retainedFusion.IsCycle ∧
+      data.retainedWalkToAmbient retainedFusion = resolution.firstFusion) ∨
+    (∃ (hroot : resolution.secondRoot ∈
+        retainedVertexSet data.firstVertex data.secondVertex)
+      (retainedFusion : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk ⟨resolution.secondRoot, hroot⟩
+          ⟨resolution.secondRoot, hroot⟩),
+    retainedFusion.IsCycle ∧
+      data.retainedWalkToAmbient retainedFusion = resolution.secondFusion) ∨
+    (∃ successors : LocalizedFusionSuccessorResolution pair
+        (edgeCrossFaceCoordinateOrbitFace graphData
+          (retainedEdgeToAmbientEdge data cross) coordinate)
+        resolution.firstFusion resolution.secondFusion,
+      successors.DiagonalTransferOutcome)
+
+/-- Every remote resolution in a minimal spherical counterexample realizes
+the diagonal-transfer-refined outcome. -/
+theorem CrossSideRemoteFusionChainResolution.diagonalTransfer_outcome
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : AdjacentPairData G)
+    {cross : (DeletedAdjacentPairGraph G
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).firstVertex
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic) cross}
+    {coordinate : Bool}
+    (resolution : CrossSideRemoteFusionChainResolution graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic) cross pair coordinate) :
+    resolution.DiagonalTransferOutcome := by
+  unfold CrossSideRemoteFusionChainResolution.DiagonalTransferOutcome
+  rcases resolution.outcome with hfirst | hsecond | hsuccessors
+  · exact Or.inl hfirst
+  · exact Or.inr (Or.inl hsecond)
+  · rcases hsuccessors with ⟨successors⟩
+    exact Or.inr (Or.inr ⟨successors,
+      successors.finite_diagonalTransfer_outcome
+        graphData minimal baseData⟩)
+
 /-- The exact cross-side transfer witness, with the active remote branch
 resolved through the complete finite fusion-chain normal form. -/
 structure CrossSideRemoteFusionChainTransferWitness
@@ -649,6 +707,33 @@ theorem CrossSideRemoteFusionChainActiveState.exists_resolution_with_signedTrans
   rcases active.exists_resolution with ⟨resolution⟩
   exact ⟨resolution,
     resolution.signedTransfer_outcome hcubic hrotation htwoSided⟩
+
+/-- In a minimal spherical counterexample, an active transfer state reaches
+a remote resolution whose clean fusion-chain branch has exact diagonal
+transfer. -/
+theorem CrossSideRemoteFusionChainActiveState.exists_resolution_with_diagonalTransfer_outcome
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (baseData : AdjacentPairData G)
+    {cross : (DeletedAdjacentPairGraph G
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).firstVertex
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).secondVertex).edgeSet}
+    {pair : CrossCentralExactFaceCutPair graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic) cross}
+    {witness : CrossSideRemoteFusionChainTransferWitness graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic) cross pair}
+    (active : CrossSideRemoteFusionChainActiveState witness) :
+    ∃ resolution : CrossSideRemoteFusionChainResolution graphData
+        (baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic) cross pair witness.coordinate,
+      resolution.DiagonalTransferOutcome := by
+  rcases active.exists_resolution with ⟨resolution⟩
+  exact ⟨resolution,
+    resolution.diagonalTransfer_outcome graphData minimal baseData⟩
 
 /-- A source exact-cut closure has a strict cycle descent when cycle bypass
 extracts a shorter simple cycle supported on either one of its two closed
