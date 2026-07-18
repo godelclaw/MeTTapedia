@@ -594,6 +594,64 @@ theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.target_suffix_offFa
   · exact hsource
   · exact False.elim (hoff (hface ▸ hselected))
 
+/-- Off one fixed face, complete prefix-closure support is antitone along
+every finite certified rebase run. -/
+theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.reflTransGen_prefixClosure_offFace_subset
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {face : OrbitFace graphData.toRotationSystem}
+    {source target : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (run : Relation.ReflTransGen
+      (CrossCentralExactFaceCertifiedRebaseTransitionOnFace graphData
+        minimal baseData face) source target)
+    (edge : G.edgeSet)
+    (hoff : edge ∉ orbitFaceBoundary graphData.toRotationSystem face)
+    (hmem : edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).oppositePortClosure
+          target.2.prefixTrail).edges) :
+    edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).oppositePortClosure
+          source.2.prefixTrail).edges := by
+  induction run with
+  | refl => exact hmem
+  | tail run transition ih =>
+      exact ih
+        (transition.target_prefixClosure_offFace_subset_source edge hoff hmem)
+
+/-- Off one fixed face, complete suffix-closure support is antitone along
+every finite certified rebase run. -/
+theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.reflTransGen_suffixClosure_offFace_subset
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    {face : OrbitFace graphData.toRotationSystem}
+    {source target : CrossCentralExactFaceCutState graphData
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)}
+    (run : Relation.ReflTransGen
+      (CrossCentralExactFaceCertifiedRebaseTransitionOnFace graphData
+        minimal baseData face) source target)
+    (edge : G.edgeSet)
+    (hoff : edge ∉ orbitFaceBoundary graphData.toRotationSystem face)
+    (hmem : edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).alternateOppositePortClosure
+          target.2.suffixTrail).edges) :
+    edge.1 ∈
+      ((baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic).alternateOppositePortClosure
+          source.2.suffixTrail).edges := by
+  induction run with
+  | refl => exact hmem
+  | tail run transition ih =>
+      exact ih
+        (transition.target_suffixClosure_offFace_subset_source edge hoff hmem)
+
 /-- Off one fixed face, prefix support is antitone along every finite
 certified rebase run. -/
 theorem CrossCentralExactFaceCertifiedRebaseTransitionOnFace.reflTransGen_prefix_offFace_subset
