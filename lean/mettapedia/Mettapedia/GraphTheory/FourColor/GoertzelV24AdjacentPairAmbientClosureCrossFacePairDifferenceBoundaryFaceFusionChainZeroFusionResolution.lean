@@ -28,7 +28,7 @@ attribute [local instance]
 /-- The irreducible single-cross residual of two sparse fusion lenses. Both
 lenses are zero-fusion simple cycles, the surviving rejected cross has the
 diagonal four-state transfer, and its exact splice pair reaches either strict
-source-cycle descent or the complete finite closed monodromy resolution. -/
+source-cycle descent or the complete finite exact-rebase transition resolution. -/
 structure SparseSingleCrossFusionChainResidual
     (graphData : Data G) (data : AdjacentPairData G)
     {C : (DeletedAdjacentPairGraph G data.firstVertex
@@ -63,7 +63,7 @@ structure SparseSingleCrossFusionChainResidual
         (CrossCentralSourceClosureCycleDescent pair ∨
           (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
               data site.1 pair,
-            witness.FiniteClosedMonodromyOutcome))) ∨
+            witness.FiniteRebaseTransitionOutcome))) ∨
       (∃ (site : lens01.cRoute.CrossSite lens23.bRoute)
           (pair : CrossCentralExactFaceCutPair graphData data site.1),
         EvenKempeFusionLens.cbCrossExitFaceTransferBit
@@ -81,7 +81,7 @@ structure SparseSingleCrossFusionChainResidual
           (CrossCentralSourceClosureCycleDescent pair ∨
             (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
                 data site.1 pair,
-              witness.FiniteClosedMonodromyOutcome)))
+              witness.FiniteRebaseTransitionOutcome)))
 
 /-- The rotation-ordered sparse-cross theorem with its surviving diagonal
 four-state branch refined all the way to exact primal fusion chains. -/
@@ -148,7 +148,7 @@ theorem EvenKempeFusionLens.rotationOrdered_sparseCrossFusionChainResolution_of_
         ⟨pair, hprefix, hsuffix, _houtcome⟩
       exact Or.inl ⟨site, pair, hfalse, hdiagonal, hcbEmpty,
         hprefix, hsuffix,
-        pair.sourceClosureCycleDescent_or_exists_finiteClosedMonodromy
+        pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
           minimal baseData⟩
     · rcases EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_rejected
           graphData minimal baseData lens01 lens23 hdata hab hac hbc
@@ -156,7 +156,7 @@ theorem EvenKempeFusionLens.rotationOrdered_sparseCrossFusionChainResolution_of_
         ⟨pair, hprefix, hsuffix, _houtcome⟩
       exact Or.inr ⟨site, pair, hfalse, hdiagonal, hbcEmpty,
         hprefix, hsuffix,
-        pair.sourceClosureCycleDescent_or_exists_finiteClosedMonodromy
+        pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
           minimal baseData⟩
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData

@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainClosedMonodromy
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseTransition
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeFusionCrossChannelTransferObstruction
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -27,7 +27,7 @@ attribute [local instance]
 
 /-- A nonempty sparse `bc` channel in a rotation-ordered minimal
 counterexample has an unconditional exact normal form: strict source-cycle
-descent, or the complete finite closed monodromy resolution. -/
+descent, or the complete finite exact-rebase transition resolution. -/
 theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -67,7 +67,7 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_o
           (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
               (baseData.rotationOrderedData graphData minimal.spherical.cubic
                 minimal.vertexRotationCyclic) site.1 pair,
-            witness.FiniteClosedMonodromyOutcome)) := by
+            witness.FiniteRebaseTransitionOutcome)) := by
   rcases EvenKempeFusionLens.exists_rotationOrdered_bcCrossExitFaceTransferBit_eq_false_of_minimal
       graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
         hcDisjoint hcount hnonempty with
@@ -77,11 +77,11 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_bcSourceClosureCycleDescent_o
         hcDisjoint hcount site hfalse with
     ⟨pair, hprefix, hsuffix, _houtcome⟩
   exact ⟨site, pair, hprefix, hsuffix,
-    pair.sourceClosureCycleDescent_or_exists_finiteClosedMonodromy
+    pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
       minimal baseData⟩
 
 /-- The symmetric nonempty sparse `cb` channel has the same unconditional
-source-cycle descent or complete finite closed monodromy resolution. -/
+source-cycle descent or complete finite exact-rebase transition resolution. -/
 theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_or_remoteFaceFusionChainResolution_of_minimal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -121,7 +121,7 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_o
           (∃ witness : CrossSideRemoteFusionChainTransferWitness graphData
               (baseData.rotationOrderedData graphData minimal.spherical.cubic
                 minimal.vertexRotationCyclic) site.1 pair,
-            witness.FiniteClosedMonodromyOutcome)) := by
+            witness.FiniteRebaseTransitionOutcome)) := by
   rcases EvenKempeFusionLens.exists_rotationOrdered_cbCrossExitFaceTransferBit_eq_false_of_minimal
       graphData minimal baseData lens01 lens23 hdata hab hac hbc hbDisjoint
         hcDisjoint hcount hnonempty with
@@ -131,7 +131,7 @@ theorem EvenKempeFusionLens.exists_rotationOrdered_cbSourceClosureCycleDescent_o
         hcDisjoint hcount site hfalse with
     ⟨pair, hprefix, hsuffix, _houtcome⟩
   exact ⟨site, pair, hprefix, hsuffix,
-    pair.sourceClosureCycleDescent_or_exists_finiteClosedMonodromy
+    pair.sourceClosureCycleDescent_or_exists_finiteRebaseTransition
       minimal baseData⟩
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData
