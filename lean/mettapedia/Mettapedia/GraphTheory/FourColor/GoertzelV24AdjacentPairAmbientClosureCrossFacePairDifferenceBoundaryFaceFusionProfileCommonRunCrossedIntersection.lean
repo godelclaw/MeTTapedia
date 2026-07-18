@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionProfileCommonRunVertexIntersection
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphTaitBridge
 
 namespace SimpleGraph.Walk
 
@@ -607,6 +608,288 @@ def LocalizedAlignedCommonRunSplice.toCleanFourArms
   suffixIncoming_suffixOutgoing_disjoint :=
     splice.suffixArms_support_disjoint
 
+/-- The three possible incoming-arm states at the common-trunk merge. At
+most one incoming arm can collapse because its two starting ports are
+distinct. -/
+inductive LocalizedCommonRunMergeArmState
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) where
+  | internal
+      (prefix_not_nil : ¬ splice.trunk.prefixIncomingArm.Nil)
+      (suffix_not_nil : ¬ splice.trunk.suffixIncomingArm.Nil)
+  | prefixPort
+      (prefix_nil : splice.trunk.prefixIncomingArm.Nil)
+      (merge_eq_port :
+        (pair.prefixSharedEdgeDart profile.firstRank).fst =
+          data.retainedPort 0)
+      (suffix_not_nil : ¬ splice.trunk.suffixIncomingArm.Nil)
+  | suffixPort
+      (suffix_nil : splice.trunk.suffixIncomingArm.Nil)
+      (merge_eq_port :
+        (pair.prefixSharedEdgeDart profile.firstRank).fst =
+          data.retainedPort 1)
+      (prefix_not_nil : ¬ splice.trunk.prefixIncomingArm.Nil)
+
+/-- The three possible outgoing-arm states at the common-trunk split. At
+most one outgoing arm can collapse because its two ending ports are
+distinct. -/
+inductive LocalizedCommonRunSplitArmState
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) where
+  | internal
+      (prefix_not_nil : ¬ splice.trunk.prefixOutgoingArm.Nil)
+      (suffix_not_nil : ¬ splice.trunk.suffixOutgoingArm.Nil)
+  | prefixPort
+      (prefix_nil : splice.trunk.prefixOutgoingArm.Nil)
+      (split_eq_port :
+        (pair.prefixSharedEdgeDart profile.lastRank).snd =
+          data.retainedPort 2)
+      (suffix_not_nil : ¬ splice.trunk.suffixOutgoingArm.Nil)
+  | suffixPort
+      (suffix_nil : splice.trunk.suffixOutgoingArm.Nil)
+      (split_eq_port :
+        (pair.prefixSharedEdgeDart profile.lastRank).snd =
+          data.retainedPort 3)
+      (prefix_not_nil : ¬ splice.trunk.prefixOutgoingArm.Nil)
+
+/-- Every merge is either internal to both incoming arms or is exactly one
+of their two distinct starting ports. -/
+def LocalizedAlignedCommonRunSplice.mergeArmState
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) :
+    LocalizedCommonRunMergeArmState splice := by
+  by_cases hprefix : splice.trunk.prefixIncomingArm.Nil
+  · have hsuffix : ¬ splice.trunk.suffixIncomingArm.Nil := by
+      intro hsuffix
+      exact (data.retainedPort_injective.ne
+        (by decide : (0 : Fin 4) ≠ 1))
+        (hprefix.eq.trans hsuffix.eq.symm)
+    exact LocalizedCommonRunMergeArmState.prefixPort hprefix
+      hprefix.eq.symm hsuffix
+  · by_cases hsuffix : splice.trunk.suffixIncomingArm.Nil
+    · exact LocalizedCommonRunMergeArmState.suffixPort hsuffix
+        hsuffix.eq.symm hprefix
+    · exact LocalizedCommonRunMergeArmState.internal hprefix hsuffix
+
+/-- Every split is either internal to both outgoing arms or is exactly one
+of their two distinct ending ports. -/
+def LocalizedAlignedCommonRunSplice.splitArmState
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    (splice : LocalizedAlignedCommonRunSplice profile) :
+    LocalizedCommonRunSplitArmState splice := by
+  by_cases hprefix : splice.trunk.prefixOutgoingArm.Nil
+  · have hsuffix : ¬ splice.trunk.suffixOutgoingArm.Nil := by
+      intro hsuffix
+      exact (data.retainedPort_injective.ne
+        (by decide : (2 : Fin 4) ≠ 3))
+        (hprefix.eq.symm.trans hsuffix.eq)
+    exact LocalizedCommonRunSplitArmState.prefixPort hprefix
+      hprefix.eq hsuffix
+  · by_cases hsuffix : splice.trunk.suffixOutgoingArm.Nil
+    · exact LocalizedCommonRunSplitArmState.suffixPort hsuffix
+        hsuffix.eq hprefix
+    · exact LocalizedCommonRunSplitArmState.internal hprefix hsuffix
+
+/-- If both incoming arms are nonempty, the merge is not one of the four
+retained ports. -/
+theorem LocalizedCommonRunCleanFourArms.merge_ne_retainedPort_of_internal
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    {splice : LocalizedAlignedCommonRunSplice profile}
+    (clean : LocalizedCommonRunCleanFourArms splice)
+    (hprefix : ¬ splice.trunk.prefixIncomingArm.Nil)
+    (hsuffix : ¬ splice.trunk.suffixIncomingArm.Nil) :
+    ∀ port : Fin 4,
+      (pair.prefixSharedEdgeDart profile.firstRank).fst ≠
+        data.retainedPort port := by
+  intro port
+  fin_cases port
+  · intro heq
+    exact hprefix ((splice.arms_arePaths.1.nil_iff_eq).2 heq.symm)
+  · intro heq
+    exact hsuffix ((splice.arms_arePaths.2.2.1.nil_iff_eq).2 heq.symm)
+  · intro heq
+    have heq' :
+        (pair.prefixSharedEdgeDart profile.firstRank).fst =
+          data.retainedPort 2 := by simpa using heq
+    exact (List.disjoint_left.mp
+        clean.prefixIncoming_prefixOutgoing_disjoint)
+      (by
+        rw [← heq']
+        exact splice.trunk.prefixIncomingArm.end_mem_support)
+      splice.trunk.prefixOutgoingArm.end_mem_support
+  · intro heq
+    have heq' :
+        (pair.prefixSharedEdgeDart profile.firstRank).fst =
+          data.retainedPort 3 := by simpa using heq
+    exact (List.disjoint_left.mp
+        clean.crossed.prefixIncoming_suffixOutgoing_disjoint)
+      (by
+        rw [← heq']
+        exact splice.trunk.prefixIncomingArm.end_mem_support)
+      splice.trunk.suffixOutgoingArm.end_mem_support
+
+/-- If both outgoing arms are nonempty, the split is not one of the four
+retained ports. -/
+theorem LocalizedCommonRunCleanFourArms.split_ne_retainedPort_of_internal
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    {splice : LocalizedAlignedCommonRunSplice profile}
+    (clean : LocalizedCommonRunCleanFourArms splice)
+    (hprefix : ¬ splice.trunk.prefixOutgoingArm.Nil)
+    (hsuffix : ¬ splice.trunk.suffixOutgoingArm.Nil) :
+    ∀ port : Fin 4,
+      (pair.prefixSharedEdgeDart profile.lastRank).snd ≠
+        data.retainedPort port := by
+  intro port
+  fin_cases port
+  · intro heq
+    have heq' :
+        (pair.prefixSharedEdgeDart profile.lastRank).snd =
+          data.retainedPort 0 := by simpa using heq
+    exact (List.disjoint_left.mp
+        clean.prefixIncoming_prefixOutgoing_disjoint)
+      splice.trunk.prefixIncomingArm.start_mem_support
+      (by
+        rw [← heq']
+        exact splice.trunk.prefixOutgoingArm.start_mem_support)
+  · intro heq
+    have heq' :
+        (pair.prefixSharedEdgeDart profile.lastRank).snd =
+          data.retainedPort 1 := by simpa using heq
+    exact (List.disjoint_left.mp
+        clean.suffixIncoming_suffixOutgoing_disjoint)
+      splice.trunk.suffixIncomingArm.start_mem_support
+      (by
+        rw [← heq']
+        exact splice.trunk.suffixOutgoingArm.start_mem_support)
+  · intro heq
+    exact hprefix ((splice.arms_arePaths.2.1.nil_iff_eq).2 heq)
+  · intro heq
+    exact hsuffix ((splice.arms_arePaths.2.2.2.nil_iff_eq).2 heq)
+
+/-- The retained degree prescribed by a merge-arm state. -/
+def LocalizedCommonRunMergeArmState.retainedDegree
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    {splice : LocalizedAlignedCommonRunSplice profile} :
+    LocalizedCommonRunMergeArmState splice → Nat
+  | .internal _ _ => 3
+  | .prefixPort _ _ _ => 2
+  | .suffixPort _ _ _ => 2
+
+/-- The retained degree prescribed by a split-arm state. -/
+def LocalizedCommonRunSplitArmState.retainedDegree
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    {splice : LocalizedAlignedCommonRunSplice profile} :
+    LocalizedCommonRunSplitArmState splice → Nat
+  | .internal _ _ => 3
+  | .prefixPort _ _ _ => 2
+  | .suffixPort _ _ _ => 2
+
+/-- In a cubic ambient graph, the merge has exactly the retained degree
+specified by its internal-or-port state. -/
+theorem LocalizedCommonRunCleanFourArms.merge_incidentEdgeFinset_card
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    {splice : LocalizedAlignedCommonRunSplice profile}
+    (clean : LocalizedCommonRunCleanFourArms splice)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (state : LocalizedCommonRunMergeArmState splice) :
+    (incidentEdgeFinset
+      (DeletedAdjacentPairGraph G data.firstVertex data.secondVertex)
+      (pair.prefixSharedEdgeDart profile.firstRank).fst).card =
+        state.retainedDegree := by
+  have hambient : ∀ vertex : V,
+      (incidentEdgeFinset G vertex).card = 3 :=
+    GoertzelV24SimpleGraphTaitBridge.incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
+      graphData hcubic
+  have hwell := data.degreeTwoBoundaryData_wellFormed hambient
+  cases state with
+  | internal hprefix hsuffix =>
+      exact hwell.2.2 _
+        (clean.merge_ne_retainedPort_of_internal hprefix hsuffix)
+  | prefixPort _ heq _ =>
+      rw [heq]
+      exact hwell.2.1 0
+  | suffixPort _ heq _ =>
+      rw [heq]
+      exact hwell.2.1 1
+
+/-- In a cubic ambient graph, the split has exactly the retained degree
+specified by its internal-or-port state. -/
+theorem LocalizedCommonRunCleanFourArms.split_incidentEdgeFinset_card
+    {graphData : Data G} {data : AdjacentPairData G}
+    {pair : RetainedIntersectionExactFaceCutPair graphData data}
+    {oldCross : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).edgeSet}
+    {face : OrbitFace graphData.toRotationSystem}
+    {profile : LocalizedAlignedSharedEdgeProfile pair oldCross face}
+    {splice : LocalizedAlignedCommonRunSplice profile}
+    (clean : LocalizedCommonRunCleanFourArms splice)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (state : LocalizedCommonRunSplitArmState splice) :
+    (incidentEdgeFinset
+      (DeletedAdjacentPairGraph G data.firstVertex data.secondVertex)
+      (pair.prefixSharedEdgeDart profile.lastRank).snd).card =
+        state.retainedDegree := by
+  have hambient : ∀ vertex : V,
+      (incidentEdgeFinset G vertex).card = 3 :=
+    GoertzelV24SimpleGraphTaitBridge.incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
+      graphData hcubic
+  have hwell := data.degreeTwoBoundaryData_wellFormed hambient
+  cases state with
+  | internal hprefix hsuffix =>
+      exact hwell.2.2 _
+        (clean.split_ne_retainedPort_of_internal hprefix hsuffix)
+  | prefixPort _ heq _ =>
+      rw [heq]
+      exact hwell.2.1 2
+  | suffixPort _ heq _ =>
+      rw [heq]
+      exact hwell.2.1 3
+
 /-- Every four-arm splice either contains a support-certified cycle in
 a crossed arm pair, closed through the common trunk, or both crossed arm
 pairs have disjoint vertex supports. -/
@@ -701,6 +984,8 @@ inductive LocalizedFusionChainCrossedResolution
       (profile : LocalizedAlignedSharedEdgeProfile pair oldCross face)
       (splice : LocalizedAlignedCommonRunSplice profile)
       (clean : Nonempty (LocalizedCommonRunCleanFourArms splice))
+      (mergeState : LocalizedCommonRunMergeArmState splice)
+      (splitState : LocalizedCommonRunSplitArmState splice)
   | alignedBubbleCycle
       (profile : LocalizedAlignedSharedEdgeProfile pair oldCross face)
       (bubble : Nonempty (LocalizedAlignedBubblePrimalCycle profile))
@@ -732,7 +1017,8 @@ theorem LocalizedFusionChainVertexResolution.nonempty_crossedResolution
       · rcases parallel with ⟨parallel⟩
         rcases crossed with ⟨crossed⟩
         exact ⟨LocalizedFusionChainCrossedResolution.cleanFourArms
-          profile splice ⟨splice.toCleanFourArms parallel crossed⟩⟩
+          profile splice ⟨splice.toCleanFourArms parallel crossed⟩
+            splice.mergeArmState splice.splitArmState⟩
   | alignedBubbleCycle profile bubble =>
       exact ⟨LocalizedFusionChainCrossedResolution.alignedBubbleCycle
         profile bubble⟩
