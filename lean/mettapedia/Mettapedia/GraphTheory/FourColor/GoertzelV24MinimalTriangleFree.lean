@@ -1,6 +1,6 @@
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutAttachment
-import Mettapedia.GraphTheory.FourColor.GoertzelV24RecoveredAdjacentPairData
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RecoveredAdjacentPairFusionChainNormalForm
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphTaitBridge
 
@@ -13,6 +13,7 @@ open GoertzelV24AdjacentPairBoundary.AdjacentPairData
 open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24RecoveredAdjacentPairData
+open GoertzelV24RecoveredAdjacentPairFusionChainNormalForm
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24SimpleGraphTaitBridge
 open GoertzelV24TwoEdgeCutMinimality
@@ -487,6 +488,22 @@ theorem exists_cyclicKempeTransferProfile_of_cyclicallyFive
   exact (exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
     graphData minimal hcyclic hadj).hasCyclicKempeTransferProfile
       graphData minimal
+
+/-- Every adjacent pair in cyclic five-edge-connected minimal normal form
+therefore reaches the complete rotation-ordered fusion-chain resolution:
+a strict primal circuit, disjoint fusion supports, or the certified
+single-cross rebase-pumping residual. -/
+theorem exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_cyclicallyFive
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {first second : V} (hadj : G.Adj first second) :
+    HasRotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal first second := by
+  exact hasRotationOrderedFusionChainNormalForm_of_cyclicKempeTransferProfile
+    graphData minimal
+      (exists_cyclicKempeTransferProfile_of_cyclicallyFive
+        graphData minimal hcyclic hadj)
 
 end
 

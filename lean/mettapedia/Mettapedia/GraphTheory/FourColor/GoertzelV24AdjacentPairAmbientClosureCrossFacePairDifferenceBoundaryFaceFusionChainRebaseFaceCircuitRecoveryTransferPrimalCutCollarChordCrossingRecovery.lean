@@ -15,6 +15,7 @@ open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24MinimalTriangleFree
 open GoertzelV24RecoveredAdjacentPairData
+open GoertzelV24RecoveredAdjacentPairFusionChainNormalForm
 open GoertzelV24TwoEdgeCutMinimality
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -88,8 +89,8 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
                   crossingEdgeFinset G
                       (fun vertex => vertex ∈ component.supp) =
                     removed ∧
-                  HasCyclicKempeTransferProfile
-                    graphData first second ∧
+                  HasRotationOrderedCyclicKempeFusionChainNormalForm
+                    graphData minimal first second ∧
                   ∃ internalEdge : G.edgeSet,
                     ∃ leftFace rightFace : AmbientFace
                         (Finset.univ : Finset
@@ -239,7 +240,7 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
           hwalkLength hadj hpairBoundary
   dsimp only at hstars
   have htransfer :=
-    exists_cyclicKempeTransferProfile_of_cyclicallyFive
+    exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_cyclicallyFive
       graphData minimal hcyclic hadj
   refine ⟨hrebaseLength, walk, hcycle, hdelete, hcutCard, ?_, hcentral,
     hboundary⟩
