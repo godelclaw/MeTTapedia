@@ -863,6 +863,22 @@ constructs the relation operator; it does not infer its rank or the rank of
 the combined quotient.  The higher $\mathrm{SU}(2)$ trace identities are
 supplied next as independent row schemas.
 
+A literal seven-field, two-derivative instance proves that this
+cross-sector coupling survives both exact contextual normalization and
+simultaneous field relabeling.  Its two eight-field curvature insertions are
+identified by independent fixed-width witnesses with two distinct entries of
+the checked positive orbit chart.  The eight-field part of the corresponding
+physical-relation column is exactly
+\[
+  -e_{10513}+e_{10515},
+\]
+and its signed Reynolds average is nonzero by off-diagonal orbit separation
+and the nonzero diagonal coefficient theorem.  Hence the descended physical
+relation operator is not block diagonal in field count: the derivative-free
+eight-field trace quotient cannot replace the joint dimension-sixteen
+physical quotient without the incoming commutator block
+(\texttt{HypercubicDimension16CovariantCompressionWall}).
+
 \paragraph{Our $\mathrm{SU}(2)$ trace rows include genuine multitrace
 rewiring.}
 \textsc{Ours.} For traceless $2\times2$ matrices the polarized
@@ -941,6 +957,74 @@ $\mathbb Q$ theorem above remains the semantic rank result, and the modular
 checks do not by themselves certify exhaustive generation of the physical
 relation operator.
 
+The independently defined target does not use the encoded coordinate table.
+On the genuine eight-field field-relabel orbit module, we
+take the span of the literal signed-orbit rows $v-hv$.  This span is proved to
+be exactly the kernel of the Reynolds projector: the forward inclusion uses
+right invariance of the group average, while the reverse inclusion writes
+$v-Pv$ as the average of the rows $v-hv$.  Consequently the signed
+coinvariant quotient is linearly equivalent to the previously constructed
+Reynolds-invariant subspace and has finrank exactly $11{,}654$
+(\texttt{HypercubicDimension16SignedOrbitCoinvariants}).  The encoded orbit
+chart is proved below to coordinatize this independently defined standard
+quotient; it does not define the quotient by its own table.
+
+We also constructed independent one-way invariants for the encoded chart.
+For each field label the first records the eight successive oriented-plane
+colors around the literal trace permutation, together with all eight
+return-to-start bits, as a base-twelve rooted code.  Both the sorted multiset
+of the eight codes and the standard symmetric polynomial
+\[
+  \prod_{f=1}^{8}(1+c_f)
+\]
+are proved invariant under simultaneous field relabeling before they are
+descended to the genuine orbit carrier.  Reflections do not change the plane
+transport, so minimization requires only the $24$ unsigned coordinate
+permutations; the resulting minimum is proved invariant under the full
+literal hypercubic group
+(\texttt{HypercubicDimension16TraceOrbitSignature}).  Distinct minima
+therefore certify distinct genuine carrier orbits, but no converse or
+completeness property is assumed.
+
+The fixed-width payload contains $11{,}654$ product-signature minima, all
+distinct.  It stores the values in representative order and strictly sorted
+order together with mutually inverse rank tables.  The kernel replay is
+partitioned into $182$ ranges of $64$ representatives and one final range of
+$6$; each range recomputes all $24$ unsigned images directly from the checked
+trace permutation and plane colors.  The global certificate separately checks
+the rank inverse and the sorted table in eleven $1024$-entry blocks and one
+$390$-entry tail; the same bounded replay checks all $11{,}653$ adjacent
+strict inequalities before using the one-way orbit theorem
+(\texttt{HypercubicDimension16TraceOrbitProductSignatureCertificate}).
+Exhaustivity of the chart remains a separate obligation.
+
+For the stabilizer sign, an even coarser standard invariant suffices.  The six
+plane multiplicities are defined on the labeled carrier, proved invariant
+under field relabeling, and descended to the genuine orbit carrier.  Exact
+enumeration gives $32{,}940$ unsigned plane-histogram stabilizer pairs and no
+negative tensor sign; every representative also has even incidence at each
+coordinate axis.  The two-form tensor sign factors exactly into its unsigned
+permutation part and its pure-reflection part.  Accordingly, the bounded
+certificate checks the $16$ pure reflections and the $24$ unsigned
+plane-histogram implications separately for each representative; the
+factorization then supplies all $384$ signed elements.  This tests only a
+necessary condition for an actual stabilizer and assumes completeness of
+neither the plane histogram, the rooted code, nor the product signature
+(\texttt{HypercubicDimension16TraceOrbitPlaneHistogram},
+\texttt{HypercubicDimension16TraceOrbitHistogramSignCertificate}).
+
+For each decoded target, take the Reynolds average of its standard coordinate
+vector.  Pairwise orbit separation makes the evaluation matrix of these
+vectors diagonal, and positive stabilizers make every diagonal entry a
+strictly positive rational number.  The $11{,}654$ Reynolds vectors are
+therefore linearly independent.  Their cardinality equals the independently
+proved finrank $11{,}654$ of the invariant subspace, so they form a basis;
+transport through the Reynolds equivalence gives a basis of the standard
+signed coinvariant quotient
+(\texttt{HypercubicDimension16TraceOrbitBasis}).  This proves that the chart
+coordinatizes the independently defined quotient rather than defining it by
+enumeration.
+
 Every selected raw row is now proved to have support inside the finite
 $11{,}654$-coordinate ambient module.  Restriction to that module preserves
 linear independence, so rank--nullity gives dimension $98$ for the quotient by
@@ -950,11 +1034,59 @@ free images form a basis of the selected-row quotient, and the corresponding
 $98\times98$ analysis matrix is exactly the identity
 (\texttt{HypercubicDimension16TraceFiniteQuotient}).
 
-This is still not the physical-quotient theorem.  Every encoded row must be
-identified with an exhaustive family of rows of the descended physical trace
-operator.  Until that semantic and exhaustive bridge is proved, $98$ is the
-dimension and identity conditioning of the certified selected-row quotient,
-not an asserted dimension or conditioning of the physical quotient.
+Every selected encoded row is also identified with an actual Reynolds image
+of a literal standard trace row.  The certificate decodes the stored source
+term, field relabeling, hypercubic transport, tensor sign, and integer
+coefficient of each nonzero coordinate.  Thirty ranges of $256$ witnesses
+cover the $7680$ one-letter traceless rows; sixty ranges of $64$ witnesses and
+one range of $36$ cover the $3876$ six-term fundamental rows.  A separate
+finite coefficient replay is proved equal to the corresponding semantic
+finitely supported vectors, so the checked payload cannot introduce a new
+relation by its encoding.  Consequently the $11{,}556$-dimensional selected
+span is a subspace of the genuine standard trace-relation span
+(\texttt{HypercubicDimension16PhysicalTraceWitnessBridge}).
+
+Independently of that finite selection, the genuine eight-field orbit module
+carries the three literal standard $\mathrm{SU}(2)$ trace schemas:
+one-letter tracelessness, the polarized Cayley--Hamilton anticommutator row,
+and the six-term fundamental $2\times2$ trace row.  Their signed $H(4)$
+intertwining law is proved before any rank computation.  Each of the $98$
+rational plane-matrix assignments is kernel-checked to be traceless, and
+ordinary product-of-traces evaluation annihilates every row in all three
+families, including after arbitrary hypercubic transport
+(\texttt{HypercubicDimension16FieldEightPhysicalTrace},
+\texttt{HypercubicDimension16PhysicalTraceEvaluationInvariant}).  Their
+full $98\times98$ evaluation matrix is checked together with an
+exact rational inverse.  The resulting $98$ annihilation functionals are
+independent on the certified free classes, giving the opposite rank
+inequality to the selected-row inclusion.  Therefore the complete literal
+standard trace-relation submodule has finrank $11{,}556$, its derivative-free
+eight-field quotient has finrank exactly $98$, and the certified free classes
+form an honest quotient basis
+(\texttt{HypercubicDimension16PhysicalTraceEvaluationCertificate},
+\texttt{HypercubicDimension16PhysicalTraceQuotient}).
+
+The genuine $384$-element Reynolds normalization makes the public evaluation
+matrix equal to the stored unsigned matrix divided by $24$.  Its exact dual
+is consequently $24$ times the stored inverse.  These duals are proved
+biorthogonal to the $98$ free classes and reconstruct every quotient vector.
+The sharp coefficient-sup analysis constant is
+\[
+  \frac{14739388451343}{30664304},
+\]
+attained by row $30$
+(\texttt{HypercubicDimension16PhysicalTracePublicConditioning}).  If the
+previously isolated fluctuation, cumulant, and recombination hypotheses are
+transported unchanged to this evaluation-sup norm, the conditioned ledger is
+\[
+  \frac{928581472434609}{1742290}.
+\]
+At block factor two its least linear contraction depth is $32$, and its least
+two-source closing depth is $34$
+(\texttt{HypercubicDimension16TraceEvaluationBootstrap}).  This last
+arithmetic is conditional and concerns only the derivative-free trace
+sector; it supplies neither the derivative-coupled joint quotient nor an
+interacting Wilson-RG estimate.
 
 \paragraph{Our quantitative restoration theorem is tree-level and
 constant-Cartan.}
@@ -1255,8 +1387,13 @@ claim that the manuscript already contains the needed census.
     complement order, an $F_{ab}$ letter is inserted on either side of that
     field in its trace cycle, and the four-term commutator row preserves
     canonical dimension and active tensor sign.  Its signed-$H(4)$
-    intertwining law is checked
-    (\texttt{HypercubicDimension16CovariantCommutator}).
+    intertwining law is checked.  For an explicit seven-field,
+    two-derivative column, the two successor terms occupy distinct checked
+    orbit coordinates, its exact eight-field component is nonzero, and its
+    Reynolds projection remains nonzero.  Thus the physical operator is
+    provably not block diagonal in field count
+    (\texttt{HypercubicDimension16CovariantCommutator},
+    \texttt{HypercubicDimension16CovariantCompressionWall}).
   \item \textbf{The $\mathrm{SU}(2)$ trace identities rewire the actual trace
     permutation.} The traceless anticommutator row splits an adjacent pair
     into a two-cycle and reconnects its context.  The six-term fundamental
@@ -1264,6 +1401,20 @@ claim that the manuscript already contains the needed census.
     three selected edges.  Both semantic matrix identities and both signed
     $H(4)$ intertwining laws are checked
     (\texttt{HypercubicDimension16SU2TraceRelations}).
+  \item \textbf{The derivative-free eight-field standard trace quotient is
+    complete.} The independently checked orbit chart has $11{,}654$
+    coordinates.  A literal $11{,}556$-row standard trace subfamily is
+    linearly independent, while $98$ ordinary traceless-matrix evaluations
+    annihilate every standard trace row and have an exact rational inverse on
+    the free classes.  Hence the complete standard trace submodule has
+    finrank $11{,}556$ and its quotient has finrank $98$.  The free classes
+    form a basis with explicit public duals.  In genuine Reynolds
+    normalization the sharp row-$\ell^1$ dual constant is
+    $14739388451343/30664304$, attained at row $30$.  This is the
+    derivative-free trace quotient, not the derivative-coupled joint physical
+    quotient
+    (\texttt{HypercubicDimension16PhysicalTraceQuotient},
+    \texttt{HypercubicDimension16PhysicalTracePublicConditioning}).
   \item \textbf{The first honest cycle-index compression target remains
     enormous.} For our explicitly defined cycle-index expression---oriented
     two-form letters, one ordered local derivative word per field, and
@@ -1479,10 +1630,16 @@ claim that the manuscript already contains the needed census.
     fundamental trace row are proved to lie in the kernel of this ordinary
     matrix semantics.  The anticommutator proof uses polarized
     Cayley--Hamilton entrywise; the fundamental proof is the vanishing
-    alternating $3\times3$ minor with only two matrix-index columns.  These
-    theorems certify soundness of the implemented trace rows, not completeness
-    of their span.  The joint blockwise physical rank and quotient
-    conditioning remain.  The
+    alternating $3\times3$ minor with only two matrix-index columns.  The
+    checked $98\times98$ evaluation inverse supplies the matching lower
+    bound, so the complete derivative-free standard trace submodule has
+    finrank $11{,}556$ and its quotient has finrank $98$, with explicit exact
+    dual conditioning.  This does not close the joint physical quotient: a
+    certified seven-field commutator column has a nonzero eight-field
+    successor component and nonzero Reynolds image, so the field sectors
+    cannot be quotiented independently.  The remaining finite problem is the
+    joint rank and conditioning after Bianchi, EOM, IBP, commutator, and trace
+    rows are assembled across all sectors.  The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
@@ -1514,15 +1671,21 @@ three different situations.
     dimensions; on the genuine eight-field orbit module the corresponding
     scalar invariant dimension is now exactly $11{,}654$, and the Cartan
     octic restriction supplies exact duals and factor-one conditioning.
-    Neither result imposes the full noncommutative
-    relation quotient.  Equivariant sparse maps for antisymmetry, Bianchi,
+    The complete derivative-free eight-field standard trace quotient is
+    separately proved to have dimension $98$, with exact evaluation duals and
+    their sharp conditioning constant.  Equivariant sparse maps for
+    antisymmetry, Bianchi,
     on-shell EOM, integrated-by-parts, the covariant-derivative commutator,
     tracelessness, and the fundamental $2\times2$ trace identity are now
     constructed on that carrier.  Ordinary two-by-two matrix semantics now
     annihilates the implemented traceless, adjacent-anticommutator, and
-    fundamental trace rows exactly.  \emph{What settles it:} certify their joint
-    sectorwise rank and a dual basis of the resulting quotient without
-    replacing the relations by a desired answer; and extend the classical
+    fundamental trace rows exactly, and the inverse evaluation certificate
+    proves completeness of their derivative-free quotient.  A nonzero
+    seven-to-eight commutator block proves that this result cannot be promoted
+    by treating field sectors independently.  \emph{What settles it:} certify
+    the joint cross-sector rank and a dual basis after all standard rows are
+    assembled, without replacing the relations by a desired answer; and
+    extend the classical
     constant-Cartan $O(a^4)$ estimate to uniform interacting Wilson
     observables. Then prove the weighted Wilson
     cumulant/tree estimate and Wilson-RG intertwining law on that same object.
@@ -1648,9 +1811,26 @@ rows, its signed $H(4)$ representation and intertwining law, and the descended
 physical-relation operator with invariant range), and
 \texttt{HypercubicDimension16PhysicalRelationBlocks} (the exact
 source/successor field-sector support and its descent through both quotient
-maps), \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
+maps), and \texttt{HypercubicDimension16CovariantCompressionWall} (the
+explicit nonzero seven-to-eight commutator block and the resulting
+field-count block-diagonal obstruction),
+\texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
-implemented trace-relation families), and
+implemented trace-relation families),
+\texttt{HypercubicDimension16SignedOrbitCoinvariants},
+\texttt{HypercubicDimension16TraceOrbitBasis}, and
+\texttt{HypercubicDimension16TraceRankTheorem} (the independently defined
+signed quotient, its checked orbit basis, and exact sparse row rank),
+\texttt{HypercubicDimension16PhysicalTraceWitnessBridge},
+\texttt{HypercubicDimension16PhysicalTraceEvaluationCertificate}, and
+\texttt{HypercubicDimension16PhysicalTraceEvaluationReynolds} (literal-row
+semantics, the exact $98\times98$ inverse, and genuine Reynolds
+normalization), and
+\texttt{HypercubicDimension16PhysicalTraceQuotient},
+\texttt{HypercubicDimension16PhysicalTracePublicConditioning}, and
+\texttt{HypercubicDimension16TraceEvaluationBootstrap} (the complete
+derivative-free standard trace quotient, exact public duals, sharp
+conditioning, and conditional depth arithmetic), and
 \texttt{WeightedOrbitBurnside} with
 \texttt{HypercubicDimension16OrbitCharacter} (the general weighted quotient
 identity and its specialization to the actual signed orbit character),
