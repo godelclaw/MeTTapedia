@@ -134,6 +134,29 @@ theorem walkEdgeParity_apply_eq_one_iff_mem_edges_of_isTrail
     exact zero_ne_one hone
   · exact walkEdgeParity_apply_eq_one_of_isTrail_of_mem_edges htrail edge
 
+omit [Fintype V] [DecidableRel G.Adj] in
+/-- Two trails have the same binary parity at an edge whenever they agree
+on whether that edge occurs. -/
+theorem walkEdgeParity_apply_eq_of_isTrail_of_mem_edges_iff
+    {firstStart firstFinish secondStart secondFinish : V}
+    {first : G.Walk firstStart firstFinish}
+    {second : G.Walk secondStart secondFinish}
+    (hfirst : first.IsTrail) (hsecond : second.IsTrail)
+    (edge : G.edgeSet)
+    (hmem : edge.1 ∈ first.edges ↔ edge.1 ∈ second.edges) :
+    walkEdgeParity first edge = walkEdgeParity second edge := by
+  by_cases hfirstMem : edge.1 ∈ first.edges
+  · have hsecondMem := hmem.1 hfirstMem
+    rw [walkEdgeParity_apply_eq_one_of_isTrail_of_mem_edges
+        hfirst edge hfirstMem,
+      walkEdgeParity_apply_eq_one_of_isTrail_of_mem_edges
+        hsecond edge hsecondMem]
+  · have hsecondNot : edge.1 ∉ second.edges := by
+      intro hsecondMem
+      exact hfirstMem (hmem.2 hsecondMem)
+    rw [walkEdgeParity_apply_eq_zero_of_not_mem_edges first edge hfirstMem,
+      walkEdgeParity_apply_eq_zero_of_not_mem_edges second edge hsecondNot]
+
 end
 
 end GoertzelV24WalkCycleParity
