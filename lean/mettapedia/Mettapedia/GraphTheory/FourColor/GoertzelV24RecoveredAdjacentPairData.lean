@@ -1,4 +1,3 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutCollarChordCrossingRecovery
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCyclicOrder
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -354,6 +353,25 @@ def adjacentPairData
   firstNeighbors := firstNeighbors_eq graphData hadj hcubic hrotation
   secondNeighbors := secondNeighbors_eq graphData hadj hcubic hrotation
 
+/-- A recovered adjacent pair has a canonical ordered four-port boundary
+together with a Tait coloring of its two-vertex deletion whose boundary
+word is compatible with the planar square reduction. -/
+def HasCyclicallyOrderedCompatibleDeletedColoring
+    (graphData : Data G) (first second : V) : Prop :=
+  ∃ ordered : AdjacentPairData G,
+    ordered.firstVertex = first ∧
+    ordered.secondVertex = second ∧
+    ordered.PortsFollowCyclicDeletedBoundaryOrder graphData ∧
+    ∃ deletedColoring :
+        (DeletedAdjacentPairGraph G ordered.firstVertex
+          ordered.secondVertex).EdgeColoring Color,
+      IsTaitEdgeColoring
+          (DeletedAdjacentPairGraph G ordered.firstVertex
+            ordered.secondVertex)
+          deletedColoring ∧
+        SquareReductionSide.join01_23.Compatible
+          (ordered.degreeTwoBoundaryData.colorWord deletedColoring)
+
 /-- The canonical adjacent-pair boundary enters the existing planar square
 reduction and supplies its exact compatible deleted coloring. -/
 theorem exists_cyclicallyOrdered_deletedColoring_of_no_common_neighbor
@@ -362,19 +380,9 @@ theorem exists_cyclicallyOrdered_deletedColoring_of_no_common_neighbor
     {first second : V} (hadj : G.Adj first second)
     (hnoCommon : ∀ common,
       G.Adj first common → G.Adj second common → False) :
-    ∃ ordered : AdjacentPairData G,
-      ordered.firstVertex = first ∧
-      ordered.secondVertex = second ∧
-      ordered.PortsFollowCyclicDeletedBoundaryOrder graphData ∧
-      ∃ deletedColoring :
-          (DeletedAdjacentPairGraph G ordered.firstVertex
-            ordered.secondVertex).EdgeColoring Color,
-        IsTaitEdgeColoring
-            (DeletedAdjacentPairGraph G ordered.firstVertex
-              ordered.secondVertex)
-            deletedColoring ∧
-          SquareReductionSide.join01_23.Compatible
-            (ordered.degreeTwoBoundaryData.colorWord deletedColoring) := by
+    HasCyclicallyOrderedCompatibleDeletedColoring
+      graphData first second := by
+  unfold HasCyclicallyOrderedCompatibleDeletedColoring
   let data := adjacentPairData graphData hadj minimal.spherical.cubic
     minimal.vertexRotationCyclic hnoCommon
   rcases data.exists_cyclicallyOrdered_deletedColoring_join01_23_compatible

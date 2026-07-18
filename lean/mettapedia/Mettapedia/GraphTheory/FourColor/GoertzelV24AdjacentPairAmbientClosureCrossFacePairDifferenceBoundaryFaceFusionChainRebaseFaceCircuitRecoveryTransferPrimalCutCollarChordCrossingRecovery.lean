@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutCollarChordCrossing
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalTriangleFree
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -12,6 +13,8 @@ open GoertzelV24FourDefectBoundary
 open GoertzelV24MinimalFaceIntersections
 open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24MinimalTriangleFree
+open GoertzelV24RecoveredAdjacentPairData
 open GoertzelV24TwoEdgeCutMinimality
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -45,7 +48,8 @@ variable {rebaseCircuit :
   CrossCentralExactFaceCertifiedRebaseCircuit graphData minimal baseData}
 
 /-- Short saturated recovery yields a remote exact adjacent-pair collar
-whose chord triangles cut off precisely the two endpoint stars. -/
+whose chord triangles cut off precisely the two endpoint stars and whose
+rotation-ordered deletion has a compatible Tait coloring. -/
 theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
     (hcyclic : CyclicallyFiveEdgeConnected G)
     (circuit : ClosureRecoveryFaceTransferCircuit rebaseCircuit)
@@ -84,6 +88,8 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
                   crossingEdgeFinset G
                       (fun vertex => vertex ∈ component.supp) =
                     removed ∧
+                  HasCyclicallyOrderedCompatibleDeletedColoring
+                    graphData first second ∧
                   ∃ internalEdge : G.edgeSet,
                     ∃ leftFace rightFace : AmbientFace
                         (Finset.univ : Finset
@@ -232,11 +238,14 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
         (pairwiseUniqueSharedInteriorEdges graphData minimal) walk hcycle
           hwalkLength hadj hpairBoundary
   dsimp only at hstars
+  have htransfer :=
+    exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
+      graphData minimal hcyclic hadj
   refine ⟨hrebaseLength, walk, hcycle, hdelete, hcutCard, ?_, hcentral,
     hboundary⟩
   dsimp only
   exact ⟨component, first, second, hfirstSecond, hsupp, hadj,
-    hcomponentBoundary, hstars⟩
+    hcomponentBoundary, htransfer, hstars⟩
 
 end ClosureRecoveryFaceTransferCircuit
 
