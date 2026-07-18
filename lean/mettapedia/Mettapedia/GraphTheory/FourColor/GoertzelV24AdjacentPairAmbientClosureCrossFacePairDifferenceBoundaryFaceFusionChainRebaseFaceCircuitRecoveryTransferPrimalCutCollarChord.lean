@@ -151,13 +151,16 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
       firstTriangle.IsCycle ∧ firstTriangle.length = 3 ∧
         secondTriangle.IsCycle ∧ secondTriangle.length = 3 ∧
         s(left, right) ∈ firstTriangle.edges ∧
-        s(left, right) ∈ secondTriangle.edges := by
+        s(left, right) ∈ secondTriangle.edges ∧
+        ∃ firstOnly : Sym2 W,
+          firstOnly ∈ firstTriangle.edges ∧
+            firstOnly ∉ secondTriangle.edges := by
   classical
   rcases exists_opposite_getVert_of_isCycle_of_length_eq_four_of_isChord
       hcycle hlength hchord with
     ⟨step, hleftPosition, hrightPosition⟩
   rcases (SimpleGraph.Walk.isChord_sym2Mk.1 hchord) with
-    ⟨hleftRight, _hnotEdge, _hleftSupport, _hrightSupport⟩
+    ⟨hleftRight, hnotEdge, _hleftSupport, _hrightSupport⟩
   let next := finRotate walk.length step
   let opposite := finRotate walk.length next
   let previous := finRotate walk.length opposite
@@ -197,6 +200,56 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
       getVert_succ_eq_getVert_finRotate_of_isCycle hcycle previous
     rw [hsuccessor, hclose] at hadj
     simpa [secondMiddle, previous, hleftPosition] using hadj
+  have hstepEdge :
+      walk.edges.get (Fin.cast walk.length_edges.symm step) =
+        s(left, firstMiddle) := by
+    rw [edges_get_cast_eq_s_getVert,
+      getVert_succ_eq_getVert_finRotate_of_isCycle hcycle]
+    simp [firstMiddle, next, hleftPosition]
+  have hoppositeEdge :
+      walk.edges.get (Fin.cast walk.length_edges.symm opposite) =
+        s(right, secondMiddle) := by
+    rw [edges_get_cast_eq_s_getVert,
+      getVert_succ_eq_getVert_finRotate_of_isCycle hcycle]
+    simp [secondMiddle, previous, hrightAtOpposite]
+  have hpreviousEdge :
+      walk.edges.get (Fin.cast walk.length_edges.symm previous) =
+        s(secondMiddle, left) := by
+    rw [edges_get_cast_eq_s_getVert,
+      getVert_succ_eq_getVert_finRotate_of_isCycle hcycle, hclose]
+    simp [secondMiddle, hleftPosition]
+  have hstepNeOpposite : step ≠ opposite := by
+    intro hsteps
+    have hvalues := congrArg Fin.val hsteps
+    simp only [opposite, next, finRotate_apply, Fin.val_add,
+      Fin.val_one', hlength] at hvalues
+    omega
+  have hstepNePrevious : step ≠ previous := by
+    intro hsteps
+    have hvalues := congrArg Fin.val hsteps
+    simp only [previous, opposite, next, finRotate_apply, Fin.val_add,
+      Fin.val_one', hlength] at hvalues
+    omega
+  have hgetInjective : Function.Injective walk.edges.get :=
+    List.nodup_iff_injective_get.mp hcycle.edges_nodup
+  have hfirstNeChord : s(left, firstMiddle) ≠ s(left, right) := by
+    intro hedges
+    apply hnotEdge
+    rw [← hedges]
+    exact hstepEdge ▸ List.get_mem walk.edges
+      (Fin.cast walk.length_edges.symm step)
+  have hfirstNeOpposite :
+      s(left, firstMiddle) ≠ s(right, secondMiddle) := by
+    intro hedges
+    apply hstepNeOpposite
+    exact Fin.cast_injective walk.length_edges.symm
+      (hgetInjective (hstepEdge.trans (hedges.trans hoppositeEdge.symm)))
+  have hfirstNePrevious :
+      s(left, firstMiddle) ≠ s(secondMiddle, left) := by
+    intro hedges
+    apply hstepNePrevious
+    exact Fin.cast_injective walk.length_edges.symm
+      (hgetInjective (hstepEdge.trans (hedges.trans hpreviousEdge.symm)))
   let firstTriangle : H.Walk left left :=
     .cons hleftFirstMiddle
       (.cons hfirstMiddleRight (.cons hleftRight.symm .nil))
@@ -216,7 +269,10 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
   exact ⟨firstTriangle, secondTriangle, hfirstCycle, by simp [firstTriangle],
     hsecondCycle, by simp [secondTriangle], by
       simp [firstTriangle, Sym2.eq_swap], by
-      simp [secondTriangle, Sym2.eq_swap]⟩
+      simp [secondTriangle, Sym2.eq_swap],
+    s(left, firstMiddle), by simp [firstTriangle], by
+      simp [secondTriangle, hfirstNeChord, hfirstNeOpposite,
+        hfirstNePrevious]⟩
 
 end GoertzelV24DualCycleChord
 
@@ -500,7 +556,13 @@ theorem exists_internal_chord_two_triangles_of_adjacent_pair_boundary_eq
             firstTriangle.IsCycle ∧ firstTriangle.length = 3 ∧
             secondTriangle.IsCycle ∧ secondTriangle.length = 3 ∧
             s(leftFace, rightFace) ∈ firstTriangle.edges ∧
-            s(leftFace, rightFace) ∈ secondTriangle.edges := by
+            s(leftFace, rightFace) ∈ secondTriangle.edges ∧
+            ∃ firstOnly : Sym2
+                (AmbientFace
+                  (Finset.univ : Finset
+                    (OrbitFace data.toRotationSystem))),
+              firstOnly ∈ firstTriangle.edges ∧
+                firstOnly ∉ secondTriangle.edges := by
   dsimp only
   rcases exists_internal_walk_chord_of_adjacent_pair_boundary_eq
       data hcubic hrotation htwoSided hunique walk hadj hboundary with
@@ -510,11 +572,12 @@ theorem exists_internal_chord_two_triangles_of_adjacent_pair_boundary_eq
       GoertzelV24DualCycleChord.exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
         hcycle hlength hchord with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
-      hsecondCycle, hsecondLength, hfirstChord, hsecondChord⟩
+      hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
+      hfirstOnly⟩
   exact ⟨internalEdge, leftFace, rightFace, firstTriangle, secondTriangle,
     hinternalValue, hinternalNotRemoved, hleftBoundary, hrightBoundary,
     hchord, hfirstCycle, hfirstLength, hsecondCycle, hsecondLength,
-    hfirstChord, hsecondChord⟩
+    hfirstChord, hsecondChord, hfirstOnly⟩
 
 end GoertzelV24DualCycleCollar
 
