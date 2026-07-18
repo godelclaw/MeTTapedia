@@ -111,6 +111,12 @@ structure CrossCentralExactFaceCertifiedRebaseStep
   resolution : CrossSideRemoteFusionChainResolution graphData
     (baseData.rotationOrderedData graphData minimal.spherical.cubic
       minimal.vertexRotationCyclic) source.1 source.2 witness.coordinate
+  firstFusion_mem_central : centralEdgeValue
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic) ∈ resolution.firstFusion.edges
+  secondFusion_mem_central : centralEdgeValue
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic) ∈ resolution.secondFusion.edges
   successors : LocalizedFusionSuccessorResolution source.2
     (edgeCrossFaceCoordinateOrbitFace graphData
       (retainedEdgeToAmbientEdge
@@ -245,33 +251,92 @@ theorem CrossSideRemoteFusionChainTransferWitness.certifiedTerminal_or_exists_re
     witness.CertifiedTerminalOutcome ∨
       Nonempty (CrossCentralExactFaceCertifiedRebaseStep graphData minimal
         baseData ⟨cross, pair⟩) := by
-  have houtcome := witness.finiteRebaseTransition_outcome_of_minimal
-    graphData minimal baseData
-  cases houtcome with
-  | mixed hindices hidentity =>
-      exact Or.inl (Or.inl ⟨hindices, hidentity⟩)
-  | firstRetained active resolution hroot retainedFusion hcycle hambient =>
-      exact Or.inl (Or.inr ⟨active, resolution,
-        Or.inl ⟨hroot, retainedFusion, hcycle, hambient⟩⟩)
-  | secondRetained active resolution hroot retainedFusion hcycle hambient =>
-      exact Or.inl (Or.inr ⟨active, resolution,
-        Or.inr (Or.inl ⟨hroot, retainedFusion, hcycle, hambient⟩)⟩)
-  | successors active resolution successors hterminal =>
-      cases hterminal with
-      | disjoint hdisjoint =>
-          exact Or.inl (Or.inr ⟨active, resolution,
-            Or.inr (Or.inr ⟨successors, Or.inl hdisjoint⟩)⟩)
-      | rebase rebase =>
-          exact Or.inr ⟨{
-            witness := witness
-            active := active
-            resolution := resolution
-            successors := successors
-            rebase := rebase }⟩
-      | cleanRouteOnly successor signed hdiagonal hrouteOnly =>
-          exact Or.inl (Or.inr ⟨active, resolution,
-            Or.inr (Or.inr ⟨successors,
-              Or.inr ⟨successor, signed, hdiagonal, hrouteOnly⟩⟩)⟩)
+  let data := baseData.rotationOrderedData graphData
+    minimal.spherical.cubic minimal.vertexRotationCyclic
+  rcases witness.mixedIndices_or_activeState with hmixed | hactive
+  · exact Or.inl (Or.inl hmixed)
+  · rcases hactive with ⟨active⟩
+    rcases active.exists_resolution with ⟨resolution⟩
+    let face := edgeCrossFaceCoordinateOrbitFace graphData
+      (retainedEdgeToAmbientEdge data cross) witness.coordinate
+    by_cases hfirstCentral : centralEdgeValue data ∈
+        resolution.firstFusion.edges
+    · by_cases hsecondCentral : centralEdgeValue data ∈
+          resolution.secondFusion.edges
+      · rcases oppositePortFusion_exists_successor_of_central data
+          pair.prefixTrail face
+          resolution.boundary_avoids_coordinate_face
+          resolution.firstFusion resolution.firstFusion_isCycle
+          resolution.firstFusion_support hfirstCentral cross
+          resolution.firstFusion_avoids_cross with
+          ⟨prefixSuccessor, hprefixPath, hprefixAvoids,
+            hprefixClosure, hprefixSubset⟩
+        rcases alternateOppositePortFusion_exists_successor_of_central data
+          pair.suffixTrail face
+          resolution.boundary_avoids_coordinate_face
+          resolution.secondFusion resolution.secondFusion_isCycle
+          resolution.secondFusion_support hsecondCentral cross
+          resolution.secondFusion_avoids_cross with
+          ⟨suffixSuccessor, hsuffixPath, hsuffixAvoids,
+            hsuffixClosure, hsuffixSubset⟩
+        have hfinite := pair.exists_localizedSuccessorFusionChainTrichotomy
+          minimal face resolution.firstFusion
+          resolution.firstFusion_support resolution.secondFusion
+          resolution.secondFusion_support prefixSuccessor hprefixAvoids
+          hprefixClosure hprefixSubset suffixSuccessor hsuffixClosure
+          hsuffixSubset
+        let successors : LocalizedFusionSuccessorResolution pair face
+            resolution.firstFusion resolution.secondFusion := {
+          prefixSuccessor := prefixSuccessor
+          suffixSuccessor := suffixSuccessor
+          prefix_isPath := hprefixPath
+          prefix_avoids_cross := hprefixAvoids
+          prefix_closure_isCycle := hprefixClosure
+          prefix_ambient_edges_subset := hprefixSubset
+          suffix_isPath := hsuffixPath
+          suffix_avoids_cross := hsuffixAvoids
+          suffix_closure_isCycle := hsuffixClosure
+          suffix_ambient_edges_subset := hsuffixSubset
+          finite_outcome := hfinite }
+        have houtcome :=
+          successors.finite_routeOnlyComposition_outcome_of_indices_eq
+            graphData minimal baseData witness.firstIndex
+              witness.secondIndex active.indices_eq
+        have hterminal :=
+          LocalizedFusionSuccessorResolution.terminalOrRebase_of_routeOnlyComposition
+            (source := witness.channelState) successors
+            witness.firstIndex witness.secondIndex houtcome
+        cases hterminal with
+        | disjoint hdisjoint =>
+            exact Or.inl (Or.inr ⟨active, resolution,
+              Or.inr (Or.inr ⟨successors, Or.inl hdisjoint⟩)⟩)
+        | rebase rebase =>
+            exact Or.inr ⟨{
+              witness := witness
+              active := active
+              resolution := resolution
+              firstFusion_mem_central := hfirstCentral
+              secondFusion_mem_central := hsecondCentral
+              successors := successors
+              rebase := rebase }⟩
+        | cleanRouteOnly successor signed hdiagonal hrouteOnly =>
+            exact Or.inl (Or.inr ⟨active, resolution,
+              Or.inr (Or.inr ⟨successors,
+                Or.inr ⟨successor, signed, hdiagonal, hrouteOnly⟩⟩)⟩)
+      · have hretained :=
+          alternateOppositePortFusion_exists_retainedCycle_of_not_central
+            data pair.suffixTrail face
+              resolution.boundary_avoids_coordinate_face
+              resolution.secondFusion resolution.secondFusion_isCycle
+              resolution.secondFusion_support hsecondCentral
+        exact Or.inl (Or.inr ⟨active, resolution,
+          Or.inr (Or.inl hretained)⟩)
+    · have hretained :=
+        oppositePortFusion_exists_retainedCycle_of_not_central data
+          pair.prefixTrail face resolution.boundary_avoids_coordinate_face
+            resolution.firstFusion resolution.firstFusion_isCycle
+            resolution.firstFusion_support hfirstCentral
+      exact Or.inl (Or.inr ⟨active, resolution, Or.inl hretained⟩)
 
 /-- Terminal outcome of an exact state, with a complete remote witness. -/
 def CrossCentralExactFaceCutState.CertifiedTerminalOutcome
