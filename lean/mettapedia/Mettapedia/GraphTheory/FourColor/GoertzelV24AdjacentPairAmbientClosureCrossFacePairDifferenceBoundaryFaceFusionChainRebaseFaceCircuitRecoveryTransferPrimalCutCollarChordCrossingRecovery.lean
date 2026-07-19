@@ -250,6 +250,33 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
   exact ⟨component, first, second, hfirstSecond, hsupp, hadj,
     hcomponentBoundary, htransfer, hstars⟩
 
+/-- Short saturated recovery genuinely re-enters the fusion dynamics.  The
+remote adjacent-pair collar either realizes a strict-circuit or disjoint-
+support terminal branch, or launches a new certified exact-state pumping
+run at its surviving cross. -/
+theorem exists_remote_fusionTerminal_or_rebasePumping_of_arcLength_le_four
+    (circuit : ClosureRecoveryFaceTransferCircuit rebaseCircuit)
+    (hminimal : circuit.IsLengthMinimal)
+    (hlength : circuit.arcLength = rebaseCircuit.arcLength)
+    (hshort : rebaseCircuit.arcLength ≤ 4) :
+    rebaseCircuit.arcLength = 4 ∧
+      ∃ first second : V,
+        first ≠ second ∧ G.Adj first second ∧
+          HasRotationOrderedFusionTerminalOrRebasePumping
+            graphData minimal first second := by
+  rcases
+      circuit.exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
+        hminimal hlength hshort with
+    ⟨hrebaseLength, walk, hcycle, hdelete, hcutCard, hcollar,
+      hcentral, hboundary⟩
+  dsimp only at hcollar
+  rcases hcollar with
+    ⟨component, first, second, hfirstSecond, hsupp, hadj,
+      hcomponentBoundary, hnormal, hstars⟩
+  exact ⟨hrebaseLength, first, second, hfirstSecond, hadj,
+    hasRotationOrderedFusionTerminalOrRebasePumping_of_normalForm
+      graphData minimal hnormal⟩
+
 end ClosureRecoveryFaceTransferCircuit
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData
