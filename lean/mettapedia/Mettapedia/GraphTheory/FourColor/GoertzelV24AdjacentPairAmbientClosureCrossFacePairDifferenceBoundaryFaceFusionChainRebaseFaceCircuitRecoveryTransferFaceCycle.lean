@@ -59,6 +59,31 @@ private theorem mem_destutter_ne_iff
       rw [List.destutter_cons', mem_destutter'_ne_iff]
       simp
 
+private theorem getVert_add_two_eq_of_consecutive_edges_eq
+    {Vertex : Type*} {graph : SimpleGraph Vertex}
+    {start finish : Vertex} (walk : graph.Walk start finish)
+    {index : ℕ} (hindex : index + 1 < walk.edges.length)
+    (hedges : walk.edges[index] = walk.edges[index + 1]) :
+    walk.getVert index = walk.getVert (index + 2) := by
+  have hfirst : index < walk.darts.length := by
+    rw [walk.length_darts]
+    rw [walk.length_edges] at hindex
+    omega
+  have hsecond : index + 1 < walk.darts.length := by
+    simpa [walk.length_darts, walk.length_edges] using hindex
+  have hindexLength : index < walk.length := by
+    simpa [walk.length_darts] using hfirst
+  have hedges' : walk.darts[index].edge =
+      walk.darts[index + 1].edge := by
+    simpa [SimpleGraph.Walk.edges] using hedges
+  rw [walk.darts_getElem_eq_getVert index hfirst,
+    walk.darts_getElem_eq_getVert (index + 1) hsecond] at hedges'
+  simp only [SimpleGraph.Dart.edge_mk] at hedges'
+  rcases Sym2.eq_iff.mp hedges' with hforward | hreverse
+  · exact False.elim
+      ((walk.adj_getVert_succ hindexLength).ne hforward.1)
+  · simpa [Nat.add_assoc] using hreverse.1
+
 namespace GoertzelV24AdjacentPairInsertion.AdjacentPairData
 
 open GoertzelV24AdjacentPairBoundary.AdjacentPairData
@@ -238,6 +263,17 @@ structure RemoteNontrailDualWalk
           minimal.vertexRotationCyclic) port ∉
       orbitFaceBoundary graphData.toRotationSystem face.1
 
+/-- A literal two-step return in the compressed selected-face itinerary. -/
+structure CompressedFaceBacktrack
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) where
+  index : ℕ
+  index_add_two_lt : index + 2 < circuit.compressedDualFaces.length
+  outer_eq : circuit.compressedDualFaces[index] =
+    circuit.compressedDualFaces[index + 2]
+  adjacent_ne : circuit.compressedDualFaces[index] ≠
+    circuit.compressedDualFaces[index + 1]
+
 /-- A remote nontrail itinerary contains a concrete repeated unoriented
 edge of the full facial dual. -/
 theorem RemoteNontrailDualWalk.exists_duplicate_edge
@@ -249,6 +285,97 @@ theorem RemoteNontrailDualWalk.exists_duplicate_edge
   intro hnodup
   exact nontrail.not_isTrail
     ((SimpleGraph.Walk.isTrail_def nontrail.walk).2 hnodup)
+
+/-- In an acyclic support, the repeated edge of a remote closed walk is
+already an immediate return across one unoriented dual edge. -/
+theorem RemoteNontrailDualWalk.exists_immediate_return_of_acyclic
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (nontrail : RemoteNontrailDualWalk circuit)
+    (hacyclic : nontrail.walk.toSubgraph.coe.IsAcyclic) :
+    ∃ index, index + 1 < nontrail.walk.edges.length ∧
+      nontrail.walk.getVert index =
+        nontrail.walk.getVert (index + 2) := by
+  let supportedWalk := nontrail.walk.mapToSubgraph
+  have hnotTrail : ¬ supportedWalk.IsTrail := by
+    intro htrail
+    have hmapped := SimpleGraph.Walk.map_isTrail_of_injective
+      nontrail.walk.toSubgraph.hom_injective htrail
+    rw [nontrail.walk.map_mapToSubgraph_hom] at hmapped
+    exact nontrail.not_isTrail hmapped
+  have hnotChain : ¬ List.IsChain (· ≠ ·) supportedWalk.edges := by
+    intro hchain
+    exact hnotTrail
+      (((hacyclic.isPath_iff_isChain supportedWalk).2 hchain).isTrail)
+  rcases List.exists_not_getElem_of_not_isChain hnotChain with
+    ⟨index, hindex, hedges⟩
+  have hedgesEq : supportedWalk.edges[index] =
+      supportedWalk.edges[index + 1] := not_ne_iff.mp hedges
+  have hreturn := getVert_add_two_eq_of_consecutive_edges_eq
+    supportedWalk hindex hedgesEq
+  have hmappedReturn := congrArg
+    (fun face => nontrail.walk.toSubgraph.hom face) hreturn
+  rw [← SimpleGraph.Walk.getVert_map,
+    ← SimpleGraph.Walk.getVert_map,
+    nontrail.walk.map_mapToSubgraph_hom] at hmappedReturn
+  have hlength : supportedWalk.length = nontrail.walk.length := by
+    calc
+      supportedWalk.length =
+          (supportedWalk.map nontrail.walk.toSubgraph.hom).length :=
+        (SimpleGraph.Walk.length_map
+          (p := supportedWalk)
+          (f := nontrail.walk.toSubgraph.hom)).symm
+      _ = nontrail.walk.length := by
+        simpa [supportedWalk] using congrArg SimpleGraph.Walk.length
+          nontrail.walk.map_mapToSubgraph_hom
+  have hindexOriginal : index + 1 < nontrail.walk.edges.length := by
+    rw [supportedWalk.length_edges, hlength,
+      ← nontrail.walk.length_edges] at hindex
+    exact hindex
+  exact ⟨index, hindexOriginal, hmappedReturn⟩
+
+/-- Pure tree backtracking therefore appears as a literal `F,G,F`
+segment of the compressed selected-face word. -/
+theorem RemoteNontrailDualWalk.exists_compressedFaceBacktrack_of_acyclic
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (nontrail : RemoteNontrailDualWalk circuit)
+    (hacyclic : nontrail.walk.toSubgraph.coe.IsAcyclic) :
+    Nonempty (CompressedFaceBacktrack circuit) := by
+  rcases nontrail.exists_immediate_return_of_acyclic hacyclic with
+    ⟨index, hindex, hreturn⟩
+  have hindexSupport : index + 2 < nontrail.walk.support.length := by
+    rw [nontrail.walk.length_support, ← nontrail.walk.length_edges]
+    omega
+  have hindexZero : index < nontrail.walk.support.length := by omega
+  have hindexOne : index + 1 < nontrail.walk.support.length := by omega
+  have hindexCompressed : index + 2 <
+      circuit.compressedDualFaces.length := by
+    rw [← nontrail.support_eq]
+    exact hindexSupport
+  have houter : nontrail.walk.support[index] =
+      nontrail.walk.support[index + 2] := by
+    rw [nontrail.walk.support_getElem_eq_getVert
+        (n := index) hindexZero,
+      nontrail.walk.support_getElem_eq_getVert
+        (n := index + 2) hindexSupport]
+    exact hreturn
+  have hadjacent : nontrail.walk.support[index] ≠
+      nontrail.walk.support[index + 1] := by
+    rw [nontrail.walk.support_getElem_eq_getVert
+        (n := index) hindexZero,
+      nontrail.walk.support_getElem_eq_getVert
+        (n := index + 1) hindexOne]
+    exact (nontrail.walk.adj_getVert_succ (by
+      rw [← nontrail.walk.length_edges]
+      omega)).ne
+  refine ⟨{
+    index := index
+    index_add_two_lt := hindexCompressed
+    outer_eq := ?_
+    adjacent_ne := ?_ }⟩
+  · simpa [nontrail.support_eq] using houter
+  · simpa [nontrail.support_eq] using hadjacent
 
 /-- Unless its edge support is a forest, a remote nontrail itinerary
 already contains a remote simple dual cycle. -/
@@ -401,6 +528,24 @@ theorem constantFace_or_exists_remote_dualCycle_or_remote_acyclic_nontrail
         hacyclic | hcycle
       · exact Or.inr (Or.inr ⟨nontrail, hacyclic⟩)
       · exact Or.inr (Or.inl hcycle)
+
+/-- Equivalently, the residual tree branch carries a concrete compressed
+face backtrack `F,G,F`; no abstract repeated-edge obstruction remains. -/
+theorem constantFace_or_exists_remote_dualCycle_or_compressedFaceBacktrack
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) :
+    (∀ arc ∈ circuit.first :: circuit.rest,
+        arc.selectedFace = circuit.first.selectedFace) ∨
+      Nonempty (RemoteDualCycle circuit) ∨
+      Nonempty (CompressedFaceBacktrack circuit) := by
+  rcases
+      circuit.constantFace_or_exists_remote_dualCycle_or_remote_acyclic_nontrail with
+    hconstant | hrest
+  · exact Or.inl hconstant
+  · rcases hrest with hcycle | ⟨nontrail, hacyclic⟩
+    · exact Or.inr (Or.inl hcycle)
+    · exact Or.inr (Or.inr
+        (nontrail.exists_compressedFaceBacktrack_of_acyclic hacyclic))
 
 end CrossCentralExactFaceCertifiedRebaseCircuit
 
