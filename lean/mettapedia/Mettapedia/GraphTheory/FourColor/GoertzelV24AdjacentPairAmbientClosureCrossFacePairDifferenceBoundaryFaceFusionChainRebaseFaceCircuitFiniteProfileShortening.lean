@@ -139,6 +139,81 @@ theorem IsLengthMinimal.sourceStates_nodup
             _ = (before ++ [first]) ++ rest := by simp
   simpa [arcs, sourceStates] using suffixPairwise [] arcs (by simp)
 
+/-- Equal retained-geometry codes at two displayed positions contradict
+global length minimality. -/
+theorem IsLengthMinimal.rigidCode_ne_of_split
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal)
+    (first second :
+      CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+    (before between after : List
+      (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData))
+    (hsplit : circuit.first :: circuit.rest =
+      before ++ (first :: (between ++ (second :: after)))) :
+    first.source.rigidCode ≠ second.source.rigidCode := by
+  intro hcode
+  have hgeometry :=
+    (CrossCentralExactFaceCutState.rigidCode_eq_iff first.source
+      second.source).mp hcode
+  rcases circuit.exists_strict_subcircuit_of_split_rigid_eq first second
+      before between after hsplit hgeometry.1 hgeometry.2.1
+        hgeometry.2.2 with
+    ⟨subcircuit, hshorter⟩
+  exact (Nat.not_lt_of_ge (hminimal subcircuit)) hshorter
+
+/-- The retained-geometry word of the cyclically displayed source states. -/
+def rigidCodeWord
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) :
+    List (CrossCentralExactFaceCutRigidCode
+      (baseData.rotationOrderedData graphData minimal.spherical.cubic
+        minimal.vertexRotationCyclic)) :=
+  circuit.sourceStates.map CrossCentralExactFaceCutState.rigidCode
+
+@[simp] theorem rigidCodeWord_length
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) :
+    circuit.rigidCodeWord.length = circuit.arcLength := by
+  simp [rigidCodeWord]
+
+/-- A globally shortest certified circuit never repeats a retained cross
+together with both retained trails. -/
+theorem IsLengthMinimal.rigidCodeWord_nodup
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal) :
+    circuit.rigidCodeWord.Nodup := by
+  rw [List.nodup_iff_pairwise_ne]
+  unfold rigidCodeWord sourceStates
+  rw [List.map_map, List.pairwise_map]
+  let arcs := circuit.first :: circuit.rest
+  have suffixPairwise : ∀ (before suffix : List
+      (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)),
+      arcs = before ++ suffix →
+        List.Pairwise (fun first second =>
+          first.source.rigidCode ≠ second.source.rigidCode) suffix := by
+    intro before suffix
+    induction suffix generalizing before with
+    | nil =>
+        intro _
+        exact List.Pairwise.nil
+    | cons first rest ih =>
+        intro hsplit
+        apply List.pairwise_cons.mpr
+        constructor
+        · intro second hsecond
+          rcases List.mem_iff_append.mp hsecond with
+            ⟨between, after, hrest⟩
+          apply hminimal.rigidCode_ne_of_split first second before between
+            after
+          simpa [arcs, hrest] using hsplit
+        · apply ih (before ++ [first])
+          calc
+            arcs = before ++ (first :: rest) := hsplit
+            _ = (before ++ [first]) ++ rest := by simp
+  simpa [arcs, sourceStates] using suffixPairwise [] arcs (by simp)
+
 /-- Five distinct positions of a length-minimal circuit cannot all share
 one retained cross and the same two retained paths. -/
 theorem IsLengthMinimal.not_five_positions_same_cross_and_trails
@@ -335,6 +410,21 @@ theorem IsLengthMinimal.arcLength_le_four_mul_card_rigidCode
             minimal.vertexRotationCyclic))))
       (fun _ _ => Finset.mem_univ _) 4
       (fun code _ => hminimal.card_rigidCodeFiber_le_four code))
+
+/-- The exact finite-state bound needs no fourfold label-profile factor:
+the retained-geometry code is already injective around a shortest circuit. -/
+theorem IsLengthMinimal.arcLength_le_card_rigidCode
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal) :
+    circuit.arcLength ≤ Fintype.card
+      (CrossCentralExactFaceCutRigidCode
+        (baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic)) := by
+  classical
+  rw [← circuit.rigidCodeWord_length,
+    ← List.toFinset_card_of_nodup hminimal.rigidCodeWord_nodup]
+  exact Finset.card_le_univ _
 
 end CrossCentralExactFaceCertifiedRebaseCircuit
 
