@@ -143,6 +143,33 @@ theorem swapOnKempeComponent_transport_self
     rw [(C.swapOnKempeComponent a b K).swapOnKempeComponent_apply_of_not_mem
       htransport, C.swapOnKempeComponent_apply_of_not_mem hmem]
 
+/-- A Kempe-component switch is reversible by switching its canonically
+transported component in the new coloring. -/
+theorem kempeStep_symm {C C' : G.Coloring α}
+    (step : G.KempeStep C C') : G.KempeStep C' C := by
+  rcases step with ⟨a, b, K, rfl⟩
+  refine ⟨a, b, transportKempeComponentAfterSwap C a b K K, ?_⟩
+  exact (swapOnKempeComponent_transport_self C a b K).symm
+
+/-- Kempe reachability is symmetric: reversing each component switch
+reverses an arbitrary finite switching sequence. -/
+theorem mem_kempeClosure_symm {C₀ C : G.Coloring α}
+    (reachable : C ∈ G.KempeClosure C₀) :
+    C₀ ∈ G.KempeClosure C := by
+  induction reachable with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ step ih =>
+      exact Relation.ReflTransGen.trans
+        (Relation.ReflTransGen.single (kempeStep_symm step)) ih
+
+/-- Any reachable coloring generates exactly the same Kempe closure as its
+source coloring. -/
+theorem kempeClosure_eq_of_mem {C₀ C : G.Coloring α}
+    (reachable : C ∈ G.KempeClosure C₀) :
+    G.KempeClosure C₀ = G.KempeClosure C :=
+  G.kempeClosure_eq_of_mem_of_mem reachable
+    (mem_kempeClosure_symm reachable)
+
 /-- Canonically transported component switches commute at graph level. -/
 theorem swapOnKempeComponent_transport_commute
     (C : G.Coloring α) (a b : α)
