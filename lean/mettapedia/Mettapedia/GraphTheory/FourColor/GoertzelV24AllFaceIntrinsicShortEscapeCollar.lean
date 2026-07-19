@@ -143,6 +143,7 @@ structure IntrinsicShortTargetEscapeCollar
   targetRetainedBySource :
     IsRetainedAmbientEdge
       (RecoveredRotationOrderedData graphData minimal baseData) targetEdge
+  targetCrossing : targetEdge ∈ cycle.crossingEdges
   sourceCentralRetainedByTarget :
     IsRetainedAmbientEdge
       (RecoveredRotationOrderedData graphData minimal targetBase)
@@ -431,6 +432,7 @@ theorem IntrinsicShortFusionTarget.nonempty_targetEscapeCollar
     targetEscape := targetEscape
     targetCentral_eq := htargetCentral
     targetRetainedBySource := htargetRetained
+    targetCrossing := hcrossing
     sourceCentralRetainedByTarget := hsourceCentralRetained
     sourceBoundaryRetainedByTarget := hsourceBoundaryRetained }⟩
 
