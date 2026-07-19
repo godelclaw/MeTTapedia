@@ -154,6 +154,151 @@ theorem isCycle_mem_edges_iff_mem_orbitFaceBoundary_of_subset
         cycle.edges := hmemAmbient
     exact hedgeValue ▸ hmemAmbientRaw
 
+/-- In a cubic two-sided rotation map, the canonical rooted facial trail is
+already a simple cycle: a cycle bypass would have the same exact edge support
+and hence could not be shorter. -/
+theorem exists_rootedFaceCycle
+    (graphData : Data G)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (root : G.Dart) :
+    ∃ cycle : G.Walk root.fst root.fst,
+      cycle.IsCycle ∧
+        cycle.darts = faceOrbitDarts graphData root ∧
+        (∀ edge : G.edgeSet,
+          edge.1 ∈ cycle.edges ↔
+            edge ∈ orbitFaceBoundary graphData.toRotationSystem
+              (dartOrbitFace graphData.toRotationSystem root)) := by
+  rcases exists_rootedFaceTrail graphData htwoSided root with
+    ⟨trail, htrail, hdarts, hedgeExact⟩
+  have htrailNotNil : trail ≠ .nil := by
+    intro hnil
+    subst trail
+    exact faceOrbitDarts_ne_nil graphData root hdarts.symm
+  have hbypassCycle : trail.cycleBypass.IsCycle :=
+    htrail.isCycle_cycleBypass htrailNotNil
+  have hbypassNotNil : ¬trail.cycleBypass.Nil :=
+    hbypassCycle.not_nil
+  have hbypassEdgesNe : trail.cycleBypass.edges ≠ [] :=
+    SimpleGraph.Walk.edges_eq_nil.not.mpr hbypassNotNil
+  let anchorValue : Sym2 V :=
+    trail.cycleBypass.edges.head hbypassEdgesNe
+  have hanchorValue : anchorValue ∈ trail.cycleBypass.edges := by
+    exact List.head_mem hbypassEdgesNe
+  let anchor : G.edgeSet :=
+    ⟨anchorValue,
+      trail.cycleBypass.edges_subset_edgeSet hanchorValue⟩
+  have hbypassFace : ∀ edge : G.edgeSet,
+      edge.1 ∈ trail.cycleBypass.edges →
+        edge ∈ orbitFaceBoundary graphData.toRotationSystem
+          (dartOrbitFace graphData.toRotationSystem root) := by
+    intro edge hedge
+    apply (hedgeExact edge).1
+    exact trail.edges_cycleBypass_subset_edges hedge
+  have hanchor : anchor.1 ∈ trail.cycleBypass.edges :=
+    hanchorValue
+  have hbypassExact :=
+    isCycle_mem_edges_iff_mem_orbitFaceBoundary_of_subset graphData
+      hcubic htwoSided (dartOrbitFace graphData.toRotationSystem root)
+      trail.cycleBypass hbypassCycle hbypassFace anchor hanchor
+  have htrailSubsetBypass : trail.edges ⊆ trail.cycleBypass.edges := by
+    intro edge hedge
+    let ambient : G.edgeSet :=
+      ⟨edge, trail.edges_subset_edgeSet hedge⟩
+    exact (hbypassExact ambient).2 ((hedgeExact ambient).1 hedge)
+  have hedgeFinsets : trail.edges.toFinset =
+      trail.cycleBypass.edges.toFinset := by
+    ext edge
+    simp only [List.mem_toFinset]
+    constructor
+    · intro hedge
+      exact htrailSubsetBypass hedge
+    · intro hedge
+      exact trail.edges_cycleBypass_subset_edges hedge
+  have hedgesLength : trail.edges.length =
+      trail.cycleBypass.edges.length := by
+    calc
+      trail.edges.length = trail.edges.toFinset.card := by
+        exact (List.toFinset_card_of_nodup htrail.edges_nodup).symm
+      _ = trail.cycleBypass.edges.toFinset.card :=
+        congrArg Finset.card hedgeFinsets
+      _ = trail.cycleBypass.edges.length :=
+        List.toFinset_card_of_nodup hbypassCycle.isTrail.edges_nodup
+  have hlength : trail.length ≤ trail.cycleBypass.length := by
+    simpa using Nat.le_of_eq hedgesLength
+  have hself : trail.cycleBypass = trail :=
+    SimpleGraph.Walk.ext_support <|
+      trail.support_cycleBypass_sublist_support.eq_of_length_le (by
+        simpa using hlength)
+  exact ⟨trail, hself ▸ hbypassCycle, hdarts, hedgeExact⟩
+
+/-- In the cubic setting, splitting a rooted facial bypass at a second edge
+produces two pieces whose concatenation through that edge is a simple path. -/
+theorem exists_rootedFacePath_splitAtEdge
+    (graphData : Data G)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (root : G.Dart) (selected : G.edgeSet)
+    (hselected : selected ∈
+      orbitFaceBoundary graphData.toRotationSystem
+        (dartOrbitFace graphData.toRotationSystem root))
+    (hselectedRoot : selected.1 ≠ root.edge) :
+    ∃ (left right : V) (adj : G.Adj left right)
+        (before : G.Walk root.snd left)
+        (after : G.Walk right root.fst),
+      selected.1 = s(left, right) ∧
+        (before.append (SimpleGraph.Walk.cons adj after)).IsPath ∧
+        (before.append (SimpleGraph.Walk.cons adj after)).darts =
+          (faceOrbitDarts graphData root).tail ∧
+        (∀ edge : G.edgeSet,
+          edge.1 ∈
+              (before.append (SimpleGraph.Walk.cons adj after)).edges ↔
+            edge ∈ orbitFaceBoundary graphData.toRotationSystem
+                (dartOrbitFace graphData.toRotationSystem root) ∧
+              edge.1 ≠ root.edge) := by
+  rcases exists_rootedFaceBypass_splitAtEdge graphData htwoSided root
+      selected hselected hselectedRoot with
+    ⟨left, right, adj, before, after, hedgeValue, _htrail,
+      hdarts, hedgeExact⟩
+  rcases exists_rootedFaceCycle graphData hcubic htwoSided root with
+    ⟨cycle, hcycle, hcycleDarts, _hcycleEdges⟩
+  have hcycleDartsNe : cycle.darts ≠ [] := by
+    rw [hcycleDarts]
+    exact faceOrbitDarts_ne_nil graphData root
+  have hcycleNotNil : ¬cycle.Nil :=
+    SimpleGraph.Walk.darts_eq_nil.not.mp hcycleDartsNe
+  have hcycleHead : cycle.darts.head
+      (SimpleGraph.Walk.darts_eq_nil.not.mpr hcycleNotNil) = root := by
+    simpa only [hcycleDarts] using faceOrbitDarts_head graphData root
+  have hcycleFirstDart : cycle.firstDart hcycleNotNil = root := by
+    rw [cycle.firstDart_eq_head_darts hcycleNotNil]
+    exact hcycleHead
+  have hsnd : cycle.snd = root.snd :=
+    congrArg (fun dart : G.Dart => dart.snd) hcycleFirstDart
+  let path : G.Walk root.snd root.fst := cycle.tail.copy hsnd rfl
+  have hpath : path.IsPath := by
+    simpa [path] using hcycle.isPath_tail
+  have hpathDarts : path.darts =
+      (faceOrbitDarts graphData root).tail := by
+    simp [path, SimpleGraph.Walk.tail,
+      SimpleGraph.Walk.darts_drop, hcycleDarts]
+  have hwalkEq :
+      before.append (SimpleGraph.Walk.cons adj after) = path := by
+    apply SimpleGraph.Walk.ext_support
+    calc
+      (before.append (SimpleGraph.Walk.cons adj after)).support =
+          (before.append (SimpleGraph.Walk.cons adj after)).darts.map
+              (fun dart => dart.fst) ++ [root.fst] :=
+        (before.append
+          (SimpleGraph.Walk.cons adj after)).map_fst_darts_append.symm
+      _ = path.darts.map (fun dart => dart.fst) ++ [root.fst] := by
+        rw [hdarts, hpathDarts]
+      _ = path.support := path.map_fst_darts_append
+  refine ⟨left, right, adj, before, after, hedgeValue, ?_, hdarts,
+    hedgeExact⟩
+  rw [hwalkEq]
+  exact hpath
+
 /-- A nonzero binary cycle-space vector supported on one face has exactly
 that facial boundary as its nonzero support. -/
 theorem f2CycleSpace_support_eq_orbitFaceBoundary_of_subset
