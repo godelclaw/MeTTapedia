@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceRemotePrimalCutProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceAdjacentPairTriangleRefinement
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -38,9 +38,9 @@ namespace CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
 variable {rebaseCircuit :
   CrossCentralExactFaceCertifiedRebaseCircuit graphData minimal baseData}
 
-/-- An intrinsic target of a short remote primal cut.  For a singleton
-side it is a crossed star edge; for an adjacent-pair side it is the
-collar's internal edge. -/
+/-- An intrinsic target of a short remote primal cut.  The short cycle is
+a source-supported dual triangle, and the target is one of its crossed
+singleton-star edges. -/
 def IntrinsicShortFusionTarget
     (cycle :
       CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
@@ -59,10 +59,8 @@ def IntrinsicShortFusionTarget
           targetEdge) ∧
       HasRotationOrderedFusionKempeOrbitEscape
         graphData minimal first second ∧
-      ((Nonempty cycle.SingletonPrimalCutProfile ∧
-          targetEdge ∈ cycle.crossingEdges) ∨
-        ∃ profile : cycle.AdjacentPairPrimalCutProfile,
-          targetEdge = profile.internalEdge)
+      Nonempty cycle.SingletonPrimalCutProfile ∧
+      targetEdge ∈ cycle.crossingEdges
 
 /-- A singleton cut supplies a crossed star edge carrying a complete
 fusion/Kempe package. -/
@@ -102,45 +100,26 @@ theorem SingletonPrimalCutProfile.exists_intrinsicShortFusionTarget
   exact ⟨targetEdge, first, second, hne, hadj, hvalue,
     cycle.crossingEdge_ne_central htargetCrossing,
     fun port => cycle.crossingEdge_ne_boundary htargetCrossing port,
-    hkempe, Or.inl ⟨⟨profile⟩, htargetCrossing⟩⟩
-
-/-- An adjacent-pair collar supplies its internal chord as an intrinsic
-target carrying the collar pair's complete fusion/Kempe package. -/
-theorem AdjacentPairPrimalCutProfile.intrinsicShortFusionTarget
-    {cycle :
-      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
-        rebaseCircuit}
-    (profile : cycle.AdjacentPairPrimalCutProfile) :
-    cycle.IntrinsicShortFusionTarget profile.internalEdge := by
-  have hfusion :=
-    GoertzelV24MinimalTriangleFree.exists_rotationOrderedFusionTerminalOrRebasePumping_of_vertexMinimalTaitCounterexample
-      graphData minimal profile.adjacent
-  have hkempe : HasRotationOrderedFusionKempeOrbitEscape graphData minimal
-      profile.firstVertex profile.secondVertex :=
-    hasRotationOrderedFusionKempeOrbitEscape_of_terminalOrRebasePumping
-      graphData minimal hfusion
-  exact ⟨profile.firstVertex, profile.secondVertex,
-    profile.first_ne_second, profile.adjacent, profile.internalEdge_value,
-    profile.internalEdge_ne_central,
-    profile.internalEdge_ne_boundary, hkempe,
-    Or.inr ⟨profile, rfl⟩⟩
+    hkempe, ⟨profile⟩, htargetCrossing⟩
 
 /-- Every remote cycle either exits through a large exact separator or
-supplies an intrinsic target of its singleton/adjacent-pair short side. -/
+refines to a source-supported singleton triangle supplying an intrinsic
+target. -/
 theorem exists_longPrimalCut_or_intrinsicShortFusionTarget
     (cycle :
       CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
         rebaseCircuit) :
     Nonempty cycle.LongPrimalCutProfile ∨
-      ∃ targetEdge : G.edgeSet,
-        cycle.IntrinsicShortFusionTarget targetEdge := by
-  cases cycle.primalCutScopeProfile with
-  | long profile => exact Or.inl ⟨profile⟩
-  | singleton profile =>
-      exact Or.inr profile.exists_intrinsicShortFusionTarget
-  | adjacentPair profile =>
-      exact Or.inr ⟨profile.internalEdge,
-        profile.intrinsicShortFusionTarget⟩
+      ∃ shortCycle :
+          CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+            rebaseCircuit,
+        ∃ targetEdge : G.edgeSet,
+          shortCycle.IntrinsicShortFusionTarget targetEdge := by
+  rcases cycle.exists_longPrimalCut_or_singletonTriangleRefinement with
+    hlong | ⟨shortCycle, ⟨profile⟩⟩
+  · exact Or.inl hlong
+  · exact Or.inr ⟨shortCycle,
+      profile.exists_intrinsicShortFusionTarget⟩
 
 end CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
 
@@ -184,8 +163,8 @@ def RotationOrderedFusionLargeRemotePrimalCutAtDart
       circuit.IsLengthMinimal ∧ Nonempty cycle.LongPrimalCutProfile
 
 /-- The recursive relation after large separators have been split off.
-Every remote target is intrinsic to a singleton star or adjacent-pair
-collar; the other constructor is a literal recovery edge. -/
+Every remote target is intrinsic to a singleton-star triangle; the other
+constructor is a literal recovery edge. -/
 def RotationOrderedFusionIntrinsicShortOrRecoveryDartReentry
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -237,7 +216,7 @@ theorem rotationOrderedFusionStructuralTarget_or_largeRemotePrimalCut_or_exists_
     rcases htarget.geometry with hremote | hrecovery
     · rcases hremote with ⟨circuit, hminimal, cycle, _htargetCrossing⟩
       rcases cycle.exists_longPrimalCut_or_intrinsicShortFusionTarget with
-        hlong | ⟨intrinsicEdge, hintrinsic⟩
+        hlong | ⟨shortCycle, intrinsicEdge, hintrinsic⟩
       · exact Or.inr (Or.inl
           ⟨baseData, circuit, cycle, hsource, hminimal, hlong⟩)
       · have hintrinsic' := hintrinsic
@@ -249,7 +228,7 @@ theorem rotationOrderedFusionStructuralTarget_or_largeRemotePrimalCut_or_exists_
           hvalue
         exact Or.inr (Or.inr ⟨intrinsicTarget, baseData, intrinsicEdge,
           hsource, hintrinsicNe, hedgeIntrinsic, hkempe,
-          Or.inl ⟨circuit, hminimal, cycle, hintrinsic'⟩⟩)
+          Or.inl ⟨circuit, hminimal, shortCycle, hintrinsic'⟩⟩)
     · have hkempe : HasRotationOrderedFusionKempeOrbitEscape graphData
           minimal target.fst target.snd :=
         hasRotationOrderedFusionKempeOrbitEscape_of_terminalOrRebasePumping
