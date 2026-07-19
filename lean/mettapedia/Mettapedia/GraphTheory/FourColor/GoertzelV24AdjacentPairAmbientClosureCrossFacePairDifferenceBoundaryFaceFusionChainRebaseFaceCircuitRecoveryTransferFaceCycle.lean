@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferSuccessor
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -34,6 +35,29 @@ private theorem isChain_ne_append_head_of_nodup
     rw [List.getLast_cons htail]
     exact List.getLast_mem htail
   exact fun hlastEq => hheadNotMem (hlastEq ▸ hlastTail)
+
+private theorem mem_destutter_ne_iff
+    {α : Type*} [DecidableEq α] (element : α) (entries : List α) :
+    element ∈ entries.destutter (· ≠ ·) ↔ element ∈ entries := by
+  have mem_destutter'_ne_iff : ∀ (anchor : α) (tail : List α),
+      element ∈ tail.destutter' (· ≠ ·) anchor ↔
+        element = anchor ∨ element ∈ tail := by
+    intro anchor tail
+    induction tail generalizing anchor with
+    | nil => simp
+    | cons next tail ih =>
+        by_cases hnext : anchor ≠ next
+        · rw [List.destutter'_cons_pos tail hnext, List.mem_cons, ih]
+          simp only [List.mem_cons]
+        · have hnextEq : next = anchor := not_ne_iff.mp hnext |>.symm
+          subst next
+          rw [List.destutter'_cons_neg tail hnext, ih]
+          simp
+  cases entries with
+  | nil => simp
+  | cons anchor tail =>
+      rw [List.destutter_cons', mem_destutter'_ne_iff]
+      simp
 
 namespace GoertzelV24AdjacentPairInsertion.AdjacentPairData
 
@@ -163,6 +187,220 @@ theorem boundary_not_mem_of_mem_cyclicDualFaces
         CrossCentralExactFaceCertifiedRebaseArc.dualFace) (by simp)
   rcases List.mem_map.1 hword with ⟨arc, _harc, rfl⟩
   exact arc.transition.boundary_not_mem_face port
+
+/-- A simple facial-dual cycle extracted from the rebase itinerary,
+together with its avoidance of the restored adjacent-pair frame. -/
+structure RemoteDualCycle
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) where
+  start : AmbientFace
+    (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))
+  walk :
+    (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Walk
+      start start
+  isCycle : walk.IsCycle
+  central_not_mem : ∀ face ∈ walk.support,
+    centralEdge
+        (baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic) ∉
+      orbitFaceBoundary graphData.toRotationSystem face.1
+  boundary_not_mem : ∀ face ∈ walk.support, ∀ port : Fin 4,
+    boundaryEdge
+        (baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic) port ∉
+      orbitFaceBoundary graphData.toRotationSystem face.1
+
+/-- A nontrivial remote closed facial-dual walk whose repeated edge is
+the obstruction to immediate simple-cycle extraction. -/
+structure RemoteNontrailDualWalk
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) where
+  walk :
+    (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Walk
+      circuit.first.dualFace circuit.first.dualFace
+  support_eq : walk.support = circuit.compressedDualFaces
+  ne_nil : walk ≠ .nil
+  not_isTrail : ¬walk.IsTrail
+  central_not_mem : ∀ face ∈ walk.support,
+    centralEdge
+        (baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic) ∉
+      orbitFaceBoundary graphData.toRotationSystem face.1
+  boundary_not_mem : ∀ face ∈ walk.support, ∀ port : Fin 4,
+    boundaryEdge
+        (baseData.rotationOrderedData graphData minimal.spherical.cubic
+          minimal.vertexRotationCyclic) port ∉
+      orbitFaceBoundary graphData.toRotationSystem face.1
+
+/-- A remote nontrail itinerary contains a concrete repeated unoriented
+edge of the full facial dual. -/
+theorem RemoteNontrailDualWalk.exists_duplicate_edge
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (nontrail : RemoteNontrailDualWalk circuit) :
+    ∃ edge, List.Duplicate edge nontrail.walk.edges := by
+  apply List.exists_duplicate_iff_not_nodup.mpr
+  intro hnodup
+  exact nontrail.not_isTrail
+    ((SimpleGraph.Walk.isTrail_def nontrail.walk).2 hnodup)
+
+/-- Unless its edge support is a forest, a remote nontrail itinerary
+already contains a remote simple dual cycle. -/
+theorem RemoteNontrailDualWalk.acyclic_toSubgraph_or_exists_remoteDualCycle
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (nontrail : RemoteNontrailDualWalk circuit) :
+    nontrail.walk.toSubgraph.coe.IsAcyclic ∨
+      Nonempty (RemoteDualCycle circuit) := by
+  classical
+  by_cases hacyclic : nontrail.walk.toSubgraph.coe.IsAcyclic
+  · exact Or.inl hacyclic
+  · right
+    simp only [SimpleGraph.IsAcyclic, not_forall, not_not] at hacyclic
+    rcases hacyclic with ⟨vertex, cycle, hcycle⟩
+    let ambientCycle := cycle.map nontrail.walk.toSubgraph.hom
+    have hambientCycle : ambientCycle.IsCycle :=
+      (SimpleGraph.Walk.map_isCycle_iff_of_injective
+        nontrail.walk.toSubgraph.hom_injective).2 hcycle
+    refine ⟨{
+      start := nontrail.walk.toSubgraph.hom vertex
+      walk := ambientCycle
+      isCycle := hambientCycle
+      central_not_mem := ?_
+      boundary_not_mem := ?_ }⟩
+    · intro face hface
+      rw [SimpleGraph.Walk.support_map] at hface
+      rcases List.mem_map.1 hface with ⟨subface, hsubface, hfaceEq⟩
+      subst face
+      exact nontrail.central_not_mem subface.1
+        ((nontrail.walk.mem_verts_toSubgraph).1 subface.2)
+    · intro face hface port
+      rw [SimpleGraph.Walk.support_map] at hface
+      rcases List.mem_map.1 hface with ⟨subface, hsubface, hfaceEq⟩
+      subst face
+      exact nontrail.boundary_not_mem subface.1
+        ((nontrail.walk.mem_verts_toSubgraph).1 subface.2) port
+
+/-- Every certified rebase circuit has one of three exact facial forms.
+Its selected face is constant; or its remote closed facial itinerary
+contains a simple dual cycle; or that itinerary repeats an unoriented
+dual edge. -/
+theorem constantFace_or_exists_remote_dualCycle_or_remote_nontrail
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) :
+    (∀ arc ∈ circuit.first :: circuit.rest,
+        arc.selectedFace = circuit.first.selectedFace) ∨
+      Nonempty (RemoteDualCycle circuit) ∨
+      Nonempty (RemoteNontrailDualWalk circuit) := by
+  classical
+  by_cases hconstant : ∀ arc ∈ circuit.first :: circuit.rest,
+      arc.selectedFace = circuit.first.selectedFace
+  · exact Or.inl hconstant
+  · right
+    rcases circuit.exists_closedDualWalk with ⟨walk, hsupport⟩
+    have hcompressedSubset : ∀ {face},
+        face ∈ circuit.compressedDualFaces →
+          face ∈ circuit.cyclicDualFaces := by
+      intro face hface
+      exact (circuit.cyclicDualFaces.destutter_sublist
+        (· ≠ ·)).subset hface
+    have hwalkNe : walk ≠ .nil := by
+      intro hnil
+      apply hconstant
+      intro arc harc
+      have hcyclic : arc.dualFace ∈ circuit.cyclicDualFaces := by
+        rcases List.mem_cons.1 harc with rfl | harc
+        · simp [cyclicDualFaces]
+        · unfold cyclicDualFaces
+          exact List.mem_cons_of_mem circuit.first.dualFace
+            (List.mem_append_left [circuit.first.dualFace]
+              (List.mem_map_of_mem
+                (f := CrossCentralExactFaceCertifiedRebaseArc.dualFace)
+                harc))
+      have hcompressed : arc.dualFace ∈
+          circuit.compressedDualFaces := by
+        exact (mem_destutter_ne_iff arc.dualFace
+          circuit.cyclicDualFaces).2 hcyclic
+      have hwalkMem : arc.dualFace ∈ walk.support := by
+        rw [hsupport]
+        exact hcompressed
+      have hdual : arc.dualFace = circuit.first.dualFace := by
+        simpa [hnil] using hwalkMem
+      exact congrArg Subtype.val hdual
+    have hremoteWalk :
+        (∀ face ∈ walk.support,
+          centralEdge
+              (baseData.rotationOrderedData graphData
+                minimal.spherical.cubic minimal.vertexRotationCyclic) ∉
+            orbitFaceBoundary graphData.toRotationSystem face.1) ∧
+        (∀ face ∈ walk.support, ∀ port : Fin 4,
+          boundaryEdge
+              (baseData.rotationOrderedData graphData
+                minimal.spherical.cubic minimal.vertexRotationCyclic)
+                port ∉
+            orbitFaceBoundary graphData.toRotationSystem face.1) := by
+      constructor
+      · intro face hface
+        apply circuit.central_not_mem_of_mem_cyclicDualFaces
+        apply hcompressedSubset
+        rw [← hsupport]
+        exact hface
+      · intro face hface port
+        apply circuit.boundary_not_mem_of_mem_cyclicDualFaces
+        apply hcompressedSubset
+        rw [← hsupport]
+        exact hface
+    by_cases htrail : walk.IsTrail
+    · left
+      let cycle := walk.cycleBypass
+      have hcycle : cycle.IsCycle :=
+        htrail.isCycle_cycleBypass hwalkNe
+      exact ⟨{
+        start := circuit.first.dualFace
+        walk := cycle
+        isCycle := hcycle
+        central_not_mem := fun face hface =>
+          hremoteWalk.1 face
+            (walk.support_cycleBypass_sublist_support.subset hface)
+        boundary_not_mem := fun face hface port =>
+          hremoteWalk.2 face
+            (walk.support_cycleBypass_sublist_support.subset hface) port }⟩
+    · right
+      exact ⟨{
+        walk := walk
+        support_eq := hsupport
+        ne_nil := hwalkNe
+        not_isTrail := htrail
+        central_not_mem := hremoteWalk.1
+        boundary_not_mem := hremoteWalk.2 }⟩
+
+/-- Thus the only nonconstant facial itinerary not already yielding a
+remote simple dual cycle is pure backtracking inside an acyclic support
+subgraph. -/
+theorem constantFace_or_exists_remote_dualCycle_or_remote_acyclic_nontrail
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) :
+    (∀ arc ∈ circuit.first :: circuit.rest,
+        arc.selectedFace = circuit.first.selectedFace) ∨
+      Nonempty (RemoteDualCycle circuit) ∨
+      ∃ nontrail : RemoteNontrailDualWalk circuit,
+        nontrail.walk.toSubgraph.coe.IsAcyclic := by
+  rcases circuit.constantFace_or_exists_remote_dualCycle_or_remote_nontrail with
+    hconstant | hrest
+  · exact Or.inl hconstant
+  · rcases hrest with hcycle | hnontrail
+    · exact Or.inr (Or.inl hcycle)
+    · rcases hnontrail with ⟨nontrail⟩
+      rcases nontrail.acyclic_toSubgraph_or_exists_remoteDualCycle with
+        hacyclic | hcycle
+      · exact Or.inr (Or.inr ⟨nontrail, hacyclic⟩)
+      · exact Or.inr (Or.inl hcycle)
 
 end CrossCentralExactFaceCertifiedRebaseCircuit
 

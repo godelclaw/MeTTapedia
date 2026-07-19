@@ -407,6 +407,50 @@ variable {graphData : Data G}
   {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
   {baseData : AdjacentPairData G}
 
+namespace CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+
+variable {rebaseCircuit :
+  CrossCentralExactFaceCertifiedRebaseCircuit graphData minimal baseData}
+
+/-- The primal crossing set of an extracted remote dual cycle disconnects
+the ambient minimal counterexample. -/
+theorem primalCut_not_connected
+    (cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit) :
+    ¬ (G.deleteEdges
+      (GoertzelV24DualCycleSeparator.dualWalkPrimalCut graphData
+        (pairwiseUniqueSharedInteriorEdges graphData minimal)
+        cycle.walk)).Connected := by
+  have hconnected : G.Connected := by
+    rw [← GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
+      G graphData]
+    exact minimal.primalConnected
+  have hdual := orbitFaceInteriorDual_connected
+    graphData.toRotationSystem minimal.spherical.cubic
+      minimal.primalConnected minimal.vertexRotationCyclic
+  exact
+    GoertzelV24DualCycleSeparator.not_connected_deleteEdges_dualWalkPrimalCut_of_isCycle
+      graphData minimal.facesTwoSided hdual hconnected minimal.spherical
+        (pairwiseUniqueSharedInteriorEdges graphData minimal)
+          cycle.walk cycle.isCycle
+
+/-- The extracted remote dual cycle crosses exactly one distinct primal
+edge per dual step. -/
+theorem ncard_primalCut_eq_length
+    (cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit) :
+    (GoertzelV24DualCycleSeparator.dualWalkPrimalCut graphData
+      (pairwiseUniqueSharedInteriorEdges graphData minimal)
+      cycle.walk).ncard = cycle.walk.length := by
+  exact
+    GoertzelV24DualCycleSeparator.ncard_dualWalkPrimalCut_eq_length_of_isCycle
+      graphData (pairwiseUniqueSharedInteriorEdges graphData minimal)
+        cycle.walk cycle.isCycle
+
+end CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+
 namespace ClosureRecoveryFaceTransferCircuit
 
 variable {rebaseCircuit :
