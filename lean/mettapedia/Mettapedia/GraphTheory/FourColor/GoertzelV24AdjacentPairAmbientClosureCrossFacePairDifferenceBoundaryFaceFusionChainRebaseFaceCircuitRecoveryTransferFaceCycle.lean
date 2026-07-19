@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferSuccessor
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitConstantFace
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitConstantFaceCell
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Data.List.Destutter
 
@@ -1207,6 +1207,26 @@ theorem IsLengthMinimal.twoArc_constantFace_or_exists_remoteDualCycle_or_rotated
         with hconstant | hremote | htransfer
   · exact Or.inl
       ⟨hminimal.arcLength_eq_two_of_constantFace hconstant, hconstant⟩
+  · exact Or.inr (Or.inl hremote)
+  · exact Or.inr (Or.inr htransfer)
+
+/-- The shortest-circuit classification with the constant branch packaged
+as its complete exact involution cell. -/
+theorem IsLengthMinimal.involutionCell_or_exists_remoteDualCycle_or_rotated_recoveryFaceTransfer
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal) :
+    Nonempty (CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+        minimal baseData) ∨
+      Nonempty (RemoteDualCycle circuit) ∨
+      ∃ rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+          minimal baseData,
+        rotated.arcLength = circuit.arcLength ∧
+          Nonempty (ClosureRecoveryFaceTransfer rotated) := by
+  rcases
+      hminimal.twoArc_constantFace_or_exists_remoteDualCycle_or_rotated_recoveryFaceTransfer
+        with hcell | hremote | htransfer
+  · exact Or.inl (circuit.exists_involutionCell_of_arcLength_eq_two hcell.1)
   · exact Or.inr (Or.inl hremote)
   · exact Or.inr (Or.inr htransfer)
 
