@@ -36,6 +36,20 @@ theorem faceOrbitDarts_ne_nil
     Finset.card_pos.mpr
       ⟨root, graphData.toRotationSystem.mem_faceOrbit_self root⟩
 
+/-- Every dart in the bounded facial enumeration represents the same
+quotient face as its root. -/
+theorem dartOrbitFace_eq_of_mem_faceOrbitDarts
+    (graphData : Data G) (root dart : G.Dart)
+    (hdart : dart ∈ faceOrbitDarts graphData root) :
+    dartOrbitFace graphData.toRotationSystem dart =
+      dartOrbitFace graphData.toRotationSystem root := by
+  simp only [faceOrbitDarts, List.mem_ofFn] at hdart
+  rcases hdart with ⟨position, rfl⟩
+  apply (mem_orbitFaceDarts_iff graphData.toRotationSystem
+    (dartOrbitFace graphData.toRotationSystem root) _).1
+  rw [orbitFaceDarts_dartOrbitFace_eq_faceOrbit]
+  exact faceCycleDart_mem graphData.toRotationSystem root position
+
 /-- A face-permutation step is a valid consecutive-dart step in the
 underlying simple graph. -/
 theorem dartAdj_phi (graphData : Data G) (dart : G.Dart) :
@@ -43,6 +57,28 @@ theorem dartAdj_phi (graphData : Data G) (dart : G.Dart) :
   change dart.snd = (graphData.toRotationSystem.phi dart).fst
   simpa using
     (graphData.toRotationSystem.vert_phi_eq_vert_alpha dart).symm
+
+/-- Consecutive darts in the bounded facial enumeration have exactly the
+edge obtained by one face-permutation step. -/
+theorem faceOrbitDarts_isPhiEdgeChain
+    (graphData : Data G) (root : G.Dart) :
+    List.IsChain
+      (fun first second : G.Dart =>
+        graphData.toRotationSystem.edgeOf second =
+          graphData.toRotationSystem.edgeOf
+            (graphData.toRotationSystem.phi first))
+      (faceOrbitDarts graphData root) := by
+  rw [faceOrbitDarts, List.isChain_ofFn]
+  intro index hnext
+  have hsuccessor :
+      faceCycleDart graphData.toRotationSystem root
+          ⟨index + 1, hnext⟩ =
+        graphData.toRotationSystem.phi
+          (faceCycleDart graphData.toRotationSystem root
+            ⟨index, Nat.lt_of_succ_lt hnext⟩) := by
+    simp only [faceCycleDart, pow_succ', Equiv.Perm.coe_mul,
+      Function.comp_apply]
+  exact congrArg graphData.toRotationSystem.edgeOf hsuccessor
 
 /-- The bounded face-orbit enumeration is a graph-dart chain. -/
 theorem faceOrbitDarts_isChain
@@ -187,19 +223,21 @@ theorem exists_rootedFaceTrail
       refine ⟨position, ?_⟩
       exact congrArg Subtype.val hposition
 
-/-- Removing the rooted face edge leaves an edge-simple facial bypass from
-its terminal endpoint back to its initial endpoint. -/
-theorem exists_rootedFaceBypass
+/-- Removing the rooted face edge leaves exactly the other edges of that
+facial boundary, in face order, as an edge-simple bypass. -/
+theorem exists_rootedFaceBypass_exact
     (graphData : Data G)
     (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
     (root : G.Dart) :
     ∃ bypass : G.Walk root.snd root.fst,
       bypass.IsTrail ∧
         root.edge ∉ bypass.edges ∧
+        bypass.darts = (faceOrbitDarts graphData root).tail ∧
         (∀ edge : G.edgeSet,
-          edge.1 ∈ bypass.edges →
+          edge.1 ∈ bypass.edges ↔
             edge ∈ orbitFaceBoundary graphData.toRotationSystem
-              (dartOrbitFace graphData.toRotationSystem root)) := by
+                (dartOrbitFace graphData.toRotationSystem root) ∧
+              edge.1 ≠ root.edge) := by
   rcases exists_rootedFaceTrail graphData htwoSided root with
     ⟨trail, htrail, hdarts, hedgeExact⟩
   have hdartsNe : trail.darts ≠ [] := by
@@ -217,29 +255,123 @@ theorem exists_rootedFaceBypass
   have hsnd : trail.snd = root.snd := by
     exact congrArg (fun dart : G.Dart => dart.snd) hfirstDart
   let bypass : G.Walk root.snd root.fst := trail.tail.copy hsnd rfl
+  have hbypassDarts : bypass.darts =
+      (faceOrbitDarts graphData root).tail := by
+    simp [bypass, SimpleGraph.Walk.tail,
+      SimpleGraph.Walk.darts_drop, hdarts]
   have hbypassEdges : bypass.edges = trail.edges.tail := by
     simp [bypass, SimpleGraph.Walk.tail,
       SimpleGraph.Walk.edges_drop]
-  refine ⟨bypass, ?_, ?_, ?_⟩
-  · refine ⟨?_⟩
+  have hedgesNe : trail.edges ≠ [] := by
+    simpa [SimpleGraph.Walk.edges] using hdartsNe
+  have hheadEdge : trail.edges.head hedgesNe = root.edge := by
+    have hheadMap := congrArg (fun dart : G.Dart => dart.edge) hheadDarts
+    simpa [SimpleGraph.Walk.edges, List.head_map] using hheadMap
+  have hdecomp : root.edge :: trail.edges.tail = trail.edges := by
+    rw [← hheadEdge]
+    exact List.cons_head_tail hedgesNe
+  have hrootNotMem : root.edge ∉ bypass.edges := by
     rw [hbypassEdges]
-    exact htrail.edges_nodup.tail
-  · rw [hbypassEdges]
-    have hedgesNe : trail.edges ≠ [] := by
-      simpa [SimpleGraph.Walk.edges] using hdartsNe
-    have hheadEdge : trail.edges.head hedgesNe = root.edge := by
-      have hheadMap := congrArg (fun dart : G.Dart => dart.edge) hheadDarts
-      simpa [SimpleGraph.Walk.edges, List.head_map] using hheadMap
-    have hdecomp : root.edge :: trail.edges.tail = trail.edges := by
-      rw [← hheadEdge]
-      exact List.cons_head_tail hedgesNe
     have hnodup := htrail.edges_nodup
     rw [← hdecomp, List.nodup_cons] at hnodup
     exact hnodup.1
-  · intro edge hedge
-    apply (hedgeExact edge).1
-    rw [hbypassEdges] at hedge
-    exact List.mem_of_mem_tail hedge
+  refine ⟨bypass, ?_, hrootNotMem, hbypassDarts, ?_⟩
+  · refine ⟨?_⟩
+    rw [hbypassEdges]
+    exact htrail.edges_nodup.tail
+  · intro edge
+    constructor
+    · intro hedge
+      refine ⟨?_, ?_⟩
+      · apply (hedgeExact edge).1
+        rw [hbypassEdges] at hedge
+        exact List.mem_of_mem_tail hedge
+      · intro hedgeRoot
+        exact hrootNotMem (hedgeRoot ▸ hedge)
+    · rintro ⟨hedgeFace, hedgeRoot⟩
+      have hedgeTrail : edge.1 ∈ trail.edges :=
+        (hedgeExact edge).2 hedgeFace
+      rw [← hdecomp] at hedgeTrail
+      rcases List.mem_cons.mp hedgeTrail with hroot | htail
+      · exact False.elim (hedgeRoot hroot)
+      · simpa only [hbypassEdges] using htail
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+private theorem exists_walk_eq_append_cons_of_mem_edges
+    {start finish : V} (walk : G.Walk start finish)
+    (edge : Sym2 V) (hedge : edge ∈ walk.edges) :
+    ∃ (left right : V) (adj : G.Adj left right)
+        (before : G.Walk start left) (after : G.Walk right finish),
+      edge = s(left, right) ∧
+        walk = before.append (Walk.cons adj after) := by
+  induction walk with
+  | nil => simp at hedge
+  | @cons start next finish adj tail inductionHypothesis =>
+      rw [Walk.edges_cons, List.mem_cons] at hedge
+      rcases hedge with hfirst | htail
+      · exact ⟨start, next, adj, Walk.nil, tail, hfirst, rfl⟩
+      · rcases inductionHypothesis htail with
+          ⟨left, right, selectedAdj, before, after,
+            hedgeValue, hdecomp⟩
+        refine ⟨left, right, selectedAdj, Walk.cons adj before, after,
+          hedgeValue, ?_⟩
+        rw [hdecomp]
+        rfl
+
+/-- A second edge of a rooted face canonically splits the facial bypass
+into the two ordered arcs on either side of that edge. -/
+theorem exists_rootedFaceBypass_splitAtEdge
+    (graphData : Data G)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (root : G.Dart) (selected : G.edgeSet)
+    (hselected : selected ∈
+      orbitFaceBoundary graphData.toRotationSystem
+        (dartOrbitFace graphData.toRotationSystem root))
+    (hselectedRoot : selected.1 ≠ root.edge) :
+    ∃ (left right : V) (adj : G.Adj left right)
+        (before : G.Walk root.snd left)
+        (after : G.Walk right root.fst),
+      selected.1 = s(left, right) ∧
+        (before.append (Walk.cons adj after)).IsTrail ∧
+        (before.append (Walk.cons adj after)).darts =
+          (faceOrbitDarts graphData root).tail ∧
+        (∀ edge : G.edgeSet,
+          edge.1 ∈ (before.append (Walk.cons adj after)).edges ↔
+            edge ∈ orbitFaceBoundary graphData.toRotationSystem
+                (dartOrbitFace graphData.toRotationSystem root) ∧
+              edge.1 ≠ root.edge) := by
+  rcases exists_rootedFaceBypass_exact graphData htwoSided root with
+    ⟨bypass, hbypass, _hroot, hdarts, hexact⟩
+  have hselectedBypass : selected.1 ∈ bypass.edges :=
+    (hexact selected).2 ⟨hselected, hselectedRoot⟩
+  rcases exists_walk_eq_append_cons_of_mem_edges bypass selected.1
+      hselectedBypass with
+    ⟨left, right, adj, before, after, hedgeValue, hdecomp⟩
+  refine ⟨left, right, adj, before, after, hedgeValue, ?_, ?_, ?_⟩
+  · rw [← hdecomp]
+    exact hbypass
+  · rw [← hdecomp]
+    exact hdarts
+  · intro edge
+    rw [← hdecomp]
+    exact hexact edge
+
+/-- Removing the rooted face edge leaves an edge-simple facial bypass from
+its terminal endpoint back to its initial endpoint. -/
+theorem exists_rootedFaceBypass
+    (graphData : Data G)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (root : G.Dart) :
+    ∃ bypass : G.Walk root.snd root.fst,
+      bypass.IsTrail ∧
+        root.edge ∉ bypass.edges ∧
+        (∀ edge : G.edgeSet,
+          edge.1 ∈ bypass.edges →
+            edge ∈ orbitFaceBoundary graphData.toRotationSystem
+              (dartOrbitFace graphData.toRotationSystem root)) := by
+  rcases exists_rootedFaceBypass_exact graphData htwoSided root with
+    ⟨bypass, hbypass, hroot, _hdarts, hexact⟩
+  exact ⟨bypass, hbypass, hroot, fun edge hedge => (hexact edge).1 hedge |>.1⟩
 
 end
 
