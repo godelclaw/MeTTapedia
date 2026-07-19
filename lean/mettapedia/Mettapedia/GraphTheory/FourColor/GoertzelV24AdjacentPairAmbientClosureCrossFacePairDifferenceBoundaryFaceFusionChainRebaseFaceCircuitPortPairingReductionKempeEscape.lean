@@ -377,10 +377,12 @@ theorem exists_deletedColoring_adjacent01_23_of_order
     intro firstTrail secondTrail hfirst hsecond hdisjoint
     exact data.no_edge_disjoint_opposite_retained_trails_of_order
       graphData minimal horder firstTrail secondTrail hfirst hsecond hdisjoint
-  rcases exists_adjacent_kempe_successor_of_no_disjoint_opposite_trails
+  obtain ⟨adjacentColoring, hresult⟩ :=
+    exists_adjacent_kempe_successor_of_no_disjoint_opposite_trails
       data.degreeTwoBoundaryData hwell constantColoring hconstantColoring
-      hconstant hnoOppositeTrails with
-    ⟨adjacentColoring, hAdjacentColoring, hAdjacent⟩
+        hconstant hnoOppositeTrails
+  have hAdjacentColoring := hresult.1
+  have hAdjacent := hresult.2.1
   have hnotColorable :
       ¬ ∃ ambientColoring : G.EdgeColoring Color,
           IsTaitEdgeColoring G ambientColoring :=
@@ -389,11 +391,10 @@ theorem exists_deletedColoring_adjacent01_23_of_order
   have hsameSide :=
     GoertzelV24AdjacentPairInsertion.AdjacentPairData.sameSidePairs_of_not_taitColorable
       data hcubic hnotColorable adjacentColoring hAdjacentColoring
-  rcases hAdjacent with hcanonical | halternate
-  · exact ⟨adjacentColoring, hAdjacentColoring, hcanonical⟩
-  · exfalso
-    exact halternate.2.2
-      (hsameSide.1.symm.trans halternate.2.1.symm)
+  exact Or.elim hAdjacent
+    (fun hcanonical => ⟨adjacentColoring, hAdjacentColoring, hcanonical⟩)
+    (fun halternate => False.elim (halternate.2.2
+      (hsameSide.1.symm.trans halternate.2.1.symm)))
 
 /-- Reading any adjacent pair from its two local cubic rotations supplies
 both its cyclic port order and a strict `01|23` deleted coloring. -/

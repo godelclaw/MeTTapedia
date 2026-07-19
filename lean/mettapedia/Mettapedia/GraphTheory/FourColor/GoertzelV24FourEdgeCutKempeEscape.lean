@@ -179,7 +179,8 @@ theorem exists_adjacent_kempe_successor_of_no_disjoint_opposite_trails
           firstTrail.edges.Disjoint secondTrail.edges → False) :
     ∃ C' : G.EdgeColoring Color,
       IsTaitEdgeColoring G C' ∧
-        SquareBoundaryWord.AdjacentPairs (data.colorWord C') := by
+        SquareBoundaryWord.AdjacentPairs (data.colorWord C') ∧
+        C' ∈ G.EdgeKempeClosure C := by
   have ha : a ≠ 0 := by
     rw [← hconstant 0]
     exact data.colorWord_ne_zero hdata C 0
@@ -221,7 +222,9 @@ theorem exists_adjacent_kempe_successor_of_no_disjoint_opposite_trails
       (data.kempePortSupport C a b K0) hab hzeroSupport0 hsupport0Proper
   have hclass0 := data.four_colorWord_classification hdata C0 hC0
   rcases hclass0.resolve_left hnotAll0 with hadjacent0 | hopposite0
-  · exact ⟨C0, hC0, hadjacent0⟩
+  · exact ⟨C0, hC0, hadjacent0,
+      G.mem_edgeKempeClosure_of_mem_of_step
+        (G.mem_edgeKempeClosure_self C) a b K0⟩
 
   have hsupport0 : data.kempePortSupport C a b K0 = {0, 2} := by
     apply support_eq_zero_two_of_constant_opposite_swap
@@ -393,9 +396,11 @@ theorem commonRetainedStateSet_allEqualKempeEscape_of_topology
       graphData htwoSided hdual hconnected hsphere hcubic hrotation
       hcyclic cut hcard cyclicData firstTrail secondTrail
       hfirstTrail hsecondTrail hsecondNil hdisjoint
-  rcases exists_adjacent_kempe_successor_of_no_disjoint_opposite_trails
-      data hdata C hC hconstant hnoOppositeTrails with
-    ⟨C', hC', hadjacent⟩
+  obtain ⟨C', hresult⟩ :=
+    exists_adjacent_kempe_successor_of_no_disjoint_opposite_trails
+      data hdata C hC hconstant hnoOppositeTrails
+  have hC' := hresult.1
+  have hadjacent := hresult.2.1
   rcases hadjacent with hadjacent01 | hadjacent12
   · exact Or.inl ⟨data.colorWord C', ⟨C', hC', rfl⟩, hadjacent01⟩
   · exact Or.inr ⟨data.colorWord C', ⟨C', hC', rfl⟩, hadjacent12⟩
