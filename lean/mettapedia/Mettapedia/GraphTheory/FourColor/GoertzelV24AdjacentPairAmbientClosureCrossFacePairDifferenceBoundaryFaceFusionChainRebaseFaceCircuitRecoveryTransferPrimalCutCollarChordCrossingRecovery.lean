@@ -52,7 +52,6 @@ variable {rebaseCircuit :
 whose chord triangles cut off precisely the two endpoint stars and whose
 rotation-ordered deletion has a compatible Tait coloring. -/
 theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
-    (hcyclic : CyclicallyFiveEdgeConnected G)
     (circuit : ClosureRecoveryFaceTransferCircuit rebaseCircuit)
     (hminimal : circuit.IsLengthMinimal)
     (hlength : circuit.arcLength = rebaseCircuit.arcLength)
@@ -192,6 +191,9 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
                   minimal.spherical.cubic minimal.vertexRotationCyclic)
                   port ∉
               orbitFaceBoundary graphData.toRotationSystem face.1) := by
+  have hcyclic : CyclicallyFiveEdgeConnected G :=
+    GoertzelV24FourEdgeCutGluing.cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample
+      graphData minimal
   rcases
       circuit.exists_remote_primal_separator_with_four_port_opposite_walk_chord_of_arcLength_le_four
         hcyclic hminimal hlength hshort with
@@ -240,8 +242,8 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
           hwalkLength hadj hpairBoundary
   dsimp only at hstars
   have htransfer :=
-    exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_cyclicallyFive
-      graphData minimal hcyclic hadj
+    exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_vertexMinimalTaitCounterexample
+      graphData minimal hadj
   refine ⟨hrebaseLength, walk, hcycle, hdelete, hcutCard, ?_, hcentral,
     hboundary⟩
   dsimp only
