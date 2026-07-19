@@ -5,6 +5,7 @@ namespace Mettapedia.GraphTheory.FourColor
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairInsertion
 open GoertzelV24CubicSmallBoundaryCycle
+open GoertzelV24DualCycleCollar
 open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
@@ -193,6 +194,26 @@ theorem crossingEdge_ne_boundary
   intro heq
   exact hboundaryOff (heq ▸ hedgeFace)
 
+/-- Every face incident to a crossed edge is backed by an actual certified
+rebase arc of the source circuit. -/
+theorem exists_rebaseArc_of_crossingEdge_mem_face
+    (cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit)
+    {edge : G.edgeSet} {face : OrbitFace graphData.toRotationSystem}
+    (hedge : edge ∈ cycle.crossingEdges)
+    (hface : edge ∈
+      orbitFaceBoundary graphData.toRotationSystem face) :
+    ∃ arc ∈ rebaseCircuit.first :: rebaseCircuit.rest,
+      arc.dualFace =
+        (⟨face, Finset.mem_univ face⟩ : AmbientFace
+          (Finset.univ : Finset
+            (OrbitFace graphData.toRotationSystem))) := by
+  apply cycle.exists_rebaseArc_of_mem_support
+  exact face_mem_walk_support_of_mem_crossingEdge_of_mem_boundary
+    graphData (pairwiseUniqueSharedInteriorEdges graphData minimal)
+      cycle.walk hedge hface
+
 /-- The internal edge of a remote adjacent-pair collar is different from
 the restored central edge. -/
 theorem AdjacentPairPrimalCutProfile.internalEdge_ne_central
@@ -219,6 +240,28 @@ theorem AdjacentPairPrimalCutProfile.internalEdge_ne_boundary
   intro heq
   exact cycle.boundary_not_mem profile.leftFace profile.leftFace_mem_support
     port (heq ▸ profile.internalEdge_mem_leftFace)
+
+/-- The left chord face of an exact adjacent-pair collar is selected by a
+certified arc of the source rebase circuit. -/
+theorem AdjacentPairPrimalCutProfile.exists_leftFace_rebaseArc
+    {cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit}
+    (profile : cycle.AdjacentPairPrimalCutProfile) :
+    ∃ arc ∈ rebaseCircuit.first :: rebaseCircuit.rest,
+      arc.dualFace = profile.leftFace :=
+  cycle.exists_rebaseArc_of_mem_support profile.leftFace_mem_support
+
+/-- The right chord face of an exact adjacent-pair collar is selected by a
+certified arc of the source rebase circuit. -/
+theorem AdjacentPairPrimalCutProfile.exists_rightFace_rebaseArc
+    {cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit}
+    (profile : cycle.AdjacentPairPrimalCutProfile) :
+    ∃ arc ∈ rebaseCircuit.first :: rebaseCircuit.rest,
+      arc.dualFace = profile.rightFace :=
+  cycle.exists_rebaseArc_of_mem_support profile.rightFace_mem_support
 
 /-- Cyclic five-edge-connectivity classifies every remote simple dual
 cycle as an exact separator of size at least five, a singleton star, or an
