@@ -144,6 +144,7 @@ structure IntrinsicShortTargetEscapeCollar
     IsRetainedAmbientEdge
       (RecoveredRotationOrderedData graphData minimal baseData) targetEdge
   targetCrossing : targetEdge ∈ cycle.crossingEdges
+  singletonProfile : Nonempty cycle.SingletonPrimalCutProfile
   sourceCentralRetainedByTarget :
     IsRetainedAmbientEdge
       (RecoveredRotationOrderedData graphData minimal targetBase)
@@ -346,7 +347,7 @@ theorem IntrinsicShortFusionTarget.nonempty_targetEscapeCollar
   have htargetRetained := target.isRetainedAmbientEdge
   rcases target with
     ⟨first, second, _hne, _hadj, htargetValue, _hcentral, _hboundary,
-      hkempe, _hsingleton, hcrossing⟩
+      hkempe, hsingleton, hcrossing⟩
   rcases hkempe with
     ⟨targetBase, htargetFirstBase, htargetSecondBase, targetNormal,
       htargetOutcome, ⟨targetEscape⟩⟩
@@ -433,6 +434,7 @@ theorem IntrinsicShortFusionTarget.nonempty_targetEscapeCollar
     targetCentral_eq := htargetCentral
     targetRetainedBySource := htargetRetained
     targetCrossing := hcrossing
+    singletonProfile := hsingleton
     sourceCentralRetainedByTarget := hsourceCentralRetained
     sourceBoundaryRetainedByTarget := hsourceBoundaryRetained }⟩
 
