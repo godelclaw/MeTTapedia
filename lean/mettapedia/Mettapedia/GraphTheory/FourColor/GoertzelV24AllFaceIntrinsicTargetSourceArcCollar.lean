@@ -150,8 +150,8 @@ def AdjacentPairPrimalCutProfile.intrinsicEdgeSourceArcCollar
       rw [hrightSourceFace]
       exact profile.internalEdge_mem_rightFace }
 
-/-- Every intrinsic singleton-star or adjacent-pair restart edge carries
-one unified two-anchor source collar. -/
+/-- Every intrinsic singleton-star restart edge carries a two-anchor
+source collar on consecutive faces of its remote triangle. -/
 theorem IntrinsicShortFusionTarget.nonempty_sourceArcCollar
     {cycle :
       CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
@@ -161,13 +161,9 @@ theorem IntrinsicShortFusionTarget.nonempty_sourceArcCollar
     Nonempty (cycle.IntrinsicTargetSourceArcCollar targetEdge) := by
   rcases target with
     ⟨_first, _second, _hne, _hadj, _hvalue, _hcentral, _hboundary,
-      _hkempe, hgeometry⟩
-  rcases hgeometry with hsingleton | hadjacent
-  · exact cycle.nonempty_intrinsicTargetSourceArcCollar_of_mem_crossingEdges
-      hsingleton.2
-  · rcases hadjacent with ⟨profile, htarget⟩
-    subst targetEdge
-    exact ⟨profile.intrinsicEdgeSourceArcCollar⟩
+      _hkempe, _hsingleton, hcrossing⟩
+  exact cycle.nonempty_intrinsicTargetSourceArcCollar_of_mem_crossingEdges
+    hcrossing
 
 /-- The two collar anchors occupy distinct physical source positions. -/
 theorem IntrinsicTargetSourceArcCollar.leftPosition_ne_rightPosition
