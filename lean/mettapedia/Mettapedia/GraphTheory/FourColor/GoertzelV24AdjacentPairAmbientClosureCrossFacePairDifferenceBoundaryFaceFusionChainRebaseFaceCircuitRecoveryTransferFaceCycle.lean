@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferSuccessor
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
+import Mathlib.Data.List.Destutter
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -83,6 +84,149 @@ private theorem getVert_add_two_eq_of_consecutive_edges_eq
   · exact False.elim
       ((walk.adj_getVert_succ hindexLength).ne hforward.1)
   · simpa [Nat.add_assoc] using hreverse.1
+
+private theorem exists_tail_destutter'_eq_cons
+    {α : Type*} {relation : α → α → Prop}
+    [DecidableRel relation]
+    (anchor : α) (states : List α) :
+    ∃ output, states.destutter' relation anchor = anchor :: output := by
+  induction states generalizing anchor with
+  | nil => exact ⟨[], rfl⟩
+  | cons next states ih =>
+      by_cases hrel : relation anchor next
+      · rcases ih next with ⟨output, houtput⟩
+        exact ⟨next :: output, by
+          rw [List.destutter'_cons_pos states hrel, houtput]⟩
+      · rcases ih anchor with ⟨output, houtput⟩
+        exact ⟨output, by
+          rw [List.destutter'_cons_neg states hrel, houtput]⟩
+
+private theorem exists_first_change_of_destutter'_eq_cons_cons
+    {α : Type*} {relation : α → α → Prop}
+    [DecidableRel relation]
+    (anchor next : α) (states output : List α)
+    (hdestutter : states.destutter' relation anchor =
+      anchor :: next :: output) :
+    ∃ front suffix,
+      states = front ++ next :: suffix ∧
+      (∀ state ∈ front, ¬ relation anchor state) ∧
+      suffix.destutter' relation next = next :: output := by
+  induction states generalizing anchor with
+  | nil => simp at hdestutter
+  | cons current states ih =>
+      by_cases hrel : relation anchor current
+      · rw [List.destutter'_cons_pos states hrel] at hdestutter
+        have htail : states.destutter' relation current =
+            next :: output := (List.cons.inj hdestutter).2
+        rcases exists_tail_destutter'_eq_cons
+            (relation := relation) current states with
+          ⟨tail, hhead⟩
+        have hcurrent : current = next := by
+          rw [hhead] at htail
+          exact (List.cons.inj htail).1
+        subst current
+        exact ⟨[], states, by simp, by simp, htail⟩
+      · rw [List.destutter'_cons_neg states hrel] at hdestutter
+        rcases ih anchor hdestutter with
+          ⟨front, suffix, hstates, hfront, hsuffix⟩
+        refine ⟨current :: front, suffix, ?_, ?_, hsuffix⟩
+        · simp [hstates]
+        · intro state hstate
+          rcases List.mem_cons.mp hstate with rfl | hstate
+          · exact hrel
+          · exact hfront state hstate
+
+private theorem exists_two_runs_of_destutter'_eq_backtrack
+    {α : Type*} {relation : α → α → Prop}
+    [DecidableRel relation]
+    (outer middle returning : α) (states after : List α)
+    (hdestutter : states.destutter' relation outer =
+      outer :: middle :: returning :: after) :
+    ∃ outerTail middleTail suffix,
+      states = outerTail ++ middle :: middleTail ++ returning :: suffix ∧
+      (∀ state ∈ outerTail, ¬ relation outer state) ∧
+      (∀ state ∈ middleTail, ¬ relation middle state) := by
+  rcases exists_first_change_of_destutter'_eq_cons_cons
+      outer middle states (returning :: after) hdestutter with
+    ⟨outerTail, middleSuffix, hstates, houter, hmiddleDestutter⟩
+  rcases exists_first_change_of_destutter'_eq_cons_cons
+      middle returning middleSuffix after hmiddleDestutter with
+    ⟨middleTail, suffix, hmiddleSuffix, hmiddle, _⟩
+  refine ⟨outerTail, middleTail, suffix, ?_, houter, hmiddle⟩
+  rw [hstates, hmiddleSuffix]
+  simp only [List.cons_append, List.append_assoc]
+
+private theorem exists_runs_of_destutter_eq_append_backtrack
+    {α : Type*} {relation : α → α → Prop}
+    [DecidableRel relation]
+    (anchor outer middle returning : α)
+    (states before after : List α)
+    (hdestutter : (anchor :: states).destutter relation =
+      before ++ outer :: middle :: returning :: after) :
+    ∃ physicalBefore outerTail middleTail physicalAfter,
+      anchor :: states =
+        physicalBefore ++
+          outer :: outerTail ++ middle :: middleTail ++
+            returning :: physicalAfter ∧
+      (∀ state ∈ outerTail, ¬ relation outer state) ∧
+      (∀ state ∈ middleTail, ¬ relation middle state) := by
+  induction before generalizing anchor states with
+  | nil =>
+      rw [List.destutter_cons'] at hdestutter
+      rcases exists_tail_destutter'_eq_cons
+          (relation := relation) anchor states with ⟨output, hhead⟩
+      have hanchor : anchor = outer := by
+        rw [hhead] at hdestutter
+        exact (List.cons.inj hdestutter).1
+      subst anchor
+      rcases exists_two_runs_of_destutter'_eq_backtrack
+          outer middle returning states after hdestutter with
+        ⟨outerTail, middleTail, physicalAfter, hstates, houter, hmiddle⟩
+      exact ⟨[], outerTail, middleTail, physicalAfter,
+        by simp [hstates], houter, hmiddle⟩
+  | cons first before ih =>
+      rw [List.destutter_cons'] at hdestutter
+      rcases exists_tail_destutter'_eq_cons
+          (relation := relation) anchor states with ⟨output, hhead⟩
+      have hanchor : anchor = first := by
+        rw [hhead] at hdestutter
+        exact (List.cons.inj hdestutter).1
+      subst first
+      cases before with
+      | nil =>
+          rcases exists_first_change_of_destutter'_eq_cons_cons
+              anchor outer states (middle :: returning :: after)
+                hdestutter with
+            ⟨initialTail, suffix, hstates, hinitial, hsuffix⟩
+          have hrecursive :
+              (outer :: suffix).destutter relation =
+                outer :: middle :: returning :: after := by
+            simpa [List.destutter_cons'] using hsuffix
+          rcases ih outer suffix hrecursive with
+            ⟨physicalBefore, outerTail, middleTail, physicalAfter,
+              hphysical, houter, hmiddle⟩
+          refine ⟨anchor :: initialTail ++ physicalBefore,
+            outerTail, middleTail, physicalAfter, ?_, houter, hmiddle⟩
+          rw [hstates, hphysical]
+          simp only [List.cons_append, List.append_assoc]
+      | cons second before =>
+          rcases exists_first_change_of_destutter'_eq_cons_cons
+              anchor second states
+                (before ++ outer :: middle :: returning :: after)
+                hdestutter with
+            ⟨initialTail, suffix, hstates, hinitial, hsuffix⟩
+          have hrecursive :
+              (second :: suffix).destutter relation =
+                (second :: before) ++
+                  outer :: middle :: returning :: after := by
+            simpa [List.destutter_cons'] using hsuffix
+          rcases ih second suffix hrecursive with
+            ⟨physicalBefore, outerTail, middleTail, physicalAfter,
+              hphysical, houter, hmiddle⟩
+          refine ⟨anchor :: initialTail ++ physicalBefore,
+            outerTail, middleTail, physicalAfter, ?_, houter, hmiddle⟩
+          rw [hstates, hphysical]
+          simp only [List.cons_append, List.append_assoc]
 
 namespace GoertzelV24AdjacentPairInsertion.AdjacentPairData
 
@@ -546,6 +690,464 @@ theorem constantFace_or_exists_remote_dualCycle_or_compressedFaceBacktrack
     · exact Or.inr (Or.inl hcycle)
     · exact Or.inr (Or.inr
         (nontrail.exists_compressedFaceBacktrack_of_acyclic hacyclic))
+
+/-- Three physical constant-face runs lifting one compressed backtrack. -/
+structure CyclicPhysicalFaceBacktrack
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) where
+  outer :
+    CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData
+  middle :
+    CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData
+  returning :
+    CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData
+  physicalBefore : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  outerTail : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  middleTail : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  physicalAfter : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  split : (circuit.first :: circuit.rest) ++ [circuit.first] =
+    physicalBefore ++
+      (outer :: (outerTail ++
+        (middle :: (middleTail ++ (returning :: physicalAfter)))))
+  returningFace : returning.selectedFace = outer.selectedFace
+  middleFace_ne : outer.selectedFace ≠ middle.selectedFace
+  outerTail_faces : ∀ arc ∈ outerTail,
+    arc.selectedFace = outer.selectedFace
+  middleTail_faces : ∀ arc ∈ middleTail,
+    arc.selectedFace = middle.selectedFace
+
+/-- Destutter inversion turns a compressed backtrack into three
+contiguous physical constant-face runs in the closed arc word. -/
+theorem CompressedFaceBacktrack.exists_cyclicPhysicalFaceBacktrack
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (backtrack : CompressedFaceBacktrack circuit) :
+    Nonempty (CyclicPhysicalFaceBacktrack circuit) := by
+  let cyclicArcs := (circuit.first :: circuit.rest) ++ [circuit.first]
+  let faceRelation := fun first second :
+      CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData =>
+    first.selectedFace ≠ second.selectedFace
+  let compressedArcs := cyclicArcs.destutter faceRelation
+  have hcyclicMap : cyclicArcs.map
+      CrossCentralExactFaceCertifiedRebaseArc.dualFace =
+      circuit.cyclicDualFaces := by
+    simp [cyclicArcs,
+      CrossCentralExactFaceCertifiedRebaseCircuit.cyclicDualFaces]
+  have hcompressedMap : compressedArcs.map
+      CrossCentralExactFaceCertifiedRebaseArc.dualFace =
+      circuit.compressedDualFaces := by
+    calc
+      compressedArcs.map
+            CrossCentralExactFaceCertifiedRebaseArc.dualFace =
+          (cyclicArcs.map
+              CrossCentralExactFaceCertifiedRebaseArc.dualFace).destutter
+            (· ≠ ·) := by
+        apply List.map_destutter
+        intro first _ second _
+        simp [faceRelation,
+          CrossCentralExactFaceCertifiedRebaseArc.dualFace]
+      _ = circuit.compressedDualFaces := by
+        rw [hcyclicMap]
+        rfl
+  have hlength : compressedArcs.length =
+      circuit.compressedDualFaces.length := by
+    simpa using congrArg List.length hcompressedMap
+  have hindex : backtrack.index + 2 < compressedArcs.length := by
+    rw [hlength]
+    exact backtrack.index_add_two_lt
+  let outer := compressedArcs[backtrack.index]
+  let middle := compressedArcs[backtrack.index + 1]
+  let returning := compressedArcs[backtrack.index + 2]
+  have houterIndex : backtrack.index < compressedArcs.length := by
+    omega
+  have hmiddleIndex : backtrack.index + 1 < compressedArcs.length := by
+    omega
+  have houterFaceIndex :
+      backtrack.index < circuit.compressedDualFaces.length := by
+    rw [← hlength]
+    exact houterIndex
+  have hmiddleFaceIndex :
+      backtrack.index + 1 < circuit.compressedDualFaces.length := by
+    rw [← hlength]
+    exact hmiddleIndex
+  have houterDual : outer.dualFace =
+      circuit.compressedDualFaces[backtrack.index] := by
+    have hmap := congrArg
+      (fun entries => entries[backtrack.index]?) hcompressedMap
+    simp [houterIndex, houterFaceIndex] at hmap
+    exact hmap
+  have hmiddleDual : middle.dualFace =
+      circuit.compressedDualFaces[backtrack.index + 1] := by
+    have hmap := congrArg
+      (fun entries => entries[backtrack.index + 1]?) hcompressedMap
+    simp [hmiddleIndex, hmiddleFaceIndex] at hmap
+    exact hmap
+  have hreturningDual : returning.dualFace =
+      circuit.compressedDualFaces[backtrack.index + 2] := by
+    have hmap := congrArg
+      (fun entries => entries[backtrack.index + 2]?) hcompressedMap
+    simp [hindex, backtrack.index_add_two_lt] at hmap
+    exact hmap
+  have hreturningFace : returning.selectedFace = outer.selectedFace := by
+    have hdual : returning.dualFace = outer.dualFace :=
+      hreturningDual.trans
+        (backtrack.outer_eq.symm.trans houterDual.symm)
+    exact congrArg Subtype.val hdual
+  have hmiddleFace : outer.selectedFace ≠ middle.selectedFace := by
+    intro hfaces
+    apply backtrack.adjacent_ne
+    rw [← houterDual, ← hmiddleDual]
+    exact Subtype.ext hfaces
+  have hcompressedSplit : compressedArcs =
+      compressedArcs.take backtrack.index ++
+        outer :: middle :: returning ::
+          compressedArcs.drop (backtrack.index + 3) := by
+    simp [outer, middle, returning]
+  have hdestutter : cyclicArcs.destutter faceRelation =
+      compressedArcs.take backtrack.index ++
+        outer :: middle :: returning ::
+          compressedArcs.drop (backtrack.index + 3) :=
+    hcompressedSplit
+  have hdestutter' :
+      ((circuit.first :: circuit.rest) ++ [circuit.first]).destutter
+          faceRelation =
+        compressedArcs.take backtrack.index ++
+          outer :: middle :: returning ::
+            compressedArcs.drop (backtrack.index + 3) := by
+    simpa [cyclicArcs] using hdestutter
+  rcases exists_runs_of_destutter_eq_append_backtrack
+      (relation := faceRelation) circuit.first outer middle returning
+        (circuit.rest ++ [circuit.first])
+        (compressedArcs.take backtrack.index)
+        (compressedArcs.drop (backtrack.index + 3)) hdestutter' with
+    ⟨physicalBefore, outerTail, middleTail, physicalAfter,
+      hsplit, houterTail, hmiddleTail⟩
+  refine ⟨{
+    outer := outer
+    middle := middle
+    returning := returning
+    physicalBefore := physicalBefore
+    outerTail := outerTail
+    middleTail := middleTail
+    physicalAfter := physicalAfter
+    split := ?_
+    returningFace := hreturningFace
+    middleFace_ne := hmiddleFace
+    outerTail_faces := ?_
+    middleTail_faces := ?_ }⟩
+  · simpa only [List.cons_append, List.append_assoc] using hsplit
+  · intro arc harc
+    exact (not_ne_iff.mp (houterTail arc harc)).symm
+  · intro arc harc
+    exact (not_ne_iff.mp (hmiddleTail arc harc)).symm
+
+/-- A cyclic rotation preserves the number of certified arcs. -/
+@[simp] theorem rotateAtSplit_arcLength
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData)
+    (first : CrossCentralExactFaceCertifiedRebaseArc graphData minimal
+      baseData)
+    (before after : List
+      (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData))
+    (hsplit : circuit.first :: circuit.rest =
+      before ++ first :: after) :
+    (circuit.rotateAtSplit first before after hsplit).arcLength =
+      circuit.arcLength := by
+  simp only [arcLength, rotateAtSplit_first, rotateAtSplit_rest]
+  rw [hsplit]
+  simp [Nat.add_comm, Nat.add_left_comm]
+
+/-- A displayed constant-face middle block, after choosing a cyclic
+representative of the same certified rebase circuit. -/
+structure RotatedConstantFaceMiddleBlock
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData) where
+  rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+    minimal baseData
+  arcLength_eq : rotated.arcLength = circuit.arcLength
+  left : CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData
+  middleFirst :
+    CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData
+  right : CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData
+  before : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  middleRest : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  after : List
+    (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+  split : rotated.first :: rotated.rest =
+    before ++
+      (left :: ((middleFirst :: middleRest) ++ (right :: after)))
+  face_ne : left.selectedFace ≠ middleFirst.selectedFace
+  middleFaces : ∀ arc ∈ middleFirst :: middleRest,
+    arc.selectedFace = middleFirst.selectedFace
+  rightFace : right.selectedFace = left.selectedFace
+
+/-- The closed physical runs yield an ordinary displayed middle block in
+a cyclic representative.  The only apparent exception would be a
+two-run circuit, which is excluded by facial nonbacktracking. -/
+theorem CyclicPhysicalFaceBacktrack.exists_rotatedConstantFaceMiddleBlock
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (backtrack : CyclicPhysicalFaceBacktrack circuit) :
+    Nonempty (RotatedConstantFaceMiddleBlock circuit) := by
+  let outerBlock := backtrack.outer :: backtrack.outerTail
+  have houterBlock : outerBlock ≠ [] := by simp [outerBlock]
+  let left := outerBlock.getLast houterBlock
+  let before := backtrack.physicalBefore ++ outerBlock.dropLast
+  have hleftMem : left ∈ outerBlock := by
+    exact List.getLast_mem houterBlock
+  have hleftFace : left.selectedFace = backtrack.outer.selectedFace := by
+    rcases List.mem_cons.mp hleftMem with hleft | hleft
+    · simpa [outerBlock] using congrArg
+        CrossCentralExactFaceCertifiedRebaseArc.selectedFace hleft
+    · exact backtrack.outerTail_faces left
+        (by simpa [outerBlock] using hleft)
+  have houterSplit : outerBlock.dropLast ++ [left] = outerBlock := by
+    simpa [left] using List.dropLast_append_getLast (l := outerBlock)
+      houterBlock
+  have hcyclicSplit :
+      (circuit.first :: circuit.rest) ++ [circuit.first] =
+        before ++ left :: backtrack.middle ::
+          backtrack.middleTail ++ backtrack.returning ::
+            backtrack.physicalAfter := by
+    rw [backtrack.split]
+    calc
+      backtrack.physicalBefore ++ backtrack.outer ::
+            (backtrack.outerTail ++ backtrack.middle ::
+              (backtrack.middleTail ++
+                backtrack.returning :: backtrack.physicalAfter)) =
+          backtrack.physicalBefore ++ outerBlock ++
+            backtrack.middle :: backtrack.middleTail ++
+              backtrack.returning :: backtrack.physicalAfter := by
+        simp [outerBlock, List.append_assoc]
+      _ = backtrack.physicalBefore ++
+            (outerBlock.dropLast ++ [left]) ++
+              backtrack.middle :: backtrack.middleTail ++
+                backtrack.returning :: backtrack.physicalAfter := by
+        rw [houterSplit]
+      _ = before ++ left :: backtrack.middle ::
+            backtrack.middleTail ++ backtrack.returning ::
+              backtrack.physicalAfter := by
+        simp [before, List.append_assoc]
+  have hfaceNe : left.selectedFace ≠ backtrack.middle.selectedFace := by
+    rw [hleftFace]
+    exact backtrack.middleFace_ne
+  have hmiddleFaces : ∀ arc ∈
+      backtrack.middle :: backtrack.middleTail,
+      arc.selectedFace = backtrack.middle.selectedFace := by
+    intro arc harc
+    rcases List.mem_cons.mp harc with rfl | harc
+    · rfl
+    · exact backtrack.middleTail_faces arc harc
+  by_cases hafter : backtrack.physicalAfter = []
+  · rw [hafter] at hcyclicSplit
+    have hreturning : backtrack.returning = circuit.first := by
+      let lastPrefix := before ++ left :: backtrack.middle ::
+        backtrack.middleTail
+      have hright : lastPrefix ++ [backtrack.returning] =
+          before ++ left :: backtrack.middle ::
+            backtrack.middleTail ++ [backtrack.returning] := by
+        simp [lastPrefix, List.append_assoc]
+      calc
+        backtrack.returning =
+            (lastPrefix ++ [backtrack.returning]).getLast (by simp) :=
+          (List.getLast_append_singleton lastPrefix).symm
+        _ = ((circuit.first :: circuit.rest) ++ [circuit.first]).getLast
+              (by simp) := by
+          exact List.getLast_congr (by simp) (by simp) (by
+            rw [hright]
+            exact hcyclicSplit.symm)
+        _ = circuit.first :=
+          List.getLast_append_singleton (circuit.first :: circuit.rest)
+    have hdisplayed : circuit.first :: circuit.rest =
+        before ++ left :: backtrack.middle ::
+          backtrack.middleTail := by
+      have hcancel :
+          (circuit.first :: circuit.rest) ++ [circuit.first] =
+            (before ++ left :: backtrack.middle ::
+              backtrack.middleTail) ++ [circuit.first] := by
+        simpa [hreturning, List.append_assoc] using hcyclicSplit
+      exact List.append_cancel_right hcancel
+    cases hbefore : before with
+    | nil =>
+        rw [hbefore] at hdisplayed
+        have hfirst : circuit.first = left := (List.cons.inj hdisplayed).1
+        have hrest : circuit.rest =
+            backtrack.middle :: backtrack.middleTail :=
+          (List.cons.inj hdisplayed).2
+        let middleBlock := backtrack.middle :: backtrack.middleTail
+        have hmiddleBlock : middleBlock ≠ [] := by simp [middleBlock]
+        let middleLast := middleBlock.getLast hmiddleBlock
+        have hmiddleLastMem : middleLast ∈ middleBlock :=
+          List.getLast_mem hmiddleBlock
+        have hmiddleLastFace : middleLast.selectedFace =
+            backtrack.middle.selectedFace :=
+          hmiddleFaces middleLast
+            (by simpa [middleBlock] using hmiddleLastMem)
+        have hmiddleLastFollows :
+            CrossCentralExactFaceCertifiedRebaseArc.Follows
+              middleLast left := by
+          simpa [hfirst, hrest, middleBlock, middleLast] using
+            circuit.closing
+        have hleftFollows :
+            CrossCentralExactFaceCertifiedRebaseArc.Follows
+              left backtrack.middle := by
+          have hparts :
+              CrossCentralExactFaceCertifiedRebaseArc.Follows
+                  left backtrack.middle ∧
+                List.IsChain CrossCentralExactFaceCertifiedRebaseArc.Follows
+                  (backtrack.middle :: backtrack.middleTail) := by
+            simpa [hfirst, hrest] using circuit.consecutive
+          exact hparts.1
+        have hmiddleLastLeft :
+            middleLast.selectedFace ≠ left.selectedFace := by
+          intro heq
+          apply hfaceNe
+          exact heq.symm.trans hmiddleLastFace
+        exact False.elim
+          (middleLast.no_selectedFace_backtrack hmiddleLastFollows
+            hleftFollows hmiddleLastLeft hmiddleLastFace.symm)
+    | cons initial beforeTail =>
+        have hinitial : initial = circuit.first := by
+          rw [hbefore] at hdisplayed
+          exact (List.cons.inj hdisplayed).1.symm
+        subst initial
+        have hrotateSplit : circuit.first :: circuit.rest =
+            (circuit.first :: beforeTail) ++ left ::
+              (backtrack.middle :: backtrack.middleTail) := by
+          simpa [hbefore] using hdisplayed
+        let rotated := circuit.rotateAtSplit left
+          (circuit.first :: beforeTail)
+          (backtrack.middle :: backtrack.middleTail) hrotateSplit
+        refine ⟨{
+          rotated := rotated
+          arcLength_eq := circuit.rotateAtSplit_arcLength left
+            (circuit.first :: beforeTail)
+            (backtrack.middle :: backtrack.middleTail) hrotateSplit
+          left := left
+          middleFirst := backtrack.middle
+          right := backtrack.returning
+          before := []
+          middleRest := backtrack.middleTail
+          after := beforeTail
+          split := ?_
+          face_ne := hfaceNe
+          middleFaces := hmiddleFaces
+          rightFace := backtrack.returningFace.trans hleftFace.symm }⟩
+        simp [rotated, hreturning]
+  · have hlastAfter :
+        backtrack.physicalAfter.getLast hafter = circuit.first := by
+      let lastPrefix := before ++ left :: backtrack.middle ::
+        backtrack.middleTail ++ [backtrack.returning]
+      have hright : lastPrefix ++ backtrack.physicalAfter =
+          before ++ left :: backtrack.middle ::
+            backtrack.middleTail ++ backtrack.returning ::
+              backtrack.physicalAfter := by
+        simp [lastPrefix, List.append_assoc]
+      calc
+        backtrack.physicalAfter.getLast hafter =
+            (lastPrefix ++ backtrack.physicalAfter).getLast
+              (by simp [hafter]) :=
+          (List.getLast_append_of_right_ne_nil lastPrefix
+            backtrack.physicalAfter hafter).symm
+        _ = ((circuit.first :: circuit.rest) ++ [circuit.first]).getLast
+              (by simp) := by
+          exact List.getLast_congr (by simp [hafter]) (by simp) (by
+            rw [hright]
+            exact hcyclicSplit.symm)
+        _ = circuit.first :=
+          List.getLast_append_singleton (circuit.first :: circuit.rest)
+    have hafterSplit : backtrack.physicalAfter =
+        backtrack.physicalAfter.dropLast ++ [circuit.first] := by
+      rw [← hlastAfter]
+      exact (List.dropLast_append_getLast
+        (l := backtrack.physicalAfter) hafter).symm
+    rw [hafterSplit] at hcyclicSplit
+    have hdisplayed : circuit.first :: circuit.rest =
+        before ++ left :: backtrack.middle ::
+          backtrack.middleTail ++ backtrack.returning ::
+            backtrack.physicalAfter.dropLast := by
+      have hcancel :
+          (circuit.first :: circuit.rest) ++ [circuit.first] =
+            (before ++ left :: backtrack.middle ::
+              backtrack.middleTail ++ backtrack.returning ::
+                backtrack.physicalAfter.dropLast) ++ [circuit.first] := by
+        simpa [List.append_assoc] using hcyclicSplit
+      exact List.append_cancel_right hcancel
+    let rotationAfter := backtrack.middle ::
+      backtrack.middleTail ++ backtrack.returning ::
+        backtrack.physicalAfter.dropLast
+    have hrotateSplit : circuit.first :: circuit.rest =
+        before ++ left :: rotationAfter := by
+      simpa [rotationAfter, List.append_assoc] using hdisplayed
+    let rotated := circuit.rotateAtSplit left before rotationAfter hrotateSplit
+    refine ⟨{
+      rotated := rotated
+      arcLength_eq := circuit.rotateAtSplit_arcLength left before
+        rotationAfter hrotateSplit
+      left := left
+      middleFirst := backtrack.middle
+      right := backtrack.returning
+      before := []
+      middleRest := backtrack.middleTail
+      after := backtrack.physicalAfter.dropLast ++ before
+      split := ?_
+      face_ne := hfaceNe
+      middleFaces := hmiddleFaces
+      rightFace := backtrack.returningFace.trans hleftFace.symm }⟩
+    simp [rotated, rotationAfter, List.append_assoc]
+
+/-- Every compressed face backtrack has a displayed constant-face middle
+block in a length-preserving cyclic representative. -/
+theorem CompressedFaceBacktrack.exists_rotatedConstantFaceMiddleBlock
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (backtrack : CompressedFaceBacktrack circuit) :
+    Nonempty (RotatedConstantFaceMiddleBlock circuit) := by
+  rcases backtrack.exists_cyclicPhysicalFaceBacktrack with ⟨physical⟩
+  exact physical.exists_rotatedConstantFaceMiddleBlock
+
+/-- On a shortest certified circuit, a compressed facial backtrack is
+resolved by nonzero complement monodromy or by a localized recovery
+transfer, after a length-preserving cyclic rotation. -/
+theorem IsLengthMinimal.exists_rotated_nonzeroComplementProfile_or_recoveryFaceTransfer_of_compressedFaceBacktrack
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal)
+    (backtrack : CompressedFaceBacktrack circuit) :
+    ∃ rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+        minimal baseData,
+      rotated.arcLength = circuit.arcLength ∧
+        ((∃ middleFirst right :
+              CrossCentralExactFaceCertifiedRebaseArc graphData minimal
+                baseData,
+            ∃ middleRest : List
+              (CrossCentralExactFaceCertifiedRebaseArc graphData minimal
+                baseData),
+              MiddleBlockNonzeroComplementProfile middleFirst right
+                middleRest) ∨
+          Nonempty (ClosureRecoveryFaceTransfer rotated)) := by
+  rcases backtrack.exists_rotatedConstantFaceMiddleBlock with ⟨block⟩
+  have hrotatedMinimal : block.rotated.IsLengthMinimal := by
+    intro other
+    rw [block.arcLength_eq]
+    exact hminimal other
+  refine ⟨block.rotated, block.arcLength_eq, ?_⟩
+  rcases
+      hrotatedMinimal.middleBlock_nonzeroComplementProfile_or_recoveryFaceTransfer
+        block.left.selectedFace block.middleFirst.selectedFace block.face_ne
+          block.left block.middleFirst block.right block.before
+          block.middleRest block.after block.split rfl block.middleFaces
+          block.rightFace with
+    hprofile | htransfer
+  · exact Or.inl ⟨block.middleFirst, block.right,
+      block.middleRest, hprofile⟩
+  · exact Or.inr htransfer
 
 end CrossCentralExactFaceCertifiedRebaseCircuit
 
