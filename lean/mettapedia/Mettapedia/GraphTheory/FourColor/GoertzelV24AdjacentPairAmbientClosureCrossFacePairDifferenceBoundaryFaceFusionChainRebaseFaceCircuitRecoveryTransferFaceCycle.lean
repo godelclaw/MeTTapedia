@@ -1112,9 +1112,32 @@ theorem CompressedFaceBacktrack.exists_rotatedConstantFaceMiddleBlock
   rcases backtrack.exists_cyclicPhysicalFaceBacktrack with ⟨physical⟩
   exact physical.exists_rotatedConstantFaceMiddleBlock
 
-/-- On a shortest certified circuit, a compressed facial backtrack is
-resolved by nonzero complement monodromy or by a localized recovery
-transfer, after a length-preserving cyclic rotation. -/
+/-- On a shortest certified circuit, every compressed facial backtrack
+produces a localized recovery transfer after a length-preserving cyclic
+rotation. -/
+theorem IsLengthMinimal.exists_rotated_recoveryFaceTransfer_of_compressedFaceBacktrack
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal)
+    (backtrack : CompressedFaceBacktrack circuit) :
+    ∃ rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+        minimal baseData,
+      rotated.arcLength = circuit.arcLength ∧
+        Nonempty (ClosureRecoveryFaceTransfer rotated) := by
+  rcases backtrack.exists_rotatedConstantFaceMiddleBlock with ⟨block⟩
+  have hrotatedMinimal : block.rotated.IsLengthMinimal := by
+    intro other
+    rw [block.arcLength_eq]
+    exact hminimal other
+  exact ⟨block.rotated, block.arcLength_eq,
+    hrotatedMinimal.middleBlock_recoveryFaceTransfer
+      block.left.selectedFace block.middleFirst.selectedFace block.face_ne
+        block.left block.middleFirst block.right block.before
+        block.middleRest block.after block.split rfl block.middleFaces
+        block.rightFace⟩
+
+/-- The former disjunctive packaging is an immediate weakening of the
+recovery-transfer theorem. -/
 theorem IsLengthMinimal.exists_rotated_nonzeroComplementProfile_or_recoveryFaceTransfer_of_compressedFaceBacktrack
     {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
       minimal baseData}
@@ -1132,22 +1155,36 @@ theorem IsLengthMinimal.exists_rotated_nonzeroComplementProfile_or_recoveryFaceT
               MiddleBlockNonzeroComplementProfile middleFirst right
                 middleRest) ∨
           Nonempty (ClosureRecoveryFaceTransfer rotated)) := by
-  rcases backtrack.exists_rotatedConstantFaceMiddleBlock with ⟨block⟩
-  have hrotatedMinimal : block.rotated.IsLengthMinimal := by
-    intro other
-    rw [block.arcLength_eq]
-    exact hminimal other
-  refine ⟨block.rotated, block.arcLength_eq, ?_⟩
   rcases
-      hrotatedMinimal.middleBlock_nonzeroComplementProfile_or_recoveryFaceTransfer
-        block.left.selectedFace block.middleFirst.selectedFace block.face_ne
-          block.left block.middleFirst block.right block.before
-          block.middleRest block.after block.split rfl block.middleFaces
-          block.rightFace with
-    hprofile | htransfer
-  · exact Or.inl ⟨block.middleFirst, block.right,
-      block.middleRest, hprofile⟩
-  · exact Or.inr htransfer
+      hminimal.exists_rotated_recoveryFaceTransfer_of_compressedFaceBacktrack
+        backtrack with
+    ⟨rotated, hlength, htransfer⟩
+  exact ⟨rotated, hlength, Or.inr htransfer⟩
+
+/-- A shortest certified rebase circuit has exactly the three structural
+branches needed by the all-face endgame: one selected face throughout, a
+remote simple facial-dual cycle, or a concrete recovery transfer on an
+equal-length cyclic representative. -/
+theorem IsLengthMinimal.constantFace_or_exists_remoteDualCycle_or_rotated_recoveryFaceTransfer
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal) :
+    (∀ arc ∈ circuit.first :: circuit.rest,
+        arc.selectedFace = circuit.first.selectedFace) ∨
+      Nonempty (RemoteDualCycle circuit) ∨
+      ∃ rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+          minimal baseData,
+        rotated.arcLength = circuit.arcLength ∧
+          Nonempty (ClosureRecoveryFaceTransfer rotated) := by
+  rcases circuit.constantFace_or_exists_remote_dualCycle_or_compressedFaceBacktrack
+    with hconstant | hrest
+  · exact Or.inl hconstant
+  · rcases hrest with hcycle | hbacktrack
+    · exact Or.inr (Or.inl hcycle)
+    · rcases hbacktrack with ⟨backtrack⟩
+      exact Or.inr (Or.inr
+        (hminimal.exists_rotated_recoveryFaceTransfer_of_compressedFaceBacktrack
+          backtrack))
 
 end CrossCentralExactFaceCertifiedRebaseCircuit
 

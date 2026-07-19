@@ -290,6 +290,38 @@ theorem IsLengthMinimal.middleBlock_nonzeroComplementProfile_or_recoveryFaceTran
     exact witness.exists_faceTransfer rebaseCircuit secondFace left
       middleFirst right before middleRest after hsplit hmiddleFaces
 
+/-- Every displayed two-face backtrack on a shortest certified circuit
+has a concrete recovery transfer.  The nominal complement-profile branch
+would be a retargetable strict subcircuit. -/
+theorem IsLengthMinimal.middleBlock_recoveryFaceTransfer
+    {rebaseCircuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : rebaseCircuit.IsLengthMinimal)
+    (firstFace secondFace : OrbitFace graphData.toRotationSystem)
+    (hfaces : firstFace ≠ secondFace)
+    (left middleFirst right :
+      CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+    (before middleRest after : List
+      (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData))
+    (hsplit : rebaseCircuit.first :: rebaseCircuit.rest =
+      before ++
+        (left :: ((middleFirst :: middleRest) ++ (right :: after))))
+    (hleftFace : left.selectedFace = firstFace)
+    (hmiddleFaces : ∀ arc ∈ middleFirst :: middleRest,
+      arc.selectedFace = secondFace)
+    (hrightFace : right.selectedFace = firstFace) :
+    Nonempty (ClosureRecoveryFaceTransfer rebaseCircuit) := by
+  rcases
+      hminimal.middleBlock_nonzeroComplementProfile_or_recoveryFaceTransfer
+        firstFace secondFace hfaces left middleFirst right before middleRest
+          after hsplit hleftFace hmiddleFaces hrightFace with
+    hprofile | htransfer
+  · rcases hprofile with ⟨hnormal, _⟩
+    exact False.elim
+      (hminimal.not_middleBlockComplementProfile left middleFirst right
+        before middleRest after hsplit hnormal)
+  · exact htransfer
+
 /-- The provenance-retaining face relation consists of concrete transfers
 whose loss is selected on the source face and whose gain is selected on the
 target face. -/
