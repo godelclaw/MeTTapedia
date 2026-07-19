@@ -1,5 +1,6 @@
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutAttachment
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FourEdgeCutGluing
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RecoveredAdjacentPairFusionChainNormalForm
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphTaitBridge
@@ -12,6 +13,7 @@ open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairBoundary.AdjacentPairData
 open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24FourEdgeCutGluing
 open GoertzelV24RecoveredAdjacentPairData
 open GoertzelV24RecoveredAdjacentPairFusionChainNormalForm
 open GoertzelV24RotationVertexCutProfile
@@ -462,6 +464,19 @@ theorem no_common_neighbor_of_cyclicallyFive
   exact (graphBackedVertexMinimalTaitCounterexample_not_graphTaitColorable
     graphData minimal) (exists_taitEdgeColoring_of_card_eq_four G hcard)
 
+/-- Adjacent vertices of a graph-backed vertex-minimal Tait
+counterexample have no common neighbor.  The exact two-, three-, and
+four-edge cut reductions supply the cyclic five-edge-connectivity needed
+by the triangle argument. -/
+theorem no_common_neighbor_of_vertexMinimalTaitCounterexample
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V} (hfirstSecond : G.Adj first second) :
+    ∀ common, G.Adj first common → G.Adj second common → False := by
+  exact no_common_neighbor_of_cyclicallyFive graphData minimal
+    (cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample
+      graphData minimal) hfirstSecond
+
 /-- Cyclic five-edge-connectivity discharges the final simplicity premise
 of the canonical recovered adjacent-pair boundary, yielding its planar
 cyclic order and compatible deleted Tait coloring from minimality alone. -/
@@ -476,6 +491,20 @@ theorem exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
     graphData minimal hadj
       (no_common_neighbor_of_cyclicallyFive graphData minimal hcyclic hadj)
 
+/-- Every adjacent pair of a graph-backed vertex-minimal Tait
+counterexample has the canonical cyclic boundary order and a compatible
+coloring after deleting the pair. -/
+theorem exists_cyclicallyOrdered_deletedColoring_of_vertexMinimalTaitCounterexample
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V} (hadj : G.Adj first second) :
+    HasCyclicallyOrderedCompatibleDeletedColoring
+      graphData first second := by
+  exact exists_cyclicallyOrdered_deletedColoring_of_no_common_neighbor
+    graphData minimal hadj
+      (no_common_neighbor_of_vertexMinimalTaitCounterexample
+        graphData minimal hadj)
+
 /-- Every adjacent pair in cyclic five-edge-connected minimal normal form
 therefore carries the complete finite cyclic Kempe profile used by the
 fusion-chain transfer system. -/
@@ -488,6 +517,18 @@ theorem exists_cyclicKempeTransferProfile_of_cyclicallyFive
   exact (exists_cyclicallyOrdered_deletedColoring_of_cyclicallyFive
     graphData minimal hcyclic hadj).hasCyclicKempeTransferProfile
       graphData minimal
+
+/-- Every adjacent pair of a graph-backed vertex-minimal Tait
+counterexample carries the finite cyclic Kempe transfer profile. -/
+theorem exists_cyclicKempeTransferProfile_of_vertexMinimalTaitCounterexample
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V} (hadj : G.Adj first second) :
+    HasCyclicKempeTransferProfile graphData first second := by
+  exact
+    (exists_cyclicallyOrdered_deletedColoring_of_vertexMinimalTaitCounterexample
+      graphData minimal hadj).hasCyclicKempeTransferProfile
+        graphData minimal
 
 /-- Every adjacent pair in cyclic five-edge-connected minimal normal form
 therefore reaches the complete rotation-ordered fusion-chain resolution:
@@ -504,6 +545,20 @@ theorem exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_cyclicallyFive
     graphData minimal
       (exists_cyclicKempeTransferProfile_of_cyclicallyFive
         graphData minimal hcyclic hadj)
+
+/-- Every adjacent pair of a graph-backed vertex-minimal Tait
+counterexample reaches the complete rotation-ordered fusion-chain normal
+form without an additional connectivity premise. -/
+theorem exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_vertexMinimalTaitCounterexample
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V} (hadj : G.Adj first second) :
+    HasRotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal first second := by
+  exact hasRotationOrderedFusionChainNormalForm_of_cyclicKempeTransferProfile
+    graphData minimal
+      (exists_cyclicKempeTransferProfile_of_vertexMinimalTaitCounterexample
+        graphData minimal hadj)
 
 end
 
