@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferSuccessor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitConstantFace
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Data.List.Destutter
 
@@ -1185,6 +1186,29 @@ theorem IsLengthMinimal.constantFace_or_exists_remoteDualCycle_or_rotated_recove
       exact Or.inr (Or.inr
         (hminimal.exists_rotated_recoveryFaceTransfer_of_compressedFaceBacktrack
           backtrack))
+
+/-- The constant-face branch of the shortest-circuit classification is a
+single involutive two-arc cell.  The other two branches retain their remote
+dual cycle or concrete recovery-transfer witnesses. -/
+theorem IsLengthMinimal.twoArc_constantFace_or_exists_remoteDualCycle_or_rotated_recoveryFaceTransfer
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (hminimal : circuit.IsLengthMinimal) :
+    (circuit.arcLength = 2 ∧
+      ∀ arc ∈ circuit.first :: circuit.rest,
+        arc.selectedFace = circuit.first.selectedFace) ∨
+      Nonempty (RemoteDualCycle circuit) ∨
+      ∃ rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+          minimal baseData,
+        rotated.arcLength = circuit.arcLength ∧
+          Nonempty (ClosureRecoveryFaceTransfer rotated) := by
+  rcases
+      hminimal.constantFace_or_exists_remoteDualCycle_or_rotated_recoveryFaceTransfer
+        with hconstant | hremote | htransfer
+  · exact Or.inl
+      ⟨hminimal.arcLength_eq_two_of_constantFace hconstant, hconstant⟩
+  · exact Or.inr (Or.inl hremote)
+  · exact Or.inr (Or.inr htransfer)
 
 end CrossCentralExactFaceCertifiedRebaseCircuit
 
