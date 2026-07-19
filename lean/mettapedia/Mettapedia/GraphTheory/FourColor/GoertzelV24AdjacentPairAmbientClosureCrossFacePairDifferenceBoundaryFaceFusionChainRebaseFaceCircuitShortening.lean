@@ -228,6 +228,126 @@ theorem exists_strict_subcircuit_of_middleBlock_endpoint_eq
   simp [middleArcs]
   omega
 
+/-- Two displayed positions with the same retained cross and both retained
+trails cut out a strict certified subcircuit.  The final arc of the segment
+is retargeted to the first position's exact pair; adjacent positions are
+already impossible because every rebase changes its cross. -/
+theorem exists_strict_subcircuit_of_split_rigid_eq
+    (circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData)
+    (first second :
+      CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData)
+    (before between after : List
+      (CrossCentralExactFaceCertifiedRebaseArc graphData minimal baseData))
+    (hsplit : circuit.first :: circuit.rest =
+      before ++ (first :: (between ++ (second :: after))))
+    (hcross : first.source.1 = second.source.1)
+    (hprefix : first.source.2.prefixTrail =
+      second.source.2.prefixTrail)
+    (hsuffix : first.source.2.suffixTrail =
+      second.source.2.suffixTrail) :
+    ∃ subcircuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+        minimal baseData,
+      subcircuit.arcLength < circuit.arcLength := by
+  let segment := first :: between
+  have hfullChain : List.IsChain
+      CrossCentralExactFaceCertifiedRebaseArc.Follows
+        (before ++ (segment ++ (second :: after))) := by
+    have hchain := circuit.consecutive
+    rw [hsplit] at hchain
+    simpa [segment, List.append_assoc] using hchain
+  have hsegmentAfterChain : List.IsChain
+      CrossCentralExactFaceCertifiedRebaseArc.Follows
+        (segment ++ (second :: after)) :=
+    (List.isChain_append.mp hfullChain).2.1
+  have hparts := List.isChain_append.mp hsegmentAfterChain
+  have hsegmentChain : List.IsChain
+      CrossCentralExactFaceCertifiedRebaseArc.Follows segment := hparts.1
+  by_cases hbetween : between = []
+  · subst between
+    have hfirstFollows :
+        CrossCentralExactFaceCertifiedRebaseArc.Follows first second :=
+      hparts.2.2 first (by simp [segment]) second (by simp)
+    exact False.elim (first.cross_ne (by
+      calc
+        first.target.1 = second.source.1 :=
+          congrArg Sigma.fst hfirstFollows
+        _ = first.source.1 := hcross.symm))
+  · let last := between.getLast hbetween
+    have hlastMem : last ∈ segment.getLast? := by
+      change last ∈ (first :: between).getLast?
+      rw [List.getLast?_cons_of_ne_nil hbetween,
+        List.getLast?_eq_getLast_of_ne_nil hbetween]
+      simp [last]
+    have hlastFollows :
+        CrossCentralExactFaceCertifiedRebaseArc.Follows last second :=
+      hparts.2.2 last hlastMem second (by simp)
+    have hlastCross : last.target.1 = first.source.1 := by
+      calc
+        last.target.1 = second.source.1 := congrArg Sigma.fst hlastFollows
+        _ = first.source.1 := hcross.symm
+    have hlastPrefix :
+        last.target.2.prefixTrail = first.source.2.prefixTrail := by
+      calc
+        last.target.2.prefixTrail = second.source.2.prefixTrail :=
+          congrArg (fun state => state.2.prefixTrail) hlastFollows
+        _ = first.source.2.prefixTrail := hprefix.symm
+    have hlastSuffix :
+        last.target.2.suffixTrail = first.source.2.suffixTrail := by
+      calc
+        last.target.2.suffixTrail = second.source.2.suffixTrail :=
+          congrArg (fun state => state.2.suffixTrail) hlastFollows
+        _ = first.source.2.suffixTrail := hsuffix.symm
+    let last' : CrossCentralExactFaceCertifiedRebaseArc graphData minimal
+        baseData := {
+      source := last.source
+      target := first.source
+      selectedFace := last.selectedFace
+      transition :=
+        last.transition.retarget_of_cross_eq_of_trails_eq hlastCross
+          hlastPrefix hlastSuffix }
+    let prefixArcs := first :: between.dropLast
+    have hsegmentDecomp : segment = prefixArcs ++ [last] := by
+      simp only [segment, prefixArcs, List.cons_append]
+      rw [List.dropLast_append_getLast hbetween]
+    have hprefixChain : List.IsChain
+        CrossCentralExactFaceCertifiedRebaseArc.Follows prefixArcs := by
+      rw [hsegmentDecomp] at hsegmentChain
+      exact (List.isChain_append.mp hsegmentChain).1
+    have hprefixLast : ∀ arc ∈ prefixArcs.getLast?,
+        CrossCentralExactFaceCertifiedRebaseArc.Follows arc last := by
+      rw [hsegmentDecomp] at hsegmentChain
+      exact fun arc harc =>
+        (List.isChain_append.mp hsegmentChain).2.2 arc harc last (by simp)
+    have hnewChain : List.IsChain
+        CrossCentralExactFaceCertifiedRebaseArc.Follows
+          (prefixArcs ++ [last']) := by
+      apply hprefixChain.append (List.IsChain.singleton last')
+      intro arc harc target htarget
+      have htargetEq : target = last' := by simpa using htarget.symm
+      subst target
+      change arc.target = last.source
+      exact hprefixLast arc harc
+    let subcircuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+        minimal baseData := {
+      first := first
+      rest := between.dropLast ++ [last']
+      consecutive := by
+        simpa [prefixArcs, List.cons_append] using hnewChain
+      closing := by
+        change
+          ((first :: (between.dropLast ++ [last'])).getLast
+            (by simp)).target = first.source
+        simp [last'] }
+    refine ⟨subcircuit, ?_⟩
+    change (first :: (between.dropLast ++ [last'])).length <
+      (circuit.first :: circuit.rest).length
+    have hbetweenLengthNe : between.length ≠ 0 := by
+      simpa using hbetween
+    rw [hsplit]
+    simp [List.length_dropLast]
+    omega
+
 /-- Any rigid middle block creates a strict certified subcircuit.  The
 last rebase may be retargeted to the initial exact pair because the block
 has returned to the same retained cross and successor trails; no absolute
@@ -246,102 +366,12 @@ theorem exists_strict_subcircuit_of_middleBlockComplementProfile
     ∃ subcircuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
         minimal baseData,
       subcircuit.arcLength < circuit.arcLength := by
-  let middleArcs := middleFirst :: middleRest
-  have hfullChain : List.IsChain
-      CrossCentralExactFaceCertifiedRebaseArc.Follows
-        (before ++ (left :: (middleArcs ++ (right :: after)))) := by
-    rw [← hsplit]
-    exact circuit.consecutive
-  have htailChain : List.IsChain
-      CrossCentralExactFaceCertifiedRebaseArc.Follows
-        (left :: (middleArcs ++ (right :: after))) :=
-    (List.isChain_append.mp hfullChain).2.1
-  have hmiddleAfterChain : List.IsChain
-      CrossCentralExactFaceCertifiedRebaseArc.Follows
-        (middleArcs ++ (right :: after)) :=
-    (List.isChain_cons_cons.mp htailChain).2
-  have hmiddleParts := List.isChain_append.mp hmiddleAfterChain
-  have hmiddleChain : List.IsChain
-      CrossCentralExactFaceCertifiedRebaseArc.Follows middleArcs :=
-    hmiddleParts.1
-  have hmiddleRestNe : middleRest ≠ [] := by
-    intro hnil
-    subst middleRest
-    simpa using hnormal.2.1
-  let last := middleRest.getLast hmiddleRestNe
-  have hlastMem : last ∈ middleArcs.getLast? := by
-    change last ∈ (middleFirst :: middleRest).getLast?
-    rw [List.getLast?_cons_of_ne_nil hmiddleRestNe,
-      List.getLast?_eq_getLast_of_ne_nil hmiddleRestNe]
-    simp [last]
-  have hlastFollows :
-      CrossCentralExactFaceCertifiedRebaseArc.Follows last right :=
-    hmiddleParts.2.2 last hlastMem right (by simp)
-  have hlastCross : last.target.1 = middleFirst.source.1 := by
-    calc
-      last.target.1 = right.source.1 := congrArg Sigma.fst hlastFollows
-      _ = middleFirst.source.1 := hnormal.1.symm
-  have hlastPrefix :
-      last.target.2.prefixTrail = middleFirst.source.2.prefixTrail := by
-    calc
-      last.target.2.prefixTrail = right.source.2.prefixTrail :=
-        congrArg (fun state => state.2.prefixTrail) hlastFollows
-      _ = middleFirst.source.2.prefixTrail := hnormal.2.2.1.symm
-  have hlastSuffix :
-      last.target.2.suffixTrail = middleFirst.source.2.suffixTrail := by
-    calc
-      last.target.2.suffixTrail = right.source.2.suffixTrail :=
-        congrArg (fun state => state.2.suffixTrail) hlastFollows
-      _ = middleFirst.source.2.suffixTrail := hnormal.2.2.2.1.symm
-  let last' : CrossCentralExactFaceCertifiedRebaseArc graphData minimal
-      baseData := {
-    source := last.source
-    target := middleFirst.source
-    selectedFace := last.selectedFace
-    transition :=
-      last.transition.retarget_of_cross_eq_of_trails_eq hlastCross
-        hlastPrefix hlastSuffix }
-  let prefixArcs := middleFirst :: middleRest.dropLast
-  have hmiddleDecomp : middleArcs = prefixArcs ++ [last] := by
-    simp only [middleArcs, prefixArcs, List.cons_append]
-    rw [List.dropLast_append_getLast hmiddleRestNe]
-  have hprefixChain : List.IsChain
-      CrossCentralExactFaceCertifiedRebaseArc.Follows prefixArcs := by
-    rw [hmiddleDecomp] at hmiddleChain
-    exact (List.isChain_append.mp hmiddleChain).1
-  have hprefixLast : ∀ arc ∈ prefixArcs.getLast?,
-      CrossCentralExactFaceCertifiedRebaseArc.Follows arc last := by
-    rw [hmiddleDecomp] at hmiddleChain
-    exact fun arc harc =>
-      (List.isChain_append.mp hmiddleChain).2.2 arc harc last (by simp)
-  have hnewChain : List.IsChain
-      CrossCentralExactFaceCertifiedRebaseArc.Follows
-        (prefixArcs ++ [last']) := by
-    apply hprefixChain.append (List.IsChain.singleton last')
-    intro arc harc target htarget
-    have htargetEq : target = last' := by simpa using htarget.symm
-    subst target
-    change arc.target = last.source
-    exact hprefixLast arc harc
-  let subcircuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
-      minimal baseData := {
-    first := middleFirst
-    rest := middleRest.dropLast ++ [last']
-    consecutive := by
-      simpa [prefixArcs, List.cons_append] using hnewChain
-    closing := by
-      change
-        ((middleFirst :: (middleRest.dropLast ++ [last'])).getLast
-          (by simp)).target = middleFirst.source
-      simp [last'] }
-  refine ⟨subcircuit, ?_⟩
-  change (middleFirst :: (middleRest.dropLast ++ [last'])).length <
-    (circuit.first :: circuit.rest).length
-  have hrestLengthNe : middleRest.length ≠ 0 := by
-    simpa using hmiddleRestNe
-  rw [hsplit]
-  simp [List.length_dropLast]
-  omega
+  apply circuit.exists_strict_subcircuit_of_split_rigid_eq middleFirst right
+    (before ++ [left]) middleRest after
+  · simpa [List.append_assoc] using hsplit
+  · exact hnormal.1
+  · exact hnormal.2.2.1
+  · exact hnormal.2.2.2.1
 
 /-- A globally shortest certified circuit has no rigid middle block: its
 returned geometric state can always be closed after retargeting the final
