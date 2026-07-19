@@ -1,6 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSlab
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceIntersections
-import Mettapedia.GraphTheory.FourColor.GoertzelV24WeightedOrbitFaceCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceSize
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -14,6 +14,7 @@ open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexCorridorSlab
 open GoertzelV24HexFaceRungType
 open GoertzelV24InducedHexCorridorTypes
+open GoertzelV24MinimalFaceSize
 open GoertzelV24MinimalFaceIntersections
 open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24OrbitFaceTwoSided
@@ -102,15 +103,14 @@ theorem orbitFaceFullerene_exists_widthFourCleanHexCorridorSlab
           hsphere.cubic minimal.vertexRotationCyclic
             minimal.facesTwoSided⟩
 
-/-- Weighted all-face replacement for the fullerene corridor entry. For a
-vertex-minimal counterexample whose actual face boundaries have length at
-least five, either its number of faces is explicitly bounded in terms of
-negative curvature or it contains the complete width-four clean slab used
-by the corridor transfer system. -/
+/-- Weighted all-face replacement for the fullerene corridor entry.  A
+vertex-minimal counterexample automatically has face size at least five;
+hence either its number of faces is explicitly bounded in terms of negative
+curvature or it contains the complete width-four clean slab used by the
+corridor transfer system. -/
 theorem orbitFace_card_le_weightedThreshold_or_exists_widthFourCleanHexCorridorSlab
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
-    (hminimum : OrbitFaceMinimumFive graphData.toRotationSystem)
     (corridorLength : Nat) (hpositive : 0 < corridorLength) :
     Fintype.card (OrbitFace graphData.toRotationSystem) ≤
         weightedCleanHexCorridorFaceThreshold
@@ -141,6 +141,9 @@ theorem orbitFace_card_le_weightedThreshold_or_exists_widthFourCleanHexCorridorS
             (internalHexRungTypeWord clean.toOrbitHexCorridorSkeleton
               minimal.facesTwoSided hunique offset) ≠
                 HexRungType.adjacent := by
+  have hminimum : OrbitFaceMinimumFive graphData.toRotationSystem :=
+    orbitFaceMinimumFive_of_vertexMinimalTaitCounterexample
+      graphData minimal
   rcases orbitFace_card_le_weightedThreshold_or_exists_cleanHexCorridor
       graphData.toRotationSystem minimal.spherical minimal.facesTwoSided
       hminimum minimal.primalConnected minimal.vertexRotationCyclic
