@@ -303,6 +303,59 @@ def negativeCurvatureWeight (faceSizes : List Nat) : Nat :=
 def ZeroNegativeCurvatureWeight (faceSizes : List Nat) : Prop :=
   negativeCurvatureWeight faceSizes = 0
 
+/-- The balanced arithmetic family with `12 + k` pentagons and `k`
+heptagons.  It preserves total curvature twelve while its negative-curvature
+weight and total size grow with `k`; no member contains a hexagon. -/
+def pentagonHeptagonBalance (k : Nat) : List Nat :=
+  List.replicate (12 + k) 5 ++ List.replicate k 7
+
+theorem pentagonHeptagonBalance_minFaceSize (k : Nat) :
+    NormalFormFaceSizeConsequences (pentagonHeptagonBalance k) := by
+  simp [NormalFormFaceSizeConsequences, pentagonHeptagonBalance]
+
+theorem pentagonHeptagonBalance_curvature (k : Nat) :
+    faceSizeCurvatureSum (pentagonHeptagonBalance k) = 12 := by
+  simp [faceSizeCurvatureSum, pentagonHeptagonBalance]
+
+theorem pentagonHeptagonBalance_pentagonCount (k : Nat) :
+    (pentagonHeptagonBalance k).count 5 = 12 + k := by
+  simp [pentagonHeptagonBalance, List.count_replicate]
+
+theorem pentagonHeptagonBalance_heptagonCount (k : Nat) :
+    (pentagonHeptagonBalance k).count 7 = k := by
+  simp [pentagonHeptagonBalance, List.count_replicate]
+
+theorem pentagonHeptagonBalance_hexagonCount (k : Nat) :
+    (pentagonHeptagonBalance k).count 6 = 0 := by
+  simp [pentagonHeptagonBalance, List.count_replicate]
+
+theorem pentagonHeptagonBalance_negativeCurvatureWeight (k : Nat) :
+    negativeCurvatureWeight (pentagonHeptagonBalance k) = k := by
+  simp [negativeCurvatureWeight, pentagonHeptagonBalance]
+
+theorem pentagonHeptagonBalance_length (k : Nat) :
+    (pentagonHeptagonBalance k).length = 12 + 2 * k := by
+  simp [pentagonHeptagonBalance]
+  omega
+
+/-- Minimum face size five and total curvature twelve alone permit
+arbitrarily large negative-curvature weight, arbitrarily many faces, and no
+hexagonal face at all. -/
+theorem exists_arbitrarily_large_curvatureBalance_without_hexagons
+    (bound : Nat) :
+    ∃ faceSizes : List Nat,
+      NormalFormFaceSizeConsequences faceSizes ∧
+      faceSizeCurvatureSum faceSizes = 12 ∧
+      faceSizes.count 6 = 0 ∧
+      bound ≤ negativeCurvatureWeight faceSizes ∧
+      12 + 2 * bound ≤ faceSizes.length := by
+  refine ⟨pentagonHeptagonBalance bound,
+    pentagonHeptagonBalance_minFaceSize bound,
+    pentagonHeptagonBalance_curvature bound,
+    pentagonHeptagonBalance_hexagonCount bound, ?_, ?_⟩
+  · rw [pentagonHeptagonBalance_negativeCurvatureWeight]
+  · rw [pentagonHeptagonBalance_length]
+
 end GoertzelV24CurvatureScope
 
 end Mettapedia.GraphTheory.FourColor

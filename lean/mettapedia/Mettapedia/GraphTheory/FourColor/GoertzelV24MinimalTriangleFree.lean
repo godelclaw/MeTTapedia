@@ -560,6 +560,20 @@ theorem exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_vertexMinimalT
       (exists_cyclicKempeTransferProfile_of_vertexMinimalTaitCounterexample
         graphData minimal hadj)
 
+/-- Every adjacent pair of a vertex-minimal counterexample reaches either a
+structural fusion terminal or the certified finite exact-state rebase
+dynamics.  This entry uses no restriction on face sizes. -/
+theorem exists_rotationOrderedFusionTerminalOrRebasePumping_of_vertexMinimalTaitCounterexample
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V} (hadj : G.Adj first second) :
+    HasRotationOrderedFusionTerminalOrRebasePumping
+      graphData minimal first second := by
+  exact hasRotationOrderedFusionTerminalOrRebasePumping_of_normalForm
+    graphData minimal
+      (exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_vertexMinimalTaitCounterexample
+        graphData minimal hadj)
+
 end
 
 end GoertzelV24MinimalTriangleFree
