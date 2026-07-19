@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorTransferMatrix
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalHexCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBoundaryFaceCutProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryProfileFiniteState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathTransversal

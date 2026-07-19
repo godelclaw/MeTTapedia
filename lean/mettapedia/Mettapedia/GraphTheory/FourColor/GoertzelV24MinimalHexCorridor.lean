@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSlab
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceIntersections
+import Mettapedia.GraphTheory.FourColor.GoertzelV24WeightedOrbitFaceCorridor
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -17,6 +18,7 @@ open GoertzelV24MinimalFaceIntersections
 open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24TwoEdgeCutMinimality
+open GoertzelV24WeightedOrbitFaceCorridor
 open SimpleGraphDartRotation
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
@@ -98,6 +100,73 @@ theorem orbitFaceFullerene_exists_widthFourCleanHexCorridorSlab
       GoertzelV24InducedHexCorridorTypes.InternalHexRungPlacement.rungType_ne_adjacent
         (internalHexRungPlacement corridor minimal.facesTwoSided hunique offset)
           hsphere.cubic minimal.vertexRotationCyclic
+            minimal.facesTwoSided⟩
+
+/-- Weighted all-face replacement for the fullerene corridor entry. For a
+vertex-minimal counterexample whose actual face boundaries have length at
+least five, either its number of faces is explicitly bounded in terms of
+negative curvature or it contains the complete width-four clean slab used
+by the corridor transfer system. -/
+theorem orbitFace_card_le_weightedThreshold_or_exists_widthFourCleanHexCorridorSlab
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (hminimum : OrbitFaceMinimumFive graphData.toRotationSystem)
+    (corridorLength : Nat) (hpositive : 0 < corridorLength) :
+    Fintype.card (OrbitFace graphData.toRotationSystem) ≤
+        weightedCleanHexCorridorFaceThreshold
+          graphData.toRotationSystem corridorLength ∨
+      ∃ clean : CleanOrbitHexCorridorSkeleton
+          graphData.toRotationSystem corridorLength,
+        ∃ hunique : PairwiseUniqueSharedInteriorEdges
+            (orbitFaceBoundary graphData.toRotationSystem)
+            (Finset.univ : Finset (OrbitFace graphData.toRotationSystem)),
+          Function.Injective
+              (clean.toOrbitHexCorridorSkeleton.rungEdge hunique) ∧
+          (∀ interior : CorridorInterior corridorLength,
+            (internalSideEdges clean.toOrbitHexCorridorSkeleton
+                hunique interior).card = 4 ∧
+            Function.Injective
+              (internalSideNeighbor clean minimal.facesTwoSided
+                hunique interior) ∧
+            ∀ side : {edge // edge ∈ internalSideEdges
+                clean.toOrbitHexCorridorSkeleton hunique interior},
+              (orbitFaceBoundary graphData.toRotationSystem
+                (internalSideNeighbor clean minimal.facesTwoSided hunique
+                  interior side).1).card = 6 ∧
+              ∀ index : Fin corridorLength,
+                internalSideNeighbor clean minimal.facesTwoSided hunique
+                    interior side ≠
+                  clean.toOrbitHexCorridorSkeleton.faceAt index) ∧
+          ∀ offset : Fin (corridorLength - 2),
+            (internalHexRungTypeWord clean.toOrbitHexCorridorSkeleton
+              minimal.facesTwoSided hunique offset) ≠
+                HexRungType.adjacent := by
+  rcases orbitFace_card_le_weightedThreshold_or_exists_cleanHexCorridor
+      graphData.toRotationSystem minimal.spherical minimal.facesTwoSided
+      hminimum minimal.primalConnected minimal.vertexRotationCyclic
+      corridorLength hpositive with hbounded | hclean
+  · exact Or.inl hbounded
+  · right
+    obtain ⟨clean⟩ := hclean
+    let hunique := pairwiseUniqueSharedInteriorEdges graphData minimal
+    let corridor := clean.toOrbitHexCorridorSkeleton
+    exact ⟨clean, hunique,
+      corridor.rungEdge_injective minimal.facesTwoSided hunique,
+      fun interior =>
+        ⟨card_internalSideEdges_eq_four corridor minimal.facesTwoSided
+            hunique interior,
+          internalSideNeighbor_injective clean minimal.facesTwoSided
+            hunique interior,
+          fun side =>
+            ⟨internalSideNeighbor_hexagonal clean minimal.facesTwoSided
+                hunique interior side,
+              internalSideNeighbor_ne_faceAt clean minimal.facesTwoSided
+                hunique interior side⟩⟩,
+      fun offset =>
+        GoertzelV24InducedHexCorridorTypes.InternalHexRungPlacement.rungType_ne_adjacent
+          (internalHexRungPlacement corridor minimal.facesTwoSided hunique
+            offset)
+          minimal.spherical.cubic minimal.vertexRotationCyclic
             minimal.facesTwoSided⟩
 
 end
