@@ -116,6 +116,99 @@ structure RotationOrderedCyclicKempeFusionChainNormalForm
   resolution : SparseFusionChainResolution graphData minimal baseData
     firstLens secondLens first_ne_second first_ne_third second_ne_third
 
+namespace RotationOrderedCyclicKempeFusionChainNormalForm
+
+/-- The two structural stopping branches of a rotation-ordered fusion
+normal form: a strict primal circuit or disjoint total fusion support. -/
+def TerminalFusionOutcome
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    (normal : RotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal baseData) : Prop :=
+  let data := RecoveredRotationOrderedData graphData minimal baseData
+  (∃ (start : retainedVertexSet data.firstVertex data.secondVertex)
+      (circuit : (DeletedAdjacentPairGraph G data.firstVertex
+        data.secondVertex).Walk start start),
+      circuit.IsCircuit ∧
+        (circuit.length < normal.firstLens.bRoute.ambientPath.length +
+            normal.secondLens.cRoute.ambientPath.length ∨
+          circuit.length < normal.firstLens.cRoute.ambientPath.length +
+            normal.secondLens.bRoute.ambientPath.length ∨
+          circuit.length < normal.firstLens.closedWalk.length ∨
+          circuit.length < normal.secondLens.closedWalk.length ∨
+          circuit.length < normal.firstLens.closedWalk.length +
+            normal.secondLens.closedWalk.length)) ∨
+    (normal.firstLens.bRoute.ambientPath.support ++
+        normal.firstLens.cRoute.ambientPath.support).Disjoint
+      (normal.secondLens.bRoute.ambientPath.support ++
+        normal.secondLens.cRoute.ambientPath.support)
+
+/-- The recursive branch of a rotation-ordered fusion normal form.  It
+retains the surviving cross orientation, the two exact splice equations,
+and the certified finite pumping outcome launched at that cross. -/
+def CertifiedRebasePumpingLaunch
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    (normal : RotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal baseData) : Prop :=
+  let data := RecoveredRotationOrderedData graphData minimal baseData
+  (∃ (site : normal.firstLens.bRoute.CrossSite
+          normal.secondLens.cRoute)
+      (pair : CrossCentralExactFaceCutPair graphData data site.1),
+      pair.prefixTrail.edges =
+          (normal.firstLens.bRoute.crossSplice
+            normal.secondLens.cRoute site).support.map Subtype.val ∧
+        pair.suffixTrail.edges =
+          (normal.firstLens.bRoute.crossSuffixSplice
+            normal.secondLens.cRoute site).support.map Subtype.val ∧
+        pair.CertifiedRebasePumpingOutcome minimal baseData) ∨
+    (∃ (site : normal.firstLens.cRoute.CrossSite
+          normal.secondLens.bRoute)
+      (pair : CrossCentralExactFaceCutPair graphData data site.1),
+      pair.prefixTrail.edges =
+          (normal.firstLens.cRoute.crossSplice
+            normal.secondLens.bRoute site).support.map Subtype.val ∧
+        pair.suffixTrail.edges =
+          (normal.firstLens.cRoute.crossSuffixSplice
+            normal.secondLens.bRoute site).support.map Subtype.val ∧
+        pair.CertifiedRebasePumpingOutcome minimal baseData)
+
+/-- The complete rotation-ordered fusion normal form either stops in one
+of its two structural branches or launches certified exact-state pumping
+at its unique surviving cross orientation. -/
+theorem terminalFusion_or_certifiedRebasePumpingLaunch
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {baseData : AdjacentPairData G}
+    (normal : RotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal baseData) :
+    normal.TerminalFusionOutcome ∨
+      normal.CertifiedRebasePumpingLaunch := by
+  have hresolution := normal.resolution
+  unfold SparseFusionChainResolution at hresolution
+  dsimp only at hresolution
+  unfold TerminalFusionOutcome CertifiedRebasePumpingLaunch
+  dsimp only
+  rcases hresolution with hstrict | hdisjoint | hresidual
+  · exact Or.inl (Or.inl hstrict)
+  · exact Or.inl (Or.inr hdisjoint)
+  · rcases hresidual with ⟨residual⟩
+    rcases residual.channel with hbc | hcb
+    · rcases hbc with
+        ⟨site, pair, _hbit, _htransfer, _hempty, hprefix, hsuffix,
+          hpumping⟩
+      exact Or.inr (Or.inl
+        ⟨site, pair, hprefix, hsuffix, hpumping⟩)
+    · rcases hcb with
+        ⟨site, pair, _hbit, _htransfer, _hempty, hprefix, hsuffix,
+          hpumping⟩
+      exact Or.inr (Or.inr
+        ⟨site, pair, hprefix, hsuffix, hpumping⟩)
+
+end RotationOrderedCyclicKempeFusionChainNormalForm
+
 /-- A cyclic Kempe profile on the literal minimality-selected rotation
 ordering reaches the complete finite fusion-chain normal form. -/
 theorem nonempty_rotationOrderedFusionChainNormalForm
@@ -172,6 +265,34 @@ def HasRotationOrderedCyclicKempeFusionChainNormalForm
     baseData.secondVertex = second ∧
     Nonempty (RotationOrderedCyclicKempeFusionChainNormalForm
       graphData minimal baseData)
+
+/-- A named adjacent pair realizes a rotation-ordered structural terminal
+outcome or launches the certified exact-state pumping machine. -/
+def HasRotationOrderedFusionTerminalOrRebasePumping
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (first second : V) : Prop :=
+  ∃ baseData : AdjacentPairData G,
+    baseData.firstVertex = first ∧
+    baseData.secondVertex = second ∧
+    ∃ normal : RotationOrderedCyclicKempeFusionChainNormalForm
+        graphData minimal baseData,
+      normal.TerminalFusionOutcome ∨
+        normal.CertifiedRebasePumpingLaunch
+
+/-- Forgetting no geometric data, a named rotation-ordered fusion normal
+form exposes its structural terminal-or-recursive-pumping dichotomy. -/
+theorem hasRotationOrderedFusionTerminalOrRebasePumping_of_normalForm
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second : V}
+    (hnormal : HasRotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal first second) :
+    HasRotationOrderedFusionTerminalOrRebasePumping
+      graphData minimal first second := by
+  rcases hnormal with ⟨baseData, hfirst, hsecond, ⟨normal⟩⟩
+  exact ⟨baseData, hfirst, hsecond, normal,
+    normal.terminalFusion_or_certifiedRebasePumpingLaunch⟩
 
 /-- The named cyclic profile can be re-expressed with its exact
 rotation-order provenance and composed through the finite fusion-chain
