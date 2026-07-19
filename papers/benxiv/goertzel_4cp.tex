@@ -697,15 +697,47 @@ routes, and the two-edge-cut color parity (\texttt{GoertzelV24Square}\,%
 /\texttt{SquareKempe}/\texttt{SquareComposition}, \texttt{GoertzelV24Digon},
 \texttt{GoertzelV24Rotor}, \texttt{GoertzelV24TwoEdgeCut}).
 
-\paragraph{In progress and open.} Current work extracts exact cut profiles
-(vertex-side, boundary-face, all-face) and graph-derived corridor cut
-profiles with splice observables, bounding face fragments by interface
-width. The endgame of the route is open: the fusion-chain and
-chiral-monodromy composition, Trail Completability itself, the L1--L10
-dependency chain into the minimal-counterexample contradiction, and a proved
-Short-Strand replacement. The v23-era collar obligations are taken up only
-where this route consumes them. Nothing in this section claims the
-Four-Color Theorem or the completion of the v24 route.
+\paragraph{The minimality normal form (proved).} The full minimality
+connectivity ladder is now machine-checked on rotation systems, with no
+\texttt{sorry} and axioms in
+$\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$. The
+two-edge, cyclic three-edge, and cyclic four-edge cut reductions are each
+proved by capping both sides into strictly smaller cubic rotation systems and
+gluing their Tait colorings across the cut; a vertex-minimal Tait
+counterexample admits none of them, so it is cyclically five-edge-connected
+(\texttt{cyclicallyFiveEdgeConnected\_of\_vertexMinimalTaitCounterexample}).
+The four-edge rung is the classically hard one: at a four-edge cut the four
+boundary colors sum to zero in the Klein four-group, giving three boundary
+classes (all-equal and the two non-crossing adjacent pairings), and the two
+capped sides always share a reducible class. The load-bearing step --- that a
+side admitting an all-equal boundary escapes, by a Kempe swap, into a
+non-crossing adjacent class (never the crossing Birkhoff pairing) --- is
+\emph{proved}, not assumed, from the planarity of the interior Kempe chains
+(\texttt{GoertzelV24FourEdgeCutKempeEscape}), and a minimal counterexample is
+correspondingly forced to have minimum face size five. The corridor-existence
+side is lifted off the fullerene premise entirely: on any spherical cubic map
+of minimum face size five, the pentagon count equals $12$ plus the total
+negative curvature weight, and either the face count lies below a
+weight-dependent threshold or a clean hexagonal corridor exists
+(\texttt{GoertzelV24WeightedOrbitFaceCorridor}) --- no restriction to
+pentagonal and hexagonal faces is used anywhere.
+
+\paragraph{In progress and open.} On this normal form the endgame reduction is
+under active construction: a fusion-chain / rebase-pumping dynamics that, from
+any adjacent pair of the counterexample, produces either a fusion terminal or
+a strictly descending rebase pumping
+(\texttt{exists\_rotationOrderedFusionTerminalOrRebasePumping\_of\_}%
+\texttt{vertexMinimalTaitCounterexample}), together with an exhaustive scope
+classification of the remote facial-dual cycles it generates (length $\geq5$
+exact cut, length-three single-vertex cut, length-four adjacent-pair cut with
+an internal dual chord). What remains \emph{open} is the coloring transport
+that turns each classified case into a contradiction with minimality --- the
+large-cut splice/interface law and the explicit consumption of the
+singleton-star and adjacent-pair-collar cases --- and hence Trail
+Completability, the L1--L10 chain, and a proved Short-Strand replacement. The
+v23-era collar obligations are taken up only where this route consumes them.
+Nothing in this section claims the Four-Color Theorem or the completion of the
+v24 route.
 
 \section{Status and scope: machine-checked, reduced, and open}
 \label{sec:status}
