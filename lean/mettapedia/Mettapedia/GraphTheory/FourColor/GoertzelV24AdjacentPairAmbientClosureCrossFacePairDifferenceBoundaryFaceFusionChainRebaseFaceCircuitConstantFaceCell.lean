@@ -161,6 +161,43 @@ variable {graphData : Data G}
   {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
   {baseData : AdjacentPairData G}
 
+/-- Reverse an involution cell while retaining the same selected face and
+both provenance-certified transitions. -/
+def symm
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData minimal
+      baseData where
+  face := cell.face
+  source := cell.target
+  target := cell.source
+  forward := cell.backward
+  backward := cell.forward
+
+@[simp] theorem symm_face
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.symm.face = cell.face :=
+  rfl
+
+@[simp] theorem symm_source
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.symm.source = cell.target :=
+  rfl
+
+@[simp] theorem symm_target
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.symm.target = cell.source :=
+  rfl
+
+@[simp] theorem symm_symm
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.symm.symm = cell := by
+  rfl
+
 /-- The two retained crosses of an involution cell are different. -/
 theorem cross_ne
     (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
@@ -393,6 +430,193 @@ theorem labelToggleProfile_spec
             OrbitFace graphData.toRotationSystem → F2) selectedFace +
               cell.labelToggleProfile.2) :=
   (Classical.choose_spec cell.existsUnique_labelToggleProfile).1
+
+/-- Reversing an involution cell preserves its facial label-transfer
+letter. -/
+theorem labelToggleProfile_symm
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.symm.labelToggleProfile = cell.labelToggleProfile := by
+  classical
+  have hforward := cell.labelToggleProfile_spec
+  have hreverse :
+      (∀ selectedFace,
+        cell.source.2.prefixLabels selectedFace =
+          cell.target.2.prefixLabels selectedFace +
+            (Pi.single cell.face 1 :
+              OrbitFace graphData.toRotationSystem → F2) selectedFace +
+                cell.labelToggleProfile.1) ∧
+      (∀ selectedFace,
+        cell.source.2.suffixLabels selectedFace =
+          cell.target.2.suffixLabels selectedFace +
+            (Pi.single cell.face 1 :
+              OrbitFace graphData.toRotationSystem → F2) selectedFace +
+                cell.labelToggleProfile.2) := by
+    constructor
+    · intro selectedFace
+      let faceBit :=
+        (Pi.single cell.face 1 :
+          OrbitFace graphData.toRotationSystem → F2) selectedFace
+      let profileBit := cell.labelToggleProfile.1
+      calc
+        cell.source.2.prefixLabels selectedFace =
+            cell.source.2.prefixLabels selectedFace +
+              ((faceBit + profileBit) + (faceBit + profileBit)) := by
+                rw [zmod2_add_self, add_zero]
+        _ = (cell.source.2.prefixLabels selectedFace + faceBit +
+              profileBit) + faceBit + profileBit := by
+                abel
+        _ = cell.target.2.prefixLabels selectedFace + faceBit +
+              profileBit := by
+                rw [← hforward.1 selectedFace]
+    · intro selectedFace
+      let faceBit :=
+        (Pi.single cell.face 1 :
+          OrbitFace graphData.toRotationSystem → F2) selectedFace
+      let profileBit := cell.labelToggleProfile.2
+      calc
+        cell.source.2.suffixLabels selectedFace =
+            cell.source.2.suffixLabels selectedFace +
+              ((faceBit + profileBit) + (faceBit + profileBit)) := by
+                rw [zmod2_add_self, add_zero]
+        _ = (cell.source.2.suffixLabels selectedFace + faceBit +
+              profileBit) + faceBit + profileBit := by
+                abel
+        _ = cell.target.2.suffixLabels selectedFace + faceBit +
+              profileBit := by
+                rw [← hforward.2 selectedFace]
+  have hunique :=
+    (Classical.choose_spec cell.symm.existsUnique_labelToggleProfile).2
+  exact (hunique cell.labelToggleProfile (by
+    simpa [CrossCentralExactFaceCertifiedRebaseInvolutionCell.symm] using
+      hreverse)).symm
+
+/-- Affine facial-label action carried by one involution cell. -/
+def labelToggleAction
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData)
+    (labels :
+      (OrbitFace graphData.toRotationSystem → F2) ×
+        (OrbitFace graphData.toRotationSystem → F2)) :
+    (OrbitFace graphData.toRotationSystem → F2) ×
+      (OrbitFace graphData.toRotationSystem → F2) :=
+  (fun selectedFace =>
+      labels.1 selectedFace +
+        (Pi.single cell.face 1 :
+          OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            cell.labelToggleProfile.1,
+    fun selectedFace =>
+      labels.2 selectedFace +
+        (Pi.single cell.face 1 :
+          OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            cell.labelToggleProfile.2)
+
+/-- The affine cell action carries the two source label channels exactly
+to the two target label channels. -/
+theorem labelToggleAction_source
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.labelToggleAction
+        (cell.source.2.prefixLabels, cell.source.2.suffixLabels) =
+      (cell.target.2.prefixLabels, cell.target.2.suffixLabels) := by
+  apply Prod.ext <;> funext selectedFace
+  · exact (cell.labelToggleProfile_spec.1 selectedFace).symm
+  · exact (cell.labelToggleProfile_spec.2 selectedFace).symm
+
+/-- Every affine facial-label action carried by an involution cell has
+order two. -/
+theorem labelToggleAction_self
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData)
+    (labels :
+      (OrbitFace graphData.toRotationSystem → F2) ×
+        (OrbitFace graphData.toRotationSystem → F2)) :
+    cell.labelToggleAction (cell.labelToggleAction labels) = labels := by
+  apply Prod.ext <;> funext selectedFace
+  · change
+      ((labels.1 selectedFace +
+          (Pi.single cell.face 1 :
+            OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            cell.labelToggleProfile.1) +
+          (Pi.single cell.face 1 :
+            OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            cell.labelToggleProfile.1) = labels.1 selectedFace
+    calc
+      _ = labels.1 selectedFace +
+          ((Pi.single cell.face 1 :
+              OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            (Pi.single cell.face 1 :
+              OrbitFace graphData.toRotationSystem → F2) selectedFace) +
+          (cell.labelToggleProfile.1 + cell.labelToggleProfile.1) := by
+            abel
+      _ = labels.1 selectedFace := by
+            rw [zmod2_add_self, zmod2_add_self]
+            simp
+  · change
+      ((labels.2 selectedFace +
+          (Pi.single cell.face 1 :
+            OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            cell.labelToggleProfile.2) +
+          (Pi.single cell.face 1 :
+            OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            cell.labelToggleProfile.2) = labels.2 selectedFace
+    calc
+      _ = labels.2 selectedFace +
+          ((Pi.single cell.face 1 :
+              OrbitFace graphData.toRotationSystem → F2) selectedFace +
+            (Pi.single cell.face 1 :
+              OrbitFace graphData.toRotationSystem → F2) selectedFace) +
+          (cell.labelToggleProfile.2 + cell.labelToggleProfile.2) := by
+            abel
+      _ = labels.2 selectedFace := by
+            rw [zmod2_add_self, zmod2_add_self]
+            simp
+
+/-- The exact facial-label permutation associated with an involution
+cell. -/
+def labelTogglePermutation
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    Equiv.Perm
+      ((OrbitFace graphData.toRotationSystem → F2) ×
+        (OrbitFace graphData.toRotationSystem → F2)) where
+  toFun := cell.labelToggleAction
+  invFun := cell.labelToggleAction
+  left_inv := cell.labelToggleAction_self
+  right_inv := cell.labelToggleAction_self
+
+/-- The cell permutation sends the source label pair to the target label
+pair. -/
+theorem labelTogglePermutation_apply_source
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.labelTogglePermutation
+        (cell.source.2.prefixLabels, cell.source.2.suffixLabels) =
+      (cell.target.2.prefixLabels, cell.target.2.suffixLabels) :=
+  cell.labelToggleAction_source
+
+/-- The reversed cell carries exactly the same facial-label permutation. -/
+theorem labelTogglePermutation_symm
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.symm.labelTogglePermutation = cell.labelTogglePermutation := by
+  ext labels selectedFace <;>
+    simp [labelTogglePermutation, labelToggleAction,
+      cell.labelToggleProfile_symm]
+
+/-- Composing a cell's facial-label permutation with itself is the
+identity. -/
+theorem labelTogglePermutation_sq
+    (cell : CrossCentralExactFaceCertifiedRebaseInvolutionCell graphData
+      minimal baseData) :
+    cell.labelTogglePermutation * cell.labelTogglePermutation =
+      Equiv.refl
+        ((OrbitFace graphData.toRotationSystem → F2) ×
+          (OrbitFace graphData.toRotationSystem → F2)) := by
+  apply Equiv.ext
+  intro labels
+  change cell.labelToggleAction (cell.labelToggleAction labels) = labels
+  exact cell.labelToggleAction_self labels
 
 /-- An ambient edge belongs to exactly one of the two prefix closures if
 and only if it belongs to the selected facial boundary. -/
