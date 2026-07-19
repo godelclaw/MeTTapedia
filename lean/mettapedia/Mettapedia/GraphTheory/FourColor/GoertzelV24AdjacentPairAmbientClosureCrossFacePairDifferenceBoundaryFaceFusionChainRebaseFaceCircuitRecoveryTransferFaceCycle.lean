@@ -372,6 +372,8 @@ structure RemoteDualCycle
         (OrbitFace graphData.toRotationSystem))).Walk
       start start
   isCycle : walk.IsCycle
+  support_mem_cyclicDualFaces : ∀ face ∈ walk.support,
+    face ∈ circuit.cyclicDualFaces
   central_not_mem : ∀ face ∈ walk.support,
     centralEdge
         (baseData.rotationOrderedData graphData minimal.spherical.cubic
@@ -382,6 +384,25 @@ structure RemoteDualCycle
         (baseData.rotationOrderedData graphData minimal.spherical.cubic
           minimal.vertexRotationCyclic) port ∉
       orbitFaceBoundary graphData.toRotationSystem face.1
+
+/-- Every face of an extracted remote dual cycle is the selected face of
+an actual certified rebase arc in the source circuit. -/
+theorem RemoteDualCycle.exists_rebaseArc_of_mem_support
+    {circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+      minimal baseData}
+    (cycle : RemoteDualCycle circuit)
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))}
+    (hface : face ∈ cycle.walk.support) :
+    ∃ arc ∈ circuit.first :: circuit.rest, arc.dualFace = face := by
+  have hcyclic := cycle.support_mem_cyclicDualFaces face hface
+  rw [circuit.cyclicDualFaces_eq_dualFaceWord_append] at hcyclic
+  rcases List.mem_append.1 hcyclic with hword | hfirst
+  · rcases List.mem_map.1 hword with ⟨arc, harc, hfaceEq⟩
+    exact ⟨arc, harc, hfaceEq⟩
+  · have hfaceEq : face = circuit.first.dualFace := by
+      simpa using hfirst
+    exact ⟨circuit.first, by simp, hfaceEq.symm⟩
 
 /-- A nontrivial remote closed facial-dual walk whose repeated edge is
 the obstruction to immediate simple-cycle extraction. -/
@@ -544,8 +565,18 @@ theorem RemoteNontrailDualWalk.acyclic_toSubgraph_or_exists_remoteDualCycle
       start := nontrail.walk.toSubgraph.hom vertex
       walk := ambientCycle
       isCycle := hambientCycle
+      support_mem_cyclicDualFaces := ?_
       central_not_mem := ?_
       boundary_not_mem := ?_ }⟩
+    · intro face hface
+      rw [SimpleGraph.Walk.support_map] at hface
+      rcases List.mem_map.1 hface with ⟨subface, _hsubface, hfaceEq⟩
+      subst face
+      have hcompressed : subface.1 ∈ circuit.compressedDualFaces := by
+        rw [← nontrail.support_eq]
+        exact (nontrail.walk.mem_verts_toSubgraph).1 subface.2
+      exact (circuit.cyclicDualFaces.destutter_sublist (· ≠ ·)).subset
+        hcompressed
     · intro face hface
       rw [SimpleGraph.Walk.support_map] at hface
       rcases List.mem_map.1 hface with ⟨subface, hsubface, hfaceEq⟩
@@ -637,6 +668,10 @@ theorem constantFace_or_exists_remote_dualCycle_or_remote_nontrail
         start := circuit.first.dualFace
         walk := cycle
         isCycle := hcycle
+        support_mem_cyclicDualFaces := fun face hface =>
+          hcompressedSubset (by
+            rw [← hsupport]
+            exact walk.support_cycleBypass_sublist_support.subset hface)
         central_not_mem := fun face hface =>
           hremoteWalk.1 face
             (walk.support_cycleBypass_sublist_support.subset hface)
