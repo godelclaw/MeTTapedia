@@ -250,10 +250,10 @@ theorem exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
   exact ⟨component, first, second, hfirstSecond, hsupp, hadj,
     hcomponentBoundary, htransfer, hstars⟩
 
-/-- Short saturated recovery genuinely re-enters the fusion dynamics.  The
-remote adjacent-pair collar either realizes a strict-circuit or disjoint-
-support terminal branch, or launches a new certified exact-state pumping
-run at its surviving cross. -/
+/-- Short saturated recovery genuinely re-enters the fusion dynamics at a
+different central edge.  The remote adjacent-pair collar either realizes a
+strict-circuit or disjoint-support terminal branch, or launches a new
+certified exact-state pumping run at its surviving cross. -/
 theorem exists_remote_fusionTerminal_or_rebasePumping_of_arcLength_le_four
     (circuit : ClosureRecoveryFaceTransferCircuit rebaseCircuit)
     (hminimal : circuit.IsLengthMinimal)
@@ -262,18 +262,44 @@ theorem exists_remote_fusionTerminal_or_rebasePumping_of_arcLength_le_four
     rebaseCircuit.arcLength = 4 ∧
       ∃ first second : V,
         first ≠ second ∧ G.Adj first second ∧
+          centralEdgeValue
+              (RecoveredRotationOrderedData graphData minimal baseData) ≠
+            s(first, second) ∧
           HasRotationOrderedFusionTerminalOrRebasePumping
             graphData minimal first second := by
+  have hcyclic : CyclicallyFiveEdgeConnected G :=
+    GoertzelV24FourEdgeCutGluing.cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample
+      graphData minimal
   rcases
-      circuit.exists_remote_endpoint_star_chord_triangles_of_arcLength_le_four
-        hminimal hlength hshort with
+      circuit.exists_remote_primal_separator_with_four_port_dual_chord_of_arcLength_le_four
+        hcyclic hminimal hlength hshort with
     ⟨hrebaseLength, walk, hcycle, hdelete, hcutCard, hcollar,
       hcentral, hboundary⟩
   dsimp only at hcollar
   rcases hcollar with
     ⟨component, first, second, hfirstSecond, hsupp, hadj,
-      hcomponentBoundary, hnormal, hstars⟩
-  exact ⟨hrebaseLength, first, second, hfirstSecond, hadj,
+      hcomponentBoundary, hfirstBoundaryCard, hsecondBoundaryCard,
+      internalEdge, leftFace, rightFace, hinternalValue,
+      hinternalNotRemoved, hleftSupport, hrightSupport, hfacesNe,
+      hleftBoundary, hrightBoundary, hdualAdj⟩
+  have hcentralNe :
+      centralEdgeValue
+          (RecoveredRotationOrderedData graphData minimal baseData) ≠
+        s(first, second) := by
+    intro hcentralValue
+    have hcentralEdge :
+        centralEdge
+            (RecoveredRotationOrderedData graphData minimal baseData) =
+          internalEdge := by
+      apply Subtype.ext
+      exact hcentralValue.trans hinternalValue.symm
+    apply hcentral leftFace hleftSupport
+    rw [hcentralEdge]
+    exact hleftBoundary
+  have hnormal :=
+    exists_rotationOrderedCyclicKempeFusionChainNormalForm_of_vertexMinimalTaitCounterexample
+      graphData minimal hadj
+  exact ⟨hrebaseLength, first, second, hfirstSecond, hadj, hcentralNe,
     hasRotationOrderedFusionTerminalOrRebasePumping_of_normalForm
       graphData minimal hnormal⟩
 
