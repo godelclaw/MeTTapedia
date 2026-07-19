@@ -151,10 +151,105 @@ theorem commonPortBoundaryLinearMap_eq_commonDiscrepancy_iff_isGraphFlow
   collar.commonPortBoundaryLinearMap_eq_iff_isGraphFlow_commonCoreChainExtendZero
     hchain (collar.commonDiscrepancy_hasCommonPortBoundary sourceEscape)
 
+/-- On the spherical minimal-counterexample graph, equality of supported
+terminal states is exactly equality modulo two ambient facial-boundary
+coordinates. -/
+theorem commonPortBoundaryLinearMap_eq_iff_exists_orbitFaceBoundary_coefficients
+    {cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit}
+    {targetEdge : G.edgeSet}
+    (collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge)
+    {left right : collar.commonCore.edgeSet → Color}
+    (hleft : collar.HasCommonPortBoundary left)
+    (hright : collar.HasCommonPortBoundary right) :
+    collar.commonPortBoundaryLinearMap left =
+        collar.commonPortBoundaryLinearMap right ↔
+      ∃ first second : OrbitFace graphData.toRotationSystem → F2,
+        orbitFaceBoundaryLinearMap graphData.toRotationSystem first =
+            (fun edge =>
+              (collar.commonCoreChainExtendZero (left + right) edge).1) ∧
+        orbitFaceBoundaryLinearMap graphData.toRotationSystem second =
+            (fun edge =>
+              (collar.commonCoreChainExtendZero (left + right) edge).2) := by
+  have hconnected : G.Connected := by
+    rw [← GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
+      G graphData]
+    exact minimal.primalConnected
+  have hdual : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Connected :=
+    orbitFaceInteriorDual_connected graphData.toRotationSystem
+      minimal.spherical.cubic minimal.primalConnected
+      minimal.vertexRotationCyclic
+  exact
+    (collar.commonPortBoundaryLinearMap_eq_iff_isGraphFlow_commonCoreChainExtendZero
+      hleft hright).trans
+        (isGraphFlow_iff_exists_orbitFaceBoundary_coefficients
+          graphData minimal.facesTwoSided hdual hconnected minimal.spherical)
+
+/-- The exact facial quotient specialized to the forced cross-base
+discrepancy. -/
+theorem commonPortBoundaryLinearMap_eq_commonDiscrepancy_iff_exists_orbitFaceBoundary_coefficients
+    {cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit}
+    {targetEdge : G.edgeSet}
+    {sourceNormal : RotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal baseData}
+    (collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge)
+    (sourceEscape : sourceNormal.KempeOrbitAdjacentEscape)
+    {chain : collar.commonCore.edgeSet → Color}
+    (hchain : collar.HasCommonPortBoundary chain) :
+    collar.commonPortBoundaryLinearMap chain =
+        collar.commonPortBoundaryLinearMap
+          (collar.commonDiscrepancy sourceEscape) ↔
+      ∃ first second : OrbitFace graphData.toRotationSystem → F2,
+        orbitFaceBoundaryLinearMap graphData.toRotationSystem first =
+            (fun edge => (collar.commonCoreChainExtendZero
+              (chain + collar.commonDiscrepancy sourceEscape) edge).1) ∧
+        orbitFaceBoundaryLinearMap graphData.toRotationSystem second =
+            (fun edge => (collar.commonCoreChainExtendZero
+              (chain + collar.commonDiscrepancy sourceEscape) edge).2) :=
+  collar.commonPortBoundaryLinearMap_eq_iff_exists_orbitFaceBoundary_coefficients
+    hchain (collar.commonDiscrepancy_hasCommonPortBoundary sourceEscape)
+
+/-- The forced discrepancy itself is not an ambient facial circulation: its
+nonzero terminal boundary must first be changed by a genuine collar
+transport. -/
+theorem not_exists_orbitFaceBoundary_coefficients_commonDiscrepancy
+    {cycle :
+      CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+        rebaseCircuit}
+    {targetEdge : G.edgeSet}
+    {sourceNormal : RotationOrderedCyclicKempeFusionChainNormalForm
+      graphData minimal baseData}
+    (collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge)
+    (sourceEscape : sourceNormal.KempeOrbitAdjacentEscape) :
+    ¬ ∃ first second : OrbitFace graphData.toRotationSystem → F2,
+      orbitFaceBoundaryLinearMap graphData.toRotationSystem first =
+          (fun edge => (collar.commonCoreChainExtendZero
+            (collar.commonDiscrepancy sourceEscape) edge).1) ∧
+      orbitFaceBoundaryLinearMap graphData.toRotationSystem second =
+          (fun edge => (collar.commonCoreChainExtendZero
+            (collar.commonDiscrepancy sourceEscape) edge).2) := by
+  rintro ⟨first, second, hfirst, hsecond⟩
+  have hambientFlow : IsGraphFlow G
+      (collar.commonCoreChainExtendZero
+        (collar.commonDiscrepancy sourceEscape)) :=
+    isGraphFlow_of_orbitFaceBoundary_coefficients
+      graphData minimal.facesTwoSided hfirst hsecond
+  have hcoreFlow : IsGraphFlow collar.commonCore
+      (collar.commonDiscrepancy sourceEscape) :=
+    (isGraphFlow_inducedEdgeChainExtendZero_iff
+      G collar.commonCorePredicate).1 hambientFlow
+  apply collar.commonDiscrepancyBoundaryState_ne_zero sourceEscape
+  funext terminal
+  exact hcoreFlow terminal.1
+
 /-- Two chains with the same terminal state differ, after zero extension, by
-two explicit binary combinations of ambient facial boundaries. Thus the
-terminal state is a complete quotient of supported common-core chains modulo
-ambient facial circulations. -/
+two explicit binary combinations of ambient facial boundaries. -/
 theorem exists_orbitFaceBoundary_coefficients_of_commonPortBoundary_eq
     {cycle :
       CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
@@ -172,25 +267,9 @@ theorem exists_orbitFaceBoundary_coefficients_of_commonPortBoundary_eq
             (collar.commonCoreChainExtendZero (left + right) edge).1) ∧
       orbitFaceBoundaryLinearMap graphData.toRotationSystem second =
           (fun edge =>
-            (collar.commonCoreChainExtendZero (left + right) edge).2) := by
-  have hambientFlow : IsGraphFlow G
-      (collar.commonCoreChainExtendZero (left + right)) :=
-    (collar.commonPortBoundaryLinearMap_eq_iff_isGraphFlow_commonCoreChainExtendZero
-      hleft hright).1 hboundary
-  have hconnected : G.Connected := by
-    rw [← GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
-      G graphData]
-    exact minimal.primalConnected
-  have hdual : (interiorDualGraph
-      (orbitFaceBoundary graphData.toRotationSystem)
-      (Finset.univ : Finset
-        (OrbitFace graphData.toRotationSystem))).Connected :=
-    orbitFaceInteriorDual_connected graphData.toRotationSystem
-      minimal.spherical.cubic minimal.primalConnected
-      minimal.vertexRotationCyclic
-  exact exists_orbitFaceBoundary_coefficients_of_isGraphFlow
-    graphData minimal.facesTwoSided hdual hconnected minimal.spherical
-      hambientFlow
+            (collar.commonCoreChainExtendZero (left + right) edge).2) :=
+  (collar.commonPortBoundaryLinearMap_eq_iff_exists_orbitFaceBoundary_coefficients
+    hleft hright).1 hboundary
 
 end IntrinsicShortTargetEscapeCollar
 

@@ -304,6 +304,47 @@ theorem snd_mem_f2CycleSpace_of_isGraphFlow
   simp only [Pi.zero_apply, hflow vertex]
   rfl
 
+/-- A color chain is a graph circulation exactly when both of its binary
+coordinates lie in the scalar cycle space. -/
+theorem isGraphFlow_iff_fst_snd_mem_f2CycleSpace
+    {chain : G.edgeSet → Color} :
+    IsGraphFlow G chain ↔
+      (fun edge => (chain edge).1) ∈ f2CycleSpace G ∧
+        (fun edge => (chain edge).2) ∈ f2CycleSpace G := by
+  constructor
+  · intro hflow
+    exact ⟨fst_mem_f2CycleSpace_of_isGraphFlow hflow,
+      snd_mem_f2CycleSpace_of_isGraphFlow hflow⟩
+  · rintro ⟨hfirst, hsecond⟩ vertex
+    apply Prod.ext
+    · rw [← scalarVertexKirchhoffSum_fst,
+        scalarVertexKirchhoffSum_eq_incidence_mulVec]
+      exact congrFun ((LinearMap.mem_ker).1 hfirst) vertex
+    · rw [← scalarVertexKirchhoffSum_snd,
+        scalarVertexKirchhoffSum_eq_incidence_mulVec]
+      exact congrFun ((LinearMap.mem_ker).1 hsecond) vertex
+
+/-- If both coordinates of a color chain are facial boundary combinations,
+then the chain is a graph circulation. -/
+theorem isGraphFlow_of_orbitFaceBoundary_coefficients
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    {chain : G.edgeSet → Color}
+    {first second : OrbitFace data.toRotationSystem → F2}
+    (hfirst : orbitFaceBoundaryLinearMap data.toRotationSystem first =
+      (fun edge => (chain edge).1))
+    (hsecond : orbitFaceBoundaryLinearMap data.toRotationSystem second =
+      (fun edge => (chain edge).2)) :
+    IsGraphFlow G chain := by
+  rw [isGraphFlow_iff_fst_snd_mem_f2CycleSpace]
+  constructor
+  · rw [← hfirst]
+    exact range_orbitFaceBoundaryLinearMap_le_f2CycleSpace
+      data htwoSided ⟨first, rfl⟩
+  · rw [← hsecond]
+    exact range_orbitFaceBoundaryLinearMap_le_f2CycleSpace
+      data htwoSided ⟨second, rfl⟩
+
 /-- On a cellular sphere, both coordinates of every ambient color
 circulation are explicit linear combinations of facial boundaries. -/
 theorem exists_orbitFaceBoundary_coefficients_of_isGraphFlow
@@ -336,6 +377,31 @@ theorem exists_orbitFaceBoundary_coefficients_of_isGraphFlow
   rcases hfirst with ⟨first, hfirst⟩
   rcases hsecond with ⟨second, hsecond⟩
   exact ⟨first, second, hfirst, hsecond⟩
+
+/-- On a cellular sphere, facial coefficient pairs characterize ambient
+color circulations exactly. -/
+theorem isGraphFlow_iff_exists_orbitFaceBoundary_coefficients
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (hsphere : OrbitSphericalCubicMapData data.toRotationSystem)
+    {chain : G.edgeSet → Color} :
+    IsGraphFlow G chain ↔
+      ∃ first second : OrbitFace data.toRotationSystem → F2,
+        orbitFaceBoundaryLinearMap data.toRotationSystem first =
+            (fun edge => (chain edge).1) ∧
+          orbitFaceBoundaryLinearMap data.toRotationSystem second =
+            (fun edge => (chain edge).2) := by
+  constructor
+  · exact exists_orbitFaceBoundary_coefficients_of_isGraphFlow
+      data htwoSided hdual hconnected hsphere
+  · rintro ⟨first, second, hfirst, hsecond⟩
+    exact isGraphFlow_of_orbitFaceBoundary_coefficients
+      data htwoSided hfirst hsecond
 
 end
 
