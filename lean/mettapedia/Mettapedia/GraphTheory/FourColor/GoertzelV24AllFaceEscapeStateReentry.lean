@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceNormalReentry
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicShortEscapeCollar
 
 /-! Finite all-face reentry states retaining the actual Kempe escape
 coloring, so that equality at recursive joins carries Kempe-orbit data rather
@@ -145,6 +145,45 @@ theorem kempeClosure_recoloring_eq_of_escapeColoring_eq
             secondEscape.coloring := by rw [hsecond]
     _ = _ := secondEscape.same_kempeClosure_as_allEqual.symm
 
+/-- Recursive geometry aligned with the literal target escape-color state.
+In the intrinsic branch the retained singleton collar's target escape is
+definitionally the coloring stored by the next state. -/
+def EscapeAlignedGeometry
+    (source target : RotationOrderedFusionEscapeColorState graphData minimal)
+    (targetEdge : G.edgeSet) : Prop :=
+  (∃ circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData minimal
+        source.1,
+      circuit.IsLengthMinimal ∧
+        ∃ cycle :
+            CrossCentralExactFaceCertifiedRebaseCircuit.RemoteDualCycle
+              circuit,
+          cycle.IntrinsicShortFusionTarget targetEdge ∧
+            ∃ collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge,
+              target = ⟨collar.targetBase,
+                collar.targetEscape.coloring⟩) ∨
+    ∃ circuit : CrossCentralExactFaceCertifiedRebaseCircuit graphData minimal
+        source.1,
+      circuit.IsLengthMinimal ∧
+        ∃ rotated : CrossCentralExactFaceCertifiedRebaseCircuit graphData
+            minimal source.1,
+          rotated.arcLength = circuit.arcLength ∧
+            ∃ transfer : ClosureRecoveryFaceTransfer rotated,
+              targetEdge = transfer.recovery.edge
+
+/-- Forgetting the exact target escape recovers the underlying geometric
+intrinsic-short/recovery alternative. -/
+theorem EscapeAlignedGeometry.toIntrinsicShortOrRecoveryGeometry
+    {source target :
+      RotationOrderedFusionEscapeColorState graphData minimal}
+    {targetEdge : G.edgeSet}
+    (geometry : source.EscapeAlignedGeometry target targetEdge) :
+    IntrinsicShortOrRecoveryGeometry graphData minimal source.1 targetEdge := by
+  rcases geometry with
+    ⟨circuit, hminimal, cycle, intrinsic, _collar, _htarget⟩ |
+      ⟨circuit, hminimal, rotated, hlength, transfer, htarget⟩
+  · exact Or.inl ⟨circuit, hminimal, cycle, intrinsic⟩
+  · exact Or.inr ⟨circuit, hminimal, rotated, hlength, transfer, htarget⟩
+
 /-- A recursive step whose source and target both retain their actual Kempe
 escape coloring.  The target is tied to the geometric successor edge by an
 equality of ambient edge-set elements, not merely by endpoint names. -/
@@ -163,8 +202,7 @@ def Reentry
               centralEdge
                   (RecoveredRotationOrderedData graphData minimal target.1) =
                 targetEdge ∧
-                IntrinsicShortOrRecoveryGeometry graphData minimal source.1
-                  targetEdge ∧
+                source.EscapeAlignedGeometry target targetEdge ∧
                 ∃ targetNormal :
                     RotationOrderedCyclicKempeFusionChainNormalForm graphData
                       minimal target.1,
@@ -281,34 +319,28 @@ theorem admissibleTerminal_or_exists_admissibleReentry
               ⟨state.1.1, circuit, cycle, rfl, hminimal, hlong⟩)
           · have hintrinsic' := hintrinsic
             rcases hintrinsic with
-              ⟨first, second, _hne, _hadj, hvalue, hintrinsicNe,
-                _hboundary, hkempe, _hshortGeometry⟩
-            rcases hkempe with
-              ⟨targetBase, htargetFirst, htargetSecond, targetNormal,
-                htargetOutcome, ⟨targetEscape⟩⟩
+              ⟨_first, _second, _hne, _hadj, _hvalue, hintrinsicNe,
+                _hboundary, _hkempe, _hshortGeometry⟩
+            rcases hintrinsic'.nonempty_targetEscapeCollar with
+              ⟨targetCollar⟩
             let targetRaw :
                 RotationOrderedFusionEscapeColorState graphData minimal :=
-              ⟨targetBase, targetEscape.coloring⟩
+              ⟨targetCollar.targetBase,
+                targetCollar.targetEscape.coloring⟩
             have htargetAdmissible : targetRaw.Admissible := by
-              exact ⟨targetNormal, htargetOutcome, targetEscape, rfl⟩
+              exact ⟨targetCollar.targetNormal,
+                targetCollar.targetOutcome, targetCollar.targetEscape, rfl⟩
             let target :
                 AdmissibleState (graphData := graphData)
                   (minimal := minimal) :=
               ⟨targetRaw, htargetAdmissible⟩
-            have htargetCentral :
-                centralEdge
-                    (RecoveredRotationOrderedData graphData minimal
-                      targetBase) = intrinsicEdge := by
-              apply Subtype.ext
-              rw [centralEdge_val, centralEdgeValue]
-              change s(targetBase.firstVertex, targetBase.secondVertex) =
-                intrinsicEdge.1
-              rw [htargetFirst, htargetSecond]
-              exact hvalue.symm
             exact Or.inr ⟨target, sourceNormal, hlaunch, sourceEscape,
-              hsourceColor, intrinsicEdge, hintrinsicNe, htargetCentral,
-              Or.inl ⟨circuit, hminimal, shortCycle, hintrinsic'⟩,
-              targetNormal, htargetOutcome, targetEscape, rfl⟩
+              hsourceColor, intrinsicEdge, hintrinsicNe,
+              targetCollar.targetCentral_eq,
+              Or.inl ⟨circuit, hminimal, shortCycle, hintrinsic',
+                targetCollar, rfl⟩,
+              targetCollar.targetNormal, targetCollar.targetOutcome,
+              targetCollar.targetEscape, rfl⟩
         · rcases htarget.target_fusion with
             ⟨first, second, _hne, hadj, htargetValue, htargetFusion⟩
           let targetDart : G.Dart := centralDart hadj
