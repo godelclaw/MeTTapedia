@@ -102,6 +102,13 @@ structure ExactReverseArrivalLens where
       boundary.arrival.witness.interior.turnPosition
   straightEdgeWord_eq_reverse :
     firstTurn.straightEdgeWord = boundary.arrivalForwardPrefix.reverse
+  firstEdge_eq_reverseRootFirst :
+    firstTurn.interior.first = boundary.reverseRootFirst
+  secondEdge_eq_reverseRootLast :
+    firstTurn.interior.second = boundary.reverseRootLast
+  thirdEdge_eq_arrivalBypassed :
+    firstTurn.interior.thirdEdge =
+      boundary.arrival.witness.corner.bypassed
   primalArc_edgeWord_eq_reverse :
     firstTurn.primalArc.edgeSubtypeSupport =
       boundary.arrival.path.edgeSubtypeSupport.reverse
@@ -112,7 +119,8 @@ structure ExactReverseArrivalLens where
 theorem nonempty_exactReverseArrivalLens :
     Nonempty boundary.ExactReverseArrivalLens := by
   rcases boundary.exists_reversedArrivalFirstTurn_finish_eq_before with
-    ⟨firstTurn, hfinish, hposition, hstraight⟩
+    ⟨firstTurn, hfinish, hposition, hstraight,
+      hfirst, hsecond, hthird⟩
   have hedgeWord := boundary.reversedFirstTurn_primalArc_edgeWord
     firstTurn hstraight
   have hlength : firstTurn.primalArc.length =
@@ -134,6 +142,9 @@ theorem nonempty_exactReverseArrivalLens :
     finishJunction_eq_before := hfinish
     turnPosition_eq_arrival := hposition
     straightEdgeWord_eq_reverse := hstraight
+    firstEdge_eq_reverseRootFirst := hfirst
+    secondEdge_eq_reverseRootLast := hsecond
+    thirdEdge_eq_arrivalBypassed := hthird
     primalArc_edgeWord_eq_reverse := hedgeWord
     primalArc_length_eq_arrival := hlength }⟩
 

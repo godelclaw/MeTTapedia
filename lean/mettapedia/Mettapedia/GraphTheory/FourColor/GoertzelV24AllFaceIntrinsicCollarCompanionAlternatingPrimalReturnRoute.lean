@@ -754,10 +754,14 @@ theorem exists_reversedArrivalFirstTurn_finish_eq_before :
     ∃ firstTurn :
         boundary.reversedArrivalRoute.FirstInteriorTransverseTurn,
       firstTurn.finishJunction = boundary.before.junction ∧
-        firstTurn.turnPosition =
+      firstTurn.turnPosition =
           boundary.arrival.witness.interior.turnPosition ∧
         firstTurn.straightEdgeWord =
-          boundary.arrivalForwardPrefix.reverse := by
+          boundary.arrivalForwardPrefix.reverse ∧
+        firstTurn.interior.first = boundary.reverseRootFirst ∧
+        firstTurn.interior.second = boundary.reverseRootLast ∧
+        firstTurn.interior.thirdEdge =
+          boundary.arrival.witness.corner.bypassed := by
   rcases List.getLast?_eq_some_iff.mp
       boundary.reversedArrivalPrefix_lastOption_eq_rootFirst with
     ⟨beforeEdges, hbeforeEdges⟩
@@ -803,7 +807,7 @@ theorem exists_reversedArrivalFirstTurn_finish_eq_before :
     change beforeEdges ++ [boundary.reverseRootFirst] =
       boundary.arrivalForwardPrefix.reverse
     exact hbeforeEdges.symm
-  refine ⟨firstTurn, ?_, ?_, hstraight⟩
+  refine ⟨firstTurn, ?_, ?_, hstraight, rfl, rfl, rfl⟩
   · change SimpleGraph.lineGraphCommonVertex
         boundary.reverseRootFirstSecond = boundary.before.junction
     symm
@@ -932,7 +936,8 @@ theorem exists_reverseExactNext_to_before :
         firstTurn.turnPosition =
           boundary.arrival.witness.interior.turnPosition := by
   rcases boundary.exists_reversedArrivalFirstTurn_finish_eq_before with
-    ⟨firstTurn, hfinish, hposition, _hstraight⟩
+    ⟨firstTurn, hfinish, hposition, _hstraight,
+      _hfirst, _hsecond, _hthird⟩
   refine ⟨firstTurn,
     boundary.returnState_isExactNext_reverseTargetState firstTurn,
     ?_, hposition⟩
