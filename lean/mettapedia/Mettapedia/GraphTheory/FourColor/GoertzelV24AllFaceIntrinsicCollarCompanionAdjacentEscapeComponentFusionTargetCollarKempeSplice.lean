@@ -268,7 +268,10 @@ theorem exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
       data.firstVertex ∉ rerouted.support ∧
       (data.secondVertex ∉ walk.support →
         data.secondVertex ∉ rerouted.support) ∧
-      (centralEdge data).1 ∉ rerouted.edges := by
+      (centralEdge data).1 ∉ rerouted.edges ∧
+      ∀ edge ∈ rerouted.edges,
+        edge ∈ walk.edges ∨
+          edge ∈ (data.retainedWalkToAmbient portBypass).edges := by
   by_cases hfirst : data.firstVertex ∈ walk.support
   · have orientation :=
       walk.internalPassage_orientation_of_neighborSet_eq_triple
@@ -296,7 +299,7 @@ theorem exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
       let replaced := walk.replaceInternalVertex data.firstVertex hfirst
         replacement
       let rerouted := replaced.bypass
-      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_⟩
+      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_, ?_⟩
       · apply walk.bypass_replaceInternalVertex_not_mem_support
           data.firstVertex hpath hfirst hleft.1 hright.1 replacement
         simpa only [replacement, SimpleGraph.Walk.support_copy] using
@@ -315,6 +318,13 @@ theorem exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
         · exact hcentral hold
         · exact ambientBypassCentral (by
             simpa only [replacement, SimpleGraph.Walk.edges_copy] using hnew)
+      · intro edge hedge
+        have hraw := replaced.edges_bypass_subset_edges hedge
+        rcases walk.mem_edges_replaceInternalVertex data.firstVertex hfirst
+            replacement hraw with hold | hnew
+        · exact Or.inl hold
+        · exact Or.inr (by
+            simpa only [replacement, SimpleGraph.Walk.edges_copy] using hnew)
     · let replacement : G.Walk
           (walk.takeUntil data.firstVertex hfirst).penultimate
           (walk.dropUntil data.firstVertex hfirst).snd :=
@@ -322,7 +332,7 @@ theorem exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
       let replaced := walk.replaceInternalVertex data.firstVertex hfirst
         replacement
       let rerouted := replaced.bypass
-      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_⟩
+      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_, ?_⟩
       · apply walk.bypass_replaceInternalVertex_not_mem_support
           data.firstVertex hpath hfirst hleft.1 hright.1 replacement
         intro hmem
@@ -349,7 +359,16 @@ theorem exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
         · exact ambientBypassCentral (by
             simpa only [replacement, SimpleGraph.Walk.edges_copy,
               SimpleGraph.Walk.edges_reverse, List.mem_reverse] using hnew)
-  · exact ⟨walk, hpath, hfirst, fun hsecond => hsecond, hcentral⟩
+      · intro edge hedge
+        have hraw := replaced.edges_bypass_subset_edges hedge
+        rcases walk.mem_edges_replaceInternalVertex data.firstVertex hfirst
+            replacement hraw with hold | hnew
+        · exact Or.inl hold
+        · exact Or.inr (by
+            simpa only [replacement, SimpleGraph.Walk.edges_copy,
+              SimpleGraph.Walk.edges_reverse, List.mem_reverse] using hnew)
+  · exact ⟨walk, hpath, hfirst, fun hsecond => hsecond, hcentral,
+      fun _ hedge => Or.inl hedge⟩
 
 /-- The symmetric surgery reroutes a simple ambient path past the second
 deleted vertex using a retained bypass from port `2` to port `3`. -/
@@ -367,7 +386,10 @@ theorem exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass
       data.secondVertex ∉ rerouted.support ∧
       (data.firstVertex ∉ walk.support →
         data.firstVertex ∉ rerouted.support) ∧
-      (centralEdge data).1 ∉ rerouted.edges := by
+      (centralEdge data).1 ∉ rerouted.edges ∧
+      ∀ edge ∈ rerouted.edges,
+        edge ∈ walk.edges ∨
+          edge ∈ (data.retainedWalkToAmbient portBypass).edges := by
   by_cases hsecond : data.secondVertex ∈ walk.support
   · have hcentralSymm :
         s(data.secondVertex, data.firstVertex) ∉ walk.edges := by
@@ -399,7 +421,7 @@ theorem exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass
       let replaced := walk.replaceInternalVertex data.secondVertex hsecond
         replacement
       let rerouted := replaced.bypass
-      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_⟩
+      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_, ?_⟩
       · apply walk.bypass_replaceInternalVertex_not_mem_support
           data.secondVertex hpath hsecond hleft.2 hright.2 replacement
         simpa only [replacement, SimpleGraph.Walk.support_copy] using
@@ -418,6 +440,13 @@ theorem exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass
         · exact hcentral hold
         · exact ambientBypassCentral (by
             simpa only [replacement, SimpleGraph.Walk.edges_copy] using hnew)
+      · intro edge hedge
+        have hraw := replaced.edges_bypass_subset_edges hedge
+        rcases walk.mem_edges_replaceInternalVertex data.secondVertex hsecond
+            replacement hraw with hold | hnew
+        · exact Or.inl hold
+        · exact Or.inr (by
+            simpa only [replacement, SimpleGraph.Walk.edges_copy] using hnew)
     · let replacement : G.Walk
           (walk.takeUntil data.secondVertex hsecond).penultimate
           (walk.dropUntil data.secondVertex hsecond).snd :=
@@ -425,7 +454,7 @@ theorem exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass
       let replaced := walk.replaceInternalVertex data.secondVertex hsecond
         replacement
       let rerouted := replaced.bypass
-      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_⟩
+      refine ⟨rerouted, replaced.bypass_isPath, ?_, ?_, ?_, ?_⟩
       · apply walk.bypass_replaceInternalVertex_not_mem_support
           data.secondVertex hpath hsecond hleft.2 hright.2 replacement
         intro hmem
@@ -452,7 +481,16 @@ theorem exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass
         · exact ambientBypassCentral (by
             simpa only [replacement, SimpleGraph.Walk.edges_copy,
               SimpleGraph.Walk.edges_reverse, List.mem_reverse] using hnew)
-  · exact ⟨walk, hpath, hsecond, fun hfirst => hfirst, hcentral⟩
+      · intro edge hedge
+        have hraw := replaced.edges_bypass_subset_edges hedge
+        rcases walk.mem_edges_replaceInternalVertex data.secondVertex hsecond
+            replacement hraw with hold | hnew
+        · exact Or.inl hold
+        · exact Or.inr (by
+            simpa only [replacement, SimpleGraph.Walk.edges_copy,
+              SimpleGraph.Walk.edges_reverse, List.mem_reverse] using hnew)
+  · exact ⟨walk, hpath, hsecond, fun hfirst => hfirst, hcentral,
+      fun _ hedge => Or.inl hedge⟩
 
 /-- Two retained same-side bypasses remove both vertices of an adjacent
 pair from any simple ambient path that avoids the central edge. The result
@@ -471,15 +509,19 @@ theorem exists_deletedAdjacentPairPath_of_central_not_mem_of_portBypasses
       data.secondVertex).Walk (data.retainedPort 2) (data.retainedPort 3)) :
     ∃ targetPath : (DeletedAdjacentPairGraph G data.firstVertex
         data.secondVertex).Walk ⟨left, hleft⟩ ⟨right, hright⟩,
-      targetPath.IsPath := by
+      targetPath.IsPath ∧
+      ∀ edge ∈ (data.retainedWalkToAmbient targetPath).edges,
+        edge ∈ walk.edges ∨
+          edge ∈ (data.retainedWalkToAmbient firstBypass).edges ∨
+            edge ∈ (data.retainedWalkToAmbient secondBypass).edges := by
   rcases exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
       data walk hpath hleft hright hcentral firstBypass with
     ⟨firstReroute, firstPath, firstAvoids, _firstPreservesSecond,
-      firstCentral⟩
+      firstCentral, firstEdgeOrigin⟩
   rcases exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass
       data firstReroute firstPath hleft hright firstCentral secondBypass with
     ⟨secondReroute, secondPath, secondAvoids, preservesFirst,
-      _secondCentral⟩
+      _secondCentral, secondEdgeOrigin⟩
   have secondAvoidsFirst : data.firstVertex ∉ secondReroute.support :=
     preservesFirst firstAvoids
   have supportRetained : ∀ vertex ∈ secondReroute.support,
@@ -489,14 +531,26 @@ theorem exists_deletedAdjacentPairPath_of_central_not_mem_of_portBypasses
       fun heq => secondAvoids (heq ▸ hvertex)⟩
   let targetPath := secondReroute.induce
     (retainedVertexSet data.firstVertex data.secondVertex) supportRetained
-  refine ⟨targetPath, ?_⟩
   let embedding := SimpleGraph.Embedding.induce
     (G := G) (retainedVertexSet data.firstVertex data.secondVertex)
+  have mappedEq : targetPath.map embedding.toHom = secondReroute :=
+    SimpleGraph.Walk.map_induce secondReroute supportRetained
+  have ambientEq : data.retainedWalkToAmbient targetPath = secondReroute := by
+    change targetPath.map embedding.toHom = secondReroute
+    exact mappedEq
   have mapped : (targetPath.map embedding.toHom).IsPath := by
-    rw [SimpleGraph.Walk.map_induce]
+    rw [mappedEq]
     exact secondPath
-  exact (SimpleGraph.Walk.map_isPath_iff_of_injective
-    (p := targetPath) (f := embedding.toHom) embedding.injective).1 mapped
+  refine ⟨targetPath, ?_, ?_⟩
+  · exact (SimpleGraph.Walk.map_isPath_iff_of_injective
+      (p := targetPath) (f := embedding.toHom) embedding.injective).1 mapped
+  · intro edge hedge
+    rw [ambientEq] at hedge
+    rcases secondEdgeOrigin edge hedge with hfirst | hsecond
+    · rcases firstEdgeOrigin edge hfirst with hold | hfirstBypass
+      · exact Or.inl hold
+      · exact Or.inr (Or.inl hfirstBypass)
+    · exact Or.inr (Or.inr hsecond)
 
 variable {graphData : Data G}
   {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
@@ -560,11 +614,97 @@ theorem exists_targetKempeReroutedPath_of_noncentral
   rcases collar.exists_targetOwnSameSideKempePrimalTrails_disjoint with
     ⟨_routes, firstBypass, secondBypass, _firstIsTrail, _secondIsTrail,
       _firstEdges, _secondEdges, _disjoint⟩
-  exact exists_deletedAdjacentPairPath_of_central_not_mem_of_portBypasses
-    collar.targetData ambientPath ambientPathIsPath
-    fusion.startVertex_mem_targetRetainedVertexSet
-    fusion.endVertex_mem_targetRetainedVertexSet centralNotAmbientPath
-    firstBypass secondBypass
+  rcases exists_deletedAdjacentPairPath_of_central_not_mem_of_portBypasses
+      collar.targetData ambientPath ambientPathIsPath
+      fusion.startVertex_mem_targetRetainedVertexSet
+      fusion.endVertex_mem_targetRetainedVertexSet centralNotAmbientPath
+      firstBypass secondBypass with ⟨targetPath, targetPathIsPath, _origin⟩
+  exact ⟨targetPath, targetPathIsPath⟩
+
+/-- The rerouted target path has exact edge provenance.  Every edge either
+comes from the original fusion trail, or belongs to one of the two genuine
+target-own Kempe routes and is therefore selected by the target color pair. -/
+theorem exists_targetKempeReroutedPath_with_edgeOrigin_of_noncentral
+    (hclass : traversal.traversalClass = .firstBoundaryPair ∨
+      traversal.traversalClass = .secondBoundaryPair ∨
+      traversal.traversalClass = .bothBoundaryPairs) :
+    ∃ targetPath : (DeletedAdjacentPairGraph G
+        collar.targetData.firstVertex collar.targetData.secondVertex).Walk
+        ⟨traversal.contact.fusion.startVertex.1,
+          traversal.contact.fusion.startVertex_mem_targetRetainedVertexSet⟩
+        ⟨traversal.contact.fusion.endVertex.1,
+          traversal.contact.fusion.endVertex_mem_targetRetainedVertexSet⟩,
+      targetPath.IsPath ∧
+      ∀ edge : (DeletedAdjacentPairGraph G
+          collar.targetData.firstVertex collar.targetData.secondVertex).edgeSet,
+        edge.1 ∈ targetPath.edges →
+          (retainedEdgeToAmbientEdge collar.targetData edge).1 ∈
+              traversal.contact.fusion.ambientTrail.edges ∨
+            edge ∈ collar.targetEscape.coloring.bicoloredSet
+              collar.targetOwnFirstColor collar.targetOwnSecondColor := by
+  let fusion := traversal.contact.fusion
+  have centralNotAmbient : (centralEdge collar.targetData).1 ∉
+      fusion.ambientTrail.edges := by
+    rcases hclass with hfirst | hsecond | hboth
+    · have husage := traversal.exactUsage
+      rw [hfirst] at husage
+      exact husage.1
+    · have husage := traversal.exactUsage
+      rw [hsecond] at husage
+      exact husage.1
+    · have husage := traversal.exactUsage
+      rw [hboth] at husage
+      exact husage.1
+  let ambientPath := fusion.ambientTrail.bypass
+  have ambientPathIsPath : ambientPath.IsPath :=
+    fusion.ambientTrail.bypass_isPath
+  have centralNotAmbientPath : (centralEdge collar.targetData).1 ∉
+      ambientPath.edges := by
+    intro hmem
+    exact centralNotAmbient
+      (fusion.ambientTrail.edges_bypass_subset_edges hmem)
+  rcases collar.exists_targetOwnSameSideKempePrimalTrails_disjoint with
+    ⟨routes, firstBypass, secondBypass, _firstIsTrail, _secondIsTrail,
+      firstEdges, secondEdges, _disjoint⟩
+  rcases exists_deletedAdjacentPairPath_of_central_not_mem_of_portBypasses
+      collar.targetData ambientPath ambientPathIsPath
+      fusion.startVertex_mem_targetRetainedVertexSet
+      fusion.endVertex_mem_targetRetainedVertexSet centralNotAmbientPath
+      firstBypass secondBypass with
+    ⟨targetPath, targetPathIsPath, edgeOrigin⟩
+  refine ⟨targetPath, targetPathIsPath, ?_⟩
+  intro edge hedge
+  have ambientEdgeMem :
+      (retainedEdgeToAmbientEdge collar.targetData edge).1 ∈
+        (collar.targetData.retainedWalkToAmbient targetPath).edges :=
+    (retainedEdgeToAmbientEdge_mem_retainedWalkToAmbient_edges_iff
+      collar.targetData targetPath edge).2 hedge
+  rcases edgeOrigin _ ambientEdgeMem with hold | hfirst | hsecond
+  · exact Or.inl
+      (fusion.ambientTrail.edges_bypass_subset_edges hold)
+  · apply Or.inr
+    have hfirst' : edge.1 ∈ firstBypass.edges :=
+      (retainedEdgeToAmbientEdge_mem_retainedWalkToAmbient_edges_iff
+        collar.targetData firstBypass edge).1 hfirst
+    rw [firstEdges] at hfirst'
+    rcases List.mem_map.mp hfirst' with ⟨routeEdge, routeEdgeMem, routeEdgeEq⟩
+    have routeEdge_eq : routeEdge = edge := Subtype.ext routeEdgeEq
+    subst routeEdge
+    exact (routes.firstRoute.mem_ambientPath_support_iff edge).1
+      routeEdgeMem |>.1
+  · apply Or.inr
+    have hsecond' : edge.1 ∈ secondBypass.edges :=
+      (retainedEdgeToAmbientEdge_mem_retainedWalkToAmbient_edges_iff
+        collar.targetData secondBypass edge).1 hsecond
+    rw [secondEdges] at hsecond'
+    rcases List.mem_map.mp hsecond' with
+      ⟨routeEdge, routeEdgeMem, routeEdgeEq⟩
+    have routeEdge_eq : routeEdge = edge := Subtype.ext routeEdgeEq
+    subst routeEdge
+    rcases (routes.secondRoute.mem_ambientPath_support_iff edge).1
+        routeEdgeMem |>.1 with hsecondColor | hfirstColor
+    · exact Or.inr hsecondColor
+    · exact Or.inl hfirstColor
 
 /-- The seven exact traversal classes now have a geometric local outcome:
 the three noncentral classes reroute to a target-deletion path, while each

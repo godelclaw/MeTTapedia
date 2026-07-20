@@ -323,6 +323,13 @@ structure FusedLinePath where
   isPath : path.IsPath
   isPrimalCoherent : path.IsPrimalCoherent
   positive : 0 < path.length
+  support_selected : ∀ edge ∈ path.support,
+    edge ∈ normal.canonicalState.coloring.bicoloredSet
+        normal.returnData.lastOverlap.overlap.fixedColor
+        normal.returnData.lastOverlap.overlap.breakOuterColor ∨
+      edge ∈ normal.canonicalState.coloring.bicoloredSet
+        (crossFaceZeroColor normal.step.firstHit.transfer.coordinate)
+        normal.step.reentry.realization.companion
 
 /-- The two canonical bicolored junction paths splice, and the open
 coherent-shortcut lemma repairs their sole possible primal seam. -/
@@ -400,9 +407,31 @@ theorem nonempty_fusedLinePath : Nonempty normal.FusedLinePath := by
         firstPrefix_isPrimalCoherent secondPrefixReverse_isPrimalCoherent
         splice_isPath normal.rootEdge_ne_launchEdge with
     ⟨joined, joined_isPath, joined_isPrimalCoherent,
-      joined_positive, _joined_length, _joined_support, _joined_coverage⟩
+      joined_positive, _joined_length, joined_support, _joined_coverage⟩
   exact ⟨⟨joined, joined_isPath, joined_isPrimalCoherent,
-    joined_positive⟩⟩
+    joined_positive, by
+      intro edge edge_mem
+      have append_mem := joined_support edge_mem
+      change edge ∈
+        (splice.firstPrefix.append splice.secondPrefix.reverse).support
+        at append_mem
+      rw [SimpleGraph.Walk.mem_support_append_iff] at append_mem
+      rcases append_mem with firstPrefix_mem | secondReverse_mem
+      · apply Or.inl
+        have ambient_mem : edge ∈ returnAmbient.support :=
+          splice.firstPrefix_support_subset firstPrefix_mem
+        exact (coloring.mem_bicoloredAmbientWalk_support_iff
+          fixed outer returnPath edge).1 (by
+            simpa only [returnAmbient] using ambient_mem) |>.1
+      · apply Or.inr
+        have secondPrefix_mem : edge ∈ splice.secondPrefix.support := by
+          simpa only [SimpleGraph.Walk.support_reverse,
+            List.mem_reverse] using secondReverse_mem
+        have ambient_mem : edge ∈ selectedAmbient.support :=
+          splice.secondPrefix_support_subset secondPrefix_mem
+        exact (coloring.mem_bicoloredAmbientWalk_support_iff
+          first second selectedPath edge).1 (by
+            simpa only [selectedAmbient] using ambient_mem) |>.1⟩⟩
 
 end CompanionCrossPairJunctionNormalForm
 
