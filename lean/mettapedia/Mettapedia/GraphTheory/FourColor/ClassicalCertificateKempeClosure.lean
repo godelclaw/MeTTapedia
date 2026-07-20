@@ -23,6 +23,9 @@ instance : Fintype ChromogramStep where
 
 abbrev Chromogram := List ChromogramStep
 
+def chromogramSteps : List ChromogramStep :=
+  [.push, .skip, .popSame, .popOpposite]
+
 /-- One stack transition of the chromogram matcher. -/
 def chromogramAdvance (stack : List Bool) (symbol : TraceSymbol)
     (step : ChromogramStep) : Option (List Bool) :=
@@ -53,6 +56,54 @@ instance (word : List TraceSymbol) (gram : Chromogram) :
     Decidable (Matches word gram) := by
   unfold Matches
   infer_instance
+
+/-- Enumerate exactly the stack histories that match a trace suffix. -/
+def matchingChromogramsFrom :
+    List Bool → List TraceSymbol → List Chromogram
+  | stack, [] => if stack = [] then [[]] else []
+  | stack, symbol :: word =>
+      chromogramSteps.flatMap fun step =>
+        match chromogramAdvance stack symbol step with
+        | none => []
+        | some nextStack =>
+            (matchingChromogramsFrom nextStack word).map (step :: ·)
+
+def matchingChromograms (word : List TraceSymbol) : List Chromogram :=
+  matchingChromogramsFrom [] word
+
+theorem mem_matchingChromogramsFrom_iff
+    (stack : List Bool) (word : List TraceSymbol) (gram : Chromogram) :
+    gram ∈ matchingChromogramsFrom stack word ↔
+      chromogramMatches stack word gram = true := by
+  induction word generalizing stack gram with
+  | nil =>
+      cases gram <;> cases stack <;>
+        simp [matchingChromogramsFrom, chromogramMatches]
+  | cons symbol word ih =>
+      cases gram with
+      | nil =>
+          cases symbol <;> cases stack with
+          | nil =>
+              simp [matchingChromogramsFrom, chromogramMatches,
+                chromogramSteps, chromogramAdvance]
+          | cons head tail =>
+              cases head <;>
+                simp [matchingChromogramsFrom, chromogramMatches,
+                  chromogramSteps, chromogramAdvance]
+      | cons step gram =>
+          cases symbol <;> cases step <;> cases stack with
+          | nil =>
+              simp [matchingChromogramsFrom, chromogramMatches,
+                chromogramSteps, chromogramAdvance, ih]
+          | cons head tail =>
+              cases head <;>
+                simp [matchingChromogramsFrom, chromogramMatches,
+                  chromogramSteps, chromogramAdvance, ih]
+
+theorem mem_matchingChromograms_iff (word : List TraceSymbol)
+    (gram : Chromogram) :
+    gram ∈ matchingChromograms word ↔ Matches word gram := by
+  exact mem_matchingChromogramsFrom_iff [] word gram
 
 theorem length_eq_of_chromogramMatches
     {stack : List Bool} {word : List TraceSymbol} {gram : Chromogram}
