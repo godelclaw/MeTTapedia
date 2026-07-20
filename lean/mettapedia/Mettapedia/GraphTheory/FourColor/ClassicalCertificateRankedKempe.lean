@@ -71,6 +71,24 @@ def permute {length : Nat} (code : PermutationCode)
       permuteWord code.toEquiv word.toList := by
   simp [permute, permuteWord, PermutationCode.toEquiv]
 
+/-- The small executable list of matching chromograms for a fixed word. -/
+def matchingGramWords {length : Nat} (word : TraceWord length) :
+    List (GramWord length) :=
+  (matchingChromograms word.toList).attach.map fun gram =>
+    ⟨gram.val,
+      ((mem_matchingChromograms_iff word.toList gram.val).1
+        gram.property).length_eq.symm.trans word.2⟩
+
+theorem mem_matchingGramWords {length : Nat} (word : TraceWord length)
+    (gram : GramWord length) (hmatch : Matches word.toList gram.toList) :
+    gram ∈ matchingGramWords word := by
+  apply List.mem_map.2
+  refine ⟨⟨gram.toList,
+    (mem_matchingChromograms_iff word.toList gram.toList).2 hmatch⟩, ?_, ?_⟩
+  · simp
+  · apply Subtype.ext
+    rfl
+
 /-- Finite rule data attached to one fixed-length trace word. -/
 inductive RuleCode (length : Nat) where
   | member
@@ -121,6 +139,103 @@ instance (certificate : Certificate length) : Decidable certificate.Valid := by
 
 def checker (certificate : Certificate length) : Bool :=
   decide certificate.Valid
+
+/-- Optimized local rule semantics: quantify only over chromograms that the
+proved-complete stack enumerator says can match the current word. -/
+def FastRuleValid (certificate : Certificate length)
+    (word : TraceWord length) : Prop :=
+  match certificate.rule word with
+  | .member => word ∈ certificate.extendable
+  | .permutation permutation =>
+      let nextWord := permute permutation word
+      nextWord ∈ certificate.covered ∧
+        certificate.rank nextWord < certificate.rank word
+  | .chromograms response =>
+      ∀ gram ∈ matchingGramWords word,
+        let nextWord := response gram
+        Matches nextWord.toList gram.toList ∧
+          nextWord ∈ certificate.covered ∧
+          certificate.rank nextWord < certificate.rank word
+
+instance (certificate : Certificate length) (word : TraceWord length) :
+    Decidable (certificate.FastRuleValid word) := by
+  unfold FastRuleValid
+  split <;> infer_instance
+
+def FastValid (certificate : Certificate length) : Prop :=
+  ∀ word ∈ certificate.covered, certificate.FastRuleValid word
+
+instance (certificate : Certificate length) :
+    Decidable certificate.FastValid := by
+  unfold FastValid
+  infer_instance
+
+def fastChecker (certificate : Certificate length) : Bool :=
+  decide certificate.FastValid
+
+/-- Proof-erased local Boolean checker for one ranked rule. -/
+def fastRuleBoolean (certificate : Certificate length)
+    (word : TraceWord length) : Bool :=
+  match certificate.rule word with
+  | .member => decide (word ∈ certificate.extendable)
+  | .permutation permutation =>
+      let nextWord := permute permutation word
+      decide (nextWord ∈ certificate.covered) &&
+        decide (certificate.rank nextWord < certificate.rank word)
+  | .chromograms response =>
+      (matchingGramWords word).all fun gram =>
+        let nextWord := response gram
+        decide (Matches nextWord.toList gram.toList) &&
+          decide (nextWord ∈ certificate.covered) &&
+          decide (certificate.rank nextWord < certificate.rank word)
+
+theorem fastRuleValid_of_fastRuleBoolean_eq_true
+    (certificate : Certificate length) (word : TraceWord length)
+    (haccepted : certificate.fastRuleBoolean word = true) :
+    certificate.FastRuleValid word := by
+  cases hrule : certificate.rule word with
+  | member =>
+      simp only [fastRuleBoolean, hrule] at haccepted
+      simpa [FastRuleValid, hrule] using Bool.of_decide_true haccepted
+  | permutation permutation =>
+      simp only [fastRuleBoolean, hrule, Bool.and_eq_true] at haccepted
+      simp only [FastRuleValid, hrule]
+      exact ⟨Bool.of_decide_true haccepted.1,
+        Bool.of_decide_true haccepted.2⟩
+  | chromograms response =>
+      simp only [fastRuleBoolean, hrule] at haccepted
+      simp only [FastRuleValid, hrule]
+      intro gram hgram
+      have hlocal := (List.all_eq_true.mp haccepted) gram hgram
+      simp only [Bool.and_eq_true] at hlocal
+      exact ⟨Bool.of_decide_true hlocal.1.1,
+        Bool.of_decide_true hlocal.1.2,
+        Bool.of_decide_true hlocal.2⟩
+
+theorem ruleValid_of_fastRuleValid (certificate : Certificate length)
+    (word : TraceWord length)
+    (hfast : certificate.FastRuleValid word) :
+    certificate.RuleValid word := by
+  cases hrule : certificate.rule word with
+  | member =>
+      simpa [FastRuleValid, RuleValid, hrule] using hfast
+  | permutation permutation =>
+      simpa [FastRuleValid, RuleValid, hrule] using hfast
+  | chromograms response =>
+      simp only [FastRuleValid, hrule] at hfast
+      simp only [RuleValid, hrule]
+      intro gram hmatch
+      exact hfast gram (mem_matchingGramWords word gram hmatch)
+
+theorem valid_of_fastValid (certificate : Certificate length)
+    (hfast : certificate.FastValid) : certificate.Valid := by
+  intro word hword
+  exact certificate.ruleValid_of_fastRuleValid word (hfast word hword)
+
+theorem valid_of_fastChecker_true (certificate : Certificate length)
+    (haccepted : certificate.fastChecker = true) : certificate.Valid := by
+  apply certificate.valid_of_fastValid
+  exact Bool.of_decide_true (by simpa [fastChecker] using haccepted)
 
 theorem valid_of_checker_true (certificate : Certificate length)
     (haccepted : certificate.checker = true) :
@@ -178,6 +293,14 @@ theorem kempeCoclosure_of_checker_true
     KempeCoclosure certificate.ExtendableFamily word.toList :=
   (certificate.derivation_of_valid
     (certificate.valid_of_checker_true haccepted) word hcovered).sound
+
+theorem kempeCoclosure_of_fastChecker_true
+    (certificate : Certificate length)
+    (haccepted : certificate.fastChecker = true)
+    (word : TraceWord length) (hcovered : word ∈ certificate.covered) :
+    KempeCoclosure certificate.ExtendableFamily word.toList :=
+  (certificate.derivation_of_valid
+    (certificate.valid_of_fastChecker_true haccepted) word hcovered).sound
 
 end Certificate
 
