@@ -17,6 +17,93 @@ open SimpleGraphDartRotation
 
 noncomputable section
 
+variable {W : Type*} {H : SimpleGraph W}
+
+/-- The first member of a positive walk's edge word is its first edge-set
+member. -/
+theorem edgeSubtypeSupport_head_eq_firstEdgeSet
+    {start finish : W} (path : H.Walk start finish)
+    (hpositive : 0 < path.length) :
+    path.edgeSubtypeSupport.head
+        (edgeSubtypeSupport_ne_nil_of_length_pos path hpositive) =
+      path.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive) := by
+  cases path with
+  | nil => simp at hpositive
+  | cons edge tail =>
+      simp [SimpleGraph.Walk.edgeSubtypeSupport,
+        SimpleGraph.Walk.firstEdgeSet,
+        SimpleGraph.Walk.firstDart]
+
+/-- Copying only the endpoints of a positive walk preserves its first
+edge-set member. -/
+theorem firstEdgeSet_copy_eq
+    {start finish start' finish' : W}
+    (path : H.Walk start finish) (hstart : start = start')
+    (hfinish : finish = finish') (hpositive : 0 < path.length) :
+    (path.copy hstart hfinish).firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr (by
+          simpa using hpositive)) =
+      path.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive) := by
+  rw [← edgeSubtypeSupport_head_eq_firstEdgeSet
+      (path.copy hstart hfinish) (by simpa using hpositive),
+    ← edgeSubtypeSupport_head_eq_firstEdgeSet path hpositive]
+  simp only [SimpleGraph.Walk.edgeSubtypeSupport,
+    SimpleGraph.Walk.darts_copy]
+
+/-- Copying only the endpoints of a positive walk preserves its last
+edge-set member. -/
+theorem lastEdgeSet_copy_eq
+    {start finish start' finish' : W}
+    (path : H.Walk start finish) (hstart : start = start')
+    (hfinish : finish = finish') (hpositive : 0 < path.length) :
+    (path.copy hstart hfinish).lastEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr (by
+          simpa using hpositive)) =
+      path.lastEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive) := by
+  rw [← edgeSubtypeSupport_getLast_eq_lastEdgeSet
+      (path.copy hstart hfinish) (by simpa using hpositive),
+    ← edgeSubtypeSupport_getLast_eq_lastEdgeSet path hpositive]
+  simp only [SimpleGraph.Walk.edgeSubtypeSupport,
+    SimpleGraph.Walk.darts_copy]
+
+/-- Option-valued first-edge form, avoiding any dependence on the proof of
+positivity. -/
+theorem edgeSubtypeSupport_head?_eq_some_firstEdgeSet
+    {start finish : W} (path : H.Walk start finish)
+    (hpositive : 0 < path.length) :
+    path.edgeSubtypeSupport.head? =
+      some (path.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive)) := by
+  calc
+    path.edgeSubtypeSupport.head? =
+        some (path.edgeSubtypeSupport.head
+          (edgeSubtypeSupport_ne_nil_of_length_pos path hpositive)) :=
+      List.head?_eq_some_head _
+    _ = some (path.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive)) :=
+      congrArg some (edgeSubtypeSupport_head_eq_firstEdgeSet path hpositive)
+
+/-- Option-valued last-edge form, avoiding any dependence on the proof of
+positivity. -/
+theorem edgeSubtypeSupport_getLast?_eq_some_lastEdgeSet
+    {start finish : W} (path : H.Walk start finish)
+    (hpositive : 0 < path.length) :
+    path.edgeSubtypeSupport.getLast? =
+      some (path.lastEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive)) := by
+  calc
+    path.edgeSubtypeSupport.getLast? =
+        some (path.edgeSubtypeSupport.getLast
+          (edgeSubtypeSupport_ne_nil_of_length_pos path hpositive)) :=
+      List.getLast?_eq_some_getLast _
+    _ = some (path.lastEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr hpositive)) :=
+      congrArg some
+        (edgeSubtypeSupport_getLast_eq_lastEdgeSet path hpositive)
+
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
 
@@ -216,6 +303,75 @@ theorem primalArc_edgeSubtypeSupport :
       intro edge _hedge
       exact supportEdgeAmbientEdge_val corner edge |>.symm
 
+/-- The normalized arc terminates through the first edge of its emitted
+turn. -/
+theorem primalArc_lastEdgeSet_eq_nextFirst :
+    firstTurn.primalArc.lastEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+          firstTurn.primalArc_positive) =
+      firstTurn.toScalarCompanionTurn.first := by
+  rw [← edgeSubtypeSupport_getLast_eq_lastEdgeSet
+    firstTurn.primalArc firstTurn.primalArc_positive]
+  simp only [firstTurn.primalArc_edgeSubtypeSupport,
+    firstTurn.supportArc_edgeSubtypeSupport]
+  unfold straightEdgeWord
+  simp only [List.map_append, List.map_singleton,
+    List.getLast_append_singleton]
+  rfl
+
+/-- The normalized arc launches through the continuing old edge or the
+transverse edge of its source turn. -/
+theorem primalArc_firstEdgeSet_eq_incoming_or_third :
+    firstTurn.primalArc.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+          firstTurn.primalArc_positive) = corner.incoming ∨
+      firstTurn.primalArc.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+          firstTurn.primalArc_positive) = turn.third := by
+  let strand := route.rootedAtLaunch
+  have hstraight := firstTurn.straightEdgeWord_ne_nil
+  have hcycle := strand.cycleEdgeWord_ne_nil
+  have hhead : firstTurn.straightEdgeWord.head hstraight =
+      strand.rootFirstSupportEdge := by
+    rcases firstTurn.straightEdgeWord_isPrefix with ⟨suffix, heq⟩
+    change firstTurn.straightEdgeWord.head hstraight =
+      route.rootedAtLaunch.cycle.edgeSubtypeSupport.head _
+    apply (List.head_eq_iff_head?_eq_some hstraight).2
+    calc
+      firstTurn.straightEdgeWord.head? =
+          (firstTurn.straightEdgeWord ++ suffix).head? := by
+        exact (List.head?_append_of_ne_nil _ hstraight).symm
+      _ = route.rootedAtLaunch.cycle.edgeSubtypeSupport.head? :=
+        congrArg List.head? heq
+      _ = some (route.rootedAtLaunch.cycle.edgeSubtypeSupport.head _) :=
+        List.head?_eq_some_head _
+  have hfirst : firstTurn.primalArc.firstEdgeSet
+        (SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+          firstTurn.primalArc_positive) =
+      corner.supportEdgeAmbientEdge strand.rootFirstSupportEdge := by
+    rw [← edgeSubtypeSupport_head_eq_firstEdgeSet
+      firstTurn.primalArc firstTurn.primalArc_positive]
+    simp only [firstTurn.primalArc_edgeSubtypeSupport,
+      firstTurn.supportArc_edgeSubtypeSupport]
+    rw [List.head_map]
+    exact congrArg corner.supportEdgeAmbientEdge hhead
+  have hroot : strand.rootFirstSupportEdge =
+        corner.incomingSupportEdge ∨
+      strand.rootFirstSupportEdge = corner.transverseSupportEdge := by
+    have hmem : strand.rootFirstSupportEdge ∈
+        ({strand.rootFirstSupportEdge, strand.rootLastSupportEdge} :
+          Finset corner.complementarySupportGraph.edgeSet) :=
+      Finset.mem_insert_self _ _
+    rw [strand.rootEdges_pair_eq_launchEdges] at hmem
+    simpa only [Finset.mem_insert, Finset.mem_singleton] using hmem
+  rcases hroot with hroot | hroot
+  · left
+    rw [hfirst, hroot]
+    rfl
+  · right
+    rw [hfirst, hroot]
+    rfl
+
 /-- The proof-independent companion label is constant along every
 internal adjacency of the oriented primal arc. -/
 theorem primalArc_companionColor_isChain :
@@ -241,7 +397,11 @@ namespace ScalarCompanionTurnState
 entirely in the common core. -/
 structure ExactPrimalArc
     (source target : collar.ScalarCompanionTurnState sourceEscape) where
+  witness : source.realizedTurn.NextTurnWitness
+  target_eq_ofTurn : target = ofTurn witness.nextTurn
   path : collar.commonCore.Walk source.junction target.junction
+  path_edgeSubtypeSupport_eq_witness :
+    path.edgeSubtypeSupport = witness.interior.primalArc.edgeSubtypeSupport
   path_isPath : path.IsPath
   path_positive : 0 < path.length
   junction_ne : target.junction ≠ source.junction
@@ -254,6 +414,12 @@ structure ExactPrimalArc
           (!source.1.coordinate) first =
         collar.commonCoreEdgeCompanionColor sourceEscape
           (!source.1.coordinate) second)
+  firstEdge_eq_sourceFirst_or_second_or_third :
+    path.edgeSubtypeSupport.head? = some source.1.first ∨
+      path.edgeSubtypeSupport.head? = some source.1.second ∨
+      path.edgeSubtypeSupport.head? = some source.1.third
+  lastEdge_eq_targetFirst :
+    path.edgeSubtypeSupport.getLast? = some target.1.first
 
 /-- Every exact next-state proof contains a positive straight primal arc. -/
 theorem IsExactNext.nonempty_exactPrimalArc
@@ -268,12 +434,19 @@ theorem IsExactNext.nonempty_exactPrimalArc
   have hexact' : source.IsExactNext (ofTurn witness.nextTurn) :=
     ⟨witness, rfl⟩
   refine ⟨{
+    witness := witness
+    target_eq_ofTurn := rfl
     path := path
+    path_edgeSubtypeSupport_eq_witness := ?_
     path_isPath := ?_
     path_positive := ?_
     junction_ne := hexact'.junction_ne
     coordinateSupport := ?_
-    companionColor_isChain := ?_ }⟩
+    companionColor_isChain := ?_
+    firstEdge_eq_sourceFirst_or_second_or_third := ?_
+    lastEdge_eq_targetFirst := ?_ }⟩
+  · simp only [path, SimpleGraph.Walk.edgeSubtypeSupport,
+      SimpleGraph.Walk.darts_copy]
   · simp only [path, SimpleGraph.Walk.isPath_copy]
     exact witness.interior.primalArc_isPath
   · simp only [path, SimpleGraph.Walk.length_copy]
@@ -285,6 +458,53 @@ theorem IsExactNext.nonempty_exactPrimalArc
   · simpa only [path, SimpleGraph.Walk.edgeSubtypeSupport,
       SimpleGraph.Walk.darts_copy] using
       witness.interior.primalArc_companionColor_isChain
+  · have hword : path.edgeSubtypeSupport =
+        witness.interior.primalArc.edgeSubtypeSupport := by
+      simp only [path, SimpleGraph.Walk.edgeSubtypeSupport,
+        SimpleGraph.Walk.darts_copy]
+    have hpathHead := congrArg List.head? hword
+    have hhead := edgeSubtypeSupport_head?_eq_some_firstEdgeSet
+      witness.interior.primalArc witness.interior.primalArc_positive
+    rcases witness.interior.primalArc_firstEdgeSet_eq_incoming_or_third with
+      hincoming | hthird
+    · rcases witness.corner.orientation with horientation | horientation
+      · left
+        calc
+          path.edgeSubtypeSupport.head? =
+              witness.interior.primalArc.edgeSubtypeSupport.head? := hpathHead
+          _ = some (witness.interior.primalArc.firstEdgeSet _) := hhead
+          _ = some source.1.first := congrArg some <|
+            hincoming.trans <| horientation.1.trans source.realizedTurn_first
+      · right
+        left
+        calc
+          path.edgeSubtypeSupport.head? =
+              witness.interior.primalArc.edgeSubtypeSupport.head? := hpathHead
+          _ = some (witness.interior.primalArc.firstEdgeSet _) := hhead
+          _ = some source.1.second := congrArg some <|
+            hincoming.trans <| horientation.1.trans source.realizedTurn_second
+    · right
+      right
+      calc
+        path.edgeSubtypeSupport.head? =
+            witness.interior.primalArc.edgeSubtypeSupport.head? := hpathHead
+        _ = some (witness.interior.primalArc.firstEdgeSet _) := hhead
+        _ = some source.1.third := congrArg some <|
+          hthird.trans source.realizedTurn_third
+  · have hword : path.edgeSubtypeSupport =
+        witness.interior.primalArc.edgeSubtypeSupport := by
+      simp only [path, SimpleGraph.Walk.edgeSubtypeSupport,
+        SimpleGraph.Walk.darts_copy]
+    have hpathLast := congrArg List.getLast? hword
+    have hlast := edgeSubtypeSupport_getLast?_eq_some_lastEdgeSet
+      witness.interior.primalArc witness.interior.primalArc_positive
+    calc
+      path.edgeSubtypeSupport.getLast? =
+          witness.interior.primalArc.edgeSubtypeSupport.getLast? := hpathLast
+      _ = some (witness.interior.primalArc.lastEdgeSet _) := hlast
+      _ = some witness.nextTurn.first := congrArg some
+        witness.interior.primalArc_lastEdgeSet_eq_nextFirst
+      _ = some (ofTurn witness.nextTurn).1.first := rfl
 
 /-- A chosen geometric representative of an exact finite-state step. -/
 noncomputable def IsExactNext.exactPrimalArc
