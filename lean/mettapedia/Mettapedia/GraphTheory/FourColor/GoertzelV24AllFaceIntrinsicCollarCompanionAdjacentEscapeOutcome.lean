@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionAdjacentEscapeComponentFusionTargetTransport
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionAdjacentEscapeComponentFusionTargetCollarSignature
 
 set_option autoImplicit false
 
@@ -58,7 +58,7 @@ theorem exists_reachable_certifiedAdjacentEscapeTerminal_or_classifiedCompanionC
             Nonempty
                 (CompanionCrossPairFusionTargetTransport collar cycleState) ∨
               Nonempty
-                  (CompanionCrossPairFusionTargetCollarContact collar cycleState) ∨
+                  (CompanionCrossPairFusionTargetCollarTraversal collar cycleState) ∨
                 Nonempty
                     (CompanionSameOuterTargetAvoidingEdgePivot collar cycleState) ∨
                   Nonempty (CompanionThreePairMonodromy collar cycleState)) := by
@@ -66,7 +66,7 @@ theorem exists_reachable_certifiedAdjacentEscapeTerminal_or_classifiedCompanionC
       start with terminal | ⟨cycleState, reachable, closed⟩
   · exact Or.inl terminal
   · exact Or.inr ⟨cycleState, reachable,
-      closedCircuit_exists_localCancellation_or_fusionTargetTransport_or_fusionTargetCollarContact_or_edgePivot_or_threePairMonodromy
+      closedCircuit_exists_localCancellation_or_fusionTargetTransport_or_fusionTargetCollarTraversal_or_edgePivot_or_threePairMonodromy
         closed⟩
 
 end IntrinsicShortTargetEscapeCollar
