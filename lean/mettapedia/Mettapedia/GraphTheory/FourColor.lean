@@ -911,3 +911,4 @@ import Mettapedia.GraphTheory.FourColor.ClassicalCertificateTraceTree
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateColorTrace
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateHypermapColoring
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateKempeClosure
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateRankedKempe

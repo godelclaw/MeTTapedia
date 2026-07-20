@@ -15,26 +15,67 @@ inductive ChromogramStep where
   | popOpposite
   deriving DecidableEq, Repr
 
+instance : Fintype ChromogramStep where
+  elems := {.push, .skip, .popSame, .popOpposite}
+  complete := by
+    intro step
+    cases step <;> simp
+
 abbrev Chromogram := List ChromogramStep
+
+/-- One stack transition of the chromogram matcher. -/
+def chromogramAdvance (stack : List Bool) (symbol : TraceSymbol)
+    (step : ChromogramStep) : Option (List Bool) :=
+  match symbol, step, stack with
+  | .red, .skip, _ => some stack
+  | .blue, .push, _ => some (false :: stack)
+  | .blue, .popSame, false :: rest => some rest
+  | .blue, .popOpposite, true :: rest => some rest
+  | .purple, .push, _ => some (true :: stack)
+  | .purple, .popSame, true :: rest => some rest
+  | .purple, .popOpposite, false :: rest => some rest
+  | _, _, _ => none
 
 /-- Exact matching relation between a normalized trace word and an oriented
 noncrossing chromogram. -/
 def chromogramMatches : List Bool → List TraceSymbol → Chromogram → Bool
   | [], [], [] => true
   | stack, symbol :: word, step :: gram =>
-      match symbol, step, stack with
-      | .red, .skip, _ => chromogramMatches stack word gram
-      | .blue, .push, _ => chromogramMatches (false :: stack) word gram
-      | .blue, .popSame, false :: rest => chromogramMatches rest word gram
-      | .blue, .popOpposite, true :: rest => chromogramMatches rest word gram
-      | .purple, .push, _ => chromogramMatches (true :: stack) word gram
-      | .purple, .popSame, true :: rest => chromogramMatches rest word gram
-      | .purple, .popOpposite, false :: rest => chromogramMatches rest word gram
-      | _, _, _ => false
+      match chromogramAdvance stack symbol step with
+      | some nextStack => chromogramMatches nextStack word gram
+      | none => false
   | _, _, _ => false
 
 def Matches (word : List TraceSymbol) (gram : Chromogram) : Prop :=
   chromogramMatches [] word gram = true
+
+instance (word : List TraceSymbol) (gram : Chromogram) :
+    Decidable (Matches word gram) := by
+  unfold Matches
+  infer_instance
+
+theorem length_eq_of_chromogramMatches
+    {stack : List Bool} {word : List TraceSymbol} {gram : Chromogram}
+    (hmatch : chromogramMatches stack word gram = true) :
+    word.length = gram.length := by
+  induction gram generalizing stack word with
+  | nil =>
+      cases word <;> simp_all [chromogramMatches]
+  | cons step gram ih =>
+      cases word with
+      | nil => simp [chromogramMatches] at hmatch
+      | cons symbol word =>
+          cases hadvance : chromogramAdvance stack symbol step with
+          | none => simp [chromogramMatches, hadvance] at hmatch
+          | some nextStack =>
+              have htail : word.length = gram.length :=
+                ih (by simpa [chromogramMatches, hadvance] using hmatch)
+              simp [htail]
+
+theorem Matches.length_eq {word : List TraceSymbol} {gram : Chromogram}
+    (hmatch : Matches word gram) :
+    word.length = gram.length :=
+  length_eq_of_chromogramMatches hmatch
 
 abbrev SymbolPermutation := Equiv.Perm TraceSymbol
 
