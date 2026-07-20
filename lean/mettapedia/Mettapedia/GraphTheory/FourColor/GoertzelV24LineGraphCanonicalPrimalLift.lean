@@ -120,4 +120,70 @@ theorem canonicalCappedPrimalLift_length_pos
   rw [walk.canonicalCappedPrimalLift_length hpositive hcoherent]
   omega
 
+/-- The canonical full lift has a first and a last dart. -/
+theorem canonicalCappedPrimalLift_not_nil
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent) :
+    ¬(walk.canonicalCappedPrimalLift hpositive hcoherent).Nil := by
+  exact SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+    (walk.canonicalCappedPrimalLift_length_pos hpositive hcoherent)
+
+/-- The first dart of the canonical full lift represents the first
+line-graph vertex. -/
+theorem canonicalCappedPrimalLift_firstDart_edge
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (hnil : ¬(walk.canonicalCappedPrimalLift
+      hpositive hcoherent).Nil) :
+    ((walk.canonicalCappedPrimalLift hpositive hcoherent).firstDart
+      hnil).edge = first.1 := by
+  let lifted := walk.canonicalCappedPrimalLift hpositive hcoherent
+  have hmapNonempty : walk.support.map Subtype.val ≠ [] := by
+    intro hnil
+    exact walk.support_ne_nil (List.map_eq_nil_iff.mp hnil)
+  calc
+    (lifted.firstDart hnil).edge =
+        lifted.edges.head (edges_eq_nil.not.mpr hnil) :=
+      (lifted.edge_firstDart hnil).trans
+        (lifted.mk_start_snd_eq_head_edges hnil)
+    _ = (walk.support.map Subtype.val).head hmapNonempty := by
+      dsimp only [lifted]
+      simp only [walk.canonicalCappedPrimalLift_edges_eq_map_support
+        hpositive hcoherent]
+    _ = (walk.support.head walk.support_ne_nil).1 := List.head_map _
+    _ = first.1 := by
+      rw [List.head_eq_getElem_zero walk.support_ne_nil]
+      exact congrArg Subtype.val walk.support_getElem_zero
+
+/-- The last dart of the canonical full lift represents the final
+line-graph vertex. -/
+theorem canonicalCappedPrimalLift_lastDart_edge
+    {first last : G.edgeSet}
+    (walk : G.lineGraph.Walk first last)
+    (hpositive : 0 < walk.length)
+    (hcoherent : walk.IsPrimalCoherent)
+    (hnil : ¬(walk.canonicalCappedPrimalLift
+      hpositive hcoherent).Nil) :
+    ((walk.canonicalCappedPrimalLift hpositive hcoherent).lastDart
+      hnil).edge = last.1 := by
+  let lifted := walk.canonicalCappedPrimalLift hpositive hcoherent
+  have hmapNonempty : walk.support.map Subtype.val ≠ [] := by
+    intro hnil
+    exact walk.support_ne_nil (List.map_eq_nil_iff.mp hnil)
+  calc
+    (lifted.lastDart hnil).edge =
+        lifted.edges.getLast (edges_eq_nil.not.mpr hnil) :=
+      (lifted.edge_lastDart hnil).trans
+        (lifted.mk_penultimate_end_eq_getLast_edges hnil)
+    _ = (walk.support.map Subtype.val).getLast hmapNonempty := by
+      dsimp only [lifted]
+      simp only [walk.canonicalCappedPrimalLift_edges_eq_map_support
+        hpositive hcoherent]
+    _ = (walk.support.getLast walk.support_ne_nil).1 := List.getLast_map _
+    _ = last.1 := by rw [walk.getLast_support]
+
 end SimpleGraph.Walk
