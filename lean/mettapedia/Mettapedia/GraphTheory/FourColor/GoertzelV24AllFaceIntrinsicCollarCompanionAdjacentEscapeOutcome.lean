@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionAdjacentEscapeComponentFusionPrimalTrail
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionAdjacentEscapeComponentFusionTargetTransport
 
 set_option autoImplicit false
 
@@ -42,7 +42,7 @@ variable {cycle :
     graphData minimal baseData}
 
 /-- Finite companion iteration reaches a certified fixed-collar exit, or
-reaches a closed circuit carrying one of the four classified local outcomes. -/
+reaches a closed circuit carrying one of the five classified local outcomes. -/
 theorem exists_reachable_certifiedAdjacentEscapeTerminal_or_classifiedCompanionCycle
     (collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge)
     (start : sourceNormal.KempeOrbitAdjacentEscape) :
@@ -55,15 +55,18 @@ theorem exists_reachable_certifiedAdjacentEscapeTerminal_or_classifiedCompanionC
             start cycleState ∧
           (Nonempty
               (CompanionCanonicalComponentDisjointClosure collar cycleState) ∨
-            Nonempty (CompanionCrossPairFusionPrimalTrail collar cycleState) ∨
+            Nonempty
+                (CompanionCrossPairFusionTargetTransport collar cycleState) ∨
               Nonempty
-                  (CompanionSameOuterTargetAvoidingEdgePivot collar cycleState) ∨
-                Nonempty (CompanionThreePairMonodromy collar cycleState)) := by
+                  (CompanionCrossPairFusionTargetCollarContact collar cycleState) ∨
+                Nonempty
+                    (CompanionSameOuterTargetAvoidingEdgePivot collar cycleState) ∨
+                  Nonempty (CompanionThreePairMonodromy collar cycleState)) := by
   rcases collar.exists_reachable_certifiedAdjacentEscapeTerminal_or_companionCycle
       start with terminal | ⟨cycleState, reachable, closed⟩
   · exact Or.inl terminal
   · exact Or.inr ⟨cycleState, reachable,
-      closedCircuit_exists_localCancellation_or_fusionPrimalTrail_or_edgePivot_or_threePairMonodromy
+      closedCircuit_exists_localCancellation_or_fusionTargetTransport_or_fusionTargetCollarContact_or_edgePivot_or_threePairMonodromy
         closed⟩
 
 end IntrinsicShortTargetEscapeCollar
