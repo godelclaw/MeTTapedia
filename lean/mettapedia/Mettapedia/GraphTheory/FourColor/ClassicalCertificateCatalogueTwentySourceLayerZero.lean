@@ -1,0 +1,25 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyResponseSeal
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyResponseTree
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateTreeIndexedLayeredKempe
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateCatalogueTwentySourceLayerZero
+
+open ClassicalCertificateCatalogueTwentyLayers
+open ClassicalCertificateCatalogueTwentyResponseTree
+open ClassicalCertificateIndexedLayeredKempe
+open ClassicalCertificateTreeIndexedLayeredKempe
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 20000000
+
+theorem twentiethCatalogueSourceLayer00 :
+    ClassicalCertificateTreeIndexedLayeredKempe.layerBoolean
+      twentiethCatalogueIndexedKempeCertificate twentiethCatalogueResponseTree
+        0 = true := by
+  rfl
+
+end ClassicalCertificateCatalogueTwentySourceLayerZero
+
+end Mettapedia.GraphTheory.FourColor

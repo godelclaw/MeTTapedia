@@ -164,6 +164,41 @@ def union : TraceTree → TraceTree → TraceTree
         (union leftPurple rightPurple)
   | left, _ => left
 
+/-- Every word retained by the fixed-height union came from one of its input
+tries.  This one-way statement is valid even for malformed mixed-height data. -/
+theorem accepts_union (left right : TraceTree) (word : List TraceSymbol)
+    (haccepted : (union left right).accepts word = true) :
+    left.accepts word = true ∨ right.accepts word = true := by
+  induction left generalizing right word with
+  | empty => exact Or.inr (by simpa [union] using haccepted)
+  | leaf =>
+      cases right <;> cases word <;>
+        simp [union, TraceTree.accepts] at haccepted ⊢
+  | node leftRed leftBlue leftPurple ihRed ihBlue ihPurple =>
+      cases right with
+      | empty => exact Or.inl (by simpa [union] using haccepted)
+      | leaf => exact Or.inl (by simpa [union] using haccepted)
+      | node rightRed rightBlue rightPurple =>
+          cases word with
+          | nil => simp [union, TraceTree.accepts] at haccepted
+          | cons symbol word =>
+              cases symbol with
+              | red =>
+                  have hchild := ihRed rightRed word (by
+                    simpa [union, TraceTree.accepts, TraceTree.child] using
+                      haccepted)
+                  simpa [TraceTree.accepts, TraceTree.child] using hchild
+              | blue =>
+                  have hchild := ihBlue rightBlue word (by
+                    simpa [union, TraceTree.accepts, TraceTree.child] using
+                      haccepted)
+                  simpa [TraceTree.accepts, TraceTree.child] using hchild
+              | purple =>
+                  have hchild := ihPurple rightPurple word (by
+                    simpa [union, TraceTree.accepts, TraceTree.child] using
+                      haccepted)
+                  simpa [TraceTree.accepts, TraceTree.child] using hchild
+
 def AcceptedFamily (length : Nat) (tree : TraceTree)
     (word : List TraceSymbol) : Prop :=
   ∃ fixedWord : TraceWord length,
@@ -271,7 +306,7 @@ def checkLayers (length : Nat) (extendable : TraceTree) :
   | _, [] => true
   | previous, delta :: deltas =>
       let current := union previous delta
-      layerBoolean length current previous extendable &&
+      layerBoolean length delta previous extendable &&
         checkLayers length extendable current deltas
 
 theorem derivation_of_checkLayers {length : Nat}
@@ -289,14 +324,20 @@ theorem derivation_of_checkLayers {length : Nat}
   | cons delta deltas ih =>
       let current := union previous delta
       have hcheck' :
-          layerBoolean length current previous extendable = true ∧
+          layerBoolean length delta previous extendable = true ∧
             checkLayers length extendable current deltas = true := by
         simpa [checkLayers, current] using hcheck
+      have deltaSound : ∀ word : TraceWord length,
+          delta.accepts word.toList = true →
+            CoclosureDerivation (AcceptedFamily length extendable) word.toList :=
+        derivation_of_layerBoolean delta previous extendable previousSound
+          hcheck'.1
       have currentSound : ∀ word : TraceWord length,
           current.accepts word.toList = true →
             CoclosureDerivation (AcceptedFamily length extendable) word.toList :=
-        derivation_of_layerBoolean current previous extendable previousSound
-          hcheck'.1
+        fun word hcurrent =>
+          (accepts_union previous delta word.toList hcurrent).elim
+            (previousSound word) (deltaSound word)
       simpa [foldLayers, current] using
         ih current currentSound hcheck'.2
 
