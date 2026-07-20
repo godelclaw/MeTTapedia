@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionAlternatingResolution
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionAlternatingFirstTurn
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorPumping
 
 /-! Finite two-coordinate dynamics of successive signed turns. -/
@@ -136,6 +136,12 @@ theorem realizedTurn_third
     state.realizedTurn.third = state.1.third :=
   (Classical.choose_spec state.2).2.2
 
+/-- Canonical primal junction carried by a realized finite turn state. -/
+noncomputable def junction
+    (state : collar.ScalarCompanionTurnState sourceEscape) :
+    collar.commonCoreVertex :=
+  state.realizedTurn.junction
+
 @[simp]
 theorem ofTurn_coordinate {coordinate : Bool}
     (turn : collar.ScalarCompanionTurn sourceEscape coordinate) :
@@ -156,6 +162,19 @@ theorem ofTurn_third {coordinate : Bool}
     (turn : collar.ScalarCompanionTurn sourceEscape coordinate) :
     (ofTurn turn).1.third = turn.third := rfl
 
+/-- Forgetting a full turn to its finite signature preserves its canonical
+primal junction exactly. -/
+theorem ofTurn_junction {coordinate : Bool}
+    (turn : collar.ScalarCompanionTurn sourceEscape coordinate) :
+    (ofTurn turn).junction = turn.junction := by
+  apply SimpleGraph.lineGraphCommonVertex_unique turn.firstSecond
+  · have hmem := (ofTurn turn).realizedTurn.junction_mem_first
+    rw [realizedTurn_first, ofTurn_first] at hmem
+    exact hmem
+  · have hmem := (ofTurn turn).realizedTurn.junction_mem_second
+    rw [realizedTurn_second, ofTurn_second] at hmem
+    exact hmem
+
 end ScalarCompanionTurnState
 
 namespace ScalarCompanionTurn
@@ -168,7 +187,7 @@ step. -/
 structure NextTurnWitness where
   corner : turn.ComplementarySupportCorner
   route : corner.ClosedSupportRoute
-  interior : route.InteriorTransverseTurn
+  interior : route.FirstInteriorTransverseTurn
 
 namespace NextTurnWitness
 
@@ -193,7 +212,7 @@ theorem hasChargedKempeReentry_or_nextTurnWitness :
   · rcases haction with ⟨representative, action, hreentry⟩
     exact Or.inl ⟨!coordinate, representative, action, hreentry⟩
   · rcases hclosed with ⟨route⟩
-    rcases route.kempeAction_and_sameBaseReentry_or_interiorTransverseTurn with
+    rcases route.kempeAction_and_sameBaseReentry_or_firstInteriorTransverseTurn with
       haction | hinterior
     · rcases haction with ⟨representative, action, hreentry⟩
       exact Or.inl ⟨coordinate, representative, action, hreentry⟩
@@ -239,6 +258,24 @@ theorem nextTurnState_isExactNext
     (state : collar.ScalarCompanionTurnState sourceEscape) :
     state.IsExactNext (state.nextTurnState hnoAction) :=
   ⟨state.nextTurnWitness hnoAction, rfl⟩
+
+/-- Every exact finite-state transition traverses a nonempty primal arc
+and therefore changes the canonical junction. -/
+theorem IsExactNext.junction_ne
+    {source target : collar.ScalarCompanionTurnState sourceEscape}
+    (hexact : source.IsExactNext target) :
+    target.junction ≠ source.junction := by
+  rcases hexact with ⟨witness, rfl⟩
+  rw [ofTurn_junction]
+  exact witness.interior.toScalarCompanionTurn_junction_ne_source
+
+/-- The chosen deterministic transition also moves to a different primal
+junction. -/
+theorem nextTurnState_junction_ne
+    (hnoAction : ¬ collar.HasChargedKempeReentry sourceEscape)
+    (state : collar.ScalarCompanionTurnState sourceEscape) :
+    (state.nextTurnState hnoAction).junction ≠ state.junction :=
+  (state.nextTurnState_isExactNext hnoAction).junction_ne
 
 /-- Every exact step toggles the scalar coordinate. -/
 @[simp]
@@ -408,6 +445,27 @@ theorem AlternatingOrbitCertificate.exists_exact_even_return
   have htransfer := exactRelationalTransfer_iterate hnoAction period entry
   rw [hreturn] at htransfer
   exact ⟨entry, period, hperiodTwo, heven, htransfer⟩
+
+/-- The exact even return begins with a genuine primal move and closes by
+an exact residual chain. -/
+theorem AlternatingOrbitCertificate.exists_exact_even_moving_return
+    {start : collar.ScalarCompanionTurnState sourceEscape}
+    (certificate : AlternatingOrbitCertificate hnoAction start) :
+    ∃ (entry next : collar.ScalarCompanionTurnState sourceEscape)
+        (period : Nat),
+      2 ≤ period ∧ Even period ∧
+        entry.IsExactNext next ∧
+        next.junction ≠ entry.junction ∧
+        ExactRelationalTransfer IsExactNext (period - 1) next entry := by
+  rcases certificate.exists_exact_even_return with
+    ⟨entry, period, hperiodTwo, heven, hreturn⟩
+  cases period with
+  | zero => omega
+  | succ remaining =>
+      cases hreturn with
+      | succ hfirst htail =>
+          exact ⟨entry, _, remaining + 1, hperiodTwo, heven,
+            hfirst, hfirst.junction_ne, by simpa using htail⟩
 
 end ScalarCompanionTurnState
 
