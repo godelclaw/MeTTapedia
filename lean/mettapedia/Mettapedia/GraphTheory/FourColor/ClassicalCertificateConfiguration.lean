@@ -365,6 +365,79 @@ def Configuration.compile (configuration : Configuration) :
     RawPointedHypermap :=
   compileConfigurationProgram configuration.program
 
+/-- A compiled configuration together with the off-ring edge transversal used
+by classical contract annotations. -/
+structure ContractCompilation where
+  state : RawPointedHypermap
+  transversal : List Nat
+
+private def shiftDarts (amount : Nat) (darts : List Nat) : List Nat :=
+  darts.map (· + amount)
+
+/-- Compile the classical kernel-edge transversal alongside the pointed map.
+The old-dart injections for `Y` and `H` are shifts by four and six in the raw
+encoding.  An initial `Y` contributes no off-ring edge. -/
+def compileContractTransversal :
+    ConfigurationProgram → ContractCompilation
+  | [] => ⟨pointedSeed, []⟩
+  | step :: rest =>
+      let previous := compileContractTransversal rest
+      match step with
+      | .rotate amount =>
+          ⟨previous.state.rotate amount, previous.transversal⟩
+      | .yellow =>
+          let next := previous.state.extendY
+          if rest.isEmpty then ⟨next, []⟩
+          else
+            ⟨next,
+              ((previous.state.node.toFin previous.state.pointer).val + 4) ::
+                shiftDarts 4 previous.transversal⟩
+      | .hexagon =>
+          let next := previous.state.extendH
+          ⟨next,
+            (next.face.toFin next.pointer).val ::
+              ((previous.state.node.toFin previous.state.pointer).val + 6) ::
+              (previous.state.pointer.val + 6) ::
+              shiftDarts 6 previous.transversal⟩
+
+theorem compileContractTransversal_state
+    (program : ConfigurationProgram) :
+    (compileContractTransversal program).state =
+      compileConfigurationProgram program := by
+  induction program with
+  | nil => rfl
+  | cons step rest ih =>
+      cases step with
+      | rotate amount =>
+          simp [compileContractTransversal, compileConfigurationProgram,
+            applyConfigurationStep, ih]
+      | yellow =>
+          by_cases hempty : rest = [] <;>
+            simp [compileContractTransversal, compileConfigurationProgram,
+              applyConfigurationStep, ih, hempty]
+      | hexagon =>
+          simp [compileContractTransversal, compileConfigurationProgram,
+            applyConfigurationStep, ih]
+
+/-- Select the annotated zero-based positions from a contract transversal.
+Out-of-range references are ignored, exactly as in the catalogue format. -/
+private def selectContractAux (references : List Nat) :
+    Nat → List Nat → List Nat
+  | _, [] => []
+  | index, dart :: rest =>
+      if index ∈ references then
+        dart :: selectContractAux references (index + 1) rest
+      else
+        selectContractAux references (index + 1) rest
+
+def selectContract (references transversal : List Nat) : List Nat :=
+  selectContractAux references 0 transversal
+
+/-- Decode a catalogue entry's contract references to raw dart numbers. -/
+def Configuration.contractDarts (configuration : Configuration) : List Nat :=
+  selectContract configuration.contractReferences
+    (compileContractTransversal configuration.program).transversal
+
 /-- The sample pentagonal map from the classical construction source. -/
 def pentagonalSampleProgram : ConfigurationProgram :=
   [.hexagon, .rotate 4, .yellow, .yellow]
@@ -377,7 +450,7 @@ theorem pentagonalSample_checker :
 /-- The first entry of the classical reducible-configuration catalogue. -/
 def firstCatalogueSample : Configuration where
   symmetric := true
-  contractReferences := [15]
+  contractReferences := [13]
   program :=
     [.hexagon, .rotate 3, .hexagon, .rotate 5, .hexagon, .rotate 5,
       .yellow, .rotate 4, .hexagon, .rotate 4, .yellow, .rotate 2,
@@ -410,6 +483,15 @@ theorem firstCatalogueSample_materialize :
     HypermapCode.materialize firstCatalogueSample.compile.pointee =
       firstCatalogueSampleCode := by
   decide
+
+/-- The first catalogue annotation selects one edge from its recursively
+constructed off-ring transversal. -/
+def firstCatalogueContractDarts : List Nat := [41]
+
+theorem firstCatalogueContractDarts_eq_compiled :
+    firstCatalogueSample.contractDarts = firstCatalogueContractDarts := by
+  set_option maxRecDepth 10000 in
+    decide
 
 private def firstCatalogueDart : Fin 42 →
     Fin firstCatalogueSampleCode.dartCount :=
