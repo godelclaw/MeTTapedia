@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateTraceWitness
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateTreeRankedKempe
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -13,6 +14,7 @@ open ClassicalCertificateKempeClosure
 open ClassicalCertificateRankedKempe
 open ClassicalCertificateTraceTree
 open ClassicalCertificateTraceWitness
+open ClassicalCertificateTreeRankedKempe
 
 /-- A fixed-length trace word satisfies the universal cyclic sum equation. -/
 def IsEvenTraceWord {length : Nat} (word : TraceWord length) : Prop :=
@@ -225,6 +227,13 @@ def firstCatalogueKempeCertificate :
   rank := firstCatalogueRank
   rule := firstCatalogueRule
 
+/-- The same ranked certificate with its covered and extendable word sets
+stored as exact ternary tries. -/
+noncomputable def firstCatalogueTreeKempeCertificate :
+    ClassicalCertificateTreeRankedKempe.Certificate 6 :=
+  ClassicalCertificateTreeRankedKempe.Certificate.ofFinite
+    firstCatalogueKempeCertificate
+
 set_option maxRecDepth 10000 in
 theorem evenTraceWords_six_card : (evenTraceWords 6).card = 183 := by
   decide
@@ -337,6 +346,56 @@ theorem firstCatalogueKempeCertificate_fastValid :
   exact firstCatalogueKempeCertificate.fastRuleValid_of_fastRuleBoolean_eq_true
     word hlocal
 
+theorem firstCatalogueTreeKempeCertificate_checker :
+    firstCatalogueTreeKempeCertificate.checker = true := by
+  apply ClassicalCertificateTreeRankedKempe.Certificate.checker_eq_true_of_valid
+  exact ClassicalCertificateTreeRankedKempe.Certificate.valid_ofFinite
+    firstCatalogueKempeCertificate
+      firstCatalogueKempeCertificate_fastValid
+
+theorem firstCatalogueTree_extendableFamily_iff
+    (word : List TraceSymbol) :
+    firstCatalogueTreeKempeCertificate.ExtendableFamily word ↔
+      firstCatalogueKempeCertificate.ExtendableFamily word := by
+  constructor
+  · rintro ⟨fixedWord, hfixed, haccepted⟩
+    refine ⟨fixedWord, ?_, hfixed⟩
+    have hmemList : fixedWord ∈
+        firstCatalogueKempeCertificate.extendable.toList :=
+      (fixedWordTree_accepts_iff
+        firstCatalogueKempeCertificate.extendable.toList fixedWord).1 (by
+          simpa [firstCatalogueTreeKempeCertificate,
+            ClassicalCertificateTreeRankedKempe.Certificate.ofFinite]
+            using haccepted)
+    simpa using hmemList
+  · rintro ⟨fixedWord, hmem, hfixed⟩
+    refine ⟨fixedWord, hfixed, ?_⟩
+    change (fixedWordTree
+      firstCatalogueKempeCertificate.extendable.toList).accepts
+        fixedWord.toList = true
+    apply (fixedWordTree_accepts_iff
+      firstCatalogueKempeCertificate.extendable.toList fixedWord).2
+    simpa using hmem
+
+theorem firstCatalogueTree_evenTrace_kempeCoclosure
+    (word : TraceWord 6) (heven : IsEvenTraceWord word) :
+    KempeCoclosure firstCatalogueKempeCertificate.ExtendableFamily
+      word.toList := by
+  have hcovered :
+      firstCatalogueTreeKempeCertificate.covered.accepts
+        word.toList = true := by
+    change (fixedWordTree firstCatalogueKempeCertificate.covered.toList).accepts
+      word.toList = true
+    apply (fixedWordTree_accepts_iff
+      firstCatalogueKempeCertificate.covered.toList word).2
+    simpa [firstCatalogueKempeCertificate] using
+      (mem_evenTraceWords word).2 heven
+  have hcoclosure :=
+    firstCatalogueTreeKempeCertificate.kempeCoclosure_of_checker_true
+      firstCatalogueTreeKempeCertificate_checker word hcovered
+  exact hcoclosure.mono fun otherWord hother =>
+    (firstCatalogueTree_extendableFamily_iff otherWord).1 hother
+
 theorem firstCatalogueKempeCertificate_valid :
     firstCatalogueKempeCertificate.Valid :=
   firstCatalogueKempeCertificate.valid_of_fastValid
@@ -346,9 +405,7 @@ theorem firstCatalogue_evenTrace_kempeCoclosure
     (word : TraceWord 6) (heven : IsEvenTraceWord word) :
     KempeCoclosure firstCatalogueKempeCertificate.ExtendableFamily
       word.toList := by
-  exact (firstCatalogueKempeCertificate.derivation_of_valid
-    firstCatalogueKempeCertificate_valid word
-      ((mem_evenTraceWords word).2 heven)).sound
+  exact firstCatalogueTree_evenTrace_kempeCoclosure word heven
 
 /-- Standard semantic family of boundary traces induced by ordinary
 colorings of `cf001`. -/
