@@ -905,3 +905,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareComposition
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareLineProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareGraphSplit
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareGraphComposition
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateHypermap
