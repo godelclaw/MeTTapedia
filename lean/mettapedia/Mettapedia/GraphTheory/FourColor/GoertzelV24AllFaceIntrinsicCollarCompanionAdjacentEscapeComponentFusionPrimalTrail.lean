@@ -72,6 +72,60 @@ namespace CompanionCrossPairFusionPrimalTrail
 
 variable (fusion : CompanionCrossPairFusionPrimalTrail collar start)
 
+/-- The retained fusion trail has terminal darts. -/
+theorem retainedTrail_not_nil : ¬fusion.retainedTrail.Nil := by
+  exact SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+    fusion.retainedTrail_positive
+
+/-- The retained fusion trail enters through the return-root edge. -/
+theorem retainedTrail_firstDart_edge :
+    (fusion.retainedTrail.firstDart fusion.retainedTrail_not_nil).edge =
+      fusion.lineFusion.normal.rootEdge.1 := by
+  let trail := fusion.retainedTrail
+  let linePath := fusion.lineFusion.fused.path
+  have hmapNonempty : linePath.support.map Subtype.val ≠ [] := by
+    intro hnil
+    exact linePath.support_ne_nil (List.map_eq_nil_iff.mp hnil)
+  calc
+    (trail.firstDart fusion.retainedTrail_not_nil).edge =
+        trail.edges.head
+          (SimpleGraph.Walk.edges_eq_nil.not.mpr
+            fusion.retainedTrail_not_nil) :=
+      (trail.edge_firstDart fusion.retainedTrail_not_nil).trans
+        (trail.mk_start_snd_eq_head_edges fusion.retainedTrail_not_nil)
+    _ = (linePath.support.map Subtype.val).head hmapNonempty := by
+      dsimp only [trail, linePath]
+      simp only [fusion.retainedTrail_edges_eq]
+    _ = (linePath.support.head linePath.support_ne_nil).1 := List.head_map _
+    _ = fusion.lineFusion.normal.rootEdge.1 := by
+      rw [List.head_eq_getElem_zero linePath.support_ne_nil]
+      exact congrArg Subtype.val linePath.support_getElem_zero
+
+/-- The retained fusion trail leaves through the selected launch edge. -/
+theorem retainedTrail_lastDart_edge :
+    (fusion.retainedTrail.lastDart fusion.retainedTrail_not_nil).edge =
+      fusion.lineFusion.normal.launchEdge.1 := by
+  let trail := fusion.retainedTrail
+  let linePath := fusion.lineFusion.fused.path
+  have hmapNonempty : linePath.support.map Subtype.val ≠ [] := by
+    intro hnil
+    exact linePath.support_ne_nil (List.map_eq_nil_iff.mp hnil)
+  calc
+    (trail.lastDart fusion.retainedTrail_not_nil).edge =
+        trail.edges.getLast
+          (SimpleGraph.Walk.edges_eq_nil.not.mpr
+            fusion.retainedTrail_not_nil) :=
+      (trail.edge_lastDart fusion.retainedTrail_not_nil).trans
+        (trail.mk_penultimate_end_eq_getLast_edges
+          fusion.retainedTrail_not_nil)
+    _ = (linePath.support.map Subtype.val).getLast hmapNonempty := by
+      dsimp only [trail, linePath]
+      simp only [fusion.retainedTrail_edges_eq]
+    _ = (linePath.support.getLast linePath.support_ne_nil).1 :=
+      List.getLast_map _
+    _ = fusion.lineFusion.normal.launchEdge.1 := by
+      rw [linePath.getLast_support]
+
 /-- Include the retained fusion trail back into the original graph. -/
 noncomputable def ambientTrail :
     G.Walk fusion.startVertex.1 fusion.endVertex.1 :=
@@ -88,6 +142,88 @@ theorem ambientTrail_positive : 0 < fusion.ambientTrail.length := by
   apply retainedWalkToAmbient_not_nil collar.sourceData fusion.retainedTrail
   exact SimpleGraph.Walk.not_nil_iff_lt_length.mpr
     fusion.retainedTrail_positive
+
+/-- The ambient fusion trail has terminal darts. -/
+theorem ambientTrail_not_nil : ¬fusion.ambientTrail.Nil := by
+  exact SimpleGraph.Walk.not_nil_iff_lt_length.mpr
+    fusion.ambientTrail_positive
+
+/-- Inclusion identifies the incoming ambient edge exactly. -/
+theorem ambientTrail_firstDart_edge :
+    (fusion.ambientTrail.firstDart fusion.ambientTrail_not_nil).edge =
+      (retainedEdgeToAmbientEdge collar.sourceData
+        fusion.lineFusion.normal.rootEdge).1 := by
+  calc
+    (fusion.ambientTrail.firstDart fusion.ambientTrail_not_nil).edge =
+        (retainedDartToAmbientDart collar.sourceData
+          (fusion.retainedTrail.firstDart
+            fusion.retainedTrail_not_nil)).edge :=
+      congrArg SimpleGraph.Dart.edge
+        (retainedWalkToAmbient_firstDart collar.sourceData
+          fusion.retainedTrail fusion.retainedTrail_not_nil
+          fusion.ambientTrail_not_nil)
+    _ = (fusion.retainedTrail.firstDart
+          fusion.retainedTrail_not_nil).edge.map Subtype.val := by
+      rw [retainedDartToAmbientDart_edge]
+    _ = fusion.lineFusion.normal.rootEdge.1.map Subtype.val := by
+      rw [fusion.retainedTrail_firstDart_edge]
+    _ = (retainedEdgeToAmbientEdge collar.sourceData
+          fusion.lineFusion.normal.rootEdge).1 := by
+      rw [retainedEdgeToAmbientEdge_val]
+
+/-- Inclusion identifies the outgoing ambient edge exactly. -/
+theorem ambientTrail_lastDart_edge :
+    (fusion.ambientTrail.lastDart fusion.ambientTrail_not_nil).edge =
+      (retainedEdgeToAmbientEdge collar.sourceData
+        fusion.lineFusion.normal.launchEdge).1 := by
+  calc
+    (fusion.ambientTrail.lastDart fusion.ambientTrail_not_nil).edge =
+        (retainedDartToAmbientDart collar.sourceData
+          (fusion.retainedTrail.lastDart
+            fusion.retainedTrail_not_nil)).edge :=
+      congrArg SimpleGraph.Dart.edge
+        (retainedWalkToAmbient_lastDart collar.sourceData
+          fusion.retainedTrail fusion.retainedTrail_not_nil
+          fusion.ambientTrail_not_nil)
+    _ = (fusion.retainedTrail.lastDart
+          fusion.retainedTrail_not_nil).edge.map Subtype.val := by
+      rw [retainedDartToAmbientDart_edge]
+    _ = fusion.lineFusion.normal.launchEdge.1.map Subtype.val := by
+      rw [fusion.retainedTrail_lastDart_edge]
+    _ = (retainedEdgeToAmbientEdge collar.sourceData
+          fusion.lineFusion.normal.launchEdge).1 := by
+      rw [retainedEdgeToAmbientEdge_val]
+
+/-- The incoming edge is the same common-core edge in the target deletion. -/
+theorem ambientTrail_firstDart_edge_eq_target :
+    (fusion.ambientTrail.firstDart fusion.ambientTrail_not_nil).edge =
+      (retainedEdgeToAmbientEdge collar.targetData
+        (collar.commonEdgeInTarget
+          fusion.lineFusion.normal.returnData.lastOverlap.overlap.commonEdge)).1 := by
+  rw [fusion.ambientTrail_firstDart_edge]
+  change
+    (retainedEdgeToAmbientEdge collar.sourceData
+      (collar.commonEdgeInSource
+        fusion.lineFusion.normal.returnData.lastOverlap.overlap.commonEdge)).1 = _
+  exact congrArg Subtype.val
+    (collar.retainedEdgeToAmbientEdge_commonEdgeInSource_eq_target
+      fusion.lineFusion.normal.returnData.lastOverlap.overlap.commonEdge)
+
+/-- The outgoing edge is likewise canonically represented in the target
+deletion. -/
+theorem ambientTrail_lastDart_edge_eq_target :
+    (fusion.ambientTrail.lastDart fusion.ambientTrail_not_nil).edge =
+      (retainedEdgeToAmbientEdge collar.targetData
+        (collar.commonEdgeInTarget
+          fusion.lineFusion.normal.launchSupportEdge.1)).1 := by
+  rw [fusion.ambientTrail_lastDart_edge]
+  change
+    (retainedEdgeToAmbientEdge collar.sourceData
+      (collar.commonEdgeInSource
+        fusion.lineFusion.normal.launchSupportEdge.1)).1 = _
+  exact congrArg Subtype.val
+    (collar.retainedEdgeToAmbientEdge_commonEdgeInSource_eq_target
+      fusion.lineFusion.normal.launchSupportEdge.1)
 
 end CompanionCrossPairFusionPrimalTrail
 
