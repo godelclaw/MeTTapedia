@@ -80,13 +80,35 @@ variable {cycle :
     graphData minimal baseData}
   {collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge}
 
-/-- The exact one-component Kempe transition between canonical adjacent
-escapes on the fixed source deletion. -/
+/-- The exact nonidentity one-component Kempe transition between canonical
+adjacent escapes on the fixed source deletion. -/
 def AdjacentEscapeKempeStep
+    (collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge)
     (first second : sourceNormal.KempeOrbitAdjacentEscape) : Prop :=
-  (DeletedAdjacentPairGraph G collar.sourceData.firstVertex
-      collar.sourceData.secondVertex).EdgeKempeStep
-    first.coloring second.coloring
+  ∃ step : sourceNormal.ProperAdjacentSameBaseKempeStep first,
+    step.successor = second ∧
+      (DeletedAdjacentPairGraph G collar.sourceData.firstVertex
+          collar.sourceData.secondVertex).EdgeKempeStep
+        first.coloring second.coloring
+
+/-- A proper adjacent transition retains its literal component swap. -/
+theorem AdjacentEscapeKempeStep.oneStep
+    {first second : sourceNormal.KempeOrbitAdjacentEscape}
+    (step : collar.AdjacentEscapeKempeStep first second) :
+    (DeletedAdjacentPairGraph G collar.sourceData.firstVertex
+        collar.sourceData.secondVertex).EdgeKempeStep
+      first.coloring second.coloring := by
+  exact step.choose_spec.2
+
+/-- A proper adjacent transition cannot be a self-loop. -/
+theorem AdjacentEscapeKempeStep.ne
+    {first second : sourceNormal.KempeOrbitAdjacentEscape}
+    (step : collar.AdjacentEscapeKempeStep first second) : first ≠ second := by
+  intro heq
+  subst second
+  rcases step with ⟨realization, hsuccessor, _honeStep⟩
+  exact realization.coloring_ne
+    (congrArg (fun escape => escape.coloring) hsuccessor)
 
 /-- A nonrecursive certified outcome at a canonical adjacent escape. -/
 inductive CertifiedAdjacentEscapeTerminal
@@ -117,21 +139,26 @@ theorem certifiedAdjacentEscapeTerminal_or_exists_kempeStep
     (escape : sourceNormal.KempeOrbitAdjacentEscape) :
     CertifiedAdjacentEscapeTerminal collar escape ∨
       ∃ successor, collar.AdjacentEscapeKempeStep escape successor := by
-  rcases collar.nonempty_adjacentEscapeResolution escape with ⟨resolution⟩
+  rcases collar.nonempty_properAdjacentEscapeResolution escape with
+    ⟨resolution⟩
   cases resolution with
   | resolvedFusion step =>
-      exact Or.inl (.resolvedFusion step)
+      exact Or.inl (CertifiedAdjacentEscapeTerminal.resolvedFusion step)
   | adjacentReentry step =>
-      exact Or.inr ⟨step.successor, step.oneStep⟩
+      exact Or.inr ⟨step.successor, step, rfl, step.oneStep⟩
   | chargedReentry resolution =>
-      exact Or.inl (.chargedReentry resolution)
+      exact Or.inl
+        (CertifiedAdjacentEscapeTerminal.chargedReentry resolution)
   | supportedPrimalCycle cycleRoot primalCycle isCycle length =>
-      exact Or.inl (.supportedPrimalCycle cycleRoot primalCycle isCycle length)
+      exact Or.inl (CertifiedAdjacentEscapeTerminal.supportedPrimalCycle
+        cycleRoot primalCycle isCycle length)
   | returnChirality boundary lens uniqueChirality =>
-      exact Or.inl (.returnChirality boundary lens uniqueChirality)
+      exact Or.inl (CertifiedAdjacentEscapeTerminal.returnChirality
+        boundary lens uniqueChirality)
 
 /-- Finite iteration of the sole adjacent residue reaches a certified
-nonrecursive outcome or a reachable nonempty closed Kempe circuit. -/
+nonrecursive outcome or a reachable nonempty closed circuit of nonidentity
+Kempe component swaps. -/
 theorem exists_reachable_certifiedAdjacentEscapeTerminal_or_kempeCycle
     (collar : cycle.IntrinsicShortTargetEscapeCollar targetEdge)
     (start : sourceNormal.KempeOrbitAdjacentEscape) :
