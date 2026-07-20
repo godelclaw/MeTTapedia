@@ -118,7 +118,7 @@ structure HypermapCode where
   edge : Array Nat
   node : Array Nat
   face : Array Nat
-  deriving Repr
+  deriving DecidableEq, Repr
 
 namespace HypermapCode
 
@@ -303,6 +303,12 @@ private def iterateNode (state : RawPointedHypermap) :
   | 0, dart => dart
   | count + 1, dart => iterateNode state count (state.node.toFin dart)
 
+/-- The ordered outer ring used for boundary color traces. -/
+def forwardRing (state : RawPointedHypermap) : List Nat :=
+  let start := state.node.toFin (state.node.toFin state.pointer)
+  (List.range state.nodeOrder).map fun offset =>
+    (state.iterateNode offset start).val
+
 /-- Reverse ring rotation.  As in the classical program language, an amount
 at least the ring order leaves the pointer unchanged. -/
 def rotate (amount : Nat) (state : RawPointedHypermap) :
@@ -395,6 +401,31 @@ def firstCatalogueSampleCode : HypermapCode where
 theorem firstCatalogueSampleCode_checker :
     firstCatalogueSampleCode.checker = true := by
   decide
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 2000000 in
+/-- The materialized first catalogue program is exactly its exported table
+certificate. -/
+theorem firstCatalogueSample_materialize :
+    HypermapCode.materialize firstCatalogueSample.compile.pointee =
+      firstCatalogueSampleCode := by
+  decide
+
+private def firstCatalogueDart : Fin 42 →
+    Fin firstCatalogueSampleCode.dartCount :=
+  Fin.cast (by rfl)
+
+/-- The six outer-ring darts of the first catalogue configuration, in the
+orientation used by boundary traces. -/
+def firstCatalogueRing : List (Fin firstCatalogueSampleCode.dartCount) :=
+  [firstCatalogueDart 12, firstCatalogueDart 6, firstCatalogueDart 11,
+    firstCatalogueDart 22, firstCatalogueDart 0, firstCatalogueDart 5]
+
+theorem firstCatalogueRing_eq_compiled :
+    firstCatalogueSample.compile.forwardRing =
+      firstCatalogueRing.map Fin.val := by
+  set_option maxRecDepth 10000 in
+    decide
 
 end ClassicalCertificateConfiguration
 
