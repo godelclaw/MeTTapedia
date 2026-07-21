@@ -67,6 +67,13 @@ inductive SearchTree where
   | node (zero red blue purple : SearchTree)
   deriving DecidableEq, Repr
 
+def SearchTree.child : SearchTree → FaceColorCode → SearchTree
+  | .node zero _ _ _, .zero => zero
+  | .node _ red _ _, .red => red
+  | .node _ _ blue _, .blue => blue
+  | .node _ _ _ purple, .purple => purple
+  | _, _ => .reject
+
 abbrev AssignedColor (componentCount : Nat) :=
   Fin componentCount × FaceColorCode
 
@@ -415,6 +422,159 @@ theorem accepts_of_valid {hypermap : HypermapCode}
                 simpa [FaceColorCode.toColor] using hpurple)
             · exact allCovered_step .purple hcovered
 
+/-- Semantic validity of a pruned search against an arbitrary executable
+boundary language.  This form lets large finite languages remain indexed. -/
+def ValidBy {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool) :
+    SearchTree → List (AssignedColor components.componentCount) →
+      List (Fin components.componentCount) → Prop
+  | .reject, assigned, _ => PartialViolation componentsValid assigned
+  | .accept, assigned, remaining =>
+      remaining = [] ∧
+        accepts
+          (symbolTraceOfAssignment partitionValid ring
+            (liftAssignment componentsValid
+              (assignmentOfAssigned assigned))) = true
+  | .node zero red blue purple, assigned, component :: remaining =>
+      ValidBy componentsValid ring accepts zero
+          ((component, .zero) :: assigned) remaining ∧
+        ValidBy componentsValid ring accepts red
+          ((component, .red) :: assigned) remaining ∧
+        ValidBy componentsValid ring accepts blue
+          ((component, .blue) :: assigned) remaining ∧
+        ValidBy componentsValid ring accepts purple
+          ((component, .purple) :: assigned) remaining
+  | .node _ _ _ _, _, [] => False
+
+/-- Executable verifier for a pruned search whose accepted language is
+supplied by a Boolean membership procedure. -/
+def checkBy {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool) :
+    SearchTree → List (AssignedColor components.componentCount) →
+      List (Fin components.componentCount) → Bool
+  | .reject, assigned, _ => decide (PartialViolation componentsValid assigned)
+  | .accept, assigned, remaining =>
+      decide (remaining = []) &&
+        accepts
+          (symbolTraceOfAssignment partitionValid ring
+            (liftAssignment componentsValid
+              (assignmentOfAssigned assigned)))
+  | .node zero red blue purple, assigned, component :: remaining =>
+      checkBy componentsValid ring accepts zero
+          ((component, .zero) :: assigned) remaining &&
+        checkBy componentsValid ring accepts red
+          ((component, .red) :: assigned) remaining &&
+        checkBy componentsValid ring accepts blue
+          ((component, .blue) :: assigned) remaining &&
+        checkBy componentsValid ring accepts purple
+          ((component, .purple) :: assigned) remaining
+  | .node _ _ _ _, _, [] => false
+
+theorem validBy_of_checkBy_true {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool)
+    (tree : SearchTree)
+    (assigned : List (AssignedColor components.componentCount))
+    (remaining : List (Fin components.componentCount))
+    (hcheck : checkBy componentsValid ring accepts tree assigned remaining =
+      true) :
+    tree.ValidBy componentsValid ring accepts assigned remaining := by
+  induction tree generalizing assigned remaining with
+  | reject =>
+      simpa [checkBy, ValidBy] using Bool.of_decide_true hcheck
+  | accept =>
+      simp only [checkBy, Bool.and_eq_true] at hcheck
+      exact ⟨Bool.of_decide_true hcheck.1, hcheck.2⟩
+  | node zero red blue purple ihZero ihRed ihBlue ihPurple =>
+      cases remaining with
+      | nil => simp [checkBy] at hcheck
+      | cons component remaining =>
+          simp only [checkBy, Bool.and_eq_true] at hcheck
+          exact ⟨ihZero _ _ hcheck.1.1.1,
+            ihRed _ _ hcheck.1.1.2,
+            ihBlue _ _ hcheck.1.2,
+            ihPurple _ _ hcheck.2⟩
+
+theorem acceptsBy_of_validBy {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool)
+    (tree : SearchTree)
+    (assigned : List (AssignedColor components.componentCount))
+    (remaining : List (Fin components.componentCount))
+    (hvalid : tree.ValidBy componentsValid ring accepts assigned remaining)
+    (assignment : Fin components.componentCount → Color)
+    (hagrees : Agrees assigned assignment)
+    (hcontract : IsContractAssignment partitionValid contract
+      (liftAssignment componentsValid assignment))
+    (hcovered : AllCovered assigned remaining) :
+    accepts
+      (symbolTraceOfAssignment partitionValid ring
+        (liftAssignment componentsValid assignment)) = true := by
+  induction tree generalizing assigned remaining with
+  | reject =>
+      exact (not_partialViolation_of_agrees_contract componentsValid assigned
+        assignment hagrees hcontract hvalid).elim
+  | accept =>
+      have hcomplete : ∀ component : Fin components.componentCount,
+          component ∈ assigned.map Prod.fst := by
+        intro component
+        rcases hcovered component with hassigned | hremaining
+        · exact hassigned
+        · simpa [hvalid.1] using hremaining
+      have heq : assignmentOfAssigned assigned = assignment :=
+        assignmentOfAssigned_eq hagrees hcomplete
+      simpa [heq] using hvalid.2
+  | node zero red blue purple ihZero ihRed ihBlue ihPurple =>
+      cases remaining with
+      | nil => exact hvalid.elim
+      | cons next remaining =>
+          rcases color_four_cases (assignment next) with
+            hzero | hred | hblue | hpurple
+          · apply ihZero ((next, .zero) :: assigned) remaining hvalid.1
+            · exact agrees_cons hagrees next .zero (by
+                simpa [FaceColorCode.toColor] using hzero)
+            · exact allCovered_step .zero hcovered
+          · apply ihRed ((next, .red) :: assigned) remaining hvalid.2.1
+            · exact agrees_cons hagrees next .red (by
+                simpa [FaceColorCode.toColor] using hred)
+            · exact allCovered_step .red hcovered
+          · apply ihBlue ((next, .blue) :: assigned) remaining
+              hvalid.2.2.1
+            · exact agrees_cons hagrees next .blue (by
+                simpa [FaceColorCode.toColor] using hblue)
+            · exact allCovered_step .blue hcovered
+          · apply ihPurple ((next, .purple) :: assigned) remaining
+              hvalid.2.2.2
+            · exact agrees_cons hagrees next .purple (by
+                simpa [FaceColorCode.toColor] using hpurple)
+            · exact allCovered_step .purple hcovered
+
 end SearchTree
 
 /-- A component order together with a pruned four-color search tree. -/
@@ -527,6 +687,107 @@ theorem accepts_of_contractWord {hypermap : HypermapCode}
     covered.accepts word = true := by
   have haccepted := certificate.accepts_of_contractAssignment componentsValid
     ring covered hchecker assignment hcontract
+  have hcanonical := symbolTraceOfAssignment_toColor partitionValid contract
+    ring assignment hcontract hcycle havoid
+  have heq : word = symbolTraceOfAssignment partitionValid ring assignment :=
+    TraceSymbol.map_toColor_injective (hword.trans hcanonical.symm)
+  simpa [heq] using haccepted
+
+/-- Reflected checker for a component search against an indexed Boolean
+boundary language. -/
+def checkerBy {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool)
+    (certificate : Certificate components.componentCount) : Bool :=
+  decide certificate.OrderComplete &&
+    SearchTree.checkBy componentsValid ring accepts certificate.tree []
+      certificate.order
+
+theorem acceptsBy_of_checkerBy_true {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool)
+    (certificate : Certificate components.componentCount)
+    (hchecker : certificate.checkerBy componentsValid ring accepts = true)
+    (assignment : Fin components.componentCount → Color)
+    (hcontract : IsContractAssignment partitionValid contract
+      (liftAssignment componentsValid assignment)) :
+    accepts
+      (symbolTraceOfAssignment partitionValid ring
+        (liftAssignment componentsValid assignment)) = true := by
+  simp only [checkerBy, Bool.and_eq_true] at hchecker
+  have horder : certificate.OrderComplete :=
+    Bool.of_decide_true hchecker.1
+  have hvalid := SearchTree.validBy_of_checkBy_true componentsValid ring accepts
+    certificate.tree [] certificate.order hchecker.2
+  apply SearchTree.acceptsBy_of_validBy componentsValid ring accepts
+    certificate.tree [] certificate.order hvalid assignment
+  · simp [Agrees]
+  · exact hcontract
+  · intro component
+    exact Or.inr (horder component)
+
+/-- Every genuine contract assignment reaches an indexed Boolean root
+language certified by a pruned component search. -/
+theorem acceptsBy_of_contractAssignment {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool)
+    (certificate : Certificate components.componentCount)
+    (hchecker : certificate.checkerBy componentsValid ring accepts = true)
+    (assignment : Fin partition.faceCount → Color)
+    (hcontract : IsContractAssignment partitionValid contract assignment) :
+    accepts (symbolTraceOfAssignment partitionValid ring assignment) = true := by
+  let componentAssignment := restrictAssignment componentsValid assignment
+  have hfactor : liftAssignment componentsValid componentAssignment = assignment :=
+    lift_restrictAssignment_eq componentsValid assignment hcontract
+  have hcontract' : IsContractAssignment partitionValid contract
+      (liftAssignment componentsValid componentAssignment) := by
+    rw [hfactor]
+    exact hcontract
+  have haccepted := certificate.acceptsBy_of_checkerBy_true componentsValid
+    ring accepts hchecker componentAssignment hcontract'
+  simpa [hfactor] using haccepted
+
+/-- Root completeness in the external word spelling for an indexed Boolean
+boundary language. -/
+theorem acceptsBy_of_contractWord {hypermap : HypermapCode}
+    {partition : ClassicalCertificateFacePartition.Code}
+    {partitionValid : ClassicalCertificateFacePartition.Valid hypermap partition}
+    {contract : Finset (Fin hypermap.dartCount)}
+    {components : ClassicalCertificateContractComponents.Code}
+    (componentsValid : ClassicalCertificateContractComponents.Valid
+      partitionValid contract components)
+    (ring : List (Fin hypermap.dartCount))
+    (accepts : List TraceSymbol → Bool)
+    (certificate : Certificate components.componentCount)
+    (hchecker : certificate.checkerBy componentsValid ring accepts = true)
+    (hcycle : RawReverseBoundaryCycle hypermap ring)
+    (havoid : ContractAvoidsBoundary contract ring)
+    (assignment : Fin partition.faceCount → Color)
+    (hcontract : IsContractAssignment partitionValid contract assignment)
+    (word : List TraceSymbol)
+    (hword : word.map TraceSymbol.toColor =
+      ringTraceOfAssignment partitionValid ring assignment) :
+    accepts word = true := by
+  have haccepted := certificate.acceptsBy_of_contractAssignment
+    componentsValid ring accepts hchecker assignment hcontract
   have hcanonical := symbolTraceOfAssignment_toColor partitionValid contract
     ring assignment hcontract hcycle havoid
   have heq : word = symbolTraceOfAssignment partitionValid ring assignment :=
