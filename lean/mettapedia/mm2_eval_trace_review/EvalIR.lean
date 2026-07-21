@@ -3,7 +3,7 @@
 -- The reference evaluator is fuel-bounded and sorry-free.
 -- The MM2 protocol types (ReqId, MM2Fact, MM2Step) formalize the request/result/join
 -- state machine that MORK executes, including IntArithSink grounded arithmetic.
--- Council: Martin-Löf/Coquand/Pfenning (types first), Carneiro/Brown (minimal),
+-- Design rationale: 
 --   Tao/Kolmogorov (proper Value type), Buzzard/Voevodsky (no sorry).
 -- `eval` is partial (Lean can't prove termination through evalList HOF), but fully
 -- implemented — validated by #eval.
@@ -262,7 +262,7 @@ theorem evalMemo_agrees (rules : List EvalRule) (fuel : Nat) (node : EvalNode) :
 -- An evaluation trace is an indexed inductive tree recording every step of
 -- CBV+memo evaluation. ALL properties (correctness, memo soundness, step count,
 -- MM2 simulation) fall out of this one structure.
--- Council: Knuth, Tao, Carneiro, Martin-Löf, Meredith, McBride, Pfenning, Voevodsky.
+-- Design rationale: ,, .
 
 -- Evaluation trace: records every step of CBV+memo evaluation.
 -- Indexed by (input_node, output_value, memo_in, memo_out).

@@ -117,7 +117,7 @@ def painEvidence : List SourceItem := [
 
 /-! ## 3. Aggregation: fold support vectors by candidate
 
-Council quorum (Goertzel/Carneiro/Hutter): This IS hplus — independent sources
+Design rationale: This IS hplus — independent sources
 contribute additively. The `support c` projection is the categorical-to-binary
 derivation GPT-5.4 Pro recommended. The fold is the explicit, auditable policy. -/
 
@@ -128,7 +128,7 @@ def strength (e : BinEvNat) : Nat × Nat := (e.pos, e.pos + e.neg)
 
 /-! ## 4. Kernel-checked evidence computation
 
-Council quorum (Knuth/Buzzard): The totals are the contract. If the fold produces
+Design rationale: The totals are the contract. If the fold produces
 the same values as the previous hand-written version, the refactor is correct. -/
 
 theorem pathologic_total :
@@ -142,7 +142,7 @@ theorem split_total :
 
 /-! ## 5. Ranking from evidence algebra
 
-Council quorum (Tao): Cross-multiplication avoids division. The ranking emerges:
+Design rationale: Cross-multiplication avoids division. The ranking emerges:
 StateOfMind > EmotionalState > Split >> PathologicProcess. -/
 
 theorem pathologic_refuted :
@@ -161,7 +161,7 @@ theorem emotional_beats_split :
 
 /-! ## 6. Generic source forgetting
 
-Council quorum (Kwiatkowska/Dragan): "What if we lose this source?" is a list
+Design rationale: "What if we lose this source?" is a list
 filter. No hand-written per-source defs — one generic function. -/
 
 def forget (s : PainSource) (items : List SourceItem) : List SourceItem :=
@@ -243,7 +243,7 @@ theorem end_to_end :
 
 /-! ## 12. AdditiveWorldModel instance
 
-Council quorum (Goertzel/Buzzard/de Paiva): Without this, it's a spreadsheet.
+Design rationale: Without this, it's a spreadsheet.
 WITH this, it's a WM-PLN evidence analysis.
 
 The state is `PainCandidate → BinEvNat` — a function from queries to evidence.
@@ -293,7 +293,7 @@ end WorldModel
 
 /-! ## 13. Bridge to formal BinaryEvidence (ℝ≥0∞)
 
-Council quorum (Skilling/Carneiro): The Nat computation is the SAME evidence
+Design rationale: The Nat computation is the SAME evidence
 as the ℝ≥0∞ theory. The bridge makes that explicit. -/
 
 noncomputable def BinEvNat.toBinaryEvidence (e : BinEvNat) :

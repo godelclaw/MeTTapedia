@@ -5,7 +5,7 @@ import Mettapedia.Languages.MeTTa.PureKernel.DeclarationSemantics
 import Mettapedia.Logic.HOL.Derivation
 
 /-!
-# HOL -> Pure Integration Contract (Council-Gated)
+# HOL -> Pure Integration Contract (design-gated)
 
 This file is an implementation contract, not a translator implementation.
 It defines:
@@ -14,7 +14,7 @@ It defines:
 - which phase is open now,
 - which moves are explicitly disallowed to prevent architecture drift.
 
-Council quorum rationale (high-level):
+Design rationale rationale (high-level):
 
 - Martin-Löf / Coquand / Dybjer / McBride / Pfenning:
   translation must target a typed kernel boundary, not ad hoc evaluator behavior.

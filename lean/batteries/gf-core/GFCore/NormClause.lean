@@ -8,7 +8,7 @@ PredVP+ComplSlash, PredVPS+ComplVPS2 all become `predication`.
 This eliminates the FocusComp problem: all copular sentences look the same
 regardless of whether the subject is focused, definite, or mass.
 
-Council: Pfenning (normalize before extraction), de Paiva (compositional passes)
+Design rationale: 
 -/
 
 import GFCore.RGLView

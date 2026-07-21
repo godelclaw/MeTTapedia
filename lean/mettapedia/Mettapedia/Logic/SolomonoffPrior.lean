@@ -616,7 +616,7 @@ structure Semimeasure where
 
 /-! ### Why Prefix-Free Machines Don't Give Semimeasures
 
-**The Council's Wisdom**: Prefix-free machines produce EXACT finite outputs.
+**design principles**: Prefix-free machines produce EXACT finite outputs.
 A program that outputs "011" does NOT output "0110" or "0111" - these are
 different, disjoint events. Therefore:
 
@@ -690,7 +690,7 @@ theorem algorithmicProbability_partial_properties (U : PrefixFreeMachine)
 
 /-! ## Part 8: Infinite Sequences and the Universal Semimeasure
 
-Following the "Council's Wisdom":
+Following the "design principles":
 
 **The Problem with Finite Strings**: The discrete algorithmic probability μ(x) over finite
 strings is useless for prediction because all conditional probabilities are zero.

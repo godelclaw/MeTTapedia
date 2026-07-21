@@ -15,7 +15,7 @@ Attr(X,P) = Rel(P,[X]) — unified, no separate handling.
 
 TODO (Phase 3): Variance annotations per predicate argument position.
 
-Council: Martin-Löf (substitution), de Paiva (unification, variance),
+Design rationale: 
          Gowers (proof calculus > bag of rules), Goertzel/Geisweiller (PLN),
          Hammer (NARS inheritance), Pfenning (backward search)
 -/

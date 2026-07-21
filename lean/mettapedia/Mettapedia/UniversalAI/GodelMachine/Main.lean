@@ -100,7 +100,7 @@ This MVP core builds on:
 - Everitt et al. (2016). "Self-Modification of Policy and Utility Function"
 - Wan & Mei (2025). "LLMs as Computable Approximations to Solomonoff Induction"
 
-## The Emulated Math Council Approval
+## The design review Approval
 
 The formalization aims to satisfy:
 - **Knuth/Skilling**: Information-theoretic foundations are rigorous

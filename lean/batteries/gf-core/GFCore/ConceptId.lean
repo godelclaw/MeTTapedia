@@ -36,7 +36,7 @@ def baseName (c : ConceptId) : String :=
     Synset agreement is definitive identity.
     BaseName match is fallback — GF parse may pick wrong sense,
     so synset disagreement does NOT reject baseName match.
-    Council (de Paiva): "Without WSD, baseName is our best handle." -/
+ Design note: "Without WSD, baseName is our best handle." -
 def sameAs (a b : ConceptId) : Bool :=
   match a.synset?, b.synset? with
   | some s1, some s2 => s1 == s2 || a.baseName == b.baseName

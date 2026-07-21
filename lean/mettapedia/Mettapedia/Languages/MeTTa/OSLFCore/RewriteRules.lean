@@ -185,7 +185,7 @@ theorem initial_not_done_example :
 
 /-- Output rule doesn't add to workspace.
 
-    Council insights:
+ Design rationale insights:
     - Mario Carneiro: Use Multiset.mem_map to decompose membership
     - Terrence Tao: The key is Multiset.card_erase_le
     - Kevin Buzzard: Handle the if-then-else by case splitting -/

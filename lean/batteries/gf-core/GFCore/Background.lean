@@ -5,7 +5,7 @@ Loads hypernymy.json (extracted from GF WordNet taxonomy.txt).
 Provides background IsA relations that entailment rules can use
 without extracting them from parsed text.
 
-Council: Goertzel (PLN background knowledge), Geisweiller (IsA = inheritance),
+Design rationale: 
          de Paiva (ontological grounding)
 -/
 
