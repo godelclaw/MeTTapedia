@@ -3,7 +3,7 @@
 -- The reference evaluator is fuel-bounded and sorry-free.
 -- The MM2 protocol types (ReqId, MM2Fact, MM2Step) formalize the request/result/join
 -- state machine that MORK executes, including IntArithSink grounded arithmetic.
--- Council: Martin-Löf/Coquand/Pfenning (types first), Carneiro/Brown (minimal),
+-- Design rationale: 
 --   Tao/Kolmogorov (proper Value type), Buzzard/Voevodsky (no sorry).
 -- `eval` is partial (Lean can't prove termination through evalList HOF), but fully
 -- implemented — validated by #eval.
@@ -464,7 +464,7 @@ theorem filterMap_map_some (vs : List α) (f : α → β) :
 
 -- Soundness of eval: if the fueled evaluator succeeds, the semantic relation holds.
 -- Proved by functional induction using eval.induct (auto-generated for mutual WF-recursive defs).
--- Council: Carneiro/Buzzard — "use the Lean-generated induction principle, not mutual theorem syntax."
+-- Design rationale: — "use the Lean-generated induction principle, not mutual theorem syntax."
 -- GPT-5.4 Pro: "eval.induct with motive2 for evalList is the correct Lean 4.28 path."
 theorem eval_sound {rules : List EvalRule} :
     ∀ fuel node v, eval rules fuel node = some v → EvalSem rules node v := by
@@ -938,13 +938,13 @@ theorem evalMemo_preserves_memo {rules : List EvalRule} {fuel : Nat} {memo : Mem
 
 -- ── Completeness ─────────────────────────────────────────────────────────
 -- If the semantic relation holds, sufficient fuel exists for eval.
--- Council: mutual induction on EvalSem/EvalSemList directly.
+-- Design rationale: mutual induction on EvalSem/EvalSemList directly.
 -- No global monotonicity; local fuel lifting only where needed.
 
 /-- Completeness with threshold: semantic derivation gives a fuel threshold
     above which eval always succeeds. This is the RIGHT theorem shape —
     it eliminates the need for separate fuel monotonicity.
-    Council: Tao/Knuth — the obstruction was the theorem shape, not tactics.
+ Design rationale: — the obstruction was the theorem shape, not tactics.
     Meredith/Stay — the userCall threshold is the real invariant. -/
 theorem eval_complete_of_sem {rules : List EvalRule} {node : EvalNode} {v : EvalValue}
     (h : EvalSem rules node v) :
@@ -1035,7 +1035,7 @@ theorem eval_complete_of_sem {rules : List EvalRule} {node : EvalNode} {v : Eval
 -- An evaluation trace is an indexed inductive tree recording every step of
 -- CBV+memo evaluation. ALL properties (correctness, memo soundness, step count,
 -- MM2 simulation) fall out of this one structure.
--- Council: Knuth, Tao, Carneiro, Martin-Löf, Meredith, McBride, Pfenning, Voevodsky.
+-- Design rationale: ,, .
 
 -- Evaluation trace: records every step of CBV+memo evaluation.
 -- Indexed by (input_node, output_value, memo_in, memo_out).

@@ -19,7 +19,7 @@ quantifier scope ordering via monotonicity of the Galois connection.
 
 If predicate φ ⊆ ψ pointwise (scope ordering), then ◇φ ⊆ ◇ψ (modal preserves ordering).
 
-## Council
+## Design rationale
 
 - Meredith, Stay: hypercube ◇ composes with quantifier semantics via monotonicity
 - de Paiva: ◇ is a left adjoint, preserves ⊔, transports lattice inequalities

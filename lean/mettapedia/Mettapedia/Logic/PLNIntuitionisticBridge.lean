@@ -17,7 +17,7 @@ BinaryEvidence has an `Order.Frame` instance (complete Heyting algebra), which m
 a sound model for IPL. By instantiating Foundation's `HeytingSemantics` structure,
 we inherit proven soundness and can derive completeness via Lindenbaum algebras.
 
-## Council Standards
+## Design rationale Standards
 
 - **Mario Carneiro**: No axioms; leverage Foundation's proven infrastructure
 - **Kevin Buzzard**: Proper typeclass instance (`HeytingSemantics`)

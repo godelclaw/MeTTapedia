@@ -15,7 +15,7 @@ MM0 has **two-stage parsing**:
 This module defines both stages as Lean structures, exports them as
 JSON artifacts, and explicitly encodes the two-stage boundary.
 
-Council: Knuth (spec is well-defined), Carneiro (two-stage is structural),
+Design rationale: 
   Tao (primary is CF, secondary is operator-precedence),
   Pfenning (notation is well-studied), Tang (single-source in Lean).
 -/

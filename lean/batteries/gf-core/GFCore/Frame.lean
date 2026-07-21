@@ -11,7 +11,7 @@ consistent with PLN (Probabilistic Logic Networks):
   member       = part-of / membership (MemberLink)
   implication  = causal / conditional (ImplicationLink)
 
-Reference: Geisweiller's PLN atom mapping, Council session 2026-03-20
+Reference: 's PLN atom mapping, design session
 -/
 
 import GFCore.Syntax

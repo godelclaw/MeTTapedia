@@ -134,7 +134,7 @@ Both strength error and confidence gap are O(1/n):
 - Strength error: |PLN - Beta_mean| → 0 at rate O(1/n)
 - Confidence gap: 1 - c = κ/(n+κ) ≤ κ/n
 
-This gives the Emulated Math Council (Tao) the rigorous rate bounds they require.
+This gives the design review () the rigorous rate bounds they require.
 -/
 
 end Mettapedia.Logic.Convergence

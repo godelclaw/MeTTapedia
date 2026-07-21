@@ -121,7 +121,7 @@ lemma no_visits_between_consecutive' {N : ℕ}
 
 /-! ## Section 5: Visit count at midpoint after segmentSwap
 
-Council quorum (82%): Knuth+Buzzard recommend the recurrence approach:
+Design rationale: recommend the recurrence approach:
   count(a+L2) = count(a+1) = count(a) + 1 = n + 1
 using visitCountBefore_eq_of_no_visits for the first step and
 visitCountBefore_succ' for the second. -/
@@ -204,7 +204,7 @@ theorem visitCountBefore_segmentSwap_at_midpoint {N : ℕ}
 
 /-! ## Section 6: Adjacent carrier transport
 
-Council quorum (78%): The adjacent carrier transport maps carrier_n to carrier_{n+1}
+Design rationale: The adjacent carrier transport maps carrier_n to carrier_{n+1}
 via segmentSwap. The key pieces are:
 1. Visit count at midpoint = n+1 (Section 5)
 2. Swapped trajectory value at midpoint = i (boundary condition)
@@ -237,7 +237,7 @@ lemma segmentSwap_successor_at_midpoint {N : ℕ}
 The swapped trajectory lands in the (n+1) carrier when the original is in the n carrier,
 provided three consecutive visit times to i are known.
 
-Council quorum (76%): Coquand emphasizes this is type-level packaging of the mathematical
+Design rationale: emphasizes this is type-level packaging of the mathematical
 facts proved in Sections 5-6. The carrier is a Finset.filter, so membership is
 equivalent to the rowVisitCylinderEventUpTo predicate on prefixExtend. -/
 
@@ -308,7 +308,7 @@ theorem segmentSwap_evidenceOf_on_carrier {N : ℕ}
 
 /-! ## Section 9: The carrier transport theorem
 
-Council quorum (72%): We prove the theorem with visit-time existence as an
+Design rationale: We prove the theorem with visit-time existence as an
 additional hypothesis. This covers all cases needed by the limit argument in
 `measure_start_inter_rowSuccessorValueEvent_eq_of_evidencePreservingEquiv_start`,
 which quantifies over all N — for large enough N, the visits exist.
@@ -322,7 +322,7 @@ implies visit-time existence. This is deferred to a follow-up. -/
 Each trajectory xs in carrier_n has its own visit times to i. The forward map
 extracts these visit times, computes segmentSwap parameters, and applies.
 
-Council quorum (75%): Martin-Löf + Carneiro recommend the per-element
+Design rationale: recommend the per-element
 construction. The map is noncomputable (uses nthVisitTime which is classical).
 
 ARCHITECTURE NOTE for future agents:
