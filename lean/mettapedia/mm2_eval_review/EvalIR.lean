@@ -3,7 +3,7 @@
 -- The reference evaluator is fuel-bounded and sorry-free.
 -- The MM2 protocol types (ReqId, MM2Fact, MM2Step) formalize the request/result/join
 -- state machine that MORK executes, including IntArithSink grounded arithmetic.
--- Council: Martin-Löf/Coquand/Pfenning (types first), Carneiro/Brown (minimal),
+-- Design rationale: 
 --   Tao/Kolmogorov (proper Value type), Buzzard/Voevodsky (no sorry).
 -- `eval` is partial (Lean can't prove termination through evalList HOF), but fully
 -- implemented — validated by #eval.

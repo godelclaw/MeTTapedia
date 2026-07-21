@@ -683,7 +683,7 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.PathMap.toRelationEnv_query
 #check @Mettapedia.OSLF.PathMap.query_comm_bridge
 
--- XI. PathMap Council additions (Math Council review)
+-- XI. PathMap Design rationale additions (Math Design rationale review)
 -- AlgebraicResult.WellFormed — representation soundness predicate
 #check @Mettapedia.PathMap.AlgebraicResult.WellFormed
 -- WellFormed theorems for all four operations on Finset α
