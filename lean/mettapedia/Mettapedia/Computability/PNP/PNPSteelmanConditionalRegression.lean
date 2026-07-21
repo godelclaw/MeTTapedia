@@ -12,14 +12,16 @@ set_option autoImplicit false
 #check toyKernelFlip_exactNeutrality_card
 #check noThreadingLemma
 #check noThreading_neutral_sufficient_blocks_nontrivial_bit
-#check pnp_steelman_conditional
+#check pnpSteelmanFrameworkPremiseBundleAudit_exact
+#check pnp_steelman_starSW_frameworkBundle_conditional
 #check toy_pnp_steelman_conditional_nonvacuous
 
 #print axioms kernelFlip_exactNeutrality_card
 #print axioms toyKernelFlip_exactNeutrality_card
 #print axioms noThreadingLemma
 #print axioms noThreading_neutral_sufficient_blocks_nontrivial_bit
-#print axioms pnp_steelman_conditional
+#print axioms pnpSteelmanFrameworkPremiseBundleAudit_exact
+#print axioms pnp_steelman_starSW_frameworkBundle_conditional
 #print axioms toy_pnp_steelman_conditional_nonvacuous
 
 end Mettapedia.Computability.PNP

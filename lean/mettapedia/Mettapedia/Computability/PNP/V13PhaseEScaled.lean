@@ -432,7 +432,7 @@ theorem phaseEScaled_gaugeFaithfulness (m k : Nat) :
   intro gamma
   rfl
 
-theorem phaseEScaled_hiddenGaugeProduct (m k : Nat) :
+theorem phaseEScaled_gaugePredicateTotal (m k : Nat) :
     ∀ gamma omega, (phaseEScaledSemantics m k).gaugeSat gamma omega := by
   intro gamma omega
   trivial
@@ -485,7 +485,7 @@ noncomputable def phaseEScaledLockedInterface (m k : Nat) :
   gaugeIncidence := phaseEScaledGaugeIncidence
   gaugeBound := 1
   singleMessage := phaseEScaled_singleMessage m k
-  hiddenGaugeProduct := phaseEScaled_hiddenGaugeProduct m k
+  gaugePredicateTotal := phaseEScaled_gaugePredicateTotal m k
   noPublicTargetTags := phaseEScaled_noPublicTargetTags m k
   atomCompleteness := phaseEScaled_atomCompleteness m k
   gaugeFaithfulness := phaseEScaled_gaugeFaithfulness m k
@@ -527,7 +527,7 @@ theorem phaseEScaled_seven_combinatorial_obligations (m k : Nat) :
       phaseEScaled_noPublicTargetTags m k,
       phaseEScaled_atomCompleteness m k,
       phaseEScaled_gaugeFaithfulness m k,
-      phaseEScaled_hiddenGaugeProduct m k,
+      phaseEScaled_gaugePredicateTotal m k,
       phaseEScaled_boundedGaugeIncidence m k,
       phaseEScaled_admissibleHistories m k⟩
 
@@ -601,7 +601,7 @@ def phaseEScaledObligationMap : List PhaseEScaledObligationRow := [
     finding := "Gauge faithfulness remains true, but the family is invalidated by a public target tag."
   },
   {
-    fieldName := "hiddenGaugeProduct"
+    fieldName := "gaugePredicateTotal"
     status := .familyInadmissible
     theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
     finding := "The hidden-gauge product does not repair the exposed public targetLock coordinate."

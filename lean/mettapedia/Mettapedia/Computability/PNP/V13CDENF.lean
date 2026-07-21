@@ -103,7 +103,10 @@ def CDENF {Neutral : Type v} {Safe : Type w} {Gauge : Type x} :
   | .disj E F => .disj (CDENF E) (CDENF F)
   | .neg E => .neg (CDENF E)
 
-/-- First theorem: CD-ENF preserves semantics. -/
+/-- Syntactic semantics preservation: once a raw term is already built only
+from preclassified neutral/safe/gauge leaves, `CDENF` renames those leaves and
+preserves Boolean semantics.  This theorem does not expand primitives emitted
+by an actual observer execution. -/
 theorem CDENF_semantics
     {Omega : Type u} {Neutral : Type v} {Safe : Type w} {Gauge : Type x}
     (S : EvidenceSemantics Omega Neutral Safe Gauge)
@@ -161,6 +164,57 @@ theorem observerToCDENF_sat
     I.semantics.SatNormal (CDENF (I.observerToEvidence observer output)) =
       fun omega => I.evalObserver observer (I.publicInput omega) = output := by
   rw [CDENF_semantics, observerToEvidence_sat I observer output]
+
+/-! ## Faithful execution-trace expansion target -/
+
+/-- Safe leaves occurring in a normal-evidence term. -/
+def NormalEvidence.safeLeaves
+    {Neutral : Type v} {Safe : Type w} {Gauge : Type x} :
+    NormalEvidence Neutral Safe Gauge -> List Safe
+  | .N _ | .G _ | .top | .bot => []
+  | .S q => [q]
+  | .conj E F | .disj E F => E.safeLeaves ++ F.safeLeaves
+  | .neg E => E.safeLeaves
+
+/-- Gauge leaves occurring in a normal-evidence term. -/
+def NormalEvidence.gaugeLeaves
+    {Neutral : Type v} {Safe : Type w} {Gauge : Type x} :
+    NormalEvidence Neutral Safe Gauge -> List Gauge
+  | .N _ | .S _ | .top | .bot => []
+  | .G gamma => [gamma]
+  | .conj E F | .disj E F => E.gaugeLeaves ++ F.gaugeLeaves
+  | .neg E => E.gaugeLeaves
+
+/-- Open target for the work not performed by `CDENF_semantics`: every
+primitive occurrence from a real execution trace receives a sound normal
+expansion; every safe leaf carries its actual legality guard; and every
+target-relevant quotient/witness use exposes the required fresh gauge support.
+
+The target is intentionally execution-indexed.  Merely choosing a datatype
+whose constructors are already N/S/G cannot inhabit it without supplying the
+occurrence, soundness, legality, and support fields. -/
+structure V13ExecutionTracePrimitiveExpansionTarget
+    (Omega : Type u) (Trace : Type v) (Primitive : Type w)
+    (Neutral : Type x) (Safe : Type y) (Gauge : Type z)
+    (GaugeCoord : Type a) [DecidableEq GaugeCoord] where
+  semantics : EvidenceSemantics Omega Neutral Safe Gauge
+  primitiveSat : Primitive -> Omega -> Prop
+  primitiveOccurs : Trace -> Primitive -> Prop
+  expansion : Trace -> Primitive -> NormalEvidence Neutral Safe Gauge
+  safeLegalAt : Trace -> Safe -> Prop
+  gaugeSupport : Gauge -> Finset GaugeCoord
+  requiredFreshGaugeSupport : Trace -> Primitive -> Finset GaugeCoord
+  expansion_sound : forall trace primitive,
+    primitiveOccurs trace primitive ->
+      semantics.SatNormal (expansion trace primitive) = primitiveSat primitive
+  every_safe_leaf_is_legal : forall trace primitive,
+    primitiveOccurs trace primitive ->
+      forall q, q ∈ (expansion trace primitive).safeLeaves -> safeLegalAt trace q
+  fresh_gauge_support_exposed : forall trace primitive,
+    primitiveOccurs trace primitive ->
+      forall coord, coord ∈ requiredFreshGaugeSupport trace primitive ->
+        exists gamma, gamma ∈ (expansion trace primitive).gaugeLeaves ∧
+          coord ∈ gaugeSupport gamma
 
 /-! ## Toy semantics -/
 

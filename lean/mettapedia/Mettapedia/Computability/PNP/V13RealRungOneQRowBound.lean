@@ -1155,6 +1155,23 @@ theorem v13RealLinearRowTracePrefixRows_card_le {m : Nat}
       rw [List.length_take]
       exact Nat.min_le_left n trace.length
 
+theorem v13RealLinearRowTracePrefixRows_take_eq {m : Nat}
+    (trace : V13RealLinearRowTrace m) {n k : Nat} (hk : k ≤ n) :
+    v13RealLinearRowTracePrefixRows (trace.take n) k =
+      v13RealLinearRowTracePrefixRows trace k := by
+  simp [v13RealLinearRowTracePrefixRows, List.take_take,
+    Nat.min_eq_left hk]
+
+theorem v13RealLinearRowTracePrefixRows_take_length_eq {m : Nat}
+    (trace : V13RealLinearRowTrace m) {n : Nat}
+    (hn : n ≤ trace.length) :
+    v13RealLinearRowTracePrefixRows (trace.take n) (trace.take n).length =
+      v13RealLinearRowTracePrefixRows trace n := by
+  have hlen : (trace.take n).length = n := by
+    rw [List.length_take, Nat.min_eq_left hn]
+  rw [hlen]
+  exact v13RealLinearRowTracePrefixRows_take_eq trace le_rfl
+
 theorem v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (publicInput : V13RealLinearPublic m) {n : Nat} (hn : n ≤ q) :
@@ -2662,6 +2679,43 @@ theorem
     exact Submodule.add_mem _ hrowSpan hz
 
 theorem
+    v13RealLinear_rowFunctionalTargetCosetHit_of_rowsGenerateTarget_of_mem
+    {m : Nat} (A : V13F2LinearEquiv m) {rows : Finset (Fin m)}
+    (i₀ row : Fin m) (hrow : row ∈ rows)
+    (hgen : V13RealLinearRowsGenerateTarget A rows i₀) :
+    V13RealLinearRowFunctionalTargetCosetHit A rows i₀ row := by
+  classical
+  have htargetSpan :
+      v13RealLinearTargetFunctional i₀ ∈
+        V13RealLinearRowsFunctionalSpan A rows :=
+    (v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+      A rows i₀).1 hgen
+  have hrowSpan :
+      v13RealLinearRowFunctional A row ∈
+        V13RealLinearRowsFunctionalSpan A rows := by
+    unfold V13RealLinearRowsFunctionalSpan
+    exact Submodule.subset_span ⟨⟨row, hrow⟩, rfl⟩
+  refine
+    ⟨v13RealLinearRowFunctional A row + v13RealLinearTargetFunctional i₀,
+      Submodule.add_mem _ hrowSpan htargetSpan, ?_⟩
+  apply LinearMap.ext
+  intro w
+  simp only [LinearMap.add_apply]
+  symm
+  calc
+    v13RealLinearRowFunctional A row w +
+        (v13RealLinearRowFunctional A row w +
+          v13RealLinearTargetFunctional i₀ w) =
+      (v13RealLinearRowFunctional A row w +
+          v13RealLinearRowFunctional A row w) +
+        v13RealLinearTargetFunctional i₀ w := by
+        rw [add_assoc]
+    _ = 0 + v13RealLinearTargetFunctional i₀ w := by
+        rw [f2_add_self]
+    _ = v13RealLinearTargetFunctional i₀ w := by
+        rw [zero_add]
+
+theorem
     v13RealLinear_rowsGenerateTarget_insert_of_rowFunctionalTargetCosetHit
     {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
     (i₀ row : Fin m)
@@ -2749,6 +2803,116 @@ theorem v13RealLinearRowTraceCosetHit_of_newCapture {m : Nat}
   · exact hcapture.1
   · simpa [v13RealLinearRowTracePrefixRows_succ trace h] using hcapture.2
 
+theorem v13RealLinearRowTraceNewCapture_of_fresh_cosetHit {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A
+        (v13RealLinearRowTracePrefixRows trace t) i₀
+        (trace.get ⟨t, h⟩))
+    (hfresh :
+      trace.get ⟨t, h⟩ ∉ v13RealLinearRowTracePrefixRows trace t) :
+    V13RealLinearRowTraceNewCapture A i₀ trace t := by
+  constructor
+  · exact
+      v13RealLinear_not_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_not_mem
+        A i₀ (trace.get ⟨t, h⟩) hfresh hhit
+  · rw [v13RealLinearRowTracePrefixRows_succ trace h]
+    exact
+      v13RealLinear_rowsGenerateTarget_insert_of_rowFunctionalTargetCosetHit
+        A (v13RealLinearRowTracePrefixRows trace t) i₀
+        (trace.get ⟨t, h⟩) hhit
+
+theorem v13RealLinearRowTracePrefixRowsGenerateTarget_of_existing_cosetHit
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A
+        (v13RealLinearRowTracePrefixRows trace t) i₀
+        (trace.get ⟨t, h⟩))
+    (hexisting :
+      trace.get ⟨t, h⟩ ∈ v13RealLinearRowTracePrefixRows trace t) :
+    V13RealLinearRowsGenerateTarget A
+      (v13RealLinearRowTracePrefixRows trace t) i₀ :=
+  v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+    A i₀ (trace.get ⟨t, h⟩) hexisting hhit
+
+theorem v13RealLinearRowTraceCosetHit_newCapture_or_prefixRowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (hcoset : V13RealLinearRowTraceCosetHit A i₀ trace t) :
+    V13RealLinearRowTraceNewCapture A i₀ trace t ∨
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearRowTracePrefixRows trace t) i₀ := by
+  rcases hcoset with ⟨h, hhit⟩
+  by_cases hmem :
+      trace.get ⟨t, h⟩ ∈ v13RealLinearRowTracePrefixRows trace t
+  · right
+    exact
+      v13RealLinearRowTracePrefixRowsGenerateTarget_of_existing_cosetHit
+        A i₀ trace h hhit hmem
+  · left
+    exact
+      v13RealLinearRowTraceNewCapture_of_fresh_cosetHit
+        A i₀ trace h hhit hmem
+
+theorem v13RealLinearRowTraceNewCapture_exists_lt_of_prefixRowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (ht : t ≤ trace.length)
+    (hgen :
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearRowTracePrefixRows trace t) i₀) :
+    ∃ s : Fin t, V13RealLinearRowTraceNewCapture A i₀ trace s := by
+  classical
+  have hfinal :
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearRowTracePrefixRows (trace.take t)
+          (trace.take t).length) i₀ := by
+    rw [v13RealLinearRowTracePrefixRows_take_length_eq trace ht]
+    exact hgen
+  rcases
+      v13RealLinearRowTraceNewCaptureCover A i₀ (trace.take t) hfinal with
+    ⟨s, hs⟩
+  have htakeLen : (trace.take t).length = t := by
+    rw [List.length_take, Nat.min_eq_left ht]
+  have hsLtT : (s : Nat) < t := by
+    simpa [htakeLen] using s.isLt
+  refine ⟨⟨s, hsLtT⟩, ?_⟩
+  have hsLe : (s : Nat) ≤ t := le_of_lt hsLtT
+  have hsSuccLe : (s : Nat) + 1 ≤ t := Nat.succ_le_of_lt hsLtT
+  constructor
+  · intro hprefix
+    exact hs.1
+      (by
+        simpa [v13RealLinearRowTracePrefixRows_take_eq trace hsLe]
+          using hprefix)
+  · have hsucc := hs.2
+    simpa [v13RealLinearRowTracePrefixRows_take_eq trace hsSuccLe]
+      using hsucc
+
+theorem v13RealLinearRowTraceCosetHit_newCapture_or_priorNewCapture
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (hcoset : V13RealLinearRowTraceCosetHit A i₀ trace t) :
+    V13RealLinearRowTraceNewCapture A i₀ trace t ∨
+      ∃ s : Fin t, V13RealLinearRowTraceNewCapture A i₀ trace s := by
+  rcases hcoset with ⟨h, hhit⟩
+  have hsplit :
+      V13RealLinearRowTraceNewCapture A i₀ trace t ∨
+        V13RealLinearRowsGenerateTarget A
+          (v13RealLinearRowTracePrefixRows trace t) i₀ := by
+    exact
+      v13RealLinearRowTraceCosetHit_newCapture_or_prefixRowsGenerateTarget
+        A i₀ trace ⟨h, hhit⟩
+  cases hsplit with
+  | inl hnew => exact Or.inl hnew
+  | inr hgen =>
+      exact
+        Or.inr
+          (v13RealLinearRowTraceNewCapture_exists_lt_of_prefixRowsGenerateTarget
+            A i₀ trace (Nat.le_of_lt h) hgen)
+
 theorem v13RealLinearRowTraceNewCapture_get_not_mem {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
     (trace : V13RealLinearRowTrace m) {t : Nat}
@@ -2764,6 +2928,31 @@ theorem v13RealLinearRowTraceNewCapture_get_not_mem {m : Nat}
     rw [v13RealLinearRowTracePrefixRows_succ trace h]
     exact Finset.insert_eq_of_mem hmem
   simpa [hprefixSucc] using hcapture.2
+
+theorem v13RealLinearRowTraceCosetHit_get_not_mem_of_noPrior {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (hprior :
+      ∀ s : Fin t, ¬ V13RealLinearRowTraceCosetHit A i₀ trace s)
+    (hhit : V13RealLinearRowTraceCosetHit A i₀ trace t)
+    (h : t < trace.length) :
+    trace.get ⟨t, h⟩ ∉
+      v13RealLinearRowTracePrefixRows trace t := by
+  intro hmem
+  have hsplit :=
+    v13RealLinearRowTraceCosetHit_newCapture_or_priorNewCapture
+      A i₀ trace hhit
+  cases hsplit with
+  | inl hnew =>
+      exact
+        (v13RealLinearRowTraceNewCapture_get_not_mem
+          A i₀ trace h hnew) hmem
+  | inr hpriorNew =>
+      rcases hpriorNew with ⟨s, hsnew⟩
+      exact
+        hprior s
+          (v13RealLinearRowTraceCosetHit_of_newCapture
+            A i₀ trace (lt_trans s.isLt h) hsnew)
 
 theorem
     v13RealLinearFunctionalTableTargetCosetHit_of_rowTraceNewCapture

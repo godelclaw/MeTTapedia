@@ -1,0 +1,9 @@
+import Mettapedia.Computability.PNP.PNPv13D8GlobalRecoveryBoundary
+
+namespace Mettapedia.Computability.PNP
+
+#check AppendixDLockedCore.not_fullPublicSyntaxReadoutHiding_of_D7_D8
+
+#print axioms AppendixDLockedCore.not_fullPublicSyntaxReadoutHiding_of_D7_D8
+
+end Mettapedia.Computability.PNP

@@ -879,6 +879,25 @@ eight-field trace quotient cannot replace the joint dimension-sixteen
 physical quotient without the incoming commutator block
 (\texttt{HypercubicDimension16CovariantCompressionWall}).
 
+\paragraph{Our joint invariant quotient is fixed before rank computation.}
+\textsc{Ours.} Let $V$ be the genuine simultaneous-field-relabel orbit
+module, $I=V^{H(4)}$ its signed hypercubic fixed submodule, and $R_p\subset V$
+the range of the joint physical-relation operator under policy $p$.  We define
+the invariant relation submodule canonically as
+\[
+ J_p=\iota^{-1}(R_p)\subset I,
+\]
+where $\iota:I\hookrightarrow V$ is the inclusion, and define the scalar
+physical quotient to be $I/J_p$.  Membership in $J_p$ is therefore exactly
+membership of the underlying invariant vector in the full relation range;
+the structural definition materializes neither a Reynolds matrix nor a dense
+relation matrix.  The off-shell generator space embeds in the on-shell one
+without adding an off-shell EOM row, so $J_{\mathrm{off}}\subseteq
+J_{\mathrm{on}}$ and the on-shell quotient dimension is no larger.  This
+fixes the honest coordinate-free target for sparse certificates; it does not
+infer either quotient dimension or conditioning
+(\texttt{HypercubicDimension16JointPhysicalQuotient}).
+
 \paragraph{Our $\mathrm{SU}(2)$ trace rows include genuine multitrace
 rewiring.}
 \textsc{Ours.} For traceless $2\times2$ matrices the polarized
@@ -1637,7 +1656,17 @@ claim that the manuscript already contains the needed census.
     dual conditioning.  This does not close the joint physical quotient: a
     certified seven-field commutator column has a nonzero eight-field
     successor component and nonzero Reynolds image, so the field sectors
-    cannot be quotiented independently.  The remaining finite problem is the
+    cannot be quotiented independently.  Our independent Cartan--Maxwell
+    Hilbert-series socket is now formalized as a bounded fourteen-class
+    character evaluator: its periodic $H(4)$ power traces agree with the
+    literal signed-group data through degree $16$, its single-particle
+    resolutions distinguish Bianchi-only and on-shell Maxwell policies, and
+    its cached integer recurrence carries an exact-divisibility ledger for
+    Newton, plethystic, Weyl, and hypercubic averaging.  No coefficient row or
+    physical-quotient dimension is claimed from this evaluator here; a
+    bounded certificate replay and a proof that Cartan specialization
+    descends through the full joint relation quotient are still absent.  The
+    remaining finite problem is the
     joint rank and conditioning after Bianchi, EOM, IBP, commutator, and trace
     rows are assembled across all sectors.  The
     quantitative restoration theorem is restricted to bounded constant
@@ -1813,7 +1842,10 @@ physical-relation operator with invariant range), and
 source/successor field-sector support and its descent through both quotient
 maps), and \texttt{HypercubicDimension16CovariantCompressionWall} (the
 explicit nonzero seven-to-eight commutator block and the resulting
-field-count block-diagonal obstruction),
+field-count block-diagonal obstruction), together with
+\texttt{HypercubicDimension16JointPhysicalQuotient} (the canonical joint
+invariant relation preimage, coordinate-free scalar quotient, and exact
+off-shell/on-shell inclusion),
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),

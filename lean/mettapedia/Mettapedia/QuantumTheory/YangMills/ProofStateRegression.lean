@@ -15,6 +15,15 @@ namespace QuantumTheory
 namespace YangMills
 namespace ProofStateRegression
 
+open V14FDQuotientTransferNoGo
+open V14BoundaryCochainComplex
+open V14BoundaryCochainExtraction
+open V14BoundaryCochainBootstrap
+open SU2LatticeFDCensusNoGo
+open V14HypercubicQuarticCensus
+open V14HypercubicQuarticWilsonBridge
+open V14HypercubicFDCensusPaddingNoGo
+
 theorem constructive_qft_node_constructive_gate_uncleared_regression :
     yangMillsConstructiveQFTNode.status = .constructiveGateUncleared :=
   yangMillsConstructiveQFTNode_constructiveGateUncleared
@@ -23,9 +32,69 @@ theorem same_constant_lower_even_extraction_node_refuted_regression :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted :=
   yangMillsSameConstantLowerEvenExtractionNode_refuted
 
-theorem extraction_constant_erratum_node_checked_regression :
-    yangMillsExtractionConstantErratumNode.status = .checked :=
-  yangMillsExtractionConstantErratumNode_checked
+theorem extraction_constant_erratum_node_refuted_regression :
+    yangMillsExtractionConstantErratumNode.status = .refuted :=
+  yangMillsExtractionConstantErratumNode_refuted
+
+theorem postponed_ibp_repair_node_checked_regression :
+    yangMillsPostponedIBPRepairNode.status = .checked :=
+  yangMillsPostponedIBPRepairNode_checked
+
+theorem dimension_sixteen_o9_wilson_census_node_refuted_regression :
+    yangMillsDimension16O9WilsonCensusNode.status = .refuted :=
+  yangMillsDimension16O9WilsonCensusNode_refuted
+
+theorem hypercubic_quartic_census_node_checked_regression :
+    yangMillsHypercubicQuarticCensusNode.status = .checked :=
+  yangMillsHypercubicQuarticCensusNode_checked
+
+theorem hypercubic_dimension_sixteen_padded_census_node_refuted_regression :
+    yangMillsHypercubicDimension16PaddedCensusNode.status = .refuted :=
+  yangMillsHypercubicDimension16PaddedCensusNode_refuted
+
+theorem hypercubic_quartic_basis_packet_regression :
+    (∀ coordinate : Fin 4,
+      IsHypercubicQuarticCoefficient (quarticOrbitBasis coordinate)) ∧
+    (fun dualCoordinate basisCoordinate : Fin 4 =>
+      quarticDual dualCoordinate (quarticOrbitBasis basisCoordinate)) =
+      fun dualCoordinate basisCoordinate =>
+        if basisCoordinate = dualCoordinate then 1 else 0 := by
+  exact ⟨quarticOrbitBasis_invariant,
+    quartic_conditioning_matrix_identity⟩
+
+theorem hypercubic_quartic_wilson_artifact_packet_regression :
+    IsHypercubicQuarticCoefficient wilsonQuarticCensusCoefficient ∧
+    (∀ coordinate : Fin 4,
+      quarticDual coordinate wilsonQuarticCensusCoefficient =
+        if coordinate = 0 then 6 else 0) ∧
+    (∀ F : SU2LatticeFDCensusNoGo.CartanCurvature,
+      iteratedDeriv 4
+          (fun t : ℝ =>
+            SU2LatticeFDCensusNoGo.su2HypercubicQuarticWilsonObservable
+              (SU2LatticeFDCensusNoGo.cartanLinkChart t F)) 0 =
+        pureFourthOrbitPolynomial 6 F) ∧
+    o4InvariantQuarticSubspace < ⊤ ∧
+    o4InvariantQuarticSubspace.mkQ
+      SU2LatticeFDCensusNoGo.hypercubicQuarticJet ≠ 0 :=
+  quarticWilson_hypercubicArtifact_packet
+
+theorem hypercubic_dimension_sixteen_padding_no_go_regression :
+    ¬ ∃ (Coordinate : Type) (_ : Fintype Coordinate)
+        (_ : DecidableEq Coordinate)
+        (certificate : V14HypercubicFDCensus.ExactCensusCertificate Coordinate),
+      ∀ coordinate : Coordinate,
+        IsPaddingInvariant (fun monomial =>
+          certificate.basisToRaw monomial coordinate) :=
+  faithful_dimension16_exactCensus_uninhabited
+
+theorem dimension_sixteen_o9_wilson_census_terminal_regression
+    (Operator : Type*) [Fintype Operator] :
+    (¬ Nonempty (FaithfulDimension16WilsonCoordinateCertificate
+      .o9OffShell Operator)) ∧
+    (¬ Nonempty (FaithfulDimension16WilsonCoordinateCertificate
+      .f43OnShell Operator)) :=
+  ⟨no_faithfulDimension16WilsonCoordinateCertificate_offShell Operator,
+    no_faithfulDimension16WilsonCoordinateCertificate_onShell Operator⟩
 
 theorem continuum_os_conditional_scaffold_node_checked_regression :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked :=
@@ -48,13 +117,53 @@ theorem current_rg_crux_lower_even_extraction_arithmetic_packet_regression :
       ¬ HasExtendedExtractionContraction 2224 2 14 := by
   exact currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet
 
-theorem current_extraction_constant_erratum_packet_regression :
-    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
-      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
-      HasExtendedExtractionContraction 2224 2 16 := by
-  exact currentYangMillsExtractionConstantErratum_packet
+theorem current_extraction_constant_adjudication_packet_regression :
+    ¬ V14LiteralExtractionRecombinationClaims ∧
+      f5DisplayedConstantAtBlockTwo = 33152 ∧
+      proposedMajorantLedgerConstant = (5544 : ℝ) / 5 ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) := by
+  exact currentYangMillsExtractionConstantAdjudication_packet
+
+theorem current_dimension_sixteen_coordinate_certificate_packet_regression :
+    (¬ V14Dimension16SourceCertificateComplete) ∧
+      v14F4RelationPolicy ≠ v14O9RelationPolicy ∧
+      (¬ V14LiteralDimension16ExtractionBound) ∧
+      v14Dimension16CertificateStatus .extractionConstant = .notDerived ∧
+      v14Dimension16CertificateStatus .wilsonRecursionConstant = .notDerived :=
+  currentYangMillsDimension16CoordinateCertificate_packet
+
+/--
+info: 'Mettapedia.QuantumTheory.YangMills.currentYangMillsDimension16CoordinateCertificate_packet' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms currentYangMillsDimension16CoordinateCertificate_packet
+
+theorem current_fd_quotient_transfer_no_go_packet_regression :
+    (¬ AssociatedRadialImplementsCanonicalCutoff) ∧
+      (¬ IndependentRadialImplementsCanonicalCutoff) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .offShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .offShell)) :=
+  currentYangMillsFDQuotientTransferNoGo_packet
+
+#print axioms currentYangMillsFDQuotientTransferNoGo_packet
+
+theorem current_postponed_ibp_repair_packet_regression :
+    (LinearMap.range
+        (sharedBoundaryCoboundaryLinear ActionLaplacianCensus)).mkQ
+      assembledActionLaplacianBulk = 0 ∧
+    RepairedBoundaryCochainExtractionCertificate ∧
+    repairedBoundaryCochainRecursionBudget = (5544 : ℝ) / 5 ∧
+    HasTwoSourceBootstrapSlack
+      repairedBoundaryCochainRecursionBudget 2 15 :=
+  currentYangMillsPostponedIBPRepair_packet
+
+#print axioms currentYangMillsPostponedIBPRepair_packet
 
 theorem current_extraction_constant_hypothetical_threshold_packet_regression :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
@@ -70,7 +179,7 @@ theorem current_continuum_os_conditional_packet_regression
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
     (D : BenYMContinuumOSConditional A Δ corr) :
-    BenStandingExtendedExtractionContraction ∧
+    HasTwoSourceBootstrapSlack D.lambdaBridge.Ctrue 2 16 ∧
       HasSpectralMassGap A Δ ∧
         0 < Δ ∧
           currentYangMillsConstructiveWorldInterfaces.missingFor
