@@ -8,7 +8,7 @@ Formalizes the core theorem of Thórisson & Talevi (AGI 2024):
    Meaning generation without autonomy is meaningless;
    autonomy without meaning is impossible."
 
-## Council Quorum
+## Design rationale Quorum
 
 **Decision: Define autonomy as a property of agents, not a separate type.**
 - Martin-Löf: Autonomy is a judgment about an agent's capacity, not a thing. ✓

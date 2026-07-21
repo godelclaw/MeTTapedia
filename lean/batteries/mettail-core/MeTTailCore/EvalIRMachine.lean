@@ -6,7 +6,7 @@
 -- Scoping: this is a fib-scoped PoC validating the inflight/waiter/memo/driver pattern
 -- on integer-arg calls. Generic CBV arg-evaluation and join frames come later.
 --
--- Council: Martin-Löf/Coquand (machine as inductive relation),
+-- Design rationale: 
 --   Meredith/Stay (1:1 with MM2 facts), Carneiro (reuse EvalIR types),
 --   Knuth/Tao (fib-scoped, don't over-generalize).
 

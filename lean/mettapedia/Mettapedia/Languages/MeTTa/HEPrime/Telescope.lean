@@ -17,7 +17,7 @@ elaborated as dependent binders. The variable `$x` is bound to the concrete argu
 upon successful type matching, and subsequent domains and the codomain may depend on
 values bound by earlier domains.
 
-## Design Principles (Council quorum 91%)
+## Design Principles (Design rationale 91%)
 
 1. **Extension, not replacement.** HE′ is an opt-in layer. Standard HE behavior
    (`he_compat`, `he_extended`) is preserved exactly.
