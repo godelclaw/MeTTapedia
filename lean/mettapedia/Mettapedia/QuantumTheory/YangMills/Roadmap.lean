@@ -17,12 +17,21 @@ namespace Mettapedia
 namespace QuantumTheory
 namespace YangMills
 
+open V14FDQuotientTransferNoGo
+open V14BoundaryCochainBootstrap
+open SU2LatticeFDCensusNoGo
+open V14HypercubicQuarticCensus
+open V14HypercubicQuarticWilsonBridge
+open V14HypercubicFDCensusPaddingNoGo
+
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
   | finiteLatticeStrongCouplingGap
   | continuumScalingDiagnostic
   | extractionConstantErratum
+  | hypercubicCensusDecision
   | continuumOSReconstructionConditional
+  | fiveInputCompletionSteelman
   | continuumMassGapEndpoint
 deriving DecidableEq, Repr
 
@@ -87,18 +96,33 @@ def z3HalfScaleLinearRGStepRoadmapEntry : YangMillsRoadmapEntry where
   evidence := "z3HalfScaleLinearRGStep_preserves_physicalGap proves a concrete kappa=1/2 refinement step preserving t(a)/a, while z3QuadraticHeatTime_physicalGap_closes records the schedule boundary."
   nextObligation := "Classify the full refinement schedules that preserve or close the physical lower bound; this is a scaling diagnostic, not a continuum mass-gap theorem."
 
-/-- Erratum for the extraction constant: the corrected Cauchy estimate keeps
-the advertised extended-extraction contraction standing. -/
+/-- Completed adjudication of the proposed extraction/recombination constant:
+the v14 as-written component package is refuted, while a concrete norm-one
+Wilson majorant realization and its conditional depth arithmetic are checked. -/
 def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   stage := .extractionConstantErratum
   nodeId := yangMillsExtractionConstantErratumNode.id
-  status := .checked
-  truthValue := ⟨100, 98⟩
-  itvLowerPercent := 98
-  itvUpperPercent := 100
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  itvLowerPercent := 0
+  itvUpperPercent := 1
   progressPercent := 100
-  evidence := "currentYangMillsExtractionConstantErratum_packet records that the corrected Cauchy estimate gives C1 <= 2224 and a b=2,dmax=16 gain 693/2560 < 1, so HasExtendedExtractionContraction holds. The old displayed-series contraction failure is retracted as an inverted-ratio erratum, not a Yang-Mills refutation."
-  nextObligation := "Treat the extended-extraction contraction as standing route evidence, and keep the continuum mass-gap endpoint gated by constructive-QFT obligations."
+  evidence := "currentYangMillsFDQuotientTransferNoGo_packet refutes the v14 ordinary block-functional socket, and currentYangMillsPostponedIBPRepair_packet constructs the replacement's algebraic core. YM MOVE 7 decisively refutes the requested completion: on an exact SU(2) Cartan link chart, a canonical-dimension-eight Wilson observable has a hypercubic quartic jet outside every finite O.9 Lorentz-scalar span, for both relation policies and every enumerated same-target variant."
+  nextObligation := "The unpadded quartic H(4) basis is checked, but the padded dimension-sixteen carrier is refuted. Replace it with faithful unpadded syntax or a padding quotient, or prove a quantitative continuum/Symanzik projection; then re-prove all conditioning and analytic/RG estimates on that same object."
+
+/-- Decision of the first hypercubic-census construction attempt: a complete
+quartic basis exists, while the fixed-width dimension-sixteen carrier cannot
+support a faithful invertible census. -/
+def yangMillsHypercubicCensusDecisionRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .hypercubicCensusDecision
+  nodeId := yangMillsHypercubicDimension16PaddedCensusNode.id
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  itvLowerPercent := 0
+  itvUpperPercent := 1
+  progressPercent := 100
+  evidence := "The unpadded dimension-eight quartic carrier has four certified H(4)-covariant basis functions and identity conditioning. Its actual Wilson coordinate vector is (6,0,0,0), and the pure-fourth polynomial is a nonzero class modulo the proper O(4)-invariant subspace. For the full fixed-width carrier, faithful_dimension16_exactCensus_uninhabited proves that active-syntax fidelity is incompatible with the ExactCensusCertificate right inverse because inactive padding creates distinct duplicate encodings."
+  nextObligation := "Construct a finite unpadded/dependent F,D syntax (or a checked padding quotient), prove the H(4) action and relation rows descend, and only then rerun the signed-orbit census and exact conditioning through dimension sixteen."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -110,8 +134,21 @@ def yangMillsContinuumOSConditionalRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 96
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional OS/Kirk endpoint: standing Lambda<1 contraction plus an explicit bridge to lattice gap/clustering, OS reflection positivity, and the carried OS reconstruction machine imply HasSpectralMassGap for the continuum Hamiltonian."
-  nextObligation := "Do not treat the conditional as a mass-gap theorem until Ben's Lambda<1-to-clustering bridge, Wilson-measure reflection positivity, and OS reconstruction/subsequential-limit inputs are supplied."
+  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional OS/Kirk endpoint from a carried actual-Wilson two-source contraction, its bridge to lattice gap/clustering, OS reflection positivity, and the OS reconstruction machine."
+  nextObligation := "Do not treat the conditional as a mass-gap theorem until the actual Wilson constant, contraction-to-clustering bridge, Wilson-measure reflection positivity, and OS reconstruction/subsequential-limit inputs are supplied."
+
+/-- Five-input completion steelman after adjudicating the constant and auditing
+the July blueprint. -/
+def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .fiveInputCompletionSteelman
+  nodeId := yangMillsCompletionSteelmanNode.id
+  status := .checked
+  truthValue := ⟨100, 94⟩
+  itvLowerPercent := 94
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "currentYangMillsCompletionSteelman_packet records the refuted as-written constant, the audited blueprint, the norm-one Wilson realization, and the remaining support, two-marked, KP/RP, and actual Wilson RG obligations."
+  nextObligation := "Repair the refuted padded dimension-sixteen H(4) carrier or prove a continuum/Symanzik projection. Derive the actual Wilson constant on that replacement, then instantiate support, two-marked, KP, and reflection-positivity inputs."
 
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
@@ -132,7 +169,9 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z2QuadraticHeatTimeGapClosingRoadmapEntry
   , z3HalfScaleLinearRGStepRoadmapEntry
   , yangMillsExtractionConstantErratumRoadmapEntry
+  , yangMillsHypercubicCensusDecisionRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
+  , yangMillsCompletionSteelmanRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
   ]
 
@@ -194,29 +233,58 @@ theorem currentYangMillsRoadmap_records_z3_half_scale_rg_step :
         exact z3HalfScaleLinearRGStep_preserves_physicalGap (a := a) (κ := κ) ha,
       z3QuadraticHeatTime_physicalGap_closes⟩
 
-theorem currentYangMillsRoadmap_records_extraction_constant_erratum :
+theorem currentYangMillsRoadmap_records_extraction_constant_adjudication :
     ∃ entry : YangMillsRoadmapEntry,
       entry.nodeId = yangMillsExtractionConstantErratumNode.id ∧
-        entry.status = .checked ∧
+        entry.status = .refuted ∧
         entry.progressPercent = 100 ∧
-        HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
-        HasExtendedExtractionContraction 2224 2 16 ∧
-        benCauchyC1UpperBound * irrelevantScale 2 16 < 1 := by
+        ¬ V14Dimension16SourceCertificateComplete ∧
+        ¬ AssociatedRadialImplementsCanonicalCutoff ∧
+        ¬ IndependentRadialImplementsCanonicalCutoff ∧
+        ¬ V14LiteralExtractionRecombinationClaims ∧
+        (∀ (Operator : Type) [Fintype Operator],
+          ¬ Nonempty (FaithfulDimension16WilsonCoordinateCertificate
+            .o9OffShell Operator)) ∧
+        f5DisplayedConstantAtBlockTwo = 33152 ∧
+        proposedMajorantLedgerConstant = (5544 : ℝ) / 5 := by
   refine ⟨yangMillsExtractionConstantErratumRoadmapEntry, ?_⟩
   exact
     ⟨rfl,
       rfl,
       rfl,
-      benCauchyC1UpperBound_contraction_two_sixteen,
-      rgContraction_2224_two_sixteen,
-      benCauchyC1UpperBound_gain_two_sixteen_lt_one⟩
+      not_v14Dimension16SourceCertificateComplete,
+      not_associatedRadialImplementsCanonicalCutoff,
+      not_independentRadialImplementsCanonicalCutoff,
+      not_v14LiteralExtractionRecombinationClaims,
+      no_faithfulDimension16WilsonCoordinateCertificate_offShell,
+      f5DisplayedConstantAtBlockTwo_eq,
+      proposedMajorantLedgerConstant_eq⟩
+
+theorem currentYangMillsRoadmap_records_hypercubic_census_decision :
+    yangMillsHypercubicCensusDecisionRoadmapEntry.status = .refuted ∧
+      yangMillsHypercubicCensusDecisionRoadmapEntry.progressPercent = 100 ∧
+      (∀ coordinate : Fin 4,
+        IsHypercubicQuarticCoefficient (quarticOrbitBasis coordinate)) ∧
+      o4InvariantQuarticSubspace < ⊤ ∧
+      o4InvariantQuarticSubspace.mkQ hypercubicQuarticJet ≠ 0 ∧
+      (¬ ∃ (Coordinate : Type) (_ : Fintype Coordinate)
+          (_ : DecidableEq Coordinate)
+          (certificate : V14HypercubicFDCensus.ExactCensusCertificate Coordinate),
+        ∀ coordinate : Coordinate,
+          IsPaddingInvariant (fun monomial =>
+            certificate.basisToRaw monomial coordinate)) := by
+  exact ⟨rfl, rfl, quarticOrbitBasis_invariant,
+    o4InvariantQuarticSubspace_strict,
+    pureFourthArtifactClass_nonzero,
+    faithful_dimension16_exactCensus_uninhabited⟩
 
 theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ∃ entry : YangMillsRoadmapEntry,
-      entry.nodeId = yangMillsContinuumOSConditionalScaffoldNode.id ∧
+        entry.nodeId = yangMillsContinuumOSConditionalScaffoldNode.id ∧
         entry.status = .checked ∧
         entry.progressPercent = 100 ∧
-        BenStandingExtendedExtractionContraction ∧
+        "Actual Wilson RG constant and two-source contraction at depth 16" ∈
+          benContinuumEndpointOpenInputs ∧
         preprints2025041268Verdict = .notRouteBlocking ∧
         yangMillsMassGapEndpointNode.status = .openGoal := by
   refine ⟨yangMillsContinuumOSConditionalRoadmapEntry, ?_⟩
@@ -224,9 +292,30 @@ theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ⟨rfl,
       rfl,
       rfl,
-      benStandingExtendedExtractionContraction_checked,
+      by simp [benContinuumEndpointOpenInputs],
       preprints2025041268Verdict_notRouteBlocking,
       yangMillsMassGapEndpointNode_open⟩
+
+theorem currentYangMillsRoadmap_records_completion_steelman :
+    ∃ entry : YangMillsRoadmapEntry,
+      entry.nodeId = yangMillsCompletionSteelmanNode.id ∧
+        entry.status = .checked ∧
+        entry.progressPercent = 100 ∧
+        recombinationConstantSteelmanRow.verdict = .refutedOrInconsistent ∧
+        supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
+        twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
+        kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
+        realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption := by
+  refine ⟨yangMillsCompletionSteelmanRoadmapEntry, ?_⟩
+  exact
+    ⟨rfl,
+      rfl,
+      rfl,
+      recombinationConstantSteelman_refutedOrInconsistent,
+      supportRecurrenceSteelman_reduced,
+      twoMarkedIdentitySteelman_reduced,
+      kpWilsonSteelman_reduced,
+      realRGRecursionSteelman_reduced⟩
 
 theorem currentYangMillsRoadmap_keeps_continuum_endpoint_open :
     yangMillsContinuumMassGapEndpointRoadmapEntry.status = .openGoal ∧

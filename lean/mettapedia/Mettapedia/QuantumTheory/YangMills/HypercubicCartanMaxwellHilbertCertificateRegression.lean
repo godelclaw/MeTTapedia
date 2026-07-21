@@ -1,0 +1,25 @@
+import Mettapedia.QuantumTheory.YangMills.HypercubicCartanMaxwellHilbertCertificate
+
+/-!
+# Regression checks for the bounded Cartan--Maxwell Hilbert evaluator
+-/
+
+namespace Mettapedia
+namespace QuantumTheory
+namespace YangMills
+namespace HypercubicCartanMaxwellHilbertCertificateRegression
+
+open HypercubicCartanMaxwellHilbertCertificate
+
+#check periodicPowerTraceInt_agrees_through_sixteen
+#check classOrientationInt_agrees
+#check cartanHilbertSeries
+#check cartanHilbertSeriesInt
+
+#print axioms periodicPowerTraceInt_agrees_through_sixteen
+#print axioms classOrientationInt_agrees
+
+end HypercubicCartanMaxwellHilbertCertificateRegression
+end YangMills
+end QuantumTheory
+end Mettapedia

@@ -1,0 +1,29 @@
+import Mettapedia.Computability.PNP.V13InterfaceBattery
+
+/-!
+# Regression checks for the v13 interface-consistency battery
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check normalEvidence_onlyNeutral_or_hasCharged
+#check CDENF_onlyNeutral_or_hasCharged
+#check public_read_cdenf_normalizes_neutral_or_charged
+#check v13RawEvidence_has_no_opaque_run_atom
+#check v13_interfaceConsistencyBattery
+#check v13InterfaceBatteryCitations_length
+#check v13InterfaceEnforcedAssumedLedger_length
+#check v13InterfaceLedger_test8_is_carried_assumption
+
+#print axioms normalEvidence_onlyNeutral_or_hasCharged
+#print axioms CDENF_onlyNeutral_or_hasCharged
+#print axioms public_read_cdenf_normalizes_neutral_or_charged
+#print axioms v13RawEvidence_has_no_opaque_run_atom
+#print axioms v13_interfaceConsistencyBattery
+#print axioms v13InterfaceBatteryCitations_length
+#print axioms v13InterfaceEnforcedAssumedLedger_length
+#print axioms v13InterfaceLedger_test8_is_carried_assumption
+
+end Mettapedia.Computability.PNP

@@ -1,12 +1,12 @@
 import Mettapedia.QuantumTheory.YangMills.Clustering
-import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
+import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlack
 
 /-!
 # Yang-Mills Continuum OS Reconstruction Scaffold
 
-This module isolates the honest continuum endpoint after the extraction
-constant erratum: the extended-extraction contraction stands, but the
-continuum Yang-Mills mass gap is not proved here.
+This module isolates an honest conditional continuum endpoint.  The actual
+Wilson-map extraction/recombination constant is carried as an input; no
+Appendix-O numeral is treated as a proved operator bound.
 
 The scaffold follows the Kirk-style route:
 
@@ -17,9 +17,9 @@ The scaffold follows the Kirk-style route:
 
 then a continuum Hamiltonian with a positive spectral gap.  The heavy
 constructive-QFT theorem is a structure field.  The central open bridge for
-Ben's route is also explicit: the standing `Lambda < 1` contraction must still
-be shown to imply the lattice gap and exponential clustering required by the
-OS reconstruction framework.
+Ben's route is also explicit: a proved actual-map two-source contraction must
+still be shown to imply the lattice gap and exponential clustering required by
+the OS reconstruction framework.
 -/
 
 set_option autoImplicit false
@@ -129,32 +129,26 @@ theorem continuumGapPositive_of_latticeMassGap_reflectionPositive_clustering
   (continuumMassGap_of_latticeMassGap_reflectionPositive_clustering
     machine massGap reflectionPositive clustering).positive
 
-/-- The standing numerical endpoint after the extraction-constant erratum. -/
-def BenStandingExtendedExtractionContraction : Prop :=
-  HasExtendedExtractionContraction benCauchyC1UpperBound 2 16
-
-/-- The standing contraction theorem is checked arithmetic, not a continuum
-mass-gap theorem. -/
-theorem benStandingExtendedExtractionContraction_checked :
-    BenStandingExtendedExtractionContraction :=
-  benCauchyC1UpperBound_contraction_two_sixteen
-
-/-- Central open input for Ben's continuum route: prove that the standing
-`Lambda < 1` extended-extraction contraction supplies the lattice mass gap and
-exponential clustering required by the OS reconstruction framework. -/
+/-- Central open input for Ben's continuum route.  It carries the actual
+Wilson-map recursion constant and the stronger two-source contraction at depth
+`16`, then requires the bridge from that contraction to the lattice mass gap
+and exponential clustering consumed by OS reconstruction. -/
 structure BenLambdaToKirkOpenInput (corr : SpatialCorrelation) where
+  Ctrue : ℝ
+  actualWilsonTwoSourceContraction :
+    HasTwoSourceBootstrapSlack Ctrue 2 16
   latticeGapAndClustering_of_contraction :
-    BenStandingExtendedExtractionContraction →
+    HasTwoSourceBootstrapSlack Ctrue 2 16 →
       LatticeMassGapInput × LatticeExponentialClusteringInput corr
 
-/-- If the open bridge is supplied, the standing contraction provides the
-Kirk-side lattice inputs. -/
+/-- If the open bridge is supplied, its carried actual-map contraction provides
+the Kirk-side lattice inputs. -/
 def BenLambdaToKirkOpenInput.latticeInputs
     {corr : SpatialCorrelation}
     (bridge : BenLambdaToKirkOpenInput corr) :
     LatticeMassGapInput × LatticeExponentialClusteringInput corr :=
   bridge.latticeGapAndClustering_of_contraction
-    benStandingExtendedExtractionContraction_checked
+    bridge.actualWilsonTwoSourceContraction
 
 /-- Ben-specific conditional endpoint package.
 
@@ -170,8 +164,8 @@ structure BenYMContinuumOSConditional
 
 /-- Conditional continuum endpoint for Ben's route.
 
-The proof genuinely uses the checked standing contraction through the explicit
-open bridge before invoking the carried OS reconstruction machine. -/
+The proof genuinely uses the carried actual-map contraction through the
+explicit open bridge before invoking the OS reconstruction machine. -/
 theorem BenYMContinuumOSConditional.continuumMassGap
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
@@ -182,31 +176,32 @@ theorem BenYMContinuumOSConditional.continuumMassGap
     continuumMassGap_of_latticeMassGap_reflectionPositive_clustering
       D.reconstructionMachine inputs.1 D.reflectionPositivity inputs.2
 
-/-- Regression-friendly packet showing the conditional is not a bare restatement:
-the standing contraction is used to obtain Kirk-side inputs, then the continuum
+/-- Regression-friendly packet showing the conditional is not a bare
+restatement: the carried actual-map contraction is exposed, then the continuum
 gap follows. -/
 theorem BenYMContinuumOSConditional.reductionPacket
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
     (D : BenYMContinuumOSConditional A Δ corr) :
-    BenStandingExtendedExtractionContraction ∧
+    HasTwoSourceBootstrapSlack D.lambdaBridge.Ctrue 2 16 ∧
       HasSpectralMassGap A Δ ∧
         0 < Δ := by
   have hgap := D.continuumMassGap
   exact
-    ⟨benStandingExtendedExtractionContraction_checked,
+    ⟨D.lambdaBridge.actualWilsonTwoSourceContraction,
       hgap,
       hgap.positive⟩
 
 /-- Named open inputs that remain after the conditional scaffold is checked. -/
 def benContinuumEndpointOpenInputs : List String :=
-  [ "Ben Lambda<1 contraction implies lattice mass gap and exponential clustering"
+  [ "Actual Wilson RG constant and two-source contraction at depth 16"
+  , "Actual Wilson contraction implies lattice mass gap and exponential clustering"
   , "Ben Wilson-measure OS reflection positivity: functional plus cone"
   , "Kirk-style subsequential Schwinger limits and OS reconstruction machinery"
   ]
 
 theorem benContinuumEndpointOpenInputs_records_lambda_bridge :
-    "Ben Lambda<1 contraction implies lattice mass gap and exponential clustering" ∈
+    "Actual Wilson contraction implies lattice mass gap and exponential clustering" ∈
       benContinuumEndpointOpenInputs := by
   simp [benContinuumEndpointOpenInputs]
 

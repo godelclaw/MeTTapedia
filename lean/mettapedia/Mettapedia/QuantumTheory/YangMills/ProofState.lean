@@ -2,8 +2,16 @@ import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGCrux
 import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
+import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
+import Mettapedia.QuantumTheory.YangMills.Dimension16WilsonExtractionCertificate
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
+import Mettapedia.QuantumTheory.YangMills.V14FDQuotientTransferNoGo
+import Mettapedia.QuantumTheory.YangMills.V14BoundaryCochainBootstrap
+import Mettapedia.QuantumTheory.YangMills.SU2LatticeFDCensusNoGo
+import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticBasis
+import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticWilsonBridge
+import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 
 /-!
 # Yang-Mills proof state
@@ -20,6 +28,15 @@ noncomputable section
 namespace Mettapedia
 namespace QuantumTheory
 namespace YangMills
+
+open V14FDQuotientTransferNoGo
+open V14BoundaryCochainComplex
+open V14BoundaryCochainExtraction
+open V14BoundaryCochainBootstrap
+open SU2LatticeFDCensusNoGo
+open V14HypercubicQuarticCensus
+open V14HypercubicQuarticWilsonBridge
+open V14HypercubicFDCensusPaddingNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -509,7 +526,7 @@ def yangMillsRegressionSurfaceNode : YangMillsProofNode where
   id := "yang-mills.regression-surface"
   status := .checked
   truthValue := ⟨100, 93⟩
-  evidence := "Mettapedia.QuantumTheory.YangMills.Regression imports eleven focused regression companions."
+  evidence := "Mettapedia.QuantumTheory.YangMills.Regression imports the focused regression companions for the live route modules."
   nextObligation := "Add future regression companions beside the route module they protect."
 
 /-- The same-constant lower-even extraction repair is arithmetically refuted. -/
@@ -520,22 +537,68 @@ def yangMillsSameConstantLowerEvenExtractionNode : YangMillsProofNode where
   evidence := "not_sameConstantEvenBelowSixteenGapRouteCertificate and not_atLeast2048EvenBelowSixteenGapRouteCertificate rule out the lower-even extraction repair, while rgContraction_2224_two_sixteen records the positive dmax=16 arithmetic benchmark."
   nextObligation := "Do not revive lower-even extraction as a mass-gap route unless the recombination constant or route shape is genuinely changed and audited."
 
-/-- Erratum for the extraction-constant audit: the corrected Cauchy estimate
-keeps the extended-extraction contraction standing. -/
+/-- Source adjudication of the former extraction-constant erratum.  The
+sign-only repair and the literal factor-fourteen reading are refuted; only the
+parameterized scalar arithmetic and our explicit norm-one realization stand. -/
 def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   id := "yang-mills.rg.extraction-constant-erratum"
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-18 scalar derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
+  nextObligation := "The unpadded quartic carrier now has a complete four-coordinate hypercubic basis, but the fixed-width dimension-sixteen carrier is refuted by inactive padding. Replace it with an unpadded/dependent syntax or an explicit padding quotient, then construct the full relation quotient and conditioning; alternatively prove a quantitative continuum/Symanzik projection."
+
+/-- Constructed algebraic/mechanical part of the postponed-IBP repair.  The
+full Wilson analytic and RG transfer remains open. -/
+def yangMillsPostponedIBPRepairNode : YangMillsProofNode where
+  id := "yang-mills.rg.postponed-ibp-boundary-cochain"
   status := .checked
   truthValue := ⟨100, 98⟩
-  evidence := "benCauchyC1UpperBound_le_advertised proves that the corrected Cauchy-estimate bound Cextract <= 2 gives C1 <= 2224; benCauchyC1UpperBound_gain_two_sixteen_lt_one and benCauchyC1UpperBound_contraction_two_sixteen prove the resulting b=2,dmax=16 gain is below 1. The old displayed-series contraction failure was an artifact of reading an inverted-ratio typo literally, so it is retracted as an erratum, not a Yang-Mills refutation."
-  nextObligation := "Keep the extended-extraction contraction as standing route evidence, and focus the open endpoint on the continuum constructive-QFT gate: continuum measure, covariance, reflection positivity, OS reconstruction, and Hamiltonian mass-gap transfer."
+  evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with constant one in coefficient-l1 and in F.3's coefficient-sup branch after coordinatization. YM MOVE 7 then proves that the requested actual-lattice O.9 coordinate completion is impossible already at canonical dimension eight: an exact SU(2) Wilson observable has a hypercubic quartic jet outside every Lorentz-scalar span."
+  nextObligation := "Preserve the boundary-cochain repair and the certified unpadded quartic basis. Before dimension-sixteen dual jets, replace the padded raw carrier by faithful unpadded syntax or an explicit padding quotient, then supply the H(4)-stable relation rows and exact quotient basis."
+
+/-- Terminal decision for the requested O.9/F.4.3 actual-lattice coordinate
+campaign.  The no-go is SU(2)-scoped and occurs at canonical dimension eight,
+before basis reduction, dual jets, or conditioning. -/
+def yangMillsDimension16O9WilsonCensusNode : YangMillsProofNode where
+  id := "yang-mills.rg.dimension16-o9-wilson-census"
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  evidence := "ymMove7_dimension16WilsonCoordinate_terminalNoGo constructs the exact SU(2) Cartan link chart, proves that the actual normalized Wilson observable has fourth jet 6 times the hypercubic quartic, exhibits an orthogonal rotation changing that jet from 1 to 337/625, and refutes every finite O.9 Lorentz-scalar spanning census under both off-shell and on-shell relation policies and all enumerated same-target variants."
+  nextObligation := "Treat a hypercubic-complete lattice census or a controlled continuum/Symanzik projection as a new route. Neither may inherit the old dual-jet conditioning or bootstrap constants without a fresh same-object proof."
+
+/-- Complete derivative-free Cartan quartic census on an unpadded carrier. -/
+def yangMillsHypercubicQuarticCensusNode : YangMillsProofNode where
+  id := "yang-mills.rg.hypercubic-quartic-census"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "V14HypercubicQuarticCensusCertificate classifies all 126 quartic monomials into four admissible signed H(4) orbits and seven killed orbit classes. V14HypercubicQuarticBasis constructs the four covariant orbit basis functions, representative-evaluation duals, identity conditioning matrix, reconstruction, and coordinate independence. V14HypercubicQuarticWilsonBridge identifies the actual Wilson coefficient vector as (6,0,0,0), realizes its exact fourth jet, and proves the O(4)-invariant subspace is proper with a nonzero pure-fourth artifact quotient class."
+  nextObligation := "Use this as the unpadded dimension-eight regression anchor only. It does not include noncommutative color/trace syntax, derivatives, or the dimension-sixteen relation quotient."
+
+/-- Terminal decision for the current fixed-width dimension-sixteen raw
+carrier.  Inactive padding prevents an invertible census from also being a
+faithful census of active operator syntax. -/
+def yangMillsHypercubicDimension16PaddedCensusNode : YangMillsProofNode where
+  id := "yang-mills.rg.hypercubic-dimension16-padded-census"
+  status := .refuted
+  truthValue := ⟨0, 99⟩
+  evidence := "faithful_dimension16_exactCensus_uninhabited gives two distinct padded encodings with zero active fields and derivatives but identical active syntax, then proves that no invertible ExactCensusCertificate can make every basis column padding-invariant: equal basis rows contradict the right-inverse identity matrix."
+  nextObligation := "Replace PaddedRawFDMonomial by an unpadded/dependent syntax or quotient inactive padding explicitly. Only on that repaired carrier should one enumerate H(4) signed orbits, construct Bianchi/EOM/IBP/trace/Cayley--Hamilton rows, and derive dual-jet conditioning through dimension sixteen."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   id := "yang-mills.continuum-os-reconstruction-conditional"
   status := .checked
   truthValue := ⟨100, 96⟩
-  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional endpoint: the standing corrected Lambda<1 contraction feeds an explicit open bridge to lattice mass gap and exponential clustering, then OS reflection positivity and a Kirk-style OS reconstruction machine yield HasSpectralMassGap for the continuum Hamiltonian."
-  nextObligation := "Discharge the open bridge from Ben's Lambda<1 contraction to lattice gap/clustering, prove Wilson-measure OS reflection positivity for the same lattice family, and supply the OS reconstruction/subsequential-limit machinery; until then the continuum mass gap remains unclaimed."
+  evidence := "BenYMContinuumOSConditional.continuumMassGap is an abstract conditional endpoint: its carried bridge supplies lattice mass gap and exponential clustering, after which OS reflection positivity and a Kirk-style reconstruction machine yield HasSpectralMassGap. The legacy numerical contraction inside that wrapper is not an actual-map Wilson constant certificate."
+  nextObligation := "First derive the actual Wilson RG constant and recursion; then prove the bridge to lattice gap/clustering, Wilson-measure reflection positivity for the same lattice family, and OS reconstruction/subsequential-limit machinery."
+
+/-- Five-input completion steelman for Ben's current Yang-Mills route. -/
+def yangMillsCompletionSteelmanNode : YangMillsProofNode where
+  id := "yang-mills.completion-steelman"
+  status := .checked
+  truthValue := ⟨100, 94⟩
+  evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The v14 extraction/recombination constant is refuted as written, the July blueprint is audited guidance, and support, two-marked identity, KP/RP, and the actual Wilson RG recursion remain explicit construction obligations."
+  nextObligation := "The unpadded quartic H(4) basis is checked, while the padded dimension-sixteen extension is refuted. Repair the full raw carrier and relation quotient, or prove a continuum/Symanzik projection; then derive same-object dual conditioning and the rooted cumulant estimate before instantiating the remaining completion inputs."
 
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
@@ -599,7 +662,12 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsRegressionSurfaceNode
   , yangMillsSameConstantLowerEvenExtractionNode
   , yangMillsExtractionConstantErratumNode
+  , yangMillsPostponedIBPRepairNode
+  , yangMillsDimension16O9WilsonCensusNode
+  , yangMillsHypercubicQuarticCensusNode
+  , yangMillsHypercubicDimension16PaddedCensusNode
   , yangMillsContinuumOSConditionalScaffoldNode
+  , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
   , yangMillsContinuumMeasureCanaryNode
   , yangMillsEuclideanCovarianceCanaryNode
@@ -620,12 +688,32 @@ theorem yangMillsSameConstantLowerEvenExtractionNode_refuted :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted := by
   rfl
 
-theorem yangMillsExtractionConstantErratumNode_checked :
-    yangMillsExtractionConstantErratumNode.status = .checked := by
+theorem yangMillsExtractionConstantErratumNode_refuted :
+    yangMillsExtractionConstantErratumNode.status = .refuted := by
+  rfl
+
+theorem yangMillsPostponedIBPRepairNode_checked :
+    yangMillsPostponedIBPRepairNode.status = .checked := by
+  rfl
+
+theorem yangMillsDimension16O9WilsonCensusNode_refuted :
+    yangMillsDimension16O9WilsonCensusNode.status = .refuted := by
+  rfl
+
+theorem yangMillsHypercubicQuarticCensusNode_checked :
+    yangMillsHypercubicQuarticCensusNode.status = .checked := by
+  rfl
+
+theorem yangMillsHypercubicDimension16PaddedCensusNode_refuted :
+    yangMillsHypercubicDimension16PaddedCensusNode.status = .refuted := by
   rfl
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by
+  rfl
+
+theorem yangMillsCompletionSteelmanNode_checked :
+    yangMillsCompletionSteelmanNode.status = .checked := by
   rfl
 
 theorem yangMillsMassGapPromotionGateNode_constructiveGateUncleared :
@@ -667,18 +755,63 @@ theorem currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet :
     ⟨rgContraction_2224_two_sixteen,
       not_rgContraction_2224_two_fourteen⟩
 
-theorem currentYangMillsExtractionConstantErratum_packet :
-    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
-      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
-      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
-      HasExtendedExtractionContraction 2224 2 16 := by
+theorem currentYangMillsExtractionConstantAdjudication_packet :
+    ¬ V14LiteralExtractionRecombinationClaims ∧
+      f5DisplayedConstantAtBlockTwo = 33152 ∧
+      proposedMajorantLedgerConstant = (5544 : ℝ) / 5 ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) := by
   exact
-    ⟨benCauchyC1UpperBound_le_advertised,
-      benCauchyC1UpperBound_gain_two_sixteen_eq,
-      benCauchyC1UpperBound_gain_two_sixteen_lt_one,
-      benCauchyC1UpperBound_contraction_two_sixteen,
-      rgContraction_2224_two_sixteen⟩
+    ⟨not_v14LiteralExtractionRecombinationClaims,
+      f5DisplayedConstantAtBlockTwo_eq,
+      proposedMajorantLedgerConstant_eq,
+      proposedMajorantLedger_twoSourceSlack_two_fifteen,
+      fun _ hD =>
+        not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD⟩
+
+/-- The earlier source-only audit remains true: the relation policies
+disagree, the supplied coordinate certificate is incomplete, and the
+advertised bound is not derived.  It is superseded as a campaign verdict by
+the stronger SU(2) actual-lattice symmetry no-go. -/
+theorem currentYangMillsDimension16CoordinateCertificate_packet :
+    (¬ V14Dimension16SourceCertificateComplete) ∧
+      v14F4RelationPolicy ≠ v14O9RelationPolicy ∧
+      (¬ V14LiteralDimension16ExtractionBound) ∧
+      v14Dimension16CertificateStatus .extractionConstant = .notDerived ∧
+      v14Dimension16CertificateStatus .wilsonRecursionConstant = .notDerived :=
+  v14Dimension16WilsonExtraction_asWritten_obstructed
+
+/-- The completed MOVE-5 transfer audit: neither surviving radial extractor is
+the canonical `F,D` cutoff, and neither EOM policy admits the as-written
+ordinary block-functional realization or an RG-compatible extension. -/
+theorem currentYangMillsFDQuotientTransferNoGo_packet :
+    (¬ AssociatedRadialImplementsCanonicalCutoff) ∧
+      (¬ IndependentRadialImplementsCanonicalCutoff) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14FaithfulFDTransferSocket .offShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .onShell)) ∧
+      (¬ Nonempty (V14RGCompatibleFDTransferSocket .offShell)) := by
+  exact
+    ⟨not_associatedRadialImplementsCanonicalCutoff,
+      not_independentRadialImplementsCanonicalCutoff,
+      no_faithfulFDTransferSocket .onShell,
+      no_faithfulFDTransferSocket .offShell,
+      no_rgCompatibleFDTransferSocket .onShell,
+      no_rgCompatibleFDTransferSocket .offShell⟩
+
+/-- Constructed MOVE-6 replacement packet.  The exact block cancellation,
+coordinate certificate, and conditional arithmetic are proved; the analytic
+transfer rows remain visibly open in `boundaryCochainRouteMatrix`. -/
+theorem currentYangMillsPostponedIBPRepair_packet :
+    (LinearMap.range
+        (sharedBoundaryCoboundaryLinear ActionLaplacianCensus)).mkQ
+      assembledActionLaplacianBulk = 0 ∧
+    RepairedBoundaryCochainExtractionCertificate ∧
+    repairedBoundaryCochainRecursionBudget = (5544 : ℝ) / 5 ∧
+    HasTwoSourceBootstrapSlack
+      repairedBoundaryCochainRecursionBudget 2 15 :=
+  v14_postponedIBP_boundaryCochain_constructed_packet
 
 theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
     ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
@@ -696,7 +829,7 @@ theorem currentYangMillsContinuumOSConditional_packet
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
     (D : BenYMContinuumOSConditional A Δ corr) :
-    BenStandingExtendedExtractionContraction ∧
+    HasTwoSourceBootstrapSlack D.lambdaBridge.Ctrue 2 16 ∧
       HasSpectralMassGap A Δ ∧
         0 < Δ ∧
           currentYangMillsConstructiveWorldInterfaces.missingFor
@@ -714,6 +847,31 @@ theorem currentYangMillsContinuumOSConditional_packet
       preprints2025041268Verdict_notRouteBlocking,
       yangMillsContinuumOSConditionalScaffoldNode_checked,
       yangMillsMassGapEndpointNode_open⟩
+
+theorem currentYangMillsCompletionSteelman_packet :
+    recombinationConstantSteelmanRow.verdict = .refutedOrInconsistent ∧
+      supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
+      twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
+      kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
+      realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption ∧
+      proBlueprintSteelmanRow.verdict = .verified ∧
+      ¬ V14LiteralExtractionRecombinationClaims ∧
+      HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 15 ∧
+      (∀ D : ℕ, D ≤ 14 →
+        ¬ HasTwoSourceBootstrapSlack proposedMajorantLedgerConstant 2 D) ∧
+      yangMillsCompletionSteelmanNode.status = .checked := by
+  exact
+    ⟨recombinationConstantSteelman_refutedOrInconsistent,
+      supportRecurrenceSteelman_reduced,
+      twoMarkedIdentitySteelman_reduced,
+      kpWilsonSteelman_reduced,
+      realRGRecursionSteelman_reduced,
+      proBlueprintSteelman_verified,
+      not_v14LiteralExtractionRecombinationClaims,
+      proposedMajorantLedger_twoSourceSlack_two_fifteen,
+      fun _ hD =>
+        not_proposedMajorantLedger_twoSourceSlack_of_depth_le_fourteen hD,
+      yangMillsCompletionSteelmanNode_checked⟩
 
 theorem currentYangMillsConstructiveDependency_packet :
     currentYangMillsConstructiveStatus.representedChecks = [] ∧

@@ -1,0 +1,206 @@
+import Mettapedia.Computability.PNP.V13FaithfulM4Mechanical
+
+/-!
+# Exact hypothesis boundary for the concrete M4 scaffold
+
+The concrete regioned object reaches the locked-message boundary but does not
+cross it.  Its local lock auxiliary can absorb any message choice, so exact
+Hypothesis D.8 is false.  This module proves that obstruction against the
+faithful record and consequently proves that the full
+`V13M4OpenConstructionObligations` record is not inhabited on this object.
+
+This counterexample concerns the concrete XOR connector in this construction
+attempt.  It does not refute a separate manuscript clause family: Appendix D
+does not provide one.  Definition D.5 leaves the lock/readout predicates
+abstract and D.8 assumes rigidity, while Appendix I only supplies their generic
+bounded-arity CNF compilation.  Replacing this connector therefore requires
+new lock construction data and a proof of D.8; neither can be recovered from
+the manuscript's displayed clauses because no such clauses are displayed.
+
+The public catalog itself contains every visible geometry, quotient, buffer,
+lock, readout, and probe-syntax primitive and contains no raw assignment.  Its
+exact D.30 record is constructible.  D.33 remains open because classifying a
+new datatype is not a proof that actual observer executions expand to those
+classes.  D.48 and every quantitative analytic package also remain exact open
+hypotheses. The downstream adaptive-gauge module proves the uniform gauge lift
+and adaptive product law directly on this scaffold.
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+/-! ## D.30 on the full concrete public catalog -/
+
+theorem v13M4Concrete_noPrimitiveRecoversTargetWithoutCharge
+    (m t : Nat) (primitive : V13M4ConcretePublicPrimitive m t) :
+    ¬ v13M4ConcreteRecoversTargetWithoutCharge primitive := by
+  rintro ⟨j, recover, hrecover⟩
+  let omega0 : V13M4ConcreteWorld m t :=
+    { neutralToken := false
+      z := fun _ => false
+      g := fun _ => false
+      bufferLeft := fun _ => false
+      messageBits := fun _ => false }
+  let omega1 : V13M4ConcreteWorld m t :=
+    { neutralToken := false
+      z := fun _ => false
+      g := fun _ => false
+      bufferLeft := fun _ => false
+      messageBits := fun _ => true }
+  have h0 := hrecover omega0
+  have h1 := hrecover omega1
+  have hvalue : v13M4ConcretePrimitiveValue primitive omega0 =
+      v13M4ConcretePrimitiveValue primitive omega1 := by
+    cases primitive <;> rfl
+  have hfalse : false = recover (v13M4ConcretePrimitiveValue primitive omega0) := by
+    simpa [omega0] using h0
+  have htrue : true = recover (v13M4ConcretePrimitiveValue primitive omega1) := by
+    simpa [omega1] using h1
+  have : false = true := hfalse.trans (hvalue ▸ htrue.symm)
+  contradiction
+
+/-- Exact D.30 full-public-syntax coverage for the current scaffold.  This
+does not establish D.8: the public syntax is tag-free precisely while the
+current lock relation still leaves the message free. -/
+theorem v13M4Concrete_D30_noPublicTargetTags :
+    V13D30NoPublicTargetTags V13M4ConcreteE := by
+  constructor
+  constructor
+  · intro theta m t primitive _
+    cases theta
+    change v13M4ConcreteDeclaredNeutral primitive ∨
+      v13M4ConcreteChargedExpansion primitive
+    cases primitive <;> simp [
+      v13M4ConcreteDeclaredNeutral, v13M4ConcreteChargedExpansion]
+  · intro theta m t primitive _
+    cases theta
+    change ¬False
+    simp
+  · intro theta m t primitive _
+    cases theta
+    change ¬v13M4ConcreteRecoversTargetWithoutCharge primitive
+    exact v13M4Concrete_noPrimitiveRecoversTargetWithoutCharge m t primitive
+
+/-- The scaffold's primitive valuation is extensionally complete for its
+one-bit public object.  This does not assert D.31 neutrality: the scaffold
+currently classifies its visible constraint templates as charged. -/
+theorem v13M4Concrete_fullPublicSyntaxObservability :
+    V13FullPublicSyntaxObservability V13M4ConcreteE := by
+  constructor
+  intro theta m t omega0 omega1 hagree
+  cases theta
+  change forall primitive : V13M4ConcretePublicPrimitive m t,
+    primitive ∈ Finset.univ ->
+      v13M4ConcretePrimitiveValue primitive omega0 =
+        v13M4ConcretePrimitiveValue primitive omega1 at hagree
+  have htoken := hagree .neutralToken (Finset.mem_univ _)
+  change omega0.neutralToken = omega1.neutralToken at htoken
+  change V13M4ConcretePublic.mk omega0.neutralToken =
+    V13M4ConcretePublic.mk omega1.neutralToken
+  rw [htoken]
+
+/-! ## Exact D.8 obstruction -/
+
+def v13M4ConcreteZeroPublic : V13M4ConcretePublic 0 0 := ⟨false⟩
+def v13M4ConcreteZeroGauge : V13M4ConcreteGaugeVector 0 := fun _ => false
+def v13M4ConcreteFalseLockAux : V13M4ConcreteMessageVector 0 := fun _ => false
+def v13M4ConcreteTrueLockAux : V13M4ConcreteMessageVector 0 := fun _ => true
+
+def v13M4ConcreteZeroWorld : V13M4ConcreteWorld 0 0 where
+  neutralToken := false
+  z := fun _ => false
+  g := fun _ => false
+  bufferLeft := fun _ => false
+  messageBits := fun _ => false
+
+theorem v13M4Concrete_zeroPublic_supported :
+    exists omega : V13M4ConcreteE.World () 0 0,
+      V13M4ConcreteE.supported omega ∧
+        V13M4ConcreteE.publicInput omega = v13M4ConcreteZeroPublic := by
+  exact ⟨v13M4ConcreteZeroWorld, trivial, rfl⟩
+
+theorem v13M4Concrete_falseCompletion_lock :
+    @V13M4LocalComponents.lockPredicate V13M4ConcreteE V13M4ConcreteG
+      V13M4ConcreteC () 0 0 v13M4ConcreteZeroPublic
+      v13M4ConcreteZeroGauge v13M4ConcreteFalseLockAux [false] := by
+  constructor
+  · rfl
+  · intro i
+    fin_cases i
+    rfl
+
+theorem v13M4Concrete_falseCompletion_readout :
+    @V13M4LocalComponents.readoutPredicate V13M4ConcreteE V13M4ConcreteG
+      V13M4ConcreteC () 0 0 v13M4ConcreteZeroPublic
+      v13M4ConcreteZeroGauge v13M4ConcreteFalseLockAux [false] := by
+  constructor
+  · rfl
+  · intro i
+    fin_cases i
+    rfl
+
+theorem v13M4Concrete_trueCompletion_lock :
+    @V13M4LocalComponents.lockPredicate V13M4ConcreteE V13M4ConcreteG
+      V13M4ConcreteC () 0 0 v13M4ConcreteZeroPublic
+      v13M4ConcreteZeroGauge v13M4ConcreteTrueLockAux [true] := by
+  constructor
+  · rfl
+  · intro i
+    fin_cases i
+    rfl
+
+theorem v13M4Concrete_trueCompletion_readout :
+    @V13M4LocalComponents.readoutPredicate V13M4ConcreteE V13M4ConcreteG
+      V13M4ConcreteC () 0 0 v13M4ConcreteZeroPublic
+      v13M4ConcreteZeroGauge v13M4ConcreteTrueLockAux [true] := by
+  constructor
+  · rfl
+  · intro i
+    fin_cases i
+    rfl
+
+/-- Precise honest hatch: the current bounded-arity connector is not a locked
+core.  It has two accepted completions over one supported public syntax with
+different messages, so exact Hypothesis D.8 fails. -/
+theorem v13M4Concrete_D8_lockedMessageRigidity_obstruction :
+    ¬ V13D8LockedMessageRigidity V13M4ConcreteE V13M4ConcreteG V13M4ConcreteC := by
+  intro hD8
+  have hmessages := hD8.locked_message_rigidity () 0 0
+    v13M4ConcreteZeroPublic
+    v13M4ConcreteZeroGauge v13M4ConcreteZeroGauge
+    v13M4ConcreteFalseLockAux v13M4ConcreteTrueLockAux
+    [false] [true]
+    v13M4Concrete_zeroPublic_supported
+    v13M4Concrete_falseCompletion_lock
+    v13M4Concrete_falseCompletion_readout
+    v13M4Concrete_trueCompletion_lock
+    v13M4Concrete_trueCompletion_readout
+  simp at hmessages
+
+/-! ## D.33 carrier and construction obstruction -/
+
+/-- Actual normalized-primitive carrier expected from a future execution-trace
+expansion.  Merely declaring these constructors does not establish D.33. -/
+inductive V13M4ConcreteNormalizedPrimitive (m t : Nat) where
+  | publicSyntax : V13M4ConcretePublicPrimitive m t ->
+      V13M4ConcreteNormalizedPrimitive m t
+  | safeBuffer : V13M4ConcreteGaugeIndex m -> Bool ->
+      V13M4ConcreteNormalizedPrimitive m t
+  | rawGauge : V13M4ConcreteGaugeIndex m -> Bool ->
+      V13M4ConcreteNormalizedPrimitive m t
+deriving DecidableEq, Repr
+
+/-- Therefore the exact faithful construction record itself is not inhabited
+on this scaffold, independently of how D.33 or D.48 are later formulated. -/
+theorem v13M4Concrete_openConstructionObligations_obstructed :
+    ¬ Nonempty
+      (V13M4OpenConstructionObligations V13M4ConcreteE V13M4ConcreteG
+        V13M4ConcreteC
+        (fun _ m t => V13M4ConcreteNormalizedPrimitive m t)
+        (fun _ m t => V13M4ConcreteCNFVar m t)) := by
+  rintro ⟨construction⟩
+  exact v13M4Concrete_D8_lockedMessageRigidity_obstruction
+    construction.D8_lockedMessageRigidity
+
+end Mettapedia.Computability.PNP
