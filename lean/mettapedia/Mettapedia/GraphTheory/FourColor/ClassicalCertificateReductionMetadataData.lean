@@ -1,0 +1,112 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk00
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk01
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk02
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk03
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk04
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk05
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk06
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk07
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk08
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk09
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk10
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk11
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk12
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk13
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk14
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk15
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk16
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk17
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk18
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk19
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk20
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk21
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk22
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk23
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk24
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk25
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk26
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk27
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk28
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk29
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk30
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk31
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk32
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk33
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk34
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk35
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk36
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk37
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk38
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk39
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataCatalogue
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateReductionMetadataData
+
+open ClassicalCertificateReductionMetadataCatalogue
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 100000000
+
+/-- Complete reduction metadata for the 633 classical configurations. -/
+def classicalReductionMetadataCatalogue :
+    ClassicalCertificateReductionMetadataCatalogue.Certificate where
+  chunks := #[
+    classicalReductionMetadataChunk00,
+    classicalReductionMetadataChunk01,
+    classicalReductionMetadataChunk02,
+    classicalReductionMetadataChunk03,
+    classicalReductionMetadataChunk04,
+    classicalReductionMetadataChunk05,
+    classicalReductionMetadataChunk06,
+    classicalReductionMetadataChunk07,
+    classicalReductionMetadataChunk08,
+    classicalReductionMetadataChunk09,
+    classicalReductionMetadataChunk10,
+    classicalReductionMetadataChunk11,
+    classicalReductionMetadataChunk12,
+    classicalReductionMetadataChunk13,
+    classicalReductionMetadataChunk14,
+    classicalReductionMetadataChunk15,
+    classicalReductionMetadataChunk16,
+    classicalReductionMetadataChunk17,
+    classicalReductionMetadataChunk18,
+    classicalReductionMetadataChunk19,
+    classicalReductionMetadataChunk20,
+    classicalReductionMetadataChunk21,
+    classicalReductionMetadataChunk22,
+    classicalReductionMetadataChunk23,
+    classicalReductionMetadataChunk24,
+    classicalReductionMetadataChunk25,
+    classicalReductionMetadataChunk26,
+    classicalReductionMetadataChunk27,
+    classicalReductionMetadataChunk28,
+    classicalReductionMetadataChunk29,
+    classicalReductionMetadataChunk30,
+    classicalReductionMetadataChunk31,
+    classicalReductionMetadataChunk32,
+    classicalReductionMetadataChunk33,
+    classicalReductionMetadataChunk34,
+    classicalReductionMetadataChunk35,
+    classicalReductionMetadataChunk36,
+    classicalReductionMetadataChunk37,
+    classicalReductionMetadataChunk38,
+    classicalReductionMetadataChunk39
+    ]
+
+theorem classicalReductionMetadataCatalogue_chunkCount :
+    classicalReductionMetadataCatalogue.chunks.size = 40 := by
+  rfl
+
+theorem classicalReductionMetadataCatalogue_populated :
+    classicalReductionMetadataCatalogue.populatedPrefixBoolean 633 = true := by
+  rfl
+
+theorem classicalReductionMetadataCatalogue_afterLast :
+    classicalReductionMetadataCatalogue.codeAt? 633 = none := by
+  rfl
+
+end ClassicalCertificateReductionMetadataData
+
+end Mettapedia.GraphTheory.FourColor
