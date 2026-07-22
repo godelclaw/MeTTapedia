@@ -34,7 +34,7 @@ Mettapedia/
 ## Toolchain
 
 - The toolchain uses Lean 4.28.0 (see lean-toolchain).
-- The toolchain uses Mathlib v4.28.0 (see lakefile.toml).
+- The toolchain uses Mathlib v4.31.0 (see lakefile.lean).
 - Local dependencies live in local subdirectories when needed.
 
 ## Build
