@@ -1,0 +1,21 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitProductData
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitResponseTable
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateCatalogueTwentyOrbitResponseValueCheck
+
+open ClassicalCertificateCatalogueTwentyOrbitProductData
+open ClassicalCertificateOrbitResponseTable
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 200000000
+
+theorem twentiethCatalogueOrbitResponseValueChunk03_checker :
+    responseValueChunkBoolean twentiethCatalogueOrbitProductCertificate
+      3 = true := by
+  rfl
+
+end ClassicalCertificateCatalogueTwentyOrbitResponseValueCheck
+
+end Mettapedia.GraphTheory.FourColor
