@@ -1,0 +1,19 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitProofDagData
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyProofDagAttachment
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateCatalogueTwentyOrbitProofDagAttachment
+
+open ClassicalCertificateCatalogueTwentyOrbitProofDagData
+open ClassicalCertificateCatalogueTwentyProofDagAttachment
+open ClassicalCertificateOrbitProofDagReduction
+
+/-- The cf020 reduction metadata attached to its global-color-orbit proof
+DAG. -/
+def twentiethCatalogueOrbitProofDagMetadataValid :=
+  twentiethCatalogueReductionMetadataValid
+
+end ClassicalCertificateCatalogueTwentyOrbitProofDagAttachment
+
+end Mettapedia.GraphTheory.FourColor
