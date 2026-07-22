@@ -1,0 +1,21 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk07
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataCatalogue
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateReductionMetadataCheck
+
+open ClassicalCertificateReductionMetadataCatalogue
+open ClassicalCertificateReductionMetadataCatalogue.Certificate
+open ClassicalCertificateReductionMetadataData
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 100000000
+
+theorem classicalReductionMetadataBlock030_checker :
+    localBlockBoolean classicalReductionMetadataChunk07 2 = true := by
+  rfl
+
+end ClassicalCertificateReductionMetadataCheck
+
+end Mettapedia.GraphTheory.FourColor
