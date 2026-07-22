@@ -1,0 +1,23 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataDataChunk15
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk15
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityCatalogue
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateContractValidityCheck
+
+open ClassicalCertificateContractValidityCatalogue.Catalogue
+open ClassicalCertificateContractValidityData
+open ClassicalCertificateReductionMetadataData
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 100000000
+
+theorem classicalContractValidityBlock060_checker :
+    localBlockBoolean classicalReductionMetadataChunk15
+      classicalContractValidityChunk15 0 = true := by
+  rfl
+
+end ClassicalCertificateContractValidityCheck
+
+end Mettapedia.GraphTheory.FourColor
