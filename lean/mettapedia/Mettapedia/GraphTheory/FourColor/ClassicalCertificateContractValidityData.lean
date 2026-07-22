@@ -1,0 +1,114 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk00
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk01
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk02
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk03
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk04
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk05
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk06
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk07
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk08
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk09
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk10
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk11
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk12
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk13
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk14
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk15
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk16
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk17
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk18
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk19
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk20
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk21
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk22
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk23
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk24
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk25
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk26
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk27
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk28
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk29
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk30
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk31
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk32
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk33
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk34
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk35
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk36
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk37
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk38
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityDataChunk39
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateContractValidityCatalogue
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateReductionMetadataData
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateContractValidityData
+
+open ClassicalCertificateContractValidityCatalogue
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 100000000
+
+/-- Complete contract-validity witness table for the 633 classical
+configurations. -/
+def classicalContractValidityCatalogue :
+    ClassicalCertificateContractValidityCatalogue.Catalogue where
+  chunks := #[
+    classicalContractValidityChunk00,
+    classicalContractValidityChunk01,
+    classicalContractValidityChunk02,
+    classicalContractValidityChunk03,
+    classicalContractValidityChunk04,
+    classicalContractValidityChunk05,
+    classicalContractValidityChunk06,
+    classicalContractValidityChunk07,
+    classicalContractValidityChunk08,
+    classicalContractValidityChunk09,
+    classicalContractValidityChunk10,
+    classicalContractValidityChunk11,
+    classicalContractValidityChunk12,
+    classicalContractValidityChunk13,
+    classicalContractValidityChunk14,
+    classicalContractValidityChunk15,
+    classicalContractValidityChunk16,
+    classicalContractValidityChunk17,
+    classicalContractValidityChunk18,
+    classicalContractValidityChunk19,
+    classicalContractValidityChunk20,
+    classicalContractValidityChunk21,
+    classicalContractValidityChunk22,
+    classicalContractValidityChunk23,
+    classicalContractValidityChunk24,
+    classicalContractValidityChunk25,
+    classicalContractValidityChunk26,
+    classicalContractValidityChunk27,
+    classicalContractValidityChunk28,
+    classicalContractValidityChunk29,
+    classicalContractValidityChunk30,
+    classicalContractValidityChunk31,
+    classicalContractValidityChunk32,
+    classicalContractValidityChunk33,
+    classicalContractValidityChunk34,
+    classicalContractValidityChunk35,
+    classicalContractValidityChunk36,
+    classicalContractValidityChunk37,
+    classicalContractValidityChunk38,
+    classicalContractValidityChunk39
+    ]
+
+theorem classicalContractValidityCatalogue_chunkCount :
+    classicalContractValidityCatalogue.chunks.size = 40 := by
+  rfl
+
+theorem classicalContractValidityCatalogue_populated :
+    classicalContractValidityCatalogue.populatedPrefixBoolean 633 = true := by
+  rfl
+
+theorem classicalContractValidityCatalogue_afterLast :
+    classicalContractValidityCatalogue.certificateAt? 633 = none := by
+  rfl
+
+end ClassicalCertificateContractValidityData
+
+end Mettapedia.GraphTheory.FourColor
