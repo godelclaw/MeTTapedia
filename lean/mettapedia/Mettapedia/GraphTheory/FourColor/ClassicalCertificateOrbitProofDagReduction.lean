@@ -86,8 +86,9 @@ def responsePermutation (packed : Nat) : PermutationCode :=
   | _ => .cycleRedPurpleBlue
 
 def ResponseTargetValid
+    (metadata : ClassicalCertificateReductionMetadata.Code)
     (code : Code) (index : Nat)
-    (gram : GramWord (ring metadata).length)
+    (gram : Chromogram)
     (packed : Nat) : Prop :=
   responseTarget packed < index ∧
     match code.nodeAt? (responseTarget packed) with
@@ -96,29 +97,52 @@ def ResponseTargetValid
         Matches
           (permute (responsePermutation packed)
             (Code.nodeWord (ring metadata).length targetNode)).toList
-          gram.toList
+          gram
 
 instance
+    (metadata : ClassicalCertificateReductionMetadata.Code)
     (code : Code) (index : Nat)
-    (gram : GramWord (ring metadata).length)
+    (gram : Chromogram)
     (packed : Nat) :
-    Decidable (ResponseTargetValid code index gram packed) := by
+    Decidable (ResponseTargetValid metadata code index gram packed) := by
   unfold ResponseTargetValid
   cases hnode : code.nodeAt? (responseTarget packed) with
   | none => infer_instance
   | some targetNode => infer_instance
 
+/-- Pointwise semantic validity for a list of chromograms and its aligned
+packed responses. -/
+def ResponseListValid
+    (metadata : ClassicalCertificateReductionMetadata.Code)
+    (code : Code) (index : Nat) :
+    List Chromogram → List Nat → Prop
+  | [], [] => True
+  | gram :: grams, packed :: responses =>
+      ResponseTargetValid metadata code index gram packed ∧
+        ResponseListValid metadata code index grams responses
+  | _, _ => False
+
+instance
+    (metadata : ClassicalCertificateReductionMetadata.Code)
+    (code : Code) (index : Nat)
+    (grams : List Chromogram) (responses : List Nat) :
+    Decidable (ResponseListValid metadata code index grams responses) := by
+  induction grams generalizing responses with
+  | nil => cases responses <;> simp only [ResponseListValid] <;> infer_instance
+  | cons gram grams ih =>
+      cases responses with
+      | nil => simp only [ResponseListValid]; infer_instance
+      | cons packed responses =>
+          simp only [ResponseListValid]
+          letI := ih responses
+          infer_instance
+
 def ChromogramResponsesValid
     (code : Code) (index : Nat)
     (word : TraceWord (ring metadata).length)
     (responses : Array Nat) : Prop :=
-  let grams := matchingGramWords word
-  responses.size = grams.length ∧
-    ∀ offset : Fin grams.length,
-      match responses[offset.val]? with
-      | none => False
-      | some packed =>
-          ResponseTargetValid code index (grams.get offset) packed
+  ResponseListValid metadata code index (matchingChromograms word.toList)
+    responses.toList
 
 instance
     (code : Code) (index : Nat)
@@ -126,16 +150,82 @@ instance
     (responses : Array Nat) :
     Decidable (ChromogramResponsesValid code index word responses) := by
   unfold ChromogramResponsesValid
-  let grams := matchingGramWords word
-  letI (offset : Fin grams.length) : Decidable (
-      match responses[offset.val]? with
-      | none => False
-      | some packed =>
-          ResponseTargetValid code index (grams.get offset) packed) := by
-    cases hresponse : responses[offset.val]? with
-    | none => infer_instance
-    | some packed => infer_instance
   infer_instance
+
+/-- Direct Boolean response check.  It traverses the raw chromogram list,
+avoiding proof-bearing vectors in reflected computations. -/
+def responseTargetBoolean
+    (metadata : ClassicalCertificateReductionMetadata.Code)
+    (code : Code) (index : Nat) (gram : Chromogram)
+    (packed : Nat) : Bool :=
+  decide (responseTarget packed < index) &&
+    match code.nodeAt? (responseTarget packed) with
+    | none => false
+    | some targetNode =>
+        chromogramMatches []
+          (permute (responsePermutation packed)
+            (Code.nodeWord (ring metadata).length targetNode)).toList
+          gram
+
+def responseListBoolean
+    (metadata : ClassicalCertificateReductionMetadata.Code)
+    (code : Code) (index : Nat) :
+    List Chromogram → List Nat → Bool
+  | [], [] => true
+  | gram :: grams, packed :: responses =>
+      responseTargetBoolean metadata code index gram packed &&
+        responseListBoolean metadata code index grams responses
+  | _, _ => false
+
+def chromogramResponsesBoolean
+    (code : Code) (index : Nat)
+    (word : TraceWord (ring metadata).length)
+    (responses : Array Nat) : Bool :=
+  responseListBoolean metadata code index (matchingChromograms word.toList)
+    responses.toList
+
+theorem responseTargetValid_of_boolean_true
+    (metadata : ClassicalCertificateReductionMetadata.Code)
+    (code : Code) (index : Nat) (gram : Chromogram)
+    (packed : Nat)
+    (hcheck : responseTargetBoolean metadata code index gram packed = true) :
+    ResponseTargetValid metadata code index gram packed := by
+  unfold responseTargetBoolean at hcheck
+  simp only [Bool.and_eq_true] at hcheck
+  refine ⟨of_decide_eq_true hcheck.1, ?_⟩
+  cases hnode : code.nodeAt? (responseTarget packed) with
+  | none => simp [hnode] at hcheck
+  | some targetNode =>
+      simpa [hnode, Matches] using hcheck.2
+
+theorem responseListValid_of_boolean_true
+    (metadata : ClassicalCertificateReductionMetadata.Code)
+    (code : Code) (index : Nat)
+    (grams : List Chromogram) (responses : List Nat)
+    (hcheck : responseListBoolean metadata code index grams responses = true) :
+    ResponseListValid metadata code index grams responses := by
+  induction grams generalizing responses with
+  | nil =>
+      cases responses with
+      | nil => trivial
+      | cons packed responses => simp [responseListBoolean] at hcheck
+  | cons gram grams ih =>
+      cases responses with
+      | nil => simp [responseListBoolean] at hcheck
+      | cons packed responses =>
+          simp only [responseListBoolean, Bool.and_eq_true] at hcheck
+          exact ⟨responseTargetValid_of_boolean_true metadata code index gram
+              packed hcheck.1,
+            ih responses hcheck.2⟩
+
+theorem chromogramResponsesValid_of_boolean_true
+    (code : Code) (index : Nat)
+    (word : TraceWord (ring metadata).length)
+    (responses : Array Nat)
+    (hcheck : chromogramResponsesBoolean code index word responses = true) :
+    ChromogramResponsesValid code index word responses := by
+  exact responseListValid_of_boolean_true metadata code index
+    (matchingChromograms word.toList) responses.toList hcheck
 
 def NodeConditions
     (valid : ClassicalCertificateReductionMetadata.Valid metadata)
@@ -161,7 +251,15 @@ def nodeEntryBoolean
   if index < code.nodeCount then
     match code.nodeAt? index with
     | none => false
-    | some node => decide (NodeConditions valid code index node)
+    | some node =>
+        let word := Code.nodeWord (ring metadata).length node
+        match node.rule with
+        | .member assignmentCode =>
+            decide
+              (ClassicalCertificateProofDagReduction.OrdinaryWitnessValid
+                valid word assignmentCode)
+        | .chromograms responses =>
+            chromogramResponsesBoolean code index word responses
   else true
 
 def nodeBlockBoolean
@@ -205,15 +303,30 @@ theorem nodeConditions_of_checker_true
     simpa [Nat.mul_comm] using Nat.div_add_mod index Code.nodeBlockSize
   have hentry' : nodeEntryBoolean valid code index = true := by
     simpa [nodeBlockBoolean, hindexEq] using hentry
-  simpa [nodeEntryBoolean, hindex, hnode] using hentry'
+  let word := Code.nodeWord (ring metadata).length node
+  cases hrule : node.rule with
+  | member assignmentCode =>
+      have hwitness :
+          ClassicalCertificateProofDagReduction.OrdinaryWitnessValid
+            valid word assignmentCode :=
+        of_decide_eq_true (by
+          simpa [nodeEntryBoolean, hindex, hnode, word, hrule] using hentry')
+      simpa [NodeConditions, word, hrule] using hwitness
+  | chromograms responses =>
+      have hresponses :
+          chromogramResponsesBoolean code index word responses = true := by
+        simpa [nodeEntryBoolean, hindex, hnode, word, hrule] using hentry'
+      have hvalid := chromogramResponsesValid_of_boolean_true
+        code index word responses hresponses
+      simpa [NodeConditions, word, hrule] using hvalid
 
 def responseWord
     (code : Code) (word : TraceWord (ring metadata).length)
     (responses : Array Nat)
-    (gram : GramWord (ring metadata).length) :
+    (gram : Chromogram) :
     TraceWord (ring metadata).length :=
-  let offset := (matchingGramWords word).idxOf gram
-  match responses[offset]? with
+  let offset := (matchingChromograms word.toList).idxOf gram
+  match responses.toList[offset]? with
   | none => word
   | some packed =>
       match code.nodeAt? (responseTarget packed) with
@@ -235,56 +348,70 @@ def responseWord
     cases permutation <;> cases symbol <;> rfl
   simp [hcomposition]
 
-theorem exists_response_of_valid
+theorem exists_response_of_list_valid
+    (metadata : ClassicalCertificateReductionMetadata.Code)
     (code : Code) (index : Nat)
-    (word : TraceWord (ring metadata).length)
-    (responses : Array Nat)
-    (hvalid : ChromogramResponsesValid code index word responses)
-    (gram : GramWord (ring metadata).length)
-    (hmem : gram ∈ matchingGramWords word) :
+    (grams : List Chromogram) (responses : List Nat)
+    (hvalid : ResponseListValid metadata code index grams responses)
+    (gram : Chromogram) (hmem : gram ∈ grams) :
     ∃ packed targetNode,
-      responses[(matchingGramWords word).idxOf gram]? = some packed ∧
+      responses[grams.idxOf gram]? = some packed ∧
         code.nodeAt? (responseTarget packed) = some targetNode ∧
           responseTarget packed < index ∧
             Matches
               (permute (responsePermutation packed)
                 (Code.nodeWord (ring metadata).length targetNode)).toList
-              gram.toList := by
-  let grams := matchingGramWords word
-  have hvalid' : responses.size = grams.length ∧
-      ∀ offset : Fin grams.length,
-        match responses[offset.val]? with
-        | none => False
-        | some packed =>
-            ResponseTargetValid code index (grams.get offset) packed := by
-    simpa [ChromogramResponsesValid, grams] using hvalid
-  have hoffset : grams.idxOf gram < grams.length :=
-    List.idxOf_lt_length_of_mem (by simpa [grams] using hmem)
-  let offset : Fin grams.length := ⟨grams.idxOf gram, hoffset⟩
-  have hgram : grams.get offset = gram := by
-    simp [offset]
-  have hentry := hvalid'.2 offset
-  cases hresponse : responses[offset.val]? with
-  | none => simp [hresponse] at hentry
-  | some packed =>
-      cases hnode : code.nodeAt? (responseTarget packed) with
-      | none =>
-          simp [hresponse, ResponseTargetValid, hnode] at hentry
-      | some targetNode =>
-          rw [hgram] at hentry
-          have hlocal : responseTarget packed < index ∧
-              Matches
-                (permute (responsePermutation packed)
-                  (Code.nodeWord (ring metadata).length targetNode)).toList
-                gram.toList := by
-            simpa [hresponse, ResponseTargetValid, hnode] using hentry
-          exact ⟨packed, targetNode, rfl, hnode, hlocal⟩
+              gram := by
+  induction grams generalizing responses with
+  | nil => simp at hmem
+  | cons head grams ih =>
+      cases responses with
+      | nil => simp [ResponseListValid] at hvalid
+      | cons packed responses =>
+          have hparts :
+              ResponseTargetValid metadata code index head packed ∧
+                ResponseListValid metadata code index grams responses := by
+            simpa [ResponseListValid] using hvalid
+          by_cases heq : gram = head
+          · subst gram
+            cases hnode : code.nodeAt? (responseTarget packed) with
+            | none => simp [ResponseTargetValid, hnode] at hparts
+            | some targetNode =>
+                have hlocal : responseTarget packed < index ∧
+                    Matches
+                      (permute (responsePermutation packed)
+                        (Code.nodeWord (ring metadata).length
+                          targetNode)).toList
+                      head := by
+                  simpa [ResponseTargetValid, hnode] using hparts.1
+                exact ⟨packed, targetNode, by simp, hnode, hlocal⟩
+          · have htail : gram ∈ grams := by
+              simpa [heq] using hmem
+            obtain ⟨targetPacked, targetNode, hresponse,
+                htargetNode, htarget, hmatches⟩ :=
+              ih responses hparts.2 htail
+            refine ⟨targetPacked, targetNode, ?_, htargetNode,
+              htarget, hmatches⟩
+            simpa [List.idxOf_cons_ne grams (Ne.symm heq)] using hresponse
 
-private def gramWordOfMatch
+theorem exists_response_of_valid
+    (code : Code) (index : Nat)
     (word : TraceWord (ring metadata).length)
-    (gram : Chromogram) (hmatch : Matches word.toList gram) :
-    GramWord (ring metadata).length :=
-  ⟨gram, by simpa using hmatch.length_eq.symm⟩
+    (responses : Array Nat)
+    (hvalid : ChromogramResponsesValid code index word responses)
+    (gram : Chromogram)
+    (hmem : gram ∈ matchingChromograms word.toList) :
+    ∃ packed targetNode,
+      responses.toList[(matchingChromograms word.toList).idxOf gram]? =
+          some packed ∧
+        code.nodeAt? (responseTarget packed) = some targetNode ∧
+          responseTarget packed < index ∧
+            Matches
+              (permute (responsePermutation packed)
+                (Code.nodeWord (ring metadata).length targetNode)).toList
+              gram := by
+  exact exists_response_of_list_valid metadata code index
+    (matchingChromograms word.toList) responses.toList hvalid gram hmem
 
 /-- Every checked orbit node denotes a genuine finite Kempe co-closure
 derivation.  Shared response permutations recover the exact spelling needed
@@ -315,33 +442,28 @@ theorem derivation_of_node
               ChromogramResponsesValid code index word responses := by
             simpa [NodeConditions, word, hrule] using hconditions
           refine .chromograms
-            (fun gram hmatch =>
-              (responseWord code word responses
-                (gramWordOfMatch word gram hmatch)).toList) ?_ ?_
+            (fun gram _hmatch =>
+              (responseWord code word responses gram).toList) ?_ ?_
           · intro gram hmatch
-            let fixedGram := gramWordOfMatch word gram hmatch
-            have hmem : fixedGram ∈ matchingGramWords word :=
-              mem_matchingGramWords word fixedGram (by
-                simpa [fixedGram, gramWordOfMatch] using hmatch)
+            have hmem : gram ∈ matchingChromograms word.toList :=
+              (mem_matchingChromograms_iff word.toList gram).2 hmatch
             obtain ⟨packed, targetNode, hresponseCode,
                 htargetNode, _htarget, hmatches⟩ :=
               exists_response_of_valid code index word responses hlocal
-                fixedGram hmem
-            have hresponse : responseWord code word responses fixedGram =
+                gram hmem
+            have hresponse : responseWord code word responses gram =
                 permute (responsePermutation packed)
                   (Code.nodeWord (ring metadata).length targetNode) := by
               simp [responseWord, hresponseCode, htargetNode]
             rw [hresponse]
-            simpa [fixedGram, gramWordOfMatch] using hmatches
+            exact hmatches
           · intro gram hmatch
-            let fixedGram := gramWordOfMatch word gram hmatch
-            have hmem : fixedGram ∈ matchingGramWords word :=
-              mem_matchingGramWords word fixedGram (by
-                simpa [fixedGram, gramWordOfMatch] using hmatch)
+            have hmem : gram ∈ matchingChromograms word.toList :=
+              (mem_matchingChromograms_iff word.toList gram).2 hmatch
             obtain ⟨packed, targetNode, hresponseCode,
                 htargetNode, htarget, _hmatches⟩ :=
               exists_response_of_valid code index word responses hlocal
-                fixedGram hmem
+                gram hmem
             have htargetCount : responseTarget packed < code.nodeCount :=
               Nat.lt_trans htarget hindex
             have hderivation :=
@@ -353,11 +475,11 @@ theorem derivation_of_node
               apply CoclosureDerivation.permutation
                 (responsePermutation packed).inverse.toEquiv
               simpa [← toList_permute, inverse_permute] using hderivation
-            have hresponse : responseWord code word responses fixedGram =
+            have hresponse : responseWord code word responses gram =
                 permute (responsePermutation packed)
                   (Code.nodeWord (ring metadata).length targetNode) := by
               simp [responseWord, hresponseCode, htargetNode]
-            simpa [fixedGram, hresponse] using hpermuted
+            simpa [hresponse] using hpermuted
 
 theorem kempeCoclosure_of_node
     (valid : ClassicalCertificateReductionMetadata.Valid metadata)
