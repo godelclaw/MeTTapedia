@@ -1,0 +1,76 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk00
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk01
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk02
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk03
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk04
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk05
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk06
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk07
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk08
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk09
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk10
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk11
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk12
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk13
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk14
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk15
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk16
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk17
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk18
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk19
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk20
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk21
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk22
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueTwentyOrbitResponseValueCheckChunk23
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateCatalogueTwentyOrbitResponseValueCheck
+
+open ClassicalCertificateCatalogueTwentyOrbitProductData
+open ClassicalCertificateOrbitResponseTable
+
+theorem twentiethCatalogueOrbitResponseValueChunkCount :
+    twentiethCatalogueOrbitProductCertificate.responseCode.values.size =
+      24 := by
+  rfl
+
+/-- Every shared response orbit has a spelling in its represented source
+layer. -/
+theorem twentiethCatalogueOrbitResponseValueTable_checker :
+    responseValueTableBoolean twentiethCatalogueOrbitProductCertificate =
+      true := by
+  rw [responseValueTableBoolean,
+    twentiethCatalogueOrbitResponseValueChunkCount]
+  apply List.all_eq_true.2
+  intro chunk hchunk
+  have hlt : chunk < 24 := List.mem_range.1 hchunk
+  interval_cases chunk <;>
+    simp only [twentiethCatalogueOrbitResponseValueChunk00_checker,
+      twentiethCatalogueOrbitResponseValueChunk01_checker,
+      twentiethCatalogueOrbitResponseValueChunk02_checker,
+      twentiethCatalogueOrbitResponseValueChunk03_checker,
+      twentiethCatalogueOrbitResponseValueChunk04_checker,
+      twentiethCatalogueOrbitResponseValueChunk05_checker,
+      twentiethCatalogueOrbitResponseValueChunk06_checker,
+      twentiethCatalogueOrbitResponseValueChunk07_checker,
+      twentiethCatalogueOrbitResponseValueChunk08_checker,
+      twentiethCatalogueOrbitResponseValueChunk09_checker,
+      twentiethCatalogueOrbitResponseValueChunk10_checker,
+      twentiethCatalogueOrbitResponseValueChunk11_checker,
+      twentiethCatalogueOrbitResponseValueChunk12_checker,
+      twentiethCatalogueOrbitResponseValueChunk13_checker,
+      twentiethCatalogueOrbitResponseValueChunk14_checker,
+      twentiethCatalogueOrbitResponseValueChunk15_checker,
+      twentiethCatalogueOrbitResponseValueChunk16_checker,
+      twentiethCatalogueOrbitResponseValueChunk17_checker,
+      twentiethCatalogueOrbitResponseValueChunk18_checker,
+      twentiethCatalogueOrbitResponseValueChunk19_checker,
+      twentiethCatalogueOrbitResponseValueChunk20_checker,
+      twentiethCatalogueOrbitResponseValueChunk21_checker,
+      twentiethCatalogueOrbitResponseValueChunk22_checker,
+      twentiethCatalogueOrbitResponseValueChunk23_checker]
+
+end ClassicalCertificateCatalogueTwentyOrbitResponseValueCheck
+
+end Mettapedia.GraphTheory.FourColor
