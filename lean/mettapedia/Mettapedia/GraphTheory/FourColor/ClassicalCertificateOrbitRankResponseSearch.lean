@@ -118,7 +118,7 @@ theorem canonicalWord_length (word : List TraceSymbol) :
 def canonicalTraceWord (word : TraceWord length) : TraceWord length :=
   ⟨canonicalWord word.toList, canonicalWord_length word.toList |>.trans word.2⟩
 
-/-- Canonical orbit words point to configuration-rank vectors. -/
+/-- Stored orbit representatives point to configuration-rank vectors. -/
 structure Table (length : Nat) where
   ranks : ClassicalCertificatePackedRankVector.Code
   orbitCode : TraceCode
@@ -126,14 +126,30 @@ structure Table (length : Nat) where
 
 def Table.vectorAt? (table : Table length)
     (word : TraceWord length) : Option Nat :=
-  table.orbitCode.lookup length table.orbitRoot
-    (canonicalTraceWord word).toList
+  table.orbitCode.lookup length table.orbitRoot word.toList
 
 def Table.rankAt? (table : Table length)
     (config : Nat) (word : TraceWord length) : Option Nat :=
-  match table.vectorAt? word with
-  | none => none
-  | some vector => table.ranks.rankAt? vector config
+  permutationCodes.findSome? fun permutation =>
+    (table.vectorAt? (permute permutation word)).bind fun vector =>
+      table.ranks.rankAt? vector config
+
+/-- A successful orbit-rank search exposes both the global permutation and
+the stored rank-vector leaf that justify it. -/
+theorem Table.rankAt?_sound (table : Table length)
+    (config rank : Nat) (word : TraceWord length)
+    (hrank : table.rankAt? config word = some rank) :
+    ∃ permutation vector,
+      table.vectorAt? (permute permutation word) = some vector ∧
+        table.ranks.rankAt? vector config = some rank := by
+  rw [Table.rankAt?, List.findSome?_eq_some_iff] at hrank
+  obtain ⟨_prefix, permutation, _suffix, _hcodes, hselected, _hprior⟩ :=
+    hrank
+  cases hvector : table.vectorAt? (permute permutation word) with
+  | none => simp [hvector] at hselected
+  | some vector =>
+      exact ⟨permutation, vector, hvector, by
+        simpa [hvector] using hselected⟩
 
 /-- Search one exact chromogram fiber for a word carrying the requested orbit
 rank in one configuration. -/
