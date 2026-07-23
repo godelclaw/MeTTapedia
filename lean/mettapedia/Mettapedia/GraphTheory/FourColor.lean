@@ -913,3 +913,4 @@ import Mettapedia.GraphTheory.FourColor.ClassicalCertificateHypermapColoring
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateKempeClosure
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateRankedKempe
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificatePresentations
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificatePresentationHubcapCoverage
