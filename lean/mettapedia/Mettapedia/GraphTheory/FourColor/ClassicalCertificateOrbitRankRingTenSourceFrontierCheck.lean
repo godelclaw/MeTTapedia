@@ -1,0 +1,114 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCoverage
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk000
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk001
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk002
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk003
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk004
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk005
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk006
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk007
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk008
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk009
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk010
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk011
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk012
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk013
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk014
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk015
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk016
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk017
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk018
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk019
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk020
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk021
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk022
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk023
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk024
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk025
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk026
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk027
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk028
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk029
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk030
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk031
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk032
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk033
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk034
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk035
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk036
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk037
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk038
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk039
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk040
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierCheckChunk041
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateOrbitRankRingTenSourceFrontierCheck
+
+open ClassicalCertificateOrbitRankResponseSearch
+open ClassicalCertificateOrbitRankRingTenData
+open ClassicalCertificateRankVectorLeafProduct
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 200000000
+
+theorem ringTenSourceFrontierBlock_checker
+    (block : Nat) (hblock : block < 42) :
+    sourceFrontierBlockBoolean ringTenRankCertificate 4 1 block = true := by
+  interval_cases block <;>
+    simp_all only [ringTenSourceFrontierBlock000_checker,
+      ringTenSourceFrontierBlock001_checker,
+      ringTenSourceFrontierBlock002_checker,
+      ringTenSourceFrontierBlock003_checker,
+      ringTenSourceFrontierBlock004_checker,
+      ringTenSourceFrontierBlock005_checker,
+      ringTenSourceFrontierBlock006_checker,
+      ringTenSourceFrontierBlock007_checker,
+      ringTenSourceFrontierBlock008_checker,
+      ringTenSourceFrontierBlock009_checker,
+      ringTenSourceFrontierBlock010_checker,
+      ringTenSourceFrontierBlock011_checker,
+      ringTenSourceFrontierBlock012_checker,
+      ringTenSourceFrontierBlock013_checker,
+      ringTenSourceFrontierBlock014_checker,
+      ringTenSourceFrontierBlock015_checker,
+      ringTenSourceFrontierBlock016_checker,
+      ringTenSourceFrontierBlock017_checker,
+      ringTenSourceFrontierBlock018_checker,
+      ringTenSourceFrontierBlock019_checker,
+      ringTenSourceFrontierBlock020_checker,
+      ringTenSourceFrontierBlock021_checker,
+      ringTenSourceFrontierBlock022_checker,
+      ringTenSourceFrontierBlock023_checker,
+      ringTenSourceFrontierBlock024_checker,
+      ringTenSourceFrontierBlock025_checker,
+      ringTenSourceFrontierBlock026_checker,
+      ringTenSourceFrontierBlock027_checker,
+      ringTenSourceFrontierBlock028_checker,
+      ringTenSourceFrontierBlock029_checker,
+      ringTenSourceFrontierBlock030_checker,
+      ringTenSourceFrontierBlock031_checker,
+      ringTenSourceFrontierBlock032_checker,
+      ringTenSourceFrontierBlock033_checker,
+      ringTenSourceFrontierBlock034_checker,
+      ringTenSourceFrontierBlock035_checker,
+      ringTenSourceFrontierBlock036_checker,
+      ringTenSourceFrontierBlock037_checker,
+      ringTenSourceFrontierBlock038_checker,
+      ringTenSourceFrontierBlock039_checker,
+      ringTenSourceFrontierBlock040_checker,
+      ringTenSourceFrontierBlock041_checker]
+
+/-- The ring-ten source trie and every matching noncrossing chromogram
+satisfy pointwise strict rank descent. -/
+theorem ringTenSourceFrontierProductValid :
+    ProductValid ringTenRankCertificate := by
+  apply productValid_of_sourceFrontier_block_checkers
+    ringTenRankCertificate 4 1 42
+  · rw [ringTenSourceFrontierLength]
+  · exact ringTenSourceFrontierBlock_checker
+
+end ClassicalCertificateOrbitRankRingTenSourceFrontierCheck
+
+end Mettapedia.GraphTheory.FourColor

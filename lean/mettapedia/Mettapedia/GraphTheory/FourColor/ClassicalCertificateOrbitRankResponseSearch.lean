@@ -277,6 +277,90 @@ theorem responseWitnessChecker_sound (table : Table length)
   · exact hconfig
   · exact hrank
 
+/-- Semantic interface exported by any response-witness checker, including
+prefix-chunked checkers. -/
+def ResponseWitnessValid (table : Table length)
+    (code : ResponseCode) (root : Nat) : Prop :=
+  ∀ gram : GramWord length, ∀ responseVector,
+    code.lookup root gram.toList = some responseVector →
+      ∀ config rank, config < table.ranks.configCount →
+        table.ranks.rankAt? responseVector config = some rank →
+          ∃ response : TraceWord length,
+            Matches response.toList gram.toList ∧
+              table.rankAt? config response = some rank
+
+theorem responseWitnessValid_of_checker_true (table : Table length)
+    (code : ResponseCode) (root : Nat)
+    (hchecker : responseWitnessChecker table code root = true) :
+    ResponseWitnessValid table code root := by
+  intro gram responseVector hlookup config rank hconfig hrank
+  exact responseWitnessChecker_sound table code root hchecker gram
+    responseVector hlookup config rank hconfig hrank
+
+/-- Semantic interface exported by the rank-vector source/response product. -/
+def ProductValid
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length) :
+    Prop :=
+  ∀ word : TraceWord length, ∀ sourceVector config sourceRank,
+    certificate.traceCode.lookup length certificate.sourceRoot word.toList =
+        some sourceVector →
+      config < certificate.ranks.configCount →
+      certificate.ranks.rankAt? sourceVector config = some sourceRank →
+      ∀ gram : GramWord length, Matches word.toList gram.toList →
+        0 < sourceRank ∧
+          ∃ responseVector responseRank,
+            certificate.responseCode.lookup certificate.responseRoot
+                gram.toList = some responseVector ∧
+              certificate.ranks.rankAt? responseVector config =
+                some responseRank ∧
+              responseRank < sourceRank
+
+theorem productValid_of_checker_true
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
+    (hchecker : certificate.checker = true) :
+    ProductValid certificate := by
+  intro word sourceVector config sourceRank haccepted hconfig hsourceRank
+    gram hmatch
+  exact certificate_response_rank_lt_of_checker_true certificate hchecker
+    word sourceVector config sourceRank haccepted hconfig hsourceRank gram
+      hmatch
+
+/-- Semantic product descent and semantic response realization compose to an
+actual same-chromogram word of strictly lower orbit rank. -/
+theorem exists_lower_response_of_validities
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
+    (table : Table length)
+    (hranks : certificate.ranks = table.ranks)
+    (hproduct : ProductValid certificate)
+    (hwitness : ResponseWitnessValid table certificate.responseCode
+      certificate.responseRoot)
+    (word : TraceWord length) (sourceVector config sourceRank : Nat)
+    (haccepted : certificate.traceCode.lookup length certificate.sourceRoot
+      word.toList = some sourceVector)
+    (hconfig : config < table.ranks.configCount)
+    (hsourceRank : table.ranks.rankAt? sourceVector config = some sourceRank)
+    (gram : GramWord length)
+    (hmatch : Matches word.toList gram.toList) :
+    0 < sourceRank ∧
+      ∃ response : TraceWord length, ∃ responseRank,
+        Matches response.toList gram.toList ∧
+          table.rankAt? config response = some responseRank ∧
+            responseRank < sourceRank := by
+  have hsourceRank' : certificate.ranks.rankAt? sourceVector config =
+      some sourceRank := by simpa [hranks] using hsourceRank
+  have hconfig' : config < certificate.ranks.configCount := by
+    simpa [hranks] using hconfig
+  obtain ⟨hpositive, responseVector, responseRank, hlookup,
+      hresponseRank, hlower⟩ :=
+    hproduct word sourceVector config sourceRank haccepted hconfig'
+      hsourceRank' gram hmatch
+  have hresponseRank' : table.ranks.rankAt? responseVector config =
+      some responseRank := by simpa [hranks] using hresponseRank
+  obtain ⟨response, hmatches, hrank⟩ :=
+    hwitness gram responseVector hlookup config responseRank hconfig
+      hresponseRank'
+  exact ⟨hpositive, response, responseRank, hmatches, hrank, hlower⟩
+
 /-- The product check and witness check compose to an actual matching word of
 strictly lower orbit rank, without storing a response pointer. -/
 theorem exists_lower_response_of_checkers
@@ -298,21 +382,12 @@ theorem exists_lower_response_of_checkers
         Matches response.toList gram.toList ∧
           table.rankAt? config response = some responseRank ∧
             responseRank < sourceRank := by
-  have hsourceRank' : certificate.ranks.rankAt? sourceVector config =
-      some sourceRank := by simpa [hranks] using hsourceRank
-  have hconfig' : config < certificate.ranks.configCount := by
-    simpa [hranks] using hconfig
-  obtain ⟨hpositive, responseVector, responseRank, hlookup,
-      hresponseRank, hlower⟩ :=
-    certificate_response_rank_lt_of_checker_true certificate hproduct word
-      sourceVector config sourceRank haccepted hconfig' hsourceRank' gram hmatch
-  have hresponseRank' : table.ranks.rankAt? responseVector config =
-      some responseRank := by simpa [hranks] using hresponseRank
-  obtain ⟨response, hmatches, hrank⟩ :=
-    responseWitnessChecker_sound table certificate.responseCode
-      certificate.responseRoot hwitness gram responseVector hlookup config
-        responseRank hconfig hresponseRank'
-  exact ⟨hpositive, response, responseRank, hmatches, hrank, hlower⟩
+  exact exists_lower_response_of_validities certificate table hranks
+    (productValid_of_checker_true certificate hproduct)
+    (responseWitnessValid_of_checker_true table certificate.responseCode
+      certificate.responseRoot hwitness)
+    word sourceVector config sourceRank haccepted hconfig hsourceRank gram
+      hmatch
 
 end ClassicalCertificateOrbitRankResponseSearch
 

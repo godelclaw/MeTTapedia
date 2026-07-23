@@ -1,0 +1,19 @@
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankRingTenSourceFrontierRefine041Check
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace ClassicalCertificateOrbitRankRingTenSourceFrontierCheck
+
+open ClassicalCertificateOrbitRankRingTenData
+open ClassicalCertificateRankVectorLeafProduct
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 200000000
+
+theorem ringTenSourceFrontierBlock041_checker :
+    sourceFrontierBlockBoolean ringTenRankCertificate 4 1 41 = true := by
+  exact ringTenSourceFrontierBlock041_refined_checker
+
+end ClassicalCertificateOrbitRankRingTenSourceFrontierCheck
+
+end Mettapedia.GraphTheory.FourColor

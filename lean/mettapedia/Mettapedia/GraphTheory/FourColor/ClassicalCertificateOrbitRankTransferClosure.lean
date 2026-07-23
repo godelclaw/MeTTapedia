@@ -151,6 +151,28 @@ theorem launchCoverageChecker_sound (table : Table length)
     findLaunch?_sound certificate table config (rank + 1) word permutation
       sourceVector hlaunch⟩
 
+/-- Semantic launch interface exported by either a whole-root checker or a
+prefix-chunked family of checkers. -/
+def LaunchCoverage (table : Table length)
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
+    (config : Nat) : Prop :=
+  ∀ word : TraceWord length, ∀ orbitVector rank,
+    table.vectorAt? word = some orbitVector →
+      table.ranks.rankAt? orbitVector config = some (rank + 1) →
+        ∃ permutation sourceVector,
+          certificate.traceCode.lookup length certificate.sourceRoot
+              (permute permutation word).toList = some sourceVector ∧
+            table.ranks.rankAt? sourceVector config = some (rank + 1)
+
+theorem launchCoverage_of_checker_true (table : Table length)
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
+    (config : Nat)
+    (hchecker : launchCoverageChecker table certificate config = true) :
+    LaunchCoverage table certificate config := by
+  intro word orbitVector rank hlookup hrank
+  exact launchCoverageChecker_sound table certificate config hchecker word
+    orbitVector rank hlookup hrank
+
 /-- Check the rank-zero orbit leaves against an independently meaningful base
 predicate. -/
 def baseCoverageChecker (table : Table length) (config : Nat)
@@ -174,14 +196,99 @@ theorem baseCoverageChecker_sound (table : Table length) (config : Nat)
   have hlocal := (List.all_eq_true.1 hchecker) (word, orbitVector) hentry
   simpa [baseCoverageChecker, hrank] using hlocal
 
+/-- Semantic rank-zero interface exported by any exact base-language
+attachment. -/
+def BaseCoverage (table : Table length) (config : Nat)
+    (base : TraceWord length → Bool) : Prop :=
+  ∀ word : TraceWord length, ∀ orbitVector,
+    table.vectorAt? word = some orbitVector →
+      table.ranks.rankAt? orbitVector config = some 0 →
+        base word = true
+
+theorem baseCoverage_of_checker_true (table : Table length) (config : Nat)
+    (base : TraceWord length → Bool)
+    (hchecker : baseCoverageChecker table config base = true) :
+    BaseCoverage table config base := by
+  intro word orbitVector hlookup hrank
+  exact baseCoverageChecker_sound table config base hchecker word orbitVector
+    hlookup hrank
+
 private def gramWordOfMatch (word : TraceWord length)
     (gram : Chromogram) (hmatch : Matches word.toList gram) :
     GramWord length :=
   ⟨gram, hmatch.length_eq.symm.trans word.2⟩
 
-/-- Orbit representatives, launch spellings, and pointer-free lower-rank
-responses assemble into one finite Kempe co-closure derivation.  The two
-global permutations are nonrecursive; only the orbit rank decreases. -/
+/-- Semantic transfer interfaces suffice for the finite derivation; their
+proofs may come from independently chunked certificates.  Orbit
+representatives and launch spellings are nonrecursive permutation steps; only
+the pointer-free response decreases the orbit rank. -/
+theorem derivation_of_validities
+    (table : Table length)
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
+    (config : Nat) (hconfig : config < table.ranks.configCount)
+    (hranks : certificate.ranks = table.ranks)
+    (hproduct : ProductValid certificate)
+    (hwitness : ResponseWitnessValid table certificate.responseCode
+      certificate.responseRoot)
+    (hlaunch : LaunchCoverage table certificate config)
+    (base : TraceWord length → Bool)
+    (hbase : BaseCoverage table config base)
+    (ordinary : List TraceSymbol → Prop)
+    (baseSound : ∀ word, base word = true → ordinary word.toList)
+    (word : TraceWord length) (rank : Nat)
+    (hrank : table.rankAt? config word = some rank) :
+    CoclosureDerivation ordinary word.toList := by
+  obtain ⟨orbitPermutation, orbitVector, horbitLookup, horbitRank⟩ :=
+    table.rankAt?_sound config rank word hrank
+  let orbitWord := permute orbitPermutation word
+  apply CoclosureDerivation.permutation orbitPermutation.toEquiv
+  change CoclosureDerivation ordinary orbitWord.toList
+  cases rank with
+  | zero =>
+      apply CoclosureDerivation.member
+      apply baseSound orbitWord
+      exact hbase orbitWord orbitVector horbitLookup horbitRank
+  | succ rank =>
+      obtain ⟨launchPermutation, sourceVector, hsourceLookup,
+          hsourceRank⟩ :=
+        hlaunch orbitWord orbitVector rank horbitLookup horbitRank
+      let launchWord := permute launchPermutation orbitWord
+      apply CoclosureDerivation.permutation launchPermutation.toEquiv
+      change CoclosureDerivation ordinary launchWord.toList
+      refine CoclosureDerivation.chromograms
+        (fun gram hmatch =>
+          let fixedGram := gramWordOfMatch launchWord gram hmatch
+          (Classical.choose
+            (exists_lower_response_of_validities certificate table hranks
+              hproduct hwitness launchWord sourceVector config (rank + 1)
+                hsourceLookup hconfig hsourceRank fixedGram hmatch).2).toList)
+        ?_ ?_
+      · intro gram hmatch
+        let fixedGram := gramWordOfMatch launchWord gram hmatch
+        have hresponses :=
+          (exists_lower_response_of_validities certificate table hranks
+            hproduct hwitness launchWord sourceVector config (rank + 1)
+              hsourceLookup hconfig hsourceRank fixedGram hmatch).2
+        obtain ⟨responseRank, hmatches, _hrank, _hlower⟩ :=
+          Classical.choose_spec hresponses
+        simpa [fixedGram, gramWordOfMatch] using hmatches
+      · intro gram hmatch
+        let fixedGram := gramWordOfMatch launchWord gram hmatch
+        have hresponses :=
+          (exists_lower_response_of_validities certificate table hranks
+            hproduct hwitness launchWord sourceVector config (rank + 1)
+              hsourceLookup hconfig hsourceRank fixedGram hmatch).2
+        obtain ⟨responseRank, _hmatches, hresponseRank, hlower⟩ :=
+          Classical.choose_spec hresponses
+        exact derivation_of_validities table certificate config hconfig
+          hranks hproduct
+          hwitness hlaunch base hbase ordinary baseSound
+            (Classical.choose hresponses) responseRank hresponseRank
+termination_by rank
+decreasing_by omega
+
+/-- Whole-root checker equations are one concrete implementation of the four
+semantic transfer interfaces. -/
 theorem derivation
     (table : Table length)
     (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
@@ -197,56 +304,14 @@ theorem derivation
     (baseSound : ∀ word, base word = true → ordinary word.toList)
     (word : TraceWord length) (rank : Nat)
     (hrank : table.rankAt? config word = some rank) :
-    CoclosureDerivation ordinary word.toList := by
-  obtain ⟨orbitPermutation, orbitVector, horbitLookup, horbitRank⟩ :=
-    table.rankAt?_sound config rank word hrank
-  let orbitWord := permute orbitPermutation word
-  apply CoclosureDerivation.permutation orbitPermutation.toEquiv
-  change CoclosureDerivation ordinary orbitWord.toList
-  cases rank with
-  | zero =>
-      apply CoclosureDerivation.member
-      apply baseSound orbitWord
-      exact baseCoverageChecker_sound table config base hbase orbitWord
-        orbitVector horbitLookup horbitRank
-  | succ rank =>
-      obtain ⟨launchPermutation, sourceVector, hsourceLookup,
-          hsourceRank⟩ :=
-        launchCoverageChecker_sound table certificate config hlaunch orbitWord
-          orbitVector rank horbitLookup horbitRank
-      let launchWord := permute launchPermutation orbitWord
-      apply CoclosureDerivation.permutation launchPermutation.toEquiv
-      change CoclosureDerivation ordinary launchWord.toList
-      refine CoclosureDerivation.chromograms
-        (fun gram hmatch =>
-          let fixedGram := gramWordOfMatch launchWord gram hmatch
-          (Classical.choose
-            (exists_lower_response_of_checkers certificate table hranks
-              hproduct hwitness launchWord sourceVector config (rank + 1)
-                hsourceLookup hconfig hsourceRank fixedGram hmatch).2).toList)
-        ?_ ?_
-      · intro gram hmatch
-        let fixedGram := gramWordOfMatch launchWord gram hmatch
-        have hresponses :=
-          (exists_lower_response_of_checkers certificate table hranks
-            hproduct hwitness launchWord sourceVector config (rank + 1)
-              hsourceLookup hconfig hsourceRank fixedGram hmatch).2
-        obtain ⟨responseRank, hmatches, _hrank, _hlower⟩ :=
-          Classical.choose_spec hresponses
-        simpa [fixedGram, gramWordOfMatch] using hmatches
-      · intro gram hmatch
-        let fixedGram := gramWordOfMatch launchWord gram hmatch
-        have hresponses :=
-          (exists_lower_response_of_checkers certificate table hranks
-            hproduct hwitness launchWord sourceVector config (rank + 1)
-              hsourceLookup hconfig hsourceRank fixedGram hmatch).2
-        obtain ⟨responseRank, _hmatches, hresponseRank, hlower⟩ :=
-          Classical.choose_spec hresponses
-        exact derivation table certificate config hconfig hranks hproduct
-          hwitness hlaunch base hbase ordinary baseSound
-            (Classical.choose hresponses) responseRank hresponseRank
-termination_by rank
-decreasing_by omega
+    CoclosureDerivation ordinary word.toList :=
+  derivation_of_validities table certificate config hconfig hranks
+    (productValid_of_checker_true certificate hproduct)
+    (responseWitnessValid_of_checker_true table certificate.responseCode
+      certificate.responseRoot hwitness)
+    (launchCoverage_of_checker_true table certificate config hlaunch)
+    base (baseCoverage_of_checker_true table config base hbase) ordinary
+      baseSound word rank hrank
 
 theorem kempeCoclosure
     (table : Table length)
