@@ -920,3 +920,4 @@ import Mettapedia.GraphTheory.FourColor.ClassicalCertificateRotationHubProfile
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateDischargeRuleBound
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateQuiz
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateDischargeQuizBridge
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateCatalogueQuiz
