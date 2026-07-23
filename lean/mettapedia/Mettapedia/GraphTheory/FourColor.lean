@@ -918,3 +918,4 @@ import Mettapedia.GraphTheory.FourColor.ClassicalCertificateDischargingScore
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateDischargingHubcapJoin
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateRotationHubProfile
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateDischargeRuleBound
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateQuiz
