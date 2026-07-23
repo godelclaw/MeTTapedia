@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankResponseSearch
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateOrbitRankWitness
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -7,6 +7,7 @@ namespace ClassicalCertificateOrbitRankTransferClosure
 open ClassicalCertificateEvenTraceKempe
 open ClassicalCertificateKempeClosure
 open ClassicalCertificateOrbitRankResponseSearch
+open ClassicalCertificateOrbitRankWitness
 open ClassicalCertificatePackedRankVector
 open ClassicalCertificateRankedKempe
 open ClassicalCertificateRankVectorDag
@@ -218,17 +219,16 @@ private def gramWordOfMatch (word : TraceWord length)
     GramWord length :=
   ⟨gram, hmatch.length_eq.symm.trans word.2⟩
 
-/-- Semantic transfer interfaces suffice for the finite derivation; their
-proofs may come from independently chunked certificates.  Orbit
-representatives and launch spellings are nonrecursive permutation steps; only
-the pointer-free response decreases the orbit rank. -/
-theorem derivation_of_validities
+/-- Explicit orbit-rank witnesses suffice for the finite derivation.  The
+recursive measure is the witnessed rank itself; orbit and launch
+permutations merely choose spellings and never consume that measure. -/
+theorem derivation_of_explicit_validities
     (table : Table length)
     (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
     (config : Nat) (hconfig : config < table.ranks.configCount)
     (hranks : certificate.ranks = table.ranks)
     (hproduct : ProductValid certificate)
-    (hwitness : ResponseWitnessValid table certificate.responseCode
+    (hwitness : ExplicitResponseWitnessValid table certificate.responseCode
       certificate.responseRoot)
     (hlaunch : LaunchCoverage table certificate config)
     (base : TraceWord length → Bool)
@@ -236,10 +236,9 @@ theorem derivation_of_validities
     (ordinary : List TraceSymbol → Prop)
     (baseSound : ∀ word, base word = true → ordinary word.toList)
     (word : TraceWord length) (rank : Nat)
-    (hrank : table.rankAt? config word = some rank) :
+    (hrank : HasOrbitRank table config word rank) :
     CoclosureDerivation ordinary word.toList := by
-  obtain ⟨orbitPermutation, orbitVector, horbitLookup, horbitRank⟩ :=
-    table.rankAt?_sound config rank word hrank
+  obtain ⟨orbitPermutation, orbitVector, horbitLookup, horbitRank⟩ := hrank
   let orbitWord := permute orbitPermutation word
   apply CoclosureDerivation.permutation orbitPermutation.toEquiv
   change CoclosureDerivation ordinary orbitWord.toList
@@ -259,33 +258,60 @@ theorem derivation_of_validities
         (fun gram hmatch =>
           let fixedGram := gramWordOfMatch launchWord gram hmatch
           (Classical.choose
-            (exists_lower_response_of_validities certificate table hranks
-              hproduct hwitness launchWord sourceVector config (rank + 1)
-                hsourceLookup hconfig hsourceRank fixedGram hmatch).2).toList)
+            (exists_lower_explicit_response_of_validities certificate table
+              hranks hproduct hwitness launchWord sourceVector config
+                (rank + 1) hsourceLookup hconfig hsourceRank fixedGram
+                  hmatch).2).toList)
         ?_ ?_
       · intro gram hmatch
         let fixedGram := gramWordOfMatch launchWord gram hmatch
         have hresponses :=
-          (exists_lower_response_of_validities certificate table hranks
-            hproduct hwitness launchWord sourceVector config (rank + 1)
-              hsourceLookup hconfig hsourceRank fixedGram hmatch).2
+          (exists_lower_explicit_response_of_validities certificate table
+            hranks hproduct hwitness launchWord sourceVector config
+              (rank + 1) hsourceLookup hconfig hsourceRank fixedGram hmatch).2
         obtain ⟨responseRank, hmatches, _hrank, _hlower⟩ :=
           Classical.choose_spec hresponses
         simpa [fixedGram, gramWordOfMatch] using hmatches
       · intro gram hmatch
         let fixedGram := gramWordOfMatch launchWord gram hmatch
         have hresponses :=
-          (exists_lower_response_of_validities certificate table hranks
-            hproduct hwitness launchWord sourceVector config (rank + 1)
-              hsourceLookup hconfig hsourceRank fixedGram hmatch).2
+          (exists_lower_explicit_response_of_validities certificate table
+            hranks hproduct hwitness launchWord sourceVector config
+              (rank + 1) hsourceLookup hconfig hsourceRank fixedGram hmatch).2
         obtain ⟨responseRank, _hmatches, hresponseRank, hlower⟩ :=
           Classical.choose_spec hresponses
-        exact derivation_of_validities table certificate config hconfig
-          hranks hproduct
-          hwitness hlaunch base hbase ordinary baseSound
-            (Classical.choose hresponses) responseRank hresponseRank
+        exact derivation_of_explicit_validities table certificate config
+          hconfig hranks hproduct hwitness hlaunch base hbase ordinary
+            baseSound (Classical.choose hresponses) responseRank hresponseRank
 termination_by rank
 decreasing_by omega
+
+/-- Semantic transfer interfaces suffice for the finite derivation; their
+proofs may come from independently chunked certificates.  Orbit
+representatives and launch spellings are nonrecursive permutation steps; only
+the pointer-free response decreases the orbit rank. -/
+theorem derivation_of_validities
+    (table : Table length)
+    (certificate : ClassicalCertificateRankVectorProduct.Certificate length)
+    (config : Nat) (hconfig : config < table.ranks.configCount)
+    (hranks : certificate.ranks = table.ranks)
+    (hproduct : ProductValid certificate)
+    (hwitness : ResponseWitnessValid table certificate.responseCode
+      certificate.responseRoot)
+    (hlaunch : LaunchCoverage table certificate config)
+    (base : TraceWord length → Bool)
+    (hbase : BaseCoverage table config base)
+    (ordinary : List TraceSymbol → Prop)
+    (baseSound : ∀ word, base word = true → ordinary word.toList)
+    (word : TraceWord length) (rank : Nat)
+    (hrank : table.rankAt? config word = some rank) :
+    CoclosureDerivation ordinary word.toList :=
+  derivation_of_explicit_validities table certificate config hconfig hranks
+    hproduct
+    (explicitResponseWitnessValid_of_responseWitnessValid table
+      certificate.responseCode certificate.responseRoot hwitness)
+    hlaunch base hbase ordinary baseSound word rank
+      (hasOrbitRank_of_rankAt?_eq_some table config rank word hrank)
 
 /-- Whole-root checker equations are one concrete implementation of the four
 semantic transfer interfaces. -/
