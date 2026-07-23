@@ -914,3 +914,4 @@ import Mettapedia.GraphTheory.FourColor.ClassicalCertificateKempeClosure
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificateRankedKempe
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificatePresentations
 import Mettapedia.GraphTheory.FourColor.ClassicalCertificatePresentationHubcapCoverage
+import Mettapedia.GraphTheory.FourColor.ClassicalCertificateDischargingScore
