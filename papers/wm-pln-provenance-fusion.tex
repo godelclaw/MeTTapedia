@@ -1,0 +1,459 @@
+%% Provenance-Carrying Evidence Fusion for Biomedical Prediction
+%%
+%% Result tables are generated from run receipts.  Regenerate before rendering:
+%%   python3 generate_wm_pln_fusion_tables.py --out generated \
+%%       --cafa5-differential <summary.json> \
+%%       --biopathnet-candidate <candidate_summary.json> \
+%%       --biopathnet-plan <run_plan.json>
+%%
+%% Render with:
+%%   pdflatex wm-pln-provenance-fusion.tex && pdflatex wm-pln-provenance-fusion.tex
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{url}
+\usepackage[hyperindex,breaklinks,hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Provenance-Carrying Evidence Fusion for Biomedical Prediction},
+  pdfsubject={A typed evidence reducer, and the pre-registration of two experiments}
+}
+
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single}
+\restylefloat{table}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}[definition]{Proposition}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\kind}[1]{\ensuremath{\mathsf{#1}}}
+
+\title{Provenance-Carrying Evidence Fusion for Biomedical Prediction\\
+  \large A typed evidence reducer, and the pre-registration of two experiments}
+\author{MeTTapedia Project}
+\date{15 July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Biomedical prediction increasingly proceeds by fusing heterogeneous evidence:
+sequence homology, learned embeddings, annotation transfer, and neural link
+predictors. The quantities being fused are heterogeneous \emph{in kind} --- some
+are ordinal similarities, some are binary observations, few are calibrated
+probabilities --- and they are mutually dependent, because they are computed from
+overlapping data. Common practice combines them anyway, because they all happen
+to be numbers in $[0,1]$.
+
+We describe a platform that refuses to do this. Evidence is typed by kind, and
+combinations that are not semantically justified simply have no reduction rule:
+noisy-OR is defined only on calibrated probabilities that share a calibration
+regime and lie in distinct dependence groups, and evidential revision is defined
+only on disjoint provenance. The fusion itself is performed by a streaming
+grouped reduction that emits, for each group, a cryptographic certificate of the
+evidence it consumed.
+
+This report has two purposes. It documents the platform and the verification it
+currently passes, and it \emph{pre-registers} two experiments --- a
+partial-knowledge protein function task and an lncRNA--target link prediction
+task --- including their hypotheses, splits, and analysis, before their outcomes
+are known.
+
+\textbf{We claim no biological performance in this report.} No full evaluation
+has been run, and no comparison against a trained control exists. Every result
+table below is generated mechanically from a run receipt; where a run has not
+been performed, the table says so and reports nothing.
+\end{abstract}
+
+\section{Introduction}
+
+A prediction that cannot be interrogated is difficult to act on. In biomedical
+settings the consumer of a prediction usually needs to know not only its score
+but what supported it, whether the supporting evidence was independent, and how
+much of the apparent confidence is an artifact of counting the same observation
+twice. Evidence fusion is exactly where these questions are decided, and it is
+usually where they are quietly discarded.
+
+Two failure modes recur. The first is \emph{kind confusion}: a BLAST bit-score,
+a cosine similarity between protein embeddings, and a binary evidence flag are
+all real numbers in $[0,1]$, and are therefore combined by formulas --- noisy-OR
+most often --- whose derivation assumes they are calibrated probabilities. The
+formula is well-defined on the floats; it is meaningless on the quantities. The
+second is \emph{dependence blindness}: predictors that share training
+annotations or an embedding are treated as independent witnesses, so agreement
+between them inflates confidence when it should not.
+
+Our position is that both failures are type errors, and should be prevented the
+way type errors are prevented: by making the illegal combination inexpressible
+rather than by warning about it in prose.
+
+\subsection*{Contributions}
+
+\begin{enumerate}
+  \item A typed evidence discipline (\S\ref{sec:evidence}) in which ordinal
+    scores, binary observations, calibrated probabilities, and evidential
+    counts are distinct kinds, and unjustified combinations have no reduction
+    rule.
+  \item A streaming grouped reduction with per-group evidence certificates
+    (\S\ref{sec:reducer}), in ordered and external-merge modes whose exact
+    agreement is checked by executable differential tests, with bounded
+    source-side input memory under direct cursor ingestion.
+  \item The pre-registration of two experiments (\S\ref{sec:cafa5},
+    \S\ref{sec:lnc}), with hypotheses and analyses fixed in advance.
+  \item Verification evidence for the platform (\S\ref{sec:verification}),
+    including exact agreement of the load-bearing reducer with an independent
+    reference implementation on a real evidence slice.
+\end{enumerate}
+
+\section{Typed evidence}\label{sec:evidence}
+
+We distinguish four kinds of evidence. Let $g$ range over \emph{dependence
+groups} --- declared equivalence classes of sources that share data, training
+annotations, or a model family --- and let $c$ range over \emph{calibration
+regimes}.
+
+\begin{definition}[Evidence kinds]
+\begin{align*}
+  \kind{Ordinal}(s, v)             &\quad \text{a value $v$ on a named ordinal scale $s$; comparable, not a probability}\\
+  \kind{Binary}(\sigma, o)         &\quad \text{an observation $o$ recorded by source $\sigma$}\\
+  \kind{Prob}(c, g, \sigma, p)     &\quad \text{$p \in [0,1]$ calibrated under regime $c$, from source $\sigma$ in group $g$}\\
+  \kind{PLN}(n^{+}, n^{-}, \tau)   &\quad \text{positive/negative evidence counts with a provenance stamp $\tau$}
+\end{align*}
+\end{definition}
+
+The discipline is carried by which combinations are \emph{defined}.
+
+\paragraph{Maximum is scale-local.} $\kind{Ordinal}(s,v_1)$ and
+$\kind{Ordinal}(s,v_2)$ reduce to $\kind{Ordinal}(s,\max(v_1,v_2))$ only when
+the scale $s$ is literally the same symbol. Two ordinal scores on different
+scales have no maximum, because their order relations are not commensurable.
+
+\paragraph{Dependence-aware noisy-OR.} For
+$\kind{Prob}(c,g_1,\sigma_1,p_1)$ and $\kind{Prob}(c,g_2,\sigma_2,p_2)$ the
+reduction
+\begin{equation}
+  p_1 \oplus p_2 = 1 - (1-p_1)(1-p_2)
+  \label{eq:noisyor}
+\end{equation}
+is defined \emph{only if} the calibration regimes agree and $g_1 \neq g_2$.
+Two consequences matter. An ordinal score can never enter
+Eq.~\ref{eq:noisyor}, because it is not of kind $\kind{Prob}$ and no rule
+mediates the two. And two sources within one dependence group can never be
+noisy-OR'd, so declaring sources dependent is a statement with teeth rather
+than documentation.
+
+\paragraph{Revision requires disjoint provenance.} $\kind{PLN}$ counts revise by
+addition only when their provenance stamps are disjoint, $\tau_1 \cap \tau_2 =
+\emptyset$. Overlapping provenance has no revision rule; a policy that resolves
+the overlap must be selected explicitly by the caller, never guessed.
+
+The engineering content of this section is that ``no rule'' is the mechanism.
+There is no runtime flag to override, and no default that silently applies. A
+pipeline that attempts an unjustified fusion does not produce a wrong number; it
+produces nothing, and fails.
+
+\section{Streaming grouped reduction and certificates}\label{sec:reducer}
+
+Fusion is a grouped reduction: partition evidence by a key (here, a
+protein--term pair and its dependence group), reduce each group, then combine
+groups. At biomedical scale the evidence does not fit in memory, so the reducer
+must stream its input. Materialized result storage remains a separate
+consumer-side cost and is not included in the source-memory claim below.
+
+The reducer exposes one surface, \code{group-fold}, in two modes.
+
+\begin{description}
+  \item[\code{ordered}] requires keys in canonical non-decreasing order. It
+    holds exactly one active accumulator, releases each group when the key
+    advances, and \emph{rejects} key regression rather than silently producing
+    fragmented groups. Ordering is over the canonical text of the key, which is
+    bytewise rather than numeric --- a distinction that matters for integer
+    keys and is benign for identifier keys.
+  \item[\code{external-merge}] accepts arbitrary input order. It builds sorted
+    runs bounded by a configured size, tags every record with a global
+    monotonic ordinal, and performs a stable $k$-way merge that feeds the same
+    ordered reducer. Equal keys retain encounter order.
+\end{description}
+
+\paragraph{Mode-agreement contract.}
+\code{external-merge} totally orders records by (key, ordinal) and feeds the
+ordered reducer over the same canonical bytes. The intended contract is that
+both modes produce identical groups and identical certificates. This is checked
+by executable differential tests rather than proved formally; the formal
+obligation is stated in \S\ref{sec:limits}.
+
+\paragraph{Certificates.} Each emitted group carries
+$(\text{count}, \text{SHA-256})$ over the canonical byte stream of the items
+that entered it, with each item length-prefixed before hashing so that the
+digest is collision-resistant across item boundaries. Together with the retained
+trail or replayable input, the certificate commits to exactly which serialized
+evidence produced the number and how many items were consumed; the digest alone
+does not recover or name those items.
+
+\section{Experiment 1: partial-knowledge protein function}\label{sec:cafa5}
+
+\subsection{Task and boundary}
+
+The task is the partial-knowledge protein function prediction setting: known
+annotations are frozen at a submission cutoff, and the ground truth consists of
+annotations newly acquired in a later growth period. The community evaluator is
+the scoring authority; we do not define the metric.
+
+The temporal boundary is a pre-registered constraint, not an aspiration. The
+final ground truth may be read \emph{only} by target selection and by the
+evaluator. It may not fit calibration, dependence groups, thresholds, source
+weights, or any fusion parameter.
+
+\subsection{Status of the released predictors}
+
+Publicly released predictors (sequence homology, embedding similarity,
+annotation transfer) are treated as \emph{frozen input features and controls},
+not as our result. Reporting their scores would be a reproduction, not an
+experiment.
+
+Critically, these released scores are \emph{not} calibrated probabilities: the
+homology scores are normalised bit-scores, the embedding scores are cosine
+similarities, and the annotation-transfer evidence is binary. Under the
+discipline of \S\ref{sec:evidence} they are of kind $\kind{Ordinal}$ and
+$\kind{Binary}$, and therefore \emph{cannot} enter Eq.~\ref{eq:noisyor} at all.
+
+\subsection{Pre-registered fusion policy}
+
+The primary policy is the conservative one: all released sources are placed in a
+single dependence group and reduced by maximum. This assumes the sources are
+mutually dependent, which is the defensible default given that they derive from
+overlapping sequence and annotation data.
+
+A calibrated noisy-OR policy is available but gated: it requires a pinned
+calibration artifact per source, one shared calibration regime, and an explicit
+independence declaration for every cross-group pair. Until a calibration is
+actually fitted from eligible pre-cutoff data, this policy is not reportable,
+and any result obtained under it is not a result.
+
+\section{Experiment 2: lncRNA--target link prediction}\label{sec:lnc}
+
+\subsection{Systems}
+
+Three systems are trained on identical frozen splits across five seeds:
+
+\begin{enumerate}
+  \item a freshly trained neural path-reasoning control (no published
+    checkpoint is reused);
+  \item a relation-path evidence model, which mines typed relation-path
+    templates from the background graph and learns positive/negative evidence
+    per template under a Beta-smoothed count-to-truth semantics;
+  \item a hybrid, combining the control's logit and the path model's evidence
+    log-odds through a non-negative $L_2$-regularised logistic stacker.
+\end{enumerate}
+
+\paragraph{A naming caution.} The relation-path evidence model is
+\emph{PLN-style} --- it uses evidence counts and a count-to-truth reading --- but
+it is presently implemented natively rather than executed in the WM-PLN runtime.
+We therefore do not call this lane ``WM-PLN'' and do not claim it as a WM-PLN
+result. Grounding it in the runtime is stated as outstanding work in
+\S\ref{sec:limits}.
+
+\subsection{Leakage controls}
+
+Three controls are mechanical rather than documentary.
+
+\emph{Self-leakage.} When collecting path features for a query edge, the query
+edge and its inverse are removed from the background graph, so the model cannot
+observe the answer it is asked for.
+
+\emph{Selection isolation.} During training and model selection the test split
+is not merely unread by convention: the selection view substitutes the
+validation file in place of the test file and records a receipt attesting the
+substitution. Training and selection commands refuse to run unless that receipt
+is present and affirms that no real test bytes are staged.
+
+\emph{One-use test.} The test evaluation is guarded by an exclusive-create lock
+and a per-job state machine that moves each job from pending to in-progress to
+consumed. A second claim fails. The lock is claimed before any test byte is
+opened.
+
+\subsection{Pre-registered hypothesis and analysis}
+
+\begin{quote}
+\textbf{Primary hypothesis.} The hybrid achieves higher MRR on the held-out test
+split than the freshly trained neural control.
+\end{quote}
+
+The primary analysis is a paired per-query bootstrap confidence interval for the
+MRR difference, with the per-seed distribution reported. Hits@$k$, mean rank,
+calibration, the path-model-only lane, provenance coverage, and path ablations
+are secondary. Selection uses validation only; the test split is scored exactly
+once. \textbf{A non-improvement, or an interval spanning zero, is a valid result
+and will be reported as such.} No post-test retuning is permitted.
+
+\subsection{Negative controls}
+
+Negatives are sampled by exact type compatibility, and shortfalls are recorded
+rather than filled by broadening the type. A sampled negative is a
+\emph{sampled} negative: it is a type-matched pair not present in the
+supervision set, not a biologically verified falsehood. Because filtering
+sampled negatives against held-out edges would itself constitute leakage, a
+sampled negative may coincide with a true held-out edge. Calibration measured
+against sampled negatives is therefore calibration against that control
+distribution, and is not population calibration.
+
+\section{Platform verification}\label{sec:verification}
+
+The following are engineering results about the platform. They are not
+biological results.
+
+\subsection{Reducer equivalence on a real evidence slice}
+
+The load-bearing reducer was run against an independent reference
+implementation of the same reduction law over a real evidence slice, under the
+conservative maximum policy, with evidence partitioned into shards by a
+digest of the protein identifier. Table~\ref{tab:reducer-equivalence} is
+generated from the gate's receipt.
+
+\input{generated/wmpf_reducer_equivalence}
+
+Two facts are worth drawing out. The maximum absolute error between the two
+implementations is exactly zero over all compared rows, and the two
+implementations emit the same prediction digest --- so the agreement is
+byte-level, not merely numerical. The sharded, streaming reducer and a
+straightforward relational reference compute the same function on real data.
+
+\subsection{Pre-registration state}
+
+Table~\ref{tab:preregistration} evidences that the frozen plan's test policy
+remains unarmed.
+
+\input{generated/wmpf_preregistration}
+
+\section{Preliminary observation, and what is absent}
+
+\subsection{One validation candidate}
+
+Exactly one hyperparameter point of the relation-path evidence model has been
+trained and scored on validation. It is reported in
+Table~\ref{tab:biopathnet-candidate} because suppressing a weak preliminary
+observation would be a selection effect.
+
+\input{generated/wmpf_biopathnet_candidate}
+
+The MRR is weak. Against a mean candidate set of roughly $929$ entries, a
+random ranking would achieve an MRR of approximately $\ln(929)/929 \approx
+0.0074$; the observed $0.0116$ is therefore on the order of $1.6\times$ random.
+This is an unselected point in a grid, at one seed, on validation, with no
+control to compare against. It supports no claim about the method, and we draw
+none. It is recorded so that the eventual grid cannot be read as if this point
+had never existed.
+
+\subsection{The results that do not yet exist}
+
+\input{generated/wmpf_cafa5_full}
+
+\input{generated/wmpf_biopathnet_grid}
+
+\section{What ``provenance'' does and does not mean here}\label{sec:provenance}
+
+Precision here is worth more than enthusiasm.
+
+\textbf{What exists.} Every fused prediction carries a trail naming the source
+packets that contributed, their dependence groups, and their scores; each
+reduction group carries a recomputable count/digest certificate; the link
+prediction lane emits witness paths, contributing input-line digests, learned
+template evidence, and a training-manifest digest. Separately, a formal
+development of provenance-aware evidential inference exists, covering source and
+scope support, disjointness, revision unions, and scoped forgetting.
+
+\textbf{What does not exist.} These artifacts do not yet compose into a single
+verified chain
+\[
+  \text{dataset/split} \to \text{training} \to \text{model/calibration}
+  \to \text{inference} \to \text{prediction} \to \text{evaluation receipt},
+\]
+and we do not yet prove that a runtime certificate denotes the corresponding
+formal derivation. The honest term for the present state is therefore
+\emph{provenance certificates and audit trails}, not \emph{proven provenance
+chains}. We use the former throughout, and the latter nowhere.
+
+\section{Limitations and threats to validity}\label{sec:limits}
+
+\paragraph{Positive-unlabelled ground truth.} Protein function annotation is
+sparse and open-world: the absence of an annotation is not evidence of absence.
+Precision measured against such a ground truth is a lower bound, and apparent
+false positives may be undiscovered true positives.
+
+\paragraph{Calibration is not yet fitted.} The calibrated fusion policy is
+plumbed but its calibration has not been learned from eligible data. No
+calibrated result is reported here, and none may be reported until the
+calibration is fitted, without consulting final labels.
+
+\paragraph{Scale is designed for, not yet demonstrated.} The reducer streams and
+spills by construction, and has been exercised at $10^5$ records and at a real
+$10^4$-scale evidence slice. The full evaluation is roughly three orders of
+magnitude larger. Working memory is bounded per shard and fails loudly rather
+than degrading, so a skewed partition is a diagnosable error rather than a
+silent one --- but the full-scale claim is an expectation, not a measurement.
+
+\paragraph{Mode agreement is tested, not proved.} The agreement of the ordered
+and external-merge modes, the once-counting property of the reduction, and the
+admissibility conditions of Eq.~\ref{eq:noisyor} are enforced by executable
+tests. Discharging them as formal obligations against the evidential semantics
+is outstanding.
+
+\paragraph{The path model is not yet runtime-grounded.} As noted in
+\S\ref{sec:lnc}, the relation-path evidence lane is PLN-style but natively
+implemented; it is not a WM-PLN execution result.
+
+\section{Reproducibility}
+
+Datasets, the evaluator, and the upstream model are pinned by content digest and
+revision; a run fails rather than proceeds if a pin does not verify. Target
+selection, shard partitioning, and negative sampling are seeded and
+deterministic. Evaluation outputs are hashed semantically --- rows and columns
+canonically ordered before digesting --- so that a digest reflects content
+rather than file-writing order.
+
+Every number in the result tables of this report is emitted by a generator that
+reads run receipts; the generator is included alongside this document. A table
+whose receipt is missing renders as an explicit pending notice. This is the same
+discipline the paper argues for, applied to the paper.
+
+\begin{thebibliography}{9}
+
+\bibitem{cafa} P.~Radivojac et~al.
+  \newblock A large-scale evaluation of computational protein function prediction.
+  \newblock \emph{Nature Methods}, 2013.
+
+\bibitem{cafapk} N.~Zhou et~al.
+  \newblock The CAFA challenge reports improved protein function prediction and
+  new functional annotations for hundreds of genes through experimental
+  screens.
+  \newblock \emph{Genome Biology}, 2019.
+
+\bibitem{smin} W.~T. Clark and P.~Radivojac.
+  \newblock Information-theoretic evaluation of predicted ontological
+  annotations.
+  \newblock \emph{Bioinformatics}, 2013.
+
+\bibitem{biopathnet} Y.~Yue et~al.
+  \newblock Path-based reasoning for biomedical knowledge graphs with
+  BioPathNet.
+  \newblock \emph{Nature Biomedical Engineering}, 2025.
+  \newblock \url{https://doi.org/10.1038/s41551-025-01598-z}
+
+\bibitem{pln} B.~Goertzel, M.~Ikl\'{e}, I.~F. Goertzel, and A.~Heljakka.
+  \newblock \emph{Probabilistic Logic Networks}.
+  \newblock Springer, 2009.
+
+\bibitem{prott5} A.~Elnaggar et~al.
+  \newblock ProtTrans: Toward understanding the language of life through
+  self-supervised learning.
+  \newblock \emph{IEEE TPAMI}, 2022.
+
+\end{thebibliography}
+
+\end{document}
