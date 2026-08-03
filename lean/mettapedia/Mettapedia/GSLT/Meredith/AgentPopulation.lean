@@ -396,12 +396,26 @@ noncomputable def fragEvidence :
     WeaknessBridge.GSLTEvidence (BisimQuotient fragGSLT) ENNReal :=
   ⟨fun _ => 1⟩
 
+/-- With uniform unit evidence, the fragment's non-distinction weakness is exactly `1`. -/
+theorem frag_nonDistinctionWeakness_eq_one :
+    WeaknessBridge.nonDistinctionWeakness fragEvidence = 1 := by
+  unfold WeaknessBridge.nonDistinctionWeakness WeaknessBridge.gsltWeakness
+    Mettapedia.Algebra.QuantaleWeakness.weakness
+  apply le_antisymm
+  · apply sSup_le
+    rintro x ⟨p, _, rfl⟩
+    simp [fragEvidence, WeaknessBridge.GSLTEvidence.toWeightFn]
+  · apply le_sSup
+    exact ⟨(toBisimClass fragGSLT .redex, toBisimClass fragGSLT .redex),
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
+      by simp [fragEvidence, WeaknessBridge.GSLTEvidence.toWeightFn]⟩
+
 /-- A coherent consciousness candidate living inside the real ρ-calculus:
 the COMM redex's class, certified coherent (trivial threshold for now). -/
 noncomputable def fragCoherent : CoherentCandidate fragGSLT ENNReal :=
   { fragCandidate with
     evidence := fragEvidence
-    threshold := ⊥
-    coherent := bot_le }
+    threshold := 1
+    coherent := le_of_eq frag_nonDistinctionWeakness_eq_one.symm }
 
 end Mettapedia.GSLT.Meredith
