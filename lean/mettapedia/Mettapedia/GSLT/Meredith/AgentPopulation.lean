@@ -418,4 +418,25 @@ noncomputable def fragCoherent : CoherentCandidate fragGSLT ENNReal :=
     threshold := 1
     coherent := le_of_eq frag_nonDistinctionWeakness_eq_one.symm }
 
+/-- Non-uniform evidence on the fragment: the redex class weighs `2`, others `1`. -/
+noncomputable def fragEvidence2 :
+    WeaknessBridge.GSLTEvidence (BisimQuotient fragGSLT) ENNReal :=
+  ⟨fun c => if c = toBisimClass fragGSLT .redex then 2 else 1⟩
+
+/-- With non-uniform weighting the fragment's non-distinction weakness rises to `4`:
+the self-diagonal pair contributes `2·2`, so the measure genuinely varies on the real calculus. -/
+theorem frag_nonDistinctionWeakness_two_eq_four :
+    WeaknessBridge.nonDistinctionWeakness fragEvidence2 = 4 := by
+  unfold WeaknessBridge.nonDistinctionWeakness WeaknessBridge.gsltWeakness
+    Mettapedia.Algebra.QuantaleWeakness.weakness
+  apply le_antisymm
+  · apply sSup_le
+    rintro x ⟨p, _, rfl⟩
+    simp only [fragEvidence2, WeaknessBridge.GSLTEvidence.toWeightFn]
+    split_ifs <;> norm_num
+  · apply le_sSup
+    exact ⟨(toBisimClass fragGSLT .redex, toBisimClass fragGSLT .redex),
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
+      by simp only [fragEvidence2, WeaknessBridge.GSLTEvidence.toWeightFn]; norm_num⟩
+
 end Mettapedia.GSLT.Meredith
