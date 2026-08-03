@@ -439,4 +439,39 @@ theorem frag_nonDistinctionWeakness_two_eq_four :
       Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
       by simp only [fragEvidence2, WeaknessBridge.GSLTEvidence.toWeightFn]; norm_num⟩
 
+/-- The COMM redex embedding has structural mass 0: every subterm is nil. -/
+theorem frag_mass_redex : rhoPatternMass (fragEmbed .redex) = 0 := by
+  simp [fragEmbed, nilProcess, rhoPatternMass]
+
+/-- The reduct embedding also has mass 0 (its bag holds just nil). -/
+theorem frag_mass_reduct : rhoPatternMass (fragEmbed .reduct) = 0 := by
+  simp only [fragEmbed]
+  rw [frag_subst_nil]
+  simp [nilProcess, rhoPatternMass]
+
+/-- Mass-derived evidence: each class weighs the structural mass of its
+representative plus one. Both masses are 0 on this tiny fragment (all subterms
+nil), so the weighting is degenerate-uniform — but the bridge from the cost
+accounting layer (rhoPatternMass) to the coherence measure is genuine. -/
+noncomputable def fragMassEvidence :
+    WeaknessBridge.GSLTEvidence (BisimQuotient fragGSLT) ENNReal :=
+  ⟨fun c => if c = toBisimClass fragGSLT .redex
+    then (rhoPatternMass (fragEmbed .redex) + 1 : ENNReal)
+    else (rhoPatternMass (fragEmbed .reduct) + 1)⟩
+
+/-- With mass-derived evidence the fragment's non-distinction weakness is `1`. -/
+theorem frag_massWeakness_eq_one :
+    WeaknessBridge.nonDistinctionWeakness fragMassEvidence = 1 := by
+  unfold WeaknessBridge.nonDistinctionWeakness WeaknessBridge.gsltWeakness
+    Mettapedia.Algebra.QuantaleWeakness.weakness
+  apply le_antisymm
+  · apply sSup_le
+    rintro x ⟨p, _, rfl⟩
+    simp only [fragMassEvidence, WeaknessBridge.GSLTEvidence.toWeightFn]
+    split_ifs <;> simp [frag_mass_redex, frag_mass_reduct]
+  · apply le_sSup
+    exact ⟨(toBisimClass fragGSLT .redex, toBisimClass fragGSLT .redex),
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
+      by simp [fragMassEvidence, WeaknessBridge.GSLTEvidence.toWeightFn, frag_mass_redex]⟩
+
 end Mettapedia.GSLT.Meredith
