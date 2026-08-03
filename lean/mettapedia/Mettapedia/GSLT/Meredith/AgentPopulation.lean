@@ -474,4 +474,138 @@ theorem frag_massWeakness_eq_one :
       Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
       by simp [fragMassEvidence, WeaknessBridge.GSLTEvidence.toWeightFn, frag_mass_redex]⟩
 
+/-! ## A second fragment: reflection with non-degenerate mass
+
+`frag1`'s two terms both have structural mass `0`, so its mass-derived
+weighting is degenerate-uniform — honest, but the bridge from the cost layer
+carries no information. This fragment fixes that: the redex has mass `3` and
+the reduct mass `0`, so `rhoPatternMass` genuinely separates the two classes
+and the mass weighting does real work for the first time.
+
+The step is also sharper. Here the input body is a *bound drop*, so COMM
+substitutes `NQuote(q)` for `BVar 0` inside `PDrop`, and quote-drop cancels:
+the reduct is `q` itself. That is genuine ρ-calculus reflection —
+`semanticCommSubst_collapses_bound_drop` — not a step into a vacuous nil. -/
+
+/-- Two-term reflection fragment: a COMM redex over a free name whose
+continuation drops the received name. -/
+inductive Frag2Term : Type
+  | redex2
+  | reduct2
+  deriving DecidableEq, Fintype
+
+/-- Embed the reflection fragment into ρ-calculus patterns. The redex sends
+`nil` on the free name `n` to a receiver that drops what it receives. -/
+def frag2Embed : Frag2Term → Pattern
+  | .redex2 => .collection .hashBag
+      [.apply "POutput" [.fvar "n", nilProcess],
+       .apply "PInput" [.fvar "n", .lambda none (.apply "PDrop" [.bvar 0])]] none
+  | .reduct2 => .collection .hashBag [nilProcess] none
+
+/-- Reflection in one line: COMM substitutes `NQuote nil` for the bound
+variable under `PDrop`, and quote-drop collapses it back to `nil`. -/
+theorem frag2_subst_drop :
+    semanticCommSubst (.apply "PDrop" [.bvar 0]) nilProcess = nilProcess := by
+  rw [semanticCommSubst_collapses_bound_drop]
+  rfl
+
+/-- The reflection fragment's GSLT: equations and rewrites pulled back along
+`frag2Embed`, exactly as for `fragGSLT`. -/
+def frag2GSLT : GSLT where
+  Term := Frag2Term
+  equations := Setoid.comap frag2Embed rhoEquivSetoid
+  rewrites t u := rhoRewrites (frag2Embed t) (frag2Embed u)
+  rewrites_resp_left := by
+    intro t tt u h hstep
+    obtain ⟨r⟩ := hstep
+    exact ⟨u,
+      ⟨Reduces.equiv (StructuralCongruence.symm _ _ h) r (StructuralCongruence.refl _)⟩,
+      StructuralCongruence.refl _⟩
+  rewrites_resp_right := by
+    intro t u uu hstep h
+    obtain ⟨r⟩ := hstep
+    exact ⟨Reduces.equiv (StructuralCongruence.refl _) r h⟩
+
+/-- The reflection redex really steps, by the genuine COMM rule. -/
+theorem frag2_step : frag2GSLT.Step .redex2 .reduct2 := by
+  refine ⟨?_⟩
+  have h := Reduces.comm (n := .fvar "n") (q := nilProcess)
+    (p := .apply "PDrop" [.bvar 0]) (rest := [])
+  simpa [frag2Embed, frag2_subst_drop] using h
+
+instance : Fintype frag2GSLT.Term := inferInstanceAs (Fintype Frag2Term)
+
+noncomputable instance : Fintype (BisimQuotient frag2GSLT) := by
+  classical
+  exact Quotient.fintype _
+
+noncomputable instance : DecidableEq (BisimQuotient frag2GSLT) :=
+  Classical.decEq _
+
+/-- The reduct is stuck: its bag is SC-equivalent to the empty bag. -/
+theorem frag2_reduct_stuck (u : Frag2Term) : ¬ frag2GSLT.rewrites .reduct2 u := by
+  intro hstep
+  obtain ⟨r⟩ := hstep
+  have hsc : StructuralCongruence (.collection .hashBag [] none) (frag2Embed .reduct2) := by
+    show StructuralCongruence (.collection .hashBag [] none)
+      (.collection .hashBag [nilProcess] none)
+    exact StructuralCongruence.trans _ _ _ StructuralCongruence.par_empty
+      (StructuralCongruence.symm _ _ (StructuralCongruence.par_singleton _))
+  exact emptyBag_SC_irreducible hsc r
+
+/-- Redex and reduct are not bisimilar: the redex reflects, the reduct is stuck. -/
+theorem frag2_not_bisim : ¬ frag2GSLT.Bisimilar .redex2 .reduct2 := by
+  rintro ⟨R, ⟨hfwd, _⟩, hR⟩
+  obtain ⟨u', hstep, _⟩ := hfwd hR frag2_step
+  exact frag2_reduct_stuck u' hstep
+
+/-- Their bisimulation classes are therefore distinct. -/
+theorem frag2_classes_ne :
+    toBisimClass frag2GSLT .redex2 ≠ toBisimClass frag2GSLT .reduct2 := fun h =>
+  frag2_not_bisim (Quotient.exact h)
+
+/-- A consciousness candidate on the reflection fragment. -/
+def frag2Candidate : ConsciousnessCandidate frag2GSLT where
+  cluster := {toBisimClass frag2GSLT .redex2}
+  self := toBisimClass frag2GSLT .redex2
+  self_mem := Set.mem_singleton _
+  env := toBisimClass frag2GSLT .reduct2
+  env_not_mem := fun h => frag2_classes_ne (Set.mem_singleton_iff.mp h).symm
+  selfDistinguishing := frag2_classes_ne
+
+/-- The redex carries structural mass `3`: two free-name occurrences and the
+bound name under the drop. -/
+theorem frag2_mass_redex : rhoPatternMass (frag2Embed .redex2) = 3 := by
+  simp [frag2Embed, nilProcess, rhoPatternMass]
+
+/-- The reduct carries mass `0`: reflection consumed everything. -/
+theorem frag2_mass_reduct : rhoPatternMass (frag2Embed .reduct2) = 0 := by
+  simp [frag2Embed, nilProcess, rhoPatternMass]
+
+/-- Mass-derived evidence that is genuinely NON-degenerate: the redex class
+weighs `3 + 1 = 4`, the reduct class `0 + 1 = 1`. -/
+noncomputable def frag2MassEvidence :
+    WeaknessBridge.GSLTEvidence (BisimQuotient frag2GSLT) ENNReal :=
+  ⟨fun c => if c = toBisimClass frag2GSLT .redex2
+    then (rhoPatternMass (frag2Embed .redex2) + 1 : ENNReal)
+    else (rhoPatternMass (frag2Embed .reduct2) + 1)⟩
+
+/-- With mass-derived weights `4` and `1`, the non-distinction weakness is
+`16`: the self-diagonal pair at the redex contributes `4 · 4`. Unlike
+`frag1`, this number is produced by the structural mass of the terms. -/
+theorem frag2_massWeakness_eq_sixteen :
+    WeaknessBridge.nonDistinctionWeakness frag2MassEvidence = 16 := by
+  unfold WeaknessBridge.nonDistinctionWeakness WeaknessBridge.gsltWeakness
+    Mettapedia.Algebra.QuantaleWeakness.weakness
+  apply le_antisymm
+  · apply sSup_le
+    rintro x ⟨p, _, rfl⟩
+    simp only [frag2MassEvidence, WeaknessBridge.GSLTEvidence.toWeightFn]
+    split_ifs <;> simp [frag2_mass_redex, frag2_mass_reduct] <;> norm_num
+  · apply le_sSup
+    exact ⟨(toBisimClass frag2GSLT .redex2, toBisimClass frag2GSLT .redex2),
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩,
+      by simp [frag2MassEvidence, WeaknessBridge.GSLTEvidence.toWeightFn,
+        frag2_mass_redex]; norm_num⟩
+
 end Mettapedia.GSLT.Meredith
