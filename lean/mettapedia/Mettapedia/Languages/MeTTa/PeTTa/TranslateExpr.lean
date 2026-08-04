@@ -549,7 +549,8 @@ theorem DedupContract.mem_iff {f : List α → List α} (hf : DedupContract f)
     then the result set is exactly `{a | a ∈ L}` — same elements as collapse,
     but without duplicates.  This is the contract `unique` promises.
 
- **Design rationale 93%**: , . -
+    This theorem intentionally states extensional membership correctness;
+    answer order is outside its claim. -/
 theorem unique_fix_correct {f : List Pattern → List Pattern}
     (hf : DedupContract f)
     (bodyAnswers : List Pattern)
