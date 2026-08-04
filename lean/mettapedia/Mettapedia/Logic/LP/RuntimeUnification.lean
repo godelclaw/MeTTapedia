@@ -79,24 +79,24 @@ theorem start_eq_startMany_singleton {σ : LPSignature}
     (memory : Memory σ) (left right : Addr) :
     start memory left right = startMany memory [(left, right)] := rfl
 
-private def orderedPair (left right : Addr) : Addr × Addr :=
+def orderedPair (left right : Addr) : Addr × Addr :=
   if left ≤ right then (left, right) else (right, left)
 
-private def seen (visited : List (Addr × Addr)) (left right : Addr) : Bool :=
+def seen (visited : List (Addr × Addr)) (left right : Addr) : Bool :=
   visited.contains (orderedPair left right)
 
-private def beginRollback {σ : LPSignature}
+def beginRollback {σ : LPSignature}
     (configuration : Configuration σ) (reason : RollbackReason) : Machine σ :=
   .running { configuration with agenda := [], phase := .rollback reason }
 
-private def afterBinding {σ : LPSignature}
+def afterBinding {σ : LPSignature}
     (configuration : Configuration σ) (rest : List (Addr × Addr))
     (variableAddress : Addr) (identity : σ.vars) (target : Addr) : Machine σ :=
   match configuration.memory.write variableAddress (.var identity (some target)) with
   | .ok memory => .running { configuration with memory, agenda := rest }
   | .error error => beginRollback configuration (.runtimeError error)
 
-private def rollbackTerminal {σ : LPSignature}
+def rollbackTerminal {σ : LPSignature}
     (reason : RollbackReason) (memory : Memory σ) : Machine σ :=
   match reason with
   | .unificationFailure => .terminal (.failure memory)
