@@ -182,6 +182,51 @@ structure Memory (σ : LPSignature) where
   heap : Heap σ
   trail : Array (TrailEntry σ)
 
+private def Cell.decisionCode {σ : LPSignature} : Cell σ →
+    (σ.vars × Option Addr) ⊕ (σ.constants ⊕ (σ.functionSymbols × Array Addr))
+  | .var identity link => .inl (identity, link)
+  | .const symbol => .inr (.inl symbol)
+  | .app symbol args => .inr (.inr (symbol, args))
+
+private theorem Cell.decisionCode_injective {σ : LPSignature} :
+    Function.Injective (Cell.decisionCode (σ := σ)) := by
+  intro left right h
+  cases left <;> cases right <;> simp_all [Cell.decisionCode]
+
+instance {σ : LPSignature} [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] : DecidableEq (Cell σ) :=
+  Cell.decisionCode_injective.decidableEq
+
+private def TrailEntry.decisionCode {σ : LPSignature}
+    (entry : TrailEntry σ) : Addr × Cell σ :=
+  (entry.address, entry.previous)
+
+private theorem TrailEntry.decisionCode_injective {σ : LPSignature} :
+    Function.Injective (TrailEntry.decisionCode (σ := σ)) := by
+  intro left right h
+  cases left
+  cases right
+  simp_all [TrailEntry.decisionCode]
+
+instance {σ : LPSignature} [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] : DecidableEq (TrailEntry σ) :=
+  TrailEntry.decisionCode_injective.decidableEq
+
+private def Memory.decisionCode {σ : LPSignature}
+    (memory : Memory σ) : Heap σ × Array (TrailEntry σ) :=
+  (memory.heap, memory.trail)
+
+private theorem Memory.decisionCode_injective {σ : LPSignature} :
+    Function.Injective (Memory.decisionCode (σ := σ)) := by
+  intro left right h
+  cases left
+  cases right
+  simp_all [Memory.decisionCode]
+
+instance {σ : LPSignature} [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] : DecidableEq (Memory σ) :=
+  Memory.decisionCode_injective.decidableEq
+
 /-- Structured failures of the total runtime-memory API. -/
 inductive MemoryError where
   | invalidAddress (address : Addr)

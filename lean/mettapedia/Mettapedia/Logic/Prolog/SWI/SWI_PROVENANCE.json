@@ -244,6 +244,24 @@
       "swi_conformance_status": "not-measured"
     },
     {
+      "id": "runtime.clause-materialization",
+      "project": "swi-prolog",
+      "sources": ["src/pl-wam.c", "src/pl-copyterm.c"],
+      "anchors": ["PL_open_query", "copy_term"],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/StandardizeApart.lean",
+        "Mettapedia/Logic/LP/RuntimeMaterialize.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/StandardizeApart.lean",
+        "Mettapedia/Logic/LP/RuntimeMaterialize.lean",
+        "Mettapedia/Logic/LP/RuntimeMaterializeRegression.lean"
+      ],
+      "swi_conformance_status": "not-measured"
+    },
+    {
       "id": "runtime.reader",
       "project": "swi-prolog",
       "sources": ["src/pl-read.c"],

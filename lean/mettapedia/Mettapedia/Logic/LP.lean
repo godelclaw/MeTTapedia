@@ -1,5 +1,8 @@
 import Mettapedia.Logic.LP.Core
 import Mettapedia.Logic.LP.StandardizeApart
+import Mettapedia.Logic.LP.RuntimeTerm
+import Mettapedia.Logic.LP.RuntimeUnification
+import Mettapedia.Logic.LP.RuntimeMaterialize
 import Mettapedia.Logic.LP.Substitution
 import Mettapedia.Logic.LP.Matching
 import Mettapedia.Logic.LP.Unification
@@ -34,6 +37,9 @@ Barrel import for the LP module stack:
 |------|----------|
 | `Core` | LPSignature, Term, Atom, Clause, GroundTerm, GroundAtom, KnowledgeBase |
 | `StandardizeApart` | Typed clause-activation scopes and proved variable disjointness |
+| `RuntimeTerm` | Checked rational-term graph heap, destructive binding trail, and exact rollback |
+| `RuntimeUnification` | Small-step graph unification with cycle-pair memoization and transactional failure |
+| `RuntimeMaterialize` | Checked source-term and standardized-clause allocation with structural trail preservation |
 | `Substitution` | Subst, apply, compose, identity/composition laws, Grounding |
 | `Matching` | collectBindings, matchTerm, matchAtom (one-sided unification) |
 | `Unification` | Martelli-Montanari unification, occurs check, soundness proof |
