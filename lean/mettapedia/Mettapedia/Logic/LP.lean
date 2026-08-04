@@ -1,4 +1,5 @@
 import Mettapedia.Logic.LP.Core
+import Mettapedia.Logic.LP.StandardizeApart
 import Mettapedia.Logic.LP.Substitution
 import Mettapedia.Logic.LP.Matching
 import Mettapedia.Logic.LP.Unification
@@ -32,6 +33,7 @@ Barrel import for the LP module stack:
 | File | Contents |
 |------|----------|
 | `Core` | LPSignature, Term, Atom, Clause, GroundTerm, GroundAtom, KnowledgeBase |
+| `StandardizeApart` | Typed clause-activation scopes and proved variable disjointness |
 | `Substitution` | Subst, apply, compose, identity/composition laws, Grounding |
 | `Matching` | collectBindings, matchTerm, matchAtom (one-sided unification) |
 | `Unification` | Martelli-Montanari unification, occurs check, soundness proof |
