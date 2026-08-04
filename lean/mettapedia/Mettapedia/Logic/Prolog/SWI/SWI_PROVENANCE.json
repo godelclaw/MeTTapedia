@@ -66,6 +66,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "src/pl-incl.h",
+      "sha256": "3bc832a330a585a177d415dad041295df712da994baad8c7e55da580ceee969c"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-prims.c",
       "sha256": "c97ba376a1f30a89b1b71eb41462dbdee7f97b4dc446e6fb4048bfea05280681"
     },
@@ -192,10 +197,26 @@
     {
       "id": "runtime.query",
       "project": "swi-prolog",
-      "sources": ["src/pl-wam.c"],
-      "anchors": ["PL_open_query", "PL_next_solution", "PL_cut_query", "PL_close_query"],
-      "implementation_status": "reference-only",
-      "proof_status": "not-started",
+      "sources": ["src/pl-incl.h", "src/pl-vmi.c", "src/pl-wam.c"],
+      "anchors": [
+        "struct localFrame",
+        "struct choice",
+        "CHP_CLAUSE",
+        "I_CUT",
+        "shallow_backtrack",
+        "deep_backtrack",
+        "discardChoicesAfter",
+        "PL_next_solution"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryRegression.lean"
+      ],
       "swi_conformance_status": "not-measured"
     },
     {

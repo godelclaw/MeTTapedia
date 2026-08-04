@@ -57,15 +57,27 @@ inductive Machine (σ : LPSignature) where
   | running (configuration : Configuration σ)
   | terminal (result : Terminal σ)
 
-/-- Start one transactional unification at the current trail mark. -/
-def start {σ : LPSignature} (memory : Memory σ) (left right : Addr) : Machine σ :=
+/-- Start one transactional unification problem at the current trail mark.
+The ordered agenda is shared by atom-head unification, where all arguments
+must succeed in one transaction. -/
+def startMany {σ : LPSignature} (memory : Memory σ)
+    (agenda : List (Addr × Addr)) : Machine σ :=
   .running {
     memory
-    agenda := [(left, right)]
+    agenda
     visited := []
     entryMark := memory.trailMark
     phase := .compare
   }
+
+/-- Start one transactional unification at the current trail mark. -/
+def start {σ : LPSignature} (memory : Memory σ) (left right : Addr) : Machine σ :=
+  startMany memory [(left, right)]
+
+@[simp]
+theorem start_eq_startMany_singleton {σ : LPSignature}
+    (memory : Memory σ) (left right : Addr) :
+    start memory left right = startMany memory [(left, right)] := rfl
 
 private def orderedPair (left right : Addr) : Addr × Addr :=
   if left ≤ right then (left, right) else (right, left)

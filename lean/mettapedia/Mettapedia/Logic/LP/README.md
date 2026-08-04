@@ -3,9 +3,9 @@
 A *logic program* answers a query by searching for a proof: you give it facts and
 rules ("`grandparent(X,Z)` if `parent(X,Y)` and `parent(Y,Z)`") and ask "who are
 the grandparents?", and the engine *derives* the answers. This directory is the
-verified core of that idea — the engine underneath PeTTa and the Prolog layer —
-built from the ground up in Lean 4 so that its central guarantees are *proven*,
-not just tested.
+verified core of that idea and the canonical executable runtime being extended
+to host pinned PeTTa's Prolog sources directly. It is built in Lean 4 so that
+local mechanism guarantees are *proven*, not just tested.
 
 Two pillars make a logic-programming engine trustworthy, and both are formalized
 here with proofs:
@@ -62,6 +62,26 @@ lake build Mettapedia.Logic.LP
 | [SLDCompletenessCanaries.lean](SLDCompletenessCanaries.lean) | Canary theorems exercising completeness |
 | [UnificationCompletenessCanaries.lean](UnificationCompletenessCanaries.lean) | Canary theorems exercising unification completeness |
 
+### Executable Prolog runtime
+
+| Module | What it does |
+|--------|-------------|
+| [StandardizeApart.lean](StandardizeApart.lean) | Typed activation scopes and variable-disjoint clause copies |
+| [RuntimeTerm.lean](RuntimeTerm.lean) | Checked rational-term heap, destructive bindings, trail, and exact rollback |
+| [RuntimeUnification.lean](RuntimeUnification.lean) | Resumable transactional graph unification with cycle-pair memoization |
+| [RuntimeMaterialize.lean](RuntimeMaterialize.lean) | Checked allocation of source queries and standardized clauses into the graph heap |
+| [RuntimeQuery.lean](RuntimeQuery.lean) | Demand-driven source-order DFS, clause retry, resumable answers, cleanup, and predicate-scoped cut |
+
+The runtime modules operate on the same `Core.lean` terms, atoms, clauses, and
+programs as the LP kernel. They are one implementation, not a PeTTa-specific
+compiler or a second semantic machine. The current executable boundary is the
+pure static-clause fragment with cut; dynamic predicates, the source loader,
+exceptions, attributed variables, and the built-ins required by PeTTa remain
+explicitly incomplete. Runtime regressions exercise exact observable behavior,
+while reusable Lean theorems state local heap, rollback, materialization, and
+control properties. SWI compatibility is tracked separately in the
+[hash-pinned provenance manifest](../Prolog/SWI/SWI_PROVENANCE.json).
+
 ### Fragments and extensions
 
 | Module | What it does |
@@ -102,7 +122,7 @@ lake build Mettapedia.Logic.LP
 
 ## Formalization status
 
-All 31 `.lean` files in this directory are `sorry`-free. The headline results are
+All `.lean` files in this directory are `sorry`-free. The headline results are
 proven, not assumed: unification correctness and assumption-free completeness
 (`UnificationMGU.lean`, `UnificationComplete.lean`), monotonicity of `T_P` and the
 least-Herbrand-model construction via `OrderHom.lfp` / Tarski (`Semantics.lean`),
@@ -124,4 +144,4 @@ base via compile-time evaluation.
 - Alberto Martelli & Ugo Montanari, "An Efficient Unification Algorithm," [*ACM Transactions on Programming Languages and Systems* 4(2), 1982, pp. 258-282](https://dl.acm.org/doi/10.1145/357162.357169) — the unification algorithm formalized in `Unification.lean`.
 
 ---
-*Status (drafted 2026-06-22 by Claude Code, Opus 4.8): 31 .lean files, 0 with sorries.*
+*Status updated 2026-08-04; executable-runtime scope is intentionally partial.*
