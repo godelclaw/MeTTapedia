@@ -595,7 +595,7 @@ deriving DecidableEq, Repr
 
 namespace Heap
 
-private def derefLoop {σ : LPSignature} (heap : Heap σ) : Nat → Addr →
+def derefLoop {σ : LPSignature} (heap : Heap σ) : Nat → Addr →
     Except MemoryError DerefResult
   | 0, address => .ok (.variableCycle address)
   | fuel + 1, address =>
