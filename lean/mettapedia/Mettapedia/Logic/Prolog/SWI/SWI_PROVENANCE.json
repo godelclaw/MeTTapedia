@@ -1,0 +1,301 @@
+{
+  "schema_version": 2,
+  "target": "petta-core-plus-clpfd",
+  "policy": {
+    "canonical_runtime": "one Lean executable microstep machine",
+    "compatibility_oracle": "SWI-Prolog 10.1.9",
+    "unsupported_behavior": "structured-error",
+    "external_effects": [
+      "filesystem",
+      "process",
+      "python",
+      "thread",
+      "time",
+      "random"
+    ]
+  },
+  "dependency_inventory": {
+    "generator": "SWI library(prolog_xref)",
+    "completeness": "static-only; dynamic and generated call targets require runtime traces",
+    "source_files": [
+      "src/metta.pl",
+      "src/translator.pl",
+      "src/parser.pl",
+      "src/specializer.pl",
+      "src/filereader.pl",
+      "src/spaces.pl"
+    ],
+    "call_sites": 885,
+    "imports": 17,
+    "classifications": {
+      "defined-in-pinned-source": 98,
+      "external-or-dynamic": 12,
+      "source-accessible": 206,
+      "swi-builtin": 569
+    },
+    "unresolved_indicators": [
+      "arity/2",
+      "empty_assoc/1",
+      "get_assoc/3",
+      "library_path/1",
+      "put_assoc/4",
+      "silent/1",
+      "translated_from/2",
+      "working_dir/1"
+    ]
+  },
+  "projects": {
+    "swi-prolog": {
+      "repository": "https://github.com/SWI-Prolog/swipl-devel.git",
+      "tag": "V10.1.9",
+      "version": "10.1.9",
+      "commit": "6be143dbd030cc9ea621cde719a37f8385575453",
+      "license": "BSD-2-Clause"
+    },
+    "petta": {
+      "repository": "https://github.com/trueagi-io/PeTTa.git",
+      "commit": "6b7f52f064bdbc82fabd0a0998404121fb01d52e",
+      "license": "MIT"
+    }
+  },
+  "source_files": [
+    {
+      "project": "swi-prolog",
+      "path": "LICENSE",
+      "sha256": "770594d0f4463b71f1485f00e4bc5cf4b6f667d62ef6bc9bde2fee236541992a"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-prims.c",
+      "sha256": "c97ba376a1f30a89b1b71eb41462dbdee7f97b4dc446e6fb4048bfea05280681"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-wam.c",
+      "sha256": "0d336f01b5a8ae8f80efe81d8869a3b2e6353d62c37aa854a11c4c80feb74d21"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-vmi.c",
+      "sha256": "e696d895187b92b46f4647977000c8e64aad2de1a518ec04ba18063d0d5e36a2"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-comp.c",
+      "sha256": "d24045b1347a45d49f9b2ae265522d9dda504d8091a155e3742231171d85d0d7"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-index.c",
+      "sha256": "f8459259c35fa55d2b382c6e6ef3255dc8ac233930ce136142663d458e9672bd"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-proc.c",
+      "sha256": "c37037a547a1cd84c5ae20588d6b99d248c06edf59f8d345576286ce8eadbc98"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-copyterm.c",
+      "sha256": "ea5e6c8242257574660ebff1bf16279d21f48de43d6cf2e25ac985043c12023a"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-rec.c",
+      "sha256": "e1ba02bb58cbdf89b094ad55c3cbf1dc3704adf6891a1f13240929dfcdc1755b"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-read.c",
+      "sha256": "87743e349b5b986c863aa975dc1318f0d0af0220b62f1c54f1e73f77b2fb4f96"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-srcfile.c",
+      "sha256": "549d3cf25b82bda16d6cdd8e61a6a231ba3109e6170709e5a36de3e7ce78b779"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/clp/clpfd.pl",
+      "sha256": "53bb30c24ef37235ea7399853f2bf3d0e9cde910fbc3244409cc6f175b48bd3f"
+    },
+    {
+      "project": "petta",
+      "path": "LICENSE",
+      "sha256": "451e08f082f06f100facd2ef99f3c661155a7a433af091889d4c04e264838ce5"
+    },
+    {
+      "project": "petta",
+      "path": "src/metta.pl",
+      "sha256": "fa969eadab621b9e113529ee1d3a0f1ebe96e5d6f28aa440ba568adea49ec8bc"
+    },
+    {
+      "project": "petta",
+      "path": "src/translator.pl",
+      "sha256": "33a53e12b710b088503cf0c1cf661de42647336813162290670c8024ae175cd0"
+    },
+    {
+      "project": "petta",
+      "path": "src/parser.pl",
+      "sha256": "5abc89c3e8ddd58769a4995919cd18d72d5b86224d6ed58363f25450e32cf45d"
+    },
+    {
+      "project": "petta",
+      "path": "src/specializer.pl",
+      "sha256": "7ed841c772fec4e9a8219d2e2bba958a6a6ab5ed0863bd5d21e754b816b62b19"
+    },
+    {
+      "project": "petta",
+      "path": "src/filereader.pl",
+      "sha256": "954711b7cbbdf9766cf3bd3118eda0b88bcfa47a60712823f74282fd1adcfd5d"
+    },
+    {
+      "project": "petta",
+      "path": "src/spaces.pl",
+      "sha256": "ee51a26a38c0ce017bf1a840677f0c71874e90480d8c0bdb49fb03b3f4e83dca"
+    }
+  ],
+  "semantic_components": [
+    {
+      "id": "runtime.term-graph",
+      "project": "swi-prolog",
+      "sources": ["src/pl-prims.c", "src/pl-wam.c"],
+      "anchors": ["unify_simple_ptrs", "TrailEntry", "Undo"],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeTermRegression.lean"
+      ],
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.unification",
+      "project": "swi-prolog",
+      "sources": ["src/pl-prims.c"],
+      "anchors": ["unify_simple_ptrs", "do_unify", "unify_ptrs"],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeUnification.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeUnification.lean",
+        "Mettapedia/Logic/LP/RuntimeUnificationRegression.lean"
+      ],
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.query",
+      "project": "swi-prolog",
+      "sources": ["src/pl-wam.c"],
+      "anchors": ["PL_open_query", "PL_next_solution", "PL_cut_query", "PL_close_query"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.vm",
+      "project": "swi-prolog",
+      "sources": ["src/pl-vmi.c", "src/pl-wam.c"],
+      "anchors": ["VMI", "VMH", "PL_next_solution"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.compiler",
+      "project": "swi-prolog",
+      "sources": ["src/pl-comp.c"],
+      "anchors": ["compileBody", "compileClause"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.clause-selection",
+      "project": "swi-prolog",
+      "sources": ["src/pl-index.c"],
+      "anchors": ["firstClause", "nextClause", "visibleClause"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.dynamic-database",
+      "project": "swi-prolog",
+      "sources": ["src/pl-proc.c", "src/pl-index.c"],
+      "anchors": ["assertProcedure", "retract_clause", "visibleClause"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.term-copy",
+      "project": "swi-prolog",
+      "sources": ["src/pl-copyterm.c", "src/pl-rec.c"],
+      "anchors": ["copy_term", "duplicate_term", "copy_term_nat"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.reader",
+      "project": "swi-prolog",
+      "sources": ["src/pl-read.c"],
+      "anchors": ["read_term", "read_term_from_stream"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "runtime.source-loader",
+      "project": "swi-prolog",
+      "sources": ["src/pl-srcfile.c", "src/pl-comp.c"],
+      "anchors": ["startReconsultFile", "endReconsult", "compileClause"],
+      "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "library.clpfd",
+      "project": "swi-prolog",
+      "sources": ["library/clp/clpfd.pl"],
+      "anchors": ["attr_unify_hook", "#=", "#<", "#>"],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "petta.compiler",
+      "project": "petta",
+      "sources": ["src/translator.pl"],
+      "anchors": ["translate_expr_to_conj", "translate_clause"],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "petta.runtime",
+      "project": "petta",
+      "sources": ["src/metta.pl", "src/spaces.pl", "src/specializer.pl"],
+      "anchors": ["eval", "reduce", "add_sexp", "maybe_specialize_call"],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "petta.reader",
+      "project": "petta",
+      "sources": ["src/parser.pl", "src/filereader.pl"],
+      "anchors": ["sread", "load_metta_file", "process_metta_string"],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    }
+  ]
+}
