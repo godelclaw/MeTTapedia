@@ -6548,5 +6548,437 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
 
 end ConsTransfer
 
+/-! ## Stage 6: the run induction
+
+One strong induction over `pull`'s fuel carries the boundary invariant,
+the per-phase data, and the lanes.  The answer arm consumes the live lane
+at the yielded memory itself; the clause-selection arm extracts the whole
+unifier run and transfers the lane by one SLD node; backtracking pops both
+chains in step, restoring exactly. -/
+
+section RunInduction
+
+open RuntimeQuery
+
+/-- Per-phase data of the run induction: control bounds and the live lane
+at dispatch; the cursor's facts and lane at select; nothing at the
+transient phases; unifying states are never entered by the induction. -/
+def PhaseLane {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.relationSymbols] (program : Program σ)
+    (root : List (Atom σ.scoped)) (keys : List (ScopedVar σ.vars))
+    (state : State σ) : Prop :=
+  match state.phase with
+  | .dispatch => ControlWF state ∧ ∃ barrier, barrier ≤ state.nextScope ∧
+      LaneOk program root keys state.memory.heap barrier
+        (flattenControl state.control)
+  | .select cursor => SelectInv program state cursor ∧
+      ∃ barrier, barrier ≤ state.nextScope ∧
+      LaneOk program root keys state.memory.heap barrier
+        (cursorResolvent cursor)
+  | .backtrack => True
+  | .afterAnswer => True
+  | .unifying _ _ => False
+
+/-- Popping a return frame preserves the flattened resolvent. -/
+theorem flatten_framePop {σ : LPSignature} {control : Control σ}
+    {frame : ReturnFrame σ} {frames' : List (ReturnFrame σ)}
+    (hcurrent : control.current = [])
+    (hframes : control.frames = frame :: frames') (d : Nat) :
+    flattenControl ({ current := frame.continuation, cutDepth := d, frames := frames' } : Control σ) =
+      flattenControl control := by
+  simp [flattenControl, hcurrent, hframes]
+
+/-- Packaging a call into a cursor preserves the flattened resolvent. -/
+theorem flatten_callCursor {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] (program : Program σ)
+    {state : State σ}
+    {goal : RuntimeMaterialize.RuntimeAtom σ.scoped}
+    {rest : List (RuntimeMaterialize.RuntimeAtom σ.scoped)}
+    (hcurrent : state.control.current = goal :: rest) :
+    cursorResolvent ({
+      checkpoint := state.memory.checkpoint
+      goal
+      clauses := RuntimeQuery.clausesFor program goal.symbol
+      cutDepth := state.choices.length
+      frames := { continuation := rest, callerCutDepth := state.control.cutDepth } :: state.control.frames
+    } : ClauseCursor σ) = flattenControl state.control := by
+  simp [cursorResolvent, flattenControl, hcurrent, List.flatMap_cons]
+
+/-- **The run induction**: from any invariant state, a pulled answer is a
+scope-1 derivation of the root whose substitution answers the query
+variables exactly as the yielded memory reads them. -/
+theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols] [IsEmpty σ.functionSymbols]
+    (builtins : Builtins σ) (program : Program σ)
+    (hCutFree : ∀ symbol, builtins.isCut symbol = false)
+    (root : List (Atom σ.scoped)) (keys : List (ScopedVar σ.vars)) :
+    ∀ (fuel : Nat) (state : State σ) (ans : Answer σ) (resumed : State σ),
+      pull builtins program fuel state = .answer ans resumed →
+      QueryInv program state →
+      PhaseLane program root keys state →
+      LaneChain program root keys state.nextScope state.choices
+        state.memory →
+      ans.queryVarMap = state.queryVarMap ∧
+      ∃ Θ, SLDScopedTree program 1 root Θ ∧
+        ∀ pair ∈ ans.queryVarMap, pair.1 ∈ keys → ∀ term,
+          Heap.readTerm ans.memory.heap pair.2 = .ok term →
+          Θ pair.1 = term := by
+  intro fuel
+  induction fuel using Nat.strong_induction_on with
+  | _ fuel ih =>
+      intro state ans resumed hPull hq hPL hLC
+      cases fuel with
+      | zero => simp [pull] at hPull
+      | succ fuel =>
+          simp only [pull] at hPull
+          cases hphase : state.phase with
+          | afterAnswer =>
+              have hstep : RuntimeQuery.step builtins program state =
+                  .next { state with phase := .backtrack } none := by
+                simp [RuntimeQuery.step, hphase]
+              rw [hstep] at hPull
+              dsimp only at hPull
+              exact ih fuel (Nat.lt_succ_self _) { state with phase := .backtrack } ans resumed hPull
+                (hq.set_phase _) (by simp [PhaseLane]) hLC
+          | unifying attempt machine =>
+              simp only [PhaseLane, hphase] at hPL
+          | backtrack =>
+              cases hchoices : state.choices with
+              | nil =>
+                  have hstep : RuntimeQuery.step builtins program state =
+                      complete state := by
+                    simp [RuntimeQuery.step, hphase, hchoices]
+                  rw [hstep] at hPull
+                  obtain ⟨result, hres⟩ := complete_terminal state
+                  rw [hres] at hPull
+                  dsimp only at hPull
+                  cases hPull
+              | cons cursor older =>
+                  obtain ⟨m₀, hres, hqPop, hsPop⟩ :=
+                    backtrackPop_inv hq hchoices
+                  have hstep : RuntimeQuery.step builtins program state =
+                      .next { state with memory := m₀, choices := older, phase := .select cursor } none := by
+                    simp [RuntimeQuery.step, hphase, hchoices, hres]
+                  rw [hstep] at hPull
+                  dsimp only at hPull
+                  rw [hchoices] at hLC
+                  obtain ⟨⟨barrier, hb, hlanePop⟩, hLCPop⟩ :=
+                    hLC.pop hres
+                  refine ih fuel (Nat.lt_succ_self _) { state with memory := m₀, choices := older, phase := .select cursor } ans resumed hPull
+                    hqPop ?_ hLCPop
+                  simp only [PhaseLane]
+                  exact ⟨hsPop, barrier, hb, hlanePop⟩
+          | dispatch =>
+              obtain ⟨hCW, barrier, hb, hlane⟩ := by
+                simpa only [PhaseLane, hphase] using hPL
+              cases hcurrent : state.control.current with
+              | nil =>
+                  cases hframes : state.control.frames with
+                  | nil =>
+                      have hstep : RuntimeQuery.step builtins program state =
+                          .next { state with phase := .afterAnswer }
+                            (some (.answer { memory := state.memory, queryVarMap := state.queryVarMap })) := by
+                        simp [RuntimeQuery.step, hphase, hcurrent, hframes]
+                      rw [hstep] at hPull
+                      dsimp only at hPull
+                      cases hPull
+                      refine ⟨rfl, ?_⟩
+                      have hflat : flattenControl state.control = [] := by
+                        simp [flattenControl, hcurrent, hframes]
+                      have hread : readGoals state.memory.heap
+                          (flattenControl state.control) = .ok [] := by
+                        rw [hflat]
+                        rfl
+                      obtain ⟨Θ, hΘ, hAg⟩ := hlane state.memory.heap
+                        (BindingExtension.rfl _) hq.inj hq.desc
+                        (functionFree_of_isEmpty _) state.nextScope hb
+                        (Subst.id σ.scoped) [] hread (.nil state.nextScope)
+                      refine ⟨Θ, hΘ, ?_⟩
+                      intro pair hpair hkey term hterm
+                      rw [hAg pair.1 hkey, Subst.comp_id_left]
+                      obtain ⟨link, hcell⟩ := hq.varMap pair hpair
+                      have hcellOf : cellOf state.memory.heap pair.1 =
+                          some pair.2 := by
+                        unfold cellOf
+                        have hex : ∃ a : Addr, ∃ l,
+                            state.memory.heap[a]? =
+                              some (Cell.var pair.1 l) :=
+                          ⟨pair.2, link, hcell⟩
+                        rw [dif_pos hex]
+                        obtain ⟨l', hl'⟩ := hex.choose_spec
+                        exact congrArg some
+                          (hq.inj _ pair.2 pair.1 l' link hl' hcell)
+                      show heapSubst state.memory.heap pair.1 = term
+                      simp [heapSubst, hcellOf, hterm]
+                  | cons frame frames' =>
+                      have hstep : RuntimeQuery.step builtins program state =
+                          .next (framePopState state frame frames') none := by
+                        simp [RuntimeQuery.step, hphase, hcurrent, hframes,
+                          framePopState]
+                      rw [hstep] at hPull
+                      dsimp only at hPull
+                      refine ih fuel (Nat.lt_succ_self _)
+                        (framePopState state frame frames') ans resumed
+                        hPull (hq.framePop) ?_ hLC
+                      simp only [PhaseLane, framePopState, hphase]
+                      refine ⟨hCW.framePop hframes, barrier, hb, ?_⟩
+                      rw [flatten_framePop hcurrent hframes
+                        frame.callerCutDepth]
+                      exact hlane
+              | cons goal rest =>
+                  have hnotCut : ¬ (builtins.isCut goal.symbol = true) := by
+                    simp [hCutFree goal.symbol]
+                  have hstep : RuntimeQuery.step builtins program state =
+                      .next { state with phase := .select {
+                        checkpoint := state.memory.checkpoint
+                        goal
+                        clauses := clausesFor program goal.symbol
+                        cutDepth := state.choices.length
+                        frames := { continuation := rest, callerCutDepth := state.control.cutDepth } :: state.control.frames
+                      } } none := by
+                    simp [RuntimeQuery.step, hphase, hcurrent, hnotCut]
+                  rw [hstep] at hPull
+                  dsimp only at hPull
+                  refine ih fuel (Nat.lt_succ_self _) { state with phase := .select { checkpoint := state.memory.checkpoint, goal := goal, clauses := clausesFor program goal.symbol, cutDepth := state.choices.length, frames := { continuation := rest, callerCutDepth := state.control.cutDepth } :: state.control.frames } } ans resumed
+                    hPull (hq.set_phase _) ?_ hLC
+                  simp only [PhaseLane]
+                  have hcc := hCW.callCursor (program := program) hcurrent
+                  refine ⟨⟨hcc.checkpoint, hcc.goal, hcc.frames,
+                    hcc.clauses⟩, barrier, hb, ?_⟩
+                  rw [flatten_callCursor program hcurrent]
+                  exact hlane
+          | select cursor =>
+              obtain ⟨hs, barrier, hb, hlane⟩ := by
+                simpa only [PhaseLane, hphase] using hPL
+              cases hclauses : cursor.clauses with
+              | nil =>
+                  have hstep : RuntimeQuery.step builtins program state =
+                      .next { state with phase := .backtrack } none := by
+                    simp [RuntimeQuery.step, hphase, hclauses]
+                  rw [hstep] at hPull
+                  dsimp only at hPull
+                  exact ih fuel (Nat.lt_succ_self _) { state with phase := .backtrack } ans resumed hPull
+                    (hq.set_phase _) (by simp [PhaseLane]) hLC
+              | cons clause remaining =>
+                  cases hMat : materializeClause state.memory
+                      (clause.atScope state.nextScope) with
+                  | error e =>
+                      have hstep : RuntimeQuery.step builtins program state =
+                          failWith state (.memory e) := by
+                        simp [RuntimeQuery.step, hphase, hclauses, hMat]
+                      rw [hstep] at hPull
+                      obtain ⟨result, hres⟩ := failWith_terminal state _
+                      rw [hres] at hPull
+                      dsimp only at hPull
+                      cases hPull
+                  | ok copied =>
+                      by_cases hPredicate :
+                          cursor.goal.symbol = copied.clause.head.symbol
+                      case neg =>
+                          have hstep : RuntimeQuery.step builtins program
+                              state = failWith state .predicateMismatch := by
+                            simp [RuntimeQuery.step, hphase, hclauses, hMat,
+                              hPredicate]
+                          rw [hstep] at hPull
+                          obtain ⟨result, hres⟩ := failWith_terminal state _
+                          rw [hres] at hPull
+                          dsimp only at hPull
+                          cases hPull
+                      case pos =>
+                      by_cases hArity : cursor.goal.args.size =
+                          copied.clause.head.args.size
+                      case neg =>
+                          have hstep : RuntimeQuery.step builtins program
+                              state = failWith state .predicateMismatch := by
+                            simp [RuntimeQuery.step, hphase, hclauses, hMat,
+                              hPredicate, hArity]
+                          rw [hstep] at hPull
+                          obtain ⟨result, hres⟩ := failWith_terminal state _
+                          rw [hres] at hPull
+                          dsimp only at hPull
+                          cases hPull
+                      case pos =>
+                      have hstep : RuntimeQuery.step builtins program state =
+                          .next (unifyEntryState state cursor remaining
+                            copied) none := by
+                        simp [RuntimeQuery.step, hphase, hclauses, hMat,
+                          hPredicate, hArity, unifyEntryState]
+                      rw [hstep] at hPull
+                      dsimp only at hPull
+                      obtain ⟨hqE, hExtMat, hClauseWF, hFresh⟩ :=
+                        selectSuccess_inv hq hs hclauses hMat
+                      obtain ⟨hPrefix, hSizeLe, _, _, _, _⟩ :=
+                        materializeClause_facts hMat
+                      have hBmat : BindingExtension state.memory.heap
+                          copied.memory.heap :=
+                        bindingExtension_of_prefix hPrefix hSizeLe
+                      have hclauseMem : clause ∈ program :=
+                        clausesFor_mem_program (hs.clauses clause (by
+                          rw [hclauses]
+                          exact List.mem_cons_self ..))
+                      -- the retry chain at the unify entry
+                      have hLCEntry : LaneChain program root keys
+                          (state.nextScope + 1)
+                          (replacementChoices cursor remaining state.choices)
+                          copied.memory := by
+                        cases remaining with
+                        | nil =>
+                            show LaneChain program root keys
+                              (state.nextScope + 1) state.choices
+                              copied.memory
+                            exact (hLC.scope_mono (Nat.le_succ _)).anchor
+                              hExtMat
+                        | cons r rs =>
+                            show LaneChain program root keys
+                              (state.nextScope + 1)
+                              ({ cursor with clauses := r :: rs } ::
+                                state.choices) copied.memory
+                            exact LaneChain.cons (m₀ := state.memory)
+                              hExtMat hs.checkpoint hq.wf hq.shaped
+                              (Nat.le_trans hb (Nat.le_succ _)) hlane
+                              (hLC.scope_mono (Nat.le_succ _))
+                      obtain ⟨k', rest', hfuelEq, hdisj⟩ :=
+                        pull_unifying_extract builtins program fuel
+                          (unifyEntryState state cursor remaining copied)
+                          _ _ ans resumed rfl hPull
+                      rcases hdisj with ⟨m₁, hrunU, hPull'⟩ |
+                        ⟨mF, hrunF, hPull'⟩
+                      · -- unify success
+                        have hrest' : rest' < fuel + 1 := by omega
+                        have hBodyWF : AtomsWF copied.memory.heap
+                            (copied.clause.body) :=
+                          fun atom hatom => hClauseWF.2 atom hatom
+                        have hFramesWF : FramesWF copied.memory.heap
+                            cursor.frames :=
+                          hs.frames.mono hSizeLe
+                        obtain ⟨hq', hc'⟩ := unifySuccess_queryInv
+                          (program := program)
+                          (attempt := { body := copied.clause.body, cutDepth := cursor.cutDepth, frames := cursor.frames })
+                          hqE hBodyWF hFramesWF hrunU
+                        obtain ⟨hBuni, hExtUni, _⟩ :=
+                          startMany_success_extension k' copied.memory _
+                            m₁ hrunU
+                        have hlane' := laneCons_transfer hb hMat hrunU
+                          hPredicate hArity hclauseMem hs.goal hq'.desc
+                          hlane
+                        refine ih rest' hrest'
+                          (unifySuccessState (unifyEntryState state cursor remaining copied) { body := copied.clause.body, cutDepth := cursor.cutDepth, frames := cursor.frames } m₁)
+                          ans resumed hPull'
+                          hq' ?_ (hLCEntry.anchor hExtUni)
+                        simp only [PhaseLane]
+                        exact ⟨hc', state.nextScope + 1, Nat.le_refl _,
+                          hlane'⟩
+                      · -- unify failure: exact rollback to the entry
+                        have hrest' : rest' < fuel + 1 := by omega
+                        have hmF : mF = copied.memory :=
+                          startMany_failure_exact k' copied.memory _ mF
+                            hrunF
+                        subst hmF
+                        exact ih rest' hrest'
+                          { unifyEntryState state cursor remaining copied with memory := copied.memory, phase := .backtrack }
+                          ans resumed hPull'
+                          (hqE.set_phase _) (by simp [PhaseLane])
+                          hLCEntry
+
+/-- The empty query materializes an empty variable map. -/
+theorem materializeGoals_nil_varMap {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ} {result : MaterializedGoals σ}
+    (h : materializeGoals memory [] = .ok result) :
+    result.varMap = [] := by
+  unfold materializeGoals at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeGoalsAux ([] : List (Atom σ))) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeGoals, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      rw [show materializeGoalsAux ([] : List (Atom σ)) =
+        ([] : List (Atom σ)).mapM materializeAtomAux from rfl,
+        run_mapM_nil] at hrun
+      cases hrun
+      simp only [List.all_nil, if_true] at h
+      cases h
+      rfl
+
+/-- **The keystone, proved for function-free signatures**: static, cut-free
+runtime answers are derivable in the standardized-apart SLD judgment, with
+the yielded bindings agreeing with the derivation's substitution.  (With
+function symbols the runtime's rational-tree unification outruns finite
+SLD — the executable canaries pin that separation — so the function-free
+fragment is exactly where the endpoint holds.) -/
+theorem refinementEndpoint_functionFree (σ : LPSignature)
+    [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    [IsEmpty σ.functionSymbols] :
+    RefinementEndpoint σ := by
+  intro builtins program goals state fuel answer resumed hCutFree hOpen
+    hPull
+  obtain ⟨hq, hCW⟩ := openQuery_empty_queryInv (program := program) hOpen
+  obtain ⟨hScope01, _, result, hMat, hstateEq⟩ := openQuery_ok_inv hOpen
+  subst hstateEq
+  have hKeys : ∀ v ∈ result.varMap.map Prod.fst, v.scope = 0 := by
+    intro v hv
+    obtain ⟨pair, hpair, rfl⟩ := List.mem_map.mp hv
+    obtain ⟨link, hcell⟩ := hq.varMap pair hpair
+    exact Nat.lt_one_iff.mp (hq.scopes _ _ _ hcell)
+  have hKeysEmpty : goals = [] → result.varMap.map Prod.fst = [] := by
+    intro hnil
+    subst hnil
+    rw [materializeGoals_nil_varMap hMat]
+    rfl
+  have hlaneRoot := rootLane_initial (program := program)
+    (result.varMap.map Prod.fst) hKeys hKeysEmpty hMat
+  have hflat : flattenControl
+      (openedState (Memory.empty σ.scoped) 1 result).control =
+      result.goals := by
+    simp [flattenControl, openedState]
+  obtain ⟨hqv, Θ, hΘ, hAg⟩ := pull_root_sound builtins program hCutFree
+    (queryAtScope 0 goals) (result.varMap.map Prod.fst) fuel
+    (openedState (Memory.empty σ.scoped) 1 result) answer resumed hPull hq
+    (by
+      simp only [PhaseLane]
+      refine ⟨hCW, 1, Nat.le_refl _, ?_⟩
+      rw [hflat]
+      exact hlaneRoot)
+    (.nil _ _)
+  refine ⟨Θ, hΘ, ?_⟩
+  intro pair hpair term hterm
+  have hpairS : pair ∈
+      (openedState (Memory.empty σ.scoped) 1 result).queryVarMap := by
+    rw [← hqv]
+    exact hpair
+  exact hAg pair hpair (List.mem_map.mpr ⟨pair, hpairS, rfl⟩) term hterm
+
+/-- **Runtime answers are true in the least Herbrand model**: the composed
+theorem.  A static, cut-free pulled answer over a function-free signature
+carries an SLD derivation of the query at scope 1 whose substitution
+matches the yielded bindings, and every query goal grounds — under that
+substitution and any grounding — into the least Herbrand model of the
+knowledge base. -/
+theorem runtimeAnswer_leastModel {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols] [IsEmpty σ.functionSymbols]
+    (builtins : Builtins σ) (kb : KnowledgeBase σ)
+    (goals : List (Atom σ)) (state : State σ) (fuel : Nat)
+    (answer : Answer σ) (resumed : State σ)
+    (hCutFree : ∀ symbol, builtins.isCut symbol = false)
+    (hOpen : openQuery (Memory.empty σ.scoped) 0 1 goals = .ok state)
+    (hPull : pull builtins kb.prog fuel state = .answer answer resumed) :
+    ∃ θ : Subst σ.scoped,
+      SLDScopedTree kb.prog 1 (queryAtScope 0 goals) θ ∧
+      (∀ pair ∈ answer.queryVarMap, ∀ term,
+        Heap.readTerm answer.memory.heap pair.2 = .ok term →
+        θ pair.1 = term) ∧
+      ∀ g : Grounding σ.scoped, ∀ a ∈ queryAtScope 0 goals,
+        ((g.compSubst θ).groundAtom a).unscope ∈ leastHerbrandModel kb := by
+  obtain ⟨θ, hSLD, hAg⟩ := refinementEndpoint_functionFree σ builtins
+    kb.prog goals state fuel answer resumed hCutFree hOpen hPull
+  exact ⟨θ, hSLD, hAg, SLDScopedTree_sound kb 1 _ θ hSLD⟩
+
+end RunInduction
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
