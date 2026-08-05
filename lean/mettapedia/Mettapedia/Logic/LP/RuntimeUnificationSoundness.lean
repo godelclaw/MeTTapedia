@@ -2658,7 +2658,7 @@ theorem runChecked_ok {σ : LPSignature} {α : Type _}
       case pos =>
       rw [if_pos hWS'] at h
       cases h
-      exact ⟨hWF, hWS, by simp [hrun], hWF', hWS'⟩
+      exact ⟨hWF, hWS, by first | exact hrun | rfl, hWF', hWS'⟩
 
 /-- **Public goals round-trip**: a materialized query's runtime atoms read
 back verbatim in the result memory; the memory extends the caller's by real
@@ -2817,7 +2817,8 @@ def ExtensionIH (σ : LPSignature) [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] (fuel : Nat) : Prop :=
   ∀ (c : Configuration σ) (m : Memory σ), c.phase = .compare →
     runSteps fuel (.running c) = .terminal (.success m) →
-    BindingExtension c.memory.heap m.heap ∧ Extends c.memory m
+    BindingExtension c.memory.heap m.heap ∧ Extends c.memory m ∧
+      c.memory.heap.size = m.heap.size
 
 /-- One binding step followed by a successful run composes both relations. -/
 theorem bindStep_extension {σ : LPSignature} [DecidableEq σ.constants]
@@ -2828,7 +2829,8 @@ theorem bindStep_extension {σ : LPSignature} [DecidableEq σ.constants]
     (hcellBound : c.memory.heap[bound]? = some (Cell.var identity none))
     (hrun : runSteps fuel (afterBinding c rest bound identity target) =
       .terminal (.success m)) :
-    BindingExtension c.memory.heap m.heap ∧ Extends c.memory m := by
+    BindingExtension c.memory.heap m.heap ∧ Extends c.memory m ∧
+      c.memory.heap.size = m.heap.size := by
   simp only [afterBinding] at hrun
   cases hw : c.memory.write bound (Cell.var identity (some target)) with
   | error e =>
@@ -2836,10 +2838,14 @@ theorem bindStep_extension {σ : LPSignature} [DecidableEq σ.constants]
       exact absurd hrun (beginRollback_no_success fuel c _ m)
   | ok memory' =>
       rw [hw] at hrun
-      obtain ⟨ihBE, ihEx⟩ :=
+      obtain ⟨ihBE, ihEx, ihSize⟩ :=
         ih { c with memory := memory', agenda := rest } m hphase hrun
-      exact ⟨(bindingExtension_of_write hcellBound hw).trans ihBE,
-        (Extends.write (.refl c.memory) hw).trans ihEx⟩
+      obtain ⟨hlt, hheq⟩ := write_ok_heap hw
+      refine ⟨(bindingExtension_of_write hcellBound hw).trans ihBE,
+        (Extends.write (.refl c.memory) hw).trans ihEx, ?_⟩
+      have hsz : memory'.heap.size = c.memory.heap.size := by
+        rw [hheq]; simp
+      exact hsz.symm.trans ihSize
 
 /-- A successful unifier run is a binding extension and a real write
 history of the entry memory. -/
@@ -2848,7 +2854,8 @@ theorem runSteps_success_extension {σ : LPSignature}
     ∀ (fuel : Nat) (c : Configuration σ) (m : Memory σ),
       c.phase = .compare →
       runSteps fuel (.running c) = .terminal (.success m) →
-      BindingExtension c.memory.heap m.heap ∧ Extends c.memory m := by
+      BindingExtension c.memory.heap m.heap ∧ Extends c.memory m ∧
+        c.memory.heap.size = m.heap.size := by
   intro fuel
   induction fuel with
   | zero =>
@@ -2872,7 +2879,7 @@ theorem runSteps_success_extension {σ : LPSignature}
                 injection hrun with h1
                 injection h1
               subst hm
-              exact ⟨BindingExtension.rfl _, .refl _⟩
+              exact ⟨BindingExtension.rfl _, .refl _, _root_.rfl⟩
           | cons pair rest =>
               obtain ⟨l, r⟩ := pair
               simp only [step, hphase, hagenda] at hstep
@@ -3089,10 +3096,50 @@ theorem startMany_success_extension {σ : LPSignature}
     (m : Memory σ)
     (hrun : runSteps fuel (startMany memory₀ agenda) =
       .terminal (.success m)) :
-    BindingExtension memory₀.heap m.heap ∧ Extends memory₀ m :=
+    BindingExtension memory₀.heap m.heap ∧ Extends memory₀ m ∧
+      memory₀.heap.size = m.heap.size :=
   runSteps_success_extension fuel
     { memory := memory₀, agenda := agenda, visited := []
       entryMark := memory₀.trailMark, phase := .compare } m rfl hrun
+
+/-- In-bounds addresses always hold a cell. -/
+theorem getElem?_some_of_lt {σ : LPSignature} {heap : Heap σ} {a : Addr}
+    (h : a < heap.size) : ∃ cell, heap[a]? = some cell := by
+  rcases hcell : heap[a]? with _ | cell
+  · rw [Array.getElem?_eq_none_iff] at hcell
+    exact absurd hcell (Nat.not_le.mpr h)
+  · exact ⟨cell, _root_.rfl⟩
+
+/-- A later-heap variable cell came from an earlier variable cell with the
+same identity, along a binding extension within bounds. -/
+theorem BindingExtension.var_back {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} (ext : BindingExtension heap₀ heap₁)
+    {a : Addr} {identity : σ.vars} {link : Option Addr}
+    (hlt : a < heap₀.size)
+    (h : heap₁[a]? = some (Cell.var identity link)) :
+    ∃ link₀, heap₀[a]? = some (Cell.var identity link₀) := by
+  obtain ⟨cell, hc⟩ := getElem?_some_of_lt hlt
+  rcases ext.2 a cell hc with hsame | ⟨id₂, target, rfl, hbound⟩
+  · rw [hsame] at h
+    cases h
+    exact ⟨_, hc⟩
+  · rw [hbound] at h
+    cases h
+    exact ⟨none, hc⟩
+
+/-- Identity injectivity transfers across a size-preserving binding
+extension: identities of existing cells never change, and no cells are
+added. -/
+theorem IdentityInjective.of_bindingExtension {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} (ext : BindingExtension heap₀ heap₁)
+    (hsize : heap₀.size = heap₁.size)
+    (inj : IdentityInjective heap₀) : IdentityInjective heap₁ := by
+  intro a b identity la lb ha hb
+  have haLt : a < heap₀.size := hsize.symm ▸ lt_of_getElem?_some ha
+  have hbLt : b < heap₀.size := hsize.symm ▸ lt_of_getElem?_some hb
+  obtain ⟨la₀, ha₀⟩ := ext.var_back haLt ha
+  obtain ⟨lb₀, hb₀⟩ := ext.var_back hbLt hb
+  exact inj a b identity la₀ lb₀ ha₀ hb₀
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
