@@ -5606,5 +5606,731 @@ theorem backtrackPop_inv {σ : LPSignature} [DecidableEq σ.relationSymbols]
 end BoundaryLemmas
 
 
+/-! ## Stage 6: the readback toolkit for the witness layer
+
+Goal-list readback, its inversions, totality on ordered function-free
+heaps, the fixed-point law (answer projections fix answer readbacks), and
+atom-level naturality.  These are the interior facts of every lane
+property. -/
+
+section ReadbackToolkit
+
+/-- Finite readback of a whole runtime goal list. -/
+def readGoals {σ : LPSignature} (heap : Heap σ)
+    (atoms : List (RuntimeMaterialize.RuntimeAtom σ)) :
+    Except ReadbackError (List (Atom σ)) :=
+  atoms.mapM (readAtom heap)
+
+@[simp] theorem readGoals_nil {σ : LPSignature} (heap : Heap σ) :
+    readGoals heap [] = .ok [] := rfl
+
+theorem readGoals_cons_ok {σ : LPSignature} {heap : Heap σ}
+    {atom : RuntimeMaterialize.RuntimeAtom σ}
+    {atoms : List (RuntimeMaterialize.RuntimeAtom σ)}
+    {src : List (Atom σ)}
+    (h : readGoals heap (atom :: atoms) = .ok src) :
+    ∃ a rest, src = a :: rest ∧ readAtom heap atom = .ok a ∧
+      readGoals heap atoms = .ok rest := by
+  rw [readGoals, List.mapM_cons] at h
+  cases hHead : readAtom heap atom with
+  | error e => rw [hHead] at h; cases h
+  | ok a =>
+      rw [hHead] at h
+      cases hTail : atoms.mapM (readAtom heap) with
+      | error e =>
+          rw [hTail] at h
+          cases h
+      | ok rest =>
+          rw [hTail] at h
+          have h' : Except.ok (a :: rest) = Except.ok src := h
+          cases h'
+          exact ⟨a, rest, rfl, rfl, hTail⟩
+
+theorem readGoals_cons_of {σ : LPSignature} {heap : Heap σ}
+    {atom : RuntimeMaterialize.RuntimeAtom σ}
+    {atoms : List (RuntimeMaterialize.RuntimeAtom σ)}
+    {a : Atom σ} {rest : List (Atom σ)}
+    (hHead : readAtom heap atom = .ok a)
+    (hTail : readGoals heap atoms = .ok rest) :
+    readGoals heap (atom :: atoms) = .ok (a :: rest) := by
+  rw [readGoals, List.mapM_cons, hHead]
+  rw [readGoals] at hTail
+  rw [hTail]
+  rfl
+
+theorem readGoals_append_ok {σ : LPSignature} {heap : Heap σ} :
+    ∀ {left right : List (RuntimeMaterialize.RuntimeAtom σ)}
+      {src : List (Atom σ)},
+      readGoals heap (left ++ right) = .ok src →
+      ∃ srcL srcR, src = srcL ++ srcR ∧
+        readGoals heap left = .ok srcL ∧ readGoals heap right = .ok srcR := by
+  intro left
+  induction left with
+  | nil =>
+      intro right src h
+      exact ⟨[], src, rfl, rfl, h⟩
+  | cons atom atoms ih =>
+      intro right src h
+      rw [List.cons_append] at h
+      obtain ⟨a, rest, rfl, hHead, hTail⟩ := readGoals_cons_ok h
+      obtain ⟨srcL, srcR, rfl, hL, hR⟩ := ih hTail
+      exact ⟨a :: srcL, srcR, rfl, readGoals_cons_of hHead hL, hR⟩
+
+theorem readGoals_append_of {σ : LPSignature} {heap : Heap σ} :
+    ∀ {left right : List (RuntimeMaterialize.RuntimeAtom σ)}
+      {srcL srcR : List (Atom σ)},
+      readGoals heap left = .ok srcL → readGoals heap right = .ok srcR →
+      readGoals heap (left ++ right) = .ok (srcL ++ srcR) := by
+  intro left
+  induction left with
+  | nil =>
+      intro right srcL srcR hL hR
+      cases hL
+      exact hR
+  | cons atom atoms ih =>
+      intro right srcL srcR hL hR
+      obtain ⟨a, rest, rfl, hHead, hTail⟩ := readGoals_cons_ok hL
+      rw [List.cons_append, List.cons_append]
+      exact readGoals_cons_of hHead (ih hTail hR)
+
+/-- Invert a successful list readback pointwise. -/
+theorem readListFuel_ok_pointwise {σ : LPSignature} {heap : Heap σ}
+    {fuel : Nat} :
+    ∀ {addresses : List Addr} {terms : List (Term σ)},
+      readListFuel heap fuel addresses = .ok terms →
+      addresses.length = terms.length ∧
+      ∀ k (hk : k < addresses.length) (hk' : k < terms.length),
+        readTermFuel heap fuel addresses[k] = .ok terms[k] := by
+  intro addresses
+  induction addresses with
+  | nil =>
+      intro terms h
+      simp only [readListFuel] at h
+      cases h
+      exact ⟨rfl, fun k hk _ => absurd hk (Nat.not_lt_zero k)⟩
+  | cons head tailA ih =>
+      intro terms h
+      simp only [readListFuel, Bind.bind, Except.bind] at h
+      cases hHead : readTermFuel heap fuel head with
+      | error e => rw [hHead] at h; cases h
+      | ok headTerm =>
+          rw [hHead] at h
+          cases hTail : readListFuel heap fuel tailA with
+          | error e => rw [hTail] at h; cases h
+          | ok tailTerms =>
+              rw [hTail] at h
+              cases h
+              obtain ⟨hLen, hPoint⟩ := ih hTail
+              refine ⟨congrArg (· + 1) hLen, ?_⟩
+              intro k hk hk'
+              cases k with
+              | zero => simpa using hHead
+              | succ k =>
+                  have := hPoint k (by simpa using hk) (by simpa using hk')
+                  simpa using this
+
+/-- Invert a successful atom readback: same symbol, pointwise arguments. -/
+theorem readAtom_ok_inv {σ : LPSignature} {heap : Heap σ}
+    {ratom : RuntimeMaterialize.RuntimeAtom σ} {atom : Atom σ}
+    (h : readAtom heap ratom = .ok atom) :
+    atom.symbol = ratom.symbol ∧
+    ∃ (children : List (Term σ))
+      (hlen : children.length = σ.relationArity ratom.symbol),
+      readListFuel heap (heap.size + 1) ratom.args.toList = .ok children ∧
+      HEq atom.args (fun index => children.get (Fin.cast hlen.symm index)) := by
+  unfold readAtom at h
+  simp only [Bind.bind, Except.bind] at h
+  cases hChildren : readListFuel heap (heap.size + 1) ratom.args.toList with
+  | error e => rw [hChildren] at h; cases h
+  | ok children =>
+      rw [hChildren] at h
+      dsimp only at h
+      by_cases hlen : children.length = σ.relationArity ratom.symbol
+      · rw [dif_pos hlen] at h
+        cases h
+        exact ⟨rfl, children, hlen, rfl, HEq.rfl⟩
+      · rw [dif_neg hlen] at h
+        cases h
+
+/-- Atom readback is total for well-formed atoms over an ordered
+function-free heap. -/
+theorem readAtom_total {σ : LPSignature} {heap : Heap σ}
+    {ratom : RuntimeMaterialize.RuntimeAtom σ}
+    (hwf : ratom.WellFormed heap) (hOFF : OrderedFF heap) :
+    ∃ atom, readAtom heap ratom = .ok atom := by
+  have hTerms : ∀ (addresses : List Addr),
+      (∀ a ∈ addresses, a < heap.size) →
+      ∃ terms, readListFuel heap (heap.size + 1) addresses = .ok terms ∧
+        addresses.length = terms.length := by
+    intro addresses
+    induction addresses with
+    | nil => exact fun _ => ⟨[], by simp [readListFuel], rfl⟩
+    | cons head tailA ih =>
+        intro hbound
+        obtain ⟨headTerm, hHead⟩ :=
+          readTerm_total_of_orderedFF hOFF (hbound head (by simp))
+        obtain ⟨tailTerms, hTail, hLen⟩ :=
+          ih (fun a ha => hbound a (by simp [ha]))
+        refine ⟨headTerm :: tailTerms, ?_, by simpa using hLen⟩
+        simp only [readListFuel, Bind.bind, Except.bind]
+        rw [show readTermFuel heap (heap.size + 1) head = .ok headTerm
+          from hHead, hTail]
+  obtain ⟨children, hChildren, hLen⟩ :=
+    hTerms ratom.args.toList (fun a ha => hwf.2 a ha)
+  have hlen : children.length = σ.relationArity ratom.symbol := by
+    rw [← hLen]
+    simpa using hwf.1
+  refine ⟨⟨ratom.symbol, fun index =>
+    children.get (Fin.cast hlen.symm index)⟩, ?_⟩
+  unfold readAtom
+  simp only [Bind.bind, Except.bind]
+  rw [hChildren]
+  dsimp only
+  rw [dif_pos hlen]
+
+/-- Goal-list readback is total for well-formed atoms over an ordered
+function-free heap. -/
+theorem readGoals_total {σ : LPSignature} {heap : Heap σ}
+    {atoms : List (RuntimeMaterialize.RuntimeAtom σ)}
+    (hwf : ∀ atom ∈ atoms, atom.WellFormed heap) (hOFF : OrderedFF heap) :
+    ∃ src, readGoals heap atoms = .ok src := by
+  induction atoms with
+  | nil => exact ⟨[], rfl⟩
+  | cons atom rest ih =>
+      obtain ⟨a, hHead⟩ := readAtom_total (hwf atom (by simp)) hOFF
+      obtain ⟨srcRest, hTail⟩ := ih (fun x hx => hwf x (by simp [hx]))
+      exact ⟨a :: srcRest, readGoals_cons_of hHead hTail⟩
+
+/-! ### The fixed-point law -/
+
+/-- Answer projections fix answer readbacks: every free variable of a
+readback denotes an unbound cell, which the projection leaves alone. -/
+theorem heapSubst_fix_readTerm {σ : LPSignature} [DecidableEq σ.vars]
+    {heap : Heap σ} (inj : IdentityInjective heap) {address : Addr}
+    {t : Term σ} (h : Heap.readTerm heap address = .ok t) :
+    (heapSubst heap).applyTerm t = t := by
+  apply applyTerm_eq_self_of_freeVars
+  intro w hw
+  obtain ⟨b, hb⟩ :=
+    readTermFuel_freeVar_unbound heap (heap.size + 1) address t h w hw
+  exact heapSubst_unbound inj hb
+
+theorem heapSubst_fix_readAtom {σ : LPSignature} [DecidableEq σ.vars]
+    {heap : Heap σ} (inj : IdentityInjective heap)
+    {ratom : RuntimeMaterialize.RuntimeAtom σ} {atom : Atom σ}
+    (h : readAtom heap ratom = .ok atom) :
+    (heapSubst heap).applyAtom atom = atom := by
+  obtain ⟨hsym, children, hlen, hChildren, hargs⟩ := readAtom_ok_inv h
+  obtain ⟨hLen, hPoint⟩ := readListFuel_ok_pointwise hChildren
+  cases atom with
+  | mk symbol args =>
+      cases hsym
+      simp only [Subst.applyAtom]
+      congr 1
+      funext index
+      have hargs' : args = fun index =>
+          children.get (Fin.cast hlen.symm index) := eq_of_heq hargs
+      have hidx : args index = children[(Fin.cast hlen.symm index).val] := by
+        rw [hargs']
+        simp [List.get_eq_getElem]
+      rw [hidx]
+      have hk' : (Fin.cast hlen.symm index).val < children.length :=
+        (Fin.cast hlen.symm index).isLt
+      have hk : (Fin.cast hlen.symm index).val <
+          ratom.args.toList.length := by
+        rw [hLen]
+        exact hk'
+      exact heapSubst_fix_readTerm inj (hPoint _ hk hk')
+
+theorem heapSubst_fix_readGoals {σ : LPSignature} [DecidableEq σ.vars]
+    {heap : Heap σ} (inj : IdentityInjective heap) :
+    ∀ {atoms : List (RuntimeMaterialize.RuntimeAtom σ)}
+      {src : List (Atom σ)},
+      readGoals heap atoms = .ok src →
+      (heapSubst heap).applyAtoms src = src := by
+  intro atoms
+  induction atoms with
+  | nil =>
+      intro src h
+      cases h
+      rfl
+  | cons atom rest ih =>
+      intro src h
+      obtain ⟨a, srcRest, rfl, hHead, hTail⟩ := readGoals_cons_ok h
+      show (heapSubst heap).applyAtom a ::
+        (heapSubst heap).applyAtoms srcRest = a :: srcRest
+      rw [heapSubst_fix_readAtom inj hHead, ih hTail]
+
+/-! ### Atom-level naturality -/
+
+/-- Naturality at the atom level: the later readback of a runtime atom is
+the later projection applied to its earlier readback. -/
+theorem readAtom_naturality {σ : LPSignature} [DecidableEq σ.vars]
+    {heap₀ heap₁ : Heap σ}
+    (ext : BindingExtension heap₀ heap₁)
+    (inj : IdentityInjective heap₁) (ff : FunctionFree heap₁)
+    {ratom : RuntimeMaterialize.RuntimeAtom σ} {a₀ a₁ : Atom σ}
+    (h₀ : readAtom heap₀ ratom = .ok a₀)
+    (h₁ : readAtom heap₁ ratom = .ok a₁) :
+    a₁ = (heapSubst heap₁).applyAtom a₀ := by
+  obtain ⟨hsym₀, children₀, hlen₀, hChildren₀, hargs₀⟩ := readAtom_ok_inv h₀
+  obtain ⟨hsym₁, children₁, hlen₁, hChildren₁, hargs₁⟩ := readAtom_ok_inv h₁
+  obtain ⟨hLen₀, hPoint₀⟩ := readListFuel_ok_pointwise hChildren₀
+  obtain ⟨hLen₁, hPoint₁⟩ := readListFuel_ok_pointwise hChildren₁
+  cases a₀ with
+  | mk symbol₀ args₀ =>
+      cases a₁ with
+      | mk symbol₁ args₁ =>
+          cases hsym₀
+          cases hsym₁
+          simp only [Subst.applyAtom]
+          congr 1
+          funext index
+          have hargs₀' : args₀ = fun index =>
+              children₀.get (Fin.cast hlen₀.symm index) := eq_of_heq hargs₀
+          have hargs₁' : args₁ = fun index =>
+              children₁.get (Fin.cast hlen₁.symm index) := eq_of_heq hargs₁
+          rw [hargs₀', hargs₁']
+          simp only [List.get_eq_getElem]
+          have hk₁ : (Fin.cast hlen₁.symm index).val < children₁.length :=
+            (Fin.cast hlen₁.symm index).isLt
+          have hk₀ : (Fin.cast hlen₀.symm index).val < children₀.length :=
+            (Fin.cast hlen₀.symm index).isLt
+          have hb₀ : (Fin.cast hlen₀.symm index).val <
+              ratom.args.toList.length := by
+            rw [hLen₀]; exact hk₀
+          have hb₁ : (Fin.cast hlen₁.symm index).val <
+              ratom.args.toList.length := by
+            rw [hLen₁]; exact hk₁
+          have hr₀ := hPoint₀ _ hb₀ hk₀
+          have hr₁ := hPoint₁ _ hb₁ hk₁
+          exact (readback_naturality ext inj ff hr₀ hr₁).symm
+
+/-! ### Small bridges -/
+
+/-- Prefix-preserving growth is a binding extension (with no bindings). -/
+theorem bindingExtension_of_prefix {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ}
+    (hprefix : ∀ i, i < heap₀.size → heap₁[i]? = heap₀[i]?)
+    (hle : heap₀.size ≤ heap₁.size) : BindingExtension heap₀ heap₁ :=
+  ⟨hle, fun a cell hc => .inl (by
+    rw [hprefix a (lt_of_getElem?_some hc)]
+    exact hc)⟩
+
+/-- Selected clauses are program clauses. -/
+theorem clausesFor_mem_program {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {symbol : σ.relationSymbols} {c : Clause σ}
+    (h : c ∈ RuntimeQuery.clausesFor program symbol) : c ∈ program :=
+  (List.mem_filter.mp h).1
+
+end ReadbackToolkit
+
+/-! ## Stage 6: lanes — root-connectible resolvents
+
+A lane is a live runtime resolvent (the current control, or a stored
+cursor) together with the proof that any scoped derivation of its readback
+extends to a derivation of the *root* query.  The lane property quantifies
+over every future heap `H` reachable by bindings from the lane's anchor —
+never over the eventual answer — which is what makes it maintainable
+forward: lanes whose subtrees die are simply never consumed. -/
+
+section LaneMachinery
+
+open RuntimeQuery
+
+/-- The runtime resolvent of the live control: current goals, then every
+stored continuation in return order. -/
+def flattenControl {σ : LPSignature} (control : Control σ) :
+    List (RuntimeMaterialize.RuntimeAtom σ.scoped) :=
+  control.current ++ control.frames.flatMap (·.continuation)
+
+/-- The runtime resolvent a cursor will retry: its goal, then its stored
+continuations. -/
+def cursorResolvent {σ : LPSignature} (cursor : ClauseCursor σ) :
+    List (RuntimeMaterialize.RuntimeAtom σ.scoped) :=
+  cursor.goal :: cursor.frames.flatMap (·.continuation)
+
+/-- **The lane property.**  For every binding-extension `H` of the anchor
+that is injective and ordered function-free, every scoped derivation of the
+lane's readback at `H` (at any scope past the barrier) yields a derivation
+of the root at scope 1 whose answer agrees with the derivation's
+substitution composed with `H`'s projection, on the query variables. -/
+def LaneOk {σ : LPSignature} [DecidableEq σ.vars] (program : Program σ)
+    (root : List (Atom σ.scoped)) (keys : List (ScopedVar σ.vars))
+    (anchor : Heap σ.scoped) (barrier : Nat)
+    (res : List (RuntimeMaterialize.RuntimeAtom σ.scoped)) : Prop :=
+  ∀ (H : Heap σ.scoped), BindingExtension anchor H →
+    IdentityInjective H → DescendingOrConst H → FunctionFree H →
+    ∀ (s : Nat), barrier ≤ s →
+    ∀ (θ' : Subst σ.scoped) (src : List (Atom σ.scoped)),
+      readGoals H res = .ok src →
+      SLDScopedTree program s src θ' →
+      ∃ Θ, SLDScopedTree program 1 root Θ ∧
+        ∀ v ∈ keys, Θ v = (θ' ∘ₛ heapSubst H) v
+
+/-- Slide the anchor forward along a binding extension. -/
+theorem LaneOk.anchor_slide {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {root : List (Atom σ.scoped)}
+    {keys : List (ScopedVar σ.vars)} {anchor anchor' : Heap σ.scoped}
+    {barrier : Nat} {res : List (RuntimeMaterialize.RuntimeAtom σ.scoped)}
+    (h : LaneOk program root keys anchor barrier res)
+    (hext : BindingExtension anchor anchor') :
+    LaneOk program root keys anchor' barrier res :=
+  fun H hB => h H (hext.trans hB)
+
+/-- Raise the barrier. -/
+theorem LaneOk.barrier_mono {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {root : List (Atom σ.scoped)}
+    {keys : List (ScopedVar σ.vars)} {anchor : Heap σ.scoped}
+    {barrier barrier' : Nat}
+    {res : List (RuntimeMaterialize.RuntimeAtom σ.scoped)}
+    (hle : barrier ≤ barrier')
+    (h : LaneOk program root keys anchor barrier res) :
+    LaneOk program root keys anchor barrier' res :=
+  fun H hB hinj hdesc hff s hs =>
+    h H hB hinj hdesc hff s (Nat.le_trans hle hs)
+
+/-- The choice stack's lanes, anchored like `ChoiceChain`: each cursor
+stores the memory its checkpoint denotes together with its lane property
+at that anchor.  Restoration re-identifies the two chains' memories via
+exact restoration. -/
+inductive LaneChain {σ : LPSignature} [DecidableEq σ.vars]
+    (program : Program σ) (root : List (Atom σ.scoped))
+    (keys : List (ScopedVar σ.vars)) :
+    Nat → List (ClauseCursor σ) → Memory σ.scoped → Prop
+  | nil (bound : Nat) (memory : Memory σ.scoped) :
+      LaneChain program root keys bound [] memory
+  | cons {bound : Nat} {cursor : ClauseCursor σ}
+      {older : List (ClauseCursor σ)} {memory m₀ : Memory σ.scoped}
+      {barrier : Nat}
+      (hext : Extends m₀ memory)
+      (hcp : cursor.checkpoint = m₀.checkpoint)
+      (hwf : Heap.WellFormed m₀.heap)
+      (hshaped : Heap.WellShaped m₀.heap)
+      (hbarrier : barrier ≤ bound)
+      (hlane : LaneOk program root keys m₀.heap barrier
+        (cursorResolvent cursor))
+      (holder : LaneChain program root keys bound older m₀) :
+      LaneChain program root keys bound (cursor :: older) memory
+
+/-- Re-anchor the lane chain along a further extension. -/
+theorem LaneChain.anchor {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {root : List (Atom σ.scoped)}
+    {keys : List (ScopedVar σ.vars)} {bound : Nat}
+    {choices : List (ClauseCursor σ)} {memory memory' : Memory σ.scoped}
+    (h : LaneChain program root keys bound choices memory)
+    (hextM : Extends memory memory') :
+    LaneChain program root keys bound choices memory' := by
+  cases h with
+  | nil => exact .nil bound memory'
+  | cons hext hcp hwf hshaped hbarrier hlane holder =>
+      exact .cons (hext.trans hextM) hcp hwf hshaped hbarrier hlane holder
+
+/-- Lift the lane chain's scope bound. -/
+theorem LaneChain.scope_mono {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {root : List (Atom σ.scoped)}
+    {keys : List (ScopedVar σ.vars)} {bound bound' : Nat}
+    {choices : List (ClauseCursor σ)} {memory : Memory σ.scoped}
+    (hle : bound ≤ bound')
+    (h : LaneChain program root keys bound choices memory) :
+    LaneChain program root keys bound' choices memory := by
+  induction h with
+  | nil => exact .nil bound' _
+  | cons hext hcp hwf hshaped hbarrier hlane holder ih =>
+      exact .cons hext hcp hwf hshaped (Nat.le_trans hbarrier hle) hlane ih
+
+/-- Consume the top lane at a backtrack: exact restoration re-identifies
+the stored anchor with the restored memory. -/
+theorem LaneChain.pop {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {root : List (Atom σ.scoped)}
+    {keys : List (ScopedVar σ.vars)} {bound : Nat}
+    {cursor : ClauseCursor σ} {older : List (ClauseCursor σ)}
+    {memory m₀ : Memory σ.scoped}
+    (h : LaneChain program root keys bound (cursor :: older) memory)
+    (hrestore : memory.restore cursor.checkpoint = .ok m₀) :
+    (∃ barrier, barrier ≤ bound ∧
+      LaneOk program root keys m₀.heap barrier (cursorResolvent cursor)) ∧
+    LaneChain program root keys bound older m₀ := by
+  cases h with
+  | cons hext hcp hwf hshaped hbarrier hlane holder =>
+      rename_i m₀' barrier
+      have hres' : memory.restore cursor.checkpoint = .ok m₀' := by
+        rw [hcp]
+        exact hext.restore_exact (Heap.check_of_wellFormed hwf)
+          (Heap.check_of_wellShaped hshaped)
+      rw [hrestore] at hres'
+      injection hres' with hres'
+      cases hres'
+      exact ⟨⟨barrier, hbarrier, hlane⟩, holder⟩
+
+/-- The full lane invariant of a state: the live control's lane at the
+current memory, plus the stored cursor lanes. -/
+def Lanes {σ : LPSignature} [DecidableEq σ.vars] (program : Program σ)
+    (root : List (Atom σ.scoped)) (keys : List (ScopedVar σ.vars))
+    (state : State σ) : Prop :=
+  (∃ barrier, barrier ≤ state.nextScope ∧
+    LaneOk program root keys state.memory.heap barrier
+      (flattenControl state.control)) ∧
+  LaneChain program root keys state.nextScope state.choices state.memory
+
+end LaneMachinery
+
+/-! ## Stage 6: the root lane
+
+The endpoint judgment is pinned at scope 1, but after failed clauses the
+runtime's first surviving activation runs at a later scope.  Only the root
+node's index is pinned — deeper nodes may use any strictly larger scope —
+so one substitution override re-expresses the surviving activation at
+scope 1: on scope-1 names it behaves as the derivation's step substitution
+did on the actual activation names, elsewhere as the composed answer.
+Query variables live at scope 0, untouched by the override. -/
+
+section RootLane
+
+open RuntimeQuery
+
+/-- Pointwise inversion of a successful goal-list readback. -/
+theorem readGoals_ok_pointwise {σ : LPSignature} {heap : Heap σ} :
+    ∀ {atoms : List (RuntimeMaterialize.RuntimeAtom σ)}
+      {src : List (Atom σ)},
+      readGoals heap atoms = .ok src →
+      atoms.length = src.length ∧
+      ∀ k (hk : k < atoms.length) (hk' : k < src.length),
+        readAtom heap atoms[k] = .ok src[k] := by
+  intro atoms
+  induction atoms with
+  | nil =>
+      intro src h
+      cases h
+      exact ⟨rfl, fun k hk _ => absurd hk (Nat.not_lt_zero k)⟩
+  | cons atom rest ih =>
+      intro src h
+      obtain ⟨a, srcRest, rfl, hHead, hTail⟩ := readGoals_cons_ok h
+      obtain ⟨hLen, hPoint⟩ := ih hTail
+      refine ⟨congrArg (· + 1) hLen, ?_⟩
+      intro k hk hk'
+      cases k with
+      | zero => simpa using hHead
+      | succ k =>
+          have := hPoint k (by simpa using hk) (by simpa using hk')
+          simpa using this
+
+/-- Substitutions agreeing on a term's variables act identically on it. -/
+theorem Subst.applyTerm_congr {σ : LPSignature} [DecidableEq σ.vars]
+    {θ θ' : Subst σ} :
+    ∀ {t : Term σ}, (∀ v ∈ t.freeVars, θ v = θ' v) →
+      θ.applyTerm t = θ'.applyTerm t := by
+  intro t
+  induction t with
+  | var v =>
+      intro h
+      simpa [Subst.applyTerm] using h v (by simp [Term.freeVars])
+  | const c => intro _; rfl
+  | app f ts ih =>
+      intro h
+      simp only [Subst.applyTerm]
+      congr 1
+      funext i
+      exact ih i (fun v hv => h v (by
+        simp only [Term.freeVars, Finset.mem_biUnion, Finset.mem_univ,
+          true_and]
+        exact ⟨i, hv⟩))
+
+theorem Subst.applyAtom_congr {σ : LPSignature} [DecidableEq σ.vars]
+    {θ θ' : Subst σ} {a : Atom σ}
+    (h : ∀ v ∈ a.freeVars, θ v = θ' v) :
+    θ.applyAtom a = θ'.applyAtom a := by
+  cases a with
+  | mk symbol args =>
+      simp only [Subst.applyAtom]
+      congr 1
+      funext i
+      exact Subst.applyTerm_congr (fun v hv => h v
+        (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ i, hv⟩))
+
+/-- Substitutions agreeing across a scope renaming act identically on the
+two scoped copies. -/
+theorem applyTerm_atScope_reindex {σ : LPSignature} [DecidableEq σ.vars]
+    {θA θB : Subst σ.scoped} {s₁ s₂ : Nat}
+    (h : ∀ name : σ.vars, θA (ScopedVar.at s₁ name) =
+      θB (ScopedVar.at s₂ name)) :
+    ∀ (t : Term σ),
+      θA.applyTerm (Term.atScope s₁ t) =
+        θB.applyTerm (Term.atScope s₂ t) := by
+  intro t
+  induction t with
+  | var v =>
+      simpa [Term.atScope, Term.renameVars_var, Subst.applyTerm] using h v
+  | const c => rfl
+  | app f ts ih =>
+      simp only [Term.atScope, Term.renameVars_app, Subst.applyTerm]
+      congr 1
+      funext i
+      exact ih i
+
+theorem applyAtom_atScope_reindex {σ : LPSignature} [DecidableEq σ.vars]
+    {θA θB : Subst σ.scoped} {s₁ s₂ : Nat}
+    (h : ∀ name : σ.vars, θA (ScopedVar.at s₁ name) =
+      θB (ScopedVar.at s₂ name))
+    (a : Atom σ) :
+    θA.applyAtom (Atom.atScope s₁ a) = θB.applyAtom (Atom.atScope s₂ a) := by
+  cases a with
+  | mk symbol args =>
+      simp only [Atom.atScope, Atom.renameVars, Subst.applyAtom]
+      congr 1
+      funext i
+      exact applyTerm_atScope_reindex h (args i)
+
+/-- **Scope-1 re-expression of the surviving root activation.**  A cons of
+the projected root at any scope `s ≥ 1` rebuilds at scope 1: the override
+substitution behaves on scope-1 names as the step substitution did on the
+scope-`s` names.  Scope-0 (query) values are untouched. -/
+theorem root_cons_reindex {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {a : Atom σ.scoped}
+    {rootRest : List (Atom σ.scoped)} {H : Heap σ.scoped}
+    {s next : Nat} {c : Clause σ} {θ₁ θ₁' : Subst σ.scoped}
+    (hs : 1 ≤ s)
+    (hA : ∀ v ∈ a.freeVars, v.scope = 0)
+    (hRest : ∀ atom ∈ rootRest, ∀ v ∈ atom.freeVars, v.scope = 0)
+    (hfresh : s < next) (hc : c ∈ program)
+    (hunif : θ₁.applyAtom ((heapSubst H).applyAtom a) =
+      θ₁.applyAtom (c.head.atScope s))
+    (hrest : SLDScopedTree program next
+      (θ₁.applyAtoms ((c.body.map (Atom.atScope s)) ++
+        (heapSubst H).applyAtoms rootRest)) θ₁') :
+    ∃ Θ, SLDScopedTree program 1 (a :: rootRest) Θ ∧
+      ∀ v : ScopedVar σ.vars, v.scope = 0 →
+        Θ v = ((θ₁' ∘ₛ θ₁) ∘ₛ heapSubst H) v := by
+  set θnew : Subst σ.scoped := fun w =>
+    if w.scope = 1 then θ₁ (ScopedVar.at s w.name)
+    else (θ₁ ∘ₛ heapSubst H) w with hθnew
+  have hzero : ∀ v : ScopedVar σ.vars, v.scope = 0 →
+      θnew v = (θ₁ ∘ₛ heapSubst H) v := by
+    intro v h0
+    simp only [hθnew]
+    rw [if_neg (by simp [h0])]
+  refine ⟨θ₁' ∘ₛ θnew, ?_, ?_⟩
+  · refine SLDScopedTree.cons 1 next a rootRest c θnew θ₁'
+      (Nat.lt_of_le_of_lt hs hfresh) hc ?_ ?_
+    · have hLHS : θnew.applyAtom a =
+          θ₁.applyAtom ((heapSubst H).applyAtom a) := by
+        rw [← Subst.applyAtom_comp]
+        exact Subst.applyAtom_congr (fun v hv => hzero v (hA v hv))
+      have hRHS : θnew.applyAtom (c.head.atScope 1) =
+          θ₁.applyAtom (c.head.atScope s) := by
+        apply applyAtom_atScope_reindex
+        intro name
+        simp only [hθnew]
+        rw [if_pos (ScopedVar.at_scope 1 name)]
+        rfl
+      rw [hLHS, hRHS]
+      exact hunif
+    · have hSubject :
+          θnew.applyAtoms ((c.body.map (Atom.atScope 1)) ++ rootRest) =
+          θ₁.applyAtoms ((c.body.map (Atom.atScope s)) ++
+            (heapSubst H).applyAtoms rootRest) := by
+        simp only [Subst.applyAtoms, List.map_append, List.map_map]
+        congr 1
+        · apply List.map_congr_left
+          intro atom _
+          show θnew.applyAtom (atom.atScope 1) =
+            θ₁.applyAtom (atom.atScope s)
+          apply applyAtom_atScope_reindex
+          intro name
+          simp only [hθnew]
+          rw [if_pos (ScopedVar.at_scope 1 name)]
+          rfl
+        · apply List.map_congr_left
+          intro atom hatom
+          show θnew.applyAtom atom =
+            (θ₁.applyAtom ∘ (heapSubst H).applyAtom) atom
+          rw [Function.comp_apply, ← Subst.applyAtom_comp]
+          exact Subst.applyAtom_congr
+            (fun v hv => hzero v (hRest atom hatom v hv))
+      rw [hSubject]
+      exact hrest
+  · intro v h0
+    show θ₁'.applyTerm (θnew v) = ((θ₁' ∘ₛ θ₁) ∘ₛ heapSubst H) v
+    rw [hzero v h0]
+    simp [Subst.comp, Subst.applyTerm_comp]
+
+/-- **The root lane**: the materialized query is root-connectible from its
+own memory at barrier 1. -/
+theorem rootLane_initial {σ : LPSignature} [DecidableEq σ.vars]
+    {program : Program σ} {goals : List (Atom σ)}
+    {result : MaterializedGoals σ.scoped}
+    (keys : List (ScopedVar σ.vars))
+    (hKeys : ∀ v ∈ keys, v.scope = 0)
+    (hKeysEmpty : goals = [] → keys = [])
+    (hMat : materializeGoals (Memory.empty σ.scoped)
+      (queryAtScope 0 goals) = .ok result) :
+    LaneOk program (queryAtScope 0 goals) keys result.memory.heap 1
+      result.goals := by
+  intro H hB hinj hdesc hff s hs θ' src hread D
+  obtain ⟨_, hLen, hPoint, _, _⟩ := materializeGoals_roundtrip hMat
+  obtain ⟨hLenH, hPointH⟩ := readGoals_ok_pointwise hread
+  have hsrc : src = (heapSubst H).applyAtoms (queryAtScope 0 goals) := by
+    have hLenQ : (queryAtScope 0 goals).length = result.goals.length :=
+      hLen.symm
+    apply List.ext_getElem
+    · simp only [Subst.applyAtoms, List.length_map]
+      rw [← hLenH, ← hLenQ]
+    · intro k hk hk'
+      simp only [Subst.applyAtoms, List.getElem_map] at hk' ⊢
+      have hkG : k < result.goals.length := by
+        rw [hLenH]
+        exact hk
+      have hkQ : k < (queryAtScope 0 goals).length := by
+        simp only [List.length_map] at hk'
+        exact hk'
+      have h₀ := hPoint k hkG hkQ
+      have h₁ := hPointH k hkG hk
+      exact readAtom_naturality hB hinj hff h₀ h₁
+  cases hroot : queryAtScope 0 goals with
+  | nil =>
+      have hGoalsNil : goals = [] := by
+        cases goals with
+        | nil => rfl
+        | cons g gs => simp [queryAtScope] at hroot
+      rw [hroot] at hsrc
+      have hsrcNil : src = [] := by simpa [Subst.applyAtoms] using hsrc
+      subst hsrcNil
+      cases D with
+      | nil =>
+          refine ⟨Subst.id σ.scoped, .nil 1, ?_⟩
+          intro v hv
+          rw [hKeysEmpty hGoalsNil] at hv
+          cases hv
+  | cons a rootRest =>
+      have haMem : a ∈ queryAtScope 0 goals := by
+        rw [hroot]
+        exact List.mem_cons_self ..
+      obtain ⟨g, _, hga⟩ := List.mem_map.mp haMem
+      have hA : ∀ v ∈ a.freeVars, v.scope = 0 := by
+        intro v hv
+        rw [← hga] at hv
+        exact Atom.freeVars_atScope 0 g v hv
+      have hRest : ∀ atom ∈ rootRest, ∀ v ∈ atom.freeVars, v.scope = 0 := by
+        intro atom hatom v hv
+        have hMem : atom ∈ queryAtScope 0 goals := by
+          rw [hroot]
+          exact List.mem_cons_of_mem _ hatom
+        obtain ⟨g', _, hg'⟩ := List.mem_map.mp hMem
+        rw [← hg'] at hv
+        exact Atom.freeVars_atScope 0 g' v hv
+      rw [hroot] at hsrc
+      have hsrcCons : src = (heapSubst H).applyAtom a ::
+          (heapSubst H).applyAtoms rootRest := by
+        simpa [Subst.applyAtoms] using hsrc
+      subst hsrcCons
+      cases D with
+      | cons _ next _ _ c θ₁ θ₁' hfresh hc hunif₁ hrest₁ =>
+          obtain ⟨Θ, hΘ, hAgree⟩ := root_cons_reindex hs hA hRest hfresh
+            hc hunif₁ hrest₁
+          exact ⟨Θ, hΘ, fun v hv => hAgree v (hKeys v hv)⟩
+
+end RootLane
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
