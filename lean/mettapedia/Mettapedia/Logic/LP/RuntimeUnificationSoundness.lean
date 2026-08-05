@@ -1,5 +1,6 @@
 import Mettapedia.Logic.LP.RuntimeReadback
 import Mettapedia.Logic.LP.Substitution
+import Mettapedia.Logic.LP.SLD
 import Mettapedia.Logic.LP.RuntimeUnification
 
 /-!
@@ -1231,9 +1232,24 @@ noncomputable def cellOf {σ : LPSignature} (heap : Heap σ) (v : σ.vars) :
     some h.choose
   else none
 
-/-- The substitution a heap denotes: each identity reads back its cell;
-identities without a cell, or with an unreadable (cyclic) cell, stay
-variables. -/
+/-- Every listed variable has a cell with *finite* readback.  This is the
+interface guard for `heapSubst`: outside a readable support, its fallback
+below silently treats a variable as unbound, which would misrepresent a
+rational (cyclic) binding as freedom.  Theorems must either hypothesize
+readability of every relevant variable or discharge it (the function-free
+fragment proves it outright). -/
+def ReadableOn {σ : LPSignature} (heap : Heap σ) (support : List σ.vars) :
+    Prop :=
+  ∀ v ∈ support, ∃ address term,
+    cellOf heap v = some address ∧
+    Heap.readTerm heap address = .ok term
+
+/-- The **finite heap projection**: each identity reads back its cell;
+identities without a cell, or whose cell has no finite readback (a rational
+cycle), fall back to themselves.  On a `ReadableOn` support — automatic in
+the function-free fragment — this is the canonical answer substitution; the
+fallback is never semantically meaningful and consumers must not rely on
+it. -/
 noncomputable def heapSubst {σ : LPSignature} (heap : Heap σ) : Subst σ :=
   fun v =>
     match cellOf heap v with
@@ -1964,6 +1980,32 @@ theorem materializeTermAux_spec {σ : LPSignature} [DecidableEq σ.vars] :
             funext index
             simp [List.get_eq_getElem, List.getElem_map,
               List.getElem_finRange]
+
+/-! ## The keystone endpoint, pinned
+
+The exact statement stages S4–S6 must produce — written down now so the arc
+has one fixed consumer and cannot drift.  `Prop`-level only; proving it *is*
+the remaining work, and immediately afterwards it must be composed with
+`SLDScopedTree_sound` into one named least-model theorem. -/
+
+/-- Static, cut-free execution of a materialized query yields only answers
+that the standardized-apart SLD judgment derives, with the yielded bindings
+agreeing with the derivation's substitution. -/
+def RefinementEndpoint (σ : LPSignature) [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols] : Prop :=
+  ∀ (builtins : RuntimeQuery.Builtins σ)
+    (program : Program σ) (goals : List (Atom σ))
+    (state : RuntimeQuery.State σ) (fuel : Nat)
+    (answer : RuntimeQuery.Answer σ) (resumed : RuntimeQuery.State σ),
+    (∀ symbol, builtins.isCut symbol = false) →
+    RuntimeQuery.openQuery (Memory.empty σ.scoped) 0 1 goals = .ok state →
+    RuntimeQuery.pull builtins program fuel state = .answer answer resumed →
+    ∃ θ : Subst σ.scoped,
+      SLDScopedTree program 1 (queryAtScope 0 goals) θ ∧
+      ∀ pair ∈ answer.queryVarMap, ∀ term,
+        Heap.readTerm answer.memory.heap pair.2 = .ok term →
+        θ pair.1 = term
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
