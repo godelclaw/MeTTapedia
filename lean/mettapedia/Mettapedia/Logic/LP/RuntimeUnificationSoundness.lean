@@ -1152,8 +1152,8 @@ theorem Extends.unwind_exact {σ : LPSignature} {before after : Memory σ}
         · intro i hi₁ hi₂
           by_cases hie : i = address
           · subst hie
-            simp [Array.getElem_set]
-          · simp [Array.getElem_set, Ne.symm hie]
+            simp
+          · simp
       simp only [hundo, Array.pop_push]
       exact hunwind
   | alloc history step ih =>
@@ -1411,6 +1411,559 @@ theorem heapSubst_idem {σ : LPSignature} [DecidableEq σ.vars]
     heapSubst heap ∘ₛ heapSubst heap = heapSubst heap := by
   funext v
   simpa [Subst.comp] using heapSubst_applyTerm_self inj v
+
+/-! ## Stage 3a: readback under append-only extension, and atom readback -/
+
+/-- List companion for `readTermFuel_extend`. -/
+theorem readListFuel_extend {σ : LPSignature} {heap heap' : Heap σ}
+    {fuel : Nat}
+    (termCase : ∀ address, address < heap.size → ∀ t,
+      readTermFuel heap fuel address = .ok t →
+      readTermFuel heap' fuel address = .ok t) :
+    ∀ (addresses : List Addr), (∀ a ∈ addresses, a < heap.size) →
+      ∀ (terms : List (Term σ)),
+        readListFuel heap fuel addresses = .ok terms →
+        readListFuel heap' fuel addresses = .ok terms := by
+  intro addresses
+  induction addresses with
+  | nil => intro _ terms h; simpa [readListFuel] using h
+  | cons head tailA tailIh =>
+      intro hbound terms h
+      simp only [readListFuel, Bind.bind, Except.bind] at h ⊢
+      cases hHead : readTermFuel heap fuel head with
+      | error e => rw [hHead] at h; simp at h
+      | ok headTerm =>
+          rw [hHead] at h
+          rw [termCase head (hbound head (by simp)) headTerm hHead]
+          cases hTail : readListFuel heap fuel tailA with
+          | error e => rw [hTail] at h; simp at h
+          | ok tailTerms =>
+              rw [hTail] at h
+              rw [tailIh (fun a ha => hbound a (by simp [ha])) tailTerms hTail]
+              exact h
+
+/-- Readback is stable under append-only extension of a *well-formed* heap:
+the prefix is reference-closed, so chains never leave it. -/
+theorem readTermFuel_extend {σ : LPSignature} {heap heap' : Heap σ}
+    (hwf : Heap.WellFormed heap)
+    (hpre : ∀ i, i < heap.size → heap'[i]? = heap[i]?) :
+    ∀ (fuel : Nat) (address : Addr), address < heap.size →
+      ∀ t, readTermFuel heap fuel address = .ok t →
+        readTermFuel heap' fuel address = .ok t := by
+  intro fuel
+  induction fuel with
+  | zero => intro address _ t h; simp [readTermFuel] at h
+  | succ fuel ih =>
+      intro address haddr t h
+      cases hcell : heap[address]? with
+      | none =>
+          rw [readTermFuel_invalid heap fuel address hcell] at h
+          exact absurd h (by simp)
+      | some cell =>
+          have hcell' : heap'[address]? = some cell := by
+            rw [hpre address haddr]; exact hcell
+          cases cell with
+          | var identity link =>
+              cases link with
+              | none =>
+                  rw [readTermFuel_unbound heap fuel address identity hcell] at h
+                  rw [readTermFuel_unbound heap' fuel address identity hcell']
+                  exact h
+              | some target =>
+                  rw [readTermFuel_link heap fuel address target identity
+                    hcell] at h
+                  rw [readTermFuel_link heap' fuel address target identity
+                    hcell']
+                  have htarget : target < heap.size :=
+                    hwf address _ hcell target (by simp [Cell.references])
+                  exact ih target htarget t h
+          | const symbol =>
+              rw [readTermFuel_const heap fuel address symbol hcell] at h
+              rw [readTermFuel_const heap' fuel address symbol hcell']
+              exact h
+          | app symbol args =>
+              rw [readTermFuel_app heap fuel address symbol args hcell] at h
+              rw [readTermFuel_app heap' fuel address symbol args hcell']
+              simp only [Bind.bind, Except.bind] at h ⊢
+              cases hArgs : readListFuel heap fuel args.toList with
+              | error e => rw [hArgs] at h; simp at h
+              | ok children =>
+                  rw [hArgs] at h
+                  have hbound : ∀ a ∈ args.toList, a < heap.size := by
+                    intro a ha
+                    exact hwf address _ hcell a (by
+                      simpa [Cell.references] using ha)
+                  rw [readListFuel_extend (fun a ha => ih a ha) args.toList
+                    hbound children hArgs]
+                  exact h
+
+/-- Read one runtime atom back into a canonical LP atom. -/
+def readAtom {σ : LPSignature} (heap : Heap σ)
+    (atom : RuntimeMaterialize.RuntimeAtom σ) :
+    Except ReadbackError (Atom σ) := do
+  let children ← readListFuel heap (heap.size + 1) atom.args.toList
+  if h : children.length = σ.relationArity atom.symbol then
+    .ok ⟨atom.symbol, fun index => children.get (Fin.cast h.symm index)⟩
+  else
+    .error .arityMismatch
+
+/-! ## Stage 3b: builder mechanics -/
+
+open RuntimeMaterialize in
+/-- All variable-map entries point at unbound cells carrying their identity. -/
+def VarMapCells {σ : LPSignature} (state : BuilderState σ) : Prop :=
+  ∀ pair ∈ state.varMap,
+    state.heap[pair.2]? = some (Cell.var pair.1 none)
+
+@[simp] theorem BuilderM.run_bind {σ : LPSignature} {α β : Type _}
+    (action : RuntimeMaterialize.BuilderM σ α)
+    (next : α → RuntimeMaterialize.BuilderM σ β)
+    (state : RuntimeMaterialize.BuilderState σ) :
+    (action >>= next).run state =
+      match action.run state with
+      | .error error => .error error
+      | .ok (value, nextState) => (next value).run nextState := rfl
+
+@[simp] theorem BuilderM.run_pure {σ : LPSignature} {α : Type _}
+    (value : α) (state : RuntimeMaterialize.BuilderState σ) :
+    (pure value : RuntimeMaterialize.BuilderM σ α).run state =
+      .ok (value, state) := rfl
+
+open RuntimeMaterialize in
+/-- Builder-level allocation, inverted. -/
+theorem allocate_run_spec {σ : LPSignature} {cell : Cell σ}
+    {s₀ s₁ : BuilderState σ} {address : Addr}
+    (h : (RuntimeMaterialize.allocate cell).run s₀ = .ok (address, s₁)) :
+    address = s₀.heap.size ∧ s₁.heap = s₀.heap.push cell ∧
+      s₁.varMap = s₀.varMap := by
+  simp only [RuntimeMaterialize.allocate, BuilderM.run_bind,
+    BuilderM.get, BuilderM.set, BuilderM.throw] at h
+  cases halloc : Memory.allocate { heap := s₀.heap, trail := #[] } cell with
+  | error e => rw [halloc] at h; cases h
+  | ok pair =>
+      obtain ⟨addr₀, memory₀⟩ := pair
+      rw [halloc] at h
+      obtain ⟨haddr, hmem⟩ := allocate_ok_inv halloc
+      cases h
+      refine ⟨haddr, ?_, rfl⟩
+      rw [hmem]
+
+/-- Pointwise readbacks assemble into a list readback. -/
+theorem readListFuel_of_pointwise {σ : LPSignature} {heap : Heap σ}
+    {fuel : Nat} :
+    ∀ (addresses : List Addr) (terms : List (Term σ)),
+      addresses.length = terms.length →
+      (∀ k (hk : k < addresses.length) (hk' : k < terms.length),
+        readTermFuel heap fuel addresses[k] = .ok terms[k]) →
+      readListFuel heap fuel addresses = .ok terms := by
+  intro addresses
+  induction addresses with
+  | nil =>
+      intro terms hlen _
+      cases terms with
+      | nil => simp [readListFuel]
+      | cons _ _ => simp at hlen
+  | cons head tailA tailIh =>
+      intro terms hlen hpoint
+      cases terms with
+      | nil => simp at hlen
+      | cons headTerm tailTerms =>
+          simp only [readListFuel, Bind.bind, Except.bind]
+          have hhead := hpoint 0 (by simp) (by simp)
+          simp only [List.getElem_cons_zero] at hhead
+          rw [hhead]
+          have htail := tailIh tailTerms (by simpa using hlen)
+            (fun k hk hk' => by
+              have := hpoint (k + 1) (by simpa using hk)
+                (by simpa using hk')
+              simpa using this)
+          rw [htail]
+
+open RuntimeMaterialize
+
+/-- A cell lookup pins the address in bounds. -/
+theorem lt_of_getElem?_some {σ : LPSignature} {heap : Heap σ} {a : Addr}
+    {cell : Cell σ} (h : heap[a]? = some cell) : a < heap.size := by
+  cases Nat.lt_or_ge a heap.size with
+  | inl hlt => exact hlt
+  | inr hge => rw [Array.getElem?_eq_none hge] at h; cases h
+
+theorem getElem?_push_lt {σ : LPSignature} (heap : Heap σ) (cell : Cell σ)
+    {a : Addr} (ha : a < heap.size) :
+    (heap.push cell)[a]? = heap[a]? := by
+  have hne : a ≠ heap.size := Nat.ne_of_lt ha
+  simp [Array.getElem?_push, hne]
+
+/-- What one builder step must preserve. -/
+structure BuildOk {σ : LPSignature} (s₀ s₁ : BuilderState σ) : Prop where
+  prefixEq : ∀ i, i < s₀.heap.size → s₁.heap[i]? = s₀.heap[i]?
+  sizeLe : s₀.heap.size ≤ s₁.heap.size
+  wf : Heap.WellFormed s₁.heap
+  cells : VarMapCells s₁
+  varMono : ∀ pair ∈ s₀.varMap, pair ∈ s₁.varMap
+
+theorem BuildOk.rfl {σ : LPSignature} {s : BuilderState σ}
+    (hwf : Heap.WellFormed s.heap) (hcells : VarMapCells s) : BuildOk s s :=
+  ⟨fun _ _ => _root_.rfl, Nat.le_refl _, hwf, hcells, fun _ hp => hp⟩
+
+theorem BuildOk.trans {σ : LPSignature} {s₀ s₁ s₂ : BuilderState σ}
+    (a : BuildOk s₀ s₁) (b : BuildOk s₁ s₂) : BuildOk s₀ s₂ where
+  prefixEq i hi := by
+    rw [b.prefixEq i (Nat.lt_of_lt_of_le hi a.sizeLe)]
+    exact a.prefixEq i hi
+  sizeLe := a.sizeLe.trans b.sizeLe
+  wf := b.wf
+  cells := b.cells
+  varMono pair hp := b.varMono pair (a.varMono pair hp)
+
+/-- Pushing a reference-closed cell is a valid builder step. -/
+theorem BuildOk.push {σ : LPSignature} {s : BuilderState σ} {cell : Cell σ}
+    (hwf : Heap.WellFormed s.heap) (hcells : VarMapCells s)
+    (hrefs : ∀ target ∈ Cell.references cell, target < s.heap.size) :
+    BuildOk s { heap := s.heap.push cell, varMap := s.varMap } where
+  prefixEq i hi := getElem?_push_lt s.heap cell hi
+  sizeLe := by
+    simp only [Array.size_push]
+    exact Nat.le_succ _
+  wf := by
+    intro address cell' hcell' target ht
+    simp only [Array.size_push]
+    by_cases haddr : address = s.heap.size
+    · subst haddr
+      have hpe : (s.heap.push cell)[s.heap.size]? = some cell := by
+        simp
+      rw [hpe] at hcell'
+      cases hcell'
+      exact Nat.lt_succ_of_lt (hrefs target ht)
+    · have hlt : address < s.heap.size := by
+        have hlt' := lt_of_getElem?_some hcell'
+        simp only [Array.size_push] at hlt'
+        exact Nat.lt_of_le_of_ne (Nat.le_of_lt_succ hlt') haddr
+      rw [getElem?_push_lt s.heap cell hlt] at hcell'
+      exact Nat.lt_succ_of_lt (hwf address cell' hcell' target ht)
+  cells pair hp := by
+    have hcell := hcells pair hp
+    have hlt := lt_of_getElem?_some hcell
+    rw [getElem?_push_lt s.heap cell hlt]
+    exact hcell
+  varMono _ hp := hp
+
+/-- A successful association-list lookup names an entry. -/
+theorem mem_of_list_lookup {σ : LPSignature} [DecidableEq σ.vars] :
+    ∀ {varMap : List (σ.vars × Addr)} {identity : σ.vars} {address : Addr},
+      List.lookup identity varMap = some address →
+      (identity, address) ∈ varMap := by
+  intro varMap
+  induction varMap with
+  | nil => intro _ _ h; simp [List.lookup] at h
+  | cons head tailM ih =>
+      intro identity address h
+      obtain ⟨key, value⟩ := head
+      by_cases he : identity = key
+      · subst he
+        simp [List.lookup] at h
+        subst h
+        exact List.mem_cons_self ..
+      · have hne : (identity == key) = false := by
+          simpa using he
+        simp [List.lookup, hne] at h
+        exact List.mem_cons_of_mem _ (ih h)
+
+/-- The specification one materialized term satisfies. -/
+def TermSpec {σ : LPSignature} [DecidableEq σ.vars] (t : Term σ) : Prop :=
+  ∀ {s₀ s₁ : BuilderState σ} {address : Addr},
+    (materializeTermAux t).run s₀ = .ok (address, s₁) →
+    Heap.WellFormed s₀.heap → VarMapCells s₀ →
+    BuildOk s₀ s₁ ∧ address < s₁.heap.size ∧
+      readTermFuel s₁.heap (s₁.heap.size + 1) address = .ok t
+
+/-- Run-level unfolding of `List.mapM.loop` for the builder monad, proved
+directly so no `LawfulMonad` instance is needed. -/
+theorem run_mapM_loop {σ : LPSignature} {α β : Type _}
+    (f : α → RuntimeMaterialize.BuilderM σ β) :
+    ∀ (as : List α) (acc : List β) (s : BuilderState σ),
+      (List.mapM.loop f as acc).run s =
+        match (as.mapM f).run s with
+        | .error e => .error e
+        | .ok (bs, s') => .ok (acc.reverse ++ bs, s') := by
+  intro as
+  induction as with
+  | nil =>
+      intro acc s
+      simp [List.mapM, List.mapM.loop, BuilderM.run_pure]
+  | cons head tailA ih =>
+      intro acc s
+      show (List.mapM.loop f (head :: tailA) acc).run s = _
+      simp only [List.mapM.loop, BuilderM.run_bind]
+      cases hHead : (f head).run s with
+      | error e =>
+          simp only [List.mapM, List.mapM.loop, BuilderM.run_bind, hHead]
+      | ok pair =>
+          obtain ⟨b, s'⟩ := pair
+          simp only [List.mapM, List.mapM.loop, BuilderM.run_bind, hHead]
+          rw [ih (b :: acc) s', ih [b] s']
+          cases hTail : (tailA.mapM f).run s' with
+          | error e => rfl
+          | ok pair' =>
+              obtain ⟨bs, s''⟩ := pair'
+              simp
+
+theorem run_mapM_nil {σ : LPSignature} {α β : Type _}
+    (f : α → RuntimeMaterialize.BuilderM σ β) (s : BuilderState σ) :
+    (([] : List α).mapM f).run s = .ok (([] : List β), s) := by
+  simp [List.mapM, List.mapM.loop, BuilderM.run_pure]
+
+theorem run_mapM_cons {σ : LPSignature} {α β : Type _}
+    (f : α → RuntimeMaterialize.BuilderM σ β) (a : α) (as : List α)
+    (s : BuilderState σ) :
+    ((a :: as).mapM f).run s =
+      match (f a).run s with
+      | .error e => .error e
+      | .ok (b, s') =>
+          match (as.mapM f).run s' with
+          | .error e => .error e
+          | .ok (bs, s'') => .ok (b :: bs, s'') := by
+  show (List.mapM.loop f (a :: as) []).run s = _
+  simp only [List.mapM.loop, BuilderM.run_bind]
+  cases hHead : (f a).run s with
+  | error e => rfl
+  | ok pair =>
+      obtain ⟨b, s'⟩ := pair
+      dsimp only
+      rw [run_mapM_loop f as [b] s']
+      cases hTail : (as.mapM f).run s' with
+      | error e => rfl
+      | ok pair' =>
+          obtain ⟨bs, s''⟩ := pair'
+          simp
+
+/-- mapM companion: element specs assemble into a run over an index list. -/
+theorem materializeMapM_spec {σ : LPSignature} [DecidableEq σ.vars]
+    {ι : Type _} (f : ι → Term σ) :
+    ∀ (indices : List ι),
+      (∀ i ∈ indices, TermSpec (f i)) →
+      ∀ {s₀ s₁ : BuilderState σ} {addresses : List Addr},
+        (indices.mapM fun i => materializeTermAux (f i)).run s₀ =
+          .ok (addresses, s₁) →
+        Heap.WellFormed s₀.heap → VarMapCells s₀ →
+        BuildOk s₀ s₁ ∧ addresses.length = indices.length ∧
+          ∀ k (hk : k < addresses.length) (hk' : k < indices.length),
+            addresses[k] < s₁.heap.size ∧
+            readTermFuel s₁.heap (s₁.heap.size + 1) addresses[k] =
+              .ok (f indices[k]) := by
+  intro indices
+  induction indices with
+  | nil =>
+      intro _ s₀ s₁ addresses h hwf hcells
+      rw [run_mapM_nil] at h
+      cases h
+      exact ⟨BuildOk.rfl hwf hcells, _root_.rfl,
+        fun k hk _ => absurd hk (Nat.not_lt_zero k)⟩
+  | cons head tailI tailIh =>
+      intro elemSpec s₀ s₁ addresses h hwf hcells
+      rw [run_mapM_cons] at h
+      cases hHead : (materializeTermAux (f head)).run s₀ with
+      | error e => rw [hHead] at h; cases h
+      | ok headPair =>
+          obtain ⟨headAddr, sMid⟩ := headPair
+          rw [hHead] at h
+          dsimp only at h
+          cases hTail : (tailI.mapM fun i => materializeTermAux (f i)).run
+              sMid with
+          | error e => rw [hTail] at h; cases h
+          | ok tailPair =>
+              obtain ⟨tailAddrs, sEnd⟩ := tailPair
+              rw [hTail] at h
+              dsimp only at h
+              cases h
+              obtain ⟨bHead, hHeadLt, hHeadRead⟩ :=
+                elemSpec head (by simp) hHead hwf hcells
+              obtain ⟨bTail, hLen, hPoint⟩ :=
+                tailIh (fun i hi => elemSpec i (by simp [hi]))
+                  hTail bHead.wf bHead.cells
+              refine ⟨bHead.trans bTail,
+                congrArg (fun n => n + 1) hLen, ?_⟩
+              intro k hk hk'
+              cases k with
+              | zero =>
+                  refine ⟨Nat.lt_of_lt_of_le hHeadLt bTail.sizeLe, ?_⟩
+                  simp only [List.getElem_cons_zero]
+                  have hExt := readTermFuel_extend bHead.wf bTail.prefixEq
+                    (sMid.heap.size + 1) headAddr hHeadLt _ hHeadRead
+                  exact readTermFuel_mono_le _
+                    (Nat.succ_le_succ bTail.sizeLe) headAddr _ hExt
+              | succ k =>
+                  have := hPoint k (by simpa using hk) (by simpa using hk')
+                  simpa using this
+
+/-- **Materialization round-trip** (term level): a materialized term reads
+back verbatim, the heap grows append-only and stays well-formed, and the
+variable map stays coherent. -/
+theorem materializeTermAux_spec {σ : LPSignature} [DecidableEq σ.vars] :
+    ∀ t : Term σ, TermSpec t := by
+  intro t
+  induction t with
+  | var identity =>
+      intro s₀ s₁ address h hwf hcells
+      simp only [materializeTermAux, BuilderM.run_bind, BuilderM.get] at h
+      cases hlook : List.lookup identity s₀.varMap with
+      | some existing =>
+          simp only [hlook, BuilderM.run_pure] at h
+          cases h
+          exact ⟨BuildOk.rfl hwf hcells,
+            lt_of_getElem?_some (hcells _ (mem_of_list_lookup hlook)),
+            readTermFuel_unbound _ _ _ _
+              (hcells _ (mem_of_list_lookup hlook))⟩
+      | none =>
+          simp only [hlook, BuilderM.run_bind] at h
+          cases hAlloc : (RuntimeMaterialize.allocate
+              (Cell.var identity none)).run s₀ with
+          | error e => rw [hAlloc] at h; cases h
+          | ok pair =>
+              obtain ⟨addr₀, sMid⟩ := pair
+              rw [hAlloc] at h
+              obtain ⟨haddr, hheap, hvar⟩ := allocate_run_spec hAlloc
+              simp only [BuilderM.set, BuilderM.run_pure] at h
+              cases h
+              subst haddr
+              have hself : sMid.heap[s₀.heap.size]? =
+                  some (Cell.var identity none) := by
+                rw [hheap]
+                simp
+              have bPush : BuildOk s₀
+                  { heap := sMid.heap, varMap := s₀.varMap } := by
+                have := BuildOk.push (cell := Cell.var identity none)
+                  hwf hcells (by simp [Cell.references])
+                rwa [← hheap] at this
+              have hCells : VarMapCells
+                  ({ heap := sMid.heap,
+                     varMap := (identity, s₀.heap.size) :: sMid.varMap } :
+                    BuilderState σ) := by
+                intro pair hp
+                rcases List.mem_cons.mp hp with hhd | hp'
+                · rw [hhd]
+                  exact hself
+                · rw [hvar] at hp'
+                  exact bPush.cells pair hp'
+              have hVarMono : ∀ pair ∈ s₀.varMap,
+                  pair ∈ (identity, s₀.heap.size) :: sMid.varMap := by
+                intro pair hp
+                rw [hvar]
+                exact List.mem_cons_of_mem _ hp
+              refine ⟨⟨bPush.prefixEq, bPush.sizeLe, bPush.wf, hCells,
+                hVarMono⟩, ?_, ?_⟩
+              · rw [hheap]
+                simp only [Array.size_push]
+                exact Nat.lt_succ_self _
+              · exact readTermFuel_unbound sMid.heap sMid.heap.size
+                  s₀.heap.size identity hself
+  | const symbol =>
+      intro s₀ s₁ address h hwf hcells
+      simp only [materializeTermAux] at h
+      obtain ⟨haddr, hheap, hvar⟩ := allocate_run_spec h
+      subst haddr
+      have hself : s₁.heap[s₀.heap.size]? = some (Cell.const symbol) := by
+        rw [hheap]
+        simp
+      have bPush : BuildOk s₀ { heap := s₁.heap, varMap := s₀.varMap } := by
+        have := BuildOk.push (cell := Cell.const symbol) hwf hcells
+          (by simp [Cell.references])
+        rwa [← hheap] at this
+      have hCells : VarMapCells s₁ := by
+        intro pair hp
+        rw [hvar] at hp
+        exact bPush.cells pair hp
+      have hVarMono : ∀ pair ∈ s₀.varMap, pair ∈ s₁.varMap := by
+        intro pair hp
+        rw [hvar]
+        exact bPush.varMono pair hp
+      refine ⟨⟨bPush.prefixEq, bPush.sizeLe, bPush.wf, hCells, hVarMono⟩,
+        ?_, ?_⟩
+      · rw [hheap]
+        simp only [Array.size_push]
+        exact Nat.lt_succ_self _
+      · exact readTermFuel_const s₁.heap s₁.heap.size s₀.heap.size symbol hself
+  | app symbol args ih =>
+      intro s₀ s₁ address h hwf hcells
+      simp only [materializeTermAux, BuilderM.run_bind] at h
+      cases hMap : ((List.finRange (σ.functionArity symbol)).mapM fun index =>
+          materializeTermAux (args index)).run s₀ with
+      | error e => rw [hMap] at h; cases h
+      | ok mapPair =>
+          obtain ⟨childAddrs, sMid⟩ := mapPair
+          rw [hMap] at h
+          obtain ⟨bMap, hLen, hPoint⟩ :=
+            materializeMapM_spec (fun index => args index)
+              (List.finRange (σ.functionArity symbol))
+              (fun i _ => ih i) hMap hwf hcells
+          obtain ⟨haddr, hheap, hvar⟩ := allocate_run_spec h
+          subst haddr
+          have hLenArity : childAddrs.length = σ.functionArity symbol := by
+            simpa [List.length_finRange] using hLen
+          have hself : s₁.heap[sMid.heap.size]? =
+              some (Cell.app symbol childAddrs.toArray) := by
+            rw [hheap]
+            simp
+          have hrefs : ∀ target ∈ Cell.references
+              (Cell.app symbol childAddrs.toArray),
+              target < sMid.heap.size := by
+            intro target ht
+            simp only [Cell.references] at ht
+            obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem ht
+            exact (hPoint k hk (by omega)).1
+          have bPush : BuildOk sMid
+              { heap := s₁.heap, varMap := sMid.varMap } := by
+            have := BuildOk.push (cell := Cell.app symbol childAddrs.toArray)
+              bMap.wf bMap.cells hrefs
+            rwa [← hheap] at this
+          have bAll : BuildOk s₀ { heap := s₁.heap, varMap := sMid.varMap } :=
+            bMap.trans bPush
+          have hCells : VarMapCells s₁ := by
+            intro pair hp
+            rw [hvar] at hp
+            exact bAll.cells pair hp
+          have hVarMono : ∀ pair ∈ s₀.varMap, pair ∈ s₁.varMap := by
+            intro pair hp
+            rw [hvar]
+            exact bAll.varMono pair hp
+          have hsize : s₁.heap.size = sMid.heap.size + 1 := by
+            rw [hheap]
+            simp
+          refine ⟨⟨bAll.prefixEq, bAll.sizeLe, bAll.wf, hCells, hVarMono⟩,
+            ?_, ?_⟩
+          · rw [hheap]
+            simp only [Array.size_push]
+            exact Nat.lt_succ_self _
+          · rw [readTermFuel_app s₁.heap s₁.heap.size sMid.heap.size symbol
+              childAddrs.toArray hself]
+            have hChildren :
+                readListFuel s₁.heap s₁.heap.size childAddrs.toArray.toList =
+                  .ok ((List.finRange (σ.functionArity symbol)).map
+                    fun index => args index) := by
+              rw [show childAddrs.toArray.toList = childAddrs from by simp]
+              apply readListFuel_of_pointwise
+              · simp [hLenArity, List.length_finRange]
+              · intro k hk hk'
+                have hp := hPoint k hk (by
+                  simpa [List.length_finRange, hLenArity] using hk)
+                have hExt := readTermFuel_extend bMap.wf bPush.prefixEq
+                  (sMid.heap.size + 1) childAddrs[k] hp.1 _ hp.2
+                rw [hsize]
+                have hidx :
+                    ((List.finRange (σ.functionArity symbol)).map
+                      fun index => args index)[k]'hk' =
+                      args ((List.finRange (σ.functionArity symbol))[k]'(by
+                        simpa [List.length_finRange, hLenArity] using hk)) := by
+                  simp
+                rw [hidx]
+                exact hExt
+            simp only [Bind.bind, Except.bind, hChildren]
+            rw [dif_pos (by simp [List.length_finRange])]
+            refine congrArg Except.ok ?_
+            refine congrArg (Term.app symbol) ?_
+            funext index
+            simp [List.get_eq_getElem, List.getElem_map,
+              List.getElem_finRange]
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
