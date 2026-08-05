@@ -3967,5 +3967,1644 @@ theorem readableOn_of_orderedFF {σ : LPSignature} {heap : Heap σ}
     readTerm_total_of_orderedFF hwf (lt_of_getElem?_some hchoose)
   exact ⟨hex.choose, term, hcellOf, hterm⟩
 
+/-! ## Stage 6: big-step extraction of the unifier phase
+
+`RuntimeQuery.step` relays exactly one unifier microstep per query step, so
+a successful `pull` through a `unifying` phase factors as: some number of
+machine steps reaching the unifier's own terminal, then the query continues
+from the dispatch (success) or backtrack (failure) boundary.  This lets the
+run induction consume whole-run unifier theorems (`startMany_success_*`)
+instead of threading a microstep invariant. -/
+
+section QueryExtraction
+
+open RuntimeQuery
+
+/-- `failWith` is always terminal. -/
+theorem failWith_terminal {σ : LPSignature} (state : State σ)
+    (error : QueryError) :
+    ∃ result, failWith state error = .terminal result := by
+  unfold failWith
+  cases closeMemory state with
+  | ok memory => exact ⟨_, rfl⟩
+  | error cleanup => exact ⟨_, rfl⟩
+
+/-- `complete` is always terminal. -/
+theorem complete_terminal {σ : LPSignature} (state : State σ) :
+    ∃ result, complete state = .terminal result := by
+  unfold complete
+  cases closeMemory state with
+  | ok memory => exact ⟨_, rfl⟩
+  | error cleanup => exact ⟨_, rfl⟩
+
+/-- The dispatch state entered when a selected head unifies. -/
+def unifySuccessState {σ : LPSignature} (state : State σ)
+    (attempt : Attempt σ) (memory : Memory σ.scoped) : State σ :=
+  { state with
+    memory
+    control := {
+      current := attempt.body
+      cutDepth := attempt.cutDepth
+      frames := attempt.frames
+    }
+    phase := .dispatch }
+
+/-- Factor a successful `pull` through a running unifier: the machine
+reaches its own terminal in as many microsteps, and the query resumes from
+the corresponding boundary state with the remaining fuel. -/
+theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    (builtins : Builtins σ) (program : Program σ) :
+    ∀ (fuel : Nat) (state : State σ) (attempt : Attempt σ)
+      (machine : RuntimeUnification.Machine σ.scoped)
+      (answer : Answer σ) (resumed : State σ),
+      state.phase = .unifying attempt machine →
+      pull builtins program fuel state = .answer answer resumed →
+      ∃ (unifierSteps rest : Nat), fuel = unifierSteps + 1 + rest ∧
+        ((∃ m, RuntimeUnification.runSteps unifierSteps machine =
+            .terminal (.success m) ∧
+          pull builtins program rest (unifySuccessState state attempt m) =
+            .answer answer resumed) ∨
+         (∃ m, RuntimeUnification.runSteps unifierSteps machine =
+            .terminal (.failure m) ∧
+          pull builtins program rest
+            { state with memory := m, phase := .backtrack } =
+            .answer answer resumed)) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro state attempt machine answer resumed hPhase hPull
+      simp [pull] at hPull
+  | succ fuel ih =>
+      intro state attempt machine answer resumed hPhase hPull
+      simp only [pull] at hPull
+      cases machine with
+      | running c =>
+          cases hms : RuntimeUnification.step (RuntimeUnification.Machine.running c) with
+          | some next =>
+              have hstep : RuntimeQuery.step builtins program state =
+                  .next { state with phase := .unifying attempt next } none := by
+                simp [RuntimeQuery.step, hPhase, hms]
+              rw [hstep] at hPull
+              dsimp only at hPull
+              obtain ⟨k, rest, hfuel, hdisj⟩ :=
+                ih { state with phase := .unifying attempt next } attempt next
+                  answer resumed rfl hPull
+              refine ⟨k + 1, rest, ?_, ?_⟩
+              · rw [hfuel]
+                exact Nat.add_right_comm (k + 1) rest 1
+              · rw [runSteps_succ_some hms]
+                exact hdisj
+          | none =>
+              have hstep : RuntimeQuery.step builtins program state =
+                  failWith state .stalledUnifier := by
+                simp [RuntimeQuery.step, hPhase, hms]
+              rw [hstep] at hPull
+              obtain ⟨result, hres⟩ := failWith_terminal state .stalledUnifier
+              rw [hres] at hPull
+              dsimp only at hPull
+              cases hPull
+      | terminal t =>
+          cases t with
+          | success m =>
+              have hstep : RuntimeQuery.step builtins program state = .next
+                  (unifySuccessState state attempt m) none := by
+                simp [RuntimeQuery.step, hPhase, unifySuccessState]
+              rw [hstep] at hPull
+              dsimp only at hPull
+              exact ⟨0, fuel, by omega, .inl ⟨m, rfl, hPull⟩⟩
+          | failure m =>
+              have hstep : RuntimeQuery.step builtins program state = .next
+                  { state with memory := m, phase := .backtrack } none := by
+                simp [RuntimeQuery.step, hPhase]
+              rw [hstep] at hPull
+              dsimp only at hPull
+              exact ⟨0, fuel, by omega, .inr ⟨m, rfl, hPull⟩⟩
+          | runtimeError e m =>
+              have hstep : RuntimeQuery.step builtins program state =
+                  failWith { state with memory := m } (.memory e) := by
+                simp [RuntimeQuery.step, hPhase]
+              rw [hstep] at hPull
+              obtain ⟨result, hres⟩ :=
+                failWith_terminal { state with memory := m } (.memory e)
+              rw [hres] at hPull
+              dsimp only at hPull
+              cases hPull
+
+end QueryExtraction
+
+/-! ## Stage 6: heap invariants across materialization, generically
+
+Materialization pushes exactly three cell shapes — an unbound variable
+carrying a term identity, a constant, or a compound over already-built
+children.  One parametric induction therefore transports every heap
+invariant that survives those three pushes; `DescendingOrConst` and
+`HeapScopesBelow` are the two instances the query run needs. -/
+
+/-- Generic transport of a heap invariant along term materialization: `P`
+must survive the three pushed shapes, with variable pushes drawing their
+identities from the term (predicate `Q`). -/
+theorem materializeTermAux_cell_preserves {σ : LPSignature}
+    [DecidableEq σ.vars] (P : Heap σ → Prop) (Q : σ.vars → Prop)
+    (hVar : ∀ (heap : Heap σ) (identity : σ.vars),
+      P heap → Q identity → P (heap.push (Cell.var identity none)))
+    (hConst : ∀ (heap : Heap σ) (symbol : σ.constants),
+      P heap → P (heap.push (Cell.const symbol)))
+    (hApp : ∀ (heap : Heap σ) (symbol : σ.functionSymbols)
+      (args : Array Addr), P heap → P (heap.push (Cell.app symbol args))) :
+    ∀ (t : Term σ) {s₀ s₁ : BuilderState σ} {address : Addr},
+      (∀ v ∈ t.freeVars, Q v) →
+      (materializeTermAux t).run s₀ = .ok (address, s₁) →
+      P s₀.heap → P s₁.heap := by
+  intro t
+  induction t with
+  | var identity =>
+      intro s₀ s₁ address hQ h hP
+      have hQid : Q identity := hQ identity (by simp [Term.freeVars])
+      simp only [materializeTermAux, BuilderM.run_bind, BuilderM.get] at h
+      cases hlook : List.lookup identity s₀.varMap with
+      | some existing =>
+          simp only [hlook, BuilderM.run_pure] at h
+          cases h
+          exact hP
+      | none =>
+          simp only [hlook, BuilderM.run_bind] at h
+          cases hAlloc : (RuntimeMaterialize.allocate
+              (Cell.var identity none)).run s₀ with
+          | error e => rw [hAlloc] at h; cases h
+          | ok pair =>
+              obtain ⟨addr₀, sMid⟩ := pair
+              rw [hAlloc] at h
+              obtain ⟨_, hheap, _⟩ := allocate_run_spec hAlloc
+              simp only [BuilderM.set, BuilderM.run_pure] at h
+              cases h
+              rw [hheap]
+              exact hVar s₀.heap identity hP hQid
+  | const symbol =>
+      intro s₀ s₁ address _ h hP
+      simp only [materializeTermAux] at h
+      obtain ⟨_, hheap, _⟩ := allocate_run_spec h
+      rw [hheap]
+      exact hConst s₀.heap symbol hP
+  | app symbol args ih =>
+      intro s₀ s₁ address hQ h hP
+      simp only [materializeTermAux, BuilderM.run_bind] at h
+      cases hMap : ((List.finRange (σ.functionArity symbol)).mapM fun index =>
+          materializeTermAux (args index)).run s₀ with
+      | error e => rw [hMap] at h; cases h
+      | ok mapPair =>
+          obtain ⟨childAddrs, sMid⟩ := mapPair
+          rw [hMap] at h
+          obtain ⟨_, hheap, _⟩ := allocate_run_spec h
+          have hMid : P sMid.heap :=
+            mapM_heap_preserves _ _
+              (fun i _ => fun {s₀ s₁ value} h' hp =>
+                ih i (fun v hv => hQ v (by
+                  simp only [Term.freeVars]
+                  exact Finset.mem_biUnion.mpr
+                    ⟨i, Finset.mem_univ i, hv⟩)) h' hp)
+              hMap hP
+          rw [hheap]
+          exact hApp sMid.heap symbol childAddrs.toArray hMid
+
+/-- Atom-level generic transport. -/
+theorem materializeAtomAux_cell_preserves {σ : LPSignature}
+    [DecidableEq σ.vars] (P : Heap σ → Prop) (Q : σ.vars → Prop)
+    (hVar : ∀ (heap : Heap σ) (identity : σ.vars),
+      P heap → Q identity → P (heap.push (Cell.var identity none)))
+    (hConst : ∀ (heap : Heap σ) (symbol : σ.constants),
+      P heap → P (heap.push (Cell.const symbol)))
+    (hApp : ∀ (heap : Heap σ) (symbol : σ.functionSymbols)
+      (args : Array Addr), P heap → P (heap.push (Cell.app symbol args)))
+    (atom : Atom σ) {s₀ s₁ : BuilderState σ} {ratom : RuntimeAtom σ}
+    (hQ : ∀ v ∈ atom.freeVars, Q v)
+    (h : (materializeAtomAux atom).run s₀ = .ok (ratom, s₁)) :
+    P s₀.heap → P s₁.heap := by
+  intro hP
+  simp only [materializeAtomAux, BuilderM.run_bind] at h
+  cases hMap : ((List.finRange (σ.relationArity atom.symbol)).mapM
+      fun index => materializeTermAux (atom.args index)).run s₀ with
+  | error e => rw [hMap] at h; cases h
+  | ok mapPair =>
+      obtain ⟨childAddrs, sMid⟩ := mapPair
+      rw [hMap] at h
+      dsimp only at h
+      cases h
+      exact mapM_heap_preserves _ _
+        (fun i _ => fun {s₀ s₁ value} h' hp =>
+          materializeTermAux_cell_preserves P Q hVar hConst hApp
+            (atom.args i)
+            (fun v hv => hQ v
+              (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ i, hv⟩))
+            h' hp)
+        hMap hP
+
+/-! ### Instance 1: descending links -/
+
+/-- Pushing any cell that is not a bound variable preserves descending
+links: the new cell adds no link, old links and their constant targets are
+untouched. -/
+theorem descendingOrConst_push {σ : LPSignature} {heap : Heap σ}
+    {cell : Cell σ}
+    (hNotBound : ∀ (identity : σ.vars) (target : Addr),
+      cell ≠ Cell.var identity (some target))
+    (hDesc : DescendingOrConst heap) :
+    DescendingOrConst (heap.push cell) := by
+  intro a id t hcellA
+  rcases getElem?_push_cases hcellA with ⟨_, hold⟩ | ⟨_, hcelleq⟩
+  · rcases hDesc a id t hold with hord | ⟨symbol, hconst⟩
+    · exact .inl hord
+    · exact .inr ⟨symbol,
+        by rw [getElem?_push_lt heap cell (lt_of_getElem?_some hconst)]
+           exact hconst⟩
+  · exact absurd hcelleq.symm (hNotBound id t)
+
+/-- Goal materialization preserves descending links. -/
+theorem materializeGoals_descendingOrConst {σ : LPSignature}
+    [DecidableEq σ.vars] {memory : Memory σ} {goals : List (Atom σ)}
+    {result : MaterializedGoals σ}
+    (h : materializeGoals memory goals = .ok result)
+    (hDesc : DescendingOrConst memory.heap) :
+    DescendingOrConst result.memory.heap := by
+  unfold materializeGoals at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeGoalsAux goals) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeGoals, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      by_cases hCheck : (runtimeGoals.all
+          fun atom => atom.checkWellFormed state.heap) = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        exact mapM_heap_preserves materializeAtomAux goals
+          (fun i _ => fun {s₀ s₁ value} h' hp =>
+            materializeAtomAux_cell_preserves DescendingOrConst
+              (fun _ => True)
+              (fun heap identity hp' _ =>
+                descendingOrConst_push (fun _ _ hEq => by cases hEq) hp')
+              (fun heap symbol hp' =>
+                descendingOrConst_push (fun _ _ hEq => by cases hEq) hp')
+              (fun heap symbol args hp' =>
+                descendingOrConst_push (fun _ _ hEq => by cases hEq) hp')
+              i (fun _ _ => trivial) h' hp)
+          hrun hDesc
+
+/-- Clause materialization preserves descending links. -/
+theorem materializeClause_descendingOrConst {σ : LPSignature}
+    [DecidableEq σ.vars] {memory : Memory σ} {clause : Clause σ}
+    {result : MaterializedClause σ}
+    (h : materializeClause memory clause = .ok result)
+    (hDesc : DescendingOrConst memory.heap) :
+    DescendingOrConst result.memory.heap := by
+  unfold materializeClause at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeClauseAux clause) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeClause, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      by_cases hCheck :
+          runtimeClause.checkWellFormed state.heap = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        simp only [materializeClauseAux, BuilderM.run_bind] at hrun
+        cases hHead : (materializeAtomAux clause.head).run
+            (BuilderState.start memory.heap) with
+        | error e => rw [hHead] at hrun; cases hrun
+        | ok headPair =>
+            obtain ⟨headAtom, sMid⟩ := headPair
+            rw [hHead] at hrun
+            dsimp only at hrun
+            cases hBody : (clause.body.mapM materializeAtomAux).run sMid with
+            | error e => rw [hBody] at hrun; cases hrun
+            | ok bodyPair =>
+                obtain ⟨bodyAtoms, sEnd⟩ := bodyPair
+                rw [hBody] at hrun
+                dsimp only at hrun
+                cases hrun
+                have hMid : DescendingOrConst sMid.heap :=
+                  materializeAtomAux_cell_preserves DescendingOrConst
+                    (fun _ => True)
+                    (fun heap identity hp _ =>
+                      descendingOrConst_push (fun _ _ hEq => by cases hEq) hp)
+                    (fun heap symbol hp =>
+                      descendingOrConst_push (fun _ _ hEq => by cases hEq) hp)
+                    (fun heap symbol args hp =>
+                      descendingOrConst_push (fun _ _ hEq => by cases hEq) hp)
+                    clause.head (fun _ _ => trivial) hHead hDesc
+                exact mapM_heap_preserves materializeAtomAux clause.body
+                  (fun i _ => fun {s₀ s₁ value} h' hp =>
+                    materializeAtomAux_cell_preserves DescendingOrConst
+                      (fun _ => True)
+                      (fun heap identity hp' _ =>
+                        descendingOrConst_push
+                          (fun _ _ hEq => by cases hEq) hp')
+                      (fun heap symbol hp' =>
+                        descendingOrConst_push
+                          (fun _ _ hEq => by cases hEq) hp')
+                      (fun heap symbol args hp' =>
+                        descendingOrConst_push
+                          (fun _ _ hEq => by cases hEq) hp')
+                      i (fun _ _ => trivial) h' hp)
+                  hBody hMid
+
+/-! ### Instance 2: scope bounds -/
+
+/-- The executable scope check means exactly `HeapScopesBelow`. -/
+theorem heapScopesBelow_iff {σ : LPSignature} (heap : Heap σ.scoped)
+    (bound : Nat) :
+    RuntimeQuery.heapScopesBelow heap bound = true ↔
+      HeapScopesBelow bound heap := by
+  constructor
+  · intro h a identity link hcell
+    have := Array.all_eq_true.mp h
+    have hlt := lt_of_getElem?_some hcell
+    have hbelow := this a hlt
+    have hget : heap[a] = Cell.var identity link := by
+      have := hcell
+      rwa [Array.getElem?_eq_getElem hlt, Option.some_inj] at this
+    rw [hget] at hbelow
+    simpa [RuntimeQuery.Cell.scopeBelow] using hbelow
+  · intro h
+    apply Array.all_eq_true.mpr
+    intro a hlt
+    cases hcell : heap[a] with
+    | var identity link =>
+        have : heap[a]? = some (Cell.var identity link) := by
+          rw [Array.getElem?_eq_getElem hlt, hcell]
+        simpa [RuntimeQuery.Cell.scopeBelow] using h a identity link this
+    | const symbol => simp [RuntimeQuery.Cell.scopeBelow]
+    | app symbol args => simp [RuntimeQuery.Cell.scopeBelow]
+
+/-- Pushing a cell whose identity (if any) is below the bound preserves the
+scope bound. -/
+theorem heapScopesBelow_push {σ : LPSignature} {heap : Heap σ.scoped}
+    {bound : Nat} {cell : Cell σ.scoped}
+    (hcell : ∀ (identity : ScopedVar σ.vars) (link : Option Addr),
+      cell = Cell.var identity link → identity.scope < bound)
+    (h : HeapScopesBelow bound heap) :
+    HeapScopesBelow bound (heap.push cell) := by
+  intro a identity link hcellA
+  rcases getElem?_push_cases hcellA with ⟨_, hold⟩ | ⟨_, hcelleq⟩
+  · exact h a identity link hold
+  · exact hcell identity link hcelleq.symm
+
+/-- Goal materialization at a scope strictly below the bound preserves the
+scope bound. -/
+theorem materializeGoals_scopesBelow {σ : LPSignature}
+    [DecidableEq σ.vars] {memory : Memory σ.scoped}
+    {goals : List (Atom σ)} {queryScope bound : Nat}
+    {result : MaterializedGoals σ.scoped}
+    (h : materializeGoals memory (queryAtScope queryScope goals) =
+      .ok result)
+    (hScope : queryScope < bound)
+    (hBelow : HeapScopesBelow bound memory.heap) :
+    HeapScopesBelow bound result.memory.heap := by
+  unfold materializeGoals at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeGoalsAux (queryAtScope queryScope goals))
+      memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeGoals, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      by_cases hCheck : (runtimeGoals.all
+          fun atom => atom.checkWellFormed state.heap) = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        refine mapM_heap_preserves materializeAtomAux
+          (queryAtScope queryScope goals)
+          (fun i hi => fun {s₀ s₁ value} h' hp => ?_) hrun hBelow
+        obtain ⟨source, _, rfl⟩ := List.mem_map.mp hi
+        exact materializeAtomAux_cell_preserves (HeapScopesBelow bound)
+          (fun v => v.scope < bound)
+          (fun heap identity hp' hQ =>
+            heapScopesBelow_push
+              (fun id link hEq => by cases hEq; exact hQ) hp')
+          (fun heap symbol hp' =>
+            heapScopesBelow_push (fun _ _ hEq => by cases hEq) hp')
+          (fun heap symbol args hp' =>
+            heapScopesBelow_push (fun _ _ hEq => by cases hEq) hp')
+          (source.atScope queryScope)
+          (fun v hv => by
+            rw [Atom.freeVars_atScope queryScope source v hv]
+            exact hScope)
+          h' hp
+
+/-- Clause activation at a scope strictly below the bound preserves the
+scope bound. -/
+theorem materializeClause_scopesBelow {σ : LPSignature}
+    [DecidableEq σ.vars] {memory : Memory σ.scoped}
+    {clause : Clause σ} {activationScope bound : Nat}
+    {result : MaterializedClause σ.scoped}
+    (h : materializeClause memory (clause.atScope activationScope) =
+      .ok result)
+    (hScope : activationScope < bound)
+    (hBelow : HeapScopesBelow bound memory.heap) :
+    HeapScopesBelow bound result.memory.heap := by
+  unfold materializeClause at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeClauseAux (clause.atScope activationScope))
+      memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeClause, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      by_cases hCheck :
+          runtimeClause.checkWellFormed state.heap = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        simp only [materializeClauseAux, BuilderM.run_bind] at hrun
+        cases hHead : (materializeAtomAux
+            ((clause.atScope activationScope).head)).run
+            (BuilderState.start memory.heap) with
+        | error e => rw [hHead] at hrun; cases hrun
+        | ok headPair =>
+            obtain ⟨headAtom, sMid⟩ := headPair
+            rw [hHead] at hrun
+            dsimp only at hrun
+            cases hBody : (((clause.atScope activationScope).body).mapM
+                materializeAtomAux).run sMid with
+            | error e => rw [hBody] at hrun; cases hrun
+            | ok bodyPair =>
+                obtain ⟨bodyAtoms, sEnd⟩ := bodyPair
+                rw [hBody] at hrun
+                dsimp only at hrun
+                cases hrun
+                have hAtomPass : ∀ (atom : Atom σ)
+                    {s₀ s₁ : BuilderState σ.scoped}
+                    {ratom : RuntimeAtom σ.scoped},
+                    (materializeAtomAux (atom.atScope activationScope)).run
+                      s₀ = .ok (ratom, s₁) →
+                    HeapScopesBelow bound s₀.heap →
+                    HeapScopesBelow bound s₁.heap := by
+                  intro atom s₀ s₁ ratom h' hp
+                  exact materializeAtomAux_cell_preserves
+                    (HeapScopesBelow bound) (fun v => v.scope < bound)
+                    (fun heap identity hp' hQ =>
+                      heapScopesBelow_push
+                        (fun id link hEq => by cases hEq; exact hQ) hp')
+                    (fun heap symbol hp' =>
+                      heapScopesBelow_push
+                        (fun _ _ hEq => by cases hEq) hp')
+                    (fun heap symbol args hp' =>
+                      heapScopesBelow_push
+                        (fun _ _ hEq => by cases hEq) hp')
+                    (atom.atScope activationScope)
+                    (fun v hv => by
+                      rw [Atom.freeVars_atScope activationScope atom v hv]
+                      exact hScope)
+                    h' hp
+                have hMid : HeapScopesBelow bound sMid.heap :=
+                  hAtomPass clause.head hHead hBelow
+                refine mapM_heap_preserves materializeAtomAux
+                  ((clause.atScope activationScope).body)
+                  (fun i hi => fun {s₀ s₁ value} h' hp => ?_)
+                  hBody hMid
+                obtain ⟨source, _, rfl⟩ := List.mem_map.mp hi
+                exact hAtomPass source h' hp
+
+/-! ## Stage 6: the opened query state
+
+`openQuery` is the endpoint's entry: invert it, and establish the full
+heap-invariant bundle at the state it constructs.  On the empty memory the
+caller-side hypotheses are all vacuous. -/
+
+section OpenedState
+
+open RuntimeQuery
+
+/-- Function-free is definitionally free when the signature has no function
+symbols — the fragment the composed endpoint theorem lives in. -/
+theorem functionFree_of_isEmpty {σ : LPSignature}
+    [IsEmpty σ.functionSymbols] (heap : Heap σ) : FunctionFree heap :=
+  fun _ symbol _ _ => (IsEmpty.false symbol).elim
+
+/-- The state `openQuery` constructs on success. -/
+def openedState {σ : LPSignature} (memory : Memory σ.scoped)
+    (nextScope : Nat) (result : MaterializedGoals σ.scoped) : State σ :=
+  { memory := result.memory
+    control := {
+      current := result.goals
+      cutDepth := 0
+      frames := []
+    }
+    choices := []
+    queryCheckpoint := memory.checkpoint
+    queryVarMap := result.varMap
+    nextScope
+    phase := .dispatch }
+
+/-- Invert a successful `openQuery`. -/
+theorem openQuery_ok_inv {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ.scoped} {queryScope nextScope : Nat}
+    {goals : List (Atom σ)} {state : State σ}
+    (h : openQuery memory queryScope nextScope goals = .ok state) :
+    queryScope < nextScope ∧
+    heapScopesBelow memory.heap nextScope = true ∧
+    ∃ result,
+      materializeGoals memory (queryAtScope queryScope goals) =
+        .ok result ∧
+      state = openedState memory nextScope result := by
+  unfold openQuery at h
+  by_cases hScope : queryScope < nextScope
+  case neg => rw [if_neg hScope] at h; cases h
+  case pos =>
+  rw [if_pos hScope] at h
+  by_cases hBelow : heapScopesBelow memory.heap nextScope = true
+  case neg => rw [if_neg hBelow] at h; cases h
+  case pos =>
+  rw [if_pos hBelow] at h
+  cases hMat : materializeGoals memory (queryAtScope queryScope goals) with
+  | error e => rw [hMat] at h; cases h
+  | ok result =>
+      rw [hMat] at h
+      dsimp only at h
+      cases h
+      exact ⟨hScope, hBelow, result, rfl, rfl⟩
+
+/-- The heap-invariant bundle carried by every query boundary state. -/
+def StateHeapInv {σ : LPSignature} (state : State σ) : Prop :=
+  Heap.WellFormed state.memory.heap ∧
+  DescendingOrConst state.memory.heap ∧
+  IdentityInjective state.memory.heap ∧
+  HeapScopesBelow state.nextScope state.memory.heap
+
+/-- Opening a query over an invariant-satisfying memory establishes the
+bundle, and the query variable map is fresh-coherent at the query scope. -/
+theorem openQuery_stateHeapInv {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ.scoped} {queryScope nextScope : Nat}
+    {goals : List (Atom σ)} {state : State σ}
+    (h : openQuery memory queryScope nextScope goals = .ok state)
+    (hDesc : DescendingOrConst memory.heap)
+    (hInj : IdentityInjective memory.heap)
+    (hBelowQ : HeapScopesBelow queryScope memory.heap) :
+    StateHeapInv state ∧
+    FreshInv (fun v : ScopedVar σ.vars => v.scope = queryScope)
+      { heap := state.memory.heap, varMap := state.queryVarMap } := by
+  obtain ⟨hScope, _, result, hMat, rfl⟩ := openQuery_ok_inv h
+  obtain ⟨_, _, _, hWF, _⟩ := materializeGoals_roundtrip hMat
+  refine ⟨⟨hWF, ?_, ?_, ?_⟩, ?_⟩
+  · exact materializeGoals_descendingOrConst hMat hDesc
+  · exact (materializeGoals_scoped_freshInv hMat hBelowQ hInj).injective
+  · exact materializeGoals_scopesBelow hMat hScope
+      (fun a id link hcell =>
+        Nat.lt_trans (hBelowQ a id link hcell) hScope)
+  · exact materializeGoals_scoped_freshInv hMat hBelowQ hInj
+
+/-- The empty memory holds no cells. -/
+theorem empty_heap_getElem {σ : LPSignature} (a : Addr) :
+    (Memory.empty σ).heap[a]? = none := by
+  rw [Array.getElem?_eq_none]
+  exact Nat.zero_le a
+
+/-- The endpoint's entry instance: everything vacuous on the empty memory. -/
+theorem openQuery_empty_stateHeapInv {σ : LPSignature} [DecidableEq σ.vars]
+    {goals : List (Atom σ)} {state : State σ}
+    (h : openQuery (Memory.empty σ.scoped) 0 1 goals = .ok state) :
+    StateHeapInv state ∧
+    FreshInv (fun v : ScopedVar σ.vars => v.scope = 0)
+      { heap := state.memory.heap, varMap := state.queryVarMap } :=
+  openQuery_stateHeapInv h
+    (fun a id t hcell => by rw [empty_heap_getElem] at hcell; cases hcell)
+    (fun a b id la lb ha _ => by rw [empty_heap_getElem] at ha; cases ha)
+    (fun a id link hcell => by rw [empty_heap_getElem] at hcell; cases hcell)
+
+end OpenedState
+
+/-! ## Stage 6: the reachable-state invariant
+
+The bundle every query boundary state satisfies, with the choice stack
+carried as an `Extends`-anchored chain of checkpoint memories: restoring a
+cursor recovers *exactly* a previously reached memory together with its
+stored invariants. -/
+
+section QueryInvariant
+
+open RuntimeQuery
+
+/-- A successful write's cell had its references checked in bounds. -/
+theorem write_ok_refs {σ : LPSignature} {memory memory' : Memory σ}
+    {address : Addr} {cell : Cell σ}
+    (h : memory.write address cell = .ok memory') :
+    ∀ target ∈ Cell.references cell, target < memory.heap.size := by
+  unfold Memory.write at h
+  split at h
+  · split at h
+    · split at h
+      next hrefs =>
+        intro target ht
+        exact of_decide_eq_true (List.all_eq_true.mp hrefs target ht)
+      next =>
+        rcases hfind : (Cell.references cell).find?
+            (fun target => decide (memory.heap.size ≤ target)) with _ | t <;>
+          rw [hfind] at h <;> cases h
+    · cases h
+  · cases h
+
+/-- A successful allocation's cell had its references checked in bounds. -/
+theorem allocate_ok_refs {σ : LPSignature} {memory memory' : Memory σ}
+    {address : Addr} {cell : Cell σ}
+    (h : memory.allocate cell = .ok (address, memory')) :
+    ∀ target ∈ Cell.references cell, target < memory.heap.size := by
+  unfold Memory.allocate at h
+  split at h
+  · split at h
+    next hrefs =>
+      intro target ht
+      exact of_decide_eq_true (List.all_eq_true.mp hrefs target ht)
+    next =>
+      rcases hfind : (Cell.references cell).find?
+          (fun address => decide (memory.heap.size ≤ address)) with _ | t <;>
+        rw [hfind] at h <;> cases h
+  · cases h
+
+/-- Successful writes preserve heap well-formedness. -/
+theorem wellFormed_write {σ : LPSignature} {memory memory' : Memory σ}
+    {address : Addr} {cell : Cell σ}
+    (h : memory.write address cell = .ok memory')
+    (hwf : Heap.WellFormed memory.heap) :
+    Heap.WellFormed memory'.heap := by
+  obtain ⟨hlt, hmem⟩ := write_ok_inv h
+  have hheap : memory'.heap = memory.heap.set address cell hlt := by
+    rw [hmem]
+  have hsize : memory'.heap.size = memory.heap.size := by
+    rw [hheap]; simp
+  intro a c hcell target ht
+  rw [hheap] at hcell
+  rw [hsize]
+  by_cases haddr : a = address
+  · rw [haddr, heap_set_get_self _ _ hlt] at hcell
+    cases hcell
+    exact write_ok_refs h target ht
+  · rw [heap_set_get_ne _ _ hlt haddr] at hcell
+    exact hwf a c hcell target ht
+
+/-- Successful allocations preserve heap well-formedness. -/
+theorem wellFormed_allocate {σ : LPSignature} {memory memory' : Memory σ}
+    {address : Addr} {cell : Cell σ}
+    (h : memory.allocate cell = .ok (address, memory'))
+    (hwf : Heap.WellFormed memory.heap) :
+    Heap.WellFormed memory'.heap := by
+  obtain ⟨haddr, hmem⟩ := allocate_ok_inv h
+  have hheap : memory'.heap = memory.heap.push cell := by
+    rw [hmem]
+  have hsize : memory'.heap.size = memory.heap.size + 1 := by
+    rw [hheap]; simp
+  intro a c hcell target ht
+  rw [hheap] at hcell
+  rw [hsize]
+  rcases getElem?_push_cases hcell with ⟨_, hold⟩ | ⟨_, hcelleq⟩
+  · exact Nat.lt_succ_of_lt (hwf a c hold target ht)
+  · subst hcelleq
+    exact Nat.lt_succ_of_lt (allocate_ok_refs h target ht)
+
+/-- A write/allocation history preserves heap well-formedness. -/
+theorem Extends.wellFormed {σ : LPSignature} {m₀ m₁ : Memory σ}
+    (h : Extends m₀ m₁) (hwf : Heap.WellFormed m₀.heap) :
+    Heap.WellFormed m₁.heap := by
+  induction h with
+  | refl => exact hwf
+  | write _ step ih => exact wellFormed_write step ih
+  | alloc _ step ih => exact wellFormed_allocate step ih
+
+/-! ### Boundedness of the live control data -/
+
+/-- Every runtime atom of the list is well-formed over the heap. -/
+def AtomsWF {σ : LPSignature} (heap : Heap σ.scoped)
+    (atoms : List (RuntimeAtom σ.scoped)) : Prop :=
+  ∀ atom ∈ atoms, atom.WellFormed heap
+
+/-- Every stored continuation is well-formed over the heap. -/
+def FramesWF {σ : LPSignature} (heap : Heap σ.scoped)
+    (frames : List (ReturnFrame σ)) : Prop :=
+  ∀ frame ∈ frames, AtomsWF heap frame.continuation
+
+/-- Every query variable's cell is present, carrying its identity. -/
+def VarMapCellsWF {σ : LPSignature} (heap : Heap σ.scoped)
+    (varMap : List (ScopedVar σ.vars × Addr)) : Prop :=
+  ∀ pair ∈ varMap, ∃ link,
+    heap[pair.2]? = some (Cell.var pair.1 link)
+
+theorem RuntimeAtom.wellFormed_mono {σ : LPSignature}
+    {heap heap' : Heap σ.scoped} {atom : RuntimeAtom σ.scoped}
+    (hle : heap.size ≤ heap'.size) (h : atom.WellFormed heap) :
+    atom.WellFormed heap' :=
+  ⟨h.1, fun a ha => Nat.lt_of_lt_of_le (h.2 a ha) hle⟩
+
+theorem AtomsWF.mono {σ : LPSignature} {heap heap' : Heap σ.scoped}
+    {atoms : List (RuntimeAtom σ.scoped)}
+    (hle : heap.size ≤ heap'.size) (h : AtomsWF heap atoms) :
+    AtomsWF heap' atoms :=
+  fun atom hatom => RuntimeAtom.wellFormed_mono hle (h atom hatom)
+
+theorem FramesWF.mono {σ : LPSignature} {heap heap' : Heap σ.scoped}
+    {frames : List (ReturnFrame σ)}
+    (hle : heap.size ≤ heap'.size) (h : FramesWF heap frames) :
+    FramesWF heap' frames :=
+  fun frame hframe => (h frame hframe).mono hle
+
+/-- Cells survive verbatim under prefix-preserving growth. -/
+theorem VarMapCellsWF.of_prefix {σ : LPSignature}
+    {heap heap' : Heap σ.scoped}
+    {varMap : List (ScopedVar σ.vars × Addr)}
+    (hprefix : ∀ i, i < heap.size → heap'[i]? = heap[i]?)
+    (h : VarMapCellsWF heap varMap) : VarMapCellsWF heap' varMap := by
+  intro pair hpair
+  obtain ⟨link, hcell⟩ := h pair hpair
+  exact ⟨link, by
+    rw [hprefix pair.2 (lt_of_getElem?_some hcell)]
+    exact hcell⟩
+
+/-- Cells keep their identity under binding extensions. -/
+theorem VarMapCellsWF.of_bindingExtension {σ : LPSignature}
+    {heap heap' : Heap σ.scoped}
+    {varMap : List (ScopedVar σ.vars × Addr)}
+    (hext : BindingExtension heap heap')
+    (h : VarMapCellsWF heap varMap) : VarMapCellsWF heap' varMap := by
+  intro pair hpair
+  obtain ⟨link, hcell⟩ := h pair hpair
+  rcases hext.2 pair.2 _ hcell with hsame | ⟨id, target, hEq, hbound⟩
+  · exact ⟨link, hsame⟩
+  · cases hEq
+    exact ⟨some target, hbound⟩
+
+/-- Scope bounds transfer along size-preserving binding extensions:
+identities never change. -/
+theorem HeapScopesBelow.of_bindingExtension {σ : LPSignature}
+    {heap heap' : Heap σ.scoped} {bound : Nat}
+    (hext : BindingExtension heap heap') (hsize : heap.size = heap'.size)
+    (h : HeapScopesBelow bound heap) : HeapScopesBelow bound heap' := by
+  intro a identity link hcell
+  have hlt : a < heap.size := by
+    rw [hsize]
+    exact lt_of_getElem?_some hcell
+  obtain ⟨link₀, hcell₀⟩ := hext.var_back hlt hcell
+  exact h a identity link₀ hcell₀
+
+/-- Scope bounds are monotone in the bound. -/
+theorem HeapScopesBelow.mono {σ : LPSignature} {heap : Heap σ.scoped}
+    {bound bound' : Nat} (hle : bound ≤ bound')
+    (h : HeapScopesBelow bound heap) : HeapScopesBelow bound' heap :=
+  fun a identity link hcell =>
+    Nat.lt_of_lt_of_le (h a identity link hcell) hle
+
+/-! ### The choice chain -/
+
+/-- The choice stack as an `Extends`-anchored chain: each cursor stores the
+memory its checkpoint denotes, that memory's invariants, and the bounds of
+everything the cursor will need after restoring.  Deeper cursors anchor to
+the memory of the cursor above them. -/
+inductive ChoiceChain {σ : LPSignature} [DecidableEq σ.relationSymbols]
+    (program : Program σ)
+    (varMap : List (ScopedVar σ.vars × Addr)) :
+    Nat → List (ClauseCursor σ) → Memory σ.scoped → Prop
+  | nil (bound : Nat) (memory : Memory σ.scoped) :
+      ChoiceChain program varMap bound [] memory
+  | cons {bound : Nat} {cursor : ClauseCursor σ}
+      {older : List (ClauseCursor σ)} {memory m₀ : Memory σ.scoped}
+      (hcp : cursor.checkpoint = m₀.checkpoint)
+      (hext : Extends m₀ memory)
+      (hwf : Heap.WellFormed m₀.heap)
+      (hshaped : Heap.WellShaped m₀.heap)
+      (hdesc : DescendingOrConst m₀.heap)
+      (hinj : IdentityInjective m₀.heap)
+      (hscopes : HeapScopesBelow bound m₀.heap)
+      (hvarMap : VarMapCellsWF m₀.heap varMap)
+      (hgoal : cursor.goal.WellFormed m₀.heap)
+      (hframes : FramesWF m₀.heap cursor.frames)
+      (hclauses : ∀ c ∈ cursor.clauses,
+        c ∈ clausesFor program cursor.goal.symbol)
+      (holder : ChoiceChain program varMap bound older m₀) :
+      ChoiceChain program varMap bound (cursor :: older) memory
+
+/-- Re-anchor a chain along a further extension. -/
+theorem ChoiceChain.anchor {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {varMap : List (ScopedVar σ.vars × Addr)} {bound : Nat}
+    {choices : List (ClauseCursor σ)} {memory memory' : Memory σ.scoped}
+    (h : ChoiceChain program varMap bound choices memory)
+    (hext : Extends memory memory') :
+    ChoiceChain program varMap bound choices memory' := by
+  cases h with
+  | nil => exact .nil bound memory'
+  | cons hcp hext₀ hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+      hclauses holder =>
+      exact .cons hcp (hext₀.trans hext) hwf hshaped hdesc hinj hscopes
+        hvarMap hgoal hframes hclauses holder
+
+/-- Lift a chain to a larger scope bound. -/
+theorem ChoiceChain.scope_mono {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {varMap : List (ScopedVar σ.vars × Addr)} {bound bound' : Nat}
+    {choices : List (ClauseCursor σ)} {memory : Memory σ.scoped}
+    (hle : bound ≤ bound')
+    (h : ChoiceChain program varMap bound choices memory) :
+    ChoiceChain program varMap bound' choices memory := by
+  induction h with
+  | nil => exact .nil bound' _
+  | cons hcp hext hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+      hclauses holder ih =>
+      exact .cons hcp hext hwf hshaped hdesc hinj (hscopes.mono hle)
+        hvarMap hgoal hframes hclauses ih
+
+/-- Drop the newest cursors; the rest stay chained to the same anchor. -/
+theorem ChoiceChain.drop {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {varMap : List (ScopedVar σ.vars × Addr)} {bound : Nat} :
+    ∀ (k : Nat) {choices : List (ClauseCursor σ)}
+      {memory : Memory σ.scoped},
+      ChoiceChain program varMap bound choices memory →
+      ChoiceChain program varMap bound (choices.drop k) memory := by
+  intro k
+  induction k with
+  | zero => intro choices memory h; exact h
+  | succ k ih =>
+      intro choices memory h
+      cases h with
+      | nil => exact .nil bound _
+      | cons hcp hext hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+          hclauses holder =>
+          exact ih (holder.anchor hext)
+
+/-- Retaining the oldest cursors preserves the chain. -/
+theorem ChoiceChain.retainBottom {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {varMap : List (ScopedVar σ.vars × Addr)} {bound : Nat}
+    {choices : List (ClauseCursor σ)} {memory : Memory σ.scoped}
+    (mark : Nat)
+    (h : ChoiceChain program varMap bound choices memory) :
+    ChoiceChain program varMap bound
+      (RuntimeQuery.retainBottom mark choices) memory :=
+  ChoiceChain.drop (choices.length - mark) h
+
+/-! ### The boundary invariant -/
+
+/-- What every reachable query state satisfies at its own memory.  The
+control's own bounds live in `ControlWF`: they hold at dispatch states but
+are deliberately absent here, because the control is stale — dead data —
+between a backtrack restore and the unify success that replaces it. -/
+structure QueryInv {σ : LPSignature} [DecidableEq σ.relationSymbols]
+    (program : Program σ) (state : State σ) : Prop where
+  wf : Heap.WellFormed state.memory.heap
+  shaped : Heap.WellShaped state.memory.heap
+  desc : DescendingOrConst state.memory.heap
+  inj : IdentityInjective state.memory.heap
+  scopes : HeapScopesBelow state.nextScope state.memory.heap
+  varMap : VarMapCellsWF state.memory.heap state.queryVarMap
+  chain : ChoiceChain program state.queryVarMap state.nextScope
+    state.choices state.memory
+
+/-- The live control is bounded — required exactly at dispatch states. -/
+def ControlWF {σ : LPSignature} (state : State σ) : Prop :=
+  AtomsWF state.memory.heap state.control.current ∧
+  FramesWF state.memory.heap state.control.frames
+
+/-- Extra facts carried by a `select` phase, about its cursor. -/
+structure SelectInv {σ : LPSignature} [DecidableEq σ.relationSymbols]
+    (program : Program σ) (state : State σ) (cursor : ClauseCursor σ) :
+    Prop where
+  checkpoint : cursor.checkpoint = state.memory.checkpoint
+  goal : cursor.goal.WellFormed state.memory.heap
+  frames : FramesWF state.memory.heap cursor.frames
+  clauses : ∀ c ∈ cursor.clauses, c ∈ clausesFor program cursor.goal.symbol
+
+/-! ### Executable checks from the propositions -/
+
+theorem Cell.check_of_shapeCorrect {σ : LPSignature} {cell : Cell σ}
+    (h : cell.ShapeCorrect) : cell.checkShape = true := by
+  cases cell with
+  | var => rfl
+  | const => rfl
+  | app symbol args => exact beq_iff_eq.mpr h
+
+theorem Heap.check_of_wellFormed {σ : LPSignature} {heap : Heap σ}
+    (h : heap.WellFormed) : heap.checkWellFormed = true := by
+  apply Array.all_eq_true.mpr
+  intro a hlt
+  apply List.all_eq_true.mpr
+  intro target ht
+  apply decide_eq_true
+  exact h a heap[a] (Array.getElem?_eq_getElem hlt) target ht
+
+theorem Heap.check_of_wellShaped {σ : LPSignature} {heap : Heap σ}
+    (h : heap.WellShaped) : heap.checkWellShaped = true := by
+  apply Array.all_eq_true.mpr
+  intro a hlt
+  exact Cell.check_of_shapeCorrect (h a heap[a] (Array.getElem?_eq_getElem hlt))
+
+/-- A write/allocation history preserves heap well-shapedness. -/
+theorem Extends.wellShaped {σ : LPSignature} {m₀ m₁ : Memory σ}
+    (h : Extends m₀ m₁) (hshaped : Heap.WellShaped m₀.heap) :
+    Heap.WellShaped m₁.heap := by
+  induction h with
+  | refl => exact hshaped
+  | write _ step ih => exact Memory.write_wellShaped ih step
+  | alloc _ step ih => exact Memory.allocate_wellShaped ih step
+
+/-! ### Structural facts of checked materialization -/
+
+/-- Everything the query transition needs from a successful clause
+materialization: old cells verbatim, heap growth, a well-formed runtime
+clause, executable checks of the result, and an untouched trail. -/
+theorem materializeClause_facts {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ} {clause : Clause σ}
+    {result : MaterializedClause σ}
+    (h : materializeClause memory clause = .ok result) :
+    (∀ i, i < memory.heap.size →
+      result.memory.heap[i]? = memory.heap[i]?) ∧
+    memory.heap.size ≤ result.memory.heap.size ∧
+    result.clause.WellFormed result.memory.heap ∧
+    result.memory.heap.checkWellFormed = true ∧
+    result.memory.heap.checkWellShaped = true ∧
+    result.memory.trail = memory.trail := by
+  unfold materializeClause at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeClauseAux clause) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeClause, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨hWF, _, hrun, hWF', hWS'⟩ := runChecked_ok hrc
+      by_cases hCheck :
+          runtimeClause.checkWellFormed state.heap = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        simp only [materializeClauseAux, BuilderM.run_bind] at hrun
+        cases hHead : (materializeAtomAux clause.head).run
+            (BuilderState.start memory.heap) with
+        | error e => rw [hHead] at hrun; cases hrun
+        | ok headPair =>
+            obtain ⟨headAtom, sMid⟩ := headPair
+            rw [hHead] at hrun
+            dsimp only at hrun
+            cases hBody : (clause.body.mapM materializeAtomAux).run sMid with
+            | error e => rw [hBody] at hrun; cases hrun
+            | ok bodyPair =>
+                obtain ⟨bodyAtoms, sEnd⟩ := bodyPair
+                rw [hBody] at hrun
+                dsimp only at hrun
+                cases hrun
+                obtain ⟨bHead, _, _⟩ :=
+                  materializeAtomAux_spec clause.head hHead
+                    (Heap.wellFormed_of_check hWF)
+                    (fun pair hp => by simp [BuilderState.start] at hp)
+                obtain ⟨bBody, _, _⟩ :=
+                  materializeAtomsMapM_spec clause.body hBody
+                    bHead.wf bHead.cells
+                have bAll := bHead.trans bBody
+                exact ⟨bAll.prefixEq, bAll.sizeLe,
+                  RuntimeClause.wellFormed_of_check hCheck, hWF', hWS', rfl⟩
+
+/-- Everything the opened query needs from goal materialization. -/
+theorem materializeGoals_facts {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ} {goals : List (Atom σ)}
+    {result : MaterializedGoals σ}
+    (h : materializeGoals memory goals = .ok result) :
+    (∀ atom ∈ result.goals, atom.WellFormed result.memory.heap) ∧
+    result.memory.heap.checkWellFormed = true ∧
+    result.memory.heap.checkWellShaped = true := by
+  unfold materializeGoals at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeGoalsAux goals) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeGoals, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, _, hWF', hWS'⟩ := runChecked_ok hrc
+      by_cases hCheck : (runtimeGoals.all
+          fun atom => atom.checkWellFormed state.heap) = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        exact ⟨fun atom hatom => RuntimeAtom.wellFormed_of_check
+          (List.all_eq_true.mp hCheck atom hatom), hWF', hWS'⟩
+
+/-! ### The invariant at the endpoint's entry -/
+
+/-- The endpoint's opened state satisfies the full boundary invariant. -/
+theorem openQuery_empty_queryInv {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.relationSymbols]
+    {program : Program σ} {goals : List (Atom σ)} {state : State σ}
+    (h : openQuery (Memory.empty σ.scoped) 0 1 goals = .ok state) :
+    QueryInv program state ∧ ControlWF state := by
+  obtain ⟨hScope, _, result, hMat, rfl⟩ := openQuery_ok_inv h
+  obtain ⟨_, _, _, hWF, hCells⟩ := materializeGoals_roundtrip hMat
+  obtain ⟨hAtoms, _, hCWS⟩ := materializeGoals_facts hMat
+  have hEmptyCell : ∀ (a : Addr) (cell : Cell σ.scoped),
+      (Memory.empty σ.scoped).heap[a]? = some cell → False := by
+    intro a cell hcell
+    rw [empty_heap_getElem] at hcell
+    cases hcell
+  refine ⟨⟨hWF, Heap.wellShaped_of_check hCWS, ?_, ?_, ?_, ?_, .nil 1 _⟩,
+    hAtoms, ?_⟩
+  · exact materializeGoals_descendingOrConst hMat
+      (fun a id t hcell => (hEmptyCell a _ hcell).elim)
+  · exact (materializeGoals_scoped_freshInv hMat
+      (fun a id link hcell => (hEmptyCell a _ hcell).elim)
+      (fun a b id la lb ha _ => (hEmptyCell a _ ha).elim)).injective
+  · exact materializeGoals_scopesBelow hMat hScope
+      (fun a id link hcell => (hEmptyCell a _ hcell).elim)
+  · exact fun pair hp => ⟨none, hCells pair hp⟩
+  · exact fun frame hframe => by cases hframe
+
+/-! ### Per-arm preservation -/
+
+/-- Changing only the phase keeps the boundary invariant. -/
+theorem QueryInv.set_phase {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {state : State σ} (h : QueryInv program state) (p : Phase σ) :
+    QueryInv program { state with phase := p } :=
+  ⟨h.wf, h.shaped, h.desc, h.inj, h.scopes, h.varMap, h.chain⟩
+
+/-- Changing only the phase also keeps the control bounds. -/
+theorem ControlWF.set_phase {σ : LPSignature} {state : State σ}
+    (h : ControlWF state) (p : Phase σ) :
+    ControlWF { state with phase := p } := h
+
+/-- The state entered when the current goal list empties into a stored
+return frame. -/
+def framePopState {σ : LPSignature} (state : State σ)
+    (frame : ReturnFrame σ) (frames' : List (ReturnFrame σ)) : State σ :=
+  { state with
+    control := {
+      current := frame.continuation
+      cutDepth := frame.callerCutDepth
+      frames := frames'
+    } }
+
+theorem QueryInv.framePop {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {state : State σ} {frame : ReturnFrame σ}
+    {frames' : List (ReturnFrame σ)}
+    (h : QueryInv program state) :
+    QueryInv program (framePopState state frame frames') :=
+  ⟨h.wf, h.shaped, h.desc, h.inj, h.scopes, h.varMap, h.chain⟩
+
+theorem ControlWF.framePop {σ : LPSignature} {state : State σ}
+    {frame : ReturnFrame σ} {frames' : List (ReturnFrame σ)}
+    (h : ControlWF state)
+    (hframes : state.control.frames = frame :: frames') :
+    ControlWF (framePopState state frame frames') :=
+  ⟨h.2 frame (by rw [hframes]; exact List.mem_cons_self ..),
+    fun f hf => h.2 f (by rw [hframes]; exact List.mem_cons_of_mem _ hf)⟩
+
+/-- A predicate call: the dispatch arm packages the caller into a cursor
+and moves to clause selection.  The boundary invariant is untouched and the
+cursor facts follow from the goal being live. -/
+theorem ControlWF.callCursor {σ : LPSignature}
+    [DecidableEq σ.relationSymbols] {program : Program σ}
+    {state : State σ} {goal : RuntimeAtom σ.scoped}
+    {rest : List (RuntimeAtom σ.scoped)}
+    (h : ControlWF state)
+    (hcurrent : state.control.current = goal :: rest) :
+    SelectInv program state {
+      checkpoint := state.memory.checkpoint
+      goal
+      clauses := clausesFor program goal.symbol
+      cutDepth := state.choices.length
+      frames := { continuation := rest, callerCutDepth := state.control.cutDepth } :: state.control.frames
+    } :=
+  ⟨rfl,
+    h.1 goal (by rw [hcurrent]; exact List.mem_cons_self ..),
+    fun f hf => by
+      rcases List.mem_cons.mp hf with rfl | hf'
+      · exact fun atom hatom => h.1 atom
+          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom)
+      · exact h.2 f hf',
+    fun c hc => hc⟩
+
+/-- The unifying-entry state built by a successful clause selection. -/
+def unifyEntryState {σ : LPSignature} (state : State σ)
+    (cursor : ClauseCursor σ) (remaining : List (Clause σ))
+    (copied : MaterializedClause σ.scoped) : State σ :=
+  { state with
+    memory := copied.memory
+    choices := replacementChoices cursor remaining state.choices
+    nextScope := state.nextScope + 1
+    phase := .unifying {
+        body := copied.clause.body
+        cutDepth := cursor.cutDepth
+        frames := cursor.frames
+      }
+      (RuntimeUnification.startMany copied.memory
+        (cursor.goal.args.toList.zip copied.clause.head.args.toList)) }
+
+/-- **Clause selection preserves the boundary invariant** and yields the
+activation facts the unifier boundary will consume. -/
+theorem selectSuccess_inv {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.relationSymbols]
+    {program : Program σ} {state : State σ} {cursor : ClauseCursor σ}
+    {clause : Clause σ} {remaining : List (Clause σ)}
+    {copied : MaterializedClause σ.scoped}
+    (hq : QueryInv program state) (hs : SelectInv program state cursor)
+    (hclauses : cursor.clauses = clause :: remaining)
+    (hMat : materializeClause state.memory
+      (clause.atScope state.nextScope) = .ok copied) :
+    QueryInv program (unifyEntryState state cursor remaining copied) ∧
+    Extends state.memory copied.memory ∧
+    copied.clause.WellFormed copied.memory.heap ∧
+    FreshInv (fun v : ScopedVar σ.vars => v.scope = state.nextScope)
+      { heap := copied.memory.heap, varMap := copied.varMap } := by
+  obtain ⟨hExt, _, _, _, hWFc, _⟩ := materializeClause_roundtrip hMat
+  obtain ⟨hPrefix, hSize, hClauseWF, _, hWS', _⟩ :=
+    materializeClause_facts hMat
+  have hFresh := materializeClause_scoped_freshInv hMat hq.scopes hq.inj
+  refine ⟨⟨hWFc, Heap.wellShaped_of_check hWS', ?_, hFresh.injective, ?_,
+    hq.varMap.of_prefix hPrefix, ?_⟩, hExt, hClauseWF, hFresh⟩
+  · exact materializeClause_descendingOrConst hMat hq.desc
+  · exact materializeClause_scopesBelow hMat (Nat.lt_succ_self _)
+      (hq.scopes.mono (Nat.le_succ _))
+  · show ChoiceChain program state.queryVarMap (state.nextScope + 1)
+      (replacementChoices cursor remaining state.choices) copied.memory
+    cases remaining with
+    | nil =>
+        show ChoiceChain program state.queryVarMap (state.nextScope + 1)
+          state.choices copied.memory
+        exact (hq.chain.anchor hExt).scope_mono (Nat.le_succ _)
+    | cons r rs =>
+        show ChoiceChain program state.queryVarMap (state.nextScope + 1)
+          ({ cursor with clauses := r :: rs } :: state.choices)
+          copied.memory
+        refine ChoiceChain.cons (m₀ := state.memory) hs.checkpoint hExt
+          hq.wf hq.shaped hq.desc hq.inj
+          (hq.scopes.mono (Nat.le_succ _)) hq.varMap hs.goal hs.frames
+          ?_ (hq.chain.scope_mono (Nat.le_succ _))
+        intro c hc
+        exact hs.clauses c (by
+          rw [hclauses]
+          exact List.mem_cons_of_mem _ hc)
+
+end QueryInvariant
+
+/-! ### Failure exactness
+
+The unifier never allocates; every compare-phase step is a trailed write.
+Rollback undoes exactly those writes, so a failing run hands back the entry
+memory verbatim — the law the query's backtrack chain stands on. -/
+
+section FailureExact
+
+/-- Rollback from a `WritesN` suffix terminates in the checkpointed memory
+whenever it produces `.failure` at all. -/
+theorem rollback_failure_exact {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] :
+    ∀ (fuel : Nat) (c : Configuration σ) (reason : RollbackReason)
+      (m m₀ : Memory σ) (k : Nat),
+      c.phase = .rollback reason →
+      Memory.WritesN k m₀ c.memory → c.entryMark = m₀.trailMark →
+      runSteps fuel (.running c) = .terminal (.failure m) →
+      m = m₀ := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro c reason m m₀ k _ _ _ hrun
+      rw [runSteps_zero] at hrun
+      simp at hrun
+  | succ fuel ih =>
+      intro c reason m m₀ k hphase hW hmark hrun
+      cases hstep : step (Machine.running c) with
+      | none =>
+          rw [runSteps_succ_none hstep] at hrun
+          simp at hrun
+      | some next =>
+          rw [runSteps_succ_some hstep] at hrun
+          simp only [step, hphase] at hstep
+          have htrail : c.memory.trailMark = m₀.trailMark + k :=
+            hW.trailMark_exact
+          cases k with
+          | zero =>
+              cases hW
+              have hcond : c.memory.trail.size = c.entryMark := hmark.symm
+              rw [if_pos hcond] at hstep
+              cases hstep
+              cases reason with
+              | unificationFailure =>
+                  simp only [rollbackTerminal] at hrun
+                  rw [runSteps_terminal] at hrun
+                  injection hrun with h1
+                  injection h1 with h2
+                  exact h2.symm
+              | runtimeError e =>
+                  simp only [rollbackTerminal] at hrun
+                  rw [runSteps_terminal] at hrun
+                  simp at hrun
+          | succ k' =>
+              have hne : ¬ (c.memory.trail.size = c.entryMark) := by
+                show ¬ (c.memory.trailMark = c.entryMark)
+                rw [htrail, hmark]
+                omega
+              rw [if_neg hne] at hstep
+              have hlt : c.entryMark < c.memory.trail.size := by
+                show c.entryMark < c.memory.trailMark
+                rw [htrail, hmark]
+                omega
+              rw [if_pos hlt] at hstep
+              cases hW with
+              | tail history hw =>
+                  rw [Memory.undoLast_write hw] at hstep
+                  cases hstep
+                  rename_i middle _ _
+                  exact ih { c with memory := middle, phase := .rollback reason } reason m m₀ k' rfl history hmark hrun
+
+/-- Entering rollback with a `WritesN` suffix: any eventual `.failure`
+memory is the checkpointed one. -/
+theorem beginRollback_failure_exact {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    {fuel : Nat} {c : Configuration σ} {reason : RollbackReason}
+    {m m₀ : Memory σ} {k : Nat}
+    (hW : Memory.WritesN k m₀ c.memory) (hmark : c.entryMark = m₀.trailMark)
+    (hrun : runSteps fuel (beginRollback c reason) =
+      .terminal (.failure m)) :
+    m = m₀ :=
+  rollback_failure_exact fuel
+    { c with agenda := [], phase := .rollback reason } reason m m₀ k rfl
+    hW hmark hrun
+
+/-- One binding step within a failing run keeps the write suffix. -/
+theorem bindStep_failure {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] {fuel : Nat}
+    (ih : ∀ (c : Configuration σ) (m m₀ : Memory σ) (k : Nat),
+      c.phase = .compare → Memory.WritesN k m₀ c.memory →
+      c.entryMark = m₀.trailMark →
+      runSteps fuel (.running c) = .terminal (.failure m) → m = m₀)
+    (c : Configuration σ) (m m₀ : Memory σ) (k : Nat)
+    (rest : List (Addr × Addr)) {bound target : Addr} {identity : σ.vars}
+    (hphase : c.phase = .compare)
+    (hW : Memory.WritesN k m₀ c.memory) (hmark : c.entryMark = m₀.trailMark)
+    (hrun : runSteps fuel (afterBinding c rest bound identity target) =
+      .terminal (.failure m)) :
+    m = m₀ := by
+  simp only [afterBinding] at hrun
+  cases hw : c.memory.write bound (Cell.var identity (some target)) with
+  | error e =>
+      rw [hw] at hrun
+      exact beginRollback_failure_exact hW hmark hrun
+  | ok memory' =>
+      rw [hw] at hrun
+      exact ih { c with memory := memory', agenda := rest } m m₀ (k + 1)
+        hphase (hW.tail hw) hmark hrun
+
+/-- **A failing unifier run restores its entry memory exactly.** -/
+theorem runSteps_failure_exact {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols] :
+    ∀ (fuel : Nat) (c : Configuration σ) (m m₀ : Memory σ) (k : Nat),
+      c.phase = .compare → Memory.WritesN k m₀ c.memory →
+      c.entryMark = m₀.trailMark →
+      runSteps fuel (.running c) = .terminal (.failure m) →
+      m = m₀ := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro c m m₀ k _ _ _ hrun
+      rw [runSteps_zero] at hrun
+      simp at hrun
+  | succ fuel ih =>
+      intro c m m₀ k hphase hW hmark hrun
+      cases hstep : step (Machine.running c) with
+      | none =>
+          rw [runSteps_succ_none hstep] at hrun
+          simp at hrun
+      | some next =>
+          rw [runSteps_succ_some hstep] at hrun
+          cases hagenda : c.agenda with
+          | nil =>
+              simp only [step, hphase, hagenda] at hstep
+              cases hstep
+              rw [runSteps_terminal] at hrun
+              cases hrun
+          | cons pair rest =>
+              obtain ⟨l, r⟩ := pair
+              simp only [step, hphase, hagenda] at hstep
+              cases hdl : c.memory.heap.deref l with
+              | error e =>
+                  simp only [hdl] at hstep
+                  cases hstep
+                  exact beginRollback_failure_exact hW hmark hrun
+              | ok dresL =>
+                  cases dresL with
+                  | variableCycle a =>
+                      simp only [hdl] at hstep
+                      cases hstep
+                      exact beginRollback_failure_exact hW hmark hrun
+                  | root leftRoot =>
+                      simp only [hdl] at hstep
+                      cases hdr : c.memory.heap.deref r with
+                      | error e =>
+                          simp only [hdr] at hstep
+                          cases hstep
+                          exact beginRollback_failure_exact hW hmark hrun
+                      | ok dresR =>
+                          cases dresR with
+                          | variableCycle a =>
+                              simp only [hdr] at hstep
+                              cases hstep
+                              exact beginRollback_failure_exact hW hmark hrun
+                          | root rightRoot =>
+                              simp only [hdr] at hstep
+                              by_cases hroots : leftRoot = rightRoot
+                              · rw [if_pos hroots] at hstep
+                                cases hstep
+                                exact ih { c with agenda := rest, phase := .compare } m m₀ k rfl hW hmark hrun
+                              · rw [if_neg hroots] at hstep
+                                cases hcl : c.memory.heap[leftRoot]? with
+                                | none =>
+                                    simp only [hcl] at hstep
+                                    cases hstep
+                                    exact beginRollback_failure_exact hW
+                                      hmark hrun
+                                | some cellL =>
+                                    cases hcr :
+                                        c.memory.heap[rightRoot]? with
+                                    | none =>
+                                        cases cellL with
+                                        | var lid linkL =>
+                                            cases linkL with
+                                            | none =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact
+                                                  beginRollback_failure_exact
+                                                    hW hmark hrun
+                                            | some t =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact
+                                                  beginRollback_failure_exact
+                                                    hW hmark hrun
+                                        | const s =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact
+                                              beginRollback_failure_exact
+                                                hW hmark hrun
+                                        | app s a =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact
+                                              beginRollback_failure_exact
+                                                hW hmark hrun
+                                    | some cellR =>
+                                        cases cellL with
+                                        | var lid linkL =>
+                                            cases linkL with
+                                            | some t =>
+                                                cases cellR with
+                                                | var rid linkR =>
+                                                    cases linkR with
+                                                    | none =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        cases hstep
+                                                        exact bindStep_failure
+                                                          ih c m m₀ k rest
+                                                          hphase hW hmark hrun
+                                                    | some t₂ =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        cases hstep
+                                                        exact
+                                                          beginRollback_failure_exact
+                                                            hW hmark hrun
+                                                | const symbolR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact
+                                                      beginRollback_failure_exact
+                                                        hW hmark hrun
+                                                | app symbolR argsR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact
+                                                      beginRollback_failure_exact
+                                                        hW hmark hrun
+                                            | none =>
+                                                cases cellR with
+                                                | var rid linkR =>
+                                                    cases linkR with
+                                                    | none =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        by_cases hord :
+                                                            leftRoot < rightRoot
+                                                        · rw [if_pos hord]
+                                                            at hstep
+                                                          cases hstep
+                                                          exact
+                                                            bindStep_failure
+                                                              ih c m m₀ k rest
+                                                              hphase hW hmark
+                                                              hrun
+                                                        · rw [if_neg hord]
+                                                            at hstep
+                                                          cases hstep
+                                                          exact
+                                                            bindStep_failure
+                                                              ih c m m₀ k rest
+                                                              hphase hW hmark
+                                                              hrun
+                                                    | some t =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        cases hstep
+                                                        exact
+                                                          bindStep_failure
+                                                            ih c m m₀ k rest
+                                                            hphase hW hmark
+                                                            hrun
+                                                | const symbolR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_failure
+                                                      ih c m m₀ k rest
+                                                      hphase hW hmark hrun
+                                                | app symbolR argsR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_failure
+                                                      ih c m m₀ k rest
+                                                      hphase hW hmark hrun
+                                        | const symbolL =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | none =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_failure
+                                                      ih c m m₀ k rest
+                                                      hphase hW hmark hrun
+                                                | some t =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact
+                                                      beginRollback_failure_exact
+                                                        hW hmark hrun
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                by_cases hsym :
+                                                    symbolL = symbolR
+                                                · rw [if_pos hsym] at hstep
+                                                  cases hstep
+                                                  exact ih { c with agenda := rest, phase := .compare } m m₀ k rfl hW hmark hrun
+                                                · rw [if_neg hsym] at hstep
+                                                  cases hstep
+                                                  exact
+                                                    beginRollback_failure_exact
+                                                      hW hmark hrun
+                                            | app symbolR argsR =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact
+                                                  beginRollback_failure_exact
+                                                    hW hmark hrun
+                                        | app symbolL argsL =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | none =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_failure
+                                                      ih c m m₀ k rest
+                                                      hphase hW hmark hrun
+                                                | some t =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact
+                                                      beginRollback_failure_exact
+                                                        hW hmark hrun
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact
+                                                  beginRollback_failure_exact
+                                                    hW hmark hrun
+                                            | app symbolR argsR =>
+                                                simp only [hcl, hcr] at hstep
+                                                by_cases hshape :
+                                                    symbolL = symbolR ∧
+                                                      argsL.size = argsR.size
+                                                · rw [if_pos hshape] at hstep
+                                                  by_cases hseen :
+                                                      seen c.visited leftRoot
+                                                        rightRoot = true
+                                                  · rw [if_pos hseen] at hstep
+                                                    cases hstep
+                                                    exact ih { c with agenda := rest, phase := .compare } m m₀ k rfl hW hmark hrun
+                                                  · rw [if_neg hseen] at hstep
+                                                    cases hstep
+                                                    exact ih { c with agenda := argsL.toList.zip argsR.toList ++ rest, visited := orderedPair leftRoot rightRoot :: c.visited, phase := .compare } m m₀ k rfl hW hmark hrun
+                                                · rw [if_neg hshape] at hstep
+                                                  cases hstep
+                                                  exact
+                                                    beginRollback_failure_exact
+                                                      hW hmark hrun
+
+/-- Entry-point form: a failing `startMany` run returns the entry memory. -/
+theorem startMany_failure_exact {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (fuel : Nat) (memory₀ : Memory σ) (agenda : List (Addr × Addr))
+    (m : Memory σ)
+    (hrun : runSteps fuel (startMany memory₀ agenda) =
+      .terminal (.failure m)) :
+    m = memory₀ :=
+  runSteps_failure_exact fuel
+    { memory := memory₀, agenda := agenda, visited := []
+      entryMark := memory₀.trailMark, phase := .compare } m memory₀ 0 rfl
+    (.refl memory₀) rfl hrun
+
+end FailureExact
+
+/-! ### Boundary lemmas: back into dispatch -/
+
+section BoundaryLemmas
+
+open RuntimeQuery
+
+/-- **Unify-success boundary**: a successful head unification from any
+invariant-satisfying entry memory re-establishes the full boundary
+invariant, and the replacing control is bounded at the success memory. -/
+theorem unifySuccess_queryInv {σ : LPSignature} [IsEmpty σ.functionSymbols]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    {program : Program σ} {stateE : State σ} {attempt : Attempt σ}
+    {agenda : List (Addr × Addr)} {k : Nat} {m : Memory σ.scoped}
+    (hq : QueryInv program stateE)
+    (hBody : AtomsWF stateE.memory.heap attempt.body)
+    (hFrames : FramesWF stateE.memory.heap attempt.frames)
+    (hrun : RuntimeUnification.runSteps k
+      (RuntimeUnification.startMany stateE.memory agenda) =
+      .terminal (.success m)) :
+    QueryInv program (unifySuccessState stateE attempt m) ∧
+    ControlWF (unifySuccessState stateE attempt m) := by
+  obtain ⟨ext, hExt, hsize⟩ :=
+    startMany_success_extension k stateE.memory agenda m hrun
+  have hOFF := startMany_success_orderedFF k stateE.memory agenda m hrun
+    ⟨hq.desc, functionFree_of_isEmpty _⟩
+  exact ⟨⟨hExt.wellFormed hq.wf, hExt.wellShaped hq.shaped, hOFF.1,
+    IdentityInjective.of_bindingExtension ext hsize hq.inj,
+    hq.scopes.of_bindingExtension ext hsize,
+    hq.varMap.of_bindingExtension ext,
+    hq.chain.anchor hExt⟩,
+    hBody.mono ext.1, hFrames.mono ext.1⟩
+
+/-- **Backtrack boundary**: popping a cursor restores exactly the chained
+checkpoint memory, with its stored invariants and the cursor's facts. -/
+theorem backtrackPop_inv {σ : LPSignature} [DecidableEq σ.relationSymbols]
+    {program : Program σ} {state : State σ} {cursor : ClauseCursor σ}
+    {older : List (ClauseCursor σ)}
+    (hq : QueryInv program state)
+    (hchoices : state.choices = cursor :: older) :
+    ∃ m₀, state.memory.restore cursor.checkpoint = .ok m₀ ∧
+      QueryInv program { state with memory := m₀, choices := older, phase := .select cursor } ∧
+      SelectInv program { state with memory := m₀, choices := older, phase := .select cursor } cursor := by
+  have hchain := hq.chain
+  rw [hchoices] at hchain
+  cases hchain with
+  | cons hcp hext hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+      hclauses holder =>
+      rename_i m₀
+      refine ⟨m₀, ?_,
+        ⟨hwf, hshaped, hdesc, hinj, hscopes, hvarMap, holder⟩,
+        ⟨hcp, hgoal, hframes, hclauses⟩⟩
+      rw [hcp]
+      exact hext.restore_exact (Heap.check_of_wellFormed hwf)
+        (Heap.check_of_wellShaped hshaped)
+
+end BoundaryLemmas
+
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP

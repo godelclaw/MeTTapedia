@@ -121,7 +121,7 @@ inductive PullResult (σ : LPSignature) where
 
 /-! ## Fresh-scope boundary -/
 
-private def Cell.scopeBelow {σ : LPSignature}
+def Cell.scopeBelow {σ : LPSignature}
     (limit : Nat) : Cell σ.scoped → Bool
   | .var identity _ => identity.scope < limit
   | .const _ => true
@@ -187,16 +187,16 @@ def openQuery {σ : LPSignature} [DecidableEq σ.vars]
   else
     .error (.staleScopeSupply queryScope nextScope)
 
-private def closeMemory {σ : LPSignature}
+def closeMemory {σ : LPSignature}
     (state : State σ) : Except MemoryError (Memory σ.scoped) :=
   state.memory.restore state.queryCheckpoint
 
-private def complete {σ : LPSignature} (state : State σ) : StepResult σ :=
+def complete {σ : LPSignature} (state : State σ) : StepResult σ :=
   match closeMemory state with
   | .ok memory => .terminal (.completed memory)
   | .error error => .terminal (.runtimeError (.memory error) state.memory)
 
-private def failWith {σ : LPSignature}
+def failWith {σ : LPSignature}
     (state : State σ) (error : QueryError) : StepResult σ :=
   match closeMemory state with
   | .ok memory => .terminal (.runtimeError error memory)
@@ -205,7 +205,7 @@ private def failWith {σ : LPSignature}
 
 /-! ## One query transition -/
 
-private def replacementChoices {σ : LPSignature}
+def replacementChoices {σ : LPSignature}
     (cursor : ClauseCursor σ) (remaining : List (Clause σ))
     (older : List (ClauseCursor σ)) : List (ClauseCursor σ) :=
   match remaining with
