@@ -241,12 +241,12 @@ theorem heap_set_size {σ : LPSignature} (heap : Heap σ) (address : Addr)
 theorem heap_set_get_ne {σ : LPSignature} (heap : Heap σ) {address other : Addr}
     (cell : Cell σ) (hlt : address < heap.size) (hne : other ≠ address) :
     (heap.set address cell hlt)[other]? = heap[other]? := by
-  simp [Array.getElem?_set, hne.symm]
+  simp [hne.symm]
 
 theorem heap_set_get_self {σ : LPSignature} (heap : Heap σ) {address : Addr}
     (cell : Cell σ) (hlt : address < heap.size) :
     (heap.set address cell hlt)[address]? = some cell := by
-  simp [Array.getElem?_set, hlt]
+  simp [hlt]
 
 /-! ## Dereference persistence under one binding -/
 
@@ -982,6 +982,230 @@ theorem startMany_success_readTerm_eq {σ : LPSignature}
         rw [← hBig, hRoot, hConst]
       simpa using this
     rw [hTl, hTr]
+
+/-! ## Stage 1: exact choice-point restoration
+
+`WritesN.undoN_exact` already reverses pure write sequences.  The query
+machine additionally *allocates* between checkpoints; `Extends` certifies an
+arbitrary interleaving of successful writes and allocations, and
+`Extends.restore_exact` proves `Memory.restore` recovers the checkpointed
+memory exactly — the backtracking law every refinement case stands on. -/
+
+/-- History certificate: `after` arises from `before` by successful trailed
+writes and allocations, in any interleaving. -/
+inductive Extends {σ : LPSignature} : Memory σ → Memory σ → Prop
+  | refl (memory : Memory σ) : Extends memory memory
+  | write {before middle after : Memory σ} {address : Addr} {cell : Cell σ}
+      (history : Extends before middle)
+      (step : middle.write address cell = .ok after) :
+      Extends before after
+  | alloc {before middle after : Memory σ} {address : Addr} {cell : Cell σ}
+      (history : Extends before middle)
+      (step : middle.allocate cell = .ok (address, after)) :
+      Extends before after
+
+/-- Invert a successful `Memory.write` completely. -/
+theorem write_ok_inv {σ : LPSignature} {memory memory' : Memory σ}
+    {address : Addr} {cell : Cell σ}
+    (h : memory.write address cell = .ok memory') :
+    ∃ hlt : address < memory.heap.size,
+      memory' = {
+        heap := memory.heap.set address cell hlt
+        trail := memory.trail.push { address, previous := memory.heap[address] }
+      } := by
+  unfold Memory.write at h
+  split at h
+  · split at h
+    · split at h
+      · exact ⟨‹_›, by cases h; rfl⟩
+      · rcases hfind :
+            (Cell.references cell).find?
+              (fun target => decide (memory.heap.size ≤ target)) with _ | t <;>
+          rw [hfind] at h <;> cases h
+    · cases h
+  · cases h
+
+/-- Invert a successful `Memory.allocate` completely. -/
+theorem allocate_ok_inv {σ : LPSignature} {memory memory' : Memory σ}
+    {address : Addr} {cell : Cell σ}
+    (h : memory.allocate cell = .ok (address, memory')) :
+    address = memory.heap.size ∧
+      memory' = { memory with heap := memory.heap.push cell } := by
+  unfold Memory.allocate at h
+  split at h
+  · split at h
+    · refine ⟨?_, ?_⟩ <;> cases h <;> rfl
+    · rcases hfind :
+          (Cell.references cell).find?
+            (fun target => decide (memory.heap.size ≤ target)) with _ | t <;>
+        rw [hfind] at h <;> cases h
+  · cases h
+
+theorem Extends.heap_le {σ : LPSignature} {before after : Memory σ}
+    (h : Extends before after) : before.heap.size ≤ after.heap.size := by
+  induction h with
+  | refl => exact Nat.le_refl _
+  | write _ step ih =>
+      obtain ⟨hlt, rfl⟩ := write_ok_inv step
+      simpa using ih
+  | alloc _ step ih =>
+      obtain ⟨_, rfl⟩ := allocate_ok_inv step
+      simp only [Array.size_push]
+      omega
+
+theorem Extends.trail_le {σ : LPSignature} {before after : Memory σ}
+    (h : Extends before after) : before.trail.size ≤ after.trail.size := by
+  induction h with
+  | refl => exact Nat.le_refl _
+  | write _ step ih =>
+      obtain ⟨hlt, rfl⟩ := write_ok_inv step
+      simp only [Array.size_push]
+      omega
+  | alloc _ step ih =>
+      obtain ⟨_, rfl⟩ := allocate_ok_inv step
+      simpa using ih
+
+/-- `Memory.unwindLoop` commutes with pushing one fresh (untrailed) heap cell. -/
+theorem unwindLoop_push {σ : LPSignature} :
+    ∀ (steps : Nat) (memory unwound : Memory σ) (cell : Cell σ),
+      Memory.unwindLoop steps memory = .ok unwound →
+      Memory.unwindLoop steps
+          { heap := memory.heap.push cell, trail := memory.trail } =
+        .ok { heap := unwound.heap.push cell, trail := unwound.trail } := by
+  intro steps
+  induction steps with
+  | zero =>
+      intro memory unwound cell h
+      cases h
+      rfl
+  | succ steps ih =>
+      intro memory unwound cell h
+      cases hback : memory.trail.back? with
+      | none => simp [Memory.unwindLoop, hback] at h
+      | some entry =>
+          by_cases hlt : entry.address < memory.heap.size
+          · simp only [Memory.unwindLoop, hback, dif_pos hlt] at h
+            simp only [Memory.unwindLoop, hback]
+            have hlt' : entry.address < (memory.heap.push cell).size := by
+              simp only [Array.size_push]
+              exact Nat.lt_succ_of_lt hlt
+            rw [dif_pos hlt']
+            have hcomm :
+                (memory.heap.push cell).set entry.address entry.previous hlt' =
+                  (memory.heap.set entry.address entry.previous hlt).push
+                    cell := by
+              apply Array.ext
+              · simp
+              · intro i hi₁ hi₂
+                by_cases hie : i = entry.address
+                · subst hie
+                  simp [Array.getElem_push, hlt]
+                · simp [Array.getElem_push, Array.getElem_set, Ne.symm hie]
+            rw [hcomm]
+            exact ih _ _ cell h
+          · simp [Memory.unwindLoop, hback, dif_neg hlt] at h
+
+/-- Unwinding back to a checkpointed trail size succeeds along any `Extends`
+history, restores the checkpointed trail, preserves heap size, and restores
+every checkpointed cell. -/
+theorem Extends.unwind_exact {σ : LPSignature} {before after : Memory σ}
+    (h : Extends before after) :
+    ∃ unwound : Memory σ,
+      after.unwindTrail before.trail.size = .ok unwound ∧
+      unwound.trail = before.trail ∧
+      unwound.heap.size = after.heap.size ∧
+      ∀ address, address < before.heap.size →
+        unwound.heap[address]? = before.heap[address]? := by
+  induction h with
+  | refl =>
+      refine ⟨before, ?_, rfl, rfl, fun _ _ => rfl⟩
+      unfold Memory.unwindTrail
+      rw [dif_pos (Nat.le_refl _)]
+      simp [Memory.unwindLoop]
+  | write history step ih =>
+      rename_i middle after address cell
+      obtain ⟨unwound, hunwind, htrail, hsize, hcells⟩ := ih
+      obtain ⟨hlt, rfl⟩ := write_ok_inv step
+      refine ⟨unwound, ?_, htrail, by simpa using hsize, hcells⟩
+      have hle := history.trail_le
+      unfold Memory.unwindTrail at hunwind ⊢
+      rw [dif_pos hle] at hunwind
+      rw [dif_pos (by simp only [Array.size_push]; omega)]
+      have hcount :
+          (middle.trail.push
+              { address := address,
+                previous := middle.heap[address] }).size -
+            before.trail.size =
+          (middle.trail.size - before.trail.size) + 1 := by
+        simp only [Array.size_push]
+        omega
+      rw [hcount]
+      simp only [Memory.unwindLoop, Array.back?_push]
+      rw [dif_pos (show address < (middle.heap.set address cell hlt).size by
+        simpa using hlt)]
+      have hundo :
+          (middle.heap.set address cell hlt).set address middle.heap[address]
+              (by simpa using hlt) = middle.heap := by
+        apply Array.ext
+        · simp
+        · intro i hi₁ hi₂
+          by_cases hie : i = address
+          · subst hie
+            simp [Array.getElem_set]
+          · simp [Array.getElem_set, Ne.symm hie]
+      simp only [hundo, Array.pop_push]
+      exact hunwind
+  | alloc history step ih =>
+      rename_i middle after address cell
+      obtain ⟨unwound, hunwind, htrail, hsize, hcells⟩ := ih
+      obtain ⟨rfl, rfl⟩ := allocate_ok_inv step
+      have hle := history.trail_le
+      unfold Memory.unwindTrail at hunwind ⊢
+      rw [dif_pos hle] at hunwind
+      refine ⟨{ heap := unwound.heap.push cell, trail := unwound.trail },
+        ?_, htrail, ?_, ?_⟩
+      · rw [dif_pos (show before.trail.size ≤
+            ({ middle with heap := middle.heap.push cell } :
+              Memory σ).trail.size from hle)]
+        exact unwindLoop_push _ middle unwound cell hunwind
+      · simp only [Array.size_push]
+        omega
+      · intro a ha
+        have hau : a < unwound.heap.size := by
+          have := history.heap_le
+          omega
+        have hne : a ≠ unwound.heap.size := by omega
+        simp only [Array.getElem?_push, hne, if_false]
+        exact hcells a ha
+
+/-- **Exact restoration**: along any write/allocate history, `restore`
+recovers the checkpointed memory exactly, provided the checkpointed heap
+passes the runtime's well-formedness gates. -/
+theorem Extends.restore_exact {σ : LPSignature} {before after : Memory σ}
+    (h : Extends before after)
+    (hWF : before.heap.checkWellFormed = true)
+    (hWS : before.heap.checkWellShaped = true) :
+    after.restore before.checkpoint = .ok before := by
+  obtain ⟨unwound, hunwind, htrail, hsize, hcells⟩ := h.unwind_exact
+  have hheap : unwound.heap.extract 0 before.heap.size = before.heap := by
+    apply Array.ext
+    · simp only [Array.size_extract]
+      have := h.heap_le
+      omega
+    · intro i hi₁ hi₂
+      have hib : i < before.heap.size := hi₂
+      have hiu : i < unwound.heap.size := by
+        have := h.heap_le
+        omega
+      rw [Array.getElem_extract]
+      have hcell := hcells i hib
+      rw [Array.getElem?_eq_getElem (by simpa using hiu),
+        Array.getElem?_eq_getElem hib] at hcell
+      simpa using hcell
+  unfold Memory.restore
+  simp only [Memory.checkpoint]
+  rw [if_pos h.heap_le, hunwind]
+  simp only [hheap, htrail, hWF, hWS, if_true]
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
