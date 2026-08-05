@@ -2007,5 +2007,196 @@ def RefinementEndpoint (σ : LPSignature) [DecidableEq σ.vars]
         Heap.readTerm answer.memory.heap pair.2 = .ok term →
         θ pair.1 = term
 
+/-! ## Stage 4: readback naturality
+
+Between two snapshots of one run segment, cells change in exactly one way:
+an unbound variable acquires a binding.  `BindingExtension` captures that,
+and `readback_naturality` proves the payoff: the later readback of any
+address is the finite heap projection applied to its earlier readback.
+This is the bridge that lets one substitution — read off the final memory —
+justify every resolution step of a derivation. -/
+
+/-- `heap₁` extends `heap₀` by bindings and fresh cells only: every old cell
+is preserved verbatim, or was an unbound variable and acquired a link with
+the *same identity*. -/
+def BindingExtension {σ : LPSignature} (heap₀ heap₁ : Heap σ) : Prop :=
+  heap₀.size ≤ heap₁.size ∧
+  ∀ (a : Addr) (cell : Cell σ), heap₀[a]? = some cell →
+    heap₁[a]? = some cell ∨
+    ∃ identity target, cell = Cell.var identity none ∧
+      heap₁[a]? = some (Cell.var identity (some target))
+
+/-- Interior chain links (bound variables) are always preserved. -/
+theorem BindingExtension.link_preserved {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} (ext : BindingExtension heap₀ heap₁)
+    {a target : Addr} {identity : σ.vars}
+    (h : heap₀[a]? = some (Cell.var identity (some target))) :
+    heap₁[a]? = some (Cell.var identity (some target)) := by
+  rcases ext.2 a _ h with hsame | ⟨_, _, habs, _⟩
+  · exact hsame
+  · cases habs
+
+/-- Constant cells are always preserved. -/
+theorem BindingExtension.const_preserved {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} (ext : BindingExtension heap₀ heap₁)
+    {a : Addr} {symbol : σ.constants}
+    (h : heap₀[a]? = some (Cell.const symbol)) :
+    heap₁[a]? = some (Cell.const symbol) := by
+  rcases ext.2 a _ h with hsame | ⟨_, _, habs, _⟩
+  · exact hsame
+  · cases habs
+
+/-- Function-freeness transfers backwards along a binding extension. -/
+theorem BindingExtension.ff_back {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} (ext : BindingExtension heap₀ heap₁)
+    (ff : FunctionFree heap₁) : FunctionFree heap₀ := by
+  intro a symbol args h
+  rcases ext.2 a _ h with hsame | ⟨_, _, habs, _⟩
+  · exact ff a symbol args hsame
+  · cases habs
+
+/-- Generalized `cellOf` characterization: any cell carrying the identity is
+the cell `cellOf` finds, bound or not. -/
+theorem cellOf_of_cell {σ : LPSignature} {heap : Heap σ}
+    (inj : IdentityInjective heap) {b : Addr} {w : σ.vars}
+    {link : Option Addr}
+    (hb : heap[b]? = some (Cell.var w link)) :
+    cellOf heap w = some b := by
+  unfold cellOf
+  have hex : ∃ a : Addr, ∃ l, heap[a]? = some (Cell.var w l) :=
+    ⟨b, link, hb⟩
+  rw [dif_pos hex]
+  obtain ⟨l', hl'⟩ := hex.choose_spec
+  exact congrArg some (inj _ b w l' link hl' hb)
+
+/-- On a function-free heap, an `.ok` readback pins the dereference root and
+the read value simultaneously. -/
+theorem deref_of_readTerm_ff {σ : LPSignature} {heap : Heap σ}
+    (ff : FunctionFree heap) :
+    ∀ (fuel : Nat) (address : Addr) (t : Term σ),
+      readTermFuel heap fuel address = .ok t →
+      ∃ root, Heap.derefLoop heap fuel address = .ok (.root root) ∧
+        ((∃ identity, heap[root]? = some (Cell.var identity none) ∧
+            t = .var identity) ∨
+         (∃ symbol, heap[root]? = some (Cell.const symbol) ∧
+            t = .const symbol)) := by
+  intro fuel
+  induction fuel with
+  | zero => intro address t h; simp [readTermFuel] at h
+  | succ fuel ih =>
+      intro address t h
+      cases hcell : heap[address]? with
+      | none =>
+          rw [readTermFuel_invalid heap fuel address hcell] at h
+          exact absurd h (by simp)
+      | some cell =>
+          cases cell with
+          | var identity link =>
+              cases link with
+              | none =>
+                  rw [readTermFuel_unbound heap fuel address identity hcell]
+                    at h
+                  have ht : Term.var identity = t := by simpa using h
+                  refine ⟨address, ?_, .inl ⟨identity, hcell, ht.symm⟩⟩
+                  simp [Heap.derefLoop, hcell]
+              | some target =>
+                  rw [readTermFuel_link heap fuel address target identity
+                    hcell] at h
+                  obtain ⟨root, hroot, hval⟩ := ih target t h
+                  refine ⟨root, ?_, hval⟩
+                  simp only [Heap.derefLoop, hcell]
+                  exact hroot
+          | const symbol =>
+              rw [readTermFuel_const heap fuel address symbol hcell] at h
+              have ht : Term.const symbol = t := by simpa using h
+              refine ⟨address, ?_, .inr ⟨symbol, hcell, ht.symm⟩⟩
+              simp [Heap.derefLoop, hcell]
+          | app symbol args => exact absurd hcell (ff address symbol args)
+
+/-- Walking a preserved chain down: a later-heap `.ok` readback of the chain
+head is also the later-heap readback of the old root, at no more fuel. -/
+theorem readTermFuel_descend_ext {σ : LPSignature} {heap₀ heap₁ : Heap σ}
+    (ext : BindingExtension heap₀ heap₁) :
+    ∀ (fuel : Nat) (address root : Addr),
+      Heap.derefLoop heap₀ fuel address = .ok (.root root) →
+      ∀ (bigFuel : Nat) (t : Term σ),
+        readTermFuel heap₁ bigFuel address = .ok t →
+        ∃ smallFuel ≤ bigFuel, readTermFuel heap₁ smallFuel root = .ok t := by
+  intro fuel
+  induction fuel with
+  | zero => intro address root h; simp [Heap.derefLoop] at h
+  | succ fuel ih =>
+      intro address root h bigFuel t hread
+      cases hcell : heap₀[address]? with
+      | none => simp [Heap.derefLoop, hcell] at h
+      | some cell =>
+          cases cell with
+          | var identity link =>
+              cases link with
+              | some target =>
+                  simp only [Heap.derefLoop, hcell] at h
+                  have hcell₁ := ext.link_preserved hcell
+                  cases bigFuel with
+                  | zero => simp [readTermFuel] at hread
+                  | succ bigFuel =>
+                      rw [readTermFuel_link heap₁ bigFuel address target
+                        identity hcell₁] at hread
+                      obtain ⟨smallFuel, hle, hres⟩ :=
+                        ih target root h bigFuel t hread
+                      exact ⟨smallFuel, Nat.le_succ_of_le hle, hres⟩
+              | none =>
+                  simp only [Heap.derefLoop, hcell] at h
+                  obtain rfl : address = root := by simpa using h
+                  exact ⟨bigFuel, Nat.le_refl _, hread⟩
+          | const symbol =>
+              simp only [Heap.derefLoop, hcell] at h
+              obtain rfl : address = root := by simpa using h
+              exact ⟨bigFuel, Nat.le_refl _, hread⟩
+          | app symbol args =>
+              simp only [Heap.derefLoop, hcell] at h
+              obtain rfl : address = root := by simpa using h
+              exact ⟨bigFuel, Nat.le_refl _, hread⟩
+
+/-- **Readback naturality**: along a binding extension, the later readback
+of any address is the finite heap projection of the later heap applied to
+its earlier readback. -/
+theorem readback_naturality {σ : LPSignature} [DecidableEq σ.vars]
+    {heap₀ heap₁ : Heap σ}
+    (ext : BindingExtension heap₀ heap₁)
+    (inj : IdentityInjective heap₁)
+    (ff : FunctionFree heap₁)
+    {address : Addr} {t₀ t₁ : Term σ}
+    (h₀ : Heap.readTerm heap₀ address = .ok t₀)
+    (h₁ : Heap.readTerm heap₁ address = .ok t₁) :
+    (heapSubst heap₁).applyTerm t₀ = t₁ := by
+  obtain ⟨root, hroot, hval⟩ :=
+    deref_of_readTerm_ff (ext.ff_back ff) (heap₀.size + 1) address t₀ h₀
+  obtain ⟨smallFuel, hle, hrootRead⟩ :=
+    readTermFuel_descend_ext ext (heap₀.size + 1) address root hroot
+      (heap₁.size + 1) t₁ h₁
+  have hrootFull : Heap.readTerm heap₁ root = .ok t₁ :=
+    readTermFuel_mono_le heap₁ (Nat.le_trans hle (Nat.le_refl _)) root t₁
+      hrootRead
+  rcases hval with ⟨identity, hcell₀, rfl⟩ | ⟨symbol, hcell₀, rfl⟩
+  · -- variable leaf: both extension outcomes give the identity a cell at
+    -- `root` in the later heap, so the projection sends it to `t₁`.
+    have hcell₁ : ∃ link, heap₁[root]? = some (Cell.var identity link) := by
+      rcases ext.2 root _ hcell₀ with hsame | ⟨id₂, target, heq, hbound⟩
+      · exact ⟨none, hsame⟩
+      · cases heq
+        exact ⟨some target, hbound⟩
+    obtain ⟨link, hcell₁⟩ := hcell₁
+    show heapSubst heap₁ identity = t₁
+    simp [heapSubst, cellOf_of_cell inj hcell₁, hrootFull]
+  · -- constant leaf: preserved verbatim, so both readbacks are the symbol.
+    have hcell₁ := ext.const_preserved hcell₀
+    have hconst : (Except.ok t₁ : Except ReadbackError (Term σ)) =
+        .ok (Term.const symbol) :=
+      hrootFull.symm.trans
+        (readTermFuel_const heap₁ heap₁.size root symbol hcell₁)
+    have : t₁ = Term.const symbol := by simpa using hconst
+    rw [this]
+    rfl
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
