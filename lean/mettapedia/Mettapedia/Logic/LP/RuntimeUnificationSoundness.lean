@@ -2198,5 +2198,209 @@ theorem readback_naturality {σ : LPSignature} [DecidableEq σ.vars]
     rw [this]
     rfl
 
+/-! ## Stage 5a: materializer discharge
+
+Every S1–S4 hypothesis, proved for what materialization actually does:
+the memory-level history is a genuine `Extends` chain of real allocations
+(trail untouched), and function-free source keeps the heap function-free. -/
+
+theorem Extends.trans {σ : LPSignature} {m₀ m₁ m₂ : Memory σ}
+    (a : Extends m₀ m₁) (b : Extends m₁ m₂) : Extends m₀ m₂ := by
+  induction b with
+  | refl => exact a
+  | write history step ih => exact .write ih step
+  | alloc history step ih => exact .alloc ih step
+
+/-- `Memory.allocate` ignores the trail: success transports to any trail. -/
+theorem allocate_trail_irrelevant {σ : LPSignature} {heap : Heap σ}
+    {trail₁ trail₂ : Array (TrailEntry σ)} {cell : Cell σ}
+    {address : Addr} {memory' : Memory σ}
+    (h : Memory.allocate { heap := heap, trail := trail₁ } cell =
+      .ok (address, memory')) :
+    Memory.allocate { heap := heap, trail := trail₂ } cell =
+      .ok (address, { heap := memory'.heap, trail := trail₂ }) := by
+  obtain ⟨haddr, hmem⟩ := allocate_ok_inv h
+  subst haddr
+  unfold Memory.allocate at h ⊢
+  split at h
+  · split at h
+    · rw [if_pos ‹_›, if_pos ‹_›]
+      rw [hmem]
+      rfl
+    · rcases hfind :
+          (Cell.references cell).find?
+            (fun target => decide (heap.size ≤ target)) with _ | t <;>
+        rw [hfind] at h <;> cases h
+  · cases h
+
+/-- A successful builder allocation is a real memory-level allocation step,
+for any caller trail. -/
+theorem allocate_extends {σ : LPSignature} {cell : Cell σ}
+    {s₀ s₁ : BuilderState σ} {address : Addr}
+    (h : (RuntimeMaterialize.allocate cell).run s₀ = .ok (address, s₁))
+    (trail : Array (TrailEntry σ)) :
+    Extends { heap := s₀.heap, trail := trail }
+      { heap := s₁.heap, trail := trail } := by
+  simp only [RuntimeMaterialize.allocate, BuilderM.run_bind,
+    BuilderM.get, BuilderM.set, BuilderM.throw] at h
+  cases hSc : Memory.allocate { heap := s₀.heap, trail := #[] } cell with
+  | error e => rw [hSc] at h; cases h
+  | ok pair =>
+      obtain ⟨addr₀, memory₀⟩ := pair
+      rw [hSc] at h
+      simp only [BuilderM.run_pure] at h
+      cases h
+      exact .alloc (.refl _) (allocate_trail_irrelevant hSc)
+
+/-- mapM companion for `Extends`. -/
+theorem mapM_extends {σ : LPSignature} [DecidableEq σ.vars]
+    {ι : Type _} (f : ι → Term σ) :
+    ∀ (indices : List ι),
+      (∀ i ∈ indices, ∀ {s₀ s₁ : BuilderState σ} {address : Addr}
+        (trail : Array (TrailEntry σ)),
+        (materializeTermAux (f i)).run s₀ = .ok (address, s₁) →
+        Extends { heap := s₀.heap, trail := trail }
+          { heap := s₁.heap, trail := trail }) →
+      ∀ {s₀ s₁ : BuilderState σ} {addresses : List Addr}
+        (trail : Array (TrailEntry σ)),
+        (indices.mapM fun i => materializeTermAux (f i)).run s₀ =
+          .ok (addresses, s₁) →
+        Extends { heap := s₀.heap, trail := trail }
+          { heap := s₁.heap, trail := trail } := by
+  intro indices
+  induction indices with
+  | nil =>
+      intro _ s₀ s₁ addresses trail h
+      rw [run_mapM_nil] at h
+      cases h
+      exact .refl _
+  | cons head tailI tailIh =>
+      intro elemExt s₀ s₁ addresses trail h
+      rw [run_mapM_cons] at h
+      cases hHead : (materializeTermAux (f head)).run s₀ with
+      | error e => rw [hHead] at h; cases h
+      | ok headPair =>
+          obtain ⟨headAddr, sMid⟩ := headPair
+          rw [hHead] at h
+          dsimp only at h
+          cases hTail : (tailI.mapM fun i => materializeTermAux (f i)).run
+              sMid with
+          | error e => rw [hTail] at h; cases h
+          | ok tailPair =>
+              obtain ⟨tailAddrs, sEnd⟩ := tailPair
+              rw [hTail] at h
+              dsimp only at h
+              cases h
+              exact (elemExt head (by simp) trail hHead).trans
+                (tailIh (fun i hi => elemExt i (by simp [hi]))
+                  trail hTail)
+
+/-- A materializer run realizes a genuine memory-level `Extends` history. -/
+theorem materializeTermAux_extends {σ : LPSignature} [DecidableEq σ.vars] :
+    ∀ (t : Term σ) {s₀ s₁ : BuilderState σ} {address : Addr}
+      (trail : Array (TrailEntry σ)),
+      (materializeTermAux t).run s₀ = .ok (address, s₁) →
+      Extends { heap := s₀.heap, trail := trail }
+        { heap := s₁.heap, trail := trail } := by
+  intro t
+  induction t with
+  | var identity =>
+      intro s₀ s₁ address trail h
+      simp only [materializeTermAux, BuilderM.run_bind, BuilderM.get] at h
+      cases hlook : List.lookup identity s₀.varMap with
+      | some existing =>
+          simp only [hlook, BuilderM.run_pure] at h
+          cases h
+          exact .refl _
+      | none =>
+          simp only [hlook, BuilderM.run_bind] at h
+          cases hAlloc : (RuntimeMaterialize.allocate
+              (Cell.var identity none)).run s₀ with
+          | error e => rw [hAlloc] at h; cases h
+          | ok pair =>
+              obtain ⟨addr₀, sMid⟩ := pair
+              rw [hAlloc] at h
+              simp only [BuilderM.set, BuilderM.run_pure] at h
+              cases h
+              exact allocate_extends hAlloc trail
+  | const symbol =>
+      intro s₀ s₁ address trail h
+      simp only [materializeTermAux] at h
+      exact allocate_extends h trail
+  | app symbol args ih =>
+      intro s₀ s₁ address trail h
+      simp only [materializeTermAux, BuilderM.run_bind] at h
+      cases hMap : ((List.finRange (σ.functionArity symbol)).mapM fun index =>
+          materializeTermAux (args index)).run s₀ with
+      | error e => rw [hMap] at h; cases h
+      | ok mapPair =>
+          obtain ⟨childAddrs, sMid⟩ := mapPair
+          rw [hMap] at h
+          exact (mapM_extends (fun index => args index)
+            (List.finRange (σ.functionArity symbol))
+            (fun i _ => ih i) trail hMap).trans
+            (allocate_extends h trail)
+
+/-- Function-free source syntax: no function applications. -/
+def TermFF {σ : LPSignature} : Term σ → Prop
+  | .var _ => True
+  | .const _ => True
+  | .app _ _ => False
+
+/-- Materializing function-free source keeps the heap function-free. -/
+theorem materializeTermAux_ff {σ : LPSignature} [DecidableEq σ.vars] :
+    ∀ (t : Term σ) {s₀ s₁ : BuilderState σ} {address : Addr},
+      TermFF t →
+      (materializeTermAux t).run s₀ = .ok (address, s₁) →
+      FunctionFree s₀.heap → FunctionFree s₁.heap := by
+  intro t
+  cases t with
+  | var identity =>
+      intro s₀ s₁ address _ h ff
+      simp only [materializeTermAux, BuilderM.run_bind, BuilderM.get] at h
+      cases hlook : List.lookup identity s₀.varMap with
+      | some existing =>
+          simp only [hlook, BuilderM.run_pure] at h
+          cases h
+          exact ff
+      | none =>
+          simp only [hlook, BuilderM.run_bind] at h
+          cases hAlloc : (RuntimeMaterialize.allocate
+              (Cell.var identity none)).run s₀ with
+          | error e => rw [hAlloc] at h; cases h
+          | ok pair =>
+              obtain ⟨addr₀, sMid⟩ := pair
+              rw [hAlloc] at h
+              obtain ⟨_, hheap, _⟩ := allocate_run_spec hAlloc
+              simp only [BuilderM.set, BuilderM.run_pure] at h
+              cases h
+              intro a symbol args ha
+              rcases Nat.lt_trichotomy a s₀.heap.size with hlt | heq | hgt
+              · rw [hheap, getElem?_push_lt _ _ hlt] at ha
+                exact ff a symbol args ha
+              · subst heq
+                rw [hheap] at ha
+                simp at ha
+              · rw [hheap, Array.getElem?_eq_none (by
+                  simp only [Array.size_push]; omega)] at ha
+                cases ha
+  | const symbol =>
+      intro s₀ s₁ address _ h ff
+      simp only [materializeTermAux] at h
+      obtain ⟨_, hheap, _⟩ := allocate_run_spec h
+      intro a symbol' args ha
+      rcases Nat.lt_trichotomy a s₀.heap.size with hlt | heq | hgt
+      · rw [hheap, getElem?_push_lt _ _ hlt] at ha
+        exact ff a symbol' args ha
+      · subst heq
+        rw [hheap] at ha
+        simp at ha
+      · rw [hheap, Array.getElem?_eq_none (by
+          simp only [Array.size_push]; omega)] at ha
+        cases ha
+  | app symbol args =>
+      intro _ _ _ hFF
+      cases hFF
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
