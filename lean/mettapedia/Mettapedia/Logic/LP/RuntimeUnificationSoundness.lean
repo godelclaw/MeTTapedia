@@ -2658,7 +2658,7 @@ theorem runChecked_ok {σ : LPSignature} {α : Type _}
       case pos =>
       rw [if_pos hWS'] at h
       cases h
-      exact ⟨hWF, hWS, by simpa using hrun, hWF', hWS'⟩
+      exact ⟨hWF, hWS, by simp [hrun], hWF', hWS'⟩
 
 /-- **Public goals round-trip**: a materialized query's runtime atoms read
 back verbatim in the result memory; the memory extends the caller's by real
@@ -2771,6 +2771,328 @@ theorem materializeClause_roundtrip {σ : LPSignature} [DecidableEq σ.vars]
                   bBody.cells⟩
                 exact readAtom_extend bHead.wf bBody.prefixEq bBody.sizeLe
                   hBound hHeadRead
+
+/-! ## Stage 5b: machine-side discharge
+
+The unifier's success segments realize both relations S4 and S1 consume:
+every write is a fresh binding over an unbound cell (`BindingExtension`)
+and a genuine trailed `Memory.write` (`Extends`). -/
+
+theorem BindingExtension.rfl {σ : LPSignature} (heap : Heap σ) :
+    BindingExtension heap heap :=
+  ⟨Nat.le_refl _, fun _ _ h => .inl h⟩
+
+theorem BindingExtension.trans {σ : LPSignature}
+    {heap₀ heap₁ heap₂ : Heap σ} (a : BindingExtension heap₀ heap₁)
+    (b : BindingExtension heap₁ heap₂) : BindingExtension heap₀ heap₂ := by
+  refine ⟨a.1.trans b.1, ?_⟩
+  intro addr cell h
+  rcases a.2 addr cell h with h₁ | ⟨id, target, rfl, h₁⟩
+  · exact b.2 addr cell h₁
+  · rcases b.2 addr _ h₁ with h₂ | ⟨id₂, target₂, habs, _⟩
+    · exact .inr ⟨id, target, _root_.rfl, h₂⟩
+    · cases habs
+
+/-- One machine binding is a binding extension. -/
+theorem bindingExtension_of_write {σ : LPSignature}
+    {memory memory' : Memory σ} {address target : Addr} {identity : σ.vars}
+    (hcell : memory.heap[address]? = some (Cell.var identity none))
+    (hw : memory.write address (Cell.var identity (some target)) =
+      .ok memory') :
+    BindingExtension memory.heap memory'.heap := by
+  obtain ⟨hlt, hheq⟩ := write_ok_heap hw
+  refine ⟨by rw [hheq]; simp, ?_⟩
+  intro addr cell h
+  by_cases haddr : addr = address
+  · subst haddr
+    rw [h] at hcell
+    cases hcell
+    exact .inr ⟨identity, target, _root_.rfl, by
+      rw [hheq]
+      exact heap_set_get_self _ _ hlt⟩
+  · exact .inl (by rw [hheq, heap_set_get_ne _ _ hlt haddr]; exact h)
+
+/-- Abbreviation for the extension induction hypothesis. -/
+def ExtensionIH (σ : LPSignature) [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (fuel : Nat) : Prop :=
+  ∀ (c : Configuration σ) (m : Memory σ), c.phase = .compare →
+    runSteps fuel (.running c) = .terminal (.success m) →
+    BindingExtension c.memory.heap m.heap ∧ Extends c.memory m
+
+/-- One binding step followed by a successful run composes both relations. -/
+theorem bindStep_extension {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] {fuel : Nat}
+    (ih : ExtensionIH σ fuel) (c : Configuration σ) (m : Memory σ)
+    (rest : List (Addr × Addr)) {bound target : Addr} {identity : σ.vars}
+    (hphase : c.phase = .compare)
+    (hcellBound : c.memory.heap[bound]? = some (Cell.var identity none))
+    (hrun : runSteps fuel (afterBinding c rest bound identity target) =
+      .terminal (.success m)) :
+    BindingExtension c.memory.heap m.heap ∧ Extends c.memory m := by
+  simp only [afterBinding] at hrun
+  cases hw : c.memory.write bound (Cell.var identity (some target)) with
+  | error e =>
+      rw [hw] at hrun
+      exact absurd hrun (beginRollback_no_success fuel c _ m)
+  | ok memory' =>
+      rw [hw] at hrun
+      obtain ⟨ihBE, ihEx⟩ :=
+        ih { c with memory := memory', agenda := rest } m hphase hrun
+      exact ⟨(bindingExtension_of_write hcellBound hw).trans ihBE,
+        (Extends.write (.refl c.memory) hw).trans ihEx⟩
+
+/-- A successful unifier run is a binding extension and a real write
+history of the entry memory. -/
+theorem runSteps_success_extension {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols] :
+    ∀ (fuel : Nat) (c : Configuration σ) (m : Memory σ),
+      c.phase = .compare →
+      runSteps fuel (.running c) = .terminal (.success m) →
+      BindingExtension c.memory.heap m.heap ∧ Extends c.memory m := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro c m _ hrun
+      rw [runSteps_zero] at hrun
+      simp at hrun
+  | succ fuel ih =>
+      intro c m hphase hrun
+      cases hstep : step (Machine.running c) with
+      | none =>
+          rw [runSteps_succ_none hstep] at hrun
+          simp at hrun
+      | some next =>
+          rw [runSteps_succ_some hstep] at hrun
+          cases hagenda : c.agenda with
+          | nil =>
+              simp only [step, hphase, hagenda] at hstep
+              cases hstep
+              rw [runSteps_terminal] at hrun
+              have hm : c.memory = m := by
+                injection hrun with h1
+                injection h1
+              subst hm
+              exact ⟨BindingExtension.rfl _, .refl _⟩
+          | cons pair rest =>
+              obtain ⟨l, r⟩ := pair
+              simp only [step, hphase, hagenda] at hstep
+              cases hdl : c.memory.heap.deref l with
+              | error e =>
+                  simp only [hdl] at hstep
+                  cases hstep
+                  exact absurd hrun (beginRollback_no_success fuel c _ m)
+              | ok dresL =>
+                  cases dresL with
+                  | variableCycle a =>
+                      simp only [hdl] at hstep
+                      cases hstep
+                      exact absurd hrun (beginRollback_no_success fuel c _ m)
+                  | root leftRoot =>
+                      simp only [hdl] at hstep
+                      cases hdr : c.memory.heap.deref r with
+                      | error e =>
+                          simp only [hdr] at hstep
+                          cases hstep
+                          exact absurd hrun (beginRollback_no_success fuel c _ m)
+                      | ok dresR =>
+                          cases dresR with
+                          | variableCycle a =>
+                              simp only [hdr] at hstep
+                              cases hstep
+                              exact absurd hrun
+                                (beginRollback_no_success fuel c _ m)
+                          | root rightRoot =>
+                              simp only [hdr] at hstep
+                              split at hstep
+                              · cases hstep
+                                exact ih { c with agenda := rest, phase := .compare } m rfl hrun
+                              · -- distinct roots: analyze both cells
+                                cases hcl : c.memory.heap[leftRoot]? with
+                                | none =>
+                                    simp only [hcl] at hstep
+                                    cases hstep
+                                    exact absurd hrun
+                                      (beginRollback_no_success fuel c _ m)
+                                | some cellL =>
+                                    cases hcr : c.memory.heap[rightRoot]? with
+                                    | none =>
+                                        cases cellL with
+                                        | var lid linkL =>
+                                            cases linkL with
+                                            | none =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                            | some t =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                        | const s =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact absurd hrun
+                                              (beginRollback_no_success
+                                                fuel c _ m)
+                                        | app s a =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact absurd hrun
+                                              (beginRollback_no_success
+                                                fuel c _ m)
+                                    | some cellR =>
+                                        cases cellL with
+                                        | var lid linkL =>
+                                            cases linkL with
+                                            | some t =>
+                                                cases cellR with
+                                                | var rid linkR =>
+                                                    cases linkR with
+                                                    | none =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        cases hstep
+                                                        exact
+                                                          bindStep_extension
+                                                            ih c m rest hphase
+                                                            hcr hrun
+                                                    | some t₂ =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        cases hstep
+                                                        exact absurd hrun
+                                                          (beginRollback_no_success
+                                                            fuel c _ m)
+                                                | const symbolR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact absurd hrun
+                                                      (beginRollback_no_success
+                                                        fuel c _ m)
+                                                | app symbolR argsR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact absurd hrun
+                                                      (beginRollback_no_success
+                                                        fuel c _ m)
+                                            | none =>
+                                                cases cellR with
+                                                | var rid linkR =>
+                                                    cases linkR with
+                                                    | none =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        split at hstep <;>
+                                                          cases hstep
+                                                        · exact
+                                                            bindStep_extension
+                                                              ih c m rest hphase
+                                                              hcr hrun
+                                                        · exact
+                                                            bindStep_extension
+                                                              ih c m rest hphase
+                                                              hcl hrun
+                                                    | some t =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        cases hstep
+                                                        exact
+                                                          bindStep_extension
+                                                            ih c m rest hphase
+                                                            hcl hrun
+                                                | const symbolR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_extension
+                                                      ih c m rest hphase hcl hrun
+                                                | app symbolR argsR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_extension
+                                                      ih c m rest hphase hcl hrun
+                                        | const symbolL =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | none =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_extension
+                                                      ih c m rest hphase hcr hrun
+                                                | some t =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact absurd hrun
+                                                      (beginRollback_no_success
+                                                        fuel c _ m)
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                split at hstep <;> cases hstep
+                                                · exact ih { c with agenda := rest, phase := .compare } m rfl hrun
+                                                · exact absurd hrun
+                                                    (beginRollback_no_success
+                                                      fuel c _ m)
+                                            | app symbolR argsR =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                        | app symbolL argsL =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | none =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_extension
+                                                      ih c m rest hphase hcr hrun
+                                                | some t =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact absurd hrun
+                                                      (beginRollback_no_success
+                                                        fuel c _ m)
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                            | app symbolR argsR =>
+                                                simp only [hcl, hcr] at hstep
+                                                split at hstep
+                                                · split at hstep <;> cases hstep
+                                                  · exact ih { c with agenda := rest, phase := .compare } m rfl hrun
+                                                  · exact ih { c with agenda := argsL.toList.zip argsR.toList ++ rest, visited := orderedPair leftRoot rightRoot :: c.visited, phase := .compare } m rfl hrun
+                                                · cases hstep
+                                                  exact absurd hrun
+                                                    (beginRollback_no_success
+                                                      fuel c _ m)
+
+/-- Entry-point form: a successful `startMany` unification run extends its
+entry memory by fresh bindings only, as a real write history. -/
+theorem startMany_success_extension {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (fuel : Nat) (memory₀ : Memory σ) (agenda : List (Addr × Addr))
+    (m : Memory σ)
+    (hrun : runSteps fuel (startMany memory₀ agenda) =
+      .terminal (.success m)) :
+    BindingExtension memory₀.heap m.heap ∧ Extends memory₀ m :=
+  runSteps_success_extension fuel
+    { memory := memory₀, agenda := agenda, visited := []
+      entryMark := memory₀.trailMark, phase := .compare } m rfl hrun
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
