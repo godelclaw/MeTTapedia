@@ -2248,46 +2248,43 @@ theorem allocate_extends {σ : LPSignature} {cell : Cell σ}
   | ok pair =>
       obtain ⟨addr₀, memory₀⟩ := pair
       rw [hSc] at h
-      simp only [BuilderM.run_pure] at h
       cases h
       exact .alloc (.refl _) (allocate_trail_irrelevant hSc)
 
-/-- mapM companion for `Extends`. -/
-theorem mapM_extends {σ : LPSignature} [DecidableEq σ.vars]
-    {ι : Type _} (f : ι → Term σ) :
+/-- mapM companion for `Extends`, over any builder element action. -/
+theorem mapM_extends {σ : LPSignature}
+    {ι : Type _} {β : Type _} (g : ι → RuntimeMaterialize.BuilderM σ β) :
     ∀ (indices : List ι),
-      (∀ i ∈ indices, ∀ {s₀ s₁ : BuilderState σ} {address : Addr}
+      (∀ i ∈ indices, ∀ {s₀ s₁ : BuilderState σ} {value : β}
         (trail : Array (TrailEntry σ)),
-        (materializeTermAux (f i)).run s₀ = .ok (address, s₁) →
+        (g i).run s₀ = .ok (value, s₁) →
         Extends { heap := s₀.heap, trail := trail }
           { heap := s₁.heap, trail := trail }) →
-      ∀ {s₀ s₁ : BuilderState σ} {addresses : List Addr}
+      ∀ {s₀ s₁ : BuilderState σ} {values : List β}
         (trail : Array (TrailEntry σ)),
-        (indices.mapM fun i => materializeTermAux (f i)).run s₀ =
-          .ok (addresses, s₁) →
+        (indices.mapM g).run s₀ = .ok (values, s₁) →
         Extends { heap := s₀.heap, trail := trail }
           { heap := s₁.heap, trail := trail } := by
   intro indices
   induction indices with
   | nil =>
-      intro _ s₀ s₁ addresses trail h
+      intro _ s₀ s₁ values trail h
       rw [run_mapM_nil] at h
       cases h
       exact .refl _
   | cons head tailI tailIh =>
-      intro elemExt s₀ s₁ addresses trail h
+      intro elemExt s₀ s₁ values trail h
       rw [run_mapM_cons] at h
-      cases hHead : (materializeTermAux (f head)).run s₀ with
+      cases hHead : (g head).run s₀ with
       | error e => rw [hHead] at h; cases h
       | ok headPair =>
-          obtain ⟨headAddr, sMid⟩ := headPair
+          obtain ⟨headVal, sMid⟩ := headPair
           rw [hHead] at h
           dsimp only at h
-          cases hTail : (tailI.mapM fun i => materializeTermAux (f i)).run
-              sMid with
+          cases hTail : (tailI.mapM g).run sMid with
           | error e => rw [hTail] at h; cases h
           | ok tailPair =>
-              obtain ⟨tailAddrs, sEnd⟩ := tailPair
+              obtain ⟨tailVals, sEnd⟩ := tailPair
               rw [hTail] at h
               dsimp only at h
               cases h
@@ -2336,7 +2333,8 @@ theorem materializeTermAux_extends {σ : LPSignature} [DecidableEq σ.vars] :
       | ok mapPair =>
           obtain ⟨childAddrs, sMid⟩ := mapPair
           rw [hMap] at h
-          exact (mapM_extends (fun index => args index)
+          exact (mapM_extends
+            (fun index => materializeTermAux (args index))
             (List.finRange (σ.functionArity symbol))
             (fun i _ => ih i) trail hMap).trans
             (allocate_extends h trail)
@@ -2401,6 +2399,378 @@ theorem materializeTermAux_ff {σ : LPSignature} [DecidableEq σ.vars] :
   | app symbol args =>
       intro _ _ _ hFF
       cases hFF
+
+/-! ## Stage 5a continued: atom, goals, and clause round-trips -/
+
+theorem readListFuel_mono_le {σ : LPSignature} (heap : Heap σ)
+    {small large : Nat} (hle : small ≤ large)
+    (addresses : List Addr) (terms : List (Term σ))
+    (h : readListFuel heap small addresses = .ok terms) :
+    readListFuel heap large addresses = .ok terms := by
+  induction hle with
+  | refl => exact h
+  | step _ ih =>
+      exact readListFuel_mono
+        (fun a t' ht => readTermFuel_mono heap _ a t' ht) addresses terms ih
+
+/-- `readAtom` results survive append-only extension of a well-formed heap. -/
+theorem readAtom_extend {σ : LPSignature} {heap heap' : Heap σ}
+    (hwf : Heap.WellFormed heap)
+    (hpre : ∀ i, i < heap.size → heap'[i]? = heap[i]?)
+    (hsize : heap.size ≤ heap'.size)
+    {atom : RuntimeAtom σ} {result : Atom σ}
+    (hbound : ∀ a ∈ atom.args.toList, a < heap.size)
+    (h : readAtom heap atom = .ok result) :
+    readAtom heap' atom = .ok result := by
+  unfold readAtom at h ⊢
+  simp only [Bind.bind, Except.bind] at h ⊢
+  cases hList : readListFuel heap (heap.size + 1) atom.args.toList with
+  | error e => rw [hList] at h; simp at h
+  | ok children =>
+      rw [hList] at h
+      have hExt := readListFuel_extend
+        (fun a ha t' ht => readTermFuel_extend hwf hpre (heap.size + 1)
+          a ha t' ht) atom.args.toList hbound children hList
+      have hLift := readListFuel_mono_le heap'
+        (Nat.succ_le_succ hsize) atom.args.toList children hExt
+      rw [hLift]
+      exact h
+
+/-- What one materialized atom satisfies. -/
+theorem materializeAtomAux_spec {σ : LPSignature} [DecidableEq σ.vars]
+    (atom : Atom σ) {s₀ s₁ : BuilderState σ}
+    {ratom : RuntimeAtom σ}
+    (h : (materializeAtomAux atom).run s₀ = .ok (ratom, s₁))
+    (hwf : Heap.WellFormed s₀.heap) (hcells : VarMapCells s₀) :
+    BuildOk s₀ s₁ ∧
+    (∀ a ∈ ratom.args.toList, a < s₁.heap.size) ∧
+    readAtom s₁.heap ratom = .ok atom := by
+  simp only [materializeAtomAux, BuilderM.run_bind] at h
+  cases hMap : ((List.finRange (σ.relationArity atom.symbol)).mapM
+      fun index => materializeTermAux (atom.args index)).run s₀ with
+  | error e => rw [hMap] at h; cases h
+  | ok mapPair =>
+      obtain ⟨childAddrs, sMid⟩ := mapPair
+      rw [hMap] at h
+      dsimp only at h
+      cases h
+      obtain ⟨bMap, hLen, hPoint⟩ :=
+        materializeMapM_spec (fun index => atom.args index)
+          (List.finRange (σ.relationArity atom.symbol))
+          (fun i _ => materializeTermAux_spec (atom.args i)) hMap hwf hcells
+      have hLenArity : childAddrs.length = σ.relationArity atom.symbol := by
+        simpa [List.length_finRange] using hLen
+      have hbound : ∀ a ∈ childAddrs.toArray.toList, a < s₁.heap.size := by
+        intro a ha
+        rw [show childAddrs.toArray.toList = childAddrs from by simp] at ha
+        obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem ha
+        exact (hPoint k hk (by omega)).1
+      refine ⟨bMap, hbound, ?_⟩
+      unfold readAtom
+      simp only [Bind.bind, Except.bind]
+      have hChildren :
+          readListFuel s₁.heap (s₁.heap.size + 1)
+              childAddrs.toArray.toList =
+            .ok ((List.finRange (σ.relationArity atom.symbol)).map
+              fun index => atom.args index) := by
+        rw [show childAddrs.toArray.toList = childAddrs from by simp]
+        apply readListFuel_of_pointwise
+        · simp [hLenArity, List.length_finRange]
+        · intro k hk hk'
+          have hp := hPoint k hk (by
+            simpa [List.length_finRange, hLenArity] using hk)
+          have hidx :
+              ((List.finRange (σ.relationArity atom.symbol)).map
+                fun index => atom.args index)[k]'hk' =
+                atom.args ((List.finRange (σ.relationArity atom.symbol))[k]'(by
+                  simpa [List.length_finRange, hLenArity] using hk)) := by
+            simp
+          rw [hidx]
+          exact hp.2
+      rw [hChildren]
+      dsimp only
+      rw [dif_pos (by simp [List.length_finRange])]
+      refine congrArg Except.ok ?_
+      cases atom with
+      | mk symbol args =>
+          refine congrArg (Atom.mk symbol) ?_
+          funext index
+          simp [List.get_eq_getElem, List.getElem_map, List.getElem_finRange]
+
+/-- Generic mapM preservation of a heap invariant. -/
+theorem mapM_heap_preserves {σ : LPSignature} {ι β : Type _}
+    {P : Heap σ → Prop} (g : ι → RuntimeMaterialize.BuilderM σ β) :
+    ∀ (indices : List ι),
+      (∀ i ∈ indices, ∀ {s₀ s₁ : BuilderState σ} {value : β},
+        (g i).run s₀ = .ok (value, s₁) → P s₀.heap → P s₁.heap) →
+      ∀ {s₀ s₁ : BuilderState σ} {values : List β},
+        (indices.mapM g).run s₀ = .ok (values, s₁) →
+        P s₀.heap → P s₁.heap := by
+  intro indices
+  induction indices with
+  | nil =>
+      intro _ s₀ s₁ values h hP
+      rw [run_mapM_nil] at h
+      cases h
+      exact hP
+  | cons head tailI tailIh =>
+      intro elem s₀ s₁ values h hP
+      rw [run_mapM_cons] at h
+      cases hHead : (g head).run s₀ with
+      | error e => rw [hHead] at h; cases h
+      | ok headPair =>
+          obtain ⟨headVal, sMid⟩ := headPair
+          rw [hHead] at h
+          dsimp only at h
+          cases hTail : (tailI.mapM g).run sMid with
+          | error e => rw [hTail] at h; cases h
+          | ok tailPair =>
+              obtain ⟨tailVals, sEnd⟩ := tailPair
+              rw [hTail] at h
+              dsimp only at h
+              cases h
+              exact tailIh (fun i hi => elem i (by simp [hi])) hTail
+                (elem head (by simp) hHead hP)
+
+/-- Atom materialization is a memory-level `Extends` history. -/
+theorem materializeAtomAux_extends {σ : LPSignature} [DecidableEq σ.vars]
+    (atom : Atom σ) {s₀ s₁ : BuilderState σ} {ratom : RuntimeAtom σ}
+    (trail : Array (TrailEntry σ))
+    (h : (materializeAtomAux atom).run s₀ = .ok (ratom, s₁)) :
+    Extends { heap := s₀.heap, trail := trail }
+      { heap := s₁.heap, trail := trail } := by
+  simp only [materializeAtomAux, BuilderM.run_bind] at h
+  cases hMap : ((List.finRange (σ.relationArity atom.symbol)).mapM
+      fun index => materializeTermAux (atom.args index)).run s₀ with
+  | error e => rw [hMap] at h; cases h
+  | ok mapPair =>
+      obtain ⟨childAddrs, sMid⟩ := mapPair
+      rw [hMap] at h
+      dsimp only at h
+      cases h
+      exact mapM_extends _ _
+        (fun i _ => fun {s₀ s₁ value} trail' h' =>
+          materializeTermAux_extends (atom.args i) trail' h') trail hMap
+
+/-- Function-free atoms keep the heap function-free. -/
+def AtomFF {σ : LPSignature} (atom : Atom σ) : Prop :=
+  ∀ index, TermFF (atom.args index)
+
+theorem materializeAtomAux_ff {σ : LPSignature} [DecidableEq σ.vars]
+    (atom : Atom σ) {s₀ s₁ : BuilderState σ} {ratom : RuntimeAtom σ}
+    (hFF : AtomFF atom)
+    (h : (materializeAtomAux atom).run s₀ = .ok (ratom, s₁)) :
+    FunctionFree s₀.heap → FunctionFree s₁.heap := by
+  intro ff
+  simp only [materializeAtomAux, BuilderM.run_bind] at h
+  cases hMap : ((List.finRange (σ.relationArity atom.symbol)).mapM
+      fun index => materializeTermAux (atom.args index)).run s₀ with
+  | error e => rw [hMap] at h; cases h
+  | ok mapPair =>
+      obtain ⟨childAddrs, sMid⟩ := mapPair
+      rw [hMap] at h
+      dsimp only at h
+      cases h
+      exact mapM_heap_preserves _ _
+        (fun i _ => fun {s₀ s₁ value} h' hp =>
+          materializeTermAux_ff (atom.args i) (hFF i) h' hp)
+        hMap ff
+
+/-- mapM companion for atom round-trips: every materialized atom reads back
+in the final builder heap. -/
+theorem materializeAtomsMapM_spec {σ : LPSignature} [DecidableEq σ.vars] :
+    ∀ (atoms : List (Atom σ)) {s₀ s₁ : BuilderState σ}
+      {ratoms : List (RuntimeAtom σ)},
+      (atoms.mapM materializeAtomAux).run s₀ = .ok (ratoms, s₁) →
+      Heap.WellFormed s₀.heap → VarMapCells s₀ →
+      BuildOk s₀ s₁ ∧ ratoms.length = atoms.length ∧
+        ∀ k (hk : k < ratoms.length) (hk' : k < atoms.length),
+          readAtom s₁.heap ratoms[k] = .ok atoms[k] := by
+  intro atoms
+  induction atoms with
+  | nil =>
+      intro s₀ s₁ ratoms h hwf hcells
+      rw [run_mapM_nil] at h
+      cases h
+      exact ⟨BuildOk.rfl hwf hcells, _root_.rfl,
+        fun k hk _ => absurd hk (Nat.not_lt_zero k)⟩
+  | cons head tailA tailIh =>
+      intro s₀ s₁ ratoms h hwf hcells
+      rw [run_mapM_cons] at h
+      cases hHead : (materializeAtomAux head).run s₀ with
+      | error e => rw [hHead] at h; cases h
+      | ok headPair =>
+          obtain ⟨headAtom, sMid⟩ := headPair
+          rw [hHead] at h
+          dsimp only at h
+          cases hTail : (tailA.mapM materializeAtomAux).run sMid with
+          | error e => rw [hTail] at h; cases h
+          | ok tailPair =>
+              obtain ⟨tailAtoms, sEnd⟩ := tailPair
+              rw [hTail] at h
+              dsimp only at h
+              cases h
+              obtain ⟨bHead, hBound, hHeadRead⟩ :=
+                materializeAtomAux_spec head hHead hwf hcells
+              obtain ⟨bTail, hLen, hPoint⟩ :=
+                tailIh hTail bHead.wf bHead.cells
+              refine ⟨bHead.trans bTail,
+                congrArg (fun n => n + 1) hLen, ?_⟩
+              intro k hk hk'
+              cases k with
+              | zero =>
+                  simp only [List.getElem_cons_zero]
+                  exact readAtom_extend bHead.wf bTail.prefixEq bTail.sizeLe
+                    hBound hHeadRead
+              | succ k =>
+                  have := hPoint k (by simpa using hk) (by simpa using hk')
+                  simpa using this
+
+/-- Invert `runChecked` success into its checks and the raw run. -/
+theorem runChecked_ok {σ : LPSignature} {α : Type _}
+    {action : RuntimeMaterialize.BuilderM σ α} {heap : Heap σ}
+    {value : α} {state : BuilderState σ}
+    (h : RuntimeMaterialize.runChecked action heap = .ok (value, state)) :
+    heap.checkWellFormed = true ∧ heap.checkWellShaped = true ∧
+      action.run (BuilderState.start heap) = .ok (value, state) ∧
+      state.heap.checkWellFormed = true ∧
+      state.heap.checkWellShaped = true := by
+  unfold RuntimeMaterialize.runChecked at h
+  by_cases hWF : heap.checkWellFormed
+  case neg => rw [if_neg hWF] at h; cases h
+  case pos =>
+  rw [if_pos hWF] at h
+  by_cases hWS : heap.checkWellShaped
+  case neg => rw [if_neg hWS] at h; cases h
+  case pos =>
+  rw [if_pos hWS] at h
+  cases hrun : action.run (BuilderState.start heap) with
+  | error e => rw [hrun] at h; cases h
+  | ok pair =>
+      rw [hrun] at h
+      dsimp only at h
+      by_cases hWF' : pair.2.heap.checkWellFormed
+      case neg => rw [if_neg hWF'] at h; cases h
+      case pos =>
+      rw [if_pos hWF'] at h
+      by_cases hWS' : pair.2.heap.checkWellShaped
+      case neg => rw [if_neg hWS'] at h; cases h
+      case pos =>
+      rw [if_pos hWS'] at h
+      cases h
+      exact ⟨hWF, hWS, by simpa using hrun, hWF', hWS'⟩
+
+/-- **Public goals round-trip**: a materialized query's runtime atoms read
+back verbatim in the result memory; the memory extends the caller's by real
+allocations only; and the variable map is cell-coherent. -/
+theorem materializeGoals_roundtrip {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ} {goals : List (Atom σ)}
+    {result : MaterializedGoals σ}
+    (h : materializeGoals memory goals = .ok result) :
+    Extends memory result.memory ∧
+    result.goals.length = goals.length ∧
+    (∀ k (hk : k < result.goals.length) (hk' : k < goals.length),
+      readAtom result.memory.heap result.goals[k] = .ok goals[k]) ∧
+    Heap.WellFormed result.memory.heap ∧
+    VarMapCells { heap := result.memory.heap, varMap := result.varMap } := by
+  unfold materializeGoals at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeGoalsAux goals) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeGoals, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨hWF, hWS, hrun, hWF', hWS'⟩ := runChecked_ok hrc
+      by_cases hCheck : (runtimeGoals.all
+          fun atom => atom.checkWellFormed state.heap) = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        obtain ⟨bOk, hLen, hPoint⟩ :=
+          materializeAtomsMapM_spec goals hrun
+            (Heap.wellFormed_of_check hWF)
+            (fun pair hp => by simp [BuilderState.start] at hp)
+        have hExtends : Extends memory
+            { heap := state.heap, trail := memory.trail } := by
+          have := mapM_extends materializeAtomAux goals
+            (fun i _ => fun {s₀ s₁ value} trail' h' =>
+              materializeAtomAux_extends i trail' h')
+            memory.trail hrun
+          simpa [BuilderState.start] using this
+        exact ⟨hExtends, hLen, hPoint, bOk.wf, bOk.cells⟩
+
+/-- **Public clause round-trip**: a materialized (already standardized-apart)
+clause reads back verbatim — head and every body atom — in the result
+memory, which extends the caller's by real allocations only. -/
+theorem materializeClause_roundtrip {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ} {clause : Clause σ}
+    {result : MaterializedClause σ}
+    (h : materializeClause memory clause = .ok result) :
+    Extends memory result.memory ∧
+    readAtom result.memory.heap result.clause.head = .ok clause.head ∧
+    result.clause.body.length = clause.body.length ∧
+    (∀ k (hk : k < result.clause.body.length)
+      (hk' : k < clause.body.length),
+      readAtom result.memory.heap result.clause.body[k] =
+        .ok clause.body[k]) ∧
+    Heap.WellFormed result.memory.heap ∧
+    VarMapCells { heap := result.memory.heap, varMap := result.varMap } := by
+  unfold materializeClause at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeClauseAux clause) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeClause, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨hWF, hWS, hrun, hWF', hWS'⟩ := runChecked_ok hrc
+      by_cases hCheck :
+          runtimeClause.checkWellFormed state.heap = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        simp only [materializeClauseAux, BuilderM.run_bind] at hrun
+        cases hHead : (materializeAtomAux clause.head).run
+            (BuilderState.start memory.heap) with
+        | error e => rw [hHead] at hrun; cases hrun
+        | ok headPair =>
+            obtain ⟨headAtom, sMid⟩ := headPair
+            rw [hHead] at hrun
+            dsimp only at hrun
+            cases hBody : (clause.body.mapM materializeAtomAux).run sMid with
+            | error e => rw [hBody] at hrun; cases hrun
+            | ok bodyPair =>
+                obtain ⟨bodyAtoms, sEnd⟩ := bodyPair
+                rw [hBody] at hrun
+                dsimp only at hrun
+                cases hrun
+                have hwf₀ : Heap.WellFormed
+                    (BuilderState.start memory.heap).heap :=
+                  Heap.wellFormed_of_check hWF
+                have hcells₀ : VarMapCells (BuilderState.start memory.heap) :=
+                  fun pair hp => by simp [BuilderState.start] at hp
+                obtain ⟨bHead, hBound, hHeadRead⟩ :=
+                  materializeAtomAux_spec clause.head hHead hwf₀ hcells₀
+                obtain ⟨bBody, hLen, hPoint⟩ :=
+                  materializeAtomsMapM_spec clause.body hBody
+                    bHead.wf bHead.cells
+                have hExtends : Extends memory
+                    { heap := state.heap, trail := memory.trail } := by
+                  have hHeadExt := materializeAtomAux_extends clause.head
+                    memory.trail hHead
+                  have hBodyExt := mapM_extends materializeAtomAux clause.body
+                    (fun i _ => fun {s₀ s₁ value} trail' h' =>
+                      materializeAtomAux_extends i trail' h')
+                    memory.trail hBody
+                  have := hHeadExt.trans hBodyExt
+                  simpa [BuilderState.start] using this
+                refine ⟨hExtends, ?_, hLen, hPoint, bBody.wf,
+                  bBody.cells⟩
+                exact readAtom_extend bHead.wf bBody.prefixEq bBody.sizeLe
+                  hBound hHeadRead
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
