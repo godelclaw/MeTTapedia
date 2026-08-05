@@ -3141,5 +3141,831 @@ theorem IdentityInjective.of_bindingExtension {σ : LPSignature}
   obtain ⟨lb₀, hb₀⟩ := ext.var_back hbLt hb
   exact inj a b identity la₀ lb₀ ha₀ hb₀
 
+/-! ## Stage 5b: identity injectivity is established at materialization
+
+Materialization is where variable identities enter the heap.  Under a
+freshness predicate separating the activation's identities from everything
+already allocated — discharged at the call sites by the scope discipline —
+the builder's variable-map bookkeeping yields identity injectivity outright:
+a fresh identity is allocated at most once because the variable map is
+consulted first, and a fresh identity can never collide with an old cell
+because old cells are never fresh. -/
+
+/-- A cell of a pushed heap is an old cell or the pushed cell at the top. -/
+theorem getElem?_push_cases {σ : LPSignature} {heap : Heap σ}
+    {cell target : Cell σ} {a : Addr}
+    (h : (heap.push cell)[a]? = some target) :
+    (a < heap.size ∧ heap[a]? = some target) ∨
+      (a = heap.size ∧ target = cell) := by
+  have hsz : a < heap.size + 1 := by
+    have := lt_of_getElem?_some h
+    simpa using this
+  rcases Nat.lt_or_ge a heap.size with hlt | hge
+  · rw [getElem?_push_lt heap cell hlt] at h
+    exact .inl ⟨hlt, h⟩
+  · have heq : a = heap.size := Nat.le_antisymm (Nat.le_of_lt_succ hsz) hge
+    subst heq
+    have htop : (heap.push cell)[heap.size]? = some cell := by simp
+    rw [htop] at h
+    cases h
+    exact .inr ⟨rfl, rfl⟩
+
+/-- A failed association-list lookup excludes every entry with that key. -/
+theorem lookup_none_not_mem {σ : LPSignature} [DecidableEq σ.vars] :
+    ∀ {varMap : List (σ.vars × Addr)} {identity : σ.vars},
+      List.lookup identity varMap = none →
+      ∀ address, (identity, address) ∉ varMap := by
+  intro varMap
+  induction varMap with
+  | nil =>
+      intro _ _ address hmem
+      cases hmem
+  | cons head tailM ih =>
+      intro identity h address hmem
+      obtain ⟨key, value⟩ := head
+      by_cases he : identity = key
+      · subst he
+        simp [List.lookup] at h
+      · have hne : (identity == key) = false := by simpa using he
+        simp only [List.lookup, hne] at h
+        rcases List.mem_cons.mp hmem with heq | hmem'
+        · exact he (by cases heq; rfl)
+        · exact ih h address hmem'
+
+/-- The freshness bundle carried through one materialization: the variable
+map is functional, every heap cell carrying a fresh identity is registered
+in the variable map, and the whole heap is identity-injective. -/
+structure FreshInv {σ : LPSignature} (Fresh : σ.vars → Prop)
+    (s : BuilderState σ) : Prop where
+  functional : ∀ (identity : σ.vars) (a b : Addr),
+    (identity, a) ∈ s.varMap → (identity, b) ∈ s.varMap → a = b
+  registered : ∀ (a : Addr) (identity : σ.vars) (link : Option Addr),
+    s.heap[a]? = some (Cell.var identity link) → Fresh identity →
+      (identity, a) ∈ s.varMap
+  injective : IdentityInjective s.heap
+
+/-- Pushing a non-variable cell preserves the freshness bundle. -/
+theorem FreshInv.push_nonvar {σ : LPSignature} {Fresh : σ.vars → Prop}
+    {s : BuilderState σ} (hInv : FreshInv Fresh s) {cell : Cell σ}
+    (hNonvar : ∀ identity link, cell ≠ Cell.var identity link) :
+    FreshInv Fresh { heap := s.heap.push cell, varMap := s.varMap } where
+  functional := hInv.functional
+  registered := by
+    intro a identity link hcell hFid
+    rcases getElem?_push_cases hcell with ⟨_, hold⟩ | ⟨_, hcelleq⟩
+    · exact hInv.registered a identity link hold hFid
+    · exact absurd hcelleq.symm (hNonvar identity link)
+  injective := by
+    intro a b identity la lb ha hb
+    rcases getElem?_push_cases ha with ⟨_, haOld⟩ | ⟨_, haNew⟩
+    · rcases getElem?_push_cases hb with ⟨_, hbOld⟩ | ⟨_, hbNew⟩
+      · exact hInv.injective a b identity la lb haOld hbOld
+      · exact absurd hbNew.symm (hNonvar identity lb)
+    · exact absurd haNew.symm (hNonvar identity la)
+
+/-- Generic mapM preservation of a builder-state invariant. -/
+theorem mapM_state_preserves {σ : LPSignature} {ι β : Type _}
+    {P : BuilderState σ → Prop} (g : ι → RuntimeMaterialize.BuilderM σ β) :
+    ∀ (indices : List ι),
+      (∀ i ∈ indices, ∀ {s₀ s₁ : BuilderState σ} {value : β},
+        (g i).run s₀ = .ok (value, s₁) → P s₀ → P s₁) →
+      ∀ {s₀ s₁ : BuilderState σ} {values : List β},
+        (indices.mapM g).run s₀ = .ok (values, s₁) →
+        P s₀ → P s₁ := by
+  intro indices
+  induction indices with
+  | nil =>
+      intro _ s₀ s₁ values h hP
+      rw [run_mapM_nil] at h
+      cases h
+      exact hP
+  | cons head tailI tailIh =>
+      intro elem s₀ s₁ values h hP
+      rw [run_mapM_cons] at h
+      cases hHead : (g head).run s₀ with
+      | error e => rw [hHead] at h; cases h
+      | ok headPair =>
+          obtain ⟨headVal, sMid⟩ := headPair
+          rw [hHead] at h
+          dsimp only at h
+          cases hTail : (tailI.mapM g).run sMid with
+          | error e => rw [hTail] at h; cases h
+          | ok tailPair =>
+              obtain ⟨tailVals, sEnd⟩ := tailPair
+              rw [hTail] at h
+              dsimp only at h
+              cases h
+              exact tailIh (fun i hi => elem i (by simp [hi])) hTail
+                (elem head (by simp) hHead hP)
+
+/-- Term materialization preserves the freshness bundle when every variable
+of the term is fresh. -/
+theorem materializeTermAux_freshInv {σ : LPSignature} [DecidableEq σ.vars]
+    {Fresh : σ.vars → Prop} :
+    ∀ (t : Term σ) {s₀ s₁ : BuilderState σ} {address : Addr},
+      (∀ v ∈ t.freeVars, Fresh v) →
+      (materializeTermAux t).run s₀ = .ok (address, s₁) →
+      FreshInv Fresh s₀ → FreshInv Fresh s₁ := by
+  intro t
+  induction t with
+  | var identity =>
+      intro s₀ s₁ address hFreshT h hInv
+      have hFreshId : Fresh identity :=
+        hFreshT identity (by simp [Term.freeVars])
+      simp only [materializeTermAux, BuilderM.run_bind, BuilderM.get] at h
+      cases hlook : List.lookup identity s₀.varMap with
+      | some existing =>
+          simp only [hlook, BuilderM.run_pure] at h
+          cases h
+          exact hInv
+      | none =>
+          simp only [hlook, BuilderM.run_bind] at h
+          cases hAlloc : (RuntimeMaterialize.allocate
+              (Cell.var identity none)).run s₀ with
+          | error e => rw [hAlloc] at h; cases h
+          | ok pair =>
+              obtain ⟨addr₀, sMid⟩ := pair
+              rw [hAlloc] at h
+              obtain ⟨haddr, hheap, hvar⟩ := allocate_run_spec hAlloc
+              simp only [BuilderM.set, BuilderM.run_pure] at h
+              cases h
+              subst haddr
+              refine ⟨?_, ?_, ?_⟩
+              · -- functionality of the extended variable map
+                intro id a b ha hb
+                rcases List.mem_cons.mp ha with haH | haT
+                · rcases List.mem_cons.mp hb with hbH | hbT
+                  · rw [Prod.mk.injEq] at haH hbH
+                    exact haH.2.trans hbH.2.symm
+                  · rw [Prod.mk.injEq] at haH
+                    rw [hvar] at hbT
+                    exact absurd (haH.1 ▸ hbT)
+                      (lookup_none_not_mem hlook b)
+                · rcases List.mem_cons.mp hb with hbH | hbT
+                  · rw [Prod.mk.injEq] at hbH
+                    rw [hvar] at haT
+                    exact absurd (hbH.1 ▸ haT)
+                      (lookup_none_not_mem hlook a)
+                  · rw [hvar] at haT hbT
+                    exact hInv.functional id a b haT hbT
+              · -- fresh cells stay registered
+                intro a id link hcell hFid
+                rw [hheap] at hcell
+                rcases getElem?_push_cases hcell with ⟨_, hold⟩ | ⟨heq, hcelleq⟩
+                · have := hInv.registered a id link hold hFid
+                  rw [← hvar] at this
+                  exact List.mem_cons_of_mem _ this
+                · injection hcelleq with hid _
+                  subst heq
+                  subst hid
+                  exact List.mem_cons_self ..
+              · -- injectivity with one genuinely new identity
+                intro a b id la lb ha hb
+                rw [hheap] at ha hb
+                rcases getElem?_push_cases ha with ⟨_, haOld⟩ | ⟨haEq, haNew⟩
+                · rcases getElem?_push_cases hb with ⟨_, hbOld⟩ | ⟨hbEq, hbNew⟩
+                  · exact hInv.injective a b id la lb haOld hbOld
+                  · injection hbNew with hid _
+                    subst hid
+                    exact absurd (hInv.registered a id la haOld hFreshId)
+                      (lookup_none_not_mem hlook a)
+                · rcases getElem?_push_cases hb with ⟨_, hbOld⟩ | ⟨hbEq, hbNew⟩
+                  · injection haNew with hid _
+                    subst hid
+                    exact absurd (hInv.registered b id lb hbOld hFreshId)
+                      (lookup_none_not_mem hlook b)
+                  · exact haEq.trans hbEq.symm
+  | const symbol =>
+      intro s₀ s₁ address _ h hInv
+      simp only [materializeTermAux] at h
+      obtain ⟨_, hheap, hvar⟩ := allocate_run_spec h
+      have := hInv.push_nonvar (cell := Cell.const symbol)
+        (fun _ _ hEq => by cases hEq)
+      rw [← hheap, ← hvar] at this
+      exact this
+  | app symbol args ih =>
+      intro s₀ s₁ address hFreshT h hInv
+      simp only [materializeTermAux, BuilderM.run_bind] at h
+      cases hMap : ((List.finRange (σ.functionArity symbol)).mapM fun index =>
+          materializeTermAux (args index)).run s₀ with
+      | error e => rw [hMap] at h; cases h
+      | ok mapPair =>
+          obtain ⟨childAddrs, sMid⟩ := mapPair
+          rw [hMap] at h
+          obtain ⟨_, hheap, hvar⟩ := allocate_run_spec h
+          have hMid : FreshInv Fresh sMid :=
+            mapM_state_preserves _ _
+              (fun i _ => fun {s₀ s₁ value} h' hp =>
+                ih i (fun v hv => hFreshT v (by
+                  simp only [Term.freeVars]
+                  exact Finset.mem_biUnion.mpr
+                    ⟨i, Finset.mem_univ i, hv⟩)) h' hp)
+              hMap hInv
+          have := hMid.push_nonvar
+            (cell := Cell.app symbol childAddrs.toArray)
+            (fun _ _ hEq => by cases hEq)
+          rw [← hheap, ← hvar] at this
+          exact this
+
+/-- Atom materialization preserves the freshness bundle when every variable
+of the atom is fresh. -/
+theorem materializeAtomAux_freshInv {σ : LPSignature} [DecidableEq σ.vars]
+    {Fresh : σ.vars → Prop} (atom : Atom σ)
+    {s₀ s₁ : BuilderState σ} {ratom : RuntimeAtom σ}
+    (hFresh : ∀ v ∈ atom.freeVars, Fresh v)
+    (h : (materializeAtomAux atom).run s₀ = .ok (ratom, s₁)) :
+    FreshInv Fresh s₀ → FreshInv Fresh s₁ := by
+  intro hInv
+  simp only [materializeAtomAux, BuilderM.run_bind] at h
+  cases hMap : ((List.finRange (σ.relationArity atom.symbol)).mapM
+      fun index => materializeTermAux (atom.args index)).run s₀ with
+  | error e => rw [hMap] at h; cases h
+  | ok mapPair =>
+      obtain ⟨childAddrs, sMid⟩ := mapPair
+      rw [hMap] at h
+      dsimp only at h
+      cases h
+      exact mapM_state_preserves _ _
+        (fun i _ => fun {s₀ s₁ value} h' hp =>
+          materializeTermAux_freshInv (atom.args i)
+            (fun v hv => hFresh v (by
+              exact Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ i, hv⟩))
+            h' hp)
+        hMap hInv
+
+/-- **Goal materialization establishes injectivity.**  If the caller's heap
+is identity-injective and carries no fresh identities, and every goal
+variable is fresh, then the materialized result is identity-injective and
+every fresh-identity cell is registered in the returned variable map. -/
+theorem materializeGoals_freshInv {σ : LPSignature} [DecidableEq σ.vars]
+    {Fresh : σ.vars → Prop} {memory : Memory σ} {goals : List (Atom σ)}
+    {result : MaterializedGoals σ}
+    (h : materializeGoals memory goals = .ok result)
+    (hFresh : ∀ atom ∈ goals, ∀ v ∈ atom.freeVars, Fresh v)
+    (hFree : ∀ (a : Addr) (identity : σ.vars) (link : Option Addr),
+      memory.heap[a]? = some (Cell.var identity link) → ¬ Fresh identity)
+    (hInj : IdentityInjective memory.heap) :
+    FreshInv Fresh
+      { heap := result.memory.heap, varMap := result.varMap } := by
+  unfold materializeGoals at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeGoalsAux goals) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeGoals, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      by_cases hCheck : (runtimeGoals.all
+          fun atom => atom.checkWellFormed state.heap) = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        have hStart : FreshInv Fresh (BuilderState.start memory.heap) := by
+          refine ⟨?_, ?_, ?_⟩
+          · intro id a b ha _
+            cases ha
+          · intro a id link hcell hFid
+            exact absurd hFid (hFree a id link hcell)
+          · exact hInj
+        exact mapM_state_preserves materializeAtomAux goals
+          (fun i hi => fun {s₀ s₁ value} h' hp =>
+            materializeAtomAux_freshInv i (hFresh i hi) h' hp)
+          hrun hStart
+
+/-- **Clause materialization establishes injectivity**, under the same
+freshness split: old cells are never fresh, clause variables always are. -/
+theorem materializeClause_freshInv {σ : LPSignature} [DecidableEq σ.vars]
+    {Fresh : σ.vars → Prop} {memory : Memory σ} {clause : Clause σ}
+    {result : MaterializedClause σ}
+    (h : materializeClause memory clause = .ok result)
+    (hFreshHead : ∀ v ∈ clause.head.freeVars, Fresh v)
+    (hFreshBody : ∀ atom ∈ clause.body, ∀ v ∈ atom.freeVars, Fresh v)
+    (hFree : ∀ (a : Addr) (identity : σ.vars) (link : Option Addr),
+      memory.heap[a]? = some (Cell.var identity link) → ¬ Fresh identity)
+    (hInj : IdentityInjective memory.heap) :
+    FreshInv Fresh
+      { heap := result.memory.heap, varMap := result.varMap } := by
+  unfold materializeClause at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeClauseAux clause) memory.heap with
+  | error e => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨runtimeClause, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      obtain ⟨_, _, hrun, _, _⟩ := runChecked_ok hrc
+      by_cases hCheck :
+          runtimeClause.checkWellFormed state.heap = true
+      case neg => rw [if_neg hCheck] at h; cases h
+      case pos =>
+        rw [if_pos hCheck] at h
+        cases h
+        simp only [materializeClauseAux, BuilderM.run_bind] at hrun
+        cases hHead : (materializeAtomAux clause.head).run
+            (BuilderState.start memory.heap) with
+        | error e => rw [hHead] at hrun; cases hrun
+        | ok headPair =>
+            obtain ⟨headAtom, sMid⟩ := headPair
+            rw [hHead] at hrun
+            dsimp only at hrun
+            cases hBody : (clause.body.mapM materializeAtomAux).run sMid with
+            | error e => rw [hBody] at hrun; cases hrun
+            | ok bodyPair =>
+                obtain ⟨bodyAtoms, sEnd⟩ := bodyPair
+                rw [hBody] at hrun
+                dsimp only at hrun
+                cases hrun
+                have hStart : FreshInv Fresh
+                    (BuilderState.start memory.heap) := by
+                  refine ⟨?_, ?_, ?_⟩
+                  · intro id a b ha _
+                    cases ha
+                  · intro a id link hcell hFid
+                    exact absurd hFid (hFree a id link hcell)
+                  · exact hInj
+                have hMid : FreshInv Fresh sMid :=
+                  materializeAtomAux_freshInv clause.head hFreshHead
+                    hHead hStart
+                exact mapM_state_preserves materializeAtomAux clause.body
+                  (fun i hi => fun {s₀ s₁ value} h' hp =>
+                    materializeAtomAux_freshInv i (hFreshBody i hi) h' hp)
+                  hBody hMid
+
+/-! ### Scope discipline discharges freshness
+
+Every variable of a term copied `atScope scope` carries exactly that scope,
+so `Fresh := (·.scope = scope)` splits new activations from every heap
+whose identities all live at strictly lower scopes. -/
+
+theorem Term.freeVars_atScope {σ : LPSignature} [DecidableEq σ.vars]
+    (scope : Nat) :
+    ∀ (t : Term σ) (v : ScopedVar σ.vars),
+      v ∈ (Term.atScope scope t).freeVars → v.scope = scope := by
+  intro t
+  induction t with
+  | var w =>
+      intro v hv
+      simp only [Term.atScope, Term.renameVars_var, Term.freeVars,
+        Finset.mem_singleton] at hv
+      subst hv
+      rfl
+  | const c =>
+      intro v hv
+      simp [Term.atScope, Term.renameVars_const, Term.freeVars] at hv
+  | app f ts ih =>
+      intro v hv
+      simp only [Term.atScope, Term.renameVars_app, Term.freeVars] at hv
+      obtain ⟨i, _, hi⟩ := Finset.mem_biUnion.mp hv
+      exact ih i v hi
+
+theorem Atom.freeVars_atScope {σ : LPSignature} [DecidableEq σ.vars]
+    (scope : Nat) (atom : Atom σ) (v : ScopedVar σ.vars)
+    (hv : v ∈ (Atom.atScope scope atom).freeVars) : v.scope = scope := by
+  obtain ⟨i, _, hi⟩ := Finset.mem_biUnion.mp hv
+  exact Term.freeVars_atScope scope (atom.args i) v hi
+
+/-- Every variable identity in the heap lives strictly below the bound.
+This is the run invariant that makes each new activation scope fresh. -/
+def HeapScopesBelow {σ : LPSignature} (bound : Nat)
+    (heap : Heap σ.scoped) : Prop :=
+  ∀ (a : Addr) (identity : ScopedVar σ.vars) (link : Option Addr),
+    heap[a]? = some (Cell.var identity link) → identity.scope < bound
+
+/-- Scoped instantiation for query materialization: a query copied at
+`scope` over a heap whose scopes are below `scope` builds an
+identity-injective heap with all `scope`-cells registered. -/
+theorem materializeGoals_scoped_freshInv {σ : LPSignature}
+    [DecidableEq σ.vars] {memory : Memory σ.scoped}
+    {goals : List (Atom σ)} {scope : Nat}
+    {result : MaterializedGoals σ.scoped}
+    (h : materializeGoals memory (queryAtScope scope goals) = .ok result)
+    (hBelow : HeapScopesBelow scope memory.heap)
+    (hInj : IdentityInjective memory.heap) :
+    FreshInv (fun v : ScopedVar σ.vars => v.scope = scope)
+      { heap := result.memory.heap, varMap := result.varMap } :=
+  materializeGoals_freshInv h
+    (fun atom hatom v hv => by
+      obtain ⟨source, _, rfl⟩ := List.mem_map.mp hatom
+      exact Atom.freeVars_atScope scope source v hv)
+    (fun a id link hcell => Nat.ne_of_lt (hBelow a id link hcell))
+    hInj
+
+/-- Scoped instantiation for clause activation: a clause standardized apart
+at `scope` over a heap whose scopes are below `scope` builds an
+identity-injective heap with all `scope`-cells registered. -/
+theorem materializeClause_scoped_freshInv {σ : LPSignature}
+    [DecidableEq σ.vars] {memory : Memory σ.scoped}
+    {clause : Clause σ} {scope : Nat}
+    {result : MaterializedClause σ.scoped}
+    (h : materializeClause memory (clause.atScope scope) = .ok result)
+    (hBelow : HeapScopesBelow scope memory.heap)
+    (hInj : IdentityInjective memory.heap) :
+    FreshInv (fun v : ScopedVar σ.vars => v.scope = scope)
+      { heap := result.memory.heap, varMap := result.varMap } :=
+  materializeClause_freshInv h
+    (fun v hv => Atom.freeVars_atScope scope clause.head v hv)
+    (fun atom hatom v hv => by
+      obtain ⟨source, _, rfl⟩ := List.mem_map.mp hatom
+      exact Atom.freeVars_atScope scope source v hv)
+    (fun a id link hcell => Nat.ne_of_lt (hBelow a id link hcell))
+    hInj
+
+/-! ## Stage 5b: the machine preserves descending links
+
+The graph unifier binds the higher-addressed unbound variable toward the
+lower one, and otherwise binds variables to constant cells.  On
+function-free heaps this keeps every variable chain strictly descending or
+terminating at a constant — the well-foundedness that makes finite readback
+total.  This section proves that shape is a run invariant of successful
+unifier runs. -/
+
+/-- Every bound variable links strictly downward or to a constant cell. -/
+def DescendingOrConst {σ : LPSignature} (heap : Heap σ) : Prop :=
+  ∀ (address : Addr) (identity : σ.vars) (target : Addr),
+    heap[address]? = some (Cell.var identity (some target)) →
+    target < address ∨ ∃ symbol, heap[target]? = some (Cell.const symbol)
+
+/-- The readback-wellfoundedness bundle threaded through machine runs. -/
+def OrderedFF {σ : LPSignature} (heap : Heap σ) : Prop :=
+  DescendingOrConst heap ∧ FunctionFree heap
+
+/-- A machine binding whose target is lower or a constant preserves
+descending links. -/
+theorem descendingOrConst_write {σ : LPSignature}
+    {memory memory' : Memory σ} {bound target : Addr} {identity : σ.vars}
+    (hcell : memory.heap[bound]? = some (Cell.var identity none))
+    (hw : memory.write bound (Cell.var identity (some target)) =
+      .ok memory')
+    (hTarget : target < bound ∨
+      ∃ symbol, memory.heap[target]? = some (Cell.const symbol))
+    (hDesc : DescendingOrConst memory.heap) :
+    DescendingOrConst memory'.heap := by
+  obtain ⟨hlt, hheq⟩ := write_ok_heap hw
+  intro a id t hcellA
+  rw [hheq] at hcellA
+  by_cases haddr : a = bound
+  · rw [haddr, heap_set_get_self _ _ hlt] at hcellA
+    injection hcellA with hcellA'
+    injection hcellA' with hid hlink
+    injection hlink with htg
+    rcases hTarget with hord | ⟨symbol, hconst⟩
+    · rw [haddr, ← htg]
+      exact .inl hord
+    · refine .inr ⟨symbol, ?_⟩
+      rw [hheq, ← htg]
+      have hne : target ≠ bound := by
+        intro hEq
+        rw [hEq, hcell] at hconst
+        cases hconst
+      rw [heap_set_get_ne _ _ hlt hne]
+      exact hconst
+  · rw [heap_set_get_ne _ _ hlt haddr] at hcellA
+    rcases hDesc a id t hcellA with hord | ⟨symbol, hconst⟩
+    · exact .inl hord
+    · refine .inr ⟨symbol, ?_⟩
+      rw [hheq]
+      have hne : t ≠ bound := by
+        intro hEq
+        rw [hEq, hcell] at hconst
+        cases hconst
+      rw [heap_set_get_ne _ _ hlt hne]
+      exact hconst
+
+/-- Machine bindings never create compound cells. -/
+theorem functionFree_write {σ : LPSignature}
+    {memory memory' : Memory σ} {bound target : Addr} {identity : σ.vars}
+    (hw : memory.write bound (Cell.var identity (some target)) =
+      .ok memory')
+    (hFF : FunctionFree memory.heap) : FunctionFree memory'.heap := by
+  obtain ⟨hlt, hheq⟩ := write_ok_heap hw
+  intro a symbol args hcellA
+  rw [hheq] at hcellA
+  by_cases haddr : a = bound
+  · subst haddr
+    rw [heap_set_get_self _ _ hlt] at hcellA
+    cases hcellA
+  · rw [heap_set_get_ne _ _ hlt haddr] at hcellA
+    exact hFF a symbol args hcellA
+
+/-- Abbreviation for the wellfoundedness induction hypothesis. -/
+def OrderedFFIH (σ : LPSignature) [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (fuel : Nat) : Prop :=
+  ∀ (c : Configuration σ) (m : Memory σ), c.phase = .compare →
+    runSteps fuel (.running c) = .terminal (.success m) →
+    OrderedFF c.memory.heap → OrderedFF m.heap
+
+/-- One ordered binding step followed by a successful run. -/
+theorem bindStep_orderedFF {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] {fuel : Nat}
+    (ih : OrderedFFIH σ fuel) (c : Configuration σ) (m : Memory σ)
+    (rest : List (Addr × Addr)) {bound target : Addr} {identity : σ.vars}
+    (hphase : c.phase = .compare)
+    (hcellBound : c.memory.heap[bound]? = some (Cell.var identity none))
+    (hTarget : target < bound ∨
+      ∃ symbol, c.memory.heap[target]? = some (Cell.const symbol))
+    (hrun : runSteps fuel (afterBinding c rest bound identity target) =
+      .terminal (.success m))
+    (hwf : OrderedFF c.memory.heap) : OrderedFF m.heap := by
+  simp only [afterBinding] at hrun
+  cases hw : c.memory.write bound (Cell.var identity (some target)) with
+  | error e =>
+      rw [hw] at hrun
+      exact absurd hrun (beginRollback_no_success fuel c _ m)
+  | ok memory' =>
+      rw [hw] at hrun
+      exact ih { c with memory := memory', agenda := rest } m hphase hrun
+        ⟨descendingOrConst_write hcellBound hw hTarget hwf.1,
+          functionFree_write hw hwf.2⟩
+
+/-- **Successful unifier runs preserve descending links and
+function-freeness.**  Together with size preservation this is exactly what
+finite-readback totality needs at the answer memory. -/
+theorem runSteps_success_orderedFF {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols] :
+    ∀ (fuel : Nat) (c : Configuration σ) (m : Memory σ),
+      c.phase = .compare →
+      runSteps fuel (.running c) = .terminal (.success m) →
+      OrderedFF c.memory.heap → OrderedFF m.heap := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro c m _ hrun _
+      rw [runSteps_zero] at hrun
+      simp at hrun
+  | succ fuel ih =>
+      intro c m hphase hrun hwf
+      cases hstep : step (Machine.running c) with
+      | none =>
+          rw [runSteps_succ_none hstep] at hrun
+          simp at hrun
+      | some next =>
+          rw [runSteps_succ_some hstep] at hrun
+          cases hagenda : c.agenda with
+          | nil =>
+              simp only [step, hphase, hagenda] at hstep
+              cases hstep
+              rw [runSteps_terminal] at hrun
+              have hm : c.memory = m := by
+                injection hrun with h1
+                injection h1
+              subst hm
+              exact hwf
+          | cons pair rest =>
+              obtain ⟨l, r⟩ := pair
+              simp only [step, hphase, hagenda] at hstep
+              cases hdl : c.memory.heap.deref l with
+              | error e =>
+                  simp only [hdl] at hstep
+                  cases hstep
+                  exact absurd hrun (beginRollback_no_success fuel c _ m)
+              | ok dresL =>
+                  cases dresL with
+                  | variableCycle a =>
+                      simp only [hdl] at hstep
+                      cases hstep
+                      exact absurd hrun (beginRollback_no_success fuel c _ m)
+                  | root leftRoot =>
+                      simp only [hdl] at hstep
+                      cases hdr : c.memory.heap.deref r with
+                      | error e =>
+                          simp only [hdr] at hstep
+                          cases hstep
+                          exact absurd hrun
+                            (beginRollback_no_success fuel c _ m)
+                      | ok dresR =>
+                          cases dresR with
+                          | variableCycle a =>
+                              simp only [hdr] at hstep
+                              cases hstep
+                              exact absurd hrun
+                                (beginRollback_no_success fuel c _ m)
+                          | root rightRoot =>
+                              simp only [hdr] at hstep
+                              by_cases hroots : leftRoot = rightRoot
+                              · rw [if_pos hroots] at hstep
+                                cases hstep
+                                exact ih { c with agenda := rest, phase := .compare } m rfl hrun hwf
+                              · rw [if_neg hroots] at hstep
+                                cases hcl : c.memory.heap[leftRoot]? with
+                                | none =>
+                                    simp only [hcl] at hstep
+                                    cases hstep
+                                    exact absurd hrun
+                                      (beginRollback_no_success fuel c _ m)
+                                | some cellL =>
+                                    cases hcr :
+                                        c.memory.heap[rightRoot]? with
+                                    | none =>
+                                        cases cellL with
+                                        | var lid linkL =>
+                                            cases linkL with
+                                            | none =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                            | some t =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                        | const s =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact absurd hrun
+                                              (beginRollback_no_success
+                                                fuel c _ m)
+                                        | app s a =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact absurd hrun
+                                              (beginRollback_no_success
+                                                fuel c _ m)
+                                    | some cellR =>
+                                        cases cellL with
+                                        | var lid linkL =>
+                                            cases linkL with
+                                            | some t =>
+                                                exact absurd hcl
+                                                  (deref_root_cell
+                                                    c.memory.heap _ l leftRoot
+                                                    (deref_root hdl) lid t)
+                                            | none =>
+                                                cases cellR with
+                                                | var rid linkR =>
+                                                    cases linkR with
+                                                    | none =>
+                                                        simp only [hcl, hcr]
+                                                          at hstep
+                                                        by_cases hord :
+                                                            leftRoot < rightRoot
+                                                        · rw [if_pos hord]
+                                                            at hstep
+                                                          cases hstep
+                                                          exact
+                                                            bindStep_orderedFF
+                                                              ih c m rest hphase
+                                                              hcr (.inl hord)
+                                                              hrun hwf
+                                                        · rw [if_neg hord]
+                                                            at hstep
+                                                          cases hstep
+                                                          exact
+                                                            bindStep_orderedFF
+                                                              ih c m rest hphase
+                                                              hcl
+                                                              (.inl
+                                                                (Nat.lt_of_le_of_ne
+                                                                  (Nat.not_lt.mp
+                                                                    hord)
+                                                                  (fun hEq =>
+                                                                    hroots
+                                                                      hEq.symm)))
+                                                              hrun hwf
+                                                    | some t =>
+                                                        exact absurd hcr
+                                                          (deref_root_cell
+                                                            c.memory.heap _ r
+                                                            rightRoot
+                                                            (deref_root hdr)
+                                                            rid t)
+                                                | const symbolR =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_orderedFF
+                                                      ih c m rest hphase hcl
+                                                      (.inr ⟨symbolR, hcr⟩)
+                                                      hrun hwf
+                                                | app symbolR argsR =>
+                                                    exact absurd hcr
+                                                      (hwf.2 rightRoot
+                                                        symbolR argsR)
+                                        | const symbolL =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | none =>
+                                                    simp only [hcl, hcr]
+                                                      at hstep
+                                                    cases hstep
+                                                    exact bindStep_orderedFF
+                                                      ih c m rest hphase hcr
+                                                      (.inr ⟨symbolL, hcl⟩)
+                                                      hrun hwf
+                                                | some t =>
+                                                    exact absurd hcr
+                                                      (deref_root_cell
+                                                        c.memory.heap _ r
+                                                        rightRoot
+                                                        (deref_root hdr)
+                                                        rid t)
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                by_cases hsym :
+                                                    symbolL = symbolR
+                                                · rw [if_pos hsym] at hstep
+                                                  cases hstep
+                                                  exact ih { c with agenda := rest, phase := .compare } m rfl hrun hwf
+                                                · rw [if_neg hsym] at hstep
+                                                  cases hstep
+                                                  exact absurd hrun
+                                                    (beginRollback_no_success
+                                                      fuel c _ m)
+                                            | app symbolR argsR =>
+                                                exact absurd hcr
+                                                  (hwf.2 rightRoot
+                                                    symbolR argsR)
+                                        | app symbolL argsL =>
+                                            exact absurd hcl
+                                              (hwf.2 leftRoot symbolL argsL)
+
+/-- Entry-point form: successful `startMany` runs preserve the
+readback-wellfoundedness bundle. -/
+theorem startMany_success_orderedFF {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (fuel : Nat) (memory₀ : Memory σ) (agenda : List (Addr × Addr))
+    (m : Memory σ)
+    (hrun : runSteps fuel (startMany memory₀ agenda) =
+      .terminal (.success m))
+    (hwf : OrderedFF memory₀.heap) : OrderedFF m.heap :=
+  runSteps_success_orderedFF fuel
+    { memory := memory₀, agenda := agenda, visited := []
+      entryMark := memory₀.trailMark, phase := .compare } m rfl hrun hwf
+
+/-! ## Stage 5b: readback totality on ordered function-free heaps
+
+Descending links terminate: every chain strictly decreases its address or
+reaches a constant cell.  So finite readback needs no more fuel than the
+address itself allows, and `notFinite` is impossible — the discharge, not
+an assumption, of every finite-readback side condition in the endpoint. -/
+
+/-- On a descending, function-free heap every in-bounds address reads back
+with fuel `address + 2`. -/
+theorem readTermFuel_total_of_orderedFF {σ : LPSignature} {heap : Heap σ}
+    (hwf : OrderedFF heap) :
+    ∀ (address : Addr), address < heap.size →
+      ∃ term, readTermFuel heap (address + 2) address = .ok term := by
+  intro address
+  induction address using Nat.strong_induction_on with
+  | _ address ih =>
+      intro ha
+      obtain ⟨cell, hcell⟩ := getElem?_some_of_lt ha
+      cases cell with
+      | var identity link =>
+          cases link with
+          | none =>
+              exact ⟨.var identity,
+                readTermFuel_unbound heap _ address identity hcell⟩
+          | some target =>
+              rw [readTermFuel_link heap (address + 1) address target
+                identity hcell]
+              rcases hwf.1 address identity target hcell with
+                hord | ⟨symbol, hconst⟩
+              · obtain ⟨term, hterm⟩ :=
+                  ih target hord (Nat.lt_trans hord ha)
+                exact ⟨term, readTermFuel_mono_le heap
+                  (Nat.succ_le_succ (Nat.succ_le_of_lt hord))
+                  target term hterm⟩
+              · exact ⟨.const symbol,
+                  readTermFuel_const heap address target symbol hconst⟩
+      | const symbol =>
+          exact ⟨.const symbol,
+            readTermFuel_const heap _ address symbol hcell⟩
+      | app symbol args =>
+          exact absurd hcell (hwf.2 address symbol args)
+
+/-- Every in-bounds address of an ordered function-free heap has a finite
+readback at the standard budget. -/
+theorem readTerm_total_of_orderedFF {σ : LPSignature} {heap : Heap σ}
+    (hwf : OrderedFF heap) {address : Addr} (ha : address < heap.size) :
+    ∃ term, Heap.readTerm heap address = .ok term := by
+  obtain ⟨term, hterm⟩ := readTermFuel_total_of_orderedFF hwf address ha
+  exact ⟨term, readTermFuel_mono_le heap
+    (Nat.succ_le_succ (Nat.succ_le_of_lt ha)) address term hterm⟩
+
+/-- Any variable support whose identities have cells is readable on an
+ordered function-free heap. -/
+theorem readableOn_of_orderedFF {σ : LPSignature} {heap : Heap σ}
+    (hwf : OrderedFF heap) (support : List σ.vars)
+    (hcells : ∀ v ∈ support, ∃ (address : Addr) (link : Option Addr),
+      heap[address]? = some (Cell.var v link)) :
+    ReadableOn heap support := by
+  intro v hv
+  obtain ⟨address, link, hcell⟩ := hcells v hv
+  have hex : ∃ a : Addr, ∃ link, heap[a]? = some (Cell.var v link) :=
+    ⟨address, link, hcell⟩
+  have hcellOf : cellOf heap v = some hex.choose := by
+    unfold cellOf
+    rw [dif_pos hex]
+  obtain ⟨link', hchoose⟩ := hex.choose_spec
+  obtain ⟨term, hterm⟩ :=
+    readTerm_total_of_orderedFF hwf (lt_of_getElem?_some hchoose)
+  exact ⟨hex.choose, term, hcellOf, hterm⟩
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
