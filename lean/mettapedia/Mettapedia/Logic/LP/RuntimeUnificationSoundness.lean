@@ -1,4 +1,5 @@
 import Mettapedia.Logic.LP.RuntimeReadback
+import Mettapedia.Logic.LP.Substitution
 import Mettapedia.Logic.LP.RuntimeUnification
 
 /-!
@@ -1206,6 +1207,210 @@ theorem Extends.restore_exact {σ : LPSignature} {before after : Memory σ}
   simp only [Memory.checkpoint]
   rw [if_pos h.heap_le, hunwind]
   simp only [hheap, htrail, hWF, hWS, if_true]
+
+/-! ## Stage 2: the canonical answer substitution
+
+The refinement theorem's substitution is not chosen — it is *read off the
+answer heap*.  Under identity-injectivity (at most one cell per variable
+identity, a consequence of the scope discipline) the denoted substitution is
+well-defined and idempotent, which is what lets the SLD judgment's answer
+compositions telescope to it. -/
+
+/-- At most one heap cell carries each variable identity. -/
+def IdentityInjective {σ : LPSignature} (heap : Heap σ) : Prop :=
+  ∀ (a b : Addr) (identity : σ.vars) (la lb : Option Addr),
+    heap[a]? = some (Cell.var identity la) →
+    heap[b]? = some (Cell.var identity lb) → a = b
+
+attribute [local instance] Classical.propDecidable
+
+/-- The cell carrying one variable identity, when it exists. -/
+noncomputable def cellOf {σ : LPSignature} (heap : Heap σ) (v : σ.vars) :
+    Option Addr :=
+  if h : ∃ a : Addr, ∃ link, heap[a]? = some (Cell.var v link) then
+    some h.choose
+  else none
+
+/-- The substitution a heap denotes: each identity reads back its cell;
+identities without a cell, or with an unreadable (cyclic) cell, stay
+variables. -/
+noncomputable def heapSubst {σ : LPSignature} (heap : Heap σ) : Subst σ :=
+  fun v =>
+    match cellOf heap v with
+    | none => .var v
+    | some address =>
+        match Heap.readTerm heap address with
+        | .ok term => term
+        | .error _ => .var v
+
+/-- List companion for `readTermFuel_freeVar_unbound`. -/
+theorem readListFuel_freeVar_unbound {σ : LPSignature} [DecidableEq σ.vars]
+    {heap : Heap σ} {fuel : Nat}
+    (termCase : ∀ address term, readTermFuel heap fuel address = .ok term →
+      ∀ w ∈ term.freeVars, ∃ b : Addr, heap[b]? = some (Cell.var w none)) :
+    ∀ (addresses : List Addr) (terms : List (Term σ)),
+      readListFuel heap fuel addresses = .ok terms →
+      ∀ c ∈ terms, ∀ w ∈ c.freeVars,
+        ∃ b : Addr, heap[b]? = some (Cell.var w none) := by
+  intro addresses
+  induction addresses with
+  | nil =>
+      intro terms h c hc _ _
+      have : ([] : List (Term σ)) = terms := by simpa [readListFuel] using h
+      subst this
+      simp at hc
+  | cons head tailA tailIh =>
+      intro terms h c hc w hw
+      simp only [readListFuel, Bind.bind, Except.bind] at h
+      cases hHead : readTermFuel heap fuel head with
+      | error e => rw [hHead] at h; simp at h
+      | ok headTerm =>
+          rw [hHead] at h
+          cases hTail : readListFuel heap fuel tailA with
+          | error e => rw [hTail] at h; simp at h
+          | ok tailTerms =>
+              rw [hTail] at h
+              have : headTerm :: tailTerms = terms := by simpa using h
+              subst this
+              rcases List.mem_cons.mp hc with rfl | hc'
+              · exact termCase head c hHead w hw
+              · exact tailIh tailTerms hTail c hc' w hw
+
+/-- Every free variable of a finite readback names an *unbound* cell. -/
+theorem readTermFuel_freeVar_unbound {σ : LPSignature}
+    [DecidableEq σ.vars] (heap : Heap σ) :
+    ∀ (fuel : Nat) (address : Addr) (term : Term σ),
+      readTermFuel heap fuel address = .ok term →
+      ∀ w ∈ term.freeVars, ∃ b : Addr, heap[b]? = some (Cell.var w none) := by
+  intro fuel
+  induction fuel with
+  | zero => intro address term h; simp [readTermFuel] at h
+  | succ fuel ih =>
+      intro address term h w hw
+      cases hcell : heap[address]? with
+      | none =>
+          rw [readTermFuel_invalid heap fuel address hcell] at h
+          exact absurd h (by simp)
+      | some cell =>
+          cases cell with
+          | var identity link =>
+              cases link with
+              | none =>
+                  rw [readTermFuel_unbound heap fuel address identity hcell] at h
+                  have : Term.var identity = term := by simpa using h
+                  subst this
+                  have : w = identity := by
+                    simpa [Term.freeVars] using hw
+                  subst this
+                  exact ⟨address, hcell⟩
+              | some target =>
+                  rw [readTermFuel_link heap fuel address target identity
+                    hcell] at h
+                  exact ih target term h w hw
+          | const symbol =>
+              rw [readTermFuel_const heap fuel address symbol hcell] at h
+              have : Term.const symbol = term := by simpa using h
+              subst this
+              simp [Term.freeVars] at hw
+          | app symbol args =>
+              rw [readTermFuel_app heap fuel address symbol args hcell] at h
+              simp only [Bind.bind, Except.bind] at h
+              cases hArgs : readListFuel heap fuel args.toList with
+              | error e => rw [hArgs] at h; simp at h
+              | ok children =>
+                  simp only [hArgs] at h
+                  by_cases hLength :
+                      children.length = σ.functionArity symbol
+                  case neg =>
+                    rw [dif_neg hLength] at h
+                    exact absurd h (by simp)
+                  case pos =>
+                    rw [dif_pos hLength] at h
+                    have hterm :
+                        Term.app symbol (fun index =>
+                          children.get (Fin.cast hLength.symm index)) =
+                          term := by
+                      simpa using h
+                    subst hterm
+                    simp only [Term.freeVars, Finset.mem_biUnion,
+                      Finset.mem_univ, true_and] at hw
+                    obtain ⟨i, hi⟩ := hw
+                    exact readListFuel_freeVar_unbound
+                      (fun a t ht => ih a t ht) args.toList children hArgs
+                      _ (children.get_mem _) w hi
+
+/-- Under injectivity, `cellOf` finds exactly the unbound cell. -/
+theorem cellOf_unbound {σ : LPSignature} {heap : Heap σ}
+    (inj : IdentityInjective heap) {b : Addr} {w : σ.vars}
+    (hb : heap[b]? = some (Cell.var w none)) :
+    cellOf heap w = some b := by
+  unfold cellOf
+  have hex : ∃ a : Addr, ∃ link, heap[a]? = some (Cell.var w link) :=
+    ⟨b, none, hb⟩
+  rw [dif_pos hex]
+  obtain ⟨link, hl⟩ := hex.choose_spec
+  exact congrArg some (inj _ b w link none hl hb)
+
+/-- An unbound identity denotes itself. -/
+theorem heapSubst_unbound {σ : LPSignature} {heap : Heap σ}
+    (inj : IdentityInjective heap) {b : Addr} {w : σ.vars}
+    (hb : heap[b]? = some (Cell.var w none)) :
+    heapSubst heap w = .var w := by
+  have hread : Heap.readTerm heap b = .ok (Term.var w) :=
+    readTermFuel_unbound heap heap.size b w hb
+  simp [heapSubst, cellOf_unbound inj hb, hread]
+
+/-- A substitution fixing every free variable fixes the term. -/
+theorem applyTerm_eq_self_of_freeVars {σ : LPSignature} [DecidableEq σ.vars]
+    {θ : Subst σ} :
+    ∀ {t : Term σ}, (∀ w ∈ t.freeVars, θ w = .var w) →
+      θ.applyTerm t = t := by
+  intro t
+  induction t with
+  | var v =>
+      intro h
+      simpa [Subst.applyTerm] using h v (by simp [Term.freeVars])
+  | const c => intro _; rfl
+  | app f ts ih =>
+      intro h
+      simp only [Subst.applyTerm]
+      congr 1
+      funext i
+      exact ih i (fun w hw => h w (by
+        simp only [Term.freeVars, Finset.mem_biUnion, Finset.mem_univ,
+          true_and]
+        exact ⟨i, hw⟩))
+
+/-- Pointwise idempotence of the denoted substitution. -/
+theorem heapSubst_applyTerm_self {σ : LPSignature} [DecidableEq σ.vars]
+    {heap : Heap σ} (inj : IdentityInjective heap) (v : σ.vars) :
+    (heapSubst heap).applyTerm (heapSubst heap v) = heapSubst heap v := by
+  have hval : heapSubst heap v = .var v ∨
+      ∃ a t, Heap.readTerm heap a = .ok t ∧ heapSubst heap v = t := by
+    cases hc : cellOf heap v with
+    | none => exact .inl (by simp [heapSubst, hc])
+    | some a =>
+        cases hr : Heap.readTerm heap a with
+        | ok term => exact .inr ⟨a, term, hr, by simp [heapSubst, hc, hr]⟩
+        | error e => exact .inl (by simp [heapSubst, hc, hr])
+  rcases hval with h | ⟨a, t, hrt, h⟩
+  · rw [h]
+    simp only [Subst.applyTerm]
+    exact h
+  · rw [h]
+    apply applyTerm_eq_self_of_freeVars
+    intro w hw
+    obtain ⟨b, hb⟩ :=
+      readTermFuel_freeVar_unbound heap (heap.size + 1) a t hrt w hw
+    exact heapSubst_unbound inj hb
+
+/-- **Idempotence**: the denoted substitution absorbs itself under
+composition — the law that lets SLD answer compositions telescope. -/
+theorem heapSubst_idem {σ : LPSignature} [DecidableEq σ.vars]
+    {heap : Heap σ} (inj : IdentityInjective heap) :
+    heapSubst heap ∘ₛ heapSubst heap = heapSubst heap := by
+  funext v
+  simpa [Subst.comp] using heapSubst_applyTerm_self inj v
 
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
