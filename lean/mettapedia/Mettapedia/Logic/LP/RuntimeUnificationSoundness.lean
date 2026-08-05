@@ -6332,5 +6332,221 @@ theorem rootLane_initial {σ : LPSignature} [DecidableEq σ.vars]
 
 end RootLane
 
+/-! ## Stage 6: the cons transfer
+
+One successful clause selection extends the SLD derivation by one node.
+The continuation lane (clause body before the stored continuations, at the
+successor scope, anchored at the unified memory) is root-connectible
+because the parent lane was: the head unification's readback equalities
+lift to any admissible future heap by naturality, and the projected
+substitution telescopes by idempotence. -/
+
+section ConsTransfer
+
+open RuntimeQuery
+
+/-- Two runtime atoms with one symbol and pointwise-equal argument
+readbacks read back to the same atom. -/
+theorem readAtom_eq_of_args {σ : LPSignature} {heap : Heap σ}
+    {ra rb : RuntimeMaterialize.RuntimeAtom σ} {a b : Atom σ}
+    (hsym : ra.symbol = rb.symbol)
+    (hpoint : ∀ k, k < ra.args.toList.length →
+      k < rb.args.toList.length → ∀ (ta tb : Term σ),
+      readTermFuel heap (heap.size + 1) ra.args.toList[k]! = .ok ta →
+      readTermFuel heap (heap.size + 1) rb.args.toList[k]! = .ok tb →
+      ta = tb)
+    (ha : readAtom heap ra = .ok a) (hb : readAtom heap rb = .ok b) :
+    a = b := by
+  obtain ⟨rsa, rargsA⟩ := ra
+  obtain ⟨rsb, rargsB⟩ := rb
+  simp only at hsym
+  subst hsym
+  obtain ⟨hsa, childrenA, hlenA, hChA, hargsA⟩ := readAtom_ok_inv ha
+  obtain ⟨hsb, childrenB, hlenB, hChB, hargsB⟩ := readAtom_ok_inv hb
+  obtain ⟨hLA, hPA⟩ := readListFuel_ok_pointwise hChA
+  obtain ⟨hLB, hPB⟩ := readListFuel_ok_pointwise hChB
+  cases a with
+  | mk sa argsA =>
+      cases b with
+      | mk sb argsB =>
+          simp only at hsa hsb
+          subst hsa
+          subst hsb
+          have hargsA' := eq_of_heq hargsA
+          have hargsB' := eq_of_heq hargsB
+          subst hargsA'
+          subst hargsB'
+          refine congrArg (Atom.mk _) ?_
+          funext index
+          have hkA : ((Fin.cast hlenA.symm index) :
+              Fin childrenA.length).val < childrenA.length :=
+            (Fin.cast hlenA.symm index).isLt
+          have hkB : ((Fin.cast hlenB.symm index) :
+              Fin childrenB.length).val < childrenB.length :=
+            (Fin.cast hlenB.symm index).isLt
+          have hbA : index.val < rargsA.toList.length := by
+            rw [hLA]
+            exact hkA
+          have hbB : index.val < rargsB.toList.length := by
+            rw [hLB]
+            exact hkB
+          have hrA := hPA index.val hbA hkA
+          have hrB := hPB index.val hbB hkB
+          simp only [List.get_eq_getElem]
+          have := hpoint index.val hbA hbB
+            childrenA[index.val] childrenB[index.val]
+            (by rw [getElem!_pos rargsA.toList index.val hbA]; exact hrA)
+            (by rw [getElem!_pos rargsB.toList index.val hbB]; exact hrB)
+          exact this
+
+/-- **The cons transfer.**  A successful clause selection turns the parent
+lane into the continuation lane: body goals before the stored
+continuations, successor barrier, anchored at the unified memory. -/
+theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols] [IsEmpty σ.functionSymbols]
+    {program : Program σ} {root : List (Atom σ.scoped)}
+    {keys : List (ScopedVar σ.vars)}
+    {m₀ m₁ : Memory σ.scoped} {cursor : ClauseCursor σ}
+    {clause : Clause σ} {copied : MaterializedClause σ.scoped}
+    {activation barrier k : Nat}
+    (hbarrier : barrier ≤ activation)
+    (hMat : materializeClause m₀ (clause.atScope activation) = .ok copied)
+    (hrun : RuntimeUnification.runSteps k
+      (RuntimeUnification.startMany copied.memory
+        (cursor.goal.args.toList.zip copied.clause.head.args.toList)) =
+      .terminal (.success m₁))
+    (hPredicate : cursor.goal.symbol = copied.clause.head.symbol)
+    (hArity : cursor.goal.args.size = copied.clause.head.args.size)
+    (hclause : clause ∈ program)
+    (hGoalWF : cursor.goal.WellFormed m₀.heap)
+    (hDesc₁ : DescendingOrConst m₁.heap)
+    (hlane : LaneOk program root keys m₀.heap barrier
+      (cursorResolvent cursor)) :
+    LaneOk program root keys m₁.heap (activation + 1)
+      (copied.clause.body ++ cursor.frames.flatMap (·.continuation)) := by
+  intro H hB hinjH hdescH hffH s' hs' θ'' src'' hread'' D''
+  obtain ⟨hPrefix, hSizeLe, hClauseWF, _, _, _⟩ := materializeClause_facts hMat
+  have hBmat : BindingExtension m₀.heap copied.memory.heap :=
+    bindingExtension_of_prefix hPrefix hSizeLe
+  obtain ⟨hBuni, _, hSizeEq⟩ :=
+    startMany_success_extension k copied.memory _ m₁ hrun
+  have hB1H : BindingExtension m₁.heap H := hB
+  have hBcH : BindingExtension copied.memory.heap H := hBuni.trans hB1H
+  have hB0H : BindingExtension m₀.heap H := hBmat.trans hBcH
+  have hOFF_H : OrderedFF H := ⟨hdescH, hffH⟩
+  have hOFF₁ : OrderedFF m₁.heap := ⟨hDesc₁, functionFree_of_isEmpty _⟩
+  obtain ⟨srcBody, srcRest, rfl, hreadBody, hreadRest⟩ :=
+    readGoals_append_ok hread''
+  -- goal atom at H
+  have hGoalWF_H : cursor.goal.WellFormed H :=
+    RuntimeAtom.wellFormed_mono hB0H.1 hGoalWF
+  obtain ⟨ga, hga⟩ := readAtom_total hGoalWF_H hOFF_H
+  -- head atom at H
+  have hHeadWF_c : copied.clause.head.WellFormed copied.memory.heap :=
+    hClauseWF.1
+  have hHeadWF_H : copied.clause.head.WellFormed H :=
+    RuntimeAtom.wellFormed_mono hBcH.1 hHeadWF_c
+  obtain ⟨haH, hhaH⟩ := readAtom_total hHeadWF_H hOFF_H
+  obtain ⟨_, hHeadRead, hBodyLen, hBodyPoint, _, _⟩ :=
+    materializeClause_roundtrip hMat
+  have hK2 := startMany_success_readTerm_eq k copied.memory _ m₁
+    (functionFree_of_isEmpty _) hrun
+  -- the unified head equals the goal in every admissible future heap
+  have hAtomEq : ga = haH := by
+    refine readAtom_eq_of_args hPredicate ?_ hga hhaH
+    intro j hjG hjH ta tb hta htb
+    have hjG' : j < cursor.goal.args.size := by
+      simpa using hjG
+    have hjH' : j < copied.clause.head.args.size := by
+      simpa using hjH
+    have haddrG : cursor.goal.args.toList[j] < m₀.heap.size :=
+      hGoalWF.2 _ (List.getElem_mem hjG)
+    have haddrH : copied.clause.head.args.toList[j] <
+        copied.memory.heap.size :=
+      hHeadWF_c.2 _ (List.getElem_mem hjH)
+    have haddrG₁ : cursor.goal.args.toList[j] < m₁.heap.size :=
+      Nat.lt_of_lt_of_le haddrG (hBmat.trans hBuni).1
+    have haddrH₁ : copied.clause.head.args.toList[j] < m₁.heap.size :=
+      Nat.lt_of_lt_of_le haddrH hBuni.1
+    obtain ⟨tl, htl⟩ := readTerm_total_of_orderedFF hOFF₁ haddrG₁
+    obtain ⟨tr, htr⟩ := readTerm_total_of_orderedFF hOFF₁ haddrH₁
+    have hjZ : j < (cursor.goal.args.toList.zip
+        copied.clause.head.args.toList).length := by
+      simp only [List.length_zip, Array.length_toList]
+      omega
+    have hpair : (cursor.goal.args.toList[j],
+        copied.clause.head.args.toList[j]) ∈
+        cursor.goal.args.toList.zip copied.clause.head.args.toList := by
+      have := List.getElem_mem hjZ
+      rwa [List.getElem_zip] at this
+    have heqm₁ : tl = tr := hK2 _ hpair tl tr htl htr
+    rw [getElem!_pos cursor.goal.args.toList j hjG] at hta
+    rw [getElem!_pos copied.clause.head.args.toList j hjH] at htb
+    have hnatL := readback_naturality hB1H hinjH hffH htl hta
+    have hnatR := readback_naturality hB1H hinjH hffH htr htb
+    rw [← hnatL, ← hnatR, heqm₁]
+  -- the body readback is the projected scoped body
+  have hbodyDef : (clause.atScope activation).body =
+      clause.body.map (Atom.atScope activation) := rfl
+  have hBodyEq : srcBody = (heapSubst H).applyAtoms
+      (clause.body.map (Atom.atScope activation)) := by
+    obtain ⟨hLenB, hPointB⟩ := readGoals_ok_pointwise hreadBody
+    apply List.ext_getElem
+    · simp only [Subst.applyAtoms, List.length_map]
+      rw [← hLenB, hBodyLen, hbodyDef, List.length_map]
+    · intro j hj hj'
+      have hjB : j < copied.clause.body.length := by
+        rw [hLenB]
+        exact hj
+      have hjS : j < (clause.atScope activation).body.length := by
+        rw [← hBodyLen]
+        exact hjB
+      have h₀ := hBodyPoint j hjB hjS
+      have h₁ := hPointB j hjB hj
+      have hnat := readAtom_naturality hBcH hinjH hffH h₀ h₁
+      rw [hnat]
+      simp only [Subst.applyAtoms, List.getElem_map]
+      congr 1
+      have hjC : j < clause.body.length := by
+        have hjS' := hjS
+        rw [hbodyDef, List.length_map] at hjS'
+        exact hjS'
+      show (clause.body.map (Atom.atScope activation))[j]'(hbodyDef ▸ hjS) =
+        Atom.atScope activation (clause.body[j]'hjC)
+      simp
+  have hRestFix : (heapSubst H).applyAtoms srcRest = srcRest :=
+    heapSubst_fix_readGoals hinjH hreadRest
+  have hfresh : activation < s' := Nat.lt_of_lt_of_le
+    (Nat.lt_succ_self _) hs'
+  have hunifNode : (heapSubst H).applyAtom ga =
+      (heapSubst H).applyAtom (clause.head.atScope activation) := by
+    rw [heapSubst_fix_readAtom hinjH hga, hAtomEq]
+    exact readAtom_naturality hBcH hinjH hffH hHeadRead hhaH
+  have happend : (heapSubst H).applyAtoms
+      ((clause.body.map (Atom.atScope activation)) ++ srcRest) =
+      (heapSubst H).applyAtoms (clause.body.map (Atom.atScope activation))
+        ++ (heapSubst H).applyAtoms srcRest := by
+    simp [Subst.applyAtoms]
+  have hrestNode : SLDScopedTree program s'
+      ((heapSubst H).applyAtoms
+        ((clause.body.map (Atom.atScope activation)) ++ srcRest)) θ'' := by
+    rw [happend, ← hBodyEq, hRestFix]
+    exact D''
+  have hNode := SLDScopedTree.cons activation s' ga srcRest clause
+    (heapSubst H) θ'' hfresh hclause hunifNode hrestNode
+  have hreadParent : readGoals H (cursorResolvent cursor) =
+      .ok (ga :: srcRest) :=
+    readGoals_cons_of hga hreadRest
+  obtain ⟨Θ, hΘ, hAg⟩ := hlane H hB0H hinjH hdescH hffH activation hbarrier
+    (θ'' ∘ₛ heapSubst H) (ga :: srcRest) hreadParent hNode
+  refine ⟨Θ, hΘ, ?_⟩
+  intro v hv
+  rw [hAg v hv]
+  show ((θ'' ∘ₛ heapSubst H) ∘ₛ heapSubst H) v = (θ'' ∘ₛ heapSubst H) v
+  rw [Subst.comp_assoc, heapSubst_idem hinjH]
+
+end ConsTransfer
+
 end RuntimeUnificationSoundness
 end Mettapedia.Logic.LP
