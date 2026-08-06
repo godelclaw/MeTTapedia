@@ -30,7 +30,8 @@ lean ClawArchitectures.lean
 lean PresentMoment.lean
 ```
 
-The paper (`paper/pettaclaw.tex`, PDF alongside) tells the whole story:
-architecture, doctrine, the two incidents, the theorems, the live
-verifications. Model-to-code conformance tests live with the agent
-runtime.
+The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
+PDF alongside) tells the whole story: architecture, doctrine, the two
+incidents, the theorems, the live verifications. Model-to-code
+conformance tests live with the agent runtime
+([godelclaw/pettaclaw](https://github.com/godelclaw/pettaclaw)).
