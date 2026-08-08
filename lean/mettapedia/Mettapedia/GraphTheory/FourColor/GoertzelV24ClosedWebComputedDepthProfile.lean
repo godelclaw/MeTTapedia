@@ -225,6 +225,32 @@ theorem canonicalFaceSide_eq_rotationSector
       (Classical.choose hwitness) hspec.2.1
       (Classical.choose (Classical.choose_spec hwitness)) hspec.2.2.2.1
 
+/-- A sector chord's canonical hole-free face side is the same Boolean used
+by the finite sector partition.  This closes the bookkeeping between the
+ordered-path sector carrier and the exact facial cut; it still makes no claim
+about the corresponding primal vertex side. -/
+theorem canonicalFaceSide_eq_sectorSide
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+    canonicalFaceSide embedded hdata htriple chord = side := by
+  have hmem := (mem_sectorSpanningChords_iff).mp chord.2
+  have hposition := positionRotationSector_eq_rotationSector
+    embedded hdata pair.firstPath htriple chord.1 hmem.1
+  calc
+    canonicalFaceSide embedded hdata htriple chord =
+        MajorityChordOnRadialPath.rotationSector
+          embedded (materializedChord chord) hdata htriple :=
+      canonicalFaceSide_eq_rotationSector embedded hdata htriple chord
+    _ = positionRotationSector embedded hdata pair.firstPath htriple chord.1 :=
+      hposition.symm
+    _ = side := hmem.2.2
+
 /-- A side assignment for every candidate chord, with the exact finite-state
 data needed to turn it into a depth profile.  The side itself is supplied by
 the pending embedded/Jordan argument; this structure does not assert it. -/
