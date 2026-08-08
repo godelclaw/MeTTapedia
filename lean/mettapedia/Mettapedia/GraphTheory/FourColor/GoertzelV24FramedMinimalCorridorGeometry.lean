@@ -1,0 +1,76 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedWeightedCurvature
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceSize
+
+/-!
+# Minimal-normal-form input to framed corridor geometry
+
+For an embedded source trail backed by a vertex-minimal Tait counterexample,
+two of the three geometric hypotheses used by weighted L1 are consequences,
+not assumptions.  Two-sided quotient faces have simple edge boundaries, and
+minimality excludes facial cycles of length below five.
+
+The remaining premise below is intentionally only connectedness of the
+internal facial dual after the two container faces are removed.  The bare
+`AnnularEmbedding` record does not imply it: that fact belongs to the future
+formation-to-graph theorem for the manuscript's Jordan annulus.  Keeping it
+visible prevents a topological obligation from being hidden inside the
+numerical corridor layer.
+-/
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace GoertzelV24FramedTrail
+
+open GoertzelV24FaceOrbitIncidence
+open GoertzelV24MinimalFaceSize
+open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24TwoEdgeCutMinimality
+open SimpleGraphDartRotation
+
+variable {V : Type*} [Fintype V] [DecidableEq V]
+  {G : SimpleGraph V} [DecidableRel G.Adj]
+
+noncomputable section
+
+local instance : DecidableEq G.edgeSet := Subtype.instDecidableEq
+
+namespace SourceTrail
+
+namespace AnnularEmbedding
+
+/-- In the vertex-minimal normal form, internal-dual connectedness is the
+only additional geometric input needed by the weighted corridor extractor.
+Boundary simplicity and minimum face size are derived from minimality. -/
+theorem corridorGeometry_of_vertexMinimalTaitCounterexample
+    {source : SourceTrail G} (embedded : source.AnnularEmbedding)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      embedded.cellulation.rotation)
+    (hinternalDualConnected :
+      (interiorDualGraph
+        (orbitFaceBoundary
+          embedded.cellulation.rotation.toRotationSystem)
+        embedded.cellulation.interiorFaces).Connected) :
+    embedded.CorridorGeometry := by
+  refine {
+    internalBoundarySimple := ?_
+    internalMinimumFive := ?_
+    internalDualConnected := hinternalDualConnected
+  }
+  · intro face _hface
+    simpa [GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.faceLength]
+      using (orbitFaceBoundarySimple_of_twoSided
+        embedded.cellulation.rotation.toRotationSystem
+        minimal.facesTwoSided face)
+  · intro face _hface
+    exact orbitFaceMinimumFive_of_vertexMinimalTaitCounterexample
+      embedded.cellulation.rotation minimal face
+
+end AnnularEmbedding
+
+end SourceTrail
+
+end
+
+end GoertzelV24FramedTrail
+
+end Mettapedia.GraphTheory.FourColor

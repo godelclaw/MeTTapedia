@@ -38,6 +38,59 @@ def weightedCleanHexBlockThreshold {source : SourceTrail G}
   (weight + 7) ^
     ((((2 * weight + rho) * (weight + 7) + 1) * blockLength) - 1)
 
+/-- The radius-one clean geodesic block produced by weighted L1.  Naming the
+conclusion separately lets later reductive steps use it without repeating the
+full bounded-growth witness type. -/
+def HasCleanHexagonalGeodesicBlock {source : SourceTrail G}
+    (embedded : source.AnnularEmbedding) (blockLength : Nat) : Prop :=
+  ∃ start finish : AmbientFace embedded.cellulation.interiorFaces,
+    ∃ path : (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        embedded.cellulation.interiorFaces).Walk start finish,
+      path.IsPath ∧
+        path.length =
+          (interiorDualGraph
+            (orbitFaceBoundary
+              embedded.cellulation.rotation.toRotationSystem)
+            embedded.cellulation.interiorFaces).dist start finish ∧
+        ((2 * embedded.interiorNegativeCurvatureWeight +
+            embedded.cellulation.boundarySurplus source.toFramedTrailData) *
+            (embedded.interiorNegativeCurvatureWeight + 7) + 1) *
+            blockLength ≤ path.length + 1 ∧
+        ∃ block : Fin
+            ((2 * embedded.interiorNegativeCurvatureWeight +
+              embedded.cellulation.boundarySurplus
+                source.toFramedTrailData) *
+              (embedded.interiorNegativeCurvatureWeight + 7) + 1),
+          ∀ offset : Fin blockLength,
+            (orbitFaceBoundary
+              embedded.cellulation.rotation.toRotationSystem
+              (path.getVert
+                (corridorBlockIndex
+                  (defectBudget :=
+                    (2 * embedded.interiorNegativeCurvatureWeight +
+                      embedded.cellulation.boundarySurplus
+                        source.toFramedTrailData) *
+                      (embedded.interiorNegativeCurvatureWeight + 7))
+                  block offset).val).1).card = 6 ∧
+            ∀ neighbor : AmbientFace embedded.cellulation.interiorFaces,
+              (interiorDualGraph
+                (orbitFaceBoundary
+                  embedded.cellulation.rotation.toRotationSystem)
+                embedded.cellulation.interiorFaces).Adj
+                  (path.getVert
+                    (corridorBlockIndex
+                      (defectBudget :=
+                        (2 * embedded.interiorNegativeCurvatureWeight +
+                          embedded.cellulation.boundarySurplus
+                            source.toFramedTrailData) *
+                          (embedded.interiorNegativeCurvatureWeight + 7))
+                      block offset).val)
+                  neighbor →
+                (orbitFaceBoundary
+                  embedded.cellulation.rotation.toRotationSystem
+                  neighbor.1).card = 6
+
 /-- Weighted repair of playbook flag L1.  Above the explicit threshold, the
 internal facial dual contains a geodesic block whose faces and all their dual
 neighbors are hexagons.  The theorem deliberately retains `W`; L9 alone does
@@ -49,53 +102,7 @@ theorem exists_cleanHexagonalGeodesicBlock_of_weightedL9
     (blockLength : Nat) (hpositive : 0 < blockLength)
     (hlarge : embedded.weightedCleanHexBlockThreshold blockLength <
       embedded.cellulation.interiorFaces.card) :
-    ∃ start finish : AmbientFace embedded.cellulation.interiorFaces,
-      ∃ path : (interiorDualGraph
-          (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
-          embedded.cellulation.interiorFaces).Walk start finish,
-        path.IsPath ∧
-          path.length =
-            (interiorDualGraph
-              (orbitFaceBoundary
-                embedded.cellulation.rotation.toRotationSystem)
-              embedded.cellulation.interiorFaces).dist start finish ∧
-          ((2 * embedded.interiorNegativeCurvatureWeight +
-              embedded.cellulation.boundarySurplus source.toFramedTrailData) *
-              (embedded.interiorNegativeCurvatureWeight + 7) + 1) *
-              blockLength ≤ path.length + 1 ∧
-          ∃ block : Fin
-              ((2 * embedded.interiorNegativeCurvatureWeight +
-                embedded.cellulation.boundarySurplus
-                  source.toFramedTrailData) *
-                (embedded.interiorNegativeCurvatureWeight + 7) + 1),
-            ∀ offset : Fin blockLength,
-              (orbitFaceBoundary
-                embedded.cellulation.rotation.toRotationSystem
-                (path.getVert
-                  (corridorBlockIndex
-                    (defectBudget :=
-                      (2 * embedded.interiorNegativeCurvatureWeight +
-                        embedded.cellulation.boundarySurplus
-                          source.toFramedTrailData) *
-                        (embedded.interiorNegativeCurvatureWeight + 7))
-                    block offset).val).1).card = 6 ∧
-              ∀ neighbor : AmbientFace embedded.cellulation.interiorFaces,
-                (interiorDualGraph
-                  (orbitFaceBoundary
-                    embedded.cellulation.rotation.toRotationSystem)
-                  embedded.cellulation.interiorFaces).Adj
-                    (path.getVert
-                      (corridorBlockIndex
-                        (defectBudget :=
-                          (2 * embedded.interiorNegativeCurvatureWeight +
-                            embedded.cellulation.boundarySurplus
-                              source.toFramedTrailData) *
-                            (embedded.interiorNegativeCurvatureWeight + 7))
-                        block offset).val)
-                    neighbor →
-                  (orbitFaceBoundary
-                    embedded.cellulation.rotation.toRotationSystem
-                    neighbor.1).card = 6 := by
+    embedded.HasCleanHexagonalGeodesicBlock blockLength := by
   let weight := embedded.interiorNegativeCurvatureWeight
   let rho := embedded.cellulation.boundarySurplus source.toFramedTrailData
   have hfaceSize : ∀ face ∈ embedded.cellulation.interiorFaces,
@@ -116,12 +123,85 @@ theorem exists_cleanHexagonalGeodesicBlock_of_weightedL9
             blockLength) - 1) < embedded.cellulation.interiorFaces.card := by
     simpa [weightedCleanHexBlockThreshold, weight, rho, Nat.add_assoc]
       using hlarge
-  simpa [weight, rho, Nat.add_assoc] using
+  simpa [HasCleanHexagonalGeodesicBlock, weight, rho, Nat.add_assoc] using
     (connectedBoundedFaceDual_exists_cleanHexagonalGeodesicBlock
       (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
       embedded.cellulation.interiorFaces embedded.internalFace_incidence_le_two
       (weight + 6) hfaceSize geometry.internalDualConnected
       (2 * weight + rho) blockLength hpositive hdefects hlarge')
+
+/-- A uniform coarse threshold valid whenever the actual negative-curvature
+weight is at most `weightBound`.  The exponent intentionally omits the
+harmless predecessor used by the sharp threshold, making monotonicity in the
+weight bound explicit. -/
+def boundedWeightCleanHexBlockThreshold {source : SourceTrail G}
+    (embedded : source.AnnularEmbedding) (weightBound blockLength : Nat) : Nat :=
+  let rho := embedded.cellulation.boundarySurplus source.toFramedTrailData
+  (weightBound + 7) ^
+    (((2 * weightBound + rho) * (weightBound + 7) + 1) * blockLength)
+
+/-- Honest L1 case split at any proposed uniform curvature bound.  A source
+trail above the coarse threshold either has negative-curvature weight beyond
+that bound, or contains the clean hexagonal block required by the corridor
+engine.  Thus the source proof's remaining obligation is precisely the first
+branch; signed L9 cannot silently discard it. -/
+theorem weight_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    (weightBound blockLength : Nat) (hpositive : 0 < blockLength)
+    (hlarge :
+      embedded.boundedWeightCleanHexBlockThreshold weightBound blockLength <
+        embedded.cellulation.interiorFaces.card) :
+    weightBound < embedded.interiorNegativeCurvatureWeight ∨
+      embedded.HasCleanHexagonalGeodesicBlock blockLength := by
+  let weight := embedded.interiorNegativeCurvatureWeight
+  let rho := embedded.cellulation.boundarySurplus source.toFramedTrailData
+  by_cases hweight : weight ≤ weightBound
+  · right
+    have hbase : weight + 7 ≤ weightBound + 7 := by omega
+    have hbudget : 2 * weight + rho ≤ 2 * weightBound + rho := by omega
+    have hproduct :
+        (2 * weight + rho) * (weight + 7) ≤
+          (2 * weightBound + rho) * (weightBound + 7) :=
+      Nat.mul_le_mul hbudget hbase
+    have hpreExponent :
+        ((2 * weight + rho) * (weight + 7) + 1) * blockLength ≤
+          ((2 * weightBound + rho) * (weightBound + 7) + 1) *
+            blockLength :=
+      Nat.mul_le_mul_right blockLength (Nat.add_le_add_right hproduct 1)
+    have hexponent :
+        (((2 * weight + rho) * (weight + 7) + 1) * blockLength) - 1 ≤
+          ((2 * weightBound + rho) * (weightBound + 7) + 1) *
+            blockLength :=
+      (Nat.sub_le _ _).trans hpreExponent
+    have hthreshold :
+        (weight + 7) ^
+            ((((2 * weight + rho) * (weight + 7) + 1) * blockLength) - 1) ≤
+          (weightBound + 7) ^
+            (((2 * weightBound + rho) * (weightBound + 7) + 1) *
+              blockLength) := by
+      calc
+        (weight + 7) ^
+              ((((2 * weight + rho) * (weight + 7) + 1) *
+                blockLength) - 1) ≤
+            (weightBound + 7) ^
+              ((((2 * weight + rho) * (weight + 7) + 1) *
+                blockLength) - 1) :=
+          Nat.pow_le_pow_left hbase _
+        _ ≤ (weightBound + 7) ^
+              (((2 * weightBound + rho) * (weightBound + 7) + 1) *
+                blockLength) :=
+          Nat.pow_le_pow_right (by omega) hexponent
+    apply embedded.exists_cleanHexagonalGeodesicBlock_of_weightedL9
+      hsource geometry blockLength hpositive
+    exact lt_of_le_of_lt
+      (by simpa [weightedCleanHexBlockThreshold,
+          boundedWeightCleanHexBlockThreshold, weight, rho]
+        using hthreshold)
+      hlarge
+  · left
+    simpa [weight] using (Nat.lt_of_not_ge hweight)
 
 end AnnularEmbedding
 
