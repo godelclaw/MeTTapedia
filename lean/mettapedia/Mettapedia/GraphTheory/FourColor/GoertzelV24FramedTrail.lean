@@ -1,6 +1,16 @@
 import Mettapedia.GraphTheory.EdgeColoring
 import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48
-import Mettapedia.GraphTheory.FourColor.Theorem49TargetSubspace
+import Mettapedia.GraphTheory.FourColor.IncidentEdgeFinset
+
+/-!
+# Graph-side semantics for the v24 framed trail
+
+This module formalizes the container-inclusive framed graph and its legal
+component switches.  It does not by itself close playbook flag L10: the
+v23 spine describes between-region switches on two-color circuits, whereas a
+framed component may be a path ending at a defect.  Relating those two move
+sets requires the independent formation/embedding model of the source trail.
+-/
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -21,6 +31,7 @@ structure FramedTrailData (G : SimpleGraph V) where
   innerContainerEdges : Finset G.edgeSet
   outerContainerEdges : Finset G.edgeSet
   betweenRegionCoreEdges : Finset G.edgeSet
+  frozenInterfaceStubVertices : Finset V
   frozenInterfaceEdges : Finset G.edgeSet
   defectVertex : Fin 2 -> V
 
@@ -31,18 +42,30 @@ In particular, container edges are movable when the data are well formed. -/
 def movableEdges (data : FramedTrailData G) : Finset G.edgeSet :=
   Finset.univ \ data.frozenInterfaceEdges
 
-/-- Computed structural conditions for a framed trail: distinct degree-two
-defects, cubicity elsewhere, and inclusion of both containers and the region
-core in the movable edge domain. -/
-def WellFormed (data : FramedTrailData G) : Prop :=
-  Function.Injective data.defectVertex ∧
-  (∀ i : Fin 2,
-    (incidentEdgeFinset G (data.defectVertex i)).card = 2) ∧
-  (∀ v : V, (∀ i : Fin 2, v ≠ data.defectVertex i) ->
-    (incidentEdgeFinset G v).card = 3) ∧
-  data.innerContainerEdges ⊆ data.movableEdges ∧
-  data.outerContainerEdges ⊆ data.movableEdges ∧
-  data.betweenRegionCoreEdges ⊆ data.movableEdges
+/-- Structural conditions for the source-faithful graph-side framed tangle.
+The two missing-edge endpoints have degree two, frozen outward interface
+stubs have degree one, and every remaining vertex has degree three. -/
+structure WellFormed (data : FramedTrailData G) : Prop where
+  defectVertex_injective : Function.Injective data.defectVertex
+  defectVertex_not_stub :
+    ∀ i : Fin 2, data.defectVertex i ∉ data.frozenInterfaceStubVertices
+  defect_degree_two :
+    ∀ i : Fin 2, (incidentEdgeFinset G (data.defectVertex i)).card = 2
+  frozen_stub_degree_one :
+    ∀ v ∈ data.frozenInterfaceStubVertices,
+      (incidentEdgeFinset G v).card = 1
+  cubic_elsewhere :
+    ∀ v : V, (∀ i : Fin 2, v ≠ data.defectVertex i) →
+      v ∉ data.frozenInterfaceStubVertices →
+      (incidentEdgeFinset G v).card = 3
+  frozen_edge_iff_incident_stub :
+    ∀ e : G.edgeSet, e ∈ data.frozenInterfaceEdges ↔
+      ∃ v ∈ data.frozenInterfaceStubVertices,
+        e ∈ incidentEdgeFinset G v
+  innerContainer_movable : data.innerContainerEdges ⊆ data.movableEdges
+  outerContainer_movable : data.outerContainerEdges ⊆ data.movableEdges
+  betweenRegionCore_movable :
+    data.betweenRegionCoreEdges ⊆ data.movableEdges
 
 /-- The color missing at a defect vertex, expressed in the existing
 `F2 x F2` bookkeeping as the sum of its two incident nonzero colors. -/
@@ -86,7 +109,8 @@ theorem missingColorAt_is_unique_admissible
     data.IsAdmissibleAtDefect C i (data.missingColorAt C i) ∧
       ∀ c : Color,
         data.IsAdmissibleAtDefect C i c -> c = data.missingColorAt C i := by
-  rcases Finset.card_eq_two.mp (hdata.2.1 i) with ⟨e, f, hef, hincident⟩
+  rcases Finset.card_eq_two.mp (hdata.defect_degree_two i) with
+    ⟨e, f, hef, hincident⟩
   have heMem : e ∈ incidentEdgeFinset G (data.defectVertex i) := by
     rw [hincident]
     simp
@@ -246,10 +270,10 @@ theorem defectFreedom_bicoloredNeighborSet_subsingleton
 
 end FramedTrailData
 
-/-- Kauffman-facing one-step definition: switch one genuine two-color
-component whose entire support lies in the movable between-region, including
-the two container cycles. -/
-def KauffmanBetweenRegionKempeStep
+/-- A graph-side one-step relation stated by support in the movable edge set.
+This is an internal normalization of `FramedTangleLegalKempeStep`, not the
+independent circuit-based move relation of the v23 spine. -/
+def MovableSupportKempeStep
     (data : FramedTrailData G)
     (C C' : G.EdgeColoring Color) : Prop :=
   ∃ a b : Color,
@@ -271,11 +295,11 @@ def FramedTangleLegalKempeStep
         (data.frozenInterfaceEdges : Set G.edgeSet) ∧
       C' = C.swapOnKempeComponent a b K
 
-/-- L10, one-step move-definition alignment. Support in the complement of
-the frozen interface is exactly disjointness from that interface. -/
-theorem L10_kauffmanBetweenRegionKempeStep_iff_framedTangleLegalKempeStep
+/-- Support in the complement of the frozen interface is exactly disjointness
+from that interface. -/
+theorem movableSupportKempeStep_iff_framedTangleLegalKempeStep
     (data : FramedTrailData G) (C C' : G.EdgeColoring Color) :
-    KauffmanBetweenRegionKempeStep data C C' ↔
+    MovableSupportKempeStep data C C' ↔
       FramedTangleLegalKempeStep data C C' := by
   constructor
   · rintro ⟨a, b, K, hab, hsupport, rfl⟩
@@ -329,11 +353,11 @@ theorem framedTangleLegalKempeStep_preserves_isTaitEdgeColoring
   rcases hstep with ⟨a, b, K, hab, _hdisjoint, rfl⟩
   exact isTaitEdgeColoring_swapOnKempeComponent hC hab K
 
-/-- Finite sequences of Kauffman between-region moves. -/
-def KauffmanBetweenRegionKempeReachable
+/-- Finite sequences of graph-side movable-support moves. -/
+def MovableSupportKempeReachable
     (data : FramedTrailData G) :
     G.EdgeColoring Color -> G.EdgeColoring Color -> Prop :=
-  ReflTransGen (KauffmanBetweenRegionKempeStep data)
+  ReflTransGen (MovableSupportKempeStep data)
 
 /-- Finite sequences of legal framed-tangle moves. -/
 def FramedTangleKempeReachable
@@ -341,19 +365,20 @@ def FramedTangleKempeReachable
     G.EdgeColoring Color -> G.EdgeColoring Color -> Prop :=
   ReflTransGen (FramedTangleLegalKempeStep data)
 
-/-- L10 alignment is stable under arbitrary finite move sequences. -/
-theorem L10_kauffmanBetweenRegionKempeReachable_iff_framedTangleKempeReachable
+/-- The internal support/disjointness normalization is stable under arbitrary
+finite move sequences. -/
+theorem movableSupportKempeReachable_iff_framedTangleKempeReachable
     (data : FramedTrailData G) (C C' : G.EdgeColoring Color) :
-    KauffmanBetweenRegionKempeReachable data C C' ↔
+    MovableSupportKempeReachable data C C' ↔
       FramedTangleKempeReachable data C C' := by
   have hstep :
-      KauffmanBetweenRegionKempeStep data =
+      MovableSupportKempeStep data =
         FramedTangleLegalKempeStep data := by
     funext source target
     exact propext
-      (L10_kauffmanBetweenRegionKempeStep_iff_framedTangleLegalKempeStep
+      (movableSupportKempeStep_iff_framedTangleLegalKempeStep
         data source target)
-  simp only [KauffmanBetweenRegionKempeReachable,
+  simp only [MovableSupportKempeReachable,
     FramedTangleKempeReachable, hstep]
 
 /-- Tait colors remain nonzero through any finite sequence of legal framed
@@ -368,11 +393,11 @@ theorem framedTangleKempeReachable_preserves_isTaitEdgeColoring
   | head hstep _ ih =>
       exact ih (framedTangleLegalKempeStep_preserves_isTaitEdgeColoring hstep hC)
 
-/-- Completion phrased with Kauffman's between-region move relation. -/
-def KauffmanBetweenRegionCompletable
+/-- Completion phrased with the internal movable-support relation. -/
+def MovableSupportCompletable
     (data : FramedTrailData G) (C : G.EdgeColoring Color) : Prop :=
   ∃ C' : G.EdgeColoring Color,
-    KauffmanBetweenRegionKempeReachable data C C' ∧
+    MovableSupportKempeReachable data C C' ∧
       data.HasMatchingDefectColors C'
 
 /-- Completion phrased with the frozen-interface framed-tangle relation. -/
@@ -382,21 +407,20 @@ def FramedTangleCompletable
     FramedTangleKempeReachable data C C' ∧
       data.HasMatchingDefectColors C'
 
-/-- L10 alignment at the completion predicate consumed by Trail
-Completability. -/
-theorem L10_kauffmanBetweenRegionCompletable_iff_framedTangleCompletable
+/-- Internal support/disjointness normalization at the completion predicate. -/
+theorem movableSupportCompletable_iff_framedTangleCompletable
     (data : FramedTrailData G) (C : G.EdgeColoring Color) :
-    KauffmanBetweenRegionCompletable data C ↔
+    MovableSupportCompletable data C ↔
       FramedTangleCompletable data C := by
   constructor
   · rintro ⟨C', hreach, hmatch⟩
     exact ⟨C',
-      (L10_kauffmanBetweenRegionKempeReachable_iff_framedTangleKempeReachable
+      (movableSupportKempeReachable_iff_framedTangleKempeReachable
         data C C').1 hreach,
       hmatch⟩
   · rintro ⟨C', hreach, hmatch⟩
     exact ⟨C',
-      (L10_kauffmanBetweenRegionKempeReachable_iff_framedTangleKempeReachable
+      (movableSupportKempeReachable_iff_framedTangleKempeReachable
         data C C').2 hreach,
       hmatch⟩
 

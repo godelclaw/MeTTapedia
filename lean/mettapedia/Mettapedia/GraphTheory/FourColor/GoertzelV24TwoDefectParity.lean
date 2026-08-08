@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail
+import Mettapedia.GraphTheory.FourColor.VertexKirchhoff
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -117,72 +118,109 @@ theorem vertexKirchhoffSum_eq_zero_of_card_three
       (hC first) (hC second) (hC third)
       hcolorFirstSecond hcolorFirstThird hcolorSecondThird
 
-/-- Two-defect parity. In a finite graph with exactly two degree-two defects
-and cubicity elsewhere, every proper nonzero three-edge coloring requests the
-same missing color at both defects. -/
-theorem FramedTrailData.hasMatchingDefectColors_of_wellFormed
+/-- The total color exposed at the frozen outward interface.  At a
+well-formed degree-one stub, its summand is the color of the unique frozen
+interface edge incident there. -/
+def frozenInterfaceColorSum
+    (data : FramedTrailData G) (C : G.EdgeColoring Color) : Color :=
+  ∑ vertex ∈ data.frozenInterfaceStubVertices,
+    vertexKirchhoffSum G C vertex
+
+/-- Exact framed-boundary parity: the two defect requests together with the
+frozen-interface color sum vanish.  Thus the outward interface, absent from
+the old two-defect model, carries precisely the possible completion defect. -/
+theorem defectSum_add_frozenInterfaceColorSum_eq_zero
     (data : FramedTrailData G) (hdata : data.WellFormed)
     (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
-    data.HasMatchingDefectColors C := by
-  let localSum : V → Color := fun vertex => vertexKirchhoffSum G C vertex
-  have hother : ∀ vertex : V,
-      vertex ≠ data.defectVertex 0 →
-      vertex ≠ data.defectVertex 1 → localSum vertex = 0 := by
-    intro vertex hzero hone
-    apply vertexKirchhoffSum_eq_zero_of_card_three C hC
-    exact hdata.2.2.1 vertex (by
-      intro i
-      fin_cases i
-      · exact hzero
-      · exact hone)
+    data.missingColorAt C 0 + data.missingColorAt C 1 +
+        frozenInterfaceColorSum data C = 0 := by
+  let defects : Finset V :=
+    {data.defectVertex 0, data.defectVertex 1}
   have hdefectsNe : data.defectVertex 0 ≠ data.defectVertex 1 := by
     intro heq
-    have : (0 : Fin 2) = 1 := hdata.1 heq
+    have : (0 : Fin 2) = 1 := hdata.defectVertex_injective heq
     omega
-  have hpairSubset :
-      ({data.defectVertex 0, data.defectVertex 1} : Finset V) ⊆
-        Finset.univ := by
-    simp
-  have hpairSum :
-      (∑ vertex ∈ ({data.defectVertex 0, data.defectVertex 1} : Finset V),
-          localSum vertex) =
-        ∑ vertex : V, localSum vertex := by
-    apply Finset.sum_subset hpairSubset
-    intro vertex _huniv hnotPair
-    apply hother vertex
-    · simpa using fun heq => hnotPair (by simp [heq])
-    · simpa using fun heq => hnotPair (by simp [heq])
-  have htwoSum :
-      localSum (data.defectVertex 0) +
-          localSum (data.defectVertex 1) = 0 := by
-    calc
-      localSum (data.defectVertex 0) + localSum (data.defectVertex 1) =
-          ∑ vertex ∈
-            ({data.defectVertex 0, data.defectVertex 1} : Finset V),
-              localSum vertex := by
-        simp [hdefectsNe]
-      _ = ∑ vertex : V, localSum vertex := hpairSum
-      _ = 0 := sum_vertexKirchhoffSum_eq_zero C
-  apply (add_eq_zero_iff_eq _ _).1
-  simpa [FramedTrailData.HasMatchingDefectColors,
-    FramedTrailData.missingColorAt, localSum, vertexKirchhoffSum] using htwoSum
+  have hdisjoint :
+      Disjoint defects data.frozenInterfaceStubVertices := by
+    rw [Finset.disjoint_left]
+    intro vertex hvertex hstub
+    have hcases :
+        vertex = data.defectVertex 0 ∨
+          vertex = data.defectVertex 1 := by
+      simpa [defects] using hvertex
+    rcases hcases with hzero | hone
+    · exact hdata.defectVertex_not_stub 0 (hzero ▸ hstub)
+    · exact hdata.defectVertex_not_stub 1 (hone ▸ hstub)
+  have hinterior : ∀ vertex ∉
+      defects ∪ data.frozenInterfaceStubVertices,
+      vertexKirchhoffSum G C vertex = 0 := by
+    intro vertex hnotBoundary
+    apply vertexKirchhoffSum_eq_zero_of_card_three C hC
+    apply hdata.cubic_elsewhere vertex
+    · intro i
+      fin_cases i
+      · intro hzero
+        apply hnotBoundary
+        simp [defects, hzero]
+      · intro hone
+        apply hnotBoundary
+        simp [defects, hone]
+    · intro hstub
+      apply hnotBoundary
+      exact Finset.mem_union_right defects hstub
+  have hboundary :=
+    sum_vertexKirchhoffSum_on_boundary_eq_zero C
+      (defects ∪ data.frozenInterfaceStubVertices) hinterior
+  rw [Finset.sum_union hdisjoint] at hboundary
+  simpa [defects, FramedTrailData.missingColorAt,
+    frozenInterfaceColorSum, vertexKirchhoffSum,
+    hdefectsNe] using hboundary
 
-/-- Under the current two-defect well-formedness predicate, framed Trail
-Completability is immediate: the starting coloring already extends. -/
+/-- If the frozen interface has zero total color, the two defect requests
+match. -/
+theorem hasMatchingDefectColors_of_frozenInterfaceColorSum_eq_zero
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (hfrozen : frozenInterfaceColorSum data C = 0) :
+    data.HasMatchingDefectColors C := by
+  have hsum :=
+    defectSum_add_frozenInterfaceColorSum_eq_zero data hdata C hC
+  rw [hfrozen, add_zero] at hsum
+  exact (add_eq_zero_iff_eq _ _).1 hsum
+
+/-- Two-defect parity for an empty frozen boundary.  This specialization
+applies to a bare one-edge deletion, not to the genuine framed trail with
+outward interface stubs. -/
+theorem FramedTrailData.hasMatchingDefectColors_of_wellFormed
+    (data : FramedTrailData G) (hdata : data.WellFormed)
+    (hnoFrozenBoundary : data.frozenInterfaceStubVertices = ∅)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
+    data.HasMatchingDefectColors C := by
+  apply hasMatchingDefectColors_of_frozenInterfaceColorSum_eq_zero
+    data hdata C hC
+  simp [frozenInterfaceColorSum, hnoFrozenBoundary]
+
+/-- With an empty frozen boundary, framed completion is immediate: the
+starting coloring already extends. -/
 theorem FramedTrailData.framedTangleCompletable_of_wellFormed
     (data : FramedTrailData G) (hdata : data.WellFormed)
+    (hnoFrozenBoundary : data.frozenInterfaceStubVertices = ∅)
     (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
     FramedTangleCompletable data C := by
   exact ⟨C, Relation.ReflTransGen.refl,
-    FramedTrailData.hasMatchingDefectColors_of_wellFormed data hdata C hC⟩
+    FramedTrailData.hasMatchingDefectColors_of_wellFormed
+      data hdata hnoFrozenBoundary C hC⟩
 
-/-- The same parity observation in the Kauffman-facing completion language. -/
-theorem FramedTrailData.kauffmanBetweenRegionCompletable_of_wellFormed
+/-- The same parity observation in the internal movable-support completion
+language. -/
+theorem FramedTrailData.movableSupportCompletable_of_wellFormed
     (data : FramedTrailData G) (hdata : data.WellFormed)
+    (hnoFrozenBoundary : data.frozenInterfaceStubVertices = ∅)
     (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
-    KauffmanBetweenRegionCompletable data C := by
-  rw [L10_kauffmanBetweenRegionCompletable_iff_framedTangleCompletable]
-  exact FramedTrailData.framedTangleCompletable_of_wellFormed data hdata C hC
+    MovableSupportCompletable data C := by
+  rw [movableSupportCompletable_iff_framedTangleCompletable]
+  exact FramedTrailData.framedTangleCompletable_of_wellFormed
+    data hdata hnoFrozenBoundary C hC
 
 /-- In particular, a Tait coloring of a one-edge deletion of a cubic graph
 always extends back across that edge; no Kempe move is needed. -/
@@ -198,7 +236,7 @@ theorem exists_taitColoring_of_deletedEdgeColoring {u v : V}
   exact
     FramedTrailData.framedTangleCompletable_of_wellFormed
       (unrestrictedDeletedEdgeFrame G u v)
-      (unrestrictedDeletedEdgeFrame_wellFormed huv hcubic) C hC
+      (unrestrictedDeletedEdgeFrame_wellFormed huv hcubic) rfl C hC
 
 /-- Consequently, a non-Tait-colorable finite cubic graph has no
 Tait-colorable one-edge deletion. -/

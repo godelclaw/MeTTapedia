@@ -44,23 +44,6 @@ theorem colorDot_add_right (x y z : Color) :
 @[simp] theorem colorDot_purple_right (x : Color) : colorDot x purple = x.1 + x.2 := by
   simp [colorDot, purple]
 
-theorem eq_zero_or_eq_red_or_eq_blue_or_eq_purple (c : Color) :
-    c = 0 ∨ c = red ∨ c = blue ∨ c = purple := by
-  rcases c with ⟨x, y⟩
-  fin_cases x <;> fin_cases y
-  · exact Or.inl rfl
-  · exact Or.inr <| Or.inr <| Or.inl rfl
-  · exact Or.inr <| Or.inl rfl
-  · exact Or.inr <| Or.inr <| Or.inr rfl
-
-theorem eq_red_or_eq_blue_or_eq_purple_of_ne_zero (c : Color) (hc : c ≠ 0) :
-    c = red ∨ c = blue ∨ c = purple := by
-  rcases eq_zero_or_eq_red_or_eq_blue_or_eq_purple c with h0 | hr | hb | hp
-  · exact False.elim (hc h0)
-  · exact Or.inl hr
-  · exact Or.inr <| Or.inl hb
-  · exact Or.inr <| Or.inr hp
-
 /-- Every nonzero color has a color-dual witness with dot product `1`. -/
 theorem exists_colorDot_one_of_ne_zero (c : Color) (hc : c ≠ 0) :
     ∃ w : Color, colorDot c w = 1 := by

@@ -44,6 +44,7 @@ def unrestrictedDeletedEdgeFrame (G : SimpleGraph V) [DecidableRel G.Adj]
   innerContainerEdges := ∅
   outerContainerEdges := ∅
   betweenRegionCoreEdges := Finset.univ
+  frozenInterfaceStubVertices := ∅
   frozenInterfaceEdges := ∅
   defectVertex := deletedEdgeDefectVertex u v
 
@@ -137,15 +138,19 @@ theorem unrestrictedDeletedEdgeFrame_wellFormed {u v : V}
       Finset.card_erase_of_mem]
     · simp [hdegreeG v]
     · simpa using huv.symm
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro first second heq
     fin_cases first <;> fin_cases second <;>
       simp_all [deletedEdgeDefectVertex]
+  · intro i
+    simp [unrestrictedDeletedEdgeFrame]
   · intro i
     fin_cases i
     · exact hleft
     · exact hright
   · intro vertex hvertex
+    simp [unrestrictedDeletedEdgeFrame] at hvertex
+  · intro vertex hvertex _hnotStub
     have hvertexU : vertex ≠ u := by
       simpa using hvertex 0
     have hvertexV : vertex ≠ v := by
@@ -154,6 +159,8 @@ theorem unrestrictedDeletedEdgeFrame_wellFormed {u v : V}
     change ((DeletedEdgeGraph G u v).neighborFinset vertex).card = 3
     rw [neighborFinset_deletedEdgeGraph_of_ne hvertexU hvertexV]
     exact hdegreeG vertex
+  · intro edge
+    simp [unrestrictedDeletedEdgeFrame]
   · simp [FramedTrailData.movableEdges, unrestrictedDeletedEdgeFrame]
   · simp [FramedTrailData.movableEdges, unrestrictedDeletedEdgeFrame]
   · simp [FramedTrailData.movableEdges, unrestrictedDeletedEdgeFrame]

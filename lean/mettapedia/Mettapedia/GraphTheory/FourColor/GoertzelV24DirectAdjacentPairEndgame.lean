@@ -59,7 +59,7 @@ theorem deletedEdgeColoring_completable_and_extends_without_step
   have hwell := unrestrictedDeletedEdgeFrame_wellFormed huv hcubic
   exact ⟨
     FramedTrailData.framedTangleCompletable_of_wellFormed
-      (unrestrictedDeletedEdgeFrame G u v) hwell C hC,
+      (unrestrictedDeletedEdgeFrame G u v) hwell rfl C hC,
     exists_taitColoring_of_deletedEdgeColoring huv hcubic C hC⟩
 
 /-- Every Tait coloring of an adjacent-pair deletion in a graph-backed

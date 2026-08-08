@@ -84,6 +84,26 @@ theorem f2_add_eq_one_iff_ne (left right : F2) :
 @[simp] theorem blue_ne_purple : blue ≠ purple := by
   decide
 
+/-- The four elements of the Tait color space are zero and the three
+standard nonzero colors. -/
+theorem eq_zero_or_eq_red_or_eq_blue_or_eq_purple (c : Color) :
+    c = 0 ∨ c = red ∨ c = blue ∨ c = purple := by
+  rcases c with ⟨x, y⟩
+  fin_cases x <;> fin_cases y
+  · exact Or.inl rfl
+  · exact Or.inr <| Or.inr <| Or.inl rfl
+  · exact Or.inr <| Or.inl rfl
+  · exact Or.inr <| Or.inr <| Or.inr rfl
+
+/-- Every nonzero Tait color is one of the three standard colors. -/
+theorem eq_red_or_eq_blue_or_eq_purple_of_ne_zero (c : Color) (hc : c ≠ 0) :
+    c = red ∨ c = blue ∨ c = purple := by
+  rcases eq_zero_or_eq_red_or_eq_blue_or_eq_purple c with h0 | hr | hb | hp
+  · exact False.elim (hc h0)
+  · exact Or.inl hr
+  · exact Or.inr <| Or.inl hb
+  · exact Or.inr <| Or.inr hp
+
 @[simp] theorem color_neg_eq (c : Color) : -c = c := by
   exact (eq_neg_of_add_eq_zero_left (color_add_self c)).symm
 
