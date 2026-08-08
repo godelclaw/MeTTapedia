@@ -290,6 +290,34 @@ structure ChordCyclicCutAssignment
     (chord : SectorChord pair embedded hdata htriple cut side),
     (edgeCut cut side chord).card ≤ widthBound
 
+/-- A chord-side assignment exposes the exact side-transport interface needed
+by a radial/Jordan argument.  The geometric caller supplies a local dart
+certificate saying that the proposed cut is absent at every vertex visited by
+the walk; the generic cut layer then turns that certificate into equality of
+the endpoint side bits.  This keeps the construction obligation (producing
+the certificate from the embedded chord wall) separate from the finite
+profile machinery. -/
+theorem ChordCyclicCutAssignment.side_iff_of_walk_darts_avoid_edgeCut
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    (cuts : ChordCyclicCutAssignment pair embedded hdata htriple widthBound)
+    (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side)
+    {u v : V} (walk : G.Walk u v)
+    (havoid : ∀ based ∈ walk.darts, ∀ incident : G.Dart,
+      incident.fst = based.fst →
+        (⟨incident.edge, incident.edge_mem⟩ : G.edgeSet) ∉
+          cuts.edgeCut cut side chord) :
+    (cuts.realization cut side chord).side u ↔
+      (cuts.realization cut side chord).side v := by
+  exact (cuts.realization cut side chord).side_iff_of_walk_darts_avoid_edgeCut
+    walk havoid
+
 /-- Convert exact cyclic cut realizations into the finite vertex-side profile
 interface.  The crossing-width proof is obtained from exact cut equality,
 not supplied as a second classification. -/

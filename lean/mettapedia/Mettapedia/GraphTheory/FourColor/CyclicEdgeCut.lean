@@ -411,6 +411,32 @@ theorem CyclicEdgeCutRealization.side_iff_of_forall_not_mem_edgeCut_of_walk
       ⟨e, hecut, heReverseEdges⟩
     exact havoid e hecut (by simpa [Walk.edges_reverse] using heReverseEdges)
 
+/-- A local dart-avoidance certificate implies the edge-list avoidance needed
+by `side_iff_of_forall_not_mem_edgeCut_of_walk`.  This is the form supplied by
+rotation-system arguments: every dart based at a vertex of the walk avoids
+the proposed cut.  The lemma performs the small but dependent conversion
+from a listed `Sym2` edge to its graph-edge subtype, so callers do not have to
+rebuild that conversion at each radial-path use site. -/
+theorem CyclicEdgeCutRealization.side_iff_of_walk_darts_avoid_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    {u v : V} (p : G.Walk u v)
+    (havoid : ∀ based ∈ p.darts, ∀ incident : G.Dart,
+      incident.fst = based.fst →
+        (⟨incident.edge, incident.edge_mem⟩ : G.edgeSet) ∉ edgeCut) :
+    realization.side u ↔ realization.side v := by
+  apply realization.side_iff_of_forall_not_mem_edgeCut_of_walk p
+  intro edge hecut heEdges
+  rcases List.mem_map.mp heEdges with ⟨dart, hdart, hedge⟩
+  have hnot :
+      (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) ∉ edgeCut :=
+    havoid dart hdart dart rfl
+  have hsubtype :
+      (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) = edge := by
+    apply Subtype.ext
+    exact hedge
+  exact hnot (hsubtype ▸ hecut)
+
 /-- Bypass-walk obstruction for realized cuts.  A realized edge cut cannot contain an edge when
 there is a walk between that edge's endpoints avoiding every edge of the cut.  This is the
 checker-facing cocycle form: every cycle must meet a vertex-side cut evenly, so a cut edge plus
