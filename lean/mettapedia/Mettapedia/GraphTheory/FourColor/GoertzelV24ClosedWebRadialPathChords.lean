@@ -1288,6 +1288,50 @@ theorem exists_external_port_at_cycleWalk_vertex
     ⟨port, hportVertex, hportOutside⟩
   exact ⟨port, by simpa [hposition] using hportVertex, hportOutside⟩
 
+/-!
+The face-tracing layer works with rotation-system darts, while the chord
+certificate above is stated with ordinary graph edges.  For an off-wall
+vertex these representations line up directly: every incident rotation dart
+has an edge outside the cycle.  This is the exact hypothesis consumed by
+`faceComponentSide_iff_of_anchor_of_vertex_avoids`.
+-/
+
+theorem toRotationSystem_edge_not_mem_cycleWalk_of_vertex_not_mem_support
+    (graphData : SimpleGraphDartRotation.Data G)
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    {vertex : V} (hvertex : vertex ∉ chord.cycleWalk.support)
+    (dart : graphData.toRotationSystem.D)
+    (hdart : graphData.toRotationSystem.vertOf dart = vertex) :
+    (graphData.toRotationSystem.edgeOf dart).1 ∉ chord.cycleWalk.edges := by
+  intro hcycle
+  have hvertexEdge : graphData.toRotationSystem.vertOf dart ∈
+      ((graphData.toRotationSystem.edgeOf dart).1 : Sym2 V) := by
+    change dart.fst ∈ dart.edge
+    simp [SimpleGraph.Dart.edge]
+  have hsupport : graphData.toRotationSystem.vertOf dart ∈
+      chord.cycleWalk.support := by
+    exact chord.cycleWalk.mem_support_of_mem_edges hcycle hvertexEdge
+  exact hvertex (hdart ▸ hsupport)
+
+theorem toRotationSystem_all_incident_edges_not_mem_cycleWalk_of_vertex_not_mem_support
+    (graphData : SimpleGraphDartRotation.Data G)
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    {vertex : V} (hvertex : vertex ∉ chord.cycleWalk.support) :
+    ∀ dart : graphData.toRotationSystem.D,
+      graphData.toRotationSystem.vertOf dart = vertex →
+        (graphData.toRotationSystem.edgeOf dart).1 ∉ chord.cycleWalk.edges := by
+  intro dart hdart
+  exact chord.toRotationSystem_edge_not_mem_cycleWalk_of_vertex_not_mem_support
+    graphData hvertex dart hdart
+
 /-- Every endpoint of every chord-cycle edge is a locally cubic annular
 interior vertex. -/
 theorem cycleWalk_edge_endpoint_incidentEdgeFinset_card_eq_three
