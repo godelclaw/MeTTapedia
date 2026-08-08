@@ -345,6 +345,32 @@ theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal_of_
   exact exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
     embedded hdata pair htriple hC widthBound hdeep cuts.toSideAssignment
 
+/-!
+The two equal-state projections below are intentionally small, but they are
+the first pieces of the source's splice checklist that can be consumed
+without any geometric assumption.  Equality in the varying-width carrier
+already includes equality of the actual crossing-port count; because the
+profile payload is dependent on that count, it also includes equality of the
+number of retained face fragments.  Keeping these facts as named lemmas
+prevents a later splice proof from recovering them by fragile dependent
+elimination at every use site.
+-/
+
+theorem closedWebDepthProfile_crossingEdgeCount_val_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    left.crossingEdgeCount.val = right.crossingEdgeCount.val := by
+  exact congrArg (fun profile => profile.crossingEdgeCount.val) hprofiles
+
+theorem closedWebDepthProfile_faceFragmentCount_val_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    left.profile.faceFragmentCount.val = right.profile.faceFragmentCount.val := by
+  cases hprofiles
+  rfl
+
 end
 
 end GoertzelV24ClosedWebComputedDepthProfile
