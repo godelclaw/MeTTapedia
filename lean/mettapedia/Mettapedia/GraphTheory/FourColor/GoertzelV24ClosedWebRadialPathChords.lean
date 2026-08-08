@@ -281,6 +281,105 @@ theorem one_lt_span
   · exact htriple.2.2.2.1 (hmajority.symm.trans hfirst)
   · exact htriple.2.2.2.2.1 (hmajority.symm.trans hsecond)
 
+/-- A third-color chord cannot be incident to the degree-one inner stub, so
+its left endpoint is strictly inside the radial path. -/
+theorem left_pos
+    {data : AnnularBoundaryData G outerCount}
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second) :
+    0 < chord.left.val := by
+  by_contra hnotPositive
+  have hleft : chord.left.val = 0 := Nat.eq_zero_of_not_pos hnotPositive
+  have hlength : 0 < radial.path.length := by
+    have hrightBound := chord.right.isLt
+    have horder := chord.left_lt_right
+    omega
+  have hdegree : G.degree (data.innerStub radial.inner) = 1 := by
+    rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree]
+    exact hdata.inner_stub_degree_one radial.inner
+  rcases SimpleGraph.degree_eq_one_iff_existsUnique_adj.mp hdegree with
+    ⟨neighbor, _hneighbor, hunique⟩
+  have hchordAdj : G.Adj (data.innerStub radial.inner)
+      ((ambientRadialPath radial).getVert chord.right.val) := by
+    simpa [hleft, radial.start_eq_innerStub] using chord.adjacent
+  have hstepAdj : G.Adj (data.innerStub radial.inner)
+      ((ambientRadialPath radial).getVert 1) := by
+    have hstep := (ambientRadialPath radial).adj_getVert_succ
+      (i := 0) (by simpa [ambientRadialPath_length] using hlength)
+    simpa [radial.start_eq_innerStub] using hstep
+  have hvertices :
+      (ambientRadialPath radial).getVert chord.right.val =
+        (ambientRadialPath radial).getVert 1 :=
+    (hunique _ hchordAdj).trans (hunique _ hstepAdj).symm
+  have hright : chord.right.val = 1 :=
+    (ambientRadialPath_isPath radial).getVert_injOn
+      (by simpa [ambientRadialPath_length] using
+        Nat.le_of_lt_succ chord.right.isLt)
+      (by
+        rw [ambientRadialPath_length]
+        exact Nat.one_le_iff_ne_zero.mpr (Nat.ne_of_gt hlength)) hvertices
+  have hspan := chord.one_lt_span htriple
+  omega
+
+/-- A third-color chord cannot be incident to the degree-one outer stub, so
+its right endpoint is strictly before the end of the radial path. -/
+theorem right_lt_length
+    {data : AnnularBoundaryData G outerCount}
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second) :
+    chord.right.val < radial.path.length := by
+  have hrightLe : chord.right.val ≤ radial.path.length := by
+    have hrightBound := chord.right.isLt
+    omega
+  by_contra hnotBeforeEnd
+  have hright : chord.right.val = radial.path.length := by omega
+  have hlength : 0 < radial.path.length := by
+    have horder := chord.left_lt_right
+    omega
+  have hdegree : G.degree (data.outerStub radial.outer) = 1 := by
+    rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree]
+    exact hdata.outer_stub_degree_one radial.outer
+  rcases SimpleGraph.degree_eq_one_iff_existsUnique_adj.mp hdegree with
+    ⟨neighbor, _hneighbor, hunique⟩
+  have hchordAdj : G.Adj (data.outerStub radial.outer)
+      ((ambientRadialPath radial).getVert chord.left.val) := by
+    simpa [hright, ambientRadialPath_length,
+      radial.finish_eq_outerStub] using chord.adjacent.symm
+  have hstepAdj : G.Adj (data.outerStub radial.outer)
+      ((ambientRadialPath radial).getVert (radial.path.length - 1)) := by
+    have hstep := (ambientRadialPath radial).adj_getVert_succ
+      (i := radial.path.length - 1) (by
+        simpa [ambientRadialPath_length] using Nat.sub_lt hlength Nat.zero_lt_one)
+    have hlast : radial.path.length - 1 + 1 = radial.path.length := by omega
+    rw [hlast] at hstep
+    have hfinish :
+        (ambientRadialPath radial).getVert radial.path.length =
+          data.outerStub radial.outer := by
+      rw [← ambientRadialPath_length radial,
+        SimpleGraph.Walk.getVert_length]
+      exact radial.finish_eq_outerStub
+    rw [hfinish] at hstep
+    exact hstep.symm
+  have hvertices :
+      (ambientRadialPath radial).getVert chord.left.val =
+        (ambientRadialPath radial).getVert (radial.path.length - 1) :=
+    (hunique _ hchordAdj).trans (hunique _ hstepAdj).symm
+  have hleft : chord.left.val = radial.path.length - 1 :=
+    (ambientRadialPath_isPath radial).getVert_injOn
+      (by simpa [ambientRadialPath_length] using
+        Nat.le_of_lt_succ chord.left.isLt)
+      (by simp [ambientRadialPath_length]) hvertices
+  have hspan := chord.one_lt_span htriple
+  omega
+
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- The chord edge is not one of the subarc edges.  This is derived from the
 third-color condition rather than stored as extra chord data. -/
