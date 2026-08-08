@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebTotalClosure
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebHoleBoundaryOrder
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebRadialPathChords
 
 /-!
 # Radial-path anchors for the two closed-web sectors
@@ -23,9 +24,11 @@ open SimpleGraph
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebHoleBoundaryOrder
+open GoertzelV24ClosedWebFaceTracing
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
 open GoertzelV24ClosedWebRadialComponents
+open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebSelectedEdgeStructure
 open GoertzelV24ClosedWebTotalClosure
 
@@ -144,6 +147,42 @@ noncomputable def holeArcDarts (cell : FramedAnnularCellulation G)
     (side : Bool) :
     (holeFaceDartEquiv cell face second).1 ∈
       holeArcDarts cell face first second side := by
+  classical
+  apply Finset.mem_image.mpr
+  exact ⟨second, second_mem_selectedCyclicArc first second side, rfl⟩
+
+/-- The underlying graph edges of a selected cyclic hole-face arc. -/
+noncomputable def holeArcEdges (cell : FramedAnnularCellulation G)
+    (face : OrbitFace cell.rotation.toRotationSystem)
+    (first second :
+      Fin (orbitFaceDarts cell.rotation.toRotationSystem face).card)
+    (side : Bool) : Finset G.edgeSet :=
+  (selectedCyclicArc first second side).image fun position =>
+    cell.rotation.toRotationSystem.edgeOf
+      (holeFaceDartEquiv cell face position).1
+
+@[simp] theorem firstEdge_mem_holeArcEdges
+    (cell : FramedAnnularCellulation G)
+    (face : OrbitFace cell.rotation.toRotationSystem)
+    (first second :
+      Fin (orbitFaceDarts cell.rotation.toRotationSystem face).card)
+    (side : Bool) :
+    cell.rotation.toRotationSystem.edgeOf
+        (holeFaceDartEquiv cell face first).1 ∈
+      holeArcEdges cell face first second side := by
+  classical
+  apply Finset.mem_image.mpr
+  exact ⟨first, first_mem_selectedCyclicArc first second side, rfl⟩
+
+@[simp] theorem secondEdge_mem_holeArcEdges
+    (cell : FramedAnnularCellulation G)
+    (face : OrbitFace cell.rotation.toRotationSystem)
+    (first second :
+      Fin (orbitFaceDarts cell.rotation.toRotationSystem face).card)
+    (side : Bool) :
+    cell.rotation.toRotationSystem.edgeOf
+        (holeFaceDartEquiv cell face second).1 ∈
+      holeArcEdges cell face first second side := by
   classical
   apply Finset.mem_image.mpr
   exact ⟨second, second_mem_selectedCyclicArc first second side, rfl⟩
@@ -285,6 +324,70 @@ noncomputable def outerHoleArcDarts
   holeArcDarts embedded.cellulation embedded.cellulation.outerHole
     (outerBoundaryPosition embedded hdata pair.firstPath.outer)
     (outerBoundaryPosition embedded hdata pair.secondPath.outer) side
+
+/-- The two ambient radial paths, as the primal edge wall common to every
+sector candidate. -/
+noncomputable def radialPathEdges
+    (pair : RadialPathPair data C first second) : Finset G.edgeSet :=
+  walkEdgeFinset (ambientRadialPath pair.firstPath) ∪
+    walkEdgeFinset (ambientRadialPath pair.secondPath)
+
+/-- One of the two inner-hole edge arcs between the radial endpoints. -/
+noncomputable def innerHoleArcEdges
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) (side : Bool) : Finset G.edgeSet :=
+  holeArcEdges embedded.cellulation embedded.cellulation.innerHole
+    (innerBoundaryPosition embedded hdata pair.firstPath.inner)
+    (innerBoundaryPosition embedded hdata pair.secondPath.inner) side
+
+/-- One of the two outer-hole edge arcs between the radial endpoints. -/
+noncomputable def outerHoleArcEdges
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) (side : Bool) : Finset G.edgeSet :=
+  holeArcEdges embedded.cellulation embedded.cellulation.outerHole
+    (outerBoundaryPosition embedded hdata pair.firstPath.outer)
+    (outerBoundaryPosition embedded hdata pair.secondPath.outer) side
+
+/-- A candidate sector boundary consists of both radial paths and one of the
+two arcs on each hole face.  There are four such combinatorial candidates.
+The missing rotation-system separation theorem must identify the two genuine
+complementary sectors; no compatibility is assumed here. -/
+noncomputable def sectorCandidateWall
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) (innerSide outerSide : Bool) :
+    Finset G.edgeSet :=
+  pair.radialPathEdges ∪ pair.innerHoleArcEdges embedded hdata innerSide ∪
+    pair.outerHoleArcEdges embedded hdata outerSide
+
+theorem radialPathEdges_subset_sectorCandidateWall
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) (innerSide outerSide : Bool) :
+    pair.radialPathEdges ⊆
+      pair.sectorCandidateWall embedded hdata innerSide outerSide := by
+  intro edge hedge
+  simp [sectorCandidateWall, hedge]
+
+theorem innerHoleArcEdges_subset_sectorCandidateWall
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) (innerSide outerSide : Bool) :
+    pair.innerHoleArcEdges embedded hdata innerSide ⊆
+      pair.sectorCandidateWall embedded hdata innerSide outerSide := by
+  intro edge hedge
+  simp [sectorCandidateWall, hedge]
+
+theorem outerHoleArcEdges_subset_sectorCandidateWall
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) (innerSide outerSide : Bool) :
+    pair.outerHoleArcEdges embedded hdata outerSide ⊆
+      pair.sectorCandidateWall embedded hdata innerSide outerSide := by
+  intro edge hedge
+  simp [sectorCandidateWall, hedge]
 
 end RadialPathPair
 
