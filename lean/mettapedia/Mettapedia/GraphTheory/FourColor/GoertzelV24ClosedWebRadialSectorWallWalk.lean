@@ -19,6 +19,7 @@ open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebHoleBoundaryOrder
 open GoertzelV24ClosedWebHoleCoreArcWalk
 open GoertzelV24ClosedWebRadialComponents
+open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebRadialPathSectorAnchors
 open GoertzelV24ClosedWebTrimmedRadialPath
 open GoertzelV24FaceOrbitIncidence
@@ -89,6 +90,37 @@ theorem mem_walk_edges_iff
       edge ∈ wall.firstCore.path.edges ∨ edge ∈ wall.outerArc.edges ∨
       edge ∈ wall.secondCore.path.edges ∨ edge ∈ wall.innerArc.edges := by
   simp [walk]
+
+/-- The two trimmed radial sides of a sector wall remain edge-disjoint.
+This is inherited from the stronger vertex-disjointness of their two ambient
+support components; trimming cannot introduce a new edge. -/
+theorem radialCore_edges_disjoint
+    (wall : RadialSectorWallWalk data C first second pair embedded hdata) :
+    wall.firstCore.path.edges.Disjoint wall.secondCore.path.edges := by
+  rw [List.disjoint_left]
+  intro edge hfirst hsecond
+  have hfirstAmbient : edge ∈
+      (ambientRadialPath pair.firstPath).edges := by
+    rw [wall.firstCore.edges_eq] at hfirst
+    exact List.mem_of_mem_tail (List.mem_of_mem_dropLast hfirst)
+  have hsecondAmbient : edge ∈
+      (ambientRadialPath pair.secondPath).edges := by
+    rw [wall.secondCore.edges_eq] at hsecond
+    exact List.mem_of_mem_tail (List.mem_of_mem_dropLast hsecond)
+  induction edge using Sym2.inductionOn with
+  | _ left right =>
+      have hleftFirst : left ∈
+          (ambientRadialPath pair.firstPath).toSubgraph.verts := by
+        rw [Walk.mem_verts_toSubgraph]
+        exact (ambientRadialPath pair.firstPath).fst_mem_support_of_mem_edges
+          hfirstAmbient
+      have hleftSecond : left ∈
+          (ambientRadialPath pair.secondPath).toSubgraph.verts := by
+        rw [Walk.mem_verts_toSubgraph]
+        exact (ambientRadialPath pair.secondPath).fst_mem_support_of_mem_edges
+          hsecondAmbient
+      exact (Set.disjoint_left.1 pair.ambientPathVerts_disjoint)
+        hleftFirst hleftSecond
 
 end RadialSectorWallWalk
 
