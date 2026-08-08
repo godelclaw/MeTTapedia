@@ -76,6 +76,173 @@ theorem mem_faceOrbit_of_mem_faceArcDarts
   rcases hdart with ⟨index, rfl⟩
   exact faceCycleDart_mem graphData.toRotationSystem root _
 
+/-- The target is the first omitted dart, hence is not itself retained. -/
+theorem target_not_mem_faceArcDarts
+    (graphData : Data G) (root target : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root) :
+    target ∉ faceArcDarts graphData root target htarget := by
+  intro hmem
+  simp only [faceArcDarts, List.mem_ofFn] at hmem
+  rcases hmem with ⟨index, hindex⟩
+  have htargetAt := faceCycleDart_faceArcPosition
+    graphData root target htarget
+  have hpositions := faceCycleDart_injective
+    graphData.toRotationSystem root (hindex.trans htargetAt.symm)
+  have hvals := congrArg Fin.val hpositions
+  exact (Nat.ne_of_lt index.isLt) hvals
+
+/-- A strict facial prefix cannot contain a predecessor of its root. -/
+theorem predecessor_not_mem_faceArcDarts
+    (graphData : Data G) (root target predecessor : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root)
+    (hpredecessor : graphData.toRotationSystem.phi predecessor = root) :
+    predecessor ∉ faceArcDarts graphData root target htarget := by
+  intro hmem
+  simp only [faceArcDarts, List.mem_ofFn] at hmem
+  rcases hmem with ⟨index, hindex⟩
+  have hnextLt : index.val + 1 <
+      (graphData.toRotationSystem.faceOrbit root).card :=
+    lt_of_le_of_lt (Nat.succ_le_of_lt index.isLt)
+      (faceArcPosition graphData root target htarget).isLt
+  let next : Fin (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨index.val + 1, hnextLt⟩
+  have hnext : faceCycleDart graphData.toRotationSystem root next = root := by
+    calc
+      faceCycleDart graphData.toRotationSystem root next =
+          graphData.toRotationSystem.phi
+            (faceCycleDart graphData.toRotationSystem root
+              ⟨index.val, lt_trans index.isLt
+                (faceArcPosition graphData root target htarget).isLt⟩) := by
+        simp only [faceCycleDart, next, pow_succ', Equiv.Perm.coe_mul,
+          Function.comp_apply]
+      _ = graphData.toRotationSystem.phi predecessor :=
+        congrArg graphData.toRotationSystem.phi hindex
+      _ = root := hpredecessor
+  have hpositive : 0 <
+      (graphData.toRotationSystem.faceOrbit root).card :=
+    Finset.card_pos.mpr
+      ⟨root, graphData.toRotationSystem.mem_faceOrbit_self root⟩
+  let zero : Fin (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨0, hpositive⟩
+  have hzero : faceCycleDart graphData.toRotationSystem root zero = root := by
+    simp [faceCycleDart, zero]
+  have hpositions := faceCycleDart_injective
+    graphData.toRotationSystem root (hnext.trans hzero.symm)
+  have hvals := congrArg Fin.val hpositions
+  change index.val + 1 = 0 at hvals
+  omega
+
+/-- A retained facial dart keeps its successor in the prefix unless that
+successor is exactly the omitted target. -/
+theorem phi_mem_faceArcDarts_of_mem_of_ne_target
+    (graphData : Data G) (root target dart : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root)
+    (hdart : dart ∈ faceArcDarts graphData root target htarget)
+    (hne : graphData.toRotationSystem.phi dart ≠ target) :
+    graphData.toRotationSystem.phi dart ∈
+      faceArcDarts graphData root target htarget := by
+  simp only [faceArcDarts, List.mem_ofFn] at hdart
+  rcases hdart with ⟨index, hindex⟩
+  have hstrict : index.val + 1 <
+      (faceArcPosition graphData root target htarget).val := by
+    have hle := Nat.succ_le_of_lt index.isLt
+    rcases Nat.lt_or_eq_of_le hle with hlt | heq
+    · exact hlt
+    · exfalso
+      apply hne
+      calc
+        graphData.toRotationSystem.phi dart =
+            graphData.toRotationSystem.phi
+              (faceCycleDart graphData.toRotationSystem root
+                ⟨index.val, lt_trans index.isLt
+                  (faceArcPosition graphData root target htarget).isLt⟩) :=
+          congrArg graphData.toRotationSystem.phi hindex.symm
+        _ = faceCycleDart graphData.toRotationSystem root
+              (faceArcPosition graphData root target htarget) := by
+          simp only [faceCycleDart, ← heq, pow_succ',
+            Equiv.Perm.coe_mul, Function.comp_apply]
+        _ = target := faceCycleDart_faceArcPosition
+          graphData root target htarget
+  change graphData.toRotationSystem.phi dart ∈
+    List.ofFn (fun successor :
+        Fin (faceArcPosition graphData root target htarget).val =>
+      faceCycleDart graphData.toRotationSystem root
+        ⟨successor.val, lt_trans successor.isLt
+          (faceArcPosition graphData root target htarget).isLt⟩)
+  apply List.mem_ofFn.mpr
+  refine ⟨⟨index.val + 1, hstrict⟩, ?_⟩
+  calc
+    faceCycleDart graphData.toRotationSystem root
+        ⟨index.val + 1,
+          lt_trans hstrict
+            (faceArcPosition graphData root target htarget).isLt⟩ =
+      graphData.toRotationSystem.phi
+        (faceCycleDart graphData.toRotationSystem root
+          ⟨index.val, lt_trans index.isLt
+            (faceArcPosition graphData root target htarget).isLt⟩) := by
+      simp only [faceCycleDart, pow_succ', Equiv.Perm.coe_mul,
+        Function.comp_apply]
+    _ = graphData.toRotationSystem.phi dart :=
+      congrArg graphData.toRotationSystem.phi hindex
+
+/-- Provided it does not wrap to the root, the target's successor lies after
+the cut and is absent from the retained prefix. -/
+theorem phi_target_not_mem_faceArcDarts
+    (graphData : Data G) (root target : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root)
+    (hnowrap : graphData.toRotationSystem.phi target ≠ root) :
+    graphData.toRotationSystem.phi target ∉
+      faceArcDarts graphData root target htarget := by
+  let position := faceArcPosition graphData root target htarget
+  have hsuccessorLt : position.val + 1 <
+      (graphData.toRotationSystem.faceOrbit root).card := by
+    have hle := Nat.succ_le_of_lt position.isLt
+    rcases Nat.lt_or_eq_of_le hle with hlt | heq
+    · exact hlt
+    · exfalso
+      apply hnowrap
+      have htargetAt := faceCycleDart_faceArcPosition
+        graphData root target htarget
+      have hwrap := (faceOrbit_isCycleOn
+        graphData.toRotationSystem root).pow_card_apply
+          (graphData.toRotationSystem.mem_faceOrbit_self root)
+      calc
+        graphData.toRotationSystem.phi target =
+            graphData.toRotationSystem.phi
+              (faceCycleDart graphData.toRotationSystem root position) := by
+          rw [htargetAt]
+        _ = (graphData.toRotationSystem.phi ^ (position.val + 1)) root := by
+          simp only [faceCycleDart, pow_succ', Equiv.Perm.coe_mul,
+            Function.comp_apply]
+        _ = (graphData.toRotationSystem.phi ^
+              (graphData.toRotationSystem.faceOrbit root).card) root := by
+          have heq' : position.val + 1 =
+              (graphData.toRotationSystem.faceOrbit root).card := by omega
+          rw [heq']
+        _ = root := hwrap
+  intro hmem
+  change graphData.toRotationSystem.phi target ∈
+    List.ofFn (fun index : Fin position.val =>
+      faceCycleDart graphData.toRotationSystem root
+        ⟨index.val, lt_trans index.isLt position.isLt⟩) at hmem
+  simp only [List.mem_ofFn] at hmem
+  rcases hmem with ⟨index, hindex⟩
+  let successor : Fin
+      (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨position.val + 1, hsuccessorLt⟩
+  have hsuccessor :
+      faceCycleDart graphData.toRotationSystem root successor =
+        graphData.toRotationSystem.phi target := by
+    rw [← faceCycleDart_faceArcPosition graphData root target htarget]
+    simp only [faceCycleDart, successor, position, pow_succ',
+      Equiv.Perm.coe_mul, Function.comp_apply]
+  have hpositions := faceCycleDart_injective
+    graphData.toRotationSystem root (hindex.trans hsuccessor.symm)
+  have hvals := congrArg Fin.val hpositions
+  have := index.isLt
+  change index.val = position.val + 1 at hvals
+  omega
+
 /-- The retained facial darts form a graph-dart chain. -/
 theorem faceArcDarts_isChain
     (graphData : Data G) (root target : G.Dart)
