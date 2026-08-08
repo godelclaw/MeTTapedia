@@ -20,16 +20,16 @@ open SimpleGraph
 variable {Vertex : Type*} {H : SimpleGraph Vertex}
   [Fintype Vertex] [DecidableEq Vertex] [DecidableRel H.Adj]
 
-/-- A connected finite graph with exactly two degree-one endpoints and
-degree two everywhere else is one spanning path. -/
-theorem exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_two_else
+/-- A connected finite graph with two degree-one endpoints and maximum
+degree two is one spanning path. -/
+theorem exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_le_two_else
     (hconnected : H.Connected) {start finish : Vertex}
     (hstartFinish : start ≠ finish)
     (hstartDegree : H.degree start = 1)
     (hfinishDegree : H.degree finish = 1)
     (hdegreeElse :
       ∀ vertex : Vertex,
-        vertex ≠ start → vertex ≠ finish → H.degree vertex = 2) :
+        vertex ≠ start → vertex ≠ finish → H.degree vertex ≤ 2) :
     ∃ path : H.Walk start finish,
       path.IsPath ∧ path.toSubgraph.verts = Set.univ := by
   classical
@@ -207,14 +207,30 @@ theorem exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_two_e
           3 = neighbors.card := by simp [hneighborsCard]
           _ ≤ (H.neighborFinset firstHit).card :=
             Finset.card_le_card hneighborsSubset
-      have hfirstHitDegree : H.degree firstHit = 2 :=
+      have hfirstHitDegreeAtMostTwo : H.degree firstHit ≤ 2 :=
         hdegreeElse firstHit hfirstHitNeStart hfirstHitNeFinish
       omega
 
-/-- Component-local form: if two vertices of one connected component have
-degree one and every other vertex of that component has degree two in the
-ambient graph, a path between them covers exactly the component support. -/
-theorem exists_path_covering_component_of_endpoints_degree_one_of_degree_two_else
+/-- Exact-degree specialization of the maximum-degree spanning-path
+classifier. -/
+theorem exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_two_else
+    (hconnected : H.Connected) {start finish : Vertex}
+    (hstartFinish : start ≠ finish)
+    (hstartDegree : H.degree start = 1)
+    (hfinishDegree : H.degree finish = 1)
+    (hdegreeElse :
+      ∀ vertex : Vertex,
+        vertex ≠ start → vertex ≠ finish → H.degree vertex = 2) :
+    ∃ path : H.Walk start finish,
+      path.IsPath ∧ path.toSubgraph.verts = Set.univ := by
+  apply exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_le_two_else
+    hconnected hstartFinish hstartDegree hfinishDegree
+  intro vertex hvertexStart hvertexFinish
+  exact (hdegreeElse vertex hvertexStart hvertexFinish).le
+
+/-- Component-local maximum-degree form: two degree-one vertices in a
+maximum-degree-two component are joined by a path covering that component. -/
+theorem exists_path_covering_component_of_endpoints_degree_one_of_degree_le_two_else
     (component : H.ConnectedComponent) {start finish : Vertex}
     (hstartComponent : start ∈ component.supp)
     (hfinishComponent : finish ∈ component.supp)
@@ -224,7 +240,7 @@ theorem exists_path_covering_component_of_endpoints_degree_one_of_degree_two_els
     (hdegreeElse :
       ∀ vertex : Vertex,
         vertex ∈ component.supp →
-        vertex ≠ start → vertex ≠ finish → H.degree vertex = 2) :
+        vertex ≠ start → vertex ≠ finish → H.degree vertex ≤ 2) :
     ∃ path : H.Walk start finish,
       path.IsPath ∧ path.toSubgraph.verts = component.supp := by
   classical
@@ -260,13 +276,13 @@ theorem exists_path_covering_component_of_endpoints_degree_one_of_degree_two_els
       ∀ vertex : component.supp,
         vertex ≠ startInComponent →
         vertex ≠ finishInComponent →
-        componentGraph.degree vertex = 2 := by
+        componentGraph.degree vertex ≤ 2 := by
     intro vertex hvertexStart hvertexFinish
     rw [hdegreeInduce]
     exact hdegreeElse vertex vertex.property
       (fun heq => hvertexStart (Subtype.ext heq))
       (fun heq => hvertexFinish (Subtype.ext heq))
-  rcases exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_two_else
+  rcases exists_spanningPath_of_connected_of_endpoints_degree_one_of_degree_le_two_else
       (H := componentGraph) hcomponentGraphConnected hstartFinishComponent
       hstartDegreeComponent hfinishDegreeComponent hdegreeElseComponent with
     ⟨path, hpath, hpathVertices⟩
@@ -292,6 +308,27 @@ theorem exists_path_covering_component_of_endpoints_degree_one_of_degree_two_els
       refine ⟨⟨vertex, hvertex⟩, ?_, rfl⟩
       rw [← SimpleGraph.Walk.mem_verts_toSubgraph, hpathVertices]
       simp
+
+/-- Exact-degree specialization of the component-local classifier. -/
+theorem exists_path_covering_component_of_endpoints_degree_one_of_degree_two_else
+    (component : H.ConnectedComponent) {start finish : Vertex}
+    (hstartComponent : start ∈ component.supp)
+    (hfinishComponent : finish ∈ component.supp)
+    (hstartFinish : start ≠ finish)
+    (hstartDegree : H.degree start = 1)
+    (hfinishDegree : H.degree finish = 1)
+    (hdegreeElse :
+      ∀ vertex : Vertex,
+        vertex ∈ component.supp →
+        vertex ≠ start → vertex ≠ finish → H.degree vertex = 2) :
+    ∃ path : H.Walk start finish,
+      path.IsPath ∧ path.toSubgraph.verts = component.supp := by
+  apply exists_path_covering_component_of_endpoints_degree_one_of_degree_le_two_else
+    component hstartComponent hfinishComponent hstartFinish
+      hstartDegree hfinishDegree
+  intro vertex hvertexComponent hvertexStart hvertexFinish
+  exact (hdegreeElse vertex hvertexComponent
+    hvertexStart hvertexFinish).le
 
 end GoertzelV24DegreeTwoSpanningPath
 
