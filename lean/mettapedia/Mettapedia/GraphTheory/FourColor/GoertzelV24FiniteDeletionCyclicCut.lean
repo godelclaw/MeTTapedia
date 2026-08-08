@@ -184,6 +184,45 @@ def componentCyclicEdgeCutRealization
     hinside_cycle := hinsideCycle
     houtside_cycle := houtsideCycle }
 
+/-- The component construction can be reindexed to a proposed finite support
+when the planar layer has proved boundary saturation.  This is the useful
+bridge for a Jordan/chord argument: the component side supplies all wall
+seams automatically, while the one remaining geometric equality identifies
+its computed boundary with the intended chord support. -/
+def componentCyclicEdgeCutRealization_of_edgeCut_eq
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {edgeCut : Finset G.edgeSet}
+    (hboundary : componentCrossingEdges removed component = edgeCut)
+    (hinsideCycle : HasCycleOnSide G
+      (fun vertex => vertex ∈ component.supp))
+    (houtsideCycle : HasCycleOnSide G
+      (fun vertex => ¬ vertex ∈ component.supp)) :
+    CyclicEdgeCutRealization G edgeCut := by
+  rw [← hboundary]
+  exact componentCyclicEdgeCutRealization removed component
+    hinsideCycle houtsideCycle
+
+/-- Away from the computed component boundary, an ambient edge preserves the
+component side.  This is the local form used to discharge all non-wall edges
+once boundary saturation has been established. -/
+omit [DecidableEq V] in
+theorem component_side_iff_of_edge_not_mem_componentCrossingEdges
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {edge : G.edgeSet}
+    (hedge : edge ∉ componentCrossingEdges removed component)
+    {u v : V} (hu : u ∈ (edge : Sym2 V)) (hv : v ∈ (edge : Sym2 V)) :
+    (u ∈ component.supp ↔ v ∈ component.supp) := by
+  have hnotCross : ¬ EdgeCrossesVertexSide G
+      (fun vertex => vertex ∈ component.supp) edge := by
+    intro hcross
+    exact hedge ((mem_componentCrossingEdges_iff removed component edge).2 hcross)
+  exact (not_edgeCrossesVertexSide_iff_forall_side_iff
+    G (fun vertex => vertex ∈ component.supp) edge).1 hnotCross u v hu hv
+
 end
 
 end GoertzelV24FiniteDeletionCyclicCut
