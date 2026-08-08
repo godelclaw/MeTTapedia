@@ -222,6 +222,44 @@ theorem pathVerts_disjoint
     (colorPairSupportGraph C first second) pair.components_ne
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- The two radial paths remain vertex-disjoint after forgetting the selected
+color-pair support subtype and viewing them in the ambient graph. -/
+theorem ambientPathVerts_disjoint
+    (pair : RadialPathPair data C first second) :
+    Disjoint (ambientRadialPath pair.firstPath).toSubgraph.verts
+      (ambientRadialPath pair.secondPath).toSubgraph.verts := by
+  rw [Set.disjoint_left]
+  intro vertex hfirst hsecond
+  rw [SimpleGraph.Walk.mem_verts_toSubgraph] at hfirst hsecond
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hfirst with
+    ⟨firstPosition, hfirstValue, _hfirstBound⟩
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hsecond with
+    ⟨secondPosition, hsecondValue, _hsecondBound⟩
+  let firstVertex := pair.firstPath.path.getVert firstPosition
+  let secondVertex := pair.secondPath.path.getVert secondPosition
+  have hvertices : firstVertex = secondVertex :=
+    Subtype.ext (by
+      change (pair.firstPath.path.getVert firstPosition).1 =
+        (pair.secondPath.path.getVert secondPosition).1
+      rw [← ambientRadialPath_getVert pair.firstPath,
+        ← ambientRadialPath_getVert pair.secondPath,
+        hfirstValue, hsecondValue])
+  have hfirstSubgraph : firstVertex ∈
+      pair.firstPath.path.toSubgraph.verts := by
+    rw [SimpleGraph.Walk.mem_verts_toSubgraph]
+    exact pair.firstPath.path.getVert_mem_support firstPosition
+  have hsecondSubgraph : secondVertex ∈
+      pair.secondPath.path.toSubgraph.verts := by
+    rw [SimpleGraph.Walk.mem_verts_toSubgraph]
+    exact pair.secondPath.path.getVert_mem_support secondPosition
+  have hfirstInSecond : firstVertex ∈
+      pair.secondPath.path.toSubgraph.verts := by
+    rw [hvertices]
+    exact hsecondSubgraph
+  exact (Set.disjoint_left.1 pair.pathVerts_disjoint)
+    hfirstSubgraph hfirstInSecond
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Two distinct radial components cannot start at the same inner stub. -/
 theorem inner_ne (pair : RadialPathPair data C first second) :
     pair.firstPath.inner ≠ pair.secondPath.inner := by

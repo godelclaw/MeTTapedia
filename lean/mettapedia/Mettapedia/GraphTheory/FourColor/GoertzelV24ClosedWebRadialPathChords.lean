@@ -86,6 +86,48 @@ theorem ambientRadialPath_isPath
     (f := colorPairSupportToAmbientHom C first second)
     Subtype.val_injective radial.path_isPath
 
+/-- The first ambient radial-path dart lies over its named inner boundary
+edge. -/
+theorem ambientRadialPath_firstDart_edgeOf_eq_innerBoundaryEdge
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    (radial : ComponentRadialPath data C first second component)
+    (hnil : ¬(ambientRadialPath radial).Nil) :
+    ((ambientRadialPath radial).firstDart hnil).edge =
+      (data.innerBoundaryEdge radial.inner).1 := by
+  have hmem :
+      (⟨((ambientRadialPath radial).firstDart hnil).edge,
+        ((ambientRadialPath radial).firstDart hnil).edge_mem⟩ : G.edgeSet) ∈
+        incidentEdgeFinset G (data.innerStub radial.inner) := by
+    simp only [incidentEdgeFinset, Finset.mem_filter, Finset.mem_univ,
+      true_and]
+    rw [← radial.start_eq_innerStub]
+    simp [SimpleGraph.Dart.edge]
+  rw [data.innerStub_incidentEdgeFinset_eq_singleton hdata] at hmem
+  simpa using congrArg Subtype.val (Finset.mem_singleton.mp hmem)
+
+/-- The last ambient radial-path dart lies over its named outer boundary
+edge. -/
+theorem ambientRadialPath_lastDart_edgeOf_eq_outerBoundaryEdge
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    (radial : ComponentRadialPath data C first second component)
+    (hnil : ¬(ambientRadialPath radial).Nil) :
+    ((ambientRadialPath radial).lastDart hnil).edge =
+      (data.outerBoundaryEdge radial.outer).1 := by
+  have hmem :
+      (⟨((ambientRadialPath radial).lastDart hnil).edge,
+        ((ambientRadialPath radial).lastDart hnil).edge_mem⟩ : G.edgeSet) ∈
+        incidentEdgeFinset G (data.outerStub radial.outer) := by
+    simp only [incidentEdgeFinset, Finset.mem_filter, Finset.mem_univ,
+      true_and]
+    rw [← radial.finish_eq_outerStub]
+    simp [SimpleGraph.Dart.edge]
+  rw [data.outerStub_incidentEdgeFinset_eq_singleton hdata] at hmem
+  simpa using congrArg Subtype.val (Finset.mem_singleton.mp hmem)
+
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Vertex positions on a radial path are injective through the final
 position. -/
@@ -247,6 +289,32 @@ theorem subarc_isPath
     chord.subarc.IsPath := by
   exact walkInterval_isPath (ambientRadialPath_isPath radial)
     chord.left chord.right (Nat.le_of_lt chord.left_lt_right)
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every vertex on the chord's radial subarc remains on the complete ambient
+radial path. -/
+theorem subarc_support_subset_ambientRadialPath_support
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial) :
+    chord.subarc.support ⊆ (ambientRadialPath radial).support := by
+  have htake := SimpleGraph.Walk.isSubwalk_take
+    ((ambientRadialPath radial).drop chord.left)
+    (chord.right.val - chord.left.val)
+  have hdrop := SimpleGraph.Walk.isSubwalk_drop
+    (ambientRadialPath radial) chord.left
+  have hsubwalk := htake.trans hdrop
+  intro vertex hvertex
+  apply hsubwalk.support_subset
+  have hsupport : chord.subarc.support =
+      (((ambientRadialPath radial).drop chord.left).take
+        (chord.right.val - chord.left.val)).support := by
+    unfold subarc walkInterval
+    exact SimpleGraph.Walk.support_copy _ _ _
+  rw [hsupport] at hvertex
+  exact hvertex
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- A third-color chord cannot join consecutive positions of the selected
@@ -462,6 +530,34 @@ theorem mem_boundary_wall_iff_mem_cycleWalk_edges
   classical
   simp [boundary, SamePathChordBoundary.mem_wall_iff, cycleWalk,
     SamePathChordBoundary.chordEdge, chordDart, Subtype.ext_iff]
+
+/-- Every endpoint of an edge in the chord cycle lies on the complete radial
+path carrying the chord. -/
+theorem mem_ambientRadialPath_support_of_mem_cycleWalk_edges
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (edge : G.edgeSet) (hedge : edge.1 ∈ chord.cycleWalk.edges)
+    {vertex : V} (hvertex : vertex ∈ (edge.1 : Sym2 V)) :
+    vertex ∈ (ambientRadialPath radial).support := by
+  have hwall : edge ∈ (chord.boundary htriple).wall :=
+    (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).2 hedge
+  rcases ((chord.boundary htriple).mem_wall_iff edge).1 hwall with
+    hedgeChord | hedgeSubarc
+  · have hedgeValue : edge.1 = chord.chordDart.edge := by
+      rw [hedgeChord]
+      rfl
+    rw [hedgeValue] at hvertex
+    rcases Sym2.mem_iff.mp hvertex with hleft | hright
+    · rw [hleft]
+      exact (ambientRadialPath radial).getVert_mem_support chord.left
+    · rw [hright]
+      exact (ambientRadialPath radial).getVert_mem_support chord.right
+  · exact chord.subarc_support_subset_ambientRadialPath_support
+      (chord.subarc.mem_support_of_mem_edges hedgeSubarc hvertex)
 
 end MajorityChordOnRadialPath
 
