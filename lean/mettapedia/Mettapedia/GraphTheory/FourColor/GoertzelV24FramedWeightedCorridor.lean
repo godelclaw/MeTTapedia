@@ -70,6 +70,67 @@ def interiorNegativeCurvatureWeight {source : SourceTrail G}
     (embedded : source.AnnularEmbedding) : Nat :=
   faceCycleNegativeCurvatureWeight embedded.interiorFaceLengths
 
+/-- Abstract face-length family witnessing the arithmetic gap in the
+unweighted reading of L9.  It has `k` pentagons and `k + excess`
+heptagons. -/
+def fixedInteriorExcessFamily (excess k : Nat) : Multiset Nat :=
+  Multiset.replicate k 5 + Multiset.replicate (k + excess) 7
+
+theorem fixedInteriorExcessFamily_minimumFive (excess k : Nat) :
+    FaceCycleMinimumFive (fixedInteriorExcessFamily excess k) := by
+  intro length hlength
+  rcases Multiset.mem_add.mp hlength with hfive | hseven
+  · have hlengthFive := (Multiset.mem_replicate.mp hfive).2
+    omega
+  · have hlengthSeven := (Multiset.mem_replicate.mp hseven).2
+    omega
+
+/-- The signed excess of the family is fixed while `k` varies. -/
+theorem fixedInteriorExcessFamily_signedExcess (excess k : Nat) :
+    ((fixedInteriorExcessFamily excess k).map
+      (fun length : Nat => (length : Int) - 6)).sum = excess := by
+  simp [fixedInteriorExcessFamily]
+
+/-- Its number of nonhexagonal faces nevertheless grows without bound. -/
+theorem fixedInteriorExcessFamily_nonHexagonalFaceCount (excess k : Nat) :
+    nonHexagonalFaceCount (fixedInteriorExcessFamily excess k) =
+      2 * k + excess := by
+  have hfive :
+      (Multiset.replicate k 5).filter (fun length => length ≠ 6) =
+        Multiset.replicate k 5 := by
+    apply Multiset.filter_eq_self.mpr
+    intro length hlength
+    have hlengthFive := (Multiset.mem_replicate.mp hlength).2
+    omega
+  have hseven :
+      (Multiset.replicate (k + excess) 7).filter
+          (fun length => length ≠ 6) =
+        Multiset.replicate (k + excess) 7 := by
+    apply Multiset.filter_eq_self.mpr
+    intro length hlength
+    have hlengthSeven := (Multiset.mem_replicate.mp hlength).2
+    omega
+  unfold nonHexagonalFaceCount fixedInteriorExcessFamily
+  rw [Multiset.filter_add, hfive, hseven]
+  simp
+  omega
+
+/-- A fixed signed Excess Identity alone cannot imply any constant defect
+budget: pentagon/heptagon cancellation leaves arbitrarily many nonhexagons.
+This theorem isolates the precise source-level obstruction repaired below by
+retaining negative-curvature weight. -/
+theorem exists_fixedSignedExcess_with_arbitrarily_many_nonHexagons
+    (excess bound : Nat) :
+    ∃ lengths : Multiset Nat,
+      FaceCycleMinimumFive lengths ∧
+      (lengths.map (fun length : Nat => (length : Int) - 6)).sum = excess ∧
+      bound ≤ nonHexagonalFaceCount lengths := by
+  refine ⟨fixedInteriorExcessFamily excess bound,
+    fixedInteriorExcessFamily_minimumFive excess bound,
+    fixedInteriorExcessFamily_signedExcess excess bound, ?_⟩
+  rw [fixedInteriorExcessFamily_nonHexagonalFaceCount]
+  omega
+
 theorem interiorFaceLengths_minimumFive
     {source : SourceTrail G} (embedded : source.AnnularEmbedding)
     (geometry : embedded.CorridorGeometry) :
