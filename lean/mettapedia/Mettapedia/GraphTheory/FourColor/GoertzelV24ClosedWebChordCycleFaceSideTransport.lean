@@ -284,6 +284,51 @@ noncomputable def cyclicEdgeCutRealization_of_faceComponentSide_with_wallDartSid
   · simpa [huA, hvD] using hsideDart.symm
   · simpa [huA, hvA] using hsideDart.symm
 
+/-!
+The generic constructor above accepts a proposed ambient side so that it can
+be reused by other annulus layers.  For the closed-web chord itself there is
+no reason to leave that field abstract: away from the wall the canonical
+predicate is exactly `faceComponentSide`.  This specialization removes that
+artificial parameter and exposes the true remaining geometric obligations.
+-/
+
+noncomputable def cyclicEdgeCutRealization_of_faceComponentSide
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    {edgeCut : Finset G.edgeSet}
+    (wallDartSideSeam : ∀ (edge : G.edgeSet), edge ∉ edgeCut →
+      ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
+        (embedded.RS.vertOf dart ∈ chord.cycleWalk.support ∨
+          embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+            chord.cycleWalk.support) →
+        (faceComponentSide embedded.RS (chord.boundary htriple).wall seed
+            (embedded.RS.vertOf dart) ↔
+          faceComponentSide embedded.RS (chord.boundary htriple).wall seed
+            (embedded.RS.vertOf (embedded.RS.alpha dart))))
+    (hcut_crosses : ∀ edge : G.edgeSet, edge ∈ edgeCut →
+      EdgeCrossesVertexSide G
+        (faceComponentSide embedded.RS (chord.boundary htriple).wall seed)
+        edge)
+    (hinside_cycle : HasCycleOnSide G
+      (faceComponentSide embedded.RS (chord.boundary htriple).wall seed))
+    (houtside_cycle : HasCycleOnSide G
+      (fun vertex => ¬ faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed vertex)) :
+    CyclicEdgeCutRealization G edgeCut := by
+  exact cyclicEdgeCutRealization_of_faceComponentSide_with_wallDartSideSeam
+    embedded chord htriple htwoSided seed
+    (fun vertex => faceComponentSide embedded.RS
+      (chord.boundary htriple).wall seed vertex)
+    (fun _vertex _hoffWall => Iff.rfl)
+    wallDartSideSeam hcut_crosses hinside_cycle houtside_cycle
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/
