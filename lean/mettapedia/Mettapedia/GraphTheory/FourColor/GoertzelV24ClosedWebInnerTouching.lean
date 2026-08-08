@@ -24,6 +24,7 @@ open SimpleGraph
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebSelectedEdgeStructure
 open GoertzelV24ClosedWebRadialComponents
+open GoertzelV24DegreeTwoSpanningPath
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
@@ -130,6 +131,19 @@ theorem degree_eq_one_of_isOuterStub
       data hdata C first second outer]
   simp [hselected]
 
+/-- Either kind of boundary support vertex has selected-pair degree one. -/
+theorem degree_eq_one_of_isBoundaryStub
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (first second : Color)
+    (vertex : ColorPairSupportVertex C first second)
+    (hboundary : IsBoundaryStub data vertex) :
+    (colorPairSupportGraph C first second).degree vertex = 1 := by
+  rcases hboundary with hinner | houter
+  · exact degree_eq_one_of_isInnerStub
+      data hdata C first second vertex hinner
+  · exact degree_eq_one_of_isOuterStub
+      data hdata C first second vertex houter
+
 /-- Every nonboundary support vertex is a cubic Tait vertex and hence has
 selected-pair degree two. -/
 theorem degree_eq_two_of_not_boundaryStub
@@ -167,6 +181,108 @@ theorem degree_eq_one_or_two
       data hdata C first second vertex houter)
   · exact Or.inr (degree_eq_two_of_not_boundaryStub
       data hdata C hC hpair vertex (by simp [IsBoundaryStub, hinner, houter]))
+
+/-- A selected-pair component contains at most two boundary stubs.  More
+precisely, once two distinct boundary vertices in the component are named,
+every other boundary vertex in that component equals one of them.
+
+This is the graph-theoretic justification for treating connected components
+as the manuscript's bichromatic strands: all support degrees are at most two,
+so the path between two degree-one boundary vertices covers the component. -/
+theorem boundaryStub_eq_start_or_finish_of_mem_component
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    {first second : Color} (hpair : ValidColorPair first second)
+    (component :
+      (colorPairSupportGraph C first second).ConnectedComponent)
+    (start finish candidate : ColorPairSupportVertex C first second)
+    (hstartComponent : start ∈ component.supp)
+    (hfinishComponent : finish ∈ component.supp)
+    (hcandidateComponent : candidate ∈ component.supp)
+    (hstartFinish : start ≠ finish)
+    (hstartBoundary : IsBoundaryStub data start)
+    (hfinishBoundary : IsBoundaryStub data finish)
+    (hcandidateBoundary : IsBoundaryStub data candidate) :
+    candidate = start ∨ candidate = finish := by
+  classical
+  have hstartDegree :
+      (colorPairSupportGraph C first second).degree start = 1 :=
+    degree_eq_one_of_isBoundaryStub
+      data hdata C first second start hstartBoundary
+  have hfinishDegree :
+      (colorPairSupportGraph C first second).degree finish = 1 :=
+    degree_eq_one_of_isBoundaryStub
+      data hdata C first second finish hfinishBoundary
+  have hdegreeElse :
+      ∀ vertex : ColorPairSupportVertex C first second,
+        vertex ∈ component.supp →
+        vertex ≠ start → vertex ≠ finish →
+        (colorPairSupportGraph C first second).degree vertex ≤ 2 := by
+    intro vertex _hvertexComponent _hvertexStart _hvertexFinish
+    rcases degree_eq_one_or_two data hdata C hC hpair vertex with
+      hone | htwo
+    · omega
+    · omega
+  rcases
+      exists_path_covering_component_of_endpoints_degree_one_of_degree_le_two_else
+        (H := colorPairSupportGraph C first second) component
+        hstartComponent hfinishComponent hstartFinish
+        hstartDegree hfinishDegree hdegreeElse with
+    ⟨path, hpath, hpathVertices⟩
+  by_contra hcandidateEndpoints
+  have hcandidateNeStart : candidate ≠ start := by
+    intro heq
+    exact hcandidateEndpoints (Or.inl heq)
+  have hcandidateNeFinish : candidate ≠ finish := by
+    intro heq
+    exact hcandidateEndpoints (Or.inr heq)
+  have hcandidatePathVertices : candidate ∈ path.toSubgraph.verts := by
+    rw [hpathVertices]
+    exact hcandidateComponent
+  have hcandidatePathSupport : candidate ∈ path.support :=
+    path.mem_verts_toSubgraph.mp hcandidatePathVertices
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp
+      hcandidatePathSupport with
+    ⟨index, hindexCandidate, hindexBound⟩
+  have hindexNeZero : index ≠ 0 := by
+    intro hindexZero
+    apply hcandidateNeStart
+    calc
+      candidate = path.getVert index := hindexCandidate.symm
+      _ = start := (hpath.getVert_eq_start_iff hindexBound).2 hindexZero
+  have hindexNeLength : index ≠ path.length := by
+    intro hindexLength
+    apply hcandidateNeFinish
+    calc
+      candidate = path.getVert index := hindexCandidate.symm
+      _ = finish := (hpath.getVert_eq_end_iff hindexBound).2 hindexLength
+  have hindexLtLength : index < path.length := by
+    omega
+  have hpathNeighborCount :
+      (path.toSubgraph.neighborSet candidate).ncard = 2 := by
+    simpa [hindexCandidate] using
+      hpath.ncard_neighborSet_toSubgraph_internal_eq_two
+        hindexNeZero hindexLtLength
+  have hneighborSubset :
+      path.toSubgraph.neighborSet candidate ⊆
+        (colorPairSupportGraph C first second).neighborSet candidate := by
+    intro neighbor hneighbor
+    exact path.toSubgraph.adj_sub hneighbor
+  have hdegreeAtLeastTwo :
+      2 ≤ (colorPairSupportGraph C first second).degree candidate := by
+    have hsubsetCard := Set.ncard_le_ncard hneighborSubset
+    have hambientNeighborCount :
+        ((colorPairSupportGraph C first second).neighborSet candidate).ncard =
+          (colorPairSupportGraph C first second).degree candidate := by
+      simpa only [Set.fintypeCard_eq_ncard] using
+        (SimpleGraph.card_neighborSet_eq_degree
+          (G := colorPairSupportGraph C first second) (v := candidate))
+    omega
+  have hcandidateDegree :
+      (colorPairSupportGraph C first second).degree candidate = 1 :=
+    degree_eq_one_of_isBoundaryStub
+      data hdata C first second candidate hcandidateBoundary
+  omega
 
 /-- In an inner-touching component, parity forces a second distinct boundary
 stub.  This is the graph half of the inner-inner/radial census split. -/
@@ -254,6 +370,14 @@ def NoComponentHasTwoDistinctInnerStubs
           data C first second component secondInner →
       firstInner = secondInner
 
+/-- The inner--inner exclusion simultaneously for every valid Tait pair. -/
+def NoColorPairComponentHasTwoDistinctInnerStubs
+    (data : AnnularBoundaryData G outerCount)
+    (C : G.EdgeColoring Color) : Prop :=
+  ∀ first second : Color,
+    ValidColorPair first second →
+      NoComponentHasTwoDistinctInnerStubs data C first second
+
 /-- Inner-touching plus exclusion of the inner--inner type forces every
 component to reach the outer boundary. -/
 theorem exists_inner_and_outer_of_innerTouching_of_noTwoInner
@@ -288,6 +412,75 @@ theorem exists_inner_and_outer_of_innerTouching_of_noTwoInner
       _ = finish.1 := hfinishEq.symm
   · rcases hfinishOuter with ⟨outer, hfinishEq⟩
     exact ⟨outer, finish, hfinishComponent, hfinishEq⟩
+
+/-- Inner-touching component semantics plus the census-level absence of an
+inner--inner strand gives the manuscript's exact radial component semantics:
+one and only one endpoint on each boundary. -/
+theorem everyComponentRadial_of_innerTouching_of_noTwoInner
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    {first second : Color} (hpair : ValidColorPair first second)
+    (hinnerTouching : EveryComponentInnerTouching data C first second)
+    (hnoTwoInner : NoComponentHasTwoDistinctInnerStubs
+      data C first second) :
+    EveryComponentRadial data C first second := by
+  classical
+  intro component
+  rcases exists_inner_and_outer_of_innerTouching_of_noTwoInner
+      data hdata C hC hpair hinnerTouching hnoTwoInner component with
+    ⟨⟨inner, hinnerContains⟩, ⟨outer, houterContains⟩⟩
+  refine ⟨⟨inner, hinnerContains, ?_⟩,
+    ⟨outer, houterContains, ?_⟩⟩
+  · intro candidate hcandidateContains
+    exact hnoTwoInner component candidate inner
+      hcandidateContains hinnerContains
+  · intro candidate hcandidateContains
+    rcases hinnerContains with
+      ⟨innerVertex, hinnerComponent, hinnerEq⟩
+    rcases houterContains with
+      ⟨outerVertex, houterComponent, houterEq⟩
+    rcases hcandidateContains with
+      ⟨candidateVertex, hcandidateComponent, hcandidateEq⟩
+    have hinnerOuter : innerVertex ≠ outerVertex := by
+      intro heq
+      apply hdata.inner_outer_stub_disjoint inner outer
+      calc
+        data.innerStub inner = innerVertex.1 := hinnerEq.symm
+        _ = outerVertex.1 := congrArg Subtype.val heq
+        _ = data.outerStub outer := houterEq
+    have hcandidateEndpoints :=
+      boundaryStub_eq_start_or_finish_of_mem_component
+        data hdata C hC hpair component innerVertex outerVertex
+        candidateVertex hinnerComponent houterComponent
+        hcandidateComponent hinnerOuter
+        (Or.inl ⟨inner, hinnerEq⟩)
+        (Or.inr ⟨outer, houterEq⟩)
+        (Or.inr ⟨candidate, hcandidateEq⟩)
+    rcases hcandidateEndpoints with hcandidateInner | hcandidateOuter
+    · exfalso
+      apply hdata.inner_outer_stub_disjoint inner candidate
+      calc
+        data.innerStub inner = innerVertex.1 := hinnerEq.symm
+        _ = candidateVertex.1 := congrArg Subtype.val hcandidateInner.symm
+        _ = data.outerStub candidate := hcandidateEq
+    · apply data.outerStub.injective
+      calc
+        data.outerStub candidate = candidateVertex.1 := hcandidateEq.symm
+        _ = outerVertex.1 := congrArg Subtype.val hcandidateOuter
+        _ = data.outerStub outer := houterEq
+
+/-- All-pairs form of the preceding component-level implication. -/
+theorem everyColorPairComponentRadial_of_innerTouching_of_noTwoInner
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (hinnerTouching : EveryColorPairComponentInnerTouching data C)
+    (hnoTwoInner : NoColorPairComponentHasTwoDistinctInnerStubs data C) :
+    EveryColorPairComponentRadial data C := by
+  intro first second hpair
+  exact everyComponentRadial_of_innerTouching_of_noTwoInner
+    data hdata C hC hpair
+      (hinnerTouching first second hpair)
+      (hnoTwoInner first second hpair)
 
 end GoertzelV24ClosedWebInnerTouching
 
