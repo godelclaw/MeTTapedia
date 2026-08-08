@@ -200,6 +200,22 @@ theorem interiorPentagonCount_le_weight_add_boundarySurplus
       hsource geometry
   omega
 
+/-- Every unit of internal negative curvature is paid for by a pentagon or
+one of the fixed framed source feet.  This is the useful reverse reading of
+the exact weighted L9 balance: bounding pentagons bounds the long-face
+weight, without treating signed excess as an unsigned defect budget. -/
+theorem interiorNegativeCurvatureWeight_le_pentagonCount_add_sourceFeet
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry) :
+    embedded.interiorNegativeCurvatureWeight ≤
+      embedded.interiorFaceLengths.count 5 + 4 +
+        2 * source.frozenInterfaceStubVertices.card := by
+  have hbalance :=
+    embedded.interiorPentagonCount_add_sourceFeet_eq_weight_add_boundarySurplus
+      hsource geometry
+  omega
+
 /-- Counting defects through the internal face set agrees with counting
 nonhexagonal entries in the internal length multiset. -/
 theorem card_interiorFaceDefectSet_eq_nonHexagonalFaceCount

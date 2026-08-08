@@ -203,6 +203,52 @@ theorem weight_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
   · left
     simpa [weight] using (Nat.lt_of_not_ge hweight)
 
+/-- A coarse clean-block threshold stated using a bound on pentagons rather
+than an unexplained curvature parameter.  Exact weighted L9 pays the
+negative-curvature weight from this bound plus the fixed source feet. -/
+def pentagonBoundedCleanHexBlockThreshold {source : SourceTrail G}
+    (embedded : source.AnnularEmbedding)
+    (pentagonBound blockLength : Nat) : Nat :=
+  embedded.boundedWeightCleanHexBlockThreshold
+    (pentagonBound + 4 + 2 * source.frozenInterfaceStubVertices.card)
+    blockLength
+
+/-- Source-faithful L1 alternative.  Above the explicit threshold, either
+the annulus contains more pentagons than the proposed bound, or the internal
+facial dual contains the clean hexagonal geodesic block needed by the
+compositional corridor engine.  The first branch remains a named structural
+obligation; this theorem does not replace it by a classical covering step. -/
+theorem pentagonCount_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    (pentagonBound blockLength : Nat) (hpositive : 0 < blockLength)
+    (hlarge :
+      embedded.pentagonBoundedCleanHexBlockThreshold
+          pentagonBound blockLength <
+        embedded.cellulation.interiorFaces.card) :
+    pentagonBound < embedded.interiorFaceLengths.count 5 ∨
+      embedded.HasCleanHexagonalGeodesicBlock blockLength := by
+  let weightBound :=
+    pentagonBound + 4 + 2 * source.frozenInterfaceStubVertices.card
+  obtain hweight | hclean :=
+    embedded.weight_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
+      hsource geometry weightBound blockLength hpositive
+        (by
+          simpa [pentagonBoundedCleanHexBlockThreshold, weightBound]
+            using hlarge)
+  · left
+    have hpaid :=
+      embedded.interiorNegativeCurvatureWeight_le_pentagonCount_add_sourceFeet
+        hsource geometry
+    by_contra hnot
+    have hpentagons :
+        embedded.interiorFaceLengths.count 5 ≤ pentagonBound :=
+      Nat.le_of_not_gt hnot
+    dsimp [weightBound] at hweight
+    omega
+  · exact Or.inr hclean
+
 end AnnularEmbedding
 
 end SourceTrail
