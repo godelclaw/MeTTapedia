@@ -164,6 +164,70 @@ theorem majorityChordDiagram_pairwiseEndpointDisjoint
     simp_all
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every nonempty finite radial-path chord diagram has an innermost member.
+Choose a chord of minimum endpoint span; a strictly nested chord would have
+strictly smaller span.  This is the finite selection step used before the
+source's sector-drainage argument. -/
+theorem exists_innermost_majorityChord
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (hnonempty :
+      (majorityChordDiagram C majority first second radial).Nonempty) :
+    ∃ chord ∈ majorityChordDiagram C majority first second radial,
+      InnermostIn chord
+        (majorityChordDiagram C majority first second radial) := by
+  obtain ⟨chord, hchord, hminimal⟩ :=
+    Finset.exists_min_image
+      (majorityChordDiagram C majority first second radial)
+      (fun candidate => candidate.right.val - candidate.left.val)
+      hnonempty
+  refine ⟨chord, hchord, ?_⟩
+  intro inner hinner _hne hnested
+  have hspanStrict :
+      inner.right.val - inner.left.val <
+        chord.right.val - chord.left.val := by
+    unfold OrderedPathChord.NestedIn at hnested
+    have hinnerOrder := inner.left_lt_right
+    have hchordOrder := chord.left_lt_right
+    omega
+  exact (Nat.not_lt_of_ge (hminimal inner hinner)) hspanStrict
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every distinct actual chord touching the open subarc of an innermost
+chord must strictly interleave it.  A chord wholly inside would contradict
+innermostness, while Tait properness excludes shared endpoints.  Thus the
+remaining case is exactly the cross-sector drainage pattern, rather than a
+same-sector nested chord. -/
+theorem other_chord_crosses_of_hasEndpointInside_innermost
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    {outer chord : OrderedPathChord (radial.path.length + 1)}
+    (hinnermost : InnermostIn outer
+      (majorityChordDiagram C majority first second radial))
+    (houter : outer ∈
+      majorityChordDiagram C majority first second radial)
+    (hchord : chord ∈
+      majorityChordDiagram C majority first second radial)
+    (hne : chord ≠ outer)
+    (htouches : chord.HasEndpointInside outer) :
+    chord.Crosses outer := by
+  have hdisjoint :=
+    majorityChordDiagram_pairwiseEndpointDisjoint
+      C majority first second radial outer houter chord hchord hne.symm
+  have hnotNested : ¬ chord.NestedIn outer :=
+    hinnermost chord hchord hne
+  unfold OrderedPathChord.HasEndpointInside at htouches
+  unfold OrderedPathChord.NestedIn at hnotNested
+  unfold OrderedPathChord.Crosses
+  have houterOrder := outer.left_lt_right
+  have hchordOrder := chord.left_lt_right
+  omega
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Correct source-facing drainage premise: once the rotation-system layer
 supplies noncrossing and a chord is chosen innermost, no other third-color
 same-path chord has an endpoint on its open subarc.  Endpoint disjointness is
