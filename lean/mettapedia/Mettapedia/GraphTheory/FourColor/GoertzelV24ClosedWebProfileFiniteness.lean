@@ -87,6 +87,21 @@ noncomputable def vertexSetClosedWebCutProfile
       Nat.lt_succ_of_le hwidth⟩
   profile := vertexSetBoundaryBoundedProfile RS htwoSided inside C hC
 
+/-- Occurrence-sensitive actual-cut packaging for framed closed webs.  This is
+the preferred L7 construction when boundary stubs are bridges. -/
+noncomputable def vertexSetClosedWebCutProfileOfDartOccurrences
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (widthBound : Nat)
+    (RS : RotationSystem V E) (inside : Finset V)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (hwidth : Fintype.card (VertexSetCrossingEdge RS inside) ≤ widthBound) :
+    ClosedWebCutProfile widthBound where
+  crossingEdgeCount :=
+    ⟨Fintype.card (VertexSetCrossingEdge RS inside),
+      Nat.lt_succ_of_le hwidth⟩
+  profile := vertexSetBoundaryBoundedProfileOfDartOccurrences RS inside C hC
+
 /-- Pigeonhole form of L7: any sequence containing one more boundary than the
 explicit state count repeats a profile. -/
 theorem exists_profile_repeat

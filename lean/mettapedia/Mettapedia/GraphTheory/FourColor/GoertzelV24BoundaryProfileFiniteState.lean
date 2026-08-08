@@ -137,6 +137,33 @@ def vertexSetBoundaryBoundedProfile
           RS htwoSided inside)⟩
   profile := (vertexSetBoundaryGraphCutData RS inside).profile C hC
 
+/-- Occurrence-sensitive packaging of an actual vertex-side profile.  Unlike
+`vertexSetBoundaryBoundedProfile`, this version also applies to framed graphs
+with bridge stubs because its fragment bound counts cut-dart occurrences. -/
+def vertexSetBoundaryBoundedProfileOfDartOccurrences
+    (RS : RotationSystem V E) (inside : Finset V)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C) :
+    BoundedCorridorCutProfile
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0
+      (2 * Fintype.card (VertexSetCrossingEdge RS inside)) where
+  faceFragmentCount :=
+    ⟨Fintype.card (BoundaryRegionalFragment RS
+        (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)),
+      Nat.lt_succ_of_le
+        (vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount_of_dartOccurrences
+          RS inside)⟩
+  profile := (vertexSetBoundaryGraphCutData RS inside).profile C hC
+
+@[simp]
+theorem vertexSetBoundaryBoundedProfileOfDartOccurrences_faceFragmentCount_val
+    (RS : RotationSystem V E) (inside : Finset V)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C) :
+    (vertexSetBoundaryBoundedProfileOfDartOccurrences RS inside C hC).faceFragmentCount.val =
+      Fintype.card (BoundaryRegionalFragment RS
+        (vertexSetCrossingEdges RS inside)
+        (vertexSetRegionEdges RS inside)) :=
+  rfl
+
 @[simp]
 theorem vertexSetBoundaryBoundedProfile_faceFragmentCount_val
     (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)

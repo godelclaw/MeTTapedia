@@ -6,6 +6,8 @@ namespace GoertzelV24RotationBoundaryFaceCutProfile
 
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24GraphDerivedCorridorCutProfile
+open GoertzelV24HexFaceRungType
+open GoertzelV24InducedHexCorridorTypes
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24RotationAllFaceCutProfile
 open GoertzelV24RotationFaceFragments
@@ -117,6 +119,144 @@ theorem boundaryRegionalFragmentCutEdge_mem_cut
     boundaryRegionalFragmentCutEdge RS cut region fragment ∈ cut :=
   (Classical.choose_spec fragment.2.2).2
 
+/-- A chosen cyclic occurrence of the chosen cut edge in an open fragment.
+Keeping the occurrence, rather than only its underlying edge, is essential
+when a facial walk traverses a bridge twice. -/
+def boundaryRegionalFragmentCutPosition
+    (RS : RotationSystem V E) (cut region : Finset E)
+    (fragment : BoundaryRegionalFragment RS cut region) :
+    Fin (RS.faceOrbit (orbitFaceRoot RS fragment.1.1)).card :=
+  Classical.choose <|
+    (mem_faceRegionalFragmentEdges_iff RS
+      (orbitFaceRoot RS fragment.1.1) region fragment.2.1
+      (boundaryRegionalFragmentCutEdge RS cut region fragment)).1
+        (boundaryRegionalFragmentCutEdge_mem_fragment RS cut region fragment)
+
+theorem boundaryRegionalFragmentCutPosition_mem
+    (RS : RotationSystem V E) (cut region : Finset E)
+    (fragment : BoundaryRegionalFragment RS cut region) :
+    boundaryRegionalFragmentCutPosition RS cut region fragment ∈
+      faceRegionalFragmentPositions RS (orbitFaceRoot RS fragment.1.1)
+        region fragment.2.1 :=
+  (Classical.choose_spec <|
+    (mem_faceRegionalFragmentEdges_iff RS
+      (orbitFaceRoot RS fragment.1.1) region fragment.2.1
+      (boundaryRegionalFragmentCutEdge RS cut region fragment)).1
+        (boundaryRegionalFragmentCutEdge_mem_fragment RS cut region fragment)).1
+
+theorem boundaryRegionalFragmentCutPosition_edge
+    (RS : RotationSystem V E) (cut region : Finset E)
+    (fragment : BoundaryRegionalFragment RS cut region) :
+    faceCycleEdge RS (orbitFaceRoot RS fragment.1.1)
+        (boundaryRegionalFragmentCutPosition RS cut region fragment) =
+      boundaryRegionalFragmentCutEdge RS cut region fragment :=
+  (Classical.choose_spec <|
+    (mem_faceRegionalFragmentEdges_iff RS
+      (orbitFaceRoot RS fragment.1.1) region fragment.2.1
+      (boundaryRegionalFragmentCutEdge RS cut region fragment)).1
+        (boundaryRegionalFragmentCutEdge_mem_fragment RS cut region fragment)).2
+
+/-- A dart occurrence over a cut edge.  Unlike edge/face incidence, this
+retains the two occurrences of a bridge on one facial walk. -/
+abbrev CutDartOccurrence (RS : RotationSystem V E) (cut : Finset E) :=
+  { dart : RS.D // RS.edgeOf dart ∈ cut }
+
+/-- There are at most two cut-dart occurrences per cut edge, directly from
+the rotation system's two-darts-per-edge law. -/
+theorem card_cutDartOccurrence_le_two_mul_card
+    (RS : RotationSystem V E) (cut : Finset E) :
+    Fintype.card (CutDartOccurrence RS cut) ≤ 2 * cut.card := by
+  let encode : CutDartOccurrence RS cut →
+      Σ edge : ↥cut, { dart : RS.D // dart ∈ RS.dartsOn edge.1 } :=
+    fun occurrence =>
+      ⟨⟨RS.edgeOf occurrence.1, occurrence.2⟩,
+        ⟨occurrence.1, (RS.mem_dartsOn).2 rfl⟩⟩
+  have hinjective : Function.Injective encode := by
+    intro left right heq
+    apply Subtype.ext
+    exact congrArg (fun occurrence => occurrence.2.1) heq
+  calc
+    Fintype.card (CutDartOccurrence RS cut) ≤
+        Fintype.card
+          (Σ edge : ↥cut, { dart : RS.D // dart ∈ RS.dartsOn edge.1 }) :=
+      Fintype.card_le_of_injective encode hinjective
+    _ = ∑ edge : ↥cut,
+        Fintype.card { dart : RS.D // dart ∈ RS.dartsOn edge.1 } := by
+      rw [Fintype.card_sigma]
+    _ = ∑ _edge : ↥cut, 2 := by
+      apply Finset.sum_congr rfl
+      intro edge _hedge
+      rw [Fintype.card_coe, RS.dartsOn_card_two]
+    _ = 2 * cut.card := by simp [Nat.mul_comm]
+
+/-- Map an open face fragment to one actual cut-dart occurrence that it
+contains. -/
+def boundaryRegionalFragmentDartOccurrence
+    (RS : RotationSystem V E) (cut region : Finset E)
+    (fragment : BoundaryRegionalFragment RS cut region) :
+    CutDartOccurrence RS cut :=
+  ⟨faceCycleDart RS (orbitFaceRoot RS fragment.1.1)
+      (boundaryRegionalFragmentCutPosition RS cut region fragment), by
+    change faceCycleEdge RS (orbitFaceRoot RS fragment.1.1)
+        (boundaryRegionalFragmentCutPosition RS cut region fragment) ∈ cut
+    rw [boundaryRegionalFragmentCutPosition_edge]
+    exact boundaryRegionalFragmentCutEdge_mem_cut RS cut region fragment⟩
+
+/-- The occurrence-sensitive fragment map is injective without any global
+two-sided-face hypothesis.  Equal darts determine the same quotient face and
+the same cyclic position; distinct connected fragments have disjoint position
+sets. -/
+theorem boundaryRegionalFragmentDartOccurrence_injective
+    (RS : RotationSystem V E) (cut region : Finset E) :
+    Function.Injective
+      (boundaryRegionalFragmentDartOccurrence RS cut region) := by
+  intro left right heq
+  have hdart :
+      faceCycleDart RS (orbitFaceRoot RS left.1.1)
+          (boundaryRegionalFragmentCutPosition RS cut region left) =
+        faceCycleDart RS (orbitFaceRoot RS right.1.1)
+          (boundaryRegionalFragmentCutPosition RS cut region right) :=
+    congrArg Subtype.val heq
+  have hface : left.1.1 = right.1.1 := by
+    calc
+      left.1.1 = dartOrbitFace RS
+          (faceCycleDart RS (orbitFaceRoot RS left.1.1)
+            (boundaryRegionalFragmentCutPosition RS cut region left)) := by
+        rw [dartOrbitFace_faceCycleDart, dartOrbitFace_orbitFaceRoot]
+      _ = dartOrbitFace RS
+          (faceCycleDart RS (orbitFaceRoot RS right.1.1)
+            (boundaryRegionalFragmentCutPosition RS cut region right)) := by
+        rw [hdart]
+      _ = right.1.1 := by
+        rw [dartOrbitFace_faceCycleDart, dartOrbitFace_orbitFaceRoot]
+  rcases left with ⟨leftFace, ⟨leftFragment, leftTouches⟩⟩
+  rcases right with ⟨rightFace, ⟨rightFragment, rightTouches⟩⟩
+  dsimp only at hface
+  have hfaceSubtype : leftFace = rightFace := Subtype.ext hface
+  subst rightFace
+  have hposition :
+      boundaryRegionalFragmentCutPosition RS cut region
+          (⟨leftFace, ⟨leftFragment, leftTouches⟩⟩ :
+            BoundaryRegionalFragment RS cut region) =
+        boundaryRegionalFragmentCutPosition RS cut region
+          (⟨leftFace, ⟨rightFragment, rightTouches⟩⟩ :
+            BoundaryRegionalFragment RS cut region) := by
+    apply faceCycleDart_injective RS (orbitFaceRoot RS leftFace.1)
+    exact hdart
+  have hfragment : leftFragment = rightFragment := by
+    by_contra hne
+    have hdisjoint := disjoint_faceRegionalFragmentPositions_of_ne RS
+      (orbitFaceRoot RS leftFace.1) region hne
+    have hleftMem := boundaryRegionalFragmentCutPosition_mem RS cut region
+      (⟨leftFace, ⟨leftFragment, leftTouches⟩⟩ :
+        BoundaryRegionalFragment RS cut region)
+    have hrightMem := boundaryRegionalFragmentCutPosition_mem RS cut region
+      (⟨leftFace, ⟨rightFragment, rightTouches⟩⟩ :
+        BoundaryRegionalFragment RS cut region)
+    exact (Finset.disjoint_left.1 hdisjoint) hleftMem (hposition ▸ hrightMem)
+  subst rightFragment
+  rfl
+
 /-- A primal cut-edge/orbit-face incidence. -/
 abbrev CutEdgeFaceIncidence (RS : RotationSystem V E) (cut : Finset E) :=
   Σ edge : ↥cut,
@@ -202,6 +342,17 @@ theorem card_boundaryRegionalFragment_le_two_mul_card
     (boundaryRegionalFragmentIncidence RS cut region)
     (boundaryRegionalFragmentIncidence_injective RS htwoSided cut region)).trans
       (card_cutEdgeFaceIncidence_le_two_mul_card RS cut)
+
+/-- Occurrence-sensitive form of the open-fragment bound.  It remains valid
+when an edge is a bridge and both of its dart sides belong to the same quotient
+face, so no global `OrbitFacesTwoSided` premise is required. -/
+theorem card_boundaryRegionalFragment_le_two_mul_card_of_dartOccurrences
+    (RS : RotationSystem V E) (cut region : Finset E) :
+    Fintype.card (BoundaryRegionalFragment RS cut region) ≤ 2 * cut.card := by
+  exact (Fintype.card_le_of_injective
+    (boundaryRegionalFragmentDartOccurrence RS cut region)
+    (boundaryRegionalFragmentDartOccurrence_injective RS cut region)).trans
+      (card_cutDartOccurrence_le_two_mul_card RS cut)
 
 /-- Canonical finite enumeration of the open regional face fragments. -/
 def boundaryRegionalFragmentAt
@@ -343,6 +494,17 @@ theorem vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount
       2 * Fintype.card (VertexSetCrossingEdge RS inside) := by
   rw [card_vertexSetCrossingEdge]
   exact card_boundaryRegionalFragment_le_two_mul_card RS htwoSided
+    (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)
+
+/-- The boundary-local face-field count is controlled by crossing width even
+for framed graphs with bridge stubs. -/
+theorem vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount_of_dartOccurrences
+    (RS : RotationSystem V E) (inside : Finset V) :
+    Fintype.card (BoundaryRegionalFragment RS
+      (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)) ≤
+      2 * Fintype.card (VertexSetCrossingEdge RS inside) := by
+  rw [card_vertexSetCrossingEdge]
+  exact card_boundaryRegionalFragment_le_two_mul_card_of_dartOccurrences RS
     (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)
 
 end
