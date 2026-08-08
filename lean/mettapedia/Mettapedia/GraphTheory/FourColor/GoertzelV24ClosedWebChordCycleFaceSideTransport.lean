@@ -21,11 +21,13 @@ namespace GoertzelV24ClosedWebChordCycleFaceSideTransport
 
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebFaceTracing
 open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedBoundaryCounts
+open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24SimpleGraphFaceDualConnectedness
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -65,6 +67,48 @@ theorem cycleWalk_dartsAt_card_eq_three
   rw [G.dart_fst_fiber_card_eq_degree]
   rw [← incidentEdgeFinset_card_eq_degree]
   exact hincident
+
+/-!
+At a vertex outside the chord wall, the cut facial component already gives a
+well-defined primal side.  The only input beyond the generic face-tracing
+lemma is the graph/rotation bridge from the radial chord module; no choice is
+made at wall vertices here.
+-/
+
+theorem faceComponentSide_iff_of_vertex_off_cycleWalk_support
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    {vertex : V} (anchor : embedded.RS.D)
+    (hanchor : embedded.RS.vertOf anchor = vertex)
+    (hvertex : vertex ∉ chord.cycleWalk.support) :
+    faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed vertex ↔
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary embedded.RS)
+        (Finset.univ : Finset (OrbitFace embedded.RS))
+        (chord.boundary htriple).wall).Reachable
+        seed (orbitFaceVertex embedded.RS anchor) := by
+  have hrotation : VertexRotationCyclic embedded.RS :=
+    hasCyclicVertexRotations_implies_vertexRotationCyclic
+      G embedded.cellulation.rotation
+        embedded.cellulation.vertexRotation_cyclic
+  apply faceComponentSide_iff_of_anchor_of_vertex_avoids
+    embedded.RS htwoSided hrotation (chord.boundary htriple).wall
+      seed vertex anchor hanchor
+  intro dart hdart
+  have hnotCycle := chord.toRotationSystem_all_incident_edges_not_mem_cycleWalk_of_vertex_not_mem_support
+    embedded.cellulation.rotation hvertex dart hdart
+  intro hwall
+  apply hnotCycle
+  exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple
+    (embedded.RS.edgeOf dart)).1 hwall
 
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
