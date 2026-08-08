@@ -427,6 +427,64 @@ theorem labels_chordSideFace_not_rotationSector_eq_innerHole
     simpa [hsectorFalse, chordSideFace,
       MajorityChordOnRadialPath.boundary] using hresult
 
+/-! The previous face-label theorem identifies the intrinsic sector.  The
+next lemma supplies the corresponding primal-side transport for an actual
+cyclic cut.  Its geometric input is deliberately only the support fact that
+the listed cut edges lie on the chord cycle; the radial-prefix avoidance is
+proved from the existing chord-cycle support lemmas.  In particular, this does
+not confuse the primal crossing-port set with the whole facial wall. -/
+
+theorem CyclicEdgeCutRealization.side_iff_of_radial_prefix_of_edgeCut_subset_cycle
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath
+      C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (hcut : ∀ e : G.edgeSet, e ∈ edgeCut →
+      e.1 ∈ chord.cycleWalk.edges) :
+    realization.side radial.start.1 ↔
+      realization.side ((ambientRadialPath radial).getVert chord.left.val) := by
+  let ambient := ambientRadialPath radial
+  let initialSegment := ambient.take chord.left.val
+  have hleftPos : 0 < chord.left.val := chord.left_pos hdata htriple
+  have hleftBound : chord.left.val ≤ ambient.length := by
+    simp [ambient, ambientRadialPath_length]
+    omega
+  have hprefixNonempty : ¬initialSegment.Nil := by
+    rw [SimpleGraph.Walk.not_nil_iff_lt_length]
+    simp [initialSegment, SimpleGraph.Walk.take_length,
+      Nat.min_eq_left hleftBound, hleftPos]
+  have hprefixAvoids :
+      ∀ based ∈ initialSegment.darts, ∀ incident : G.Dart,
+        incident.fst = based.fst →
+          (⟨incident.edge, incident.edge_mem⟩ : G.edgeSet) ∉ edgeCut := by
+    intro based hbased incident hincident
+    rcases exists_position_lt_of_mem_darts_take
+        ambient chord.left.val hleftBound based hbased with
+      ⟨position, hposition, hbasedPosition⟩
+    have hnotCycle :
+        (embedded.RS.edgeOf incident).1 ∉ chord.cycleWalk.edges := by
+      apply incidentEdge_not_mem_cycleWalk_of_position_outside chord
+        htriple position
+        (by
+          rw [← ambientRadialPath_length radial]
+          exact le_trans (Nat.le_of_lt hposition) hleftBound)
+        (Or.inl hposition) (embedded.RS.edgeOf incident)
+      change ambient.getVert position ∈ incident.edge
+      rw [← hbasedPosition, ← hincident]
+      simp [SimpleGraph.Dart.edge]
+    intro hcutEdge
+    exact hnotCycle <| hcut _ hcutEdge
+  have hside := realization.side_iff_of_walk_darts_avoid_edgeCut
+    initialSegment hprefixAvoids
+  simpa [initialSegment, ambient] using hside
+
 /-- Any selected side whose exact-cut label differs from the common hole
 label is necessarily the intrinsic rotation sector of the chord. -/
 theorem side_eq_rotationSector_of_label_ne_innerHole
