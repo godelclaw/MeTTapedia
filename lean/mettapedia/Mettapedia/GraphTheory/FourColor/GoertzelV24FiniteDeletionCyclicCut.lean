@@ -207,7 +207,6 @@ def componentCyclicEdgeCutRealization_of_edgeCut_eq
 /-- Away from the computed component boundary, an ambient edge preserves the
 component side.  This is the local form used to discharge all non-wall edges
 once boundary saturation has been established. -/
-omit [DecidableEq V] in
 theorem component_side_iff_of_edge_not_mem_componentCrossingEdges
     (removed : Finset G.edgeSet)
     (component :
@@ -222,6 +221,85 @@ theorem component_side_iff_of_edge_not_mem_componentCrossingEdges
     exact hedge ((mem_componentCrossingEdges_iff removed component edge).2 hcross)
   exact (not_edgeCrossesVertexSide_iff_forall_side_iff
     G (fun vertex => vertex ∈ component.supp) edge).1 hnotCross u v hu hv
+
+/-- A closed walk avoiding the deleted support stays wholly in one deletion
+component once its root is known to lie there.  This packages the side-cycle
+obligation in the form supplied by the annular hole walks. -/
+theorem hasCycleOnSide_of_walk_avoiding_removed
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {root : V} (walk : G.Walk root root) (hcycle : walk.IsCycle)
+    (havoid : ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ walk.edges →
+      edge.1 ∉ edgeFinsetValueSet removed)
+    (hroot : root ∈ component.supp) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) := by
+  refine ⟨root, hroot, walk, hcycle, ?_⟩
+  intro vertex hvertex
+  let pfx := walk.takeUntil vertex hvertex
+  have hprefixAvoid : ∀ edge : G.edgeSet,
+      (edge : Sym2 V) ∈ pfx.edges →
+        edge.1 ∉ edgeFinsetValueSet removed := by
+    intro edge hedge
+    exact havoid edge
+      (walk.edges_takeUntil_subset_edges hvertex hedge)
+  have hside := component_side_iff_of_walk_avoiding_removed
+    removed component pfx hprefixAvoid
+  exact hside.mp hroot
+
+/-- The complementary side-cycle variant of
+`hasCycleOnSide_of_walk_avoiding_removed`. -/
+theorem hasCycleOnComplementSide_of_walk_avoiding_removed
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {root : V} (walk : G.Walk root root) (hcycle : walk.IsCycle)
+    (havoid : ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ walk.edges →
+      edge.1 ∉ edgeFinsetValueSet removed)
+    (hroot : ¬ root ∈ component.supp) :
+    HasCycleOnSide G (fun vertex => ¬ vertex ∈ component.supp) := by
+  refine ⟨root, hroot, walk, hcycle, ?_⟩
+  intro vertex hvertex hcomponent
+  let pfx := walk.takeUntil vertex hvertex
+  have hprefixAvoid : ∀ edge : G.edgeSet,
+      (edge : Sym2 V) ∈ pfx.edges →
+        edge.1 ∉ edgeFinsetValueSet removed := by
+    intro edge hedge
+    exact havoid edge
+      (walk.edges_takeUntil_subset_edges hvertex hedge)
+  have hside := component_side_iff_of_walk_avoiding_removed
+    removed component pfx hprefixAvoid
+  exact hroot (hside.mpr hcomponent)
+
+/-- A compact annular-witness constructor: once two closed walks avoid the
+deleted support and start on opposite deletion sides, the only remaining
+geometric datum needed for an exact cyclic cut is boundary saturation. -/
+def componentCyclicEdgeCutRealization_of_edgeCut_eq_of_avoiding_cycle_witnesses
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {edgeCut : Finset G.edgeSet}
+    (hboundary : componentCrossingEdges removed component = edgeCut)
+    {insideRoot outsideRoot : V}
+    (insideWalk : G.Walk insideRoot insideRoot)
+    (outsideWalk : G.Walk outsideRoot outsideRoot)
+    (hinsideCycle : insideWalk.IsCycle)
+    (houtsideCycle : outsideWalk.IsCycle)
+    (hinsideAvoid : ∀ edge : G.edgeSet,
+      (edge : Sym2 V) ∈ insideWalk.edges →
+        edge.1 ∉ edgeFinsetValueSet removed)
+    (houtsideAvoid : ∀ edge : G.edgeSet,
+      (edge : Sym2 V) ∈ outsideWalk.edges →
+        edge.1 ∉ edgeFinsetValueSet removed)
+    (hinsideRoot : insideRoot ∈ component.supp)
+    (houtsideRoot : ¬ outsideRoot ∈ component.supp) :
+    CyclicEdgeCutRealization G edgeCut :=
+  componentCyclicEdgeCutRealization_of_edgeCut_eq
+    removed component hboundary
+    (hasCycleOnSide_of_walk_avoiding_removed
+      removed component insideWalk hinsideCycle hinsideAvoid hinsideRoot)
+    (hasCycleOnComplementSide_of_walk_avoiding_removed
+      removed component outsideWalk houtsideCycle houtsideAvoid houtsideRoot)
 
 end
 
