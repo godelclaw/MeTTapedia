@@ -123,6 +123,46 @@ theorem card_componentCrossingEdges_le_removed
   Finset.card_le_card (componentCrossingEdges_subset_removed removed component)
 
 /-!
+The component side is constant along every walk that avoids the deleted
+support.  This is the walk form of the endpoint boundary calculation and is
+the exact graph lemma needed when a planar/Jordan argument supplies an
+avoiding route around a wall vertex.
+-/
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+theorem component_side_iff_of_walk_avoiding_removed
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {u v : V} (walk : G.Walk u v)
+    (havoid : ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ walk.edges →
+      edge.1 ∉ edgeFinsetValueSet removed) :
+    (u ∈ component.supp ↔ v ∈ component.supp) := by
+  induction walk with
+  | nil =>
+      exact Iff.rfl
+  | @cons u v w hadj tail ih =>
+      let edge : G.edgeSet := ⟨s(u, v), hadj⟩
+      have hedge_mem : (edge : Sym2 V) ∈
+          (SimpleGraph.Walk.cons hadj tail).edges := by
+        simp [SimpleGraph.Walk.edges_cons, edge]
+      have hedge_avoid : edge.1 ∉ edgeFinsetValueSet removed :=
+        havoid edge hedge_mem
+      have hdeleteAdj :
+          (G.deleteEdges (edgeFinsetValueSet removed)).Adj u v := by
+        rw [SimpleGraph.deleteEdges_adj]
+        exact ⟨hadj, hedge_avoid⟩
+      have hstep : u ∈ component.supp ↔ v ∈ component.supp :=
+        component.mem_supp_congr_adj hdeleteAdj
+      have htailAvoid : ∀ edge' : G.edgeSet,
+          (edge' : Sym2 V) ∈ tail.edges →
+            edge'.1 ∉ edgeFinsetValueSet removed := by
+        intro edge' hedge'
+        exact havoid edge' (by
+          simp [SimpleGraph.Walk.edges_cons, hedge'])
+      exact hstep.trans (ih htailAvoid)
+
+/-!
 The exact realization constructor.  Notice that the edge support in the
 result is the *computed* component boundary.  Reusing a preselected deleted
 support requires the separate equality
