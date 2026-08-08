@@ -11,10 +11,11 @@ cycles gives the partial face map used by the classical reducibility
 argument.
 
 This file states the four preembedding obligations with their standard
-hypermap meanings and constructs the facial part of the map directly from a
-checked catalogue quiz.  The remaining local obligation is expressed without
-loss: the paired traversal representatives must be edge-central.  Once that
-is proved, kernel coverage follows immediately.
+hypermap meanings and constructs the partial map directly from a checked
+catalogue quiz.  A reflected source-geometry check and the recursive quiz
+structure force the paired traversal representatives to be edge-central, so
+kernel coverage follows.  The resulting constructor leaves only the standard
+`R`-link connectivity field to be supplied.
 -/
 
 set_option autoImplicit false
@@ -57,6 +58,22 @@ def EdgeCentral
     (source : FiniteHypermap Source) (target : FiniteHypermap Target)
     (mapDart : Source → Target) (dart : Source) : Prop :=
   mapDart (source.edge dart) = target.edge (mapDart dart)
+
+/-- Every hypermap edge is an involution. -/
+def IsPlain (H : FiniteHypermap D) : Prop :=
+  ∀ dart, H.edge (H.edge dart) = dart
+
+/-- Every vertex permutation has period three. -/
+def IsCubic (H : FiniteHypermap D) : Prop :=
+  ∀ dart, H.node (H.node (H.node dart)) = dart
+
+/-- Period-three vertex rotation on a specified source domain. -/
+def IsCubicOn (H : FiniteHypermap D) (domain : D → Prop) : Prop :=
+  ∀ dart, domain dart → H.node (H.node (H.node dart)) = dart
+
+/-- A domain consists of complete face cycles. -/
+def FaceInvariant (H : FiniteHypermap D) (domain : D → Prop) : Prop :=
+  ∀ dart, domain (H.face dart) ↔ domain dart
 
 /-- A list-valued path for a binary relation, with the first vertex supplied
 separately. -/
@@ -133,6 +150,704 @@ theorem faceClosure_of_sameCycle
     (hsame : H.face.SameCycle dart anchor) :
     FaceClosure H predicate dart :=
   ⟨anchor, hanchor, hsame⟩
+
+/-- Cubicity rewrites one face step after an edge crossing as two node
+steps. -/
+theorem face_edge_eq_node_node_of_cube
+    (H : FiniteHypermap D) (dart : D)
+    (hcube : H.node (H.node (H.node dart)) = dart) :
+    H.face (H.edge dart) = H.node (H.node dart) := by
+  have hidentity := H.face_edge_node (H.node (H.node dart))
+  rw [hcube] at hidentity
+  exact hidentity
+
+/-- If the target of one face step is cubic, that step is two node turns after
+crossing the incoming edge. -/
+theorem face_eq_node_node_edge_of_face_cube
+    (H : FiniteHypermap D) (hplain : IsPlain H) (dart : D)
+    (hcube : H.node (H.node (H.node (H.face dart))) = H.face dart) :
+    H.face dart = H.node (H.node (H.edge dart)) := by
+  have hnode : H.node (H.face dart) = H.edge dart := by
+    apply H.edge.injective
+    rw [H.edge_node_face, hplain]
+  calc
+    H.face dart = H.node (H.node (H.node (H.face dart))) := hcube.symm
+    _ = H.node (H.node (H.edge dart)) := by rw [hnode]
+
+/-- The node just beyond a double-left quiz turn is the second face successor
+of the seed's crossed edge. -/
+theorem node_qstepL_node_eq_face_face_edge
+    (H : FiniteHypermap D) (hplain : IsPlain H) (dart : D)
+    (hcube : H.node (H.node (H.node dart)) = dart)
+    (hfaceFaceCube :
+      H.node (H.node (H.node (H.face (H.face (H.edge dart))))) =
+        H.face (H.face (H.edge dart))) :
+    H.node (qstepLWith H.edge H.node (H.node dart)) =
+      H.face (H.face (H.edge dart)) := by
+  unfold qstepLWith
+  have hfirst := face_edge_eq_node_node_of_cube H dart hcube
+  have hnextCube :
+      H.node (H.node (H.node (H.face (H.node (H.node dart))))) =
+        H.face (H.node (H.node dart)) := by
+    rw [← hfirst]
+    exact hfaceFaceCube
+  calc
+    H.node (H.node (H.edge (H.node (H.node dart)))) =
+        H.face (H.node (H.node dart)) :=
+      (face_eq_node_node_edge_of_face_cube H hplain
+        (H.node (H.node dart)) hnextCube).symm
+    _ = H.face (H.face (H.edge dart)) :=
+      (congrArg H.face hfirst).symm
+
+/-- A face-invariant domain contains the predecessor `edge (node dart)` of
+each one of its darts. -/
+theorem domain_edge_node
+    (H : FiniteHypermap D) {domain : D → Prop}
+    (hinvariant : FaceInvariant H domain) (dart : D)
+    (hdart : domain dart) : domain (H.edge (H.node dart)) := by
+  apply (hinvariant (H.edge (H.node dart))).1
+  rw [H.face_edge_node]
+  exact hdart
+
+/-- In a cubic hypermap, face invariance also transports membership from
+`edge dart` to `node² dart`. -/
+theorem domain_node_node_of_edge
+    (H : FiniteHypermap D) {domain : D → Prop}
+    (hinvariant : FaceInvariant H domain) (dart : D)
+    (hedge : domain (H.edge dart))
+    (hcube : H.node (H.node (H.node dart)) = dart) :
+    domain (H.node (H.node dart)) := by
+  rw [← face_edge_eq_node_node_of_cube H dart hcube]
+  exact (hinvariant (H.edge dart)).2 hedge
+
+/-- A partial face morphism sends the canonical face predecessor of a dart to
+the corresponding target predecessor. -/
+theorem map_edge_node
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (dart : Source) (hdart : domain dart) :
+    mapDart (source.edge (source.node dart)) =
+      target.edge (target.node (mapDart dart)) := by
+  have hpredecessor := domain_edge_node source hinvariant dart hdart
+  apply target.face.injective
+  rw [← hface _ hpredecessor]
+  simp only [source.face_edge_node, target.face_edge_node]
+
+/-- Edge-centrality is invariant under crossing an edge in plain source and
+target hypermaps. -/
+theorem edgeCentral_edge
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    (mapDart : Source → Target)
+    (hsourcePlain : IsPlain source) (htargetPlain : IsPlain target)
+    (dart : Source)
+    (hcentral : EdgeCentral source target mapDart dart) :
+    EdgeCentral source target mapDart (source.edge dart) := by
+  unfold EdgeCentral at hcentral ⊢
+  rw [hsourcePlain dart, hcentral, htargetPlain]
+
+/-- If a mapped question head is the corresponding target node step, facial
+transport makes that head edge-central. -/
+theorem edgeCentral_node_of_map_node
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (dart : Source) (hdart : domain dart)
+    (hnode : mapDart (source.node dart) = target.node (mapDart dart)) :
+    EdgeCentral source target mapDart (source.node dart) := by
+  unfold EdgeCentral
+  rw [map_edge_node source target mapDart hinvariant hface dart hdart,
+    hnode]
+
+/-- A mapped node head turns its right predecessor into the next mapped
+edge-central recursion seed. -/
+theorem rightSeed_of_map_node
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (hsourcePlain : IsPlain source) (htargetPlain : IsPlain target)
+    (dart : Source) (hdart : domain dart)
+    (hnode : mapDart (source.node dart) = target.node (mapDart dart)) :
+    mapDart (source.edge (source.node dart)) =
+        target.edge (target.node (mapDart dart)) ∧
+      EdgeCentral source target mapDart
+        (source.edge (source.node dart)) := by
+  have hmap := map_edge_node source target mapDart hinvariant hface dart hdart
+  refine ⟨hmap, ?_⟩
+  unfold EdgeCentral
+  rw [hsourcePlain, hnode, hmap, htargetPlain]
+
+/-- A mapped node head and a central seed similarly produce the left
+predecessor `edge (node² dart)` as a mapped central recursion seed. -/
+theorem leftSeed_of_map_node
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (hsourcePlain : IsPlain source) (htargetPlain : IsPlain target)
+    (dart : Source) (hedge : domain (source.edge dart))
+    (hnodeDomain : domain (source.node dart))
+    (hsourceCube : source.node (source.node (source.node dart)) = dart)
+    (htargetCube : target.node (target.node (target.node (mapDart dart))) =
+      mapDart dart)
+    (hcentral : EdgeCentral source target mapDart dart)
+    (hnode : mapDart (source.node dart) = target.node (mapDart dart)) :
+    mapDart (source.edge (source.node (source.node dart))) =
+        target.edge (target.node (target.node (mapDart dart))) ∧
+      EdgeCentral source target mapDart
+        (source.edge (source.node (source.node dart))) := by
+  have hmap := map_edge_node source target mapDart hinvariant hface
+    (source.node dart) hnodeDomain
+  have hmapSeed :
+      mapDart (source.edge (source.node (source.node dart))) =
+        target.edge (target.node (target.node (mapDart dart))) := by
+    simpa only [hnode] using hmap
+  have hnodeNode :
+      mapDart (source.node (source.node dart)) =
+        target.node (target.node (mapDart dart)) := by
+    calc
+      mapDart (source.node (source.node dart)) =
+          mapDart (source.face (source.edge dart)) := by
+        rw [face_edge_eq_node_node_of_cube source dart hsourceCube]
+      _ = target.face (mapDart (source.edge dart)) :=
+        hface (source.edge dart) hedge
+      _ = target.face (target.edge (mapDart dart)) := by
+        rw [hcentral]
+      _ = target.node (target.node (mapDart dart)) :=
+        face_edge_eq_node_node_of_cube target (mapDart dart) htargetCube
+  refine ⟨hmapSeed, ?_⟩
+  unfold EdgeCentral
+  rw [hsourcePlain, hnodeNode, hmapSeed, htargetPlain]
+
+/-- A partial face morphism commutes with two successive face steps whenever
+its domain is face-invariant. -/
+theorem map_face_face
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (dart : Source) (hdart : domain dart) :
+    mapDart (source.face (source.face dart)) =
+      target.face (target.face (mapDart dart)) := by
+  have hnext : domain (source.face dart) := (hinvariant dart).2 hdart
+  rw [hface _ hnext, hface _ hdart]
+
+/-- Constructor-generic centrality propagation for a question rooted one node
+step beyond an already central seed. -/
+theorem questionWalk_node_edgeCentral
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (hsourcePlain : IsPlain source) (htargetPlain : IsPlain target)
+    (hsourceCubic : IsCubicOn source domain)
+    (htargetCubic : IsCubic target) :
+    ∀ (question : Question) (seed : Source),
+      domain seed →
+      domain (source.edge seed) →
+      EdgeCentral source target mapDart seed →
+      (∀ dart ∈ questionWalkWith source.edge source.node
+        (source.node seed) question, domain dart) →
+      (questionWalkWith source.edge source.node
+          (source.node seed) question).map mapDart =
+        questionWalkWith target.edge target.node
+          (target.node (mapDart seed)) question →
+      ∀ dart ∈ questionWalkWith source.edge source.node
+        (source.node seed) question,
+          EdgeCentral source target mapDart dart := by
+  intro question
+  induction question with
+  | empty => simp [questionWalkWith]
+  | check arity =>
+      intro seed hseed hedge hseedCentral hwalkDomain hwalkMap dart hdart
+      have hnodeMap : mapDart (source.node seed) =
+          target.node (mapDart seed) := by
+        simpa [questionWalkWith] using hwalkMap
+      have hdartEq : dart = source.node seed := by
+        simpa [questionWalkWith] using hdart
+      subst dart
+      exact edgeCentral_node_of_map_node source target mapDart hinvariant
+        hface seed hseed hnodeMap
+  | left arity next ih =>
+      intro seed hseed hedge hseedCentral hwalkDomain hwalkMap dart hdart
+      let nextSeed := source.edge (source.node (source.node seed))
+      let targetNextSeed :=
+        target.edge (target.node (target.node (mapDart seed)))
+      change
+        mapDart (source.node seed) ::
+            (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+          target.node (mapDart seed) ::
+            questionWalkWith target.edge target.node
+              (target.node targetNextSeed) next at hwalkMap
+      rcases List.cons.inj hwalkMap with ⟨hnodeMap, htailMap⟩
+      have hnodeDomain : domain (source.node seed) :=
+        hwalkDomain _ (by simp [questionWalkWith])
+      have hseedCube := hsourceCubic seed hseed
+      have hnextDomain : domain nextSeed := by
+        exact domain_edge_node source hinvariant (source.node seed) hnodeDomain
+      have hnextEdgeDomain : domain (source.edge nextSeed) := by
+        dsimp [nextSeed]
+        rw [hsourcePlain]
+        exact domain_node_node_of_edge source hinvariant seed hedge hseedCube
+      have hnextData := leftSeed_of_map_node source target mapDart hinvariant
+        hface hsourcePlain htargetPlain seed hedge hnodeDomain hseedCube
+        (htargetCubic (mapDart seed)) hseedCentral hnodeMap
+      have hnextMap : mapDart nextSeed = targetNextSeed := hnextData.1
+      have hnextCentral : EdgeCentral source target mapDart nextSeed :=
+        hnextData.2
+      have htailDomain : ∀ other ∈
+          questionWalkWith source.edge source.node (source.node nextSeed) next,
+          domain other := by
+        intro other hother
+        apply hwalkDomain other
+        simp only [questionWalkWith, List.mem_cons]
+        exact Or.inr hother
+      have htailMap' :
+          (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+            questionWalkWith target.edge target.node
+              (target.node (mapDart nextSeed)) next := by
+        simpa only [hnextMap] using htailMap
+      have htailCentral := ih nextSeed hnextDomain hnextEdgeDomain
+        hnextCentral htailDomain htailMap'
+      simp only [questionWalkWith, List.mem_cons] at hdart
+      rcases hdart with rfl | hdart
+      · exact edgeCentral_node_of_map_node source target mapDart hinvariant
+          hface seed hseed hnodeMap
+      · exact htailCentral dart hdart
+  | right arity next ih =>
+      intro seed hseed hedge hseedCentral hwalkDomain hwalkMap dart hdart
+      let nextSeed := source.edge (source.node seed)
+      let targetNextSeed := target.edge (target.node (mapDart seed))
+      change
+        mapDart (source.node seed) ::
+            (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+          target.node (mapDart seed) ::
+            questionWalkWith target.edge target.node
+              (target.node targetNextSeed) next at hwalkMap
+      rcases List.cons.inj hwalkMap with ⟨hnodeMap, htailMap⟩
+      have hnodeDomain : domain (source.node seed) :=
+        hwalkDomain _ (by simp [questionWalkWith])
+      have hnextDomain : domain nextSeed :=
+        domain_edge_node source hinvariant seed hseed
+      have hnextEdgeDomain : domain (source.edge nextSeed) := by
+        dsimp [nextSeed]
+        rw [hsourcePlain]
+        exact hnodeDomain
+      have hnextData := rightSeed_of_map_node source target mapDart hinvariant
+        hface hsourcePlain htargetPlain seed hseed hnodeMap
+      have hnextMap : mapDart nextSeed = targetNextSeed := hnextData.1
+      have hnextCentral : EdgeCentral source target mapDart nextSeed :=
+        hnextData.2
+      have htailDomain : ∀ other ∈
+          questionWalkWith source.edge source.node (source.node nextSeed) next,
+          domain other := by
+        intro other hother
+        apply hwalkDomain other
+        simp only [questionWalkWith, List.mem_cons]
+        exact Or.inr hother
+      have htailMap' :
+          (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+            questionWalkWith target.edge target.node
+              (target.node (mapDart nextSeed)) next := by
+        simpa only [hnextMap] using htailMap
+      have htailCentral := ih nextSeed hnextDomain hnextEdgeDomain
+        hnextCentral htailDomain htailMap'
+      simp only [questionWalkWith, List.mem_cons] at hdart
+      rcases hdart with rfl | hdart
+      · exact edgeCentral_node_of_map_node source target mapDart hinvariant
+          hface seed hseed hnodeMap
+      · exact htailCentral dart hdart
+  | fork arity left right ihLeft ihRight =>
+      intro seed hseed hedge hseedCentral hwalkDomain hwalkMap dart hdart
+      let leftSeed := source.edge (source.node (source.node seed))
+      let targetLeftSeed :=
+        target.edge (target.node (target.node (mapDart seed)))
+      let rightSeed := source.edge (source.node seed)
+      let targetRightSeed := target.edge (target.node (mapDart seed))
+      let sourceLeftWalk :=
+        questionWalkWith source.edge source.node (source.node leftSeed) left
+      let sourceRightWalk :=
+        questionWalkWith source.edge source.node (source.node rightSeed) right
+      let targetLeftWalk :=
+        questionWalkWith target.edge target.node
+          (target.node targetLeftSeed) left
+      let targetRightWalk :=
+        questionWalkWith target.edge target.node
+          (target.node targetRightSeed) right
+      simp only [questionWalkWith, List.map_cons, List.map_append] at hwalkMap
+      change
+        mapDart (source.node seed) ::
+            (sourceLeftWalk.map mapDart ++ sourceRightWalk.map mapDart) =
+          target.node (mapDart seed) ::
+            (targetLeftWalk ++ targetRightWalk) at hwalkMap
+      rcases List.cons.inj hwalkMap with ⟨hnodeMap, htailMap⟩
+      have hlength : (sourceLeftWalk.map mapDart).length =
+          targetLeftWalk.length := by
+        simp [sourceLeftWalk, targetLeftWalk, length_questionWalkWith]
+      rcases (append_eq_append_iff_of_length_eq hlength).1 htailMap with
+        ⟨hleftMap, hrightMap⟩
+      have hnodeDomain : domain (source.node seed) :=
+        hwalkDomain _ (by simp [questionWalkWith])
+      have hseedCube := hsourceCubic seed hseed
+      have hleftDomain : domain leftSeed :=
+        domain_edge_node source hinvariant (source.node seed) hnodeDomain
+      have hleftEdgeDomain : domain (source.edge leftSeed) := by
+        dsimp [leftSeed]
+        rw [hsourcePlain]
+        exact domain_node_node_of_edge source hinvariant seed hedge hseedCube
+      have hleftData := leftSeed_of_map_node source target mapDart hinvariant
+        hface hsourcePlain htargetPlain seed hedge hnodeDomain hseedCube
+        (htargetCubic (mapDart seed)) hseedCentral hnodeMap
+      have hleftMapSeed : mapDart leftSeed = targetLeftSeed := hleftData.1
+      have hleftCentral : EdgeCentral source target mapDart leftSeed :=
+        hleftData.2
+      have hrightDomain : domain rightSeed :=
+        domain_edge_node source hinvariant seed hseed
+      have hrightEdgeDomain : domain (source.edge rightSeed) := by
+        dsimp [rightSeed]
+        rw [hsourcePlain]
+        exact hnodeDomain
+      have hrightData := rightSeed_of_map_node source target mapDart hinvariant
+        hface hsourcePlain htargetPlain seed hseed hnodeMap
+      have hrightMapSeed : mapDart rightSeed = targetRightSeed := hrightData.1
+      have hrightCentral : EdgeCentral source target mapDart rightSeed :=
+        hrightData.2
+      have hleftWalkDomain : ∀ other ∈ sourceLeftWalk, domain other := by
+        intro other hother
+        apply hwalkDomain other
+        simp only [questionWalkWith, List.mem_cons, List.mem_append]
+        exact Or.inr (Or.inl hother)
+      have hrightWalkDomain : ∀ other ∈ sourceRightWalk, domain other := by
+        intro other hother
+        apply hwalkDomain other
+        simp only [questionWalkWith, List.mem_cons, List.mem_append]
+        exact Or.inr (Or.inr hother)
+      have hleftMap' : sourceLeftWalk.map mapDart =
+          questionWalkWith target.edge target.node
+            (target.node (mapDart leftSeed)) left := by
+        simpa only [hleftMapSeed] using hleftMap
+      have hrightMap' : sourceRightWalk.map mapDart =
+          questionWalkWith target.edge target.node
+            (target.node (mapDart rightSeed)) right := by
+        simpa only [hrightMapSeed] using hrightMap
+      have hleftAll := ihLeft leftSeed hleftDomain hleftEdgeDomain
+        hleftCentral hleftWalkDomain hleftMap'
+      have hrightAll := ihRight rightSeed hrightDomain hrightEdgeDomain
+        hrightCentral hrightWalkDomain hrightMap'
+      simp only [questionWalkWith, List.mem_cons, List.mem_append] at hdart
+      rcases hdart with rfl | hdart
+      · exact edgeCentral_node_of_map_node source target mapDart hinvariant
+          hface seed hseed hnodeMap
+      · rcases hdart with hleft | hright
+        · exact hleftAll dart hleft
+        · exact hrightAll dart hright
+  | skewLeft arity next ih =>
+      intro seed hseed hedge hseedCentral hwalkDomain hwalkMap dart hdart
+      let sourceZ :=
+        source.node (qstepLWith source.edge source.node (source.node seed))
+      let targetZ :=
+        target.node (qstepLWith target.edge target.node
+          (target.node (mapDart seed)))
+      let nextSeed := source.edge sourceZ
+      let targetNextSeed := target.edge targetZ
+      change
+        mapDart nextSeed ::
+            (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+          targetNextSeed ::
+            questionWalkWith target.edge target.node
+              (target.node targetNextSeed) next at hwalkMap
+      rcases List.cons.inj hwalkMap with ⟨hnextMap, htailMap⟩
+      have hnextDomain : domain nextSeed :=
+        hwalkDomain _ (by
+          simp [questionWalkWith, nextSeed, sourceZ, qstepLWith])
+      have hfaceEdgeDomain : domain (source.face (source.edge seed)) :=
+        (hinvariant (source.edge seed)).2 hedge
+      have hfaceFaceEdgeDomain :
+          domain (source.face (source.face (source.edge seed))) :=
+        (hinvariant (source.face (source.edge seed))).2 hfaceEdgeDomain
+      have hseedCube := hsourceCubic seed hseed
+      have hfaceFaceCube := hsourceCubic
+        (source.face (source.face (source.edge seed))) hfaceFaceEdgeDomain
+      have hsourceZ : sourceZ =
+          source.face (source.face (source.edge seed)) :=
+        node_qstepL_node_eq_face_face_edge source hsourcePlain seed
+          hseedCube hfaceFaceCube
+      have htargetZ : targetZ =
+          target.face (target.face (target.edge (mapDart seed))) :=
+        node_qstepL_node_eq_face_face_edge target htargetPlain (mapDart seed)
+          (htargetCubic (mapDart seed))
+          (htargetCubic
+            (target.face (target.face (target.edge (mapDart seed)))))
+      have hmapZ : mapDart sourceZ = targetZ := by
+        calc
+          mapDart sourceZ =
+              mapDart (source.face (source.face (source.edge seed))) := by
+            rw [hsourceZ]
+          _ = target.face (target.face (mapDart (source.edge seed))) :=
+            map_face_face source target mapDart hinvariant hface
+              (source.edge seed) hedge
+          _ = target.face (target.face (target.edge (mapDart seed))) := by
+            rw [hseedCentral]
+          _ = targetZ := htargetZ.symm
+      have hsourceZDomain : domain sourceZ := by
+        rw [hsourceZ]
+        exact hfaceFaceEdgeDomain
+      have hnextEdgeDomain : domain (source.edge nextSeed) := by
+        dsimp [nextSeed]
+        rw [hsourcePlain]
+        exact hsourceZDomain
+      have hnextCentral : EdgeCentral source target mapDart nextSeed := by
+        unfold EdgeCentral
+        dsimp [nextSeed, targetNextSeed] at hnextMap ⊢
+        rw [hsourcePlain, hmapZ, hnextMap, htargetPlain]
+      have htailDomain : ∀ other ∈
+          questionWalkWith source.edge source.node (source.node nextSeed) next,
+          domain other := by
+        intro other hother
+        apply hwalkDomain other
+        simp only [questionWalkWith, List.mem_cons]
+        exact Or.inr hother
+      have htailMap' :
+          (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+            questionWalkWith target.edge target.node
+              (target.node (mapDart nextSeed)) next := by
+        simpa only [hnextMap] using htailMap
+      have htailAll := ih nextSeed hnextDomain hnextEdgeDomain
+        hnextCentral htailDomain htailMap'
+      simp only [questionWalkWith, List.mem_cons] at hdart
+      change dart = nextSeed ∨
+        dart ∈ questionWalkWith source.edge source.node
+          (source.node nextSeed) next at hdart
+      rcases hdart with rfl | hdart
+      · exact hnextCentral
+      · exact htailAll dart hdart
+  | skewRight arity next ih =>
+      intro seed hseed hedge hseedCentral hwalkDomain hwalkMap dart hdart
+      let rightSeed := source.edge (source.node seed)
+      let targetRightSeed := target.edge (target.node (mapDart seed))
+      let head := source.node rightSeed
+      let targetHead := target.node targetRightSeed
+      let nextSeed := source.edge head
+      let targetNextSeed := target.edge targetHead
+      change
+        mapDart head ::
+            (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+          targetHead ::
+            questionWalkWith target.edge target.node
+              (target.node targetNextSeed) next at hwalkMap
+      rcases List.cons.inj hwalkMap with ⟨hheadMap, htailMap⟩
+      have hheadDomain : domain head :=
+        hwalkDomain _ (by
+          simp [questionWalkWith, head, rightSeed, qstepRWith])
+      have hrightDomain : domain rightSeed :=
+        domain_edge_node source hinvariant seed hseed
+      have hrightMap : mapDart rightSeed = targetRightSeed :=
+        map_edge_node source target mapDart hinvariant hface seed hseed
+      have hheadMap' : mapDart (source.node rightSeed) =
+          target.node (mapDart rightSeed) := by
+        simpa only [head, targetHead, hrightMap] using hheadMap
+      have hheadCentral : EdgeCentral source target mapDart head := by
+        exact edgeCentral_node_of_map_node source target mapDart hinvariant
+          hface rightSeed hrightDomain hheadMap'
+      have hnextDomain : domain nextSeed :=
+        domain_edge_node source hinvariant rightSeed hrightDomain
+      have hnextEdgeDomain : domain (source.edge nextSeed) := by
+        dsimp [nextSeed]
+        rw [hsourcePlain]
+        exact hheadDomain
+      have hnextCentral : EdgeCentral source target mapDart nextSeed :=
+        edgeCentral_edge source target mapDart hsourcePlain htargetPlain
+          head hheadCentral
+      have hnextMap : mapDart nextSeed = targetNextSeed := by
+        dsimp [nextSeed, targetNextSeed, targetHead]
+        unfold EdgeCentral at hheadCentral
+        simpa only [hheadMap] using hheadCentral
+      have htailDomain : ∀ other ∈
+          questionWalkWith source.edge source.node (source.node nextSeed) next,
+          domain other := by
+        intro other hother
+        apply hwalkDomain other
+        simp only [questionWalkWith, List.mem_cons]
+        exact Or.inr hother
+      have htailMap' :
+          (questionWalkWith source.edge source.node
+              (source.node nextSeed) next).map mapDart =
+            questionWalkWith target.edge target.node
+              (target.node (mapDart nextSeed)) next := by
+        simpa only [hnextMap] using htailMap
+      have htailAll := ih nextSeed hnextDomain hnextEdgeDomain
+        hnextCentral htailDomain htailMap'
+      simp only [questionWalkWith, List.mem_cons] at hdart
+      change dart = head ∨
+        dart ∈ questionWalkWith source.edge source.node
+          (source.node nextSeed) next at hdart
+      rcases hdart with rfl | hdart
+      · exact hheadCentral
+      · exact htailAll dart hdart
+
+/-- A question accepted by the right-rooted checker has a right constructor
+at its root. -/
+theorem exists_right_of_questionIsRightRooted
+    {question : Question} (hright : questionIsRightRooted question = true) :
+    ∃ arity next, question = .right arity next := by
+  cases question <;> simp [questionIsRightRooted] at hright
+  exact ⟨_, _, rfl⟩
+
+/-- In plain cubic hypermaps, an aligned right-rooted quiz traversal is
+edge-central at every visited dart. -/
+theorem quizWalk_edgeCentral_of_rightRooted
+    {Source Target : Type*}
+    [Fintype Source] [DecidableEq Source]
+    [Fintype Target] [DecidableEq Target]
+    (source : FiniteHypermap Source) (target : FiniteHypermap Target)
+    {domain : Source → Prop} (mapDart : Source → Target)
+    (hinvariant : FaceInvariant source domain)
+    (hface : ∀ dart, domain dart →
+      mapDart (source.face dart) = target.face (mapDart dart))
+    (hsourcePlain : IsPlain source) (htargetPlain : IsPlain target)
+    (hsourceCubic : IsCubicOn source domain)
+    (htargetCubic : IsCubic target)
+    (sourceRoot : Source) (targetRoot : Target) (quiz : Quiz)
+    (hright : quizIsRightRooted quiz = true)
+    (hwalkDomain : ∀ dart ∈
+      quizWalkWith source.edge source.node sourceRoot quiz, domain dart)
+    (hwalkMap :
+      (quizWalkWith source.edge source.node sourceRoot quiz).map mapDart =
+        quizWalkWith target.edge target.node targetRoot quiz) :
+    ∀ dart ∈ quizWalkWith source.edge source.node sourceRoot quiz,
+      EdgeCentral source target mapDart dart := by
+  simp only [quizIsRightRooted, Bool.and_eq_true] at hright
+  have hfirstRight : questionIsRightRooted quiz.first = true :=
+    hright.1
+  have hsecondRight : questionIsRightRooted quiz.second = true :=
+    hright.2
+  obtain ⟨firstArity, firstTail, hfirst⟩ :=
+    exists_right_of_questionIsRightRooted hfirstRight
+  obtain ⟨secondArity, secondTail, hsecond⟩ :=
+    exists_right_of_questionIsRightRooted hsecondRight
+  cases quiz with
+  | mk first second =>
+    simp only at hfirst hsecond
+    subst first
+    subst second
+    simp only [quizWalkWith, List.map_append] at hwalkMap
+    have hfirstLength :
+        ((questionWalkWith source.edge source.node sourceRoot
+          (.right firstArity firstTail)).map mapDart).length =
+        (questionWalkWith target.edge target.node targetRoot
+          (.right firstArity firstTail)).length := by
+      simp [length_questionWalkWith]
+    rcases (append_eq_append_iff_of_length_eq hfirstLength).1 hwalkMap with
+      ⟨hfirstMap, hsecondMap⟩
+    simp only [questionWalkWith, List.map_cons, List.cons.injEq] at hfirstMap hsecondMap
+    rcases hfirstMap with ⟨hrootMap, hfirstTailMap⟩
+    rcases hsecondMap with ⟨hedgeRootMap, hsecondTailMap⟩
+    have hrootDomain : domain sourceRoot :=
+      hwalkDomain sourceRoot (by
+        simp [quizWalkWith, questionWalkWith])
+    have hedgeRootDomain : domain (source.edge sourceRoot) :=
+      hwalkDomain (source.edge sourceRoot) (by
+        simp [quizWalkWith, questionWalkWith])
+    have hsourceEdgeEdge :
+        source.edge (source.edge sourceRoot) = sourceRoot :=
+      hsourcePlain sourceRoot
+    have htargetEdgeEdge :
+        target.edge (target.edge targetRoot) = targetRoot :=
+      htargetPlain targetRoot
+    have hrootCentral : EdgeCentral source target mapDart sourceRoot := by
+      unfold EdgeCentral
+      simpa only [hrootMap] using hedgeRootMap
+    have hedgeRootCentral :
+        EdgeCentral source target mapDart (source.edge sourceRoot) :=
+      edgeCentral_edge source target mapDart hsourcePlain htargetPlain
+        sourceRoot hrootCentral
+    have hfirstTailDomain : ∀ dart ∈
+        questionWalkWith source.edge source.node
+          (source.node (source.edge sourceRoot)) firstTail,
+        domain dart := by
+      intro dart hdart
+      apply hwalkDomain dart
+      simp only [quizWalkWith, questionWalkWith, List.mem_append,
+        List.mem_cons]
+      exact Or.inl (Or.inr hdart)
+    have hsecondTailDomain : ∀ dart ∈
+        questionWalkWith source.edge source.node
+          (source.node sourceRoot) secondTail,
+        domain dart := by
+      intro dart hdart
+      apply hwalkDomain dart
+      simp only [quizWalkWith, questionWalkWith, List.mem_append,
+        List.mem_cons]
+      exact Or.inr (Or.inr (by
+        simpa only [qstepRWith, hsourceEdgeEdge] using hdart))
+    have hfirstTailMap' :
+        (questionWalkWith source.edge source.node
+          (source.node (source.edge sourceRoot)) firstTail).map mapDart =
+        questionWalkWith target.edge target.node
+          (target.node (mapDart (source.edge sourceRoot))) firstTail := by
+      simpa only [qstepRWith, hedgeRootMap] using hfirstTailMap
+    have hsecondTailMap' :
+        (questionWalkWith source.edge source.node
+          (source.node sourceRoot) secondTail).map mapDart =
+        questionWalkWith target.edge target.node
+          (target.node (mapDart sourceRoot)) secondTail := by
+      simpa only [qstepRWith, hsourceEdgeEdge, htargetEdgeEdge, hrootMap] using
+        hsecondTailMap
+    have hfirstTailCentral := questionWalk_node_edgeCentral source target
+      mapDart hinvariant hface hsourcePlain htargetPlain hsourceCubic
+      htargetCubic firstTail (source.edge sourceRoot) hedgeRootDomain
+      (by simpa only [hsourceEdgeEdge] using hrootDomain) hedgeRootCentral
+      hfirstTailDomain hfirstTailMap'
+    have hsecondTailCentral := questionWalk_node_edgeCentral source target
+      mapDart hinvariant hface hsourcePlain htargetPlain hsourceCubic
+      htargetCubic secondTail sourceRoot hrootDomain hedgeRootDomain
+      hrootCentral hsecondTailDomain hsecondTailMap'
+    intro dart hdart
+    simp only [quizWalkWith, questionWalkWith, List.mem_append,
+      List.mem_cons] at hdart
+    rcases hdart with (rfl | hdart) | (rfl | hdart)
+    · exact hrootCentral
+    · exact hfirstTailCentral dart hdart
+    · exact hedgeRootCentral
+    · apply hsecondTailCentral dart
+      simpa only [qstepRWith, hsourceEdgeEdge] using hdart
 
 /-- One pair of entries occupying the same position in two traversals. -/
 structure AlignedFaceAnchor
@@ -344,6 +1059,75 @@ theorem cycleTransport_root
 variable {code : ClassicalCertificateReductionMetadata.Code}
   {root : Nat} {quiz : Quiz}
 
+/-- Executable edge-involution condition on a materialized configuration. -/
+def RawPlain (code : ClassicalCertificateReductionMetadata.Code) : Prop :=
+  ∀ dart : Fin code.hypermap.dartCount,
+    rawEdge code (rawEdge code dart.val) = dart.val
+
+/-- Executable cubicity condition on the faces belonging to the configuration
+kernel.  Boundary vertices may have smaller degree in a configuration. -/
+def RawCubicOnKernel
+    (code : ClassicalCertificateReductionMetadata.Code) : Prop :=
+  ∀ dart : Fin code.hypermap.dartCount,
+    rawFaceClass code dart.val ∈ kernelFaceClasses code →
+      rawNode code (rawNode code (rawNode code dart.val)) = dart.val
+
+instance (code : ClassicalCertificateReductionMetadata.Code) :
+    Decidable (RawPlain code) := by
+  unfold RawPlain
+  infer_instance
+
+instance (code : ClassicalCertificateReductionMetadata.Code) :
+    Decidable (RawCubicOnKernel code) := by
+  unfold RawCubicOnKernel
+  infer_instance
+
+/-- Reflected local geometry needed by the recursive quiz traversal. -/
+structure SourceGeometryValid
+    (code : ClassicalCertificateReductionMetadata.Code) : Prop where
+  plain : RawPlain code
+  cubicOnKernel : RawCubicOnKernel code
+
+/-- Boolean checker for the source geometry used by quiz preembeddings. -/
+def sourceGeometryChecker
+    (code : ClassicalCertificateReductionMetadata.Code) : Bool :=
+  decide (RawPlain code ∧ RawCubicOnKernel code)
+
+theorem sourceGeometryValid_of_checker_true
+    (code : ClassicalCertificateReductionMetadata.Code)
+    (hchecker : sourceGeometryChecker code = true) :
+    SourceGeometryValid code := by
+  have hconditions : RawPlain code ∧ RawCubicOnKernel code :=
+    Bool.of_decide_true (by
+      simpa [sourceGeometryChecker] using hchecker)
+  exact ⟨hconditions.1, hconditions.2⟩
+
+theorem cf001_sourceGeometry_checker :
+    sourceGeometryChecker cf001Code = true := by decide
+
+set_option maxRecDepth 10000 in
+theorem cf003_sourceGeometry_checker :
+    sourceGeometryChecker cf003Code = true := by decide
+
+set_option maxRecDepth 10000 in
+theorem cf006_sourceGeometry_checker :
+    sourceGeometryChecker cf006Code = true := by decide
+
+set_option maxRecDepth 10000 in
+theorem cf009_sourceGeometry_checker :
+    sourceGeometryChecker cf009Code = true := by decide
+
+theorem cf024_sourceGeometry_checker :
+    sourceGeometryChecker cf024Code = true := by decide
+
+set_option maxRecDepth 10000 in
+theorem cf139_sourceGeometry_checker :
+    sourceGeometryChecker cf139Code = true := by decide
+
+set_option maxRecDepth 10000 in
+theorem cf182_sourceGeometry_checker :
+    sourceGeometryChecker cf182Code = true := by decide
+
 /-- The semantic source traversal has exactly the checked list of face-class
 numbers. -/
 theorem map_val_sourceWalk_faceClass_eq_visited
@@ -419,6 +1203,31 @@ theorem faceKernel_iff_faceClass_mem_kernelFaceClasses
     exact hnone ⟨raw, hraw, hclass⟩
   · rintro ⟨_, hnone⟩ ⟨raw, hraw, hclass⟩
     exact hnone raw hraw hclass
+
+/-- The reflected edge condition is plainness of the checked source
+hypermap. -/
+theorem SourceGeometryValid.isPlain
+    (geometry : SourceGeometryValid code)
+    (valid : ClassicalCertificateReductionMetadata.Valid code) :
+    IsPlain (checkedHypermap valid.partitionValid) := by
+  intro dart
+  apply Fin.ext
+  simp only [checkedHypermap_edge_val valid]
+  exact geometry.plain dart
+
+/-- The reflected kernel condition is cubicity on the semantic face
+kernel. -/
+theorem SourceGeometryValid.isCubicOnFaceKernel
+    (geometry : SourceGeometryValid code)
+    (valid : ClassicalCertificateReductionMetadata.Valid code) :
+    IsCubicOn (checkedHypermap valid.partitionValid)
+      (FaceKernel (checkedHypermap valid.partitionValid)
+        (ClassicalCertificateReductionMetadata.ring code)) := by
+  intro dart hdart
+  apply Fin.ext
+  simp only [checkedHypermap_node_val valid]
+  apply geometry.cubicOnKernel dart
+  exact (faceKernel_iff_faceClass_mem_kernelFaceClasses valid dart).1 hdart
 
 /-- Kernel coverage in the raw checker is coverage by the semantic source
 traversal, face for face. -/
@@ -819,6 +1628,36 @@ theorem map_quizFaceMap_sourceQuizWalk
     exact quizFaceMap_eq_of_aligned quizValid valid target targetRoot
       targetFits haligned
 
+/-- Checked source geometry and an aligned right-rooted quiz force the
+canonical face map to be edge-central on every traversal representative. -/
+theorem quizFaceMap_sourceWalk_edgeCentral
+    (quizValid : ValidAt code root quiz)
+    (valid : ClassicalCertificateReductionMetadata.Valid code)
+    (geometry : SourceGeometryValid code)
+    {Target : Type*} [Fintype Target] [DecidableEq Target]
+    (target : FiniteHypermap Target) (targetRoot : Target)
+    (targetFits : HypermapQuizFits target targetRoot quiz)
+    (htargetPlain : IsPlain target) (htargetCubic : IsCubic target) :
+    ∀ source ∈ sourceQuizWalk quizValid valid,
+      EdgeCentral (checkedHypermap valid.partitionValid) target
+        (quizFaceMap quizValid valid target targetRoot targetFits) source := by
+  apply quizWalk_edgeCentral_of_rightRooted
+    (checkedHypermap valid.partitionValid) target
+    (quizFaceMap quizValid valid target targetRoot targetFits)
+  · intro dart
+    exact faceKernel_face_iff (checkedHypermap valid.partitionValid)
+      (ClassicalCertificateReductionMetadata.ring code) dart
+  · exact quizFaceMap_face quizValid valid target targetRoot targetFits
+  · exact geometry.isPlain valid
+  · exact htargetPlain
+  · exact geometry.isCubicOnFaceKernel valid
+  · exact htargetCubic
+  · exact quizValid.rightRooted
+  · intro dart hdart
+    exact faceKernel_of_mem_sourceQuizWalk quizValid valid hdart
+  · exact map_quizFaceMap_sourceQuizWalk quizValid valid target targetRoot
+      targetFits
+
 /-- Edge-centrality on the source traversal already covers every kernel face,
 because that traversal is its face transversal. -/
 theorem quizFaceMap_cover_of_sourceWalk_edgeCentral
@@ -874,6 +1713,55 @@ noncomputable def quizPreembeddingOfCentralWalkAndRLink
     target targetRoot targetFits hcentral
   rlinked := hrlinked
 
+/-- Once the source geometry is checked, `R`-link connectivity is the sole
+remaining field of the classical preembedding constructor. -/
+noncomputable def quizPreembeddingOfSourceGeometryAndRLink
+    (quizValid : ValidAt code root quiz)
+    (valid : ClassicalCertificateReductionMetadata.Valid code)
+    (geometry : SourceGeometryValid code)
+    {Target : Type*} [Fintype Target] [DecidableEq Target]
+    (target : FiniteHypermap Target) (targetRoot : Target)
+    (targetFits : HypermapQuizFits target targetRoot quiz)
+    (htargetPlain : IsPlain target) (htargetCubic : IsCubic target)
+    (hrlinked : RLinkConnected (checkedHypermap valid.partitionValid)
+      (fun source =>
+        FaceKernel (checkedHypermap valid.partitionValid)
+            (ClassicalCertificateReductionMetadata.ring code) source ∧
+          EdgeCentral (checkedHypermap valid.partitionValid) target
+            (quizFaceMap quizValid valid target targetRoot targetFits)
+              source)) :
+    Preembedding (checkedHypermap valid.partitionValid) target
+      (FaceKernel (checkedHypermap valid.partitionValid)
+        (ClassicalCertificateReductionMetadata.ring code))
+      (quizFaceMap quizValid valid target targetRoot targetFits) :=
+  quizPreembeddingOfCentralWalkAndRLink quizValid valid target targetRoot
+    targetFits
+    (quizFaceMap_sourceWalk_edgeCentral quizValid valid geometry target
+      targetRoot targetFits htargetPlain htargetCubic)
+    hrlinked
+
+/-- The finite hypermap associated to a rotation system is plain. -/
+theorem rotationSystem_toFiniteHypermap_isPlain
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) : IsPlain RS.toFiniteHypermap := by
+  intro dart
+  exact RS.alpha_involutive dart
+
+/-- Cubicity of a cyclic rotation system gives period three for the inverse
+node permutation used by its finite hypermap. -/
+theorem rotationSystem_toFiniteHypermap_isCubic
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : GoertzelV24FaceDualConnectedness.VertexRotationCyclic RS) :
+    IsCubic RS.toFiniteHypermap := by
+  intro dart
+  have hcube := congrArg (fun permutation : Equiv.Perm RS.D =>
+      permutation dart)
+    (ClassicalCertificateCubicWord.rho_symm_cube_eq_one RS hcubic hrotation)
+  simpa [pow_succ, Equiv.Perm.mul_apply] using hcube
+
 /-- Rotation-system quiz fitting is exactly the generic finite-hypermap
 fitting premise used by the preembedding constructor. -/
 theorem hypermapQuizFits_toFiniteHypermap_of_fits
@@ -893,6 +1781,28 @@ theorem hypermapQuizFits_toFiniteHypermap_of_fits
   intro dart hdart
   rfl
 
+/-- A fitting quiz in a cubic cyclic rotation system is edge-central on every
+checked source representative. -/
+theorem quizFaceMap_sourceWalk_edgeCentral_of_rotationSystemFit
+    (quizValid : ValidAt code root quiz)
+    (valid : ClassicalCertificateReductionMetadata.Valid code)
+    (geometry : SourceGeometryValid code)
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : GoertzelV24FaceDualConnectedness.VertexRotationCyclic RS)
+    (targetRoot : RS.D) (hfits : Quiz.Fits RS targetRoot quiz) :
+    ∀ source ∈ sourceQuizWalk quizValid valid,
+      EdgeCentral (checkedHypermap valid.partitionValid) RS.toFiniteHypermap
+        (quizFaceMap quizValid valid RS.toFiniteHypermap targetRoot
+          (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz hfits))
+        source :=
+  quizFaceMap_sourceWalk_edgeCentral quizValid valid geometry
+    RS.toFiniteHypermap targetRoot
+    (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz hfits)
+    (rotationSystem_toFiniteHypermap_isPlain RS)
+    (rotationSystem_toFiniteHypermap_isCubic RS hcubic hrotation)
+
 /-- A checked catalogue quiz fitting in an actual rotation system therefore
 supplies the facial half of its classical preembedding there. -/
 noncomputable def quizFacialPreembeddingOfRotationSystemFit
@@ -910,6 +1820,39 @@ noncomputable def quizFacialPreembeddingOfRotationSystemFit
         (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz hfits)) :=
   quizFacialPreembedding quizValid valid RS.toFiniteHypermap targetRoot
     (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz hfits)
+
+/-- For a checked source and a fitting cubic rotation-system target, an
+`R`-link certificate completes the full classical preembedding. -/
+noncomputable def quizPreembeddingOfRotationSystemFitAndRLink
+    (quizValid : ValidAt code root quiz)
+    (valid : ClassicalCertificateReductionMetadata.Valid code)
+    (geometry : SourceGeometryValid code)
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : GoertzelV24FaceDualConnectedness.VertexRotationCyclic RS)
+    (targetRoot : RS.D) (hfits : Quiz.Fits RS targetRoot quiz)
+    (hrlinked : RLinkConnected (checkedHypermap valid.partitionValid)
+      (fun source =>
+        FaceKernel (checkedHypermap valid.partitionValid)
+            (ClassicalCertificateReductionMetadata.ring code) source ∧
+          EdgeCentral (checkedHypermap valid.partitionValid)
+            RS.toFiniteHypermap
+            (quizFaceMap quizValid valid RS.toFiniteHypermap targetRoot
+              (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz
+                hfits)) source)) :
+    Preembedding (checkedHypermap valid.partitionValid) RS.toFiniteHypermap
+      (FaceKernel (checkedHypermap valid.partitionValid)
+        (ClassicalCertificateReductionMetadata.ring code))
+      (quizFaceMap quizValid valid RS.toFiniteHypermap targetRoot
+        (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz
+          hfits)) :=
+  quizPreembeddingOfSourceGeometryAndRLink quizValid valid geometry
+    RS.toFiniteHypermap targetRoot
+    (hypermapQuizFits_toFiniteHypermap_of_fits RS targetRoot quiz hfits)
+    (rotationSystem_toFiniteHypermap_isPlain RS)
+    (rotationSystem_toFiniteHypermap_isCubic RS hcubic hrotation)
+    hrlinked
 
 end
 
