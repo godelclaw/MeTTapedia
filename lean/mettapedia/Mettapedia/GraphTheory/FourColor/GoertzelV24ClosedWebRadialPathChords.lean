@@ -959,6 +959,189 @@ theorem exists_left_external_port
         simpa [ambientRadialPathStepEdge] using hsecond
       exact htriple.2.2.2.2.2 (hedgeColor.symm.trans this)
 
+/- The same cubic audit at the right endpoint.  The radial step is read
+backwards here, so the path's penultimate-vertex lemma identifies the only
+possible selected-color wall edge at that endpoint. -/
+theorem exists_right_external_port
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second) :
+    ∃ edge : G.edgeSet,
+      (ambientRadialPath radial).getVert chord.right.val ∈
+        (edge.1 : Sym2 V) ∧
+      edge.1 ∉ chord.cycleWalk.edges := by
+  have hrightLength := chord.right_lt_length hdata htriple
+  have hrightPos : 0 < chord.right.val := by
+    have hleftPos := chord.left_pos hdata htriple
+    exact Nat.lt_trans hleftPos chord.left_lt_right
+  have hrightOne : 1 ≤ chord.right.val := by omega
+  have hprevAdd : chord.right.val - 1 + 1 = chord.right.val :=
+    Nat.sub_add_cancel hrightOne
+  have hprevious : chord.right.val - 1 < radial.path.length := by
+    omega
+  have hstep := ambientRadialPath_step_color radial
+    (chord.right.val - 1) hprevious
+  have hsubarcPenultimate : chord.subarc.penultimate =
+      (ambientRadialPath radial).getVert (chord.right.val - 1) := by
+    change (walkInterval (ambientRadialPath radial) chord.left.val chord.right.val
+      (Nat.le_of_lt chord.left_lt_right)).getVert
+        ((walkInterval (ambientRadialPath radial) chord.left.val chord.right.val
+          (Nat.le_of_lt chord.left_lt_right)).length - 1) = _
+    rw [walkInterval_length (ambientRadialPath radial) chord.left.val chord.right.val
+      (Nat.le_of_lt chord.left_lt_right)
+      (by simpa [ambientRadialPath_length] using Nat.le_of_lt hrightLength)]
+    rw [walkInterval_getVert (ambientRadialPath radial) chord.left.val chord.right.val
+      (chord.right.val - chord.left.val - 1)
+      (Nat.le_of_lt chord.left_lt_right) (Nat.sub_le _ _)]
+    congr 1
+    have hspan := chord.one_lt_span htriple
+    omega
+  rcases hstep with hfirst | hsecond
+  · have htarget : second ≠ 0 := htriple.2.2.1
+    rcases GoertzelV24FramedTrail.exists_incident_edge_of_color_of_cubic_tait
+        C hC ((ambientRadialPath radial).getVert chord.right.val)
+        (by
+          exact ambientRadialPath_internal_incidentEdgeFinset_card_eq_three
+            hdata radial chord.right.val (by omega) hrightLength)
+        second htarget with
+      ⟨edge, hedge, hedgeColor⟩
+    have hincident : (ambientRadialPath radial).getVert chord.right.val ∈
+        (edge.1 : Sym2 V) := by
+      simpa [incidentEdgeFinset] using hedge
+    refine ⟨edge, hincident, ?_⟩
+    intro hcycle
+    have hwall : edge ∈ (chord.boundary htriple).wall :=
+      (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).2 hcycle
+    rcases ((chord.boundary htriple).mem_wall_iff edge).1 hwall with
+      hchord | hsubarc
+    · have hedgeValue : edge.1 = chord.chordDart.edge := by
+        rw [hchord]
+        rfl
+      have hmajority : C edge = majority := by
+        have hedgeSubtype : edge = chord.chordEdge := by
+          apply Subtype.ext
+          exact hedgeValue
+        rw [hedgeSubtype]
+        exact chord.color_chordEdge
+      exact htriple.2.2.2.2.1 (hmajority.symm.trans hedgeColor)
+    · have hsubarc' : edge.1 ∈ chord.subarc.edges := by
+        simpa only [MajorityChordOnRadialPath.boundary] using hsubarc
+      rcases Sym2.mem_iff_exists.mp hincident with ⟨neighbor, hedgePair⟩
+      have hsubarcMem : s((ambientRadialPath radial).getVert chord.right.val,
+          neighbor) ∈ chord.subarc.edges := by
+        rw [← hedgePair]
+        exact hsubarc'
+      have hneighbor : neighbor = chord.subarc.penultimate := by
+        apply chord.subarc_isPath.eq_penultimate_of_mem_edges
+        exact hsubarcMem
+      have hstepEdge :
+          (⟨s((ambientRadialPath radial).getVert (chord.right.val - 1),
+            (ambientRadialPath radial).getVert chord.right.val), by
+              have hstepAdj := (ambientRadialPath radial).adj_getVert_succ
+                (i := chord.right.val - 1) (by
+                  simpa [ambientRadialPath_length] using hprevious)
+              have hprevAdd : chord.right.val - 1 + 1 = chord.right.val :=
+                Nat.sub_add_cancel hrightOne
+              rw [hprevAdd] at hstepAdj
+              exact hstepAdj⟩ :
+            G.edgeSet) = edge := by
+        apply Subtype.ext
+        calc
+          s((ambientRadialPath radial).getVert (chord.right.val - 1),
+              (ambientRadialPath radial).getVert chord.right.val) =
+              s(chord.subarc.penultimate,
+                (ambientRadialPath radial).getVert chord.right.val) := by
+                  rw [hsubarcPenultimate]
+          _ = s((ambientRadialPath radial).getVert chord.right.val, neighbor) := by
+                rw [hneighbor]
+                exact Sym2.eq_swap
+          _ = edge.1 := hedgePair.symm
+      have : C edge = first := by
+        have hstepEdge' : ambientRadialPathStepEdge radial
+            (chord.right.val - 1) hprevious = edge := by
+          apply Subtype.ext
+          change s((ambientRadialPath radial).getVert (chord.right.val - 1),
+            (ambientRadialPath radial).getVert (chord.right.val - 1 + 1)) = edge.1
+          rw [hprevAdd]
+          exact congrArg Subtype.val hstepEdge
+        rw [← hstepEdge']
+        exact hfirst
+      exact htriple.2.2.2.2.2 (this.symm.trans hedgeColor)
+  · have htarget : first ≠ 0 := htriple.2.1
+    rcases GoertzelV24FramedTrail.exists_incident_edge_of_color_of_cubic_tait
+        C hC ((ambientRadialPath radial).getVert chord.right.val)
+        (by
+          exact ambientRadialPath_internal_incidentEdgeFinset_card_eq_three
+            hdata radial chord.right.val (by omega) hrightLength)
+        first htarget with
+      ⟨edge, hedge, hedgeColor⟩
+    have hincident : (ambientRadialPath radial).getVert chord.right.val ∈
+        (edge.1 : Sym2 V) := by
+      simpa [incidentEdgeFinset] using hedge
+    refine ⟨edge, hincident, ?_⟩
+    intro hcycle
+    have hwall : edge ∈ (chord.boundary htriple).wall :=
+      (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).2 hcycle
+    rcases ((chord.boundary htriple).mem_wall_iff edge).1 hwall with
+      hchord | hsubarc
+    · have hedgeValue : edge.1 = chord.chordDart.edge := by
+        rw [hchord]
+        rfl
+      have hmajority : C edge = majority := by
+        have hedgeSubtype : edge = chord.chordEdge := by
+          apply Subtype.ext
+          exact hedgeValue
+        rw [hedgeSubtype]
+        exact chord.color_chordEdge
+      exact htriple.2.2.2.1 (hmajority.symm.trans hedgeColor)
+    · have hsubarc' : edge.1 ∈ chord.subarc.edges := by
+        simpa only [MajorityChordOnRadialPath.boundary] using hsubarc
+      rcases Sym2.mem_iff_exists.mp hincident with ⟨neighbor, hedgePair⟩
+      have hsubarcMem : s((ambientRadialPath radial).getVert chord.right.val,
+          neighbor) ∈ chord.subarc.edges := by
+        rw [← hedgePair]
+        exact hsubarc'
+      have hneighbor : neighbor = chord.subarc.penultimate := by
+        apply chord.subarc_isPath.eq_penultimate_of_mem_edges
+        exact hsubarcMem
+      have hstepEdge :
+          (⟨s((ambientRadialPath radial).getVert (chord.right.val - 1),
+            (ambientRadialPath radial).getVert chord.right.val), by
+              have hstepAdj := (ambientRadialPath radial).adj_getVert_succ
+                (i := chord.right.val - 1) (by
+                  simpa [ambientRadialPath_length] using hprevious)
+              have hprevAdd : chord.right.val - 1 + 1 = chord.right.val :=
+                Nat.sub_add_cancel hrightOne
+              rw [hprevAdd] at hstepAdj
+              exact hstepAdj⟩ :
+            G.edgeSet) = edge := by
+        apply Subtype.ext
+        calc
+          s((ambientRadialPath radial).getVert (chord.right.val - 1),
+              (ambientRadialPath radial).getVert chord.right.val) =
+              s(chord.subarc.penultimate,
+                (ambientRadialPath radial).getVert chord.right.val) := by
+                  rw [hsubarcPenultimate]
+          _ = s((ambientRadialPath radial).getVert chord.right.val, neighbor) := by
+                rw [hneighbor]
+                exact Sym2.eq_swap
+          _ = edge.1 := hedgePair.symm
+      have : C edge = second := by
+        have hstepEdge' : ambientRadialPathStepEdge radial
+            (chord.right.val - 1) hprevious = edge := by
+          apply Subtype.ext
+          change s((ambientRadialPath radial).getVert (chord.right.val - 1),
+            (ambientRadialPath radial).getVert (chord.right.val - 1 + 1)) = edge.1
+          rw [hprevAdd]
+          exact congrArg Subtype.val hstepEdge
+        rw [← hstepEdge']
+        exact hsecond
+      exact htriple.2.2.2.2.2 (hedgeColor.symm.trans this)
+
 /-- Every endpoint of a chord-cycle edge occurs between the chord endpoints
 on the complete radial path. -/
 theorem exists_position_between_of_mem_cycleWalk_edges
