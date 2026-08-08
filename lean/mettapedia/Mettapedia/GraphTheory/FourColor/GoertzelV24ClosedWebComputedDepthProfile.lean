@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLaminarProfileRepeat
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebChordRotationNoncrossing
 
 /-!
 # Graph-derived depth profiles for closed-web chords
@@ -20,6 +21,8 @@ namespace GoertzelV24ClosedWebComputedDepthProfile
 
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebChordHoleSideCutWitness
+open GoertzelV24ClosedWebChordRotationNoncrossing
 open GoertzelV24ClosedWebChordRotationSector
 open GoertzelV24ClosedWebFaceTracing
 open GoertzelV24ClosedWebLaminarDepth
@@ -161,8 +164,9 @@ noncomputable def materializedChord
     chordBoundary chord = (materializedChord chord).boundary htriple :=
   rfl
 
-/-- The hole-free facial side canonically selected by the exact binary cut
-theorem.  This Boolean is independent of the radial sector bit. -/
+/-- The hole-free facial side canonically selected by the exact binary-cut
+theorem.  Retaining the exact-label witness makes the later sector alignment
+theorem transparent; this definition still selects only a face side. -/
 noncomputable def canonicalFaceSide
     {data : AnnularBoundaryData G outerCount}
     {C : G.EdgeColoring Color} {majority first second : Color}
@@ -172,9 +176,10 @@ noncomputable def canonicalFaceSide
     (htriple : IsTaitColorTriple majority first second)
     {cut : Fin pair.firstPath.path.length} {side : Bool}
     (chord : SectorChord pair embedded hdata htriple cut side) : Bool :=
-  Classical.choose <|
-    GoertzelV24ClosedWebChordHoleSeparation.exists_holeFreeChordSide
-      embedded hdata pair (materializedChord chord) htriple
+  Classical.choose
+    (Classical.choose_spec
+      (exists_exact_chordCycle_faceCut_with_holeFreeSide
+        embedded hdata pair (materializedChord chord) htriple))
 
 theorem canonicalFaceSide_holeFree
     {data : AnnularBoundaryData G outerCount}
@@ -189,9 +194,36 @@ theorem canonicalFaceSide_holeFree
       (canonicalFaceSide embedded hdata htriple chord) := by
   unfold canonicalFaceSide
   simpa [chordBoundary_eq_materializedChord_boundary] using
-    Classical.choose_spec
-      (GoertzelV24ClosedWebChordHoleSeparation.exists_holeFreeChordSide
-        embedded hdata pair (materializedChord chord) htriple)
+    (Classical.choose_spec
+      (Classical.choose_spec
+        (exists_exact_chordCycle_faceCut_with_holeFreeSide
+          embedded hdata pair (materializedChord chord) htriple))).2.2.2.2
+
+/-- The exact-label witness also identifies the selected hole-free facial side
+with the intrinsic rotation sector of the materialized chord.  This is a
+face-side/rotation-bit identification only; it does not yet construct the
+primal vertex side needed by the computed-profile interface. -/
+theorem canonicalFaceSide_eq_rotationSector
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+    canonicalFaceSide embedded hdata htriple chord =
+      MajorityChordOnRadialPath.rotationSector
+        embedded (materializedChord chord) hdata htriple := by
+  unfold canonicalFaceSide
+  let hwitness :=
+    exists_exact_chordCycle_faceCut_with_holeFreeSide
+      embedded hdata pair (materializedChord chord) htriple
+  have hspec := Classical.choose_spec (Classical.choose_spec hwitness)
+  exact side_eq_rotationSector_of_label_ne_innerHole
+    embedded hdata (materializedChord chord) htriple
+      (Classical.choose hwitness) hspec.2.1
+      (Classical.choose (Classical.choose_spec hwitness)) hspec.2.2.2.1
 
 /-- A side assignment for every candidate chord, with the exact finite-state
 data needed to turn it into a depth profile.  The side itself is supplied by
