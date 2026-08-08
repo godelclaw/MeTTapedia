@@ -1175,6 +1175,61 @@ theorem exists_external_port_on_chord_interval
     ⟨edge, hincident, _hcolor, hnotWall⟩
   exact ⟨edge, hincident, hnotWall⟩
 
+/-!
+The interval theorem is existential, which is the right statement for the
+local cubic argument but awkward for the next (side-construction) layer.  The
+following choice packages exactly that information into a function on the
+finite interval.  It is intentionally only a choice of an *external
+incident edge*: it does not choose a face component or claim that the chosen
+ports form the global crossing set of the chord wall.
+-/
+
+noncomputable def externalPortOnChordInterval
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (position : {position : Nat //
+      chord.left.val ≤ position ∧ position ≤ chord.right.val}) : G.edgeSet :=
+  Classical.choose
+    (chord.exists_external_port_on_chord_interval hdata hC htriple
+      position.1 position.2.1 position.2.2)
+
+theorem externalPortOnChordInterval_incident
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (position : {position : Nat //
+      chord.left.val ≤ position ∧ position ≤ chord.right.val}) :
+    (ambientRadialPath radial).getVert position.1 ∈
+      ((externalPortOnChordInterval hdata hC chord htriple position).1 : Sym2 V) := by
+  exact (Classical.choose_spec
+    (chord.exists_external_port_on_chord_interval hdata hC htriple
+      position.1 position.2.1 position.2.2)).1
+
+theorem externalPortOnChordInterval_not_cycleWalk
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (position : {position : Nat //
+      chord.left.val ≤ position ∧ position ≤ chord.right.val}) :
+    (externalPortOnChordInterval hdata hC chord htriple position).1 ∉
+      chord.cycleWalk.edges := by
+  exact (Classical.choose_spec
+    (chord.exists_external_port_on_chord_interval hdata hC htriple
+      position.1 position.2.1 position.2.2)).2
+
 /-- Every endpoint of a chord-cycle edge occurs between the chord endpoints
 on the complete radial path. -/
 theorem exists_position_between_of_mem_cycleWalk_edges
@@ -1204,6 +1259,34 @@ theorem exists_position_between_of_mem_cycleWalk_edges
         le_rfl, hright.symm⟩
   · exact chord.exists_position_between_of_mem_subarc_support
       (chord.subarc.mem_support_of_mem_edges hedgeSubarc hvertex)
+
+/-!
+Every wall-edge endpoint inherits the same local certificate.  This is the
+useful bridge from the interval-coordinate proof to the wall support: it says
+that a cycle vertex has at least one incident ambient edge which is not on the
+cycle.  The theorem still makes no global side assignment; it only supplies
+the off-wall incidence needed by a later primal Jordan construction.
+-/
+
+theorem exists_external_port_at_cycleWalk_vertex
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (edge : G.edgeSet) (hedge : edge.1 ∈ chord.cycleWalk.edges)
+    {vertex : V} (hvertex : vertex ∈ (edge.1 : Sym2 V)) :
+    ∃ port : G.edgeSet,
+      vertex ∈ (port.1 : Sym2 V) ∧ port.1 ∉ chord.cycleWalk.edges := by
+  rcases chord.exists_position_between_of_mem_cycleWalk_edges htriple
+      edge hedge hvertex with
+    ⟨position, hleft, hright, hposition⟩
+  rcases chord.exists_external_port_on_chord_interval hdata hC htriple
+      position hleft hright with
+    ⟨port, hportVertex, hportOutside⟩
+  exact ⟨port, by simpa [hposition] using hportVertex, hportOutside⟩
 
 /-- Every endpoint of every chord-cycle edge is a locally cubic annular
 interior vertex. -/
