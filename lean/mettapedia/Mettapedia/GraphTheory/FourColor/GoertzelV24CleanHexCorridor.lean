@@ -188,6 +188,64 @@ theorem card_pathContaminatedPositions_le
   have hcard := Fintype.card_le_of_injective pathFace hinjective
   simpa only [Fintype.card_coe] using hcard
 
+/-- Positions on an initial segment of a facial-dual path that lie in an
+arbitrary finite marked set.  This is the boundary-aware generalization of
+`pathContaminatedPositions`: annular applications must mark faces touching a
+hole in addition to the closed neighborhood of nonhexagonal faces. -/
+def pathMarkedPositions
+    (faceBoundary : Face → Finset Edge) (allFaces : Finset Face)
+    (markedFaces : Finset (AmbientFace allFaces))
+    {start finish : AmbientFace allFaces}
+    (path : (interiorDualGraph faceBoundary allFaces).Walk start finish)
+    (positionCount : Nat) : Finset (Fin positionCount) :=
+  Finset.univ.filter fun position =>
+    path.getVert position.val ∈ markedFaces
+
+@[simp]
+theorem mem_pathMarkedPositions_iff
+    (faceBoundary : Face → Finset Edge) (allFaces : Finset Face)
+    (markedFaces : Finset (AmbientFace allFaces))
+    {start finish : AmbientFace allFaces}
+    (path : (interiorDualGraph faceBoundary allFaces).Walk start finish)
+    (positionCount : Nat) (position : Fin positionCount) :
+    position ∈ pathMarkedPositions faceBoundary allFaces markedFaces path
+        positionCount ↔
+      path.getVert position.val ∈ markedFaces := by
+  simp [pathMarkedPositions]
+
+/-- A simple path visits each face of an arbitrary marked set at most once. -/
+theorem card_pathMarkedPositions_le
+    (faceBoundary : Face → Finset Edge) (allFaces : Finset Face)
+    (markedFaces : Finset (AmbientFace allFaces))
+    {start finish : AmbientFace allFaces}
+    (path : (interiorDualGraph faceBoundary allFaces).Walk start finish)
+    (hpath : path.IsPath) (positionCount : Nat)
+    (hpositionCount : positionCount ≤ path.length + 1) :
+    (pathMarkedPositions faceBoundary allFaces markedFaces path
+      positionCount).card ≤ markedFaces.card := by
+  let positions := pathMarkedPositions faceBoundary allFaces markedFaces path
+    positionCount
+  let pathFace : positions → markedFaces := fun position =>
+    ⟨path.getVert position.1.val,
+      (mem_pathMarkedPositions_iff faceBoundary allFaces markedFaces path
+        positionCount position.1).1 position.2⟩
+  have hinjective : Function.Injective pathFace := by
+    intro left right hfaces
+    have hvertices : path.getVert left.1.val = path.getVert right.1.val :=
+      congrArg Subtype.val hfaces
+    have hleftBound : left.1.val ≤ path.length := by
+      have hleft := left.1.isLt
+      omega
+    have hrightBound : right.1.val ≤ path.length := by
+      have hright := right.1.isLt
+      omega
+    have hindices := hpath.getVert_injOn
+      (by simpa using hleftBound) (by simpa using hrightBound) hvertices
+    apply Subtype.ext
+    exact Fin.ext hindices
+  have hcard := Fintype.card_le_of_injective pathFace hinjective
+  simpa only [Fintype.card_coe] using hcard
+
 /-- Among `B+1` equal consecutive blocks, at most `B` bad positions leave
 one entire block clean. -/
 theorem exists_corridorBlock_avoiding
