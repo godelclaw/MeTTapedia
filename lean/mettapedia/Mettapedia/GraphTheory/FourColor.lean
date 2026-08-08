@@ -571,6 +571,8 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24Necklace
 import Mettapedia.GraphTheory.FourColor.GoertzelV24WindingClassification
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BetweenRegionMoves
+import Mettapedia.GraphTheory.FourColor.GoertzelV24BetweenRegionDefectPaths
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTrailAlignment
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FourDefectBoundary
