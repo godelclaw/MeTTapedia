@@ -312,6 +312,39 @@ theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
     ⟨canonicalFaceSide_holeFree embedded hdata htriple inner,
       canonicalFaceSide_holeFree embedded hdata htriple outer⟩⟩
 
+/--
+The geometric premise can be supplied in its most economical form: a cyclic
+edge-cut realization for each chord.  Once those realizations exist, the
+conversion to vertex sides and the occurrence-sensitive L7 profile is wholly
+mechanical.  Keeping this theorem separate makes the remaining Jordan/sector
+lemma a single named input rather than an implicit assumption.
+ -/
+theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal_of_cyclicCuts
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (htriple : IsTaitColorTriple majority first second)
+    (hC : IsTaitEdgeColoring G C)
+    (widthBound : Nat)
+    (hdeep : HasDeepChordTransversal C majority first second
+      pair.firstPath (2 * closedWebCutProfileCount widthBound))
+    (cuts : ChordCyclicCutAssignment pair embedded hdata htriple widthBound) :
+    ∃ (cut : Fin pair.firstPath.path.length) (side : Bool)
+        (inner outer : SectorChord pair embedded hdata htriple cut side),
+      (inner ≠ outer) ∧ (inner.1.NestedIn outer.1) ∧
+        ((cuts.toSideAssignment.profile hC cut side inner =
+          cuts.toSideAssignment.profile hC cut side outer) ∧
+        (HoleFreeChordSide embedded.cellulation
+            (chordBoundary inner)
+            (canonicalFaceSide embedded hdata htriple inner) ∧
+          HoleFreeChordSide embedded.cellulation
+            (chordBoundary outer)
+            (canonicalFaceSide embedded hdata htriple outer))) := by
+  exact exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
+    embedded hdata pair htriple hC widthBound hdeep cuts.toSideAssignment
+
 end
 
 end GoertzelV24ClosedWebComputedDepthProfile
