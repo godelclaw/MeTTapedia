@@ -162,6 +162,49 @@ theorem labels_eq_head_getLast_of_faceCutCycleTurnChain
             simp
   simpa using hresult
 
+/-- The same transport reaches every dart which occurs in the locally cubic
+turn chain, not only its final dart. -/
+theorem labels_eq_head_of_mem_faceCutCycleTurnChain
+    (RS : RotationSystem V E) (hrotation : VertexRotationCyclic RS)
+    {A : Type*} (labels : OrbitFace RS → A) (cut : E → Prop)
+    (hexact : ∀ dart : RS.D,
+      labels (dartOrbitFace RS dart) ≠
+          labels (dartOrbitFace RS (RS.alpha dart)) ↔
+        cut (RS.edgeOf dart))
+    (darts : List RS.D) (hne : darts ≠ [])
+    (hchain : darts.IsChain (RS.FaceCutCycleTurnStep cut))
+    (target : RS.D) (htarget : target ∈ darts) :
+    labels (dartOrbitFace RS (darts.head hne)) =
+      labels (dartOrbitFace RS target) := by
+  obtain ⟨first, rest, rfl⟩ := List.exists_cons_of_ne_nil hne
+  have haux : ∀ (first : RS.D) (rest : List RS.D),
+      (first :: rest).IsChain (RS.FaceCutCycleTurnStep cut) →
+      target ∈ first :: rest →
+      labels (dartOrbitFace RS first) =
+        labels (dartOrbitFace RS target) := by
+    intro first rest
+    induction rest generalizing first with
+    | nil =>
+        intro _ hmem
+        simpa using congrArg
+          (fun dart : RS.D => labels (dartOrbitFace RS dart))
+          (List.mem_singleton.mp hmem).symm
+    | cons second rest ih =>
+        intro hturnChain hmem
+        rcases (List.mem_cons.mp hmem) with rfl | htailMem
+        · rfl
+        · have hstep : RS.FaceCutCycleTurnStep cut first second :=
+            hturnChain.rel
+          have htail : (second :: rest).IsChain
+              (RS.FaceCutCycleTurnStep cut) :=
+            hturnChain.of_cons
+          have hturn :=
+            labels_eq_of_cutCycle_turn_at_card_dartsAt_eq_three
+              RS hrotation labels cut hexact first second
+                hstep.2.2.1 hstep.1 hstep.2.1 hstep.2.2.2
+          exact hturn.trans (ih second htail htailMem)
+  simpa using haux first rest hchain htarget
+
 end RotationSystem
 
 namespace SimpleGraphDartRotation.Data
@@ -174,6 +217,59 @@ noncomputable section
 local instance localCycleWalkGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
+
+/-- The dart list of a simple cycle forms the exact locally cubic turn chain
+used by face-side transport. -/
+theorem isChain_faceCutCycleTurnStep_darts_of_local_cubic
+    (graphData : Data G)
+    {base : V} (cycle : G.Walk base base) (hcycle : cycle.IsCycle)
+    (hlocalCubic : ∀ dart ∈ cycle.darts,
+      (graphData.toRotationSystem.dartsAt
+        (graphData.toRotationSystem.vertOf dart)).card = 3) :
+    cycle.darts.IsChain
+      (graphData.toRotationSystem.FaceCutCycleTurnStep
+        (fun edge => edge.1 ∈ cycle.edges)) := by
+  let RS := graphData.toRotationSystem
+  have hvertices : cycle.darts.IsChain (fun first second =>
+      RS.vertOf second = RS.vertOf (RS.alpha first)) := by
+    apply cycle.isChain_dartAdj_darts.imp
+    intro first second hadj
+    change second.fst = first.symm.fst
+    exact hadj.symm
+  have hedges : (cycle.darts.map RS.edgeOf).Nodup := by
+    apply List.Nodup.of_map Subtype.val
+    rw [List.map_map]
+    change (cycle.darts.map SimpleGraph.Dart.edge).Nodup
+    exact hcycle.isTrail.edges_nodup
+  have htrailChain : cycle.darts.IsChain RS.FaceCutTrailStep :=
+    RS.isChain_faceCutTrailStep_of_edgeOf_nodup
+      cycle.darts hvertices hedges
+  rw [List.isChain_iff_getElem]
+  intro index hnext
+  have hindex : index < cycle.darts.length :=
+    Nat.lt_trans (Nat.lt_succ_self index) hnext
+  let previous := cycle.darts[index]'hindex
+  let outgoing := cycle.darts[index + 1]'hnext
+  have hstep : RS.FaceCutTrailStep previous outgoing :=
+    List.isChain_iff_getElem.mp htrailChain index hnext
+  have hpreviousMemList : previous ∈ cycle.darts := by
+    exact List.getElem_mem hindex
+  have houtgoingMemList : outgoing ∈ cycle.darts := by
+    exact List.getElem_mem hnext
+  have hpreviousEdge : previous.edge ∈ cycle.edges := by
+    exact List.mem_map_of_mem hpreviousMemList
+  have houtgoingEdge : outgoing.edge ∈ cycle.edges := by
+    exact List.mem_map_of_mem houtgoingMemList
+  refine ⟨hstep.1, hstep.2, hlocalCubic outgoing
+    houtgoingMemList, ?_⟩
+  intro dart hbase hneArrived hneOutgoing
+  change dart.edge ∉ cycle.edges
+  have harrivedEdge : (RS.alpha previous).edge ∈ cycle.edges := by
+    simpa [RS] using hpreviousEdge
+  exact SimpleGraph.Walk.IsCycle.third_dart_edge_not_mem_of_two_darts_mem
+    hcycle (RS.alpha previous) outgoing dart hstep.1
+      (hbase.trans hstep.1) hstep.2 hneArrived.symm
+      hneOutgoing.symm harrivedEdge houtgoingEdge
 
 /-- Graph-level iteration on the oriented side of a simple cycle.  Global
 cubicity is replaced by the exact local three-dart hypothesis on the darts
@@ -199,49 +295,9 @@ theorem cycle_labels_eq_firstDart_lastDart_of_local_cubic
   let RS := graphData.toRotationSystem
   have hdartsNe : cycle.darts ≠ [] :=
     SimpleGraph.Walk.darts_eq_nil.not.mpr hcycle.not_nil
-  have hvertices : cycle.darts.IsChain (fun first second =>
-      RS.vertOf second = RS.vertOf (RS.alpha first)) := by
-    apply cycle.isChain_dartAdj_darts.imp
-    intro first second hadj
-    change second.fst = first.symm.fst
-    exact hadj.symm
-  have hedges : (cycle.darts.map RS.edgeOf).Nodup := by
-    apply List.Nodup.of_map Subtype.val
-    rw [List.map_map]
-    change (cycle.darts.map SimpleGraph.Dart.edge).Nodup
-    exact hcycle.isTrail.edges_nodup
-  have htrailChain : cycle.darts.IsChain RS.FaceCutTrailStep :=
-    RS.isChain_faceCutTrailStep_of_edgeOf_nodup
-      cycle.darts hvertices hedges
-  have hturnChain : cycle.darts.IsChain
-      (RS.FaceCutCycleTurnStep
-        (fun edge => edge.1 ∈ cycle.edges)) := by
-    rw [List.isChain_iff_getElem]
-    intro index hnext
-    have hindex : index < cycle.darts.length :=
-      Nat.lt_trans (Nat.lt_succ_self index) hnext
-    let previous := cycle.darts[index]'hindex
-    let outgoing := cycle.darts[index + 1]'hnext
-    have hstep : RS.FaceCutTrailStep previous outgoing :=
-      List.isChain_iff_getElem.mp htrailChain index hnext
-    have hpreviousMemList : previous ∈ cycle.darts := by
-      exact List.getElem_mem hindex
-    have houtgoingMemList : outgoing ∈ cycle.darts := by
-      exact List.getElem_mem hnext
-    have hpreviousEdge : previous.edge ∈ cycle.edges := by
-      exact List.mem_map_of_mem hpreviousMemList
-    have houtgoingEdge : outgoing.edge ∈ cycle.edges := by
-      exact List.mem_map_of_mem houtgoingMemList
-    refine ⟨hstep.1, hstep.2, hlocalCubic outgoing
-      houtgoingMemList, ?_⟩
-    intro dart hbase hneArrived hneOutgoing
-    change dart.edge ∉ cycle.edges
-    have harrivedEdge : (RS.alpha previous).edge ∈ cycle.edges := by
-      simpa [RS] using hpreviousEdge
-    exact SimpleGraph.Walk.IsCycle.third_dart_edge_not_mem_of_two_darts_mem
-      hcycle (RS.alpha previous) outgoing dart hstep.1
-        (hbase.trans hstep.1) hstep.2 hneArrived.symm
-        hneOutgoing.symm harrivedEdge houtgoingEdge
+  have hturnChain :=
+    graphData.isChain_faceCutCycleTurnStep_darts_of_local_cubic
+      cycle hcycle hlocalCubic
   have hlabels :=
     RS.labels_eq_head_getLast_of_faceCutCycleTurnChain
       hrotation labels (fun edge => edge.1 ∈ cycle.edges)
@@ -255,6 +311,42 @@ theorem cycle_labels_eq_firstDart_lastDart_of_local_cubic
       labels (dartOrbitFace graphData.toRotationSystem dart))
     (cycle.getLast_darts_eq_lastDart hdartsNe)
   exact hfirstLabel.trans (hlabels.trans hlastLabel)
+
+/-- The selected oriented side label at the first cycle dart agrees with the
+label at every dart occurring later in the same locally cubic cycle chain. -/
+theorem cycle_labels_eq_firstDart_dart_of_mem_darts_of_local_cubic
+    (graphData : Data G)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    {A : Type*}
+    (labels : OrbitFace graphData.toRotationSystem → A)
+    {base : V} (cycle : G.Walk base base) (hcycle : cycle.IsCycle)
+    (hexact : ∀ dart : graphData.toRotationSystem.D,
+      labels (dartOrbitFace graphData.toRotationSystem dart) ≠
+          labels (dartOrbitFace graphData.toRotationSystem
+            (graphData.toRotationSystem.alpha dart)) ↔
+        (graphData.toRotationSystem.edgeOf dart).1 ∈ cycle.edges)
+    (hlocalCubic : ∀ dart ∈ cycle.darts,
+      (graphData.toRotationSystem.dartsAt
+        (graphData.toRotationSystem.vertOf dart)).card = 3)
+    (target : G.Dart) (htarget : target ∈ cycle.darts) :
+    labels (dartOrbitFace graphData.toRotationSystem
+        (cycle.firstDart hcycle.not_nil)) =
+      labels (dartOrbitFace graphData.toRotationSystem target) := by
+  let RS := graphData.toRotationSystem
+  have hdartsNe : cycle.darts ≠ [] :=
+    SimpleGraph.Walk.darts_eq_nil.not.mpr hcycle.not_nil
+  have hturnChain :=
+    graphData.isChain_faceCutCycleTurnStep_darts_of_local_cubic
+      cycle hcycle hlocalCubic
+  have hlabels :=
+    RS.labels_eq_head_of_mem_faceCutCycleTurnChain
+      hrotation labels (fun edge => edge.1 ∈ cycle.edges)
+        hexact cycle.darts hdartsNe hturnChain target htarget
+  have hfirstLabel := congrArg
+    (fun dart : G.Dart =>
+      labels (dartOrbitFace graphData.toRotationSystem dart))
+    (cycle.firstDart_eq_head_darts hcycle.not_nil)
+  exact hfirstLabel.trans hlabels
 
 end
 
