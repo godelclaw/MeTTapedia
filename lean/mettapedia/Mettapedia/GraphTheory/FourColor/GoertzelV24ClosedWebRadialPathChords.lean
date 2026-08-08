@@ -145,6 +145,49 @@ theorem ambientRadialPath_getVert_injective
   · simpa [ambientRadialPath_length] using Nat.le_of_lt_succ right.isLt
   · exact heq
 
+/-- Every strict interior position of a radial path is an interior vertex of
+the annular tangle and therefore has exactly three incident ambient edges.
+The proof uses the two distinct path neighbors to exclude all degree-one
+boundary stubs. -/
+theorem ambientRadialPath_internal_incidentEdgeFinset_card_eq_three
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    (radial : ComponentRadialPath data C first second component)
+    (position : Nat) (hpositive : position ≠ 0)
+    (hbeforeEnd : position < radial.path.length) :
+    (incidentEdgeFinset G
+      ((ambientRadialPath radial).getVert position)).card = 3 := by
+  let path := ambientRadialPath radial
+  let vertex := path.getVert position
+  have hpath : path.IsPath := ambientRadialPath_isPath radial
+  have hpathNeighborCount :
+      (path.toSubgraph.neighborSet vertex).ncard = 2 := by
+    exact hpath.ncard_neighborSet_toSubgraph_internal_eq_two
+      hpositive (by simpa [path, ambientRadialPath_length] using hbeforeEnd)
+  have hneighborSubset :
+      path.toSubgraph.neighborSet vertex ⊆ G.neighborSet vertex := by
+    intro neighbor hneighbor
+    exact path.toSubgraph.adj_sub hneighbor
+  have hdegreeAtLeastTwo : 2 ≤ G.degree vertex := by
+    have hsubsetCard := Set.ncard_le_ncard hneighborSubset
+    have hambientNeighborCount :
+        (G.neighborSet vertex).ncard = G.degree vertex := by
+      simpa only [Set.fintypeCard_eq_ncard] using
+        (SimpleGraph.card_neighborSet_eq_degree (G := G) (v := vertex))
+    omega
+  apply hdata.cubic_elsewhere vertex
+  · intro inner heq
+    have hdegreeOne : G.degree vertex = 1 := by
+      rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree]
+      simpa [heq] using hdata.inner_stub_degree_one inner
+    omega
+  · intro outer heq
+    have hdegreeOne : G.degree vertex = 1 := by
+      rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree]
+      simpa [heq] using hdata.outer_stub_degree_one outer
+    omega
+
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- The ambient edge traversed at one position of a radial path. -/
 def ambientRadialPathStepEdge
@@ -207,6 +250,17 @@ theorem walkInterval_length {start finish : V}
     SimpleGraph.Walk.take_length, SimpleGraph.Walk.drop_length]
   rw [Nat.min_eq_left]
   omega
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Vertex lookup inside a bounded walk interval is lookup at the translated
+position in the original walk. -/
+theorem walkInterval_getVert {start finish : V}
+    (walk : G.Walk start finish) (left right position : Nat)
+    (horder : left ≤ right) (hposition : position ≤ right - left) :
+    (walkInterval walk left right horder).getVert position =
+      walk.getVert (left + position) := by
+  simp [walkInterval, SimpleGraph.Walk.take_getVert,
+    SimpleGraph.Walk.drop_getVert, Nat.min_eq_right hposition]
 
 end WalkInterval
 
@@ -315,6 +369,46 @@ theorem subarc_support_subset_ambientRadialPath_support
     exact SimpleGraph.Walk.support_copy _ _ _
   rw [hsupport] at hvertex
   exact hvertex
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every vertex of the chord subarc occurs at an ambient radial-path
+position between the two chord endpoints. -/
+theorem exists_position_between_of_mem_subarc_support
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    {vertex : V} (hvertex : vertex ∈ chord.subarc.support) :
+    ∃ position : Nat,
+      chord.left.val ≤ position ∧ position ≤ chord.right.val ∧
+        (ambientRadialPath radial).getVert position = vertex := by
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hvertex with
+    ⟨offset, hoffsetVertex, hoffsetBound⟩
+  have hrightBound : chord.right.val ≤
+      (ambientRadialPath radial).length := by
+    rw [ambientRadialPath_length]
+    omega
+  have hlength := walkInterval_length (ambientRadialPath radial)
+    chord.left chord.right (Nat.le_of_lt chord.left_lt_right) hrightBound
+  have hoffsetSpan : offset ≤ chord.right.val - chord.left.val := by
+    change offset ≤ (walkInterval (ambientRadialPath radial)
+      chord.left chord.right
+        (Nat.le_of_lt chord.left_lt_right)).length at hoffsetBound
+    rw [hlength] at hoffsetBound
+    exact hoffsetBound
+  have hpositionRight : chord.left.val + offset ≤ chord.right.val := by
+    calc
+      chord.left.val + offset ≤
+          chord.left.val + (chord.right.val - chord.left.val) :=
+        Nat.add_le_add_left hoffsetSpan chord.left.val
+      _ = chord.right.val := Nat.add_sub_of_le
+        (Nat.le_of_lt chord.left_lt_right)
+  refine ⟨chord.left.val + offset, by omega, hpositionRight, ?_⟩
+  rw [← hoffsetVertex]
+  exact (walkInterval_getVert (ambientRadialPath radial)
+    chord.left chord.right offset (Nat.le_of_lt chord.left_lt_right)
+      hoffsetSpan).symm
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- A third-color chord cannot join consecutive positions of the selected
@@ -558,6 +652,61 @@ theorem mem_ambientRadialPath_support_of_mem_cycleWalk_edges
       exact (ambientRadialPath radial).getVert_mem_support chord.right
   · exact chord.subarc_support_subset_ambientRadialPath_support
       (chord.subarc.mem_support_of_mem_edges hedgeSubarc hvertex)
+
+/-- Every endpoint of a chord-cycle edge occurs between the chord endpoints
+on the complete radial path. -/
+theorem exists_position_between_of_mem_cycleWalk_edges
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (edge : G.edgeSet) (hedge : edge.1 ∈ chord.cycleWalk.edges)
+    {vertex : V} (hvertex : vertex ∈ (edge.1 : Sym2 V)) :
+    ∃ position : Nat,
+      chord.left.val ≤ position ∧ position ≤ chord.right.val ∧
+        (ambientRadialPath radial).getVert position = vertex := by
+  have hwall : edge ∈ (chord.boundary htriple).wall :=
+    (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).2 hedge
+  rcases ((chord.boundary htriple).mem_wall_iff edge).1 hwall with
+    hedgeChord | hedgeSubarc
+  · have hedgeValue : edge.1 = chord.chordDart.edge := by
+      rw [hedgeChord]
+      rfl
+    rw [hedgeValue] at hvertex
+    rcases Sym2.mem_iff.mp hvertex with hleft | hright
+    · exact ⟨chord.left.val, le_rfl,
+        Nat.le_of_lt chord.left_lt_right, hleft.symm⟩
+    · exact ⟨chord.right.val, Nat.le_of_lt chord.left_lt_right,
+        le_rfl, hright.symm⟩
+  · exact chord.exists_position_between_of_mem_subarc_support
+      (chord.subarc.mem_support_of_mem_edges hedgeSubarc hvertex)
+
+/-- Every endpoint of every chord-cycle edge is a locally cubic annular
+interior vertex. -/
+theorem cycleWalk_edge_endpoint_incidentEdgeFinset_card_eq_three
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (edge : G.edgeSet) (hedge : edge.1 ∈ chord.cycleWalk.edges)
+    {vertex : V} (hvertex : vertex ∈ (edge.1 : Sym2 V)) :
+    (incidentEdgeFinset G vertex).card = 3 := by
+  rcases chord.exists_position_between_of_mem_cycleWalk_edges htriple
+      edge hedge hvertex with
+    ⟨position, hleft, hright, hposition⟩
+  have hpositive : position ≠ 0 := by
+    have := chord.left_pos hdata htriple
+    omega
+  have hbeforeEnd : position < radial.path.length := by
+    have := chord.right_lt_length hdata htriple
+    omega
+  have hcubic := ambientRadialPath_internal_incidentEdgeFinset_card_eq_three
+    hdata radial position hpositive hbeforeEnd
+  rwa [hposition] at hcubic
 
 end MajorityChordOnRadialPath
 
