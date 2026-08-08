@@ -517,6 +517,130 @@ theorem nonempty_cleanOrbitHexCorridorSkeleton_of_weightedL9
       (embedded.exists_boundaryCleanHexagonalGeodesicBlock_of_weightedL9
         hsource geometry blockLength hpositive hlarge)
 
+/-- Coarse weight bound supplied by a proposed bound on internal pentagons. -/
+def pentagonBoundedBoundaryCleanWeightBound
+    (source : SourceTrail G) (pentagonBound : Nat) : Nat :=
+  pentagonBound + 4 + 2 * source.frozenInterfaceStubVertices.card
+
+/-- Coarse full-face contamination budget under a pentagon bound.  Exact L9
+bounds both `W` and `rho` by the same weight bound; the actual hole perimeter
+is then at most twice the frozen-stub count plus that bound. -/
+def pentagonBoundedBoundaryCleanContaminationBudget
+    (source : SourceTrail G) (pentagonBound : Nat) : Nat :=
+  let weightBound :=
+    pentagonBoundedBoundaryCleanWeightBound source pentagonBound
+  (3 * weightBound) * (weightBound + 7) +
+    (2 * source.frozenInterfaceStubVertices.card + weightBound)
+
+/-- Uniform boundary-clean L1 threshold at a proposed pentagon bound.  The
+exponent deliberately omits the harmless predecessor used by the sharp
+threshold, making monotonicity explicit. -/
+def pentagonBoundedBoundaryCleanHexBlockThreshold
+    (source : SourceTrail G) (pentagonBound blockLength : Nat) : Nat :=
+  let weightBound :=
+    pentagonBoundedBoundaryCleanWeightBound source pentagonBound
+  let contaminationBound :=
+    pentagonBoundedBoundaryCleanContaminationBudget source pentagonBound
+  (weightBound + 7) ^ ((contaminationBound + 1) * blockLength)
+
+/-- Complete honest framed L1 alternative.  Above a threshold depending only
+on the proposed pentagon bound and the fixed source interface, either that
+bound is false or the existing full-face clean-corridor transfer carrier is
+present.  The first branch is the remaining high-curvature structural
+obligation of the reductive proof. -/
+theorem pentagonCount_exceeds_bound_or_nonempty_cleanOrbitHexCorridorSkeleton
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    (pentagonBound blockLength : Nat) (hpositive : 0 < blockLength)
+    (hlarge :
+      pentagonBoundedBoundaryCleanHexBlockThreshold source
+          pentagonBound blockLength <
+        embedded.cellulation.interiorFaces.card) :
+    pentagonBound < embedded.interiorFaceLengths.count 5 ∨
+      Nonempty (CleanOrbitHexCorridorSkeleton
+        embedded.cellulation.rotation.toRotationSystem blockLength) := by
+  let pentagons := embedded.interiorFaceLengths.count 5
+  let weight := embedded.interiorNegativeCurvatureWeight
+  let rho := embedded.cellulation.boundarySurplus source.toFramedTrailData
+  let stubCount := source.frozenInterfaceStubVertices.card
+  let weightBound :=
+    pentagonBoundedBoundaryCleanWeightBound source pentagonBound
+  let contaminationBound :=
+    pentagonBoundedBoundaryCleanContaminationBudget source pentagonBound
+  by_cases hpentagons : pentagons ≤ pentagonBound
+  · right
+    have hbalance :=
+      embedded.interiorPentagonCount_add_sourceFeet_eq_weight_add_boundarySurplus
+        hsource geometry
+    have hweight : weight ≤ weightBound := by
+      dsimp [pentagons, weight, rho, stubCount] at hbalance hpentagons
+      dsimp [weight, weightBound, stubCount,
+        pentagonBoundedBoundaryCleanWeightBound]
+      omega
+    have hrho : rho ≤ weightBound := by
+      dsimp [pentagons, weight, rho, stubCount] at hbalance hpentagons
+      dsimp [rho, weightBound, stubCount,
+        pentagonBoundedBoundaryCleanWeightBound]
+      omega
+    have hholeEq : embedded.cellulation.holePerimeter =
+        2 * stubCount + rho := by
+      simpa [stubCount, rho, toFramedTrailData] using
+        (embedded.cellulation
+          |>.holePerimeter_eq_twice_frozenStubCount_add_boundarySurplus
+            source.toFramedTrailData
+              embedded.twice_frozenStubCount_le_holePerimeter)
+    have hhole : embedded.cellulation.holePerimeter ≤
+        2 * stubCount + weightBound := by
+      omega
+    have hfirstFactor : 2 * weight + rho ≤ 3 * weightBound := by
+      omega
+    have hsecondFactor : weight + 7 ≤ weightBound + 7 := by
+      omega
+    have hproduct :
+        (2 * weight + rho) * (weight + 7) ≤
+          (3 * weightBound) * (weightBound + 7) :=
+      Nat.mul_le_mul hfirstFactor hsecondFactor
+    have hcontamination :
+        embedded.boundaryCleanContaminationBudget ≤ contaminationBound := by
+      unfold boundaryCleanContaminationBudget
+      dsimp [contaminationBound,
+        pentagonBoundedBoundaryCleanContaminationBudget]
+      exact Nat.add_le_add hproduct hhole
+    have hbase : weight + 7 ≤ weightBound + 7 := by omega
+    have hexponent :
+        ((embedded.boundaryCleanContaminationBudget + 1) * blockLength) - 1 ≤
+          (contaminationBound + 1) * blockLength := by
+      exact (Nat.sub_le _ _).trans
+        (Nat.mul_le_mul_right blockLength
+          (Nat.add_le_add_right hcontamination 1))
+    have hthreshold :
+        embedded.boundaryCleanHexBlockThreshold blockLength ≤
+          pentagonBoundedBoundaryCleanHexBlockThreshold source
+            pentagonBound blockLength := by
+      calc
+        embedded.boundaryCleanHexBlockThreshold blockLength =
+            (weight + 7) ^
+              (((embedded.boundaryCleanContaminationBudget + 1) *
+                blockLength) - 1) := by
+          simp [boundaryCleanHexBlockThreshold, weight]
+        _ ≤ (weightBound + 7) ^
+              (((embedded.boundaryCleanContaminationBudget + 1) *
+                blockLength) - 1) :=
+          Nat.pow_le_pow_left hbase _
+        _ ≤ (weightBound + 7) ^
+              ((contaminationBound + 1) * blockLength) :=
+          Nat.pow_le_pow_right (by omega) hexponent
+        _ = pentagonBoundedBoundaryCleanHexBlockThreshold source
+              pentagonBound blockLength := by
+          simp [pentagonBoundedBoundaryCleanHexBlockThreshold,
+            weightBound, contaminationBound]
+    apply embedded.nonempty_cleanOrbitHexCorridorSkeleton_of_weightedL9
+      hsource geometry blockLength hpositive
+    exact lt_of_le_of_lt hthreshold hlarge
+  · left
+    simpa [pentagons] using (Nat.lt_of_not_ge hpentagons)
+
 end AnnularEmbedding
 
 end SourceTrail
