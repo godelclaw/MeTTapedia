@@ -1,5 +1,7 @@
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Finite
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedAnnularExcess
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceTwoSided
 
 /-!
 # Face tracing for the v24 closed-web sectors
@@ -23,10 +25,13 @@ namespace GoertzelV24ClosedWebFaceTracing
 
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
+open GoertzelV24FaceDualConnectedness
+open GoertzelV24OrbitFaceTwoSided
 open SimpleGraph
 open SimpleGraphDartRotation
 
-variable {F E : Type*} [Fintype F] [DecidableEq F]
+variable {V F E : Type*} [Fintype V] [DecidableEq V]
+  [Fintype F] [DecidableEq F]
   [Fintype E] [DecidableEq E]
 
 /-- The facial dual after crossings through the listed primal wall edges have
@@ -86,6 +91,220 @@ theorem faceAdjacencyAvoiding_le_interiorDualGraph
   intro first second hadj
   rcases hadj with ⟨hne, edge, hinterior, _haway, hfirst, hsecond⟩
   exact ⟨hne, edge, hinterior, hfirst, hsecond⟩
+
+/-- A rotation step at an interior edge remains reachable after cutting that
+edge out of the facial dual.  This is the local Jordan-side move: the two
+dart-side faces are still joined by the vertex rotation whenever the rotated
+edge is not part of the wall.  The two-sidedness premise is kept explicit
+because a bare rotation system may let one edge occur twice on one quotient
+face. -/
+theorem faceAdjacencyAvoiding_reachable_of_rho
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (wall : Finset E) (dart : RS.D)
+    (haway : RS.edgeOf dart ∉ wall) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+      (orbitFaceVertex RS dart) (orbitFaceVertex RS (RS.rho dart)) := by
+  by_cases hsame : dartOrbitFace RS dart = dartOrbitFace RS (RS.rho dart)
+  · have heq : orbitFaceVertex RS dart =
+        orbitFaceVertex RS (RS.rho dart) := Subtype.ext hsame
+    rw [heq]
+  · apply SimpleGraph.Adj.reachable
+    apply (faceAdjacencyAvoiding_adj_iff
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).2
+    refine ⟨hsame, RS.edgeOf dart, ?_, haway, ?_, ?_⟩
+    · apply (mem_interiorEdgeSupport_iff
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).2
+      refine ⟨Finset.mem_biUnion.2 ⟨dartOrbitFace RS dart, ?_, ?_⟩, ?_⟩
+      · exact Finset.mem_univ _
+      · exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS dart
+      · exact orbitFace_totalIncidenceCount_eq_two_of_twoSided RS
+          htwoSided (RS.edgeOf dart)
+    · exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS dart
+    · change RS.edgeOf dart ∈
+        orbitFaceBoundary RS (dartOrbitFace RS (RS.rho dart))
+      rw [← dartOrbitFace_alpha_eq_dartOrbitFace_rho RS dart]
+      simpa [RS.edge_alpha] using
+        edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS (RS.alpha dart)
+
+/-- A whole vertex-rotation cycle remains connected in the cut facial dual
+when every edge incident with that vertex avoids the wall.  This is the
+well-definedness step for deriving a primal side from a chosen face
+component: the chosen incident dart does not matter away from the wall. -/
+theorem faceAdjacencyAvoiding_reachable_of_rho_sameCycle_of_vertex_avoids
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (wall : Finset E) {left right : RS.D}
+    (hsame : RS.rho.SameCycle left right)
+    (havoid : ∀ dart : RS.D,
+      RS.vertOf dart = RS.vertOf left → RS.edgeOf dart ∉ wall) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+      (orbitFaceVertex RS left) (orbitFaceVertex RS right) := by
+  rcases hsame with ⟨power, hpower⟩
+  have hpowers :
+      RS.vertOf ((RS.rho ^ power) left) = RS.vertOf left ∧
+        (faceAdjacencyAvoiding
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+          (orbitFaceVertex RS left)
+          (orbitFaceVertex RS ((RS.rho ^ power) left)) := by
+    exact zpow_induction_left (g := RS.rho)
+      (P := fun permutation =>
+        RS.vertOf (permutation left) = RS.vertOf left ∧
+          (faceAdjacencyAvoiding
+            (orbitFaceBoundary RS)
+            (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+            (orbitFaceVertex RS left)
+            (orbitFaceVertex RS (permutation left)))
+      (by simp)
+      (fun permutation hreach => by
+        have hstep := faceAdjacencyAvoiding_reachable_of_rho RS htwoSided
+          wall (permutation left) (havoid (permutation left) hreach.1)
+        refine ⟨(RS.vert_rho (permutation left)).trans hreach.1, ?_⟩
+        exact hreach.2.trans (by simpa using hstep))
+      (fun permutation hreach => by
+        have hvertex : RS.vertOf (RS.rho.symm (permutation left)) =
+            RS.vertOf left := by
+          calc
+            RS.vertOf (RS.rho.symm (permutation left)) =
+                RS.vertOf (RS.rho (RS.rho.symm (permutation left))) :=
+              (RS.vert_rho (RS.rho.symm (permutation left))).symm
+            _ = RS.vertOf (permutation left) := by simp
+            _ = RS.vertOf left := hreach.1
+        have hstep := faceAdjacencyAvoiding_reachable_of_rho RS htwoSided
+          wall (RS.rho.symm (permutation left)) (havoid _ hvertex)
+        have hstep' :
+            (faceAdjacencyAvoiding
+              (orbitFaceBoundary RS)
+              (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+              (orbitFaceVertex RS (RS.rho.symm (permutation left)))
+              (orbitFaceVertex RS (permutation left)) := by
+          simpa using hstep
+        refine ⟨by
+          calc
+            RS.vertOf (RS.rho.symm (permutation left)) =
+                RS.vertOf (RS.rho (RS.rho.symm (permutation left))) :=
+              (RS.vert_rho (RS.rho.symm (permutation left))).symm
+            _ = RS.vertOf (permutation left) := by simp
+            _ = RS.vertOf left := hreach.1, ?_⟩
+        exact hreach.2.trans hstep'.symm)
+      power
+  rw [hpower] at hpowers
+  exact hpowers.2
+
+/-- Crossing one non-wall edge remains a reachable move in the cut facial dual.
+The two-sidedness premise again rules out the degenerate case in which both
+dart sides of the edge belong to one quotient face. -/
+theorem faceAdjacencyAvoiding_reachable_of_alpha
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (wall : Finset E) (dart : RS.D)
+    (haway : RS.edgeOf dart ∉ wall) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+      (orbitFaceVertex RS dart) (orbitFaceVertex RS (RS.alpha dart)) := by
+  by_cases hsame : dartOrbitFace RS dart = dartOrbitFace RS (RS.alpha dart)
+  · have heq : orbitFaceVertex RS dart =
+        orbitFaceVertex RS (RS.alpha dart) := Subtype.ext hsame
+    rw [heq]
+  · apply SimpleGraph.Adj.reachable
+    apply (faceAdjacencyAvoiding_adj_iff
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).2
+    refine ⟨hsame, RS.edgeOf dart, ?_, haway, ?_, ?_⟩
+    · apply (mem_interiorEdgeSupport_iff
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).2
+      refine ⟨Finset.mem_biUnion.2 ⟨dartOrbitFace RS dart, ?_, ?_⟩, ?_⟩
+      · exact Finset.mem_univ _
+      · exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS dart
+      · exact orbitFace_totalIncidenceCount_eq_two_of_twoSided RS
+          htwoSided (RS.edgeOf dart)
+    · exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS dart
+    · change RS.edgeOf dart ∈
+        orbitFaceBoundary RS (dartOrbitFace RS (RS.alpha dart))
+      simpa [RS.edge_alpha] using
+        edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS (RS.alpha dart)
+
+/-- The primal side induced by one component of the facial dual after a wall
+is removed.  It is deliberately existential over incident darts; the next
+lemma proves that this existential is a genuine vertex predicate away from
+wall-incident vertices. -/
+def faceComponentSide
+    (RS : RotationSystem V E) (wall : Finset E)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace RS)))
+    (vertex : V) : Prop :=
+  ∃ dart : RS.D,
+    RS.vertOf dart = vertex ∧
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+        seed (orbitFaceVertex RS dart)
+
+/-- At a vertex whose whole rotation fiber avoids the wall, the facial
+component side is independent of the chosen incident dart. -/
+theorem faceComponentSide_iff_of_anchor_of_vertex_avoids
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace RS)))
+    (vertex : V) (anchor : RS.D)
+    (hanchor : RS.vertOf anchor = vertex)
+    (havoid : ∀ dart : RS.D,
+      RS.vertOf dart = vertex → RS.edgeOf dart ∉ wall) :
+    faceComponentSide RS wall seed vertex ↔
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+        seed (orbitFaceVertex RS anchor) := by
+  constructor
+  · rintro ⟨dart, hdart, hreach⟩
+    have hsame : RS.rho.SameCycle dart anchor :=
+      hrotation dart anchor (hdart.trans hanchor.symm)
+    have hconnect :=
+      faceAdjacencyAvoiding_reachable_of_rho_sameCycle_of_vertex_avoids
+        RS htwoSided wall hsame (by
+          intro incident hincident
+          exact havoid incident (hincident.trans hdart))
+    exact hreach.trans hconnect
+  · intro hreach
+    exact ⟨anchor, hanchor, hreach⟩
+
+/-- A non-wall edge whose two endpoint rotation fibers avoid the wall preserves
+the face-component side.  This is the exact local non-crossing statement that
+the eventual primal Jordan separator must extend over the wall vertices. -/
+theorem faceComponentSide_iff_of_nonwall_edge
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace RS)))
+    (dart : RS.D)
+    (haway : RS.edgeOf dart ∉ wall)
+    (havoidLeft : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf dart → RS.edgeOf incident ∉ wall)
+    (havoidRight : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf (RS.alpha dart) →
+        RS.edgeOf incident ∉ wall) :
+    faceComponentSide RS wall seed (RS.vertOf dart) ↔
+      faceComponentSide RS wall seed (RS.vertOf (RS.alpha dart)) := by
+  have hleft := faceComponentSide_iff_of_anchor_of_vertex_avoids
+    RS htwoSided hrotation wall seed (RS.vertOf dart) dart rfl havoidLeft
+  have hright := faceComponentSide_iff_of_anchor_of_vertex_avoids
+    RS htwoSided hrotation wall seed (RS.vertOf (RS.alpha dart))
+      (RS.alpha dart) rfl havoidRight
+  have hcross := faceAdjacencyAvoiding_reachable_of_alpha
+    RS htwoSided wall dart haway
+  constructor
+  · intro hside
+    apply hright.mpr
+    exact (hleft.mp hside).trans hcross
+  · intro hside
+    apply hleft.mpr
+    exact (hright.mp hside).trans hcross.symm
 
 omit [Fintype F] [DecidableEq F] [Fintype E] in
 /-- Enlarging the primal wall can only shrink the cut facial dual. -/
