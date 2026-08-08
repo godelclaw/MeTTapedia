@@ -99,6 +99,65 @@ noncomputable def chordBoundary
     (mem_majorityChordDiagram_iff.mp
       ((mem_sectorSpanningChords_iff).mp chord.2).1)).boundary htriple
 
+/-- The materialized radial-path chord underlying a sector-diagram member. -/
+noncomputable def materializedChord
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+    MajorityChordOnRadialPath C majority first second pair.firstPath :=
+  majorityChordOfPosition chord.1
+    (mem_majorityChordDiagram_iff.mp
+      ((mem_sectorSpanningChords_iff).mp chord.2).1)
+
+@[simp] theorem chordBoundary_eq_materializedChord_boundary
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+    chordBoundary chord = (materializedChord chord).boundary htriple :=
+  rfl
+
+/-- The hole-free facial side canonically selected by the exact binary cut
+theorem.  This Boolean is independent of the radial sector bit. -/
+noncomputable def canonicalFaceSide
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) : Bool :=
+  Classical.choose <|
+    GoertzelV24ClosedWebChordHoleSeparation.exists_holeFreeChordSide
+      embedded hdata pair (materializedChord chord) htriple
+
+theorem canonicalFaceSide_holeFree
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+      HoleFreeChordSide embedded.cellulation (chordBoundary chord)
+      (canonicalFaceSide embedded hdata htriple chord) := by
+  unfold canonicalFaceSide
+  simpa [chordBoundary_eq_materializedChord_boundary] using
+    Classical.choose_spec
+      (GoertzelV24ClosedWebChordHoleSeparation.exists_holeFreeChordSide
+        embedded hdata pair (materializedChord chord) htriple)
+
 /-- A side assignment for every candidate chord, with the exact finite-state
 data needed to turn it into a depth profile.  The side itself is supplied by
 the pending embedded/Jordan argument; this structure does not assert it. -/
@@ -116,10 +175,6 @@ structure ChordSideAssignment
     (chord : SectorChord pair embedded hdata htriple cut side),
     Fintype.card (VertexSetCrossingEdge embedded.RS
       (inside cut side chord)) ≤ widthBound
-  holeFree : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
-    (chord : SectorChord pair embedded hdata htriple cut side),
-      HoleFreeChordSide embedded.cellulation
-        (chordBoundary chord) side
 
 /-- Once an actual side assignment is available, compute its L7 depth state.
 The use of `vertexSetClosedWebCutProfileOfDartOccurrences` is important for
@@ -164,9 +219,11 @@ theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
         ((assignment.profile hC cut side inner =
           assignment.profile hC cut side outer) ∧
         (HoleFreeChordSide embedded.cellulation
-            (chordBoundary inner) side ∧
+            (chordBoundary inner)
+            (canonicalFaceSide embedded hdata htriple inner) ∧
           HoleFreeChordSide embedded.cellulation
-            (chordBoundary outer) side)) := by
+            (chordBoundary outer)
+            (canonicalFaceSide embedded hdata htriple outer))) := by
   let profile : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool),
       SectorChord pair embedded hdata htriple cut side →
         ClosedWebDepthProfile widthBound :=
@@ -175,8 +232,8 @@ theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
       embedded hdata pair htriple widthBound hdeep profile with
     ⟨cut, side, inner, outer, hne, hnested, hequal⟩
   exact ⟨cut, side, inner, outer, hne, hnested, hequal,
-    ⟨assignment.holeFree cut side inner,
-      assignment.holeFree cut side outer⟩⟩
+    ⟨canonicalFaceSide_holeFree embedded hdata htriple inner,
+      canonicalFaceSide_holeFree embedded hdata htriple outer⟩⟩
 
 end
 
