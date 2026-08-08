@@ -140,6 +140,22 @@ structure OrderedPathChord (length : Nat) where
   left_lt_right : left < right
   deriving DecidableEq
 
+/-- Ordered chords are the finite subtype of ordered pairs of path
+positions. -/
+def orderedPathChordEquiv (length : Nat) :
+    OrderedPathChord length ≃
+      {pair : Fin length × Fin length // pair.1 < pair.2} where
+  toFun chord := ⟨(chord.left, chord.right), chord.left_lt_right⟩
+  invFun pair := ⟨pair.1.1, pair.1.2, pair.2⟩
+  left_inv chord := by cases chord; rfl
+  right_inv pair := by cases pair; rfl
+
+instance instFintypeOrderedPathChord (length : Nat) :
+    Fintype (OrderedPathChord length) :=
+  Fintype.ofEquiv
+    {pair : Fin length × Fin length // pair.1 < pair.2}
+    (orderedPathChordEquiv length).symm
+
 /-- Two path chords cross when their endpoints strictly interleave.  Nested
 endpoint intervals are deliberately not crossings. -/
 def OrderedPathChord.Crosses {length : Nat}

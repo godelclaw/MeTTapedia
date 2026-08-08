@@ -87,6 +87,23 @@ theorem ambientRadialPath_isPath
     Subtype.val_injective radial.path_isPath
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Vertex positions on a radial path are injective through the final
+position. -/
+theorem ambientRadialPath_getVert_injective
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    (radial : ComponentRadialPath data C first second component) :
+    Function.Injective (fun position : Fin (radial.path.length + 1) =>
+      (ambientRadialPath radial).getVert position) := by
+  intro left right heq
+  apply Fin.ext
+  apply (ambientRadialPath_isPath radial).getVert_injOn
+  · simpa [ambientRadialPath_length] using Nat.le_of_lt_succ left.isLt
+  · simpa [ambientRadialPath_length] using Nat.le_of_lt_succ right.isLt
+  · exact heq
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- The ambient edge traversed at one position of a radial path. -/
 def ambientRadialPathStepEdge
     {data : AnnularBoundaryData G outerCount}
