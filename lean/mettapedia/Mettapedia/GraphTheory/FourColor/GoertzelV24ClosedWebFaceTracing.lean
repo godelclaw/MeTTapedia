@@ -306,6 +306,47 @@ theorem faceComponentSide_iff_of_nonwall_edge
     apply hleft.mpr
     exact (hright.mp hside).trans hcross.symm
 
+/-!
+The off-wall theorem above obtains the vertex-side seam by rotating through a
+wall-free vertex fiber.  At a wall vertex that rotation is unavailable.  The
+following form isolates exactly the replacement needed there: if every
+incident dart at each endpoint can be routed, in the cut facial dual, to the
+chosen dart of the non-wall edge, then the existential face-component side is
+still constant across that edge.  This is the local Jordan/seam interface;
+the theorem itself is purely combinatorial face tracing.
+-/
+
+theorem faceComponentSide_iff_of_nonwall_edge_of_local_vertex_routes
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (wall : Finset E)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace RS)))
+    (dart : RS.D)
+    (haway : RS.edgeOf dart ∉ wall)
+    (hleftRoute : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf dart →
+        (faceAdjacencyAvoiding
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+          (orbitFaceVertex RS incident) (orbitFaceVertex RS dart))
+    (hrightRoute : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf (RS.alpha dart) →
+        (faceAdjacencyAvoiding
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+          (orbitFaceVertex RS incident)
+            (orbitFaceVertex RS (RS.alpha dart))) :
+    faceComponentSide RS wall seed (RS.vertOf dart) ↔
+      faceComponentSide RS wall seed (RS.vertOf (RS.alpha dart)) := by
+  have hedge := faceAdjacencyAvoiding_reachable_of_alpha
+    RS htwoSided wall dart haway
+  constructor
+  · rintro ⟨incident, hincident, hreach⟩
+    refine ⟨RS.alpha dart, rfl, ?_⟩
+    exact hreach.trans ((hleftRoute incident hincident).trans hedge)
+  · rintro ⟨incident, hincident, hreach⟩
+    refine ⟨dart, rfl, ?_⟩
+    exact hreach.trans ((hrightRoute incident hincident).trans hedge.symm)
+
 omit [Fintype F] [DecidableEq F] [Fintype E] in
 /-- Enlarging the primal wall can only shrink the cut facial dual. -/
 theorem faceAdjacencyAvoiding_anti
