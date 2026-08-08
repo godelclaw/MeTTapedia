@@ -1142,6 +1142,39 @@ theorem exists_right_external_port
         exact hsecond
       exact htriple.2.2.2.2.2 (hedgeColor.symm.trans this)
 
+/- The three local port lemmas compose into one interval-level certificate.
+This is the exact reusable input for a later separator construction: it says
+where the wall can leave the radial carrier, but deliberately does not choose
+the global side or claim a bound on the number of such ports. -/
+theorem exists_external_port_on_chord_interval
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (position : Nat) (hleft : chord.left.val ≤ position)
+    (hright : position ≤ chord.right.val) :
+    ∃ edge : G.edgeSet,
+      (ambientRadialPath radial).getVert position ∈
+        (edge.1 : Sym2 V) ∧
+      edge.1 ∉ chord.cycleWalk.edges := by
+  by_cases hleftEq : position = chord.left.val
+  · subst position
+    exact chord.exists_left_external_port hdata hC htriple
+  by_cases hrightEq : position = chord.right.val
+  · subst position
+    exact chord.exists_right_external_port hdata hC htriple
+  have hinterior : chord.left.val < position ∧ position < chord.right.val := by
+    omega
+  rcases chord.exists_thirdColor_external_port_of_interior hdata hC htriple
+      position (by
+        have hrightLength := chord.right_lt_length hdata htriple
+        omega) hinterior with
+    ⟨edge, hincident, _hcolor, hnotWall⟩
+  exact ⟨edge, hincident, hnotWall⟩
+
 /-- Every endpoint of a chord-cycle edge occurs between the chord endpoints
 on the complete radial path. -/
 theorem exists_position_between_of_mem_cycleWalk_edges
