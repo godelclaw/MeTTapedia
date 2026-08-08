@@ -221,6 +221,38 @@ theorem ambientRadialPath_step_color
     ⟨_hambient, hcolor⟩
   simpa [ambientRadialPathStepEdge] using hcolor
 
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every ambient edge traversed by a selected color-pair walk retains one of
+the two selected colors.  This is the edge-level form needed when a chord
+cycle is inspected at an interior path position. -/
+theorem mapped_walk_edges_color_pair
+    {C : G.EdgeColoring Color} {first second : Color}
+    {start finish : ColorPairSupportVertex C first second}
+    (walk : (colorPairSupportGraph C first second).Walk start finish)
+    (edge : G.edgeSet) (hedge : edge.1 ∈
+      (walk.map (colorPairSupportToAmbientHom C first second)).edges) :
+    C edge = first ∨ C edge = second := by
+  induction walk with
+  | nil => simp at hedge
+  | @cons u v w h walk ih =>
+      rw [SimpleGraph.Walk.map_cons, SimpleGraph.Walk.edges_cons] at hedge
+      have hedge' : edge.1 = s((colorPairSupportToAmbientHom C first second) u,
+          (colorPairSupportToAmbientHom C first second) v) ∨
+        edge.1 ∈ (walk.map (colorPairSupportToAmbientHom C first second)).edges := by
+        simpa only [List.mem_cons] using hedge
+      rcases hedge' with hedge | hedge
+      · have hgraph : (colorPairGraph C first second).Adj u.1 v.1 := by
+          simpa [colorPairSupportGraph] using h
+        rcases (colorPairGraph_adj_iff C first second u.1 v.1).1 hgraph with
+          ⟨hadj, hcolor⟩
+        have hedgeEq : edge.1 = s(u.1, v.1) := by
+          simpa [colorPairSupportToAmbientHom] using hedge
+        have edgeEq : edge = ⟨s(u.1, v.1), by simpa using hadj⟩ :=
+          Subtype.ext hedgeEq
+        rw [edgeEq]
+        simpa using hcolor
+      · exact ih hedge
+
 section WalkInterval
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
@@ -652,6 +684,107 @@ theorem mem_ambientRadialPath_support_of_mem_cycleWalk_edges
       exact (ambientRadialPath radial).getVert_mem_support chord.right
   · exact chord.subarc_support_subset_ambientRadialPath_support
       (chord.subarc.mem_support_of_mem_edges hedgeSubarc hvertex)
+
+/-- The remaining-color edge at a strict interior radial-path position is an
+external port of the chord wall.  Thus the cycle contains only the two
+selected-color path edges at such a position; its third edge leaves the wall.
+This is the local port fact needed before a global side predicate can be
+constructed. -/
+theorem thirdColor_edge_not_mem_cycleWalk_of_interior
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (position : Nat) (hposition : position ≤ radial.path.length)
+    (hinterior : chord.left.val < position ∧ position < chord.right.val)
+    (edge : G.edgeSet)
+    (hincident : (ambientRadialPath radial).getVert position ∈
+      (edge.1 : Sym2 V))
+    (hcolor : C edge = first + second) :
+    edge.1 ∉ chord.cycleWalk.edges := by
+  intro hedge
+  have hwall : edge ∈ (chord.boundary htriple).wall :=
+    (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).2 hedge
+  rcases ((chord.boundary htriple).mem_wall_iff edge).1 hwall with
+    hedgeChord | hedgeSubarc
+  · have hedgeValue : edge.1 = chord.chordDart.edge := by
+      rw [hedgeChord]
+      rfl
+    rw [hedgeValue] at hincident
+    rcases Sym2.mem_iff.mp hincident with hleft | hright
+    · have hposEq : position = chord.left.val :=
+        (ambientRadialPath_isPath radial).getVert_injOn
+          (by simpa [ambientRadialPath_length] using hposition)
+          (by simpa [ambientRadialPath_length] using
+            Nat.le_of_lt_succ chord.left.isLt) hleft
+      omega
+    · have hposEq : position = chord.right.val :=
+        (ambientRadialPath_isPath radial).getVert_injOn
+          (by simpa [ambientRadialPath_length] using hposition)
+          (by simpa [ambientRadialPath_length] using
+            Nat.le_of_lt_succ chord.right.isLt) hright
+      omega
+  · have htake := SimpleGraph.Walk.isSubwalk_take
+      ((ambientRadialPath radial).drop chord.left)
+      (chord.right.val - chord.left.val)
+    have hdrop := SimpleGraph.Walk.isSubwalk_drop
+      (ambientRadialPath radial) chord.left
+    have hsubwalk := htake.trans hdrop
+    have hambient : edge.1 ∈ (ambientRadialPath radial).edges := by
+      apply hsubwalk.edges_subset
+      have hedgeSubarc' : edge.1 ∈ chord.subarc.edges := by
+        simpa only [MajorityChordOnRadialPath.boundary] using hedgeSubarc
+      change edge.1 ∈ (walkInterval (ambientRadialPath radial)
+        chord.left chord.right (Nat.le_of_lt chord.left_lt_right)).edges at hedgeSubarc'
+      unfold walkInterval at hedgeSubarc'
+      rw [SimpleGraph.Walk.edges_copy] at hedgeSubarc'
+      exact hedgeSubarc'
+    have hmapped := hambient
+    change edge.1 ∈
+      (radial.path.map (colorPairSupportToAmbientHom C first second)).edges at hmapped
+    rcases mapped_walk_edges_color_pair (walk := radial.path)
+      (edge := edge) hmapped with hfirst | hsecond
+    · have hthird := third_color_properties htriple.2.1
+          htriple.2.2.1 htriple.2.2.2.2.2
+      exact hthird.2.1 (hcolor.symm.trans hfirst)
+    · have hthird := third_color_properties htriple.2.1
+          htriple.2.2.1 htriple.2.2.2.2.2
+      exact hthird.2.2 (hcolor.symm.trans hsecond)
+
+/-- At every strict interior radial-path position, cubicity supplies a
+remaining-color edge, and the preceding theorem proves that edge is an
+external port of the chord wall. -/
+theorem exists_thirdColor_external_port_of_interior
+    {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (position : Nat) (hposition : position ≤ radial.path.length)
+    (hinterior : chord.left.val < position ∧ position < chord.right.val) :
+    ∃ edge : G.edgeSet,
+      (ambientRadialPath radial).getVert position ∈
+        (edge.1 : Sym2 V) ∧
+      C edge = first + second ∧
+      edge.1 ∉ chord.cycleWalk.edges := by
+  have hcubic := ambientRadialPath_internal_incidentEdgeFinset_card_eq_three
+    hdata radial position (by omega) (by omega)
+  have hthird := third_color_properties htriple.2.1
+    htriple.2.2.1 htriple.2.2.2.2.2
+  rcases GoertzelV24FramedTrail.exists_incident_edge_of_color_of_cubic_tait
+      C hC ((ambientRadialPath radial).getVert position) hcubic
+      (first + second) hthird.1 with
+    ⟨edge, hedge, hcolor⟩
+  have hincident : (ambientRadialPath radial).getVert position ∈
+      (edge.1 : Sym2 V) := by
+    simpa [incidentEdgeFinset] using hedge
+  refine ⟨edge, hincident, hcolor, ?_⟩
+  exact thirdColor_edge_not_mem_cycleWalk_of_interior chord htriple
+    position hposition hinterior edge hincident hcolor
 
 /-- Every endpoint of a chord-cycle edge occurs between the chord endpoints
 on the complete radial path. -/
