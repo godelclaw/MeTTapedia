@@ -42,6 +42,41 @@ local instance computedDepthProfileGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+/-- Turn a finite graph-side predicate into the finite carrier consumed by
+the rotation-system profile engine. -/
+noncomputable def sideFinset (side : V → Prop) : Finset V := by
+  classical
+  exact Finset.univ.filter side
+
+omit [DecidableEq V] in
+@[simp] theorem mem_sideFinset_iff
+    (side : V → Prop) (vertex : V) :
+    vertex ∈ sideFinset side ↔ side vertex := by
+  simp [sideFinset]
+
+/-- A cyclic-cut realization has exactly the crossing-port support computed
+from its finite vertex side.  This is the finite graph bridge; it does not
+construct the realization from a chord or invoke planarity. -/
+theorem vertexSetCrossingEdges_eq_of_cyclicEdgeCutRealization
+    (data : SimpleGraphDartRotation.Data G)
+    {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut) :
+    vertexSetCrossingEdges data.toRotationSystem
+        (sideFinset realization.side) = edgeCut := by
+  ext edge
+  rw [mem_vertexSetCrossingEdges_iff,
+    simpleGraph_edgeCrossesVertexSet_iff_edgeCrossesVertexSide]
+  simpa [sideFinset] using (realization.hcut_eq edge).symm
+
+theorem card_vertexSetCrossingEdge_eq_of_cyclicEdgeCutRealization
+    (data : SimpleGraphDartRotation.Data G)
+    {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut) :
+    Fintype.card (VertexSetCrossingEdge data.toRotationSystem
+        (sideFinset realization.side)) = edgeCut.card := by
+  rw [card_vertexSetCrossingEdge,
+    vertexSetCrossingEdges_eq_of_cyclicEdgeCutRealization data realization]
+
 /- The embedding stores a rotation system whose edge-adjacency graph is not
 definitionally equal to the ordinary line graph.  Keep
 this transport in one small helper, so the profile below is genuinely driven
@@ -175,6 +210,48 @@ structure ChordSideAssignment
     (chord : SectorChord pair embedded hdata htriple cut side),
     Fintype.card (VertexSetCrossingEdge embedded.RS
       (inside cut side chord)) ≤ widthBound
+
+/-- The exact geometric input that is sufficient to build a side assignment:
+each chord receives a cyclic edge-cut realization, together with a uniform
+finite cut bound.  Constructing this family is the remaining Jordan/sector
+lemma; the conversion to profile data is mechanical and proved below. -/
+structure ChordCyclicCutAssignment
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    (widthBound : Nat) where
+  edgeCut : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (_chord : SectorChord pair embedded hdata htriple cut side), Finset G.edgeSet
+  realization : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    CyclicEdgeCutRealization G (edgeCut cut side chord)
+  width : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    (edgeCut cut side chord).card ≤ widthBound
+
+/-- Convert exact cyclic cut realizations into the finite vertex-side profile
+interface.  The crossing-width proof is obtained from exact cut equality,
+not supplied as a second classification. -/
+def ChordCyclicCutAssignment.toSideAssignment
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    (cuts : ChordCyclicCutAssignment pair embedded hdata htriple widthBound) :
+    ChordSideAssignment pair embedded hdata htriple widthBound where
+  inside := fun cut side chord =>
+    sideFinset (cuts.realization cut side chord).side
+  crossingWidth := by
+    intro cut side chord
+    rw [card_vertexSetCrossingEdge_eq_of_cyclicEdgeCutRealization
+      embedded.cellulation.rotation (cuts.realization cut side chord)]
+    exact cuts.width cut side chord
 
 /-- Once an actual side assignment is available, compute its L7 depth state.
 The use of `vertexSetClosedWebCutProfileOfDartOccurrences` is important for
