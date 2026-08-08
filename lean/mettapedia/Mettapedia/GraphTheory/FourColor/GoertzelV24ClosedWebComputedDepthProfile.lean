@@ -429,6 +429,25 @@ theorem closedWebDepthProfile_faceFragmentCount_val_eq_of_eq
   cases hprofiles
   rfl
 
+/-
+The edge-color coordinate is dependent on the crossing-port count.  Expose
+its transport explicitly: a later splice proof can compare the corresponding
+finite interface colors without reopening the dependent profile equality.
+-/
+theorem closedWebDepthProfile_edgeColor_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    ∀ (index : Fin left.crossingEdgeCount.val),
+      left.profile.profile.edgeColor index =
+        right.profile.profile.edgeColor
+          (Fin.cast
+            (closedWebDepthProfile_crossingEdgeCount_val_eq_of_eq hprofiles)
+            index) := by
+  intro index
+  cases hprofiles
+  rfl
+
 end
 
 end GoertzelV24ClosedWebComputedDepthProfile
