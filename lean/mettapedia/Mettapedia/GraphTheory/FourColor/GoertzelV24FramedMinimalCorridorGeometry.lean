@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedWeightedCurvature
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedInteriorDual
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceSize
 
 /-!
@@ -64,6 +64,25 @@ theorem corridorGeometry_of_vertexMinimalTaitCounterexample
   · intro face _hface
     exact orbitFaceMinimumFive_of_vertexMinimalTaitCounterexample
       embedded.cellulation.rotation minimal face
+
+/-- Formation-facing version of the adapter: the remaining premise is stated
+as connectedness of the full facial dual after the two hole faces are
+deleted. -/
+theorem corridorGeometry_of_vertexMinimalTaitCounterexample_of_fullDualInduceConnected
+    {source : SourceTrail G} (embedded : source.AnnularEmbedding)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      embedded.cellulation.rotation)
+    (hfullDualInduceConnected :
+      ((interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).induce
+        (fun face => face.1 ∈
+          embedded.cellulation.interiorFaces)).Connected) :
+    embedded.CorridorGeometry :=
+  embedded.corridorGeometry_of_vertexMinimalTaitCounterexample minimal
+    (embedded.internalDualConnected_iff_fullDualInduceConnected.mpr
+      hfullDualInduceConnected)
 
 end AnnularEmbedding
 
