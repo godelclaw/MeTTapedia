@@ -110,6 +110,59 @@ theorem faceComponentSide_iff_of_vertex_off_cycleWalk_support
   exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple
     (embedded.RS.edgeOf dart)).1 hwall
 
+/-!
+The vertex statement upgrades to an edge statement away from the wall.  This
+is the exact non-crossing classification for the easy class of ambient edges:
+both endpoint rotation fibers avoid the cycle, so the cut facial component is
+constant across the edge.
+-/
+
+theorem faceComponentSide_iff_of_edge_off_cycleWalk_support
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    (dart : embedded.RS.D)
+    (hleft : embedded.RS.vertOf dart ∉ chord.cycleWalk.support)
+    (hright : embedded.RS.vertOf (embedded.RS.alpha dart) ∉
+      chord.cycleWalk.support) :
+    faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed (embedded.RS.vertOf dart) ↔
+      faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed
+          (embedded.RS.vertOf (embedded.RS.alpha dart)) := by
+  have hrotation : VertexRotationCyclic embedded.RS :=
+    hasCyclicVertexRotations_implies_vertexRotationCyclic
+      G embedded.cellulation.rotation
+        embedded.cellulation.vertexRotation_cyclic
+  have haway : embedded.RS.edgeOf dart ∉
+      (chord.boundary htriple).wall := by
+    intro hwall
+    have hcycle : (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges :=
+      (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple
+        (embedded.RS.edgeOf dart)).1 hwall
+    exact hleft (chord.cycleWalk.mem_support_of_mem_edges hcycle (by
+      change dart.fst ∈ dart.edge
+      simp [SimpleGraph.Dart.edge]))
+  apply faceComponentSide_iff_of_nonwall_edge
+      embedded.RS htwoSided hrotation (chord.boundary htriple).wall seed dart
+      haway
+  · intro incident hincident hwall
+    apply chord.toRotationSystem_edge_not_mem_cycleWalk_of_vertex_not_mem_support
+      embedded.cellulation.rotation hleft incident hincident
+    exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple
+      (embedded.RS.edgeOf incident)).1 hwall
+  · intro incident hincident hwall
+    apply chord.toRotationSystem_edge_not_mem_cycleWalk_of_vertex_not_mem_support
+      embedded.cellulation.rotation hright incident hincident
+    exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple
+      (embedded.RS.edgeOf incident)).1 hwall
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/
