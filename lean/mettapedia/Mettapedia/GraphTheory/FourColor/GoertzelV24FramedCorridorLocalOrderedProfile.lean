@@ -304,6 +304,65 @@ theorem exists_equal_sourceSlabOrderedDepthProfiles
   rcases exists_depthProfile_repeat 4 profiles with ⟨first, second, hne, heq⟩
   exact ⟨first, second, hne, heq⟩
 
+/-- A longer source corridor has equal realized profile boundaries with three
+whole source positions between them.  The extra spacing is finite-state
+bookkeeping: without such a repeat, the pair consisting of a profile and a
+position modulo four would inject all positions into four copies of the
+finite profile carrier. -/
+theorem exists_equal_sourceSlabOrderedDepthProfiles_separated
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hlarge : 4 * closedWebCutProfileCount 4 + 1 ≤ blockLength - 3)
+    (coloring : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcoloring : embedded.cellulation.rotation.toRotationSystem.IsTaitEdgeColoring
+      coloring) :
+    ∃ first second : Fin (4 * closedWebCutProfileCount 4 + 1),
+      first.val + 3 < second.val ∧
+      sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge first) coloring hcoloring =
+      sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge second) coloring hcoloring := by
+  let profiles : Fin (4 * closedWebCutProfileCount 4 + 1) →
+      ClosedWebDepthProfile 4 := fun offset =>
+    sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+      (Fin.castLE hlarge offset) coloring hcoloring
+  by_contra hrepeat
+  have hseparated : ∀ first second,
+      first.val + 3 < second.val → profiles first ≠ profiles second := by
+    intro first second hfar heq
+    exact hrepeat ⟨first, second, hfar, heq⟩
+  let encode : Fin (4 * closedWebCutProfileCount 4 + 1) →
+      ClosedWebDepthProfile 4 × Fin 4 := fun offset =>
+    (profiles offset, ⟨offset.val % 4, Nat.mod_lt _ (by omega)⟩)
+  have hinjective : Function.Injective encode := by
+    intro first second heq
+    have hprofile : profiles first = profiles second := by
+      exact congrArg Prod.fst heq
+    have hmod : first.val % 4 = second.val % 4 := by
+      have hresidue := congrArg (fun pair => pair.2.val) heq
+      simpa [encode] using hresidue
+    apply Fin.ext
+    by_cases hval : first.val = second.val
+    · exact hval
+    · rcases lt_or_gt_of_ne hval with hfirst | hsecond
+      · have hfar : first.val + 3 < second.val := by omega
+        exact False.elim (hseparated first second hfar hprofile)
+      · have hfar : second.val + 3 < first.val := by omega
+        exact False.elim (hseparated second first hfar hprofile.symm)
+  have hcard := Fintype.card_le_of_injective encode hinjective
+  simp [card_closedWebDepthProfile] at hcard
+  omega
+
 end AnnularEmbedding
 
 end SourceTrail
