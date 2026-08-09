@@ -47,6 +47,103 @@ local instance chordCycleFaceSideGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+/-! A route-neutral Jordan interface
+
+The existing face-tracing lemmas provide the dual transport, but they do not
+choose values of a primal vertex side at the vertices of the wall.  The
+following certificate is the small, honest interface for that missing step:
+the wall cycle alternates the chosen side at its darts, while every edge not
+on the cycle preserves it.  It is deliberately independent of a particular
+face-label construction.  A future annulus/Jordan proof can populate these
+two fields; the exact graph-side cut then follows mechanically. -/
+
+structure CycleSideCertificate
+    {start : V} (cycle : G.Walk start start) where
+  side : V → Prop
+  cycle_side_alternates :
+    ∀ dart : G.Dart, dart ∈ cycle.darts →
+      (side dart.fst ↔ ¬ side dart.snd)
+  noncycle_side_preserves :
+    ∀ (edge : G.edgeSet), edge.1 ∉ cycle.edges →
+      ∀ u v : V, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+        (side u ↔ side v)
+  hinside_cycle : HasCycleOnSide G side
+  houtside_cycle : HasCycleOnSide G (fun vertex => ¬ side vertex)
+
+namespace CycleSideCertificate
+
+/-! An alternating dart gives an unoriented edge crossing.  The case split is
+needed because `EdgeCrossesVertexSide` remembers one direction of the witness
+even though the graph edge itself is unordered. -/
+
+theorem edgeCrosses_of_alternating
+    {side : V → Prop} {dart : G.Dart}
+    (halternates : side dart.fst ↔ ¬ side dart.snd) :
+    EdgeCrossesVertexSide G side
+      (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) := by
+  by_cases hfirst : side dart.fst
+  · exact ⟨dart.fst, dart.snd, by simp [SimpleGraph.Dart.edge],
+      by simp [SimpleGraph.Dart.edge], hfirst, halternates.mp hfirst⟩
+  · have hsecond : side dart.snd := by
+      by_contra hnot
+      exact hfirst (halternates.mpr hnot)
+    exact ⟨dart.snd, dart.fst, by simp [SimpleGraph.Dart.edge],
+      by simp [SimpleGraph.Dart.edge], hsecond, hfirst⟩
+
+/-! The certificate is now promoted to the exact finite cut used by the
+computed-profile layer.  Notice that no topological theorem is hidden here:
+all geometric content is precisely in the two certificate fields above. -/
+
+noncomputable def toCyclicEdgeCutRealization
+    {start : V} {cycle : G.Walk start start}
+    (certificate : CycleSideCertificate (G := G) cycle) :
+    CyclicEdgeCutRealization G (walkEdgeFinset cycle) := by
+  refine CyclicEdgeCutRealization.of_edge_side_classification
+    certificate.side ?_ ?_ certificate.hinside_cycle
+      certificate.houtside_cycle
+  · intro edge hedge
+    have hedgeEdges : edge.1 ∈ cycle.edges :=
+      (mem_walkEdgeFinset_iff cycle edge).1 hedge
+    rcases List.mem_map.mp hedgeEdges with ⟨dart, hdart, hedgeEq⟩
+    have hdartEdge :
+        (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) = edge := by
+      apply Subtype.ext
+      exact hedgeEq
+    rw [← hdartEdge]
+    exact edgeCrosses_of_alternating
+      (certificate.cycle_side_alternates dart hdart)
+  · intro edge hnot u v hu hv
+    apply certificate.noncycle_side_preserves edge
+    intro hedge
+    exact hnot ((mem_walkEdgeFinset_iff cycle edge).2 hedge)
+    exact hu
+    exact hv
+
+end CycleSideCertificate
+
+/-! The chord-facing spelling of the same interface.  The boundary wall is
+definitionally a chord plus its path subarc, while the cycle walk records
+exactly those edges; the existing boundary-membership theorem supplies the
+finite-support equality. -/
+
+noncomputable def cyclicEdgeCutRealization_of_chordCycleSideCertificate
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (certificate : CycleSideCertificate (G := G) chord.cycleWalk) :
+    CyclicEdgeCutRealization G (chord.boundary htriple).wall := by
+  have hwall : (chord.boundary htriple).wall =
+      walkEdgeFinset chord.cycleWalk := by
+    ext edge
+    exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges
+      htriple edge).trans (mem_walkEdgeFinset_iff chord.cycleWalk edge).symm
+  rw [hwall]
+  exact certificate.toCyclicEdgeCutRealization
+
 /-- Every based vertex occurring in the chord-cycle dart chain is locally
 cubic, even though the framed annular graph has degree-one interface stubs. -/
 theorem cycleWalk_dartsAt_card_eq_three

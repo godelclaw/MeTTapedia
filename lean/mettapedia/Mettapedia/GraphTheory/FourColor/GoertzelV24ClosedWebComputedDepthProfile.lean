@@ -21,6 +21,7 @@ namespace GoertzelV24ClosedWebComputedDepthProfile
 
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebChordCycleFaceSideTransport
 open GoertzelV24ClosedWebChordHoleSideCutWitness
 open GoertzelV24ClosedWebChordRotationNoncrossing
 open GoertzelV24ClosedWebChordRotationSector
@@ -289,6 +290,40 @@ structure ChordCyclicCutAssignment
   width : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
     (chord : SectorChord pair embedded hdata htriple cut side),
     (edgeCut cut side chord).card ≤ widthBound
+
+/-! This constructor makes the remaining geometric obligation explicit in
+the language of the route.  A family of primal cycle-side certificates is
+enough; the wall/cycle support equality and the exact crossing classification
+are inherited from the generic separator bridge.  No catalogue or finite
+configuration data is introduced. -/
+
+noncomputable def ChordCyclicCutAssignment.ofCycleSideCertificates
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    (widthBound : Nat)
+    (certificates : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+      (chord : SectorChord pair embedded hdata htriple cut side),
+      GoertzelV24ClosedWebChordCycleFaceSideTransport.CycleSideCertificate
+        (G := G)
+        (materializedChord chord).cycleWalk)
+    (hwidth : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+      (chord : SectorChord pair embedded hdata htriple cut side),
+      (chordBoundary chord).wall.card ≤ widthBound) :
+    ChordCyclicCutAssignment pair embedded hdata htriple widthBound where
+  edgeCut := fun _cut _side chord => (chordBoundary chord).wall
+  realization := by
+    intro cut side chord
+    simpa only [chordBoundary_eq_materializedChord_boundary] using
+      (GoertzelV24ClosedWebChordCycleFaceSideTransport.cyclicEdgeCutRealization_of_chordCycleSideCertificate
+        (embedded := embedded) (chord := materializedChord chord)
+        htriple (certificates cut side chord))
+  width := by
+    intro cut side chord
+    exact hwidth cut side chord
 
 /-- A chord-side assignment exposes the exact side-transport interface needed
 by a radial/Jordan argument.  The geometric caller supplies a local dart
