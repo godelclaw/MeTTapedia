@@ -90,6 +90,58 @@ theorem edgeCrosses_of_alternating
     exact ⟨dart.snd, dart.fst, by simp [SimpleGraph.Dart.edge],
       by simp [SimpleGraph.Dart.edge], hsecond, hfirst⟩
 
+/-! The converse local fact is useful when a geometric argument already
+supplies an exact cyclic-cut realization.  It turns the existential crossing
+witness into the oriented endpoint statement used by the cycle certificate;
+the only graph fact needed is that an unordered edge has exactly the two dart
+endpoints. -/
+
+theorem side_iff_not_side_of_edgeCrosses
+    {side : V → Prop} {e : G.edgeSet} {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V))
+    (hne : u ≠ v)
+    (hcross : EdgeCrossesVertexSide G side e) :
+    side u ↔ ¬ side v := by
+  have heq : (e : Sym2 V) = s(u, v) :=
+    sym2_eq_mk_of_mem_of_mem_of_ne hu hv hne
+  have hnot : ¬ (side u ↔ side v) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq heq hcross
+  by_cases huSide : side u <;> by_cases hvSide : side v <;>
+    simp_all
+
+/-! A realized cut can be repackaged as the certificate interface.  This is
+deliberately a reverse adapter, not a Jordan theorem: it lets a future
+annulus/separation proof return `CyclicEdgeCutRealization` directly while the
+profile layer continues to consume `CycleSideCertificate`. -/
+
+noncomputable def ofCyclicEdgeCutRealization
+    {start : V} {cycle : G.Walk start start}
+    (realization : CyclicEdgeCutRealization G (walkEdgeFinset cycle)) :
+    CycleSideCertificate (G := G) cycle where
+  side := realization.side
+  cycle_side_alternates := by
+    intro dart hdart
+    have hedge : dart.edge ∈ cycle.edges :=
+      List.mem_map_of_mem hdart
+    have hcut : (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) ∈
+        walkEdgeFinset cycle :=
+      (mem_walkEdgeFinset_iff cycle ⟨dart.edge, dart.edge_mem⟩).2 hedge
+    have hcross := (realization.hcut_eq ⟨dart.edge, dart.edge_mem⟩).1 hcut
+    exact side_iff_not_side_of_edgeCrosses
+      (by simp [SimpleGraph.Dart.edge])
+      (by simp [SimpleGraph.Dart.edge]) dart.fst_ne_snd hcross
+  noncycle_side_preserves := by
+    intro edge hnot u v hu hv
+    apply (not_edgeCrossesVertexSide_iff_forall_side_iff
+      G realization.side edge).1
+    intro hcross
+    exact hnot ((mem_walkEdgeFinset_iff cycle edge).1
+      ((realization.hcut_eq edge).2 hcross))
+    exact hu
+    exact hv
+  hinside_cycle := realization.hinside_cycle
+  houtside_cycle := realization.houtside_cycle
+
 /-! The certificate is now promoted to the exact finite cut used by the
 computed-profile layer.  Notice that no topological theorem is hidden here:
 all geometric content is precisely in the two certificate fields above. -/
