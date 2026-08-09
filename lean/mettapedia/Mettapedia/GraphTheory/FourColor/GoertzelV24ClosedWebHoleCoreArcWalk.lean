@@ -665,6 +665,78 @@ theorem exists_innerHoleCoreArcWalk_isTrail_of_local_twoSided
     ⟨arc, htrail, hface, hlength⟩
   exact ⟨arc, htrail, hface, hlength⟩
 
+/-! The endpoint-avoiding local form packages the exact interface needed by a
+radial sector wall: the retained hole-face trail does not reuse either radial
+stub edge. -/
+
+theorem exists_innerHoleCoreArcWalk_isTrail_of_local_twoSided_avoids_boundaryEdges
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) {first second : Fin 5}
+    (hne : first ≠ second)
+    (htargetOrbit : embedded.RS.alpha
+        (innerBoundaryDart data hdata second) ∈
+      embedded.RS.faceOrbit
+        (embedded.RS.phi (innerBoundaryDart data hdata first)))
+    (hlocal : ∀ dart ∈ faceArcDarts embedded.cellulation.rotation
+        (embedded.RS.phi (innerBoundaryDart data hdata first))
+        (embedded.RS.alpha (innerBoundaryDart data hdata second))
+        htargetOrbit,
+      dartOrbitFace embedded.RS dart ≠
+        dartOrbitFace embedded.RS (embedded.RS.alpha dart)) :
+    ∃ arc : G.Walk
+        (innerBoundaryDart data hdata first).snd
+        (innerBoundaryDart data hdata second).snd,
+      arc.IsTrail ∧
+      (∀ dart ∈ arc.darts,
+        dartOrbitFace embedded.RS dart = embedded.cellulation.innerHole) ∧
+      arc.length <
+        (embedded.RS.faceOrbit
+          (embedded.RS.phi (innerBoundaryDart data hdata first))).card ∧
+      (data.innerBoundaryEdge first).1 ∉ arc.edges ∧
+      (data.innerBoundaryEdge second).1 ∉ arc.edges := by
+  let firstDart := innerBoundaryDart data hdata first
+  let secondDart := innerBoundaryDart data hdata second
+  have hfirst : dartOrbitFace embedded.RS firstDart =
+      embedded.cellulation.innerHole :=
+    innerBoundaryDart_on_innerHole embedded hdata first
+  have hsecondOn : secondDart ∈
+      embedded.RS.dartsOn (data.innerBoundaryEdge second) :=
+    innerBoundaryDart_mem_dartsOn embedded hdata second
+  have hsecondAlphaOn : embedded.RS.alpha secondDart ∈
+      embedded.RS.dartsOn (data.innerBoundaryEdge second) :=
+    embedded.RS.alpha_mem_dartsOn hsecondOn
+  have hsecondAlpha :
+      dartOrbitFace embedded.RS (embedded.RS.alpha secondDart) =
+        embedded.cellulation.innerHole :=
+    embedded.innerBoundaryEdgeDarts_on_innerHole second
+      (embedded.RS.alpha secondDart) hsecondAlphaOn
+  have hfirstTarget : firstDart ≠ embedded.RS.alpha secondDart := by
+    intro hdarts
+    have hdartEdges := congrArg (fun dart : G.Dart => dart.edge) hdarts
+    have hedges : data.innerBoundaryEdge first =
+        data.innerBoundaryEdge second := by
+      apply Subtype.ext
+      calc
+        (data.innerBoundaryEdge first).1 = firstDart.edge :=
+          (innerBoundaryDart_edge data hdata first).symm
+        _ = secondDart.edge := by simpa using hdartEdges
+        _ = (data.innerBoundaryEdge second).1 :=
+          innerBoundaryDart_edge data hdata second
+    exact hne (data.innerBoundaryEdge.injective hedges)
+  rcases exists_coreFaceArcWalk_isTrail_of_local_twoSided_avoids_endpoint_edges
+      embedded.cellulation.rotation embedded.cellulation.innerHole
+      firstDart secondDart hfirst hsecondAlpha
+      (phi_alpha_innerBoundaryDart embedded hdata first)
+      (phi_alpha_innerBoundaryDart embedded hdata second)
+      hfirstTarget
+      (innerBoundaryDart_ne_phi_innerBoundaryDart embedded hdata hne)
+      htargetOrbit hlocal with
+    ⟨arc, htrail, hface, hlength, hfirstEdge, hsecondEdge⟩
+  refine ⟨arc, htrail, hface, hlength, ?_, ?_⟩
+  · simpa [firstDart] using hfirstEdge
+  · simpa [secondDart] using hsecondEdge
+
 /-- For two distinct inner anchors, the core arc avoids both named boundary
 edges and therefore does not duplicate either radial-path stub edge. -/
 theorem exists_innerHoleCoreArcWalk_avoids_boundaryEdges
@@ -799,6 +871,74 @@ theorem exists_outerHoleCoreArcWalk_isTrail_of_local_twoSided
       firstDart secondDart hfirst hsecondAlpha htargetOrbit hlocal with
     ⟨arc, htrail, hface, hlength⟩
   exact ⟨arc, htrail, hface, hlength⟩
+
+theorem exists_outerHoleCoreArcWalk_isTrail_of_local_twoSided_avoids_boundaryEdges
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) {first second : Fin outerCount}
+    (hne : first ≠ second)
+    (htargetOrbit : embedded.RS.alpha
+        (outerBoundaryDart data hdata second) ∈
+      embedded.RS.faceOrbit
+        (embedded.RS.phi (outerBoundaryDart data hdata first)))
+    (hlocal : ∀ dart ∈ faceArcDarts embedded.cellulation.rotation
+        (embedded.RS.phi (outerBoundaryDart data hdata first))
+        (embedded.RS.alpha (outerBoundaryDart data hdata second))
+        htargetOrbit,
+      dartOrbitFace embedded.RS dart ≠
+        dartOrbitFace embedded.RS (embedded.RS.alpha dart)) :
+    ∃ arc : G.Walk
+        (outerBoundaryDart data hdata first).snd
+        (outerBoundaryDart data hdata second).snd,
+      arc.IsTrail ∧
+      (∀ dart ∈ arc.darts,
+        dartOrbitFace embedded.RS dart = embedded.cellulation.outerHole) ∧
+      arc.length <
+        (embedded.RS.faceOrbit
+          (embedded.RS.phi (outerBoundaryDart data hdata first))).card ∧
+      (data.outerBoundaryEdge first).1 ∉ arc.edges ∧
+      (data.outerBoundaryEdge second).1 ∉ arc.edges := by
+  let firstDart := outerBoundaryDart data hdata first
+  let secondDart := outerBoundaryDart data hdata second
+  have hfirst : dartOrbitFace embedded.RS firstDart =
+      embedded.cellulation.outerHole :=
+    outerBoundaryDart_on_outerHole embedded hdata first
+  have hsecondOn : secondDart ∈
+      embedded.RS.dartsOn (data.outerBoundaryEdge second) :=
+    outerBoundaryDart_mem_dartsOn embedded hdata second
+  have hsecondAlphaOn : embedded.RS.alpha secondDart ∈
+      embedded.RS.dartsOn (data.outerBoundaryEdge second) :=
+    embedded.RS.alpha_mem_dartsOn hsecondOn
+  have hsecondAlpha :
+      dartOrbitFace embedded.RS (embedded.RS.alpha secondDart) =
+        embedded.cellulation.outerHole :=
+    embedded.outerBoundaryEdgeDarts_on_outerHole second
+      (embedded.RS.alpha secondDart) hsecondAlphaOn
+  have hfirstTarget : firstDart ≠ embedded.RS.alpha secondDart := by
+    intro hdarts
+    have hdartEdges := congrArg (fun dart : G.Dart => dart.edge) hdarts
+    have hedges : data.outerBoundaryEdge first =
+        data.outerBoundaryEdge second := by
+      apply Subtype.ext
+      calc
+        (data.outerBoundaryEdge first).1 = firstDart.edge :=
+          (outerBoundaryDart_edge data hdata first).symm
+        _ = secondDart.edge := by simpa using hdartEdges
+        _ = (data.outerBoundaryEdge second).1 :=
+          outerBoundaryDart_edge data hdata second
+    exact hne (data.outerBoundaryEdge.injective hedges)
+  rcases exists_coreFaceArcWalk_isTrail_of_local_twoSided_avoids_endpoint_edges
+      embedded.cellulation.rotation embedded.cellulation.outerHole
+      firstDart secondDart hfirst hsecondAlpha
+      (phi_alpha_outerBoundaryDart embedded hdata first)
+      (phi_alpha_outerBoundaryDart embedded hdata second)
+      hfirstTarget
+      (outerBoundaryDart_ne_phi_outerBoundaryDart embedded hdata hne)
+      htargetOrbit hlocal with
+    ⟨arc, htrail, hface, hlength, hfirstEdge, hsecondEdge⟩
+  refine ⟨arc, htrail, hface, hlength, ?_, ?_⟩
+  · simpa [firstDart] using hfirstEdge
+  · simpa [secondDart] using hsecondEdge
 
 /-- For two distinct outer anchors, the outer core arc likewise avoids both
 radial-path boundary edges. -/
