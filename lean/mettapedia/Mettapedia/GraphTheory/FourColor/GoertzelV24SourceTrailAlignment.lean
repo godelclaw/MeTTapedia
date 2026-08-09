@@ -149,6 +149,19 @@ theorem legalKempeStep_iff_sourceBetweenRegionKempeStep
     source.toFramedTrailData hsource
     source.toFramedTrailData_betweenRegionEdgeAligned C hC C'
 
+/-- The source-side move relation from L10 preserves a proper Tait coloring.
+This is not a second move definition: it is the preservation consequence of
+the proved source/frame alignment, stated in the relation consumed by Trail
+Completability. -/
+theorem sourceBetweenRegionKempeStep_preserves_isTaitEdgeColoring
+    (source : SourceTrail G) (hsource : source.WellFormed)
+    {C C' : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    (hstep : SourceBetweenRegionKempeStep source.toFramedTrailData C C') :
+    IsTaitEdgeColoring G C' := by
+  apply framedTangleLegalKempeStep_preserves_isTaitEdgeColoring
+    ((source.legalKempeStep_iff_sourceBetweenRegionKempeStep hsource C hC C').2
+      hstep) hC
+
 /-- L10 at finite reachability for an actual graph-side source trail. -/
 theorem kempeReachable_iff_sourceBetweenRegionKempeReachable
     (source : SourceTrail G) (hsource : source.WellFormed)
@@ -160,6 +173,18 @@ theorem kempeReachable_iff_sourceBetweenRegionKempeReachable
     source.toFramedTrailData hsource
     source.toFramedTrailData_betweenRegionEdgeAligned C hC C').symm
 
+/-- Finite sequences of the source's between-region moves preserve proper
+Tait colorings.  This is the form needed when Trail Completability supplies a
+reachable completed coloring rather than a single switch. -/
+theorem sourceBetweenRegionKempeReachable_preserves_isTaitEdgeColoring
+    (source : SourceTrail G) (hsource : source.WellFormed)
+    {C C' : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    (hreach : SourceBetweenRegionKempeReachable source.toFramedTrailData C C') :
+    IsTaitEdgeColoring G C' := by
+  apply framedTangleKempeReachable_preserves_isTaitEdgeColoring
+    ((source.kempeReachable_iff_sourceBetweenRegionKempeReachable
+      hsource C hC C').2 hreach) hC
+
 /-- L10 at the completion predicate for an actual graph-side source trail. -/
 theorem completable_iff_sourceBetweenRegionCompletable
     (source : SourceTrail G) (hsource : source.WellFormed)
@@ -169,6 +194,44 @@ theorem completable_iff_sourceBetweenRegionCompletable
   exact (sourceBetweenRegionCompletable_iff_framedTangleCompletable
     source.toFramedTrailData hsource
     source.toFramedTrailData_betweenRegionEdgeAligned C hC).symm
+
+/-- The source's Trail Completability predicate has the expected graph
+meaning: after a finite sequence of source between-region moves, the missing
+trail edge has one proper extension color at both defect endpoints, and the
+terminal coloring remains proper.  This combines the L10 relation alignment
+with the framed completion semantics, without changing either move relation. -/
+theorem sourceBetweenRegionCompletable_iff_exists_reachable_properTrailExtensionColor
+    (source : SourceTrail G) (hsource : source.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C) :
+    SourceBetweenRegionCompletable source.toFramedTrailData C ↔
+      ∃ C' : G.EdgeColoring Color, ∃ c : Color,
+        SourceBetweenRegionKempeReachable source.toFramedTrailData C C' ∧
+          IsTaitEdgeColoring G C' ∧
+            source.toFramedTrailData.IsProperTrailExtensionColor C' c := by
+  constructor
+  · intro hcomplete
+    have hframed : FramedTangleCompletable source.toFramedTrailData C :=
+      (source.completable_iff_sourceBetweenRegionCompletable hsource C hC).2
+        hcomplete
+    rcases (framedTangleCompletable_iff_exists_reachable_properTrailExtensionColor
+      source.toFramedTrailData hsource C hC).1 hframed with
+      ⟨C', c, hreach, hproper⟩
+    have hsourceReach :
+        SourceBetweenRegionKempeReachable source.toFramedTrailData C C' :=
+      (source.kempeReachable_iff_sourceBetweenRegionKempeReachable
+        hsource C hC C').1 hreach
+    exact ⟨C', c, hsourceReach,
+      source.sourceBetweenRegionKempeReachable_preserves_isTaitEdgeColoring
+        hsource hC hsourceReach,
+      hproper⟩
+  · rintro ⟨C', c, hreach, _hterminal, hproper⟩
+    apply (source.completable_iff_sourceBetweenRegionCompletable hsource C hC).1
+    apply (framedTangleCompletable_iff_exists_reachable_properTrailExtensionColor
+      source.toFramedTrailData hsource C hC).2
+    exact ⟨C', c,
+      (source.kempeReachable_iff_sourceBetweenRegionKempeReachable
+        hsource C hC C').2 hreach,
+      hproper⟩
 
 end SourceTrail
 
