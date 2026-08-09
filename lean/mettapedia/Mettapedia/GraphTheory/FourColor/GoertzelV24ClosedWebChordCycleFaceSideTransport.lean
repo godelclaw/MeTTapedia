@@ -674,6 +674,101 @@ noncomputable def cyclicEdgeCutRealization_of_faceComponentSide
     (fun _vertex _hoffWall => Iff.rfl)
     wallDartSideSeam hcut_crosses hinside_cycle houtside_cycle
 
+/-!
+The existential `faceComponentSide` is intentionally not used as the
+definition of a primal side at a wall vertex: a wall vertex can see faces on
+both sides.  The exact binary face cut already supplies the missing canonical
+choice.  We record it as the label of an incident dart whose edge is not in
+the wall.  At a cubic wall vertex there is one such port; away from the wall,
+the local label-coherence theorem makes the choice independent of the dart.
+
+This is a generic, route-neutral bridge.  It does not assert the Jordan
+construction or the two side cycles; it isolates precisely the local premise
+which that construction must provide.
+-/
+
+def exactCutLabelSide
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (wall : Finset E)
+    (labels : OrbitFace RS → F2) (selected : F2) (vertex : V) : Prop :=
+  ∃ dart : RS.D,
+    RS.vertOf dart = vertex ∧
+      RS.edgeOf dart ∉ wall ∧
+        labels (dartOrbitFace RS dart) = selected
+
+theorem exactCutLabelSide_iff_of_nonwall_dart_of_local_label_coherence
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (wall : Finset E)
+    (labels : OrbitFace RS → F2) (selected : F2)
+    (hexact : ∀ dart : RS.D,
+      labels (dartOrbitFace RS dart) ≠
+          labels (dartOrbitFace RS (RS.alpha dart)) ↔
+        RS.edgeOf dart ∈ wall)
+    (hcoherent : ∀ {first second : RS.D},
+      RS.vertOf second = RS.vertOf first →
+      RS.edgeOf first ∉ wall →
+      RS.edgeOf second ∉ wall →
+      labels (dartOrbitFace RS first) =
+        labels (dartOrbitFace RS second))
+    (dart : RS.D) (haway : RS.edgeOf dart ∉ wall) :
+    exactCutLabelSide RS wall labels selected (RS.vertOf dart) ↔
+      exactCutLabelSide RS wall labels selected
+        (RS.vertOf (RS.alpha dart)) := by
+  constructor
+  · rintro ⟨incident, hincident, hincidentAway, hselected⟩
+    have hsame :
+        labels (dartOrbitFace RS incident) =
+          labels (dartOrbitFace RS dart) :=
+      hcoherent hincident.symm hincidentAway haway
+    have halpha :
+        labels (dartOrbitFace RS dart) =
+          labels (dartOrbitFace RS (RS.alpha dart)) :=
+      GoertzelV24FaceCutTransport.labels_eq_alpha_of_not_cut
+        RS labels (fun edge => edge ∈ wall) hexact dart haway
+    refine ⟨RS.alpha dart, rfl, ?_, ?_⟩
+    · simpa only [RS.edge_alpha] using haway
+    · exact (hselected.symm.trans (hsame.trans halpha)).symm
+  · rintro ⟨incident, hincident, hincidentAway, hselected⟩
+    have hsame :
+        labels (dartOrbitFace RS incident) =
+          labels (dartOrbitFace RS (RS.alpha dart)) :=
+      hcoherent hincident.symm hincidentAway (by
+        simpa only [RS.edge_alpha] using haway)
+    have halpha :
+        labels (dartOrbitFace RS (RS.alpha dart)) =
+          labels (dartOrbitFace RS dart) :=
+      by
+        simpa only [RS.alpha_involutive] using
+          (GoertzelV24FaceCutTransport.labels_eq_alpha_of_not_cut
+            RS labels (fun edge => edge ∈ wall) hexact (RS.alpha dart) (by
+              simpa only [RS.edge_alpha] using haway))
+    refine ⟨dart, rfl, haway, ?_⟩
+    exact halpha.symm.trans (hsame.symm.trans hselected)
+
+theorem labels_eq_of_same_vertex_of_unique_nonwall_port
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (wall : Finset E)
+    (labels : OrbitFace RS → F2)
+    {external first second : RS.D}
+    (hunique : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf external →
+      incident ≠ external → RS.edgeOf incident ∈ wall)
+    (hfirstBase : RS.vertOf first = RS.vertOf external)
+    (hsecondBase : RS.vertOf second = RS.vertOf external)
+    (hfirstAway : RS.edgeOf first ∉ wall)
+    (hsecondAway : RS.edgeOf second ∉ wall) :
+    labels (dartOrbitFace RS first) =
+      labels (dartOrbitFace RS second) := by
+  have hfirstEq : first = external := by
+    by_contra hne
+    exact hfirstAway (hunique first hfirstBase hne)
+  have hsecondEq : second = external := by
+    by_contra hne
+    exact hsecondAway (hunique second hsecondBase hne)
+  subst first
+  subst second
+  rfl
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/
