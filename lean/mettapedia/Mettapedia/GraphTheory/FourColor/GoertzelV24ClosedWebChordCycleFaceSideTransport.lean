@@ -1118,6 +1118,110 @@ def exactCutLabelSide
       RS.edgeOf dart ∉ wall ∧
         labels (dartOrbitFace RS dart) = selected
 
+/-! The existential side predicate is usable at a vertex as soon as one
+non-wall port is available.  This small lemma is deliberately generic: it
+does not assert that a Jordan construction supplies such a port, nor that
+the port is unique.  The coherence field says that all non-wall ports at the
+same vertex carry the same face label. -/
+
+theorem exactCutLabelSide_iff_of_nonwall_port
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (wall : Finset E)
+    (labels : OrbitFace RS → F2) (selected : F2)
+    (hcoherent : ∀ {first second : RS.D},
+      RS.vertOf second = RS.vertOf first →
+      RS.edgeOf first ∉ wall →
+      RS.edgeOf second ∉ wall →
+      labels (dartOrbitFace RS first) =
+        labels (dartOrbitFace RS second))
+    {vertex : V} (port : RS.D)
+    (hportVertex : RS.vertOf port = vertex)
+    (hportAway : RS.edgeOf port ∉ wall) :
+    exactCutLabelSide RS wall labels selected vertex ↔
+      labels (dartOrbitFace RS port) = selected := by
+  constructor
+  · rintro ⟨incident, hincident, hincidentAway, hselected⟩
+    have hsame :
+        labels (dartOrbitFace RS incident) =
+          labels (dartOrbitFace RS port) :=
+      hcoherent (hportVertex.trans hincident.symm)
+        hincidentAway hportAway
+    exact hsame.symm.trans hselected
+  · intro hselected
+    exact ⟨port, hportVertex, hportAway, hselected⟩
+
+/-! The two values of `F2` give a genuine complement law for the exact-label
+side, provided every vertex has a non-wall port.  This is useful when the
+positive cycle witness is obtained from one selected face component and the
+opposite witness from the other: it transports the latter through the
+predicate actually consumed by `CyclicEdgeCutRealization`.  The theorem keeps
+the total-port and two-value facts explicit, so it is not a hidden Jordan or
+side-separation result. -/
+
+theorem exactCutLabelSide_iff_of_other_label_of_total_nonwall_port
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (wall : Finset E)
+    (labels : OrbitFace RS → F2) (selected other : F2)
+    (hother_ne : other ≠ selected)
+    (hlabels_two : ∀ label : F2, label = selected ∨ label = other)
+    (hport : ∀ vertex : V, ∃ port : RS.D,
+      RS.vertOf port = vertex ∧ RS.edgeOf port ∉ wall)
+    (hcoherent : ∀ {first second : RS.D},
+      RS.vertOf second = RS.vertOf first →
+      RS.edgeOf first ∉ wall →
+      RS.edgeOf second ∉ wall →
+      labels (dartOrbitFace RS first) =
+        labels (dartOrbitFace RS second))
+    (vertex : V) :
+    exactCutLabelSide RS wall labels other vertex ↔
+      ¬ exactCutLabelSide RS wall labels selected vertex := by
+  rcases hport vertex with ⟨port, hportVertex, hportAway⟩
+  rw [exactCutLabelSide_iff_of_nonwall_port RS wall labels other
+      hcoherent port hportVertex hportAway,
+    exactCutLabelSide_iff_of_nonwall_port RS wall labels selected
+      hcoherent port hportVertex hportAway]
+  constructor
+  · intro hother hselected
+    exact hother_ne (hother.symm.trans hselected)
+  · intro hnotSelected
+    rcases hlabels_two (labels (dartOrbitFace RS port)) with hselected | hother
+    · exact (hnotSelected hselected).elim
+    · exact hother
+
+/-! `F2`'s additive notation gives the caller a no-bookkeeping corollary:
+the other label is `selected + 1`.  The finite two-value facts are discharged
+by the same kernel computation used throughout the face-cut algebra. -/
+
+theorem exactCutLabelSide_iff_of_add_one_label_of_total_nonwall_port
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (wall : Finset E)
+    (labels : OrbitFace RS → F2) (selected : F2)
+    (hport : ∀ vertex : V, ∃ port : RS.D,
+      RS.vertOf port = vertex ∧ RS.edgeOf port ∉ wall)
+    (hcoherent : ∀ {first second : RS.D},
+      RS.vertOf second = RS.vertOf first →
+      RS.edgeOf first ∉ wall →
+      RS.edgeOf second ∉ wall →
+      labels (dartOrbitFace RS first) =
+        labels (dartOrbitFace RS second))
+    (vertex : V) :
+    exactCutLabelSide RS wall labels (selected + 1) vertex ↔
+      ¬ exactCutLabelSide RS wall labels selected vertex := by
+  apply exactCutLabelSide_iff_of_other_label_of_total_nonwall_port
+    RS wall labels selected (selected + 1) ?_ ?_ hport hcoherent vertex
+  · intro hne
+    fin_cases selected <;> simp at hne
+  · intro label
+    fin_cases label <;> fin_cases selected
+    · exact Or.inl rfl
+    · exact Or.inr (by
+        change (0 : F2) = 1 + 1
+        rw [zmod2_add_self])
+    · exact Or.inr (by
+        change (1 : F2) = 0 + 1
+        simp)
+    · exact Or.inl rfl
+
 theorem exactCutLabelSide_iff_of_nonwall_dart_of_local_label_coherence
     {E : Type*} [Fintype E] [DecidableEq E]
     (RS : RotationSystem V E) (wall : Finset E)
