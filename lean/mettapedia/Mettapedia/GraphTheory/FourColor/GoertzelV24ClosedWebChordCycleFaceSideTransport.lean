@@ -1619,6 +1619,74 @@ theorem labels_ne_of_exact_cut_of_wall_dart_face_assignment
         (embedded.RS.alpha wallDart)) := by
       rw [hportVFace]
 
+/-! The face-assignment packet can be supplied in a smaller rotation-level
+form.  For an oriented wall dart `wallDart`, the two darts
+`rho (alpha wallDart)` and `rho wallDart` are based at the two opposite
+endpoints.  The face permutation identifies their faces with the two faces
+of `wallDart` and `alpha wallDart`, respectively.  Thus a future Jordan
+construction only has to establish this local rotated-port orientation and
+the fact that those ports are off the wall; no face-orbit algebra needs to be
+repeated at each edge.
+
+This theorem deliberately does not construct the rotated-port orientation.
+That is the remaining global embedding premise, and keeping it as an explicit
+hypothesis prevents a local cubic calculation from being mistaken for a
+Jordan separator.
+-/
+
+theorem wall_port_face_assignment_of_rotated_external_ports
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (hrotated : ∀ (edge : G.edgeSet), edge ∈
+      (chord.boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ wallDart : embedded.RS.D,
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf (embedded.RS.rho
+          (embedded.RS.alpha wallDart)) = u ∧
+        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
+        embedded.RS.edgeOf (embedded.RS.rho
+          (embedded.RS.alpha wallDart)) ∉
+          (chord.boundary htriple).wall ∧
+        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
+          (chord.boundary htriple).wall) :
+    ∀ (edge : G.edgeSet), edge ∈ (chord.boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ (wallDart portU portV : embedded.RS.D),
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf portU = u ∧
+        embedded.RS.vertOf portV = v ∧
+        embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
+        embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
+        dartOrbitFace embedded.RS portU =
+          dartOrbitFace embedded.RS wallDart ∧
+        dartOrbitFace embedded.RS portV =
+          dartOrbitFace embedded.RS (embedded.RS.alpha wallDart) := by
+  intro edge hedge u v hu hv
+  rcases hrotated edge hedge hu hv with
+    ⟨wallDart, hwallDart, hportU, hportV, hportUAway, hportVAway⟩
+  let portU := embedded.RS.rho (embedded.RS.alpha wallDart)
+  let portV := embedded.RS.rho wallDart
+  have hportUFace : dartOrbitFace embedded.RS portU =
+      dartOrbitFace embedded.RS wallDart := by
+    have hface := dartOrbitFace_alpha_eq_dartOrbitFace_rho
+      embedded.RS (embedded.RS.alpha wallDart)
+    dsimp [portU]
+    exact hface.symm
+  have hportVFace : dartOrbitFace embedded.RS portV =
+      dartOrbitFace embedded.RS (embedded.RS.alpha wallDart) := by
+    have hface := dartOrbitFace_alpha_eq_dartOrbitFace_rho
+      embedded.RS wallDart
+    dsimp [portV]
+    exact hface.symm
+  exact ⟨wallDart, portU, portV, hwallDart, hportU, hportV,
+    hportUAway, hportVAway, hportUFace, hportVFace⟩
+
 /-! The preceding binary-label lemma is the local end of the wall seam.  The
 following adapter gives the geometric caller one named obligation: for each
 wall edge, identify an oriented wall dart and the two off-wall endpoint ports
