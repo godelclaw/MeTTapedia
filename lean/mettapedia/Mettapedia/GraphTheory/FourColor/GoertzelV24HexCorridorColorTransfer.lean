@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorInterfaceMatching
 import Mettapedia.GraphTheory.FourColor.RotationSystemEdgeColoring
+import Mettapedia.GraphTheory.FourColor.GoertzelV24WindingClassification
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -16,12 +17,95 @@ open GoertzelV24HexSlabSideAdjacency
 open GoertzelV24InducedHexCorridorTypes
 open GoertzelV24OrientedHexSlab
 open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24WindingClassification
 open SimpleGraphDartRotation
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
 
 noncomputable section
+
+/-- Predecessor in the standard cyclic six-slot coordinate system.  It is
+used by the geometric corner correspondence as well as the finite color
+transition, so it belongs in the shared corridor layer. -/
+def hexCyclicPred (position : Fin 6) : Fin 6 :=
+  ⟨(position.val + 5) % 6, Nat.mod_lt _ (by decide)⟩
+
+theorem hexCyclicPred_succ_modEq (position : Fin 6) :
+    position.val ≡ (hexCyclicPred position).val + 1 [MOD 6] := by
+  fin_cases position <;> decide
+
+/-- The next canonical corridor interior begins at the current outgoing
+rung.  This is independent of color and records the index equality used by
+the geometric corner construction. -/
+theorem nextCorridorInterior_incoming_eq_outgoing
+    {corridorLength : Nat} (interior : CorridorInterior corridorLength)
+    (hnext : interior.center.val + 2 < corridorLength) :
+    (nextCorridorInterior interior hnext).incoming = interior.outgoing := by
+  have hleft : (nextCorridorInterior interior hnext).incoming.left =
+      interior.outgoing.left := by
+    simp [nextCorridorInterior, CorridorInterior.incoming,
+      CorridorInterior.outgoing]
+  cases hright : (nextCorridorInterior interior hnext).incoming with
+  | mk rightLeft rightProof =>
+    cases hleftStep : interior.outgoing with
+    | mk leftLeft leftProof =>
+      simp only [hright, hleftStep, CorridorStep.mk.injEq] at hleft ⊢
+      exact hleft
+
+/-- The incoming dart of any placement of the next corridor face is exactly
+the alpha-opposite of the outgoing dart of the current placement. -/
+theorem nextPlacement_incomingDart_eq_alpha_outgoingDart
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)))
+    (leftInterior : CorridorInterior corridorLength)
+    (hnext : leftInterior.center.val + 2 < corridorLength)
+    (leftPlacement : InternalHexRungPlacement
+      corridor hunique leftInterior)
+    (rightPlacement : InternalHexRungPlacement corridor hunique
+      (nextCorridorInterior leftInterior hnext)) :
+    faceCycleDart RS rightPlacement.root rightPlacement.incomingPosition =
+      RS.alpha
+        (faceCycleDart RS leftPlacement.root leftPlacement.outgoingPosition) := by
+  let rightInterior := nextCorridorInterior leftInterior hnext
+  let leftDart :=
+    faceCycleDart RS leftPlacement.root leftPlacement.outgoingPosition
+  let rightDart :=
+    faceCycleDart RS rightPlacement.root rightPlacement.incomingPosition
+  have hsteps : rightInterior.incoming = leftInterior.outgoing := by
+    simpa [rightInterior] using
+      nextCorridorInterior_incoming_eq_outgoing leftInterior hnext
+  have hedge : RS.edgeOf rightDart = RS.edgeOf leftDart := by
+    calc
+      RS.edgeOf rightDart =
+          corridor.rungEdge hunique rightInterior.incoming :=
+        rightPlacement.incoming_edge
+      _ = corridor.rungEdge hunique leftInterior.outgoing := by rw [hsteps]
+      _ = RS.edgeOf leftDart := leftPlacement.outgoing_edge.symm
+  have hrightFace : dartOrbitFace RS rightDart =
+      (corridor.faceAt rightInterior.center).1 := by
+    calc
+      dartOrbitFace RS rightDart = dartOrbitFace RS rightPlacement.root :=
+        dartOrbitFace_faceCycleDart RS rightPlacement.root
+          rightPlacement.incomingPosition
+      _ = (corridor.faceAt rightInterior.center).1 := rightPlacement.root_face
+  have halphaFace : dartOrbitFace RS (RS.alpha leftDart) =
+      (corridor.faceAt rightInterior.center).1 := by
+    simpa [rightInterior, nextCorridorInterior] using
+      outgoing_alpha_face_eq_next htwoSided leftPlacement
+  rcases RS.edge_fiber_two_cases (e := RS.edgeOf leftDart)
+    (d := leftDart) (y := rightDart) rfl hedge with heq | heq
+  · exfalso
+    apply htwoSided leftDart
+    calc
+      dartOrbitFace RS leftDart = dartOrbitFace RS rightDart :=
+        congrArg (dartOrbitFace RS) heq.symm
+      _ = (corridor.faceAt rightInterior.center).1 := hrightFace
+      _ = dartOrbitFace RS (RS.alpha leftDart) := halphaFace.symm
+  · exact heq
 
 private theorem color_eq_add_of_three_distinct_nonzero {a b c : Color}
     (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
@@ -49,7 +133,7 @@ theorem cornerDarts_pairwise_ne (RS : RotationSystem V E)
     rw [hcubic vertex]
     omega
   have hnontrivial : (RS.dartsAt vertex : Set RS.D).Nontrivial := by
-    simpa only [Finset.coe_sort_coe] using hnontrivialFinset
+    exact hnontrivialFinset
   have hfirstStep : RS.rho first ≠ first :=
     (rho_isCycleOn_dartsAt RS hrotation vertex).apply_ne
       hnontrivial hfirstMem
@@ -477,6 +561,121 @@ theorem exists_nextPlacementSideEdge_eq_afterOutgoingCornerEdge
         hrightShared hcornerShared
   refine ⟨rightPosition, hedgeEq, ?_⟩
   exact hrightNeighbor.symm
+
+/-- The first matched corner edge occupies the slot immediately after the
+incoming rung of the next placed hexagon.  This is geometry, not color
+transport, so it lives beside the corner-edge construction that proves it. -/
+theorem nextPlacement_beforeCornerPosition_after_incoming
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)))
+    (leftInterior : CorridorInterior corridorLength)
+    (hnext : leftInterior.center.val + 2 < corridorLength)
+    (leftPlacement : InternalHexRungPlacement corridor hunique leftInterior)
+    (rightPlacement : InternalHexRungPlacement corridor hunique
+      (nextCorridorInterior leftInterior hnext))
+    (rightPosition :
+      {position // position ∈ placementSidePositions rightPlacement})
+    (hedge : placementSideEdge htwoSided rightPlacement rightPosition =
+      beforeOutgoingCornerEdge leftPlacement) :
+    rightPosition.1.val ≡ rightPlacement.incomingPosition.val + 1 [MOD 6] := by
+  let leftDart :=
+    faceCycleDart RS leftPlacement.root leftPlacement.outgoingPosition
+  let rightIncomingDart :=
+    faceCycleDart RS rightPlacement.root rightPlacement.incomingPosition
+  let candidate6 := cyclicSucc rightPlacement.incomingPosition6
+  let candidate := placementPositionOfSix rightPlacement candidate6
+  have hcandidateMod : candidate.val ≡
+      rightPlacement.incomingPosition.val + 1 [MOD 6] := by
+    simp [candidate, candidate6, cyclicSucc, Nat.ModEq,
+      InternalHexRungPlacement.incomingPosition6]
+  have hcandidateDart :
+      faceCycleDart RS rightPlacement.root candidate =
+        RS.phi rightIncomingDart :=
+    faceCycleDart_successor_of_modEq RS rightPlacement.root
+      rightPlacement.orbit_card rightPlacement.incomingPosition candidate
+        hcandidateMod
+  have hincomingDart : rightIncomingDart = RS.alpha leftDart :=
+    nextPlacement_incomingDart_eq_alpha_outgoingDart htwoSided hunique
+      leftInterior hnext leftPlacement rightPlacement
+  have hcandidateEdge : faceCycleEdge RS rightPlacement.root candidate =
+      beforeOutgoingCornerEdge leftPlacement := by
+    change RS.edgeOf (faceCycleDart RS rightPlacement.root candidate) =
+      RS.edgeOf (RS.rho leftDart)
+    rw [hcandidateDart, hincomingDart]
+    simp only [RotationSystem.phi_apply, RS.alpha_involutive]
+  have hposition : rightPosition.1 = candidate := by
+    apply faceCycleEdge_injective RS htwoSided rightPlacement.root
+    calc
+      faceCycleEdge RS rightPlacement.root rightPosition.1 =
+          beforeOutgoingCornerEdge leftPlacement := hedge
+      _ = faceCycleEdge RS rightPlacement.root candidate := hcandidateEdge.symm
+  rw [hposition]
+  exact hcandidateMod
+
+/-- The second matched corner edge occupies the slot immediately before the
+incoming rung of the next placed hexagon.  As above, this is a reusable
+rotation-system fact independent of any particular finite color state. -/
+theorem nextPlacement_incoming_after_afterCornerPosition
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    (hcubic : RS.IsCubic) (hrotation : VertexRotationCyclic RS)
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)))
+    (leftInterior : CorridorInterior corridorLength)
+    (hnext : leftInterior.center.val + 2 < corridorLength)
+    (leftPlacement : InternalHexRungPlacement corridor hunique leftInterior)
+    (rightPlacement : InternalHexRungPlacement corridor hunique
+      (nextCorridorInterior leftInterior hnext))
+    (rightPosition :
+      {position // position ∈ placementSidePositions rightPlacement})
+    (hedge : placementSideEdge htwoSided rightPlacement rightPosition =
+      afterOutgoingCornerEdge leftPlacement) :
+    rightPlacement.incomingPosition.val ≡ rightPosition.1.val + 1 [MOD 6] := by
+  let leftDart :=
+    faceCycleDart RS leftPlacement.root leftPlacement.outgoingPosition
+  let thirdDart := RS.rho (RS.phi leftDart)
+  let rightIncomingDart :=
+    faceCycleDart RS rightPlacement.root rightPlacement.incomingPosition
+  let candidate6 := hexCyclicPred rightPlacement.incomingPosition6
+  let candidate := placementPositionOfSix rightPlacement candidate6
+  have hcandidateMod : rightPlacement.incomingPosition.val ≡
+      candidate.val + 1 [MOD 6] := by
+    simpa [candidate, candidate6, placementPositionOfSix,
+      InternalHexRungPlacement.incomingPosition6] using
+        hexCyclicPred_succ_modEq rightPlacement.incomingPosition6
+  have hcandidateDart : rightIncomingDart =
+      RS.phi (faceCycleDart RS rightPlacement.root candidate) :=
+    faceCycleDart_successor_of_modEq RS rightPlacement.root
+      rightPlacement.orbit_card candidate rightPlacement.incomingPosition
+        hcandidateMod
+  have hincomingDart : rightIncomingDart = RS.alpha leftDart :=
+    nextPlacement_incomingDart_eq_alpha_outgoingDart htwoSided hunique
+      leftInterior hnext leftPlacement rightPlacement
+  have hthirdRho : RS.rho thirdDart = RS.alpha leftDart := by
+    have hcube := rho_cube_apply_of_isCubic RS hcubic hrotation (RS.alpha leftDart)
+    simpa only [thirdDart, RotationSystem.phi_apply] using hcube
+  have hcandidateDartEq :
+      faceCycleDart RS rightPlacement.root candidate = RS.alpha thirdDart := by
+    apply RS.phi.injective
+    rw [← hcandidateDart, hincomingDart]
+    simp only [RotationSystem.phi_apply, RS.alpha_involutive, hthirdRho]
+  have hcandidateEdge : faceCycleEdge RS rightPlacement.root candidate =
+      afterOutgoingCornerEdge leftPlacement := by
+    change RS.edgeOf (faceCycleDart RS rightPlacement.root candidate) =
+      RS.edgeOf thirdDart
+    rw [hcandidateDartEq, RS.edge_alpha]
+  have hposition : rightPosition.1 = candidate := by
+    apply faceCycleEdge_injective RS htwoSided rightPlacement.root
+    calc
+      faceCycleEdge RS rightPlacement.root rightPosition.1 =
+          afterOutgoingCornerEdge leftPlacement := hedge
+      _ = faceCycleEdge RS rightPlacement.root candidate := hcandidateEdge.symm
+  rw [hposition]
+  exact hcandidateMod
 
 /-- Computed two-corner Tait transfer between consecutive clean hex slabs.
 The witnesses are actual ordered side slots. Their edge identities, external

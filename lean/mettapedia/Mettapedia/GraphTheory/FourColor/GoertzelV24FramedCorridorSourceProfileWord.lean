@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorLocalDepthProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorCanonicalInterface
 
 /-!
 # A source-indexed finite profile word along a clean corridor
@@ -24,6 +25,7 @@ open GoertzelV24CleanHexCorridor
 open GoertzelV24ClosedWebProfileFiniteness
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
 open SimpleGraph
@@ -58,9 +60,33 @@ theorem sourceSlabLeftInterior_hasNext {blockLength : Nat}
   change offset.val + 1 + 2 < blockLength
   omega
 
-/-- Choose the source-certified two-port interface at one actual consecutive
-pair of corridor cells.  The choice resolves only the finite local orientation
-whose existence was proved from the facial rotations. -/
+/-- The corner-aligned source interface at one actual consecutive pair of
+corridor cells.  Keeping this richer object available lets the later rail
+induction use the checked continuation coordinates rather than reconstruct
+them from a bare profile. -/
+noncomputable def sourceSlabCornerInterfaceAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (sourceSlabLeftInterior offset)
+      (sourceSlabLeftInterior_hasNext offset) :=
+  realization.sourceCornerAlignedSlabInterface hcubic hrotation htwoSided hunique
+    (sourceSlabLeftInterior offset) (sourceSlabLeftInterior_hasNext offset)
+
+/-- The profile-facing projection of the corner-aligned source interface.
+It has the ordinary layer type consumed by existing finite-profile code, while
+the richer object above retains the real continuation data for the splice. -/
 noncomputable def sourceSlabInterfaceAt
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
@@ -78,8 +104,106 @@ noncomputable def sourceSlabInterfaceAt
     SourceConsecutiveSlabInterface realization htwoSided hunique
       (sourceSlabLeftInterior offset)
       (sourceSlabLeftInterior_hasNext offset) :=
-  realization.sourceConsecutiveSlabInterface hcubic hrotation htwoSided hunique
-    (sourceSlabLeftInterior offset) (sourceSlabLeftInterior_hasNext offset)
+  (sourceSlabCornerInterfaceAt realization hcubic hrotation htwoSided hunique
+    offset).toInterface
+
+/-- At every indexed source position, the first left port is the literal side
+slot immediately before that slab's outgoing rung. -/
+theorem sourceSlabInterfaceAt_leftBefore_precedesOutgoing
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (realization.slabPlacementAt htwoSided hunique
+      (sourceSlabLeftInterior offset)).outgoingPosition.val ≡
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        offset).leftBeforePos.1.val + 1 [MOD 6] := by
+  simpa [sourceSlabInterfaceAt] using
+    (sourceSlabCornerInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).leftBefore_precedesOutgoing
+
+/-- The second left port is the literal side slot immediately after the
+outgoing rung. -/
+theorem sourceSlabInterfaceAt_leftAfter_followsOutgoing
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).leftAfterPos.1.val ≡
+      (realization.slabPlacementAt htwoSided hunique
+        (sourceSlabLeftInterior offset)).outgoingPosition.val + 1 [MOD 6] := by
+  simpa [sourceSlabInterfaceAt] using
+    (sourceSlabCornerInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).leftAfter_followsOutgoing
+
+/-- The first right port continues at the side slot immediately after the
+next slab's incoming rung. -/
+theorem sourceSlabInterfaceAt_rightBefore_followsIncoming
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).rightBeforePos.1.val ≡
+      (realization.slabPlacementAt htwoSided hunique
+        (nextCorridorInterior (sourceSlabLeftInterior offset)
+          (sourceSlabLeftInterior_hasNext offset))).incomingPosition.val + 1 [MOD 6] := by
+  simpa [sourceSlabInterfaceAt] using
+    (sourceSlabCornerInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).rightBefore_followsIncoming
+
+/-- The second right port continues at the side slot immediately before the
+next slab's incoming rung. -/
+theorem sourceSlabInterfaceAt_rightAfter_precedesIncoming
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (realization.slabPlacementAt htwoSided hunique
+      (nextCorridorInterior (sourceSlabLeftInterior offset)
+        (sourceSlabLeftInterior_hasNext offset))).incomingPosition.val ≡
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        offset).rightAfterPos.1.val + 1 [MOD 6] := by
+  simpa [sourceSlabInterfaceAt] using
+    (sourceSlabCornerInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).rightAfter_precedesIncoming
 
 /-- The finite profile at a literal source corridor position.  It is computed
 from that position's deletion component, including actual colors, connectivity
