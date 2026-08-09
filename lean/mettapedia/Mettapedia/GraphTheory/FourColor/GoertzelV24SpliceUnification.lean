@@ -27,6 +27,7 @@ open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24OrderedCutRotationSplice
 open GoertzelV24RetainedVertexRotationSplice
 open GoertzelV24RetainedVertexTaitSplice
+open GoertzelV24RetainedSpliceEdgeDecomposition
 open GoertzelV24RotationCutDartDecomposition
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
@@ -168,6 +169,109 @@ theorem not_taitColorable_output_of_not_taitColorable
   intro houtput
   rcases houtput with ⟨coloring, hcoloring⟩
   exact hbad (hcompletion coloring hcoloring)
+
+/-! ## Semantic boundary profiles -/
+
+/-- A boundary color word for an ordered `n`-port seam. -/
+abbrev BoundaryColorWord (n : Nat) := Fin n → Color
+
+/-- The semantic profile carrier: the boundary words that extend across a
+region.  The concrete region and extension predicate are supplied by the
+caller; this carrier is intentionally independent of the finite syntactic
+`CorridorCutProfile`. -/
+abbrev SemanticBoundaryProfile (n : Nat) := Set (BoundaryColorWord n)
+
+/-- A semantic profile factors through a finite code when membership in each
+region's extendable-word set is determined by the same code on the boundary
+word, with only the region's target code allowed to differ.  This is the
+precise bridge needed to turn a finite profile repeat into equality of
+semantic profiles; it is not asserted for `CorridorCutProfile` until its
+extension-invariance theorem has been proved. -/
+structure SemanticProfileFactor (n : Nat) where
+  Code : Type*
+  code : BoundaryColorWord n → Code
+  inner : SemanticBoundaryProfile n
+  outer : SemanticBoundaryProfile n
+  innerCode : Code
+  outerCode : Code
+  inner_mem_iff : ∀ word, word ∈ inner ↔ code word = innerCode
+  outer_mem_iff : ∀ word, word ∈ outer ↔ code word = outerCode
+
+theorem SemanticProfileFactor.equal_of_target_eq
+    (factor : SemanticProfileFactor n)
+    (htarget : factor.innerCode = factor.outerCode) :
+    factor.inner = factor.outer := by
+  ext word
+  rw [factor.inner_mem_iff, factor.outer_mem_iff, htarget]
+
+/-- The seam word seen by a coloring of the shortened object. -/
+def seamColorWord
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (coloring : data.output.EdgeColoring Color) : BoundaryColorWord n :=
+  fun step => coloring (orderedCutSeamSpliceEdge RS data.keep
+    data.left.crossingEdge data.right.crossingEdge data.leftCrosses
+    data.rightCrosses data.leftInjective data.rightInjective data.cover
+    data.disjoint data.outer_kept data.seamEndpoints step)
+
+/-- A semantic bridge for one concrete splice.  Its two sets are the actual
+extendable boundary-word sets for the inner and outer regions.  The final
+field is the genuine gluing theorem: once a shortened coloring has a word in
+the outer set, it can be completed to an original coloring. -/
+structure SemanticProfileBridge
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount) where
+  inner : SemanticBoundaryProfile n
+  outer : SemanticBoundaryProfile n
+  equal : inner = outer
+  shortened_word_mem_inner :
+    ∀ coloring : data.output.EdgeColoring Color,
+      data.output.IsTaitEdgeColoring coloring →
+        seamColorWord data coloring ∈ inner
+  complete_of_outer_word :
+    ∀ coloring : data.output.EdgeColoring Color,
+      data.output.IsTaitEdgeColoring coloring →
+        seamColorWord data coloring ∈ outer →
+          TaitColorable (RS := RS)
+
+/-- Build the concrete bridge from a factorization witness.  The only
+non-definitional ingredient is the region gluing theorem in
+`complete_of_outer_word`; `equal` is now a proved consequence of finite-code
+factorization rather than a free semantic equality field. -/
+def SemanticProfileBridge.ofFactor
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (factor : SemanticProfileFactor n)
+    (htarget : factor.innerCode = factor.outerCode)
+    (shortened_word_mem_inner :
+      ∀ coloring : data.output.EdgeColoring Color,
+        data.output.IsTaitEdgeColoring coloring →
+          seamColorWord data coloring ∈ factor.inner)
+    (complete_of_outer_word :
+      ∀ coloring : data.output.EdgeColoring Color,
+        data.output.IsTaitEdgeColoring coloring →
+          seamColorWord data coloring ∈ factor.outer →
+            TaitColorable (RS := RS)) :
+    data.SemanticProfileBridge where
+  inner := factor.inner
+  outer := factor.outer
+  equal := factor.equal_of_target_eq htarget
+  shortened_word_mem_inner := shortened_word_mem_inner
+  complete_of_outer_word := complete_of_outer_word
+
+theorem reverseCompletion_of_semanticProfileBridge
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (bridge : data.SemanticProfileBridge) :
+    data.ReverseCompletion := by
+  intro coloring hcoloring
+  apply bridge.complete_of_outer_word coloring hcoloring
+  rw [← bridge.equal]
+  exact bridge.shortened_word_mem_inner coloring hcoloring
+
+theorem not_taitColorable_output_of_semanticProfileBridge
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (bridge : data.SemanticProfileBridge)
+    (hbad : ¬ TaitColorable (RS := RS)) :
+    ¬ TaitColorable data.output := by
+  exact data.not_taitColorable_output_of_not_taitColorable
+    (reverseCompletion_of_semanticProfileBridge data bridge) hbad
 
 /-- A completed splice step has exactly the two reductive facts needed by the
 spine: strict descent and preservation of counterexamples.  The theorem is
