@@ -317,6 +317,47 @@ theorem sourceCornerAlignedRailPair_first_second_support_disjoint_of_add_three_l
     exact rightPair.secondRail_support_adjacent_to_axis face hface
   · exact hseparated
 
+/-- A second rail and a first rail from source tiles separated by a
+three-cell gap cannot meet.  Along with the other three track combinations,
+this closes every nonlocal rail collision; only the bounded neighbouring-tile
+join remains for the source-cell analysis. -/
+theorem sourceCornerAlignedRailPair_second_first_support_disjoint_of_add_three_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior rightInterior : CorridorInterior blockLength}
+    {hleftNext : leftInterior.center.val + 2 < blockLength}
+    {hleftNextNext :
+      (nextCorridorInterior leftInterior hleftNext).center.val + 2 < blockLength}
+    {hrightNext : rightInterior.center.val + 2 < blockLength}
+    {hrightNextNext :
+      (nextCorridorInterior rightInterior hrightNext).center.val + 2 < blockLength}
+    (leftFirst : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hleftNext)
+    (leftSecond : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hleftNext) hleftNextNext)
+    (rightFirst : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      rightInterior hrightNext)
+    (rightSecond : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior rightInterior hrightNext) hrightNextNext)
+    (leftPair : SourceCornerAlignedRailPair leftFirst leftSecond)
+    (rightPair : SourceCornerAlignedRailPair rightFirst rightSecond)
+    (hseparated : leftInterior.center.val + 3 < rightInterior.center.val) :
+    leftPair.secondRail.support.Disjoint rightPair.firstRail.support := by
+  apply realization.walkSupports_disjoint_of_two_source_anchor_pairs_of_add_three_lt
+    hleftNext hrightNext leftPair.secondRail rightPair.firstRail
+  · intro face hface
+    exact leftPair.secondRail_support_adjacent_to_axis face hface
+  · intro face hface
+    exact rightPair.firstRail_support_adjacent_to_axis face hface
+  · exact hseparated
+
 /-- A `forwardTwo` source word gives a shared first rail endpoint and a
 two-edge second rail through its certified exterior middle face. -/
 theorem sourceCornerAlignedRailPair_of_forwardTwo
