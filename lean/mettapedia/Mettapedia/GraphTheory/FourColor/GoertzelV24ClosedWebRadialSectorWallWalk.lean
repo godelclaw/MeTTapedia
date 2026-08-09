@@ -16,8 +16,10 @@ namespace GoertzelV24ClosedWebRadialSectorWallWalk
 
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebFaceTracing
 open GoertzelV24ClosedWebHoleBoundaryOrder
 open GoertzelV24ClosedWebHoleCoreArcWalk
+open GoertzelV24OrbitFaceArcWalk
 open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebRadialPathSectorAnchors
@@ -249,6 +251,68 @@ theorem exists_radialSectorWallWalk
     innerArc_avoids_second := innerSecond
     innerArc_avoids_first := innerFirst
   }⟩
+
+/-! With the retained-prefix local two-sidedness certificates, the two hole
+arcs can be selected as genuine trails while preserving the endpoint-edge
+avoidance required by the sector wall.  Cross-piece disjointness and planar
+separation remain separate geometric premises. -/
+
+theorem exists_radialSectorWallWalk_with_local_twoSided_arcs
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {first second : Color}
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (houterTarget : embedded.RS.alpha
+        (outerBoundaryDart data hdata pair.secondPath.outer) ∈
+      embedded.RS.faceOrbit
+        (embedded.RS.phi
+          (outerBoundaryDart data hdata pair.firstPath.outer)))
+    (houterLocal : ∀ dart ∈ faceArcDarts embedded.cellulation.rotation
+        (embedded.RS.phi
+          (outerBoundaryDart data hdata pair.firstPath.outer))
+        (embedded.RS.alpha
+          (outerBoundaryDart data hdata pair.secondPath.outer))
+        houterTarget,
+      dartOrbitFace embedded.RS dart ≠
+        dartOrbitFace embedded.RS (embedded.RS.alpha dart))
+    (hinnerTarget : embedded.RS.alpha
+        (innerBoundaryDart data hdata pair.firstPath.inner) ∈
+      embedded.RS.faceOrbit
+        (embedded.RS.phi
+          (innerBoundaryDart data hdata pair.secondPath.inner)))
+    (hinnerLocal : ∀ dart ∈ faceArcDarts embedded.cellulation.rotation
+        (embedded.RS.phi
+          (innerBoundaryDart data hdata pair.secondPath.inner))
+        (embedded.RS.alpha
+          (innerBoundaryDart data hdata pair.firstPath.inner))
+        hinnerTarget,
+      dartOrbitFace embedded.RS dart ≠
+        dartOrbitFace embedded.RS (embedded.RS.alpha dart)) :
+    ∃ wall : RadialSectorWallWalk data C first second pair embedded hdata,
+      wall.outerArc.IsTrail ∧ wall.innerArc.IsTrail := by
+  rcases exists_radialCorePath hdata pair.firstPath with ⟨firstCore⟩
+  rcases exists_radialCorePath hdata pair.secondPath with ⟨secondCore⟩
+  rcases exists_outerHoleCoreArcWalk_isTrail_of_local_twoSided_avoids_boundaryEdges
+      embedded hdata pair.outer_ne houterTarget houterLocal with
+    ⟨outerArc, outerTrail, outerFace, _outerLength,
+      outerFirst, outerSecond⟩
+  rcases exists_innerHoleCoreArcWalk_isTrail_of_local_twoSided_avoids_boundaryEdges
+      embedded hdata pair.inner_ne.symm hinnerTarget hinnerLocal with
+    ⟨innerArc, innerTrail, innerFace, _innerLength,
+      innerSecond, innerFirst⟩
+  refine ⟨{
+    firstCore := firstCore
+    secondCore := secondCore
+    outerArc := outerArc
+    outerArc_on_outerHole := outerFace
+    outerArc_avoids_first := outerFirst
+    outerArc_avoids_second := outerSecond
+    innerArc := innerArc
+    innerArc_on_innerHole := innerFace
+    innerArc_avoids_second := innerSecond
+    innerArc_avoids_first := innerFirst
+  }, outerTrail, innerTrail⟩
 
 end GoertzelV24ClosedWebRadialSectorWallWalk
 
