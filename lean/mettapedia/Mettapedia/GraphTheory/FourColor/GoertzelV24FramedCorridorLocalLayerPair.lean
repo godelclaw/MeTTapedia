@@ -142,6 +142,59 @@ theorem localLayerLoop_isCycle
     interface.nextLocalLayer.isPath.reverse interface.localLayers_tail_disjoint
       (Or.inl (by simp [interface.localLayer_walk_length_eq_two]))
 
+/-- Every face of a literal source cell loop is either one of its two corridor
+centres or a side neighbour of one.  This gives the loop a concrete bounded
+neighbourhood in the realized corridor, which later separates distant layer
+boundaries without treating an arbitrary chord as a transversal. -/
+theorem localLayerLoop_support_near_centers
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hface : face ∈ interface.localLayerLoop.support) :
+    face = interface.centerLayerFace ∨ face = interface.nextCenterLayerFace ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          interface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          interface.nextCenterLayerFace face := by
+  rw [localLayerLoop, SimpleGraph.Walk.mem_support_append_iff] at hface
+  rcases hface with hlocal | hnextLayer
+  · change face ∈ interface.localLayerWalk.support at hlocal
+    simp only [localLayerWalk, SimpleGraph.Walk.support_cons,
+      SimpleGraph.Walk.support_nil, List.mem_cons] at hlocal
+    rcases hlocal with hfirst | hcenter | hsecond
+    · subst face
+      exact Or.inr (Or.inr (Or.inl
+        interface.firstLayerFace_adjacent_centerLayerFace.symm))
+    · subst face
+      exact Or.inl rfl
+    · rcases hsecond with hsecond | hnone
+      · subst face
+        exact Or.inr (Or.inr (Or.inl
+          interface.centerLayerFace_adjacent_secondLayerFace))
+      · simp at hnone
+  · change face ∈ interface.nextLocalLayerWalk.reverse.support at hnextLayer
+    rw [SimpleGraph.Walk.support_reverse] at hnextLayer
+    simp only [nextLocalLayerWalk, SimpleGraph.Walk.support_cons,
+      SimpleGraph.Walk.support_nil, List.mem_reverse, List.mem_cons] at hnextLayer
+    rcases hnextLayer with hfirst | hnextCenter | hsecond
+    · subst face
+      exact Or.inr (Or.inr (Or.inr
+        interface.firstLayerFace_adjacent_nextCenterLayerFace.symm))
+    · subst face
+      exact Or.inr (Or.inl rfl)
+    · rcases hsecond with hsecond | hnone
+      · subst face
+        exact Or.inr (Or.inr (Or.inr
+          interface.nextCenterLayerFace_adjacent_secondLayerFace))
+      · simp at hnone
+
 /-- Every primal edge crossing the local cell loop occurs at one unique dual
 position.  This is the finite face-incidence fact that prevents the two
 layer boundaries from secretly reusing a source edge. -/
