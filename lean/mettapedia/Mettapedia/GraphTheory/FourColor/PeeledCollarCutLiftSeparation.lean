@@ -69,6 +69,28 @@ structure PeeledCollarCutAmbientSideSeparation
 
 namespace PeeledCollarCutAmbientSideSeparation
 
+/-! A route-neutral separator returned by another planar layer already carries
+the no-avoiding-walk fact needed here.  Keeping this adapter next to the
+ambient-side structure prevents callers from reproving the same contradiction
+between a side-changing walk and an exact cyclic-cut realization.  It is only
+an interface conversion: it does not construct a separator or use any
+catalogue/discharging data. -/
+
+def ofCyclicEdgeCutRealization
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    {cut : SmallCyclicEdgeCut H}
+    (realization : CyclicEdgeCutRealization G
+      (cut.edgeCut.map φ.mapEdgeSet))
+    (hside : ∀ w, realization.side (φ w) ↔ cut.side w) :
+    PeeledCollarCutAmbientSideSeparation φ cut where
+  side := realization.side
+  side_comp_embedding := hside
+  noWalkAvoiding_mappedCut := by
+    rintro ⟨u, v, p, hu, hv, havoid⟩
+    rcases realization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv with
+      ⟨edge, hedge, hedgeWalk⟩
+    exact havoid edge hedge hedgeWalk
+
 /-- The no-avoiding-walk separation datum gives the exact side-extension
 datum used by the embedding-side cut-lift bridge. -/
 def toCutSideExtension
