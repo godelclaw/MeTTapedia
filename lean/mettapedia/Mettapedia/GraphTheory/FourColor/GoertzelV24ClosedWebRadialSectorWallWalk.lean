@@ -196,6 +196,57 @@ theorem walk_isTrail_of_piecewiseEdgeDisjoint
       · exact (List.disjoint_left.mp houterInner') houterEdge hinnerEdge
     · exact (List.disjoint_left.mp hsecondInner') hsecondEdge hinnerEdge
 
+/-- The finite cross-piece condition is not merely sufficient: after the
+two radial cores are trimmed, it is exactly what remains for the four-piece
+sector wall to be a trail.  This makes the L8 simplicity obligation a
+checkable property of the concrete wall, rather than a hidden topological
+assumption. -/
+theorem walk_isTrail_iff
+    (wall : RadialSectorWallWalk data C first second pair embedded hdata) :
+    wall.walk.IsTrail ↔
+      wall.outerArc.IsTrail ∧ wall.innerArc.IsTrail ∧
+        wall.PiecewiseEdgeDisjoint := by
+  constructor
+  · intro htrail
+    unfold walk at htrail
+    rw [SimpleGraph.Walk.isTrail_append,
+      SimpleGraph.Walk.isTrail_append,
+      SimpleGraph.Walk.isTrail_append] at htrail
+    rcases htrail with
+      ⟨⟨⟨_hfirst, houter, hfirstOuter⟩, _hsecond,
+        hfirstOuterSecond⟩, hinner, hwholeInner⟩
+    rw [SimpleGraph.Walk.edges_append] at hfirstOuterSecond
+    rw [SimpleGraph.Walk.edges_append,
+      SimpleGraph.Walk.edges_append] at hwholeInner
+    have hfirstInner :
+        wall.firstCore.path.edges.Disjoint wall.innerArc.edges := by
+      rw [List.disjoint_left]
+      intro edge hfirst hinnerEdge
+      exact (List.disjoint_left.mp hwholeInner)
+        (List.mem_append_left _ (List.mem_append_left _ hfirst)) hinnerEdge
+    have houterSecond :
+        wall.outerArc.edges.Disjoint wall.secondCore.path.edges := by
+      rw [List.disjoint_left]
+      intro edge houterEdge hsecond
+      exact (List.disjoint_left.mp hfirstOuterSecond)
+        (List.mem_append_right _ houterEdge) (by simpa using hsecond)
+    have houterInner :
+        wall.outerArc.edges.Disjoint wall.innerArc.edges := by
+      rw [List.disjoint_left]
+      intro edge houterEdge hinnerEdge
+      exact (List.disjoint_left.mp hwholeInner)
+        (List.mem_append_left _ (List.mem_append_right _ houterEdge)) hinnerEdge
+    have hsecondInner :
+        wall.secondCore.path.edges.Disjoint wall.innerArc.edges := by
+      rw [List.disjoint_left]
+      intro edge hsecond hinnerEdge
+      exact (List.disjoint_left.mp hwholeInner)
+        (List.mem_append_right _ (by simpa using hsecond)) hinnerEdge
+    exact ⟨houter, hinner,
+      ⟨hfirstOuter, hfirstInner, houterSecond, houterInner, hsecondInner⟩⟩
+  · rintro ⟨houter, hinner, hpieces⟩
+    exact wall.walk_isTrail_of_piecewiseEdgeDisjoint houter hinner hpieces
+
 /-! A positive trail-shaped sector wall contains a genuine simple cycle.
 This is the graph-side bridge; the remaining geometric work is to establish
 the trail/disjointness interface above and to place the resulting cycle on
