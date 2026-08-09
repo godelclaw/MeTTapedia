@@ -1316,6 +1316,38 @@ theorem exists_external_port_dart_at_chord_cycle_vertex
   · refine ⟨embedded.RS.alpha dart, hvertexAlpha.symm, ?_⟩
     simpa only [embedded.RS.edge_alpha] using hportAway
 
+/-! The interval-level external-port certificate can be lifted uniformly to
+both endpoints of any wall edge.  This is the reusable incidence half of the
+primal seam; it deliberately says nothing yet about the labels of the two
+ports or about cycles on either side. -/
+theorem exists_external_ports_at_wall_edge_endpoints
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (edge : G.edgeSet) (hedge : edge ∈ (chord.boundary htriple).wall)
+    {u v : V} (hu : u ∈ (edge : Sym2 V))
+    (hv : v ∈ (edge : Sym2 V)) :
+    ∃ (portU portV : embedded.RS.D),
+      embedded.RS.vertOf portU = u ∧
+      embedded.RS.vertOf portV = v ∧
+      embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
+      embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall := by
+  have hcycleEdge : edge.1 ∈ chord.cycleWalk.edges :=
+    (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).1 hedge
+  rcases exists_external_port_dart_at_chord_cycle_vertex
+      embedded hdata hC chord htriple edge hcycleEdge hu with
+    ⟨portU, hportU, hportUAway⟩
+  rcases exists_external_port_dart_at_chord_cycle_vertex
+      embedded hdata hC chord htriple edge hcycleEdge hv with
+    ⟨portV, hportV, hportVAway⟩
+  exact ⟨portU, portV, hportU, hportV, hportUAway, hportVAway⟩
+
 theorem chord_labels_eq_of_same_vertex_on_cycleWalk_support
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
