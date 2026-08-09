@@ -561,6 +561,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedVertexRotationSplice
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorPrefixProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DependencyLedger
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ReductiveSpine
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SpliceUnification
 import Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorPumping
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorProfile
