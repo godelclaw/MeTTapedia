@@ -389,6 +389,35 @@ theorem sourceSlabLocalLayerLoops_support_disjoint_of_add_three_lt
         change first.val + 1 + 3 < second.val + 1
         omega)
 
+/-- The same three-position source gap separates the literal primal walls
+crossed by the two local layer loops.  This is stronger than dual-support
+separation: the two resulting finite deletion components now have disjoint
+named boundary edge sets. -/
+theorem sourceSlabLocalLayerLoopCutEdges_disjoint_of_add_three_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (first second : Fin (blockLength - 3))
+    (hseparated : first.val + 3 < second.val) :
+    Disjoint
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        first).localLayerLoopCutEdges
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        second).localLayerLoopCutEdges := by
+  apply (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+    first).localLayerLoopCutEdges_disjoint_of_support_disjoint
+  apply sourceSlabLocalLayerLoops_support_disjoint_of_add_three_lt
+  exact hseparated
+
 /-- A long source corridor therefore supplies two equal finite profile states
 on literal, disjoint local layer loops.  This packages precisely the
 finite-state and geometric input available before the later annular formation
@@ -425,6 +454,47 @@ theorem exists_equal_sourceSlabOrderedDepthProfiles_with_disjointLocalLayerLoops
     ⟨first, second, hseparated, hequal⟩
   refine ⟨first, second, hseparated, hequal, ?_⟩
   apply sourceSlabLocalLayerLoops_support_disjoint_of_add_three_lt
+  change first.val + 3 < second.val
+  exact hseparated
+
+/-- A sufficiently long source corridor repeats an ordered finite profile on
+two literal layers whose primal four-edge walls are disjoint.  It packages
+the finite-state repeat together with the non-overlap needed by the later
+annular splice construction; it does not yet claim that the two local walls
+have been joined into a global source transversal. -/
+theorem exists_equal_sourceSlabOrderedDepthProfiles_with_disjointLocalLayerLoopCutEdges
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hlarge : 4 * closedWebCutProfileCount 4 + 1 ≤ blockLength - 3)
+    (coloring : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcoloring : embedded.cellulation.rotation.toRotationSystem.IsTaitEdgeColoring
+      coloring) :
+    ∃ first second : Fin (4 * closedWebCutProfileCount 4 + 1),
+      first.val + 3 < second.val ∧
+      sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge first) coloring hcoloring =
+      sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge second) coloring hcoloring ∧
+      Disjoint
+        (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+          (Fin.castLE hlarge first)).localLayerLoopCutEdges
+        (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+          (Fin.castLE hlarge second)).localLayerLoopCutEdges := by
+  rcases exists_equal_sourceSlabOrderedDepthProfiles_separated realization hcubic
+      hrotation htwoSided hunique hlarge coloring hcoloring with
+    ⟨first, second, hseparated, hequal⟩
+  refine ⟨first, second, hseparated, hequal, ?_⟩
+  apply sourceSlabLocalLayerLoopCutEdges_disjoint_of_add_three_lt
   change first.val + 3 < second.val
   exact hseparated
 

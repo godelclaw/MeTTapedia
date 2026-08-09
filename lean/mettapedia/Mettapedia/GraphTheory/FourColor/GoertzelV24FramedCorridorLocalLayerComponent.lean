@@ -65,6 +65,118 @@ noncomputable def localLayerLoopCutEdges
       (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
     interface.localLayerLoop
 
+/-- Any face incident to a primal edge crossed by a source facial-dual walk
+already occurs in that walk's support.  Thus face-disjoint source layers
+cannot silently share a primal wall edge. -/
+private theorem face_mem_sourceDualWalk_support_of_mem_crossingEdge_of_mem_boundary
+    {start finish : AmbientFace
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Walk start finish)
+    {edge : G.edgeSet}
+    {face : OrbitFace embedded.cellulation.rotation.toRotationSystem}
+    (hedge : edge ∈ dualWalkCrossingEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk)
+    (hface : edge ∈ orbitFaceBoundary
+      embedded.cellulation.rotation.toRotationSystem face) :
+    (⟨face, Finset.mem_univ face⟩ : AmbientFace
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))) ∈ walk.support := by
+  rcases (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk edge).1 hedge with
+    ⟨step, hstep⟩
+  let leftFace := walk.getVert step.val
+  let rightFace := walk.getVert (step.val + 1)
+  have hadj := walk.adj_getVert_succ step.isLt
+  have hleftRight : leftFace.1 ≠ rightFace.1 := by
+    intro hfaces
+    exact hadj.ne (Subtype.ext hfaces)
+  have hleft : edge ∈ orbitFaceBoundary
+      embedded.cellulation.rotation.toRotationSystem leftFace.1 := by
+    rw [← hstep]
+    exact dualWalkCrossingEdge_mem_leftFace
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk step
+  have hright : edge ∈ orbitFaceBoundary
+      embedded.cellulation.rotation.toRotationSystem rightFace.1 := by
+    rw [← hstep]
+    exact dualWalkCrossingEdge_mem_rightFace
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk step
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))
+      (orbitFace_incidence_le_two embedded.cellulation.rotation.toRotationSystem)
+      leftFace.2 rightFace.2 (Finset.mem_univ face) hleftRight hleft hright hface
+  rcases hcases with hfaceLeft | hfaceRight
+  · have hvertices :
+        (⟨face, Finset.mem_univ face⟩ : AmbientFace
+          (Finset.univ : Finset
+            (OrbitFace embedded.cellulation.rotation.toRotationSystem))) = leftFace :=
+      Subtype.ext hfaceLeft
+    rw [hvertices]
+    exact walk.getVert_mem_support step.val
+  · have hvertices :
+        (⟨face, Finset.mem_univ face⟩ : AmbientFace
+          (Finset.univ : Finset
+            (OrbitFace embedded.cellulation.rotation.toRotationSystem))) = rightFace :=
+      Subtype.ext hfaceRight
+    rw [hvertices]
+    exact walk.getVert_mem_support (step.val + 1)
+
+/-- Face-disjoint source-local layer loops cross disjoint primal edge sets.
+This converts the already-proved dual separation into the primal wall
+separation required before two local deletion components can take part in an
+annular splice. -/
+theorem localLayerLoopCutEdges_disjoint_of_support_disjoint
+    {rightInterior : CorridorInterior blockLength}
+    {hrightNext : rightInterior.center.val + 2 < blockLength}
+    (left : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (right : SourceConsecutiveSlabInterface realization htwoSided hunique
+      rightInterior hrightNext)
+    (hsupport : left.localLayerLoop.support.Disjoint
+      right.localLayerLoop.support) :
+    Disjoint left.localLayerLoopCutEdges right.localLayerLoopCutEdges := by
+  rw [Finset.disjoint_left]
+  intro edge hleft hright
+  rw [localLayerLoopCutEdges] at hleft hright
+  rcases (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+      left.localLayerLoop edge).1 hleft with ⟨leftStep, hleftStep⟩
+  rcases (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+      right.localLayerLoop edge).1 hright with ⟨rightStep, hrightStep⟩
+  have hleftFace :
+      edge ∈ orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+        (left.localLayerLoop.getVert leftStep.val).1 := by
+    rw [← hleftStep]
+    exact dualWalkCrossingEdge_mem_leftFace
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+      left.localLayerLoop leftStep
+  have hleftSupport := left.localLayerLoop.getVert_mem_support leftStep.val
+  have hrightSupport :=
+    face_mem_sourceDualWalk_support_of_mem_crossingEdge_of_mem_boundary
+      right.localLayerLoop hright hleftFace
+  exact (List.disjoint_left.mp hsupport) hleftSupport hrightSupport
+
 /-- The source slab wall has exactly four different primal edges. -/
 theorem localLayerLoopCutEdges_card_eq_four
     (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
