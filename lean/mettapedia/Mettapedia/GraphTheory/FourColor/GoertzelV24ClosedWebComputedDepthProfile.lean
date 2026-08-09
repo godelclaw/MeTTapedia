@@ -34,6 +34,7 @@ open GoertzelV24ClosedWebRadialPathChordDiagram
 open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathSectorAnchors
+open GoertzelV24CorridorProfile
 open GoertzelV24RotationVertexCutProfile
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -510,6 +511,90 @@ theorem closedWebDepthProfile_edgeColor_eq_of_eq
   intro index
   cases hprofiles
   rfl
+
+/-
+The remaining profile coordinates have dependent finite indices as well.  The
+following transport is deliberately just a sum map: crossing ports are
+cast along the repeated width, while the terminal-port part is unchanged
+(the closed-web carrier uses zero terminals).  Naming this map keeps later
+splice statements about connectivity and fragment incidence readable.
+-/
+def transportClosedWebCorridorPort
+    {leftCount rightCount terminalCount : Nat}
+    (hcount : leftCount = rightCount) :
+    CorridorPort leftCount terminalCount →
+      CorridorPort rightCount terminalCount
+  | .inl index => .inl (Fin.cast hcount index)
+  | .inr index => .inr index
+
+theorem closedWebDepthProfile_strandConnected_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    ∀ (pair : TrackedColorPair)
+      (first second : CorridorPort left.crossingEdgeCount.val 0),
+      left.profile.profile.strandConnected pair first second =
+        right.profile.profile.strandConnected pair
+          (transportClosedWebCorridorPort
+            (closedWebDepthProfile_crossingEdgeCount_val_eq_of_eq hprofiles)
+            first)
+          (transportClosedWebCorridorPort
+            (closedWebDepthProfile_crossingEdgeCount_val_eq_of_eq hprofiles)
+            second) := by
+  intro pair first second
+  cases hprofiles
+  simp only [transportClosedWebCorridorPort]
+  cases first <;> cases second <;> rfl
+
+theorem closedWebDepthProfile_faceContinues_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    ∀ (first second : Fin left.profile.faceFragmentCount.val),
+      left.profile.profile.faceContinues first second =
+        right.profile.profile.faceContinues
+          (Fin.cast
+            (closedWebDepthProfile_faceFragmentCount_val_eq_of_eq hprofiles)
+            first)
+          (Fin.cast
+            (closedWebDepthProfile_faceFragmentCount_val_eq_of_eq hprofiles)
+            second) := by
+  intro first second
+  cases hprofiles
+  simp
+
+theorem closedWebDepthProfile_fragmentContainsPort_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    ∀ (fragment : Fin left.profile.faceFragmentCount.val)
+      (port : CorridorPort left.crossingEdgeCount.val 0),
+      left.profile.profile.fragmentContainsPort fragment port =
+        right.profile.profile.fragmentContainsPort
+          (Fin.cast
+            (closedWebDepthProfile_faceFragmentCount_val_eq_of_eq hprofiles)
+            fragment)
+          (transportClosedWebCorridorPort
+            (closedWebDepthProfile_crossingEdgeCount_val_eq_of_eq hprofiles)
+            port) := by
+  intro fragment port
+  cases hprofiles
+  simp only [transportClosedWebCorridorPort]
+  cases port <;> rfl
+
+theorem closedWebDepthProfile_faceLengthCap_eq_of_eq
+    {widthBound : Nat}
+    {left right : ClosedWebDepthProfile widthBound}
+    (hprofiles : left = right) :
+    ∀ (fragment : Fin left.profile.faceFragmentCount.val),
+      left.profile.profile.faceLengthCap fragment =
+        right.profile.profile.faceLengthCap
+          (Fin.cast
+            (closedWebDepthProfile_faceFragmentCount_val_eq_of_eq hprofiles)
+            fragment) := by
+  intro fragment
+  cases hprofiles
+  simp
 
 end
 
