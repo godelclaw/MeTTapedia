@@ -72,6 +72,120 @@ theorem cycleWalk_dartsAt_card_eq_three
   rw [← incidentEdgeFinset_card_eq_degree]
   exact hincident
 
+/-! A consecutive pair in the simple chord cycle supplies the two wall darts
+at its common cubic vertex.  Therefore an explicitly off-wall external dart
+is the unique third dart in that fiber, and every other incident dart is on
+the wall.  This is the local incidence construction needed by the primal
+side/Jordan seam; it is stronger than merely assuming an adjacent rotational
+successor. -/
+
+theorem all_other_incident_edges_in_wall_of_chord_cycle_turn
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (hdata : data.WellFormed)
+    {previous cycleDart : embedded.RS.D}
+    (hprevious : previous ∈ chord.cycleWalk.darts)
+    (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (hbase : embedded.RS.vertOf cycleDart =
+      embedded.RS.vertOf (embedded.RS.alpha previous))
+    (hnonback : embedded.RS.alpha previous ≠ cycleDart)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external =
+      embedded.RS.vertOf cycleDart)
+    (haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall) :
+    ∀ dart : embedded.RS.D,
+      embedded.RS.vertOf dart = embedded.RS.vertOf external →
+      dart ≠ external →
+      embedded.RS.edgeOf dart ∈ (chord.boundary htriple).wall := by
+  have hcard := cycleWalk_dartsAt_card_eq_three
+    embedded hdata chord htriple cycleDart hcycleDart
+  have hcycleBase : embedded.RS.vertOf cycleDart =
+      embedded.RS.vertOf external := by
+    simpa using hexternalVertex.symm
+  have hpreviousEdge : (embedded.RS.edgeOf previous).1 ∈
+      chord.cycleWalk.edges := by
+    change previous.edge ∈ chord.cycleWalk.edges
+    exact List.mem_map_of_mem hprevious
+  have hcycleEdge : (embedded.RS.edgeOf cycleDart).1 ∈
+      chord.cycleWalk.edges := by
+    change cycleDart.edge ∈ chord.cycleWalk.edges
+    exact List.mem_map_of_mem hcycleDart
+  have hwallPrevious : embedded.RS.edgeOf (embedded.RS.alpha previous) ∈
+      (chord.boundary htriple).wall := by
+    rw [chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple]
+    simpa using hpreviousEdge
+  have hwallCycleDart : embedded.RS.edgeOf cycleDart ∈
+      (chord.boundary htriple).wall := by
+    rw [chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple]
+    simpa using hcycleEdge
+  have hpreviousNeExternal : embedded.RS.alpha previous ≠ external := by
+    intro heq
+    apply haway
+    rw [← heq]
+    exact hwallPrevious
+  have hcycleDartNeExternal : cycleDart ≠ external := by
+    intro heq
+    apply haway
+    rw [← heq]
+    exact hwallCycleDart
+  have htripleSubset :
+      ({embedded.RS.alpha previous, cycleDart, external} :
+        Finset embedded.RS.D) ⊆
+      embedded.RS.dartsAt (embedded.RS.vertOf external) := by
+    intro dart hdart
+    rcases Finset.mem_insert.mp hdart with hdart | hdart
+    · subst dart
+      exact Finset.mem_filter.mpr
+        ⟨Finset.mem_univ _, hbase.symm.trans hcycleBase⟩
+    rcases Finset.mem_insert.mp hdart with hdart | hdart
+    · subst dart
+      exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hcycleBase⟩
+    have hdartEq : dart = external := Finset.mem_singleton.mp hdart
+    subst dart
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩
+  have hprevNotMem : embedded.RS.alpha previous ∉
+      ({cycleDart, external} : Finset embedded.RS.D) := by
+    intro hmem
+    rcases Finset.mem_insert.mp hmem with hmem | hmem
+    · exact hnonback hmem
+    · exact hpreviousNeExternal (Finset.mem_singleton.mp hmem)
+  have hcycleNotMem : cycleDart ∉
+      ({external} : Finset embedded.RS.D) := by
+    exact fun h => hcycleDartNeExternal (Finset.mem_singleton.mp h)
+  have htripleCard :
+      ({embedded.RS.alpha previous, cycleDart, external} :
+        Finset embedded.RS.D).card = 3 := by
+    rw [Finset.card_insert_of_notMem hprevNotMem]
+    rw [Finset.card_insert_of_notMem hcycleNotMem]
+    simp
+  have hcardExternal :
+      (embedded.RS.dartsAt (embedded.RS.vertOf external)).card = 3 := by
+    rw [← hcycleBase]
+    exact hcard
+  have htripleEq :
+      ({embedded.RS.alpha previous, cycleDart, external} :
+        Finset embedded.RS.D) =
+      embedded.RS.dartsAt (embedded.RS.vertOf external) := by
+    apply Finset.eq_of_subset_of_card_le htripleSubset
+    rw [hcardExternal, htripleCard]
+  intro dart hdartBase hdartNeExternal
+  have hdartMem : dart ∈ embedded.RS.dartsAt (embedded.RS.vertOf external) := by
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hdartBase⟩
+  rw [← htripleEq] at hdartMem
+  rcases Finset.mem_insert.mp hdartMem with hpreviousDart | hdartMem
+  · rw [hpreviousDart]
+    exact hwallPrevious
+  rcases Finset.mem_insert.mp hdartMem with hcycleDart' | hexternalDart
+  · rw [hcycleDart']
+    exact hwallCycleDart
+  exact False.elim (hdartNeExternal (Finset.mem_singleton.mp hexternalDart))
+
 /-! The generic cubic seam is now exposed at the actual chord interface.  A
 cycle dart supplies the local degree-three certificate; the caller still has
 to provide the exact-cut labels and identify which rotational successor edge
@@ -93,9 +207,11 @@ theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_
           labels (dartOrbitFace embedded.RS
             (embedded.RS.alpha dart)) ↔
         (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
-    (cycleDart : G.Dart) (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (cycleDart : embedded.RS.D)
+    (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
     (external : embedded.RS.D)
-    (hexternalVertex : embedded.RS.vertOf external = cycleDart.fst)
+    (hexternalVertex : embedded.RS.vertOf external =
+      embedded.RS.vertOf cycleDart)
     (haway : embedded.RS.edgeOf external ∉
       (chord.boundary htriple).wall)
     (hadjacent :
@@ -158,9 +274,11 @@ theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_
           labels (dartOrbitFace embedded.RS
             (embedded.RS.alpha dart)) ↔
         (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
-    (cycleDart : G.Dart) (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (cycleDart : embedded.RS.D)
+    (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
     (external : embedded.RS.D)
-    (hexternalVertex : embedded.RS.vertOf external = cycleDart.fst)
+    (hexternalVertex : embedded.RS.vertOf external =
+      embedded.RS.vertOf cycleDart)
     (haway : embedded.RS.edgeOf external ∉
       (chord.boundary htriple).wall)
     (hother : ∀ dart : embedded.RS.D,
@@ -199,6 +317,103 @@ theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_
   exact faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_all_other_incident_edges_in_wall
     embedded.RS htwoSided hrotation (chord.boundary htriple).wall labels
       hexactWall external hcardExternal haway hother hincident hsame
+
+/-! A consecutive cycle turn now discharges the local incidence premise
+itself.  Thus the face-side connection can be invoked directly from the
+ordinary cycle-list data (two adjacent wall darts, cubicity, and an external
+off-wall dart), with no manually supplied rotational successor case. -/
+
+theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_turn
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {previous cycleDart : embedded.RS.D}
+    (hprevious : previous ∈ chord.cycleWalk.darts)
+    (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (hbase : embedded.RS.vertOf cycleDart =
+      embedded.RS.vertOf (embedded.RS.alpha previous))
+    (hnonback : embedded.RS.alpha previous ≠ cycleDart)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external =
+      embedded.RS.vertOf cycleDart)
+    (haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall)
+    {incident : embedded.RS.D}
+    (hincident : embedded.RS.vertOf incident =
+      embedded.RS.vertOf external)
+    (hsame : labels (dartOrbitFace embedded.RS incident) =
+      labels (dartOrbitFace embedded.RS external)) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary embedded.RS)
+      (Finset.univ : Finset (OrbitFace embedded.RS))
+      (chord.boundary htriple).wall).Reachable
+      (orbitFaceVertex embedded.RS external)
+      (orbitFaceVertex embedded.RS incident) := by
+  exact faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_vertex_of_all_other_incident_edges_in_wall
+    embedded hdata chord htriple htwoSided labels hexact cycleDart hcycleDart
+      external hexternalVertex haway
+      (all_other_incident_edges_in_wall_of_chord_cycle_turn
+        embedded chord htriple hdata hprevious hcycleDart hbase hnonback
+          external hexternalVertex haway)
+      hincident hsame
+
+/-! Convenience form for the existing `FaceCutCycleTurnStep` chain: its
+first two fields are exactly the base-point and nonbacktracking hypotheses
+used above. -/
+
+theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_faceCutCycleTurn
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {previous cycleDart : embedded.RS.D}
+    (hprevious : previous ∈ chord.cycleWalk.darts)
+    (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (hturn : embedded.RS.FaceCutCycleTurnStep
+      (fun edge => edge ∈ (chord.boundary htriple).wall)
+      previous cycleDart)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external =
+      embedded.RS.vertOf cycleDart)
+    (haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall)
+    {incident : embedded.RS.D}
+    (hincident : embedded.RS.vertOf incident =
+      embedded.RS.vertOf external)
+    (hsame : labels (dartOrbitFace embedded.RS incident) =
+      labels (dartOrbitFace embedded.RS external)) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary embedded.RS)
+      (Finset.univ : Finset (OrbitFace embedded.RS))
+      (chord.boundary htriple).wall).Reachable
+      (orbitFaceVertex embedded.RS external)
+      (orbitFaceVertex embedded.RS incident) := by
+  exact faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_turn
+    embedded hdata chord htriple htwoSided labels hexact hprevious hcycleDart
+      hturn.1 hturn.2.1 external hexternalVertex haway hincident hsame
 
 /-!
 At a vertex outside the chord wall, the cut facial component already gives a
