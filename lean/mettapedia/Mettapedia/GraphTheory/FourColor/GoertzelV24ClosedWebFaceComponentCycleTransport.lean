@@ -111,6 +111,43 @@ theorem faceAdjacencyAvoiding_reachable_of_faceCutCycleTurn
         orbitFaceVertex RS outgoing := by rw [hthirdRho]
     exact hfirst ▸ hstep.trans (by simpa [hlast])
 
+/-! Hole-free face regions also have a direct primal consequence.  At a
+wall-free vertex, all incident face choices are connected by rotation; hence
+a vertex incident with a forbidden hole face cannot belong to the selected
+face-component side. -/
+
+theorem not_faceComponentSide_of_holeFree_incident_dart
+    (RS : RotationSystem V E)
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E)
+    (seed hole : AmbientFace (Finset.univ : Finset (OrbitFace RS)))
+    (dart : RS.D)
+    (hface : orbitFaceVertex RS dart = hole)
+    (havoid : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf dart → RS.edgeOf incident ∉ wall)
+    (hfree : ¬ (faceAdjacencyAvoiding
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).Reachable seed hole) :
+    ¬ faceComponentSide RS wall seed (RS.vertOf dart) := by
+  intro hside
+  rcases hside with ⟨incident, hincident, hreach⟩
+  have hsame : RS.rho.SameCycle incident dart :=
+    hrotation incident dart (hincident.trans rfl)
+  have hconnect :=
+    faceAdjacencyAvoiding_reachable_of_rho_sameCycle_of_vertex_avoids
+      RS htwoSided wall hsame (by
+        intro other hother
+        exact havoid other (hother.trans hincident))
+  apply hfree
+  have htoHole :
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+        (orbitFaceVertex RS dart) hole := by
+    rw [hface]
+  exact hreach.trans (hconnect.trans htoHole)
+
 /-! The one-step result iterates over a simple graph cycle. -/
 
 namespace SimpleGraphDartRotation.Data
