@@ -319,6 +319,53 @@ theorem outputSize_lt (data : OrderedCutSpliceData RS n terminalCount faceFragme
     data.outputSize < Fintype.card V := by
   exact card_retainedVertex_lt data.keep data.removed data.removed_not_kept
 
+/-- The manuscript's closed-web shrinking surgery removes a rung pair, not
+merely an unspecified nonempty region.  This packages the second distinct
+deleted vertex while the generic splice data retains its first one. -/
+structure RungPairDeletion
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount) where
+  companion : V
+  companion_ne_removed : companion ≠ data.removed
+  companion_not_kept : ¬ data.keep companion
+
+/-- Two distinct deleted vertices force the source-level two-vertex size
+decrease.  The weaker strict inequality remains available for the abstract
+reductive spine, but this is the quantitative contract a rung-pair splice
+must ultimately discharge. -/
+theorem outputSize_add_two_le
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (deletion : data.RungPairDeletion) :
+    data.outputSize + 2 ≤ Fintype.card V := by
+  let deleted : Fin 2 → DeletedVertex data.keep := fun index =>
+    if index = 0 then
+      ⟨data.removed, data.removed_not_kept⟩
+    else
+      ⟨deletion.companion, deletion.companion_not_kept⟩
+  have hdeleted : Function.Injective deleted := by
+    intro first second heq
+    have hvalue := congrArg Subtype.val heq
+    fin_cases first <;> fin_cases second
+    · rfl
+    · simp [deleted] at hvalue
+      exact (deletion.companion_ne_removed hvalue.symm).elim
+    · simp [deleted] at hvalue
+      exact (deletion.companion_ne_removed hvalue).elim
+    · rfl
+  have hcardDeleted : 2 ≤ Fintype.card (DeletedVertex data.keep) := by
+    simpa using Fintype.card_le_of_injective deleted hdeleted
+  have hpartition := card_retainedVertex_add_card_deletedVertex data.keep
+  change Fintype.card (RetainedVertex data.keep) + 2 ≤ Fintype.card V
+  omega
+
+/-- Equivalent subtraction form of the source's `V ↦ V - 2` shrinking
+claim. -/
+theorem outputSize_le_sub_two
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (deletion : data.RungPairDeletion) :
+    data.outputSize ≤ Fintype.card V - 2 := by
+  have hdecrease := data.outputSize_add_two_le deletion
+  omega
+
 /-! ## The geometric and face-safety parts of the source checklist -/
 
 /-- The local Euler equation for this exact cut.  It is a computed equation
@@ -728,6 +775,14 @@ theorem ProfileAlignedSplice.outputSize_lt
     (aligned : ProfileAlignedSplice data) :
     aligned.spliceData.outputSize < Fintype.card V :=
   aligned.spliceData.outputSize_lt
+
+/-- Source-level quantitative descent for an aligned rung-pair splice. -/
+theorem ProfileAlignedSplice.outputSize_add_two_le
+    {data : OrderedCutSidesData RS n terminalCount faceFragmentCount}
+    (aligned : ProfileAlignedSplice data)
+    (deletion : aligned.spliceData.RungPairDeletion) :
+    aligned.spliceData.outputSize + 2 ≤ Fintype.card V :=
+  aligned.spliceData.outputSize_add_two_le deletion
 
 end OrderedCutSidesData
 
