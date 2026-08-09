@@ -59,6 +59,30 @@ private theorem walk_append_isPath_of_support_disjoint
     List.nodup_append']
   exact ⟨hleft.support_nodup, hright.support_nodup.tail, hdisjoint⟩
 
+/-- The source anchor of a face is preserved when two local rail walks are
+appended: it comes from the first cell, the shared cell, or the last cell.
+The theorem only records provenance; simplicity remains the separately
+checked geometric obligation. -/
+private theorem walk_append_support_adjacent_three
+    {F : Type*} {H : SimpleGraph F}
+    {start middle finish : F}
+    (left : H.Walk start middle) (right : H.Walk middle finish)
+    (firstAnchor sharedAnchor lastAnchor : F)
+    (hleft : ∀ face ∈ left.support,
+      H.Adj firstAnchor face ∨ H.Adj sharedAnchor face)
+    (hright : ∀ face ∈ right.support,
+      H.Adj sharedAnchor face ∨ H.Adj lastAnchor face)
+    {face : F} (hface : face ∈ (left.append right).support) :
+    H.Adj firstAnchor face ∨ H.Adj sharedAnchor face ∨ H.Adj lastAnchor face := by
+  rw [SimpleGraph.Walk.support_append] at hface
+  rcases List.mem_append.mp hface with hleftFace | hrightFace
+  · rcases hleft face hleftFace with hfirst | hshared
+    · exact Or.inl hfirst
+    · exact Or.inr (Or.inl hshared)
+  · rcases hright face (List.mem_of_mem_tail hrightFace) with hshared | hlast
+    · exact Or.inr (Or.inl hshared)
+    · exact Or.inr (Or.inr hlast)
+
 /-- Two consecutive local rail pairs composed into the two actual source
 rails across a three-interface corridor segment.  Individual rail simplicity
 is retained here; mutual rail disjointness is the next, separate geometric
@@ -222,6 +246,117 @@ theorem sourceCornerAlignedRailChain_of_pairs_secondRail
       leftPair rightPair hfirst hsecond).secondRail =
       leftPair.secondRail.append rightPair.secondRail :=
   rfl
+
+/-- Every face on the composed first rail remains anchored at one of the
+three source cells crossed by the two local steps. -/
+theorem sourceCornerAlignedRailChain_of_pairs_firstRail_support_adjacent_to_source
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {hnextThird :
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center.val + 2 < blockLength}
+    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (middle : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext)
+    (last : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird)
+    (leftPair : SourceCornerAlignedRailPair first middle)
+    (rightPair : SourceCornerAlignedRailPair middle last)
+    (hfirst : leftPair.firstRail.support.Disjoint rightPair.firstRail.support.tail)
+    (hsecond : leftPair.secondRail.support.Disjoint rightPair.secondRail.support.tail)
+    {face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    (hface : face ∈
+      (sourceCornerAlignedRailChain_of_pairs first middle last
+        leftPair rightPair hfirst hsecond).firstRail.support) :
+    (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        first.toInterface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        middle.toInterface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        last.toInterface.centerLayerFace face := by
+  rw [sourceCornerAlignedRailChain_of_pairs_firstRail] at hface
+  exact walk_append_support_adjacent_three leftPair.firstRail rightPair.firstRail
+    first.toInterface.centerLayerFace middle.toInterface.centerLayerFace
+    last.toInterface.centerLayerFace
+    leftPair.firstRail_support_adjacent_to_source
+    rightPair.firstRail_support_adjacent_to_source hface
+
+/-- The analogous source-anchor statement for the composed second rail. -/
+theorem sourceCornerAlignedRailChain_of_pairs_secondRail_support_adjacent_to_source
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {hnextThird :
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center.val + 2 < blockLength}
+    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (middle : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext)
+    (last : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird)
+    (leftPair : SourceCornerAlignedRailPair first middle)
+    (rightPair : SourceCornerAlignedRailPair middle last)
+    (hfirst : leftPair.firstRail.support.Disjoint rightPair.firstRail.support.tail)
+    (hsecond : leftPair.secondRail.support.Disjoint rightPair.secondRail.support.tail)
+    {face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    (hface : face ∈
+      (sourceCornerAlignedRailChain_of_pairs first middle last
+        leftPair rightPair hfirst hsecond).secondRail.support) :
+    (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        first.toInterface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        middle.toInterface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        last.toInterface.centerLayerFace face := by
+  rw [sourceCornerAlignedRailChain_of_pairs_secondRail] at hface
+  exact walk_append_support_adjacent_three leftPair.secondRail rightPair.secondRail
+    first.toInterface.centerLayerFace middle.toInterface.centerLayerFace
+    last.toInterface.centerLayerFace
+    leftPair.secondRail_support_adjacent_to_source
+    rightPair.secondRail_support_adjacent_to_source hface
 
 end AnnularEmbedding
 

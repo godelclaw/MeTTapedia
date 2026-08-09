@@ -20,6 +20,7 @@ open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24HexCorridorSlab
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexSlabSideAdjacency
 open GoertzelV24InducedHexCorridorTypes
@@ -78,6 +79,34 @@ structure SourceCornerAlignedRailPair
   secondRail_isPath : secondRail.IsPath
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
+  /-- Every face on a local rail is an actual side neighbor of one of the
+  two source cells that the rail joins.  Retaining this provenance lets the
+  global construction exclude remote rail collisions from the L1 geodesic,
+  rather than treating rail simplicity as a bare local fact. -/
+  firstRail_support_adjacent_to_source :
+    ∀ face ∈ firstRail.support,
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          first.toInterface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          second.toInterface.centerLayerFace face
+  secondRail_support_adjacent_to_source :
+    ∀ face ∈ secondRail.support,
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          first.toInterface.centerLayerFace face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          second.toInterface.centerLayerFace face
 
 /-- A `forwardTwo` source word gives a shared first rail endpoint and a
 two-edge second rail through its certified exterior middle face. -/
@@ -131,6 +160,39 @@ theorem sourceCornerAlignedRailPair_of_forwardTwo
           List.mem_cons, List.not_mem_nil, or_false, not_or] using And.intro hBM' hBD
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
+    firstRail_support_adjacent_to_source := by
+      intro face hface
+      have hfaceEq : face = first.toInterface.firstLayerFace := by
+        simpa only [SimpleGraph.Walk.support_copy,
+          SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+          or_false] using hface
+      subst face
+      exact Or.inl first.toInterface.firstLayerFace_adjacent_centerLayerFace.symm
+    secondRail_support_adjacent_to_source := by
+      have hmiddle :
+          (interiorDualGraph
+            (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+            (Finset.univ : Finset
+              (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+            second.toInterface.centerLayerFace rail.middleFace := by
+        simpa [SourceConsecutiveSlabInterface.centerLayerFace,
+          SourceCornerAlignedForwardTwoRailWitness.middleFace,
+          placementSideNeighbor] using
+          (internalSideNeighbor_adjacent realization.toCleanOrbitHexCorridorSkeleton
+            htwoSided hunique (nextCorridorInterior leftInterior hnext)
+            (placementSideEdge htwoSided
+              (realization.slabPlacementAt htwoSided hunique
+                (nextCorridorInterior leftInterior hnext)) rail.middlePosition))
+      intro face hface
+      simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
+        List.mem_cons, List.not_mem_nil, or_false] at hface
+      rcases hface with hface | hface | hface
+      · subst face
+        exact Or.inl first.toInterface.centerLayerFace_adjacent_secondLayerFace
+      · subst face
+        exact Or.inr hmiddle
+      · subst face
+        exact Or.inr second.toInterface.centerLayerFace_adjacent_secondLayerFace
   }⟩
 
 /-- The numerical middle source word is the opposite-rung case. -/
@@ -187,6 +249,24 @@ theorem sourceCornerAlignedRailPair_of_forwardThree
     secondRail_isPath := SimpleGraph.Walk.IsPath.of_adj rails.2
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
+    firstRail_support_adjacent_to_source := by
+      intro face hface
+      simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
+        List.mem_cons, List.not_mem_nil, or_false] at hface
+      rcases hface with hface | hface
+      · subst face
+        exact Or.inl first.toInterface.firstLayerFace_adjacent_centerLayerFace.symm
+      · subst face
+        exact Or.inr second.toInterface.firstLayerFace_adjacent_centerLayerFace.symm
+    secondRail_support_adjacent_to_source := by
+      intro face hface
+      simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
+        List.mem_cons, List.not_mem_nil, or_false] at hface
+      rcases hface with hface | hface
+      · subst face
+        exact Or.inl first.toInterface.centerLayerFace_adjacent_secondLayerFace
+      · subst face
+        exact Or.inr second.toInterface.centerLayerFace_adjacent_secondLayerFace
   }⟩
 
 /-- A `forwardFour` source word gives a two-edge first rail through its
@@ -241,6 +321,39 @@ theorem sourceCornerAlignedRailPair_of_forwardFour
     secondRail_isPath := by simp
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
+    firstRail_support_adjacent_to_source := by
+      have hmiddle :
+          (interiorDualGraph
+            (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+            (Finset.univ : Finset
+              (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+            second.toInterface.centerLayerFace rail.middleFace := by
+        simpa [SourceConsecutiveSlabInterface.centerLayerFace,
+          SourceCornerAlignedForwardFourRailWitness.middleFace,
+          placementSideNeighbor] using
+          (internalSideNeighbor_adjacent realization.toCleanOrbitHexCorridorSkeleton
+            htwoSided hunique (nextCorridorInterior leftInterior hnext)
+            (placementSideEdge htwoSided
+              (realization.slabPlacementAt htwoSided hunique
+                (nextCorridorInterior leftInterior hnext)) rail.middlePosition))
+      intro face hface
+      simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
+        List.mem_cons, List.not_mem_nil, or_false] at hface
+      rcases hface with hface | hface | hface
+      · subst face
+        exact Or.inl first.toInterface.firstLayerFace_adjacent_centerLayerFace.symm
+      · subst face
+        exact Or.inr hmiddle
+      · subst face
+        exact Or.inr second.toInterface.firstLayerFace_adjacent_centerLayerFace.symm
+    secondRail_support_adjacent_to_source := by
+      intro face hface
+      have hfaceEq : face = first.toInterface.secondLayerFace := by
+        simpa only [SimpleGraph.Walk.support_copy,
+          SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+          or_false] using hface
+      subst face
+      exact Or.inl first.toInterface.centerLayerFace_adjacent_secondLayerFace
   }⟩
 
 /-- Every non-adjacent source tile yields one bounded pair of concrete local
