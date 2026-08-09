@@ -1174,10 +1174,11 @@ theorem exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardFour
     simp [firstRail, secondRail, secondRail1, secondRail0,
       SourceConsecutiveSlabInterface.localLayer,
       SourceConsecutiveSlabInterface.localLayerWalk]
-    exact ⟨⟨hXY, hCX.symm,
-      (by simpa [SourceCornerAlignedForwardFourRailWitness.middleFace,
-        sharedPlacement] using hMX.symm), hAX.symm⟩,
-      hBY, hBC, hBM, hAB.symm⟩
+    exact ⟨⟨hXY.symm, hBY.symm⟩,
+      ⟨⟨hCX, hBC.symm⟩,
+        ⟨⟨(by simpa [SourceCornerAlignedForwardFourRailWitness.middleFace,
+          sharedPlacement] using hMX), hBM.symm⟩,
+          ⟨hAX, hAB⟩⟩⟩⟩
   have hcycle : (firstRail.append secondRail).IsCycle :=
     SimpleGraph.Walk.IsPath.isCycle_append hfirstRail hsecondRail htails
       (Or.inl (by
@@ -1187,64 +1188,6 @@ theorem exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardFour
   simp [firstRail, secondRail, secondRail1, secondRail0,
     SourceConsecutiveSlabInterface.localLayer,
     SourceConsecutiveSlabInterface.localLayerWalk]
-
-/-- Every non-adjacent source slab has one of the three finite oriented
-forms, and each form now supplies a literal simple six-edge layer boundary.
-This is the source-facing case closure: no later splice argument may silently
-use only the straight `forwardThree` geometry. -/
-theorem exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle
-    {source : SourceTrail G}
-    {embedded : source.AnnularEmbedding} {blockLength : Nat}
-    {realization : BoundaryCleanCorridorRealization embedded blockLength}
-    {htwoSided : OrbitFacesTwoSided
-      embedded.cellulation.rotation.toRotationSystem}
-    {hunique : PairwiseUniqueSharedInteriorEdges
-      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
-      (Finset.univ : Finset
-        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
-    {leftInterior : CorridorInterior blockLength}
-    {hnext : leftInterior.center.val + 2 < blockLength}
-    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
-    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (hrotation : VertexRotationCyclic
-      embedded.cellulation.rotation.toRotationSystem)
-    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
-      leftInterior hnext)
-    (second : SourceCornerAlignedSlabInterface realization htwoSided hunique
-      (nextCorridorInterior leftInterior hnext) hnextNext) :
-    ∃ boundary : (interiorDualGraph
-        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
-        (Finset.univ : Finset
-          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Walk
-        first.toInterface.firstLayerFace first.toInterface.firstLayerFace,
-      boundary.IsCycle ∧ boundary.length = 6 := by
-  let sharedPlacement := realization.slabPlacementAt htwoSided hunique
-    (nextCorridorInterior leftInterior hnext)
-  have hnonadjacent : sharedPlacement.rungType ≠ HexRungType.adjacent := by
-    simpa [sharedPlacement] using
-      realization.slabPlacementAt_rungType_ne_adjacent hcubic hrotation htwoSided
-        hunique (nextCorridorInterior leftInterior hnext)
-  rcases hexForwardDistance_eq_two_or_three_or_four
-      sharedPlacement.incomingPosition6 sharedPlacement.outgoingPosition6
-      sharedPlacement.positions6_ne hnonadjacent with htwo | hthree | hfour
-  · exact exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardTwo
-      hcubic hrotation first second (by simpa [sharedPlacement] using htwo)
-  · have hopposite6 : sharedPlacement.outgoingPosition6.val ≡
-        sharedPlacement.incomingPosition6.val + 3 [MOD 6] :=
-      outgoing_modEq_of_hexForwardDistance_three _ _ hthree
-    have hopposite : sharedPlacement.outgoingPosition.val ≡
-        sharedPlacement.incomingPosition.val + 3 [MOD 6] := by
-      simpa [InternalHexRungPlacement.incomingPosition6,
-        InternalHexRungPlacement.outgoingPosition6] using hopposite6
-    let boundary := sourceCornerAlignedTwoTileLayerBoundary_of_oppositeRungs
-      hcubic hrotation first second (by simpa [sharedPlacement] using hopposite)
-    refine ⟨boundary, ?_, ?_⟩
-    · simpa [boundary] using
-        sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_oppositeRungs
-          hcubic hrotation first second (by simpa [sharedPlacement] using hopposite)
-    · simp [boundary, sourceCornerAlignedTwoTileLayerBoundary_of_oppositeRungs]
-  · exact exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardFour
-      hcubic hrotation first second (by simpa [sharedPlacement] using hfour)
 
 /-- In the opposite-rung case, the two successive source tiles expose four
 different exterior faces.  This is the local non-self-intersection fact needed
@@ -1647,6 +1590,63 @@ theorem sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardThree
   simpa [sharedPlacement] using
     sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_oppositeRungs
       hcubic hrotation first second hopposite
+
+/-- Every non-adjacent source slab has one of the three finite oriented
+forms, and each form supplies a literal simple six-edge layer boundary.  The
+dispatcher follows the three concrete constructions it combines. -/
+theorem exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext) :
+    ∃ boundary : (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Walk
+        first.toInterface.firstLayerFace first.toInterface.firstLayerFace,
+      boundary.IsCycle ∧ boundary.length = 6 := by
+  let sharedPlacement := realization.slabPlacementAt htwoSided hunique
+    (nextCorridorInterior leftInterior hnext)
+  have hnonadjacent : sharedPlacement.rungType ≠ HexRungType.adjacent := by
+    simpa [sharedPlacement] using
+      realization.slabPlacementAt_rungType_ne_adjacent hcubic hrotation htwoSided
+        hunique (nextCorridorInterior leftInterior hnext)
+  rcases hexForwardDistance_eq_two_or_three_or_four
+      sharedPlacement.incomingPosition6 sharedPlacement.outgoingPosition6
+      sharedPlacement.positions6_ne hnonadjacent with htwo | hthree | hfour
+  · exact exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardTwo
+      hcubic hrotation first second (by simpa [sharedPlacement] using htwo)
+  · have hopposite6 : sharedPlacement.outgoingPosition6.val ≡
+        sharedPlacement.incomingPosition6.val + 3 [MOD 6] :=
+      outgoing_modEq_of_hexForwardDistance_three _ _ hthree
+    have hopposite : sharedPlacement.outgoingPosition.val ≡
+        sharedPlacement.incomingPosition.val + 3 [MOD 6] := by
+      simpa [InternalHexRungPlacement.incomingPosition6,
+        InternalHexRungPlacement.outgoingPosition6] using hopposite6
+    let boundary := sourceCornerAlignedTwoTileLayerBoundary_of_oppositeRungs
+      hcubic hrotation first second (by simpa [sharedPlacement] using hopposite)
+    refine ⟨boundary, ?_, ?_⟩
+    · simpa [boundary] using
+        sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_oppositeRungs
+          hcubic hrotation first second (by simpa [sharedPlacement] using hopposite)
+    · simp [boundary, sourceCornerAlignedTwoTileLayerBoundary_of_oppositeRungs]
+  · exact exists_sourceCornerAlignedTwoTileLayerBoundary_isCycle_of_forwardFour
+      hcubic hrotation first second (by simpa [sharedPlacement] using hfour)
 
 /-- The source word's `forwardTwo` symbol supplies a concrete bent rail:
 one endpoint is shared and the other travels through an explicitly realized
