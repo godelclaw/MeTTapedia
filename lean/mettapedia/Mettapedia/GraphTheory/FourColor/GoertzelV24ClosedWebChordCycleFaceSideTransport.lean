@@ -1579,6 +1579,46 @@ theorem edgeCrossesVertexSide_of_f2_label_inequality
           simp_all
       exact hlabels heq
 
+/-! The exact-cut equation already supplies the port-label inequality once
+the planar turn has identified the two endpoint ports with the two incident
+faces of an oriented wall dart.  Keeping this adapter separate is useful:
+the remaining Jordan argument only has to produce those two face
+identifications, rather than reproving the binary-label step at every wall
+edge. -/
+
+theorem labels_ne_of_exact_cut_of_wall_dart_face_assignment
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {wallDart portU portV : embedded.RS.D}
+    (hwallDart : (embedded.RS.edgeOf wallDart).1 ∈
+      chord.cycleWalk.edges)
+    (hportUFace : dartOrbitFace embedded.RS portU =
+      dartOrbitFace embedded.RS wallDart)
+    (hportVFace : dartOrbitFace embedded.RS portV =
+      dartOrbitFace embedded.RS (embedded.RS.alpha wallDart)) :
+    labels (dartOrbitFace embedded.RS portU) ≠
+      labels (dartOrbitFace embedded.RS portV) := by
+  intro hlabels
+  apply (hexact wallDart).2 hwallDart
+  calc
+    labels (dartOrbitFace embedded.RS wallDart) =
+        labels (dartOrbitFace embedded.RS portU) := by
+      rw [hportUFace]
+    _ = labels (dartOrbitFace embedded.RS portV) := hlabels
+    _ = labels (dartOrbitFace embedded.RS
+        (embedded.RS.alpha wallDart)) := by
+      rw [hportVFace]
+
 theorem edgeCrossesVertexSide_of_chord_wall_of_port_label_inequality
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
