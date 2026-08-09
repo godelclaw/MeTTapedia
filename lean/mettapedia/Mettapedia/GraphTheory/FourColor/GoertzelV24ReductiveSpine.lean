@@ -80,6 +80,60 @@ theorem target_all_iff_baseVerified
 
 end ReductiveSystem
 
+/-!
+## The prime/factored Trail Completability assembly
+
+The source's final spine is a strong-induction argument on a minimal
+uncolorable trail.  A prime trail is ruled out by the parity contradiction;
+the factored case is repaired by applying the induction hypothesis to each
+strictly smaller factor, completing those colorable factors, and gluing the
+completions.  The structure below records exactly those source-facing
+premises.  It is an assembly theorem, not a claim that the geometric
+Trail-Completability, parity, or gluing lemmas have already been proved for
+the graph model.
+-/
+
+structure TrailAssembly (Object : Type*)
+    (colorable : Object → Prop) where
+  size : Object → Nat
+  completable : Object → Prop
+  prime : Object → Prop
+  factored : Object → Prop
+  factors : Object → List Object
+  prime_or_factored :
+    ∀ object, ¬ colorable object → prime object ∨ factored object
+  prime_contradiction :
+    ∀ object, prime object → ¬ colorable object → False
+  factor_smaller :
+    ∀ object, factored object → ∀ factor, factor ∈ factors object →
+      size factor < size object
+  trailCompletability :
+    ∀ object, colorable object → completable object
+  glue_factored :
+    ∀ object, factored object →
+      (∀ factor, factor ∈ factors object → completable factor) →
+      colorable object
+
+namespace TrailAssembly
+
+/-- The source's prime/factored minimal-counterexample contradiction. -/
+theorem all_colorable
+    (assembly : TrailAssembly Object colorable) :
+    ∀ object, colorable object := by
+  intro object
+  refine (measure assembly.size).wf.induction object ?_
+  intro current ih
+  by_contra hnot
+  rcases assembly.prime_or_factored current hnot with hprime | hfactored
+  · exact assembly.prime_contradiction current hprime hnot
+  · apply hnot
+    apply assembly.glue_factored current hfactored
+    intro factor hfactor
+    apply assembly.trailCompletability factor
+    exact ih factor (assembly.factor_smaller current hfactored factor hfactor)
+
+end TrailAssembly
+
 end GoertzelV24ReductiveSpine
 
 end Mettapedia.GraphTheory.FourColor
