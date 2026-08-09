@@ -142,6 +142,25 @@ def port (indexing : CorridorProfileIndexing n terminalCount faceFragmentCount) 
 
 end CorridorProfileIndexing
 
+/-- Relabel every finite coordinate of a corridor profile along an explicitly
+certified correspondence.  This is the profile-level counterpart of
+`reindexGraphCorridorCutData`; keeping the two operations separate makes the
+source's geometric port matching visible rather than treating a finite-type
+enumeration as an order. -/
+def reindexCorridorCutProfile
+    {n terminalCount faceFragmentCount : Nat}
+    (profile : CorridorCutProfile n terminalCount faceFragmentCount)
+    (indexing : CorridorProfileIndexing n terminalCount faceFragmentCount) :
+    CorridorCutProfile n terminalCount faceFragmentCount where
+  edgeColor := fun crossing => profile.edgeColor (indexing.crossing crossing)
+  strandConnected := fun pair first second =>
+    profile.strandConnected pair (indexing.port first) (indexing.port second)
+  faceContinues := fun first second =>
+    profile.faceContinues (indexing.fragment first) (indexing.fragment second)
+  fragmentContainsPort := fun fragment port =>
+    profile.fragmentContainsPort (indexing.fragment fragment) (indexing.port port)
+  faceLengthCap := fun fragment => profile.faceLengthCap (indexing.fragment fragment)
+
 /-- Relabel raw cut data without changing its underlying region. -/
 def reindexGraphCorridorCutData
     {RS : RotationSystem V E}
@@ -154,6 +173,36 @@ def reindexGraphCorridorCutData
   terminalEdge := fun index => data.terminalEdge (indexing.terminal index)
   fragmentFace := fun index => data.fragmentFace (indexing.fragment index)
   fragmentEdges := fun index => data.fragmentEdges (indexing.fragment index)
+
+/-- Computing the graph-derived profile after relabelling raw cut data is
+definitionally the same as relabelling its complete finite profile.  Thus a
+geometric transversal correspondence transports colors, connectivity, face
+incidence, and capped face progress together. -/
+theorem reindexGraphCorridorCutData_profile
+    {RS : RotationSystem V E}
+    {n terminalCount faceFragmentCount : Nat}
+    (data : GraphCorridorCutData RS n terminalCount faceFragmentCount)
+    (indexing : CorridorProfileIndexing n terminalCount faceFragmentCount)
+    (coloring : RS.EdgeColoring Color) (hcoloring : RS.IsTaitEdgeColoring coloring) :
+    (reindexGraphCorridorCutData data indexing).profile coloring hcoloring =
+      reindexCorridorCutProfile (data.profile coloring hcoloring) indexing := by
+  cases data
+  cases indexing
+  rw [CorridorCutProfile.mk.injEq]
+  constructor
+  · funext crossing
+    rfl
+  constructor
+  · funext pair first second
+    cases first <;> cases second <;> rfl
+  constructor
+  · funext first second
+    rfl
+  constructor
+  · funext fragment port
+    cases port <;> rfl
+  · funext fragment
+    rfl
 
 omit [Fintype E] in
 /-- Reordering an injective crossing list does not change its underlying cut
@@ -287,6 +336,24 @@ def reindexRight
   outer_kept := data.outer_kept
   removed := data.removed
   removed_not_kept := data.removed_not_kept
+
+/-- A profile equality stated in the source's actual port correspondence is
+exactly the fixed-coordinate equality required after reindexing the right
+cut.  This discharges the profile field of `ProfileAlignedSplice`; it does
+not discharge the separate geometric seam-endpoint or output-planarity
+obligations. -/
+theorem profile_eq_after_reindexRight
+    (data : OrderedCutSidesData RS n terminalCount faceFragmentCount)
+    (indexing : CorridorProfileIndexing n terminalCount faceFragmentCount)
+    (coloring : RS.EdgeColoring Color) (hcoloring : RS.IsTaitEdgeColoring coloring)
+    (hprofiles : data.left.profile coloring hcoloring =
+      reindexCorridorCutProfile (data.right.profile coloring hcoloring) indexing) :
+    (data.reindexRight indexing).left.profile coloring hcoloring =
+      (data.reindexRight indexing).right.profile coloring hcoloring := by
+  change data.left.profile coloring hcoloring =
+    (reindexGraphCorridorCutData data.right indexing).profile coloring hcoloring
+  rw [reindexGraphCorridorCutData_profile]
+  exact hprofiles
 
 end OrderedCutSidesData
 
