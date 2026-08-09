@@ -463,6 +463,125 @@ theorem exists_coreFaceArcWalk_avoids_endpoint_edges
   · simpa [arc] using hfirstEdgeRaw
   · simpa [arc] using hsecondEdgeRaw
 
+/-! The endpoint-avoiding form with the same prefix-local trail premise. -/
+
+theorem exists_coreFaceArcWalk_isTrail_of_local_twoSided_avoids_endpoint_edges
+    (graphData : Data G)
+    (face : OrbitFace graphData.toRotationSystem)
+    (first second : G.Dart)
+    (hfirst : dartOrbitFace graphData.toRotationSystem first = face)
+    (hsecondAlpha :
+      dartOrbitFace graphData.toRotationSystem
+        (graphData.toRotationSystem.alpha second) = face)
+    (hphiAlphaFirst : graphData.toRotationSystem.phi
+      (graphData.toRotationSystem.alpha first) = first)
+    (hphiAlphaSecond : graphData.toRotationSystem.phi
+      (graphData.toRotationSystem.alpha second) = second)
+    (hfirstTarget : first ≠ graphData.toRotationSystem.alpha second)
+    (hsecondRoot : second ≠ graphData.toRotationSystem.phi first)
+    (htargetOrbit : graphData.toRotationSystem.alpha second ∈
+      graphData.toRotationSystem.faceOrbit
+        (graphData.toRotationSystem.phi first))
+    (hlocal : ∀ dart ∈ faceArcDarts graphData
+        (graphData.toRotationSystem.phi first)
+        (graphData.toRotationSystem.alpha second) htargetOrbit,
+      dartOrbitFace graphData.toRotationSystem dart ≠
+        dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha dart)) :
+    ∃ arc : G.Walk first.snd second.snd,
+      arc.IsTrail ∧
+      (∀ dart ∈ arc.darts,
+        dartOrbitFace graphData.toRotationSystem dart = face) ∧
+      arc.length <
+        (graphData.toRotationSystem.faceOrbit
+          (graphData.toRotationSystem.phi first)).card ∧
+      first.edge ∉ arc.edges ∧ second.edge ∉ arc.edges := by
+  let root := graphData.toRotationSystem.phi first
+  let target := graphData.toRotationSystem.alpha second
+  have hrootFace :
+      dartOrbitFace graphData.toRotationSystem root = face := by
+    exact (dartOrbitFace_phi_eq graphData.toRotationSystem first).trans hfirst
+  rcases exists_faceArcWalk_isTrail_of_local_twoSided
+      graphData root target htargetOrbit hlocal with
+    ⟨raw, hrawTrail, hdarts, hlength, hrawFace⟩
+  have hfirstNot : first ∉
+      faceArcDarts graphData root target htargetOrbit :=
+    predecessor_not_mem_faceArcDarts graphData root target first
+      htargetOrbit rfl
+  have htargetNot : target ∉
+      faceArcDarts graphData root target htargetOrbit :=
+    target_not_mem_faceArcDarts graphData root target htargetOrbit
+  have hsecondNot : second ∉
+      faceArcDarts graphData root target htargetOrbit := by
+    have hnoWrap : graphData.toRotationSystem.phi target ≠ root := by
+      change graphData.toRotationSystem.phi
+          (graphData.toRotationSystem.alpha second) ≠
+        graphData.toRotationSystem.phi first
+      rw [hphiAlphaSecond]
+      exact hsecondRoot
+    have hafter := phi_target_not_mem_faceArcDarts
+      graphData root target htargetOrbit hnoWrap
+    rw [hphiAlphaSecond] at hafter
+    exact hafter
+  have halphaFirstNot : graphData.toRotationSystem.alpha first ∉
+      faceArcDarts graphData root target htargetOrbit := by
+    intro hmem
+    have hneSuccessor : graphData.toRotationSystem.phi
+        (graphData.toRotationSystem.alpha first) ≠ target := by
+      change graphData.toRotationSystem.phi
+          (graphData.toRotationSystem.alpha first) ≠
+        graphData.toRotationSystem.alpha second
+      rw [hphiAlphaFirst]
+      exact hfirstTarget
+    have hsuccessor := phi_mem_faceArcDarts_of_mem_of_ne_target
+      graphData root target (graphData.toRotationSystem.alpha first)
+      htargetOrbit hmem hneSuccessor
+    rw [hphiAlphaFirst] at hsuccessor
+    exact hfirstNot hsuccessor
+  have hfirstEdgeRaw : first.edge ∉ raw.edges := by
+    intro hedge
+    rw [SimpleGraph.Walk.edges, hdarts] at hedge
+    rcases List.mem_map.mp hedge with ⟨dart, hdart, hedgeEq⟩
+    rcases (SimpleGraph.dart_edge_eq_iff dart first).1 hedgeEq with
+      hdartEq | hdartEq
+    · exact hfirstNot (hdartEq ▸ hdart)
+    · have halpha : dart = graphData.toRotationSystem.alpha first := by
+        simpa using hdartEq
+      exact halphaFirstNot (halpha ▸ hdart)
+  have hsecondEdgeRaw : second.edge ∉ raw.edges := by
+    intro hedge
+    rw [SimpleGraph.Walk.edges, hdarts] at hedge
+    rcases List.mem_map.mp hedge with ⟨dart, hdart, hedgeEq⟩
+    rcases (SimpleGraph.dart_edge_eq_iff dart second).1 hedgeEq with
+      hdartEq | hdartEq
+    · exact hsecondNot (hdartEq ▸ hdart)
+    · have halpha : dart = target := by simpa [target] using hdartEq
+      exact htargetNot (halpha ▸ hdart)
+  have hstart : root.fst = first.snd := by
+    change (graphData.toRotationSystem.phi first).fst = first.snd
+    simpa using (graphData.toRotationSystem.vert_phi_eq_vert_alpha first)
+  have hfinish : target.fst = second.snd := by
+    change (graphData.toRotationSystem.alpha second).fst = second.snd
+    simp
+  let arc : G.Walk first.snd second.snd := raw.copy hstart hfinish
+  refine ⟨arc, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa [arc] using hrawTrail
+  · intro dart hdart
+    have hdartRaw : dart ∈ raw.darts := by simpa [arc] using hdart
+    have horbit := hrawFace dart hdartRaw
+    rw [← orbitFaceDarts_dartOrbitFace_eq_faceOrbit
+      graphData.toRotationSystem root] at horbit
+    exact (mem_orbitFaceDarts_iff graphData.toRotationSystem
+      (dartOrbitFace graphData.toRotationSystem root) dart).1 horbit |>
+        (fun h => h.trans hrootFace)
+  · have hpositionLt :=
+      (faceArcPosition graphData root target htargetOrbit).isLt
+    have harcLength : arc.length = raw.length := by simp [arc]
+    rw [harcLength, hlength]
+    exact hpositionLt
+  · simpa [arc] using hfirstEdgeRaw
+  · simpa [arc] using hsecondEdgeRaw
+
 /-- The actual inner-hole segment between two ordered inner stubs, with the
 stub spikes removed from its endpoints. -/
 theorem exists_innerHoleCoreArcWalk
