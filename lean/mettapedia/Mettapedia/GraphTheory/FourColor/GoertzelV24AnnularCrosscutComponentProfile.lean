@@ -135,6 +135,55 @@ theorem vertexSetCrossingEdges_componentSide_eq_primalCutEdges
             (pair.primalCutEdges data) component edge).symm
     _ ↔ edge ∈ pair.primalCutEdges data := by rw [hboundary]
 
+/-- A crossed edge of the actual paired-transversal separator has a concrete
+orientation from the retained component toward its complement.  This turns
+the graph-side equality into the boundary-dart evidence consumed by the
+rotation-system splice, without choosing a synthetic chord wall. -/
+theorem exists_oriented_componentSide_crossingDart
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (component : (G.deleteEdges
+      (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent)
+    (hboundary : componentCrossingEdges (pair.primalCutEdges data) component =
+      pair.primalCutEdges data)
+    (edge : G.edgeSet) (hedge : edge ∈ pair.primalCutEdges data) :
+    ∃ dart : data.toRotationSystem.D,
+      data.toRotationSystem.edgeOf dart = edge ∧
+      data.toRotationSystem.vertOf dart ∈ pair.componentSide component ∧
+      data.toRotationSystem.vertOf (data.toRotationSystem.alpha dart) ∉
+        pair.componentSide component := by
+  have hcross : EdgeCrossesVertexSide G
+      (fun vertex => vertex ∈ pair.componentSide component) edge := by
+    apply (mem_simpleGraph_vertexSetCrossingEdges_iff data
+      (pair.componentSide component) edge).1
+    rw [pair.vertexSetCrossingEdges_componentSide_eq_primalCutEdges
+      data component hboundary]
+    exact hedge
+  rcases hcross with ⟨inside, outside, hinsideEdge, houtsideEdge,
+    hinside, houtside⟩
+  have hne : inside ≠ outside := by
+    intro heq
+    exact houtside (heq ▸ hinside)
+  have hedgeValue : edge.1 = s(inside, outside) :=
+    sym2_eq_mk_of_mem_of_mem_of_ne hinsideEdge houtsideEdge hne
+  have hadj : G.Adj inside outside := by
+    rw [← SimpleGraph.mem_edgeSet, ← hedgeValue]
+    exact edge.property
+  let dart : G.Dart := ⟨(inside, outside), hadj⟩
+  refine ⟨dart, ?_, ?_, ?_⟩
+  · apply Subtype.ext
+    simpa [dart] using hedgeValue.symm
+  · simpa [dart] using hinside
+  · simpa [dart] using houtside
+
 /-- The profile engine sees precisely the expected number of actual crossing
 ports on a component whose boundary is the paired transversal loop. -/
 theorem componentSide_crossingCard_eq_interfaceWidths
