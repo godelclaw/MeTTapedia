@@ -259,9 +259,10 @@ def HasBoundaryCleanHexagonalGeodesicBlock {source : SourceTrail G}
                 (Finset.univ : Finset
                   (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
                   (embedded.internalFaceToFull selected) neighbor →
-                (orbitFaceBoundary
-                  embedded.cellulation.rotation.toRotationSystem
-                  neighbor.1).card = 6
+                neighbor.1 ∈ embedded.cellulation.interiorFaces ∧
+                  (orbitFaceBoundary
+                    embedded.cellulation.rotation.toRotationSystem
+                    neighbor.1).card = 6
 
 /-- Boundary-aware weighted L1.  The additional contamination term is the
 actual hole perimeter, so no internal path position adjacent to a container
@@ -363,6 +364,7 @@ theorem exists_boundaryCleanHexagonalGeodesicBlock_of_weightedL9
         interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
           boundary internalFaces embedded.internalFace_incidence_le_two
             hne hselected hneighbor
+    refine ⟨hneighborInternal, ?_⟩
     by_contra hnonhex
     apply hselectedNotDefectNeighborhood
     exact mem_faceDefectClosedNeighborhood_of_adj_defect
@@ -498,7 +500,7 @@ theorem nonempty_cleanOrbitHexCorridorSkeleton_of_boundaryCleanBlock
     toOrbitHexCorridorSkeleton := corridor
     neighbor_hexagonal := by
       intro offset neighbor hadj
-      exact (hblock offset).2 neighbor hadj
+      exact ((hblock offset).2 neighbor hadj).2
   }⟩
 
 /-- Complete boundary-aware framed L1 adapter into the full clean-corridor

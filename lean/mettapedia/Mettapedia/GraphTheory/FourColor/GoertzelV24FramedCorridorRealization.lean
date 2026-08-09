@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedBoundaryCleanCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OrientedHexSlab
 
 /-!
 # Source-realized clean corridor axes
@@ -23,7 +24,11 @@ open GoertzelV24BoundedDegreePath
 open GoertzelV24BulkCorridor
 open GoertzelV24CleanHexCorridor
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24HexCorridorSlab
+open GoertzelV24HexFaceRungType
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24OrientedHexSlab
 open SimpleGraphDartRotation
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -68,8 +73,9 @@ structure BoundaryCleanCorridorRealization {source : SourceTrail G}
           (Finset.univ : Finset
             (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
             (embedded.internalFaceToFull selected) neighbor →
-          (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
-            neighbor.1).card = 6
+          neighbor.1 ∈ embedded.cellulation.interiorFaces ∧
+            (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+              neighbor.1).card = 6
 
 /-- Forgetting the retained witness recovers the existing framed L1
 proposition exactly. -/
@@ -200,7 +206,27 @@ theorem BoundaryCleanCorridorRealization.coreWalk_neighbor_hexagonal
     (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
       neighbor.1).card = 6 := by
   rw [realization.coreWalk_getVert hpositive offset] at hadj
-  exact (realization.clean offset).2 neighbor hadj
+  exact ((realization.clean offset).2 neighbor hadj).2
+
+/-- Every full-dual neighbor of a selected corridor face remains an internal
+annular face.  This preserves the boundary-clean construction's explicit
+avoidance of both container holes for the later rail and separator steps. -/
+theorem BoundaryCleanCorridorRealization.coreWalk_neighbor_internal
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hpositive : 0 < blockLength) (offset : Fin blockLength)
+    (neighbor : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hadj : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+      (embedded.internalFaceToFull (realization.coreWalk.getVert offset.val))
+      neighbor) :
+    neighbor.1 ∈ embedded.cellulation.interiorFaces := by
+  rw [realization.coreWalk_getVert hpositive offset] at hadj
+  exact ((realization.clean offset).2 neighbor hadj).1
 
 /-- The finite-interface corridor is constructed directly from the retained
 source geodesic.  In particular, its faces are not an arbitrary clean
@@ -337,7 +363,7 @@ noncomputable def BoundaryCleanCorridorRealization.toCleanOrbitHexCorridorSkelet
     toOrbitHexCorridorSkeleton := corridor
     neighbor_hexagonal := by
       intro offset neighbor hadj
-      exact (realization.clean offset).2 neighbor hadj
+      exact ((realization.clean offset).2 neighbor hadj).2
   }
 
 /-- The face selected by the concrete clean-corridor carrier is exactly the
@@ -351,10 +377,122 @@ theorem BoundaryCleanCorridorRealization.toCleanOrbitHexCorridorSkeleton_faceAt
       |>.toOrbitHexCorridorSkeleton.faceAt offset) =
       embedded.internalFaceToFull
         (realization.path.getVert
-          (corridorBlockIndex
+        (corridorBlockIndex
             (defectBudget := embedded.boundaryCleanContaminationBudget)
             realization.block offset).val) := by
   rfl
+
+/-- A full-dual face cannot meet two source-corridor positions more than two
+steps apart.  Boundary cleanliness first returns that face to the internal
+annular dual; the retained L1 geodesic then excludes the resulting two-step
+shortcut.  Thus any later collision of the two rail tracks is confined to a
+bounded local window. -/
+theorem BoundaryCleanCorridorRealization.no_common_fullNeighbor_of_add_two_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (left right : Fin blockLength) (hseparated : left.val + 2 < right.val) :
+    ¬ ∃ neighbor : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)),
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        (realization.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton.faceAt left) neighbor ∧
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+        (realization.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton.faceAt right) neighbor := by
+  rintro ⟨neighbor, hleft, hright⟩
+  rw [realization.toCleanOrbitHexCorridorSkeleton_faceAt] at hleft hright
+  let boundary := orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+  let internalFaces := embedded.cellulation.interiorFaces
+  let allFaces : Finset (OrbitFace embedded.cellulation.rotation.toRotationSystem) :=
+    Finset.univ
+  let internalDual := interiorDualGraph boundary internalFaces
+  let leftIndex := corridorBlockIndex
+    (defectBudget := embedded.boundaryCleanContaminationBudget)
+    realization.block left
+  let rightIndex := corridorBlockIndex
+    (defectBudget := embedded.boundaryCleanContaminationBudget)
+    realization.block right
+  have hneighborInternal : neighbor.1 ∈ internalFaces := by
+    exact ((realization.clean left).2 neighbor hleft).1
+  let internalNeighbor : AmbientFace internalFaces :=
+    ⟨neighbor.1, hneighborInternal⟩
+  have hleftInternal : internalDual.Adj
+      (realization.path.getVert leftIndex.val) internalNeighbor := by
+    rcases (interiorDualGraph_adj_iff boundary allFaces).1 hleft with
+      ⟨hne, edge, _hinterior, hleftEdge, hneighborEdge⟩
+    exact interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      boundary internalFaces embedded.internalFace_incidence_le_two
+      hne hleftEdge (by simpa [internalNeighbor] using hneighborEdge)
+  have hrightInternal : internalDual.Adj
+      (realization.path.getVert rightIndex.val) internalNeighbor := by
+    rcases (interiorDualGraph_adj_iff boundary allFaces).1 hright with
+      ⟨hne, edge, _hinterior, hrightEdge, hneighborEdge⟩
+    exact interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      boundary internalFaces embedded.internalFace_incidence_le_two
+      hne hrightEdge (by simpa [internalNeighbor] using hneighborEdge)
+  have hleftBound : leftIndex.val ≤ realization.path.length := by
+    have hindex := leftIndex.isLt
+    have hpositionCount := realization.positionCount
+    dsimp [leftIndex, corridorBlockIndex] at hindex ⊢
+    omega
+  have hrightBound : rightIndex.val ≤ realization.path.length := by
+    have hindex := rightIndex.isLt
+    have hpositionCount := realization.positionCount
+    dsimp [rightIndex, corridorBlockIndex] at hindex ⊢
+    omega
+  apply not_exists_common_neighbor_getVert_of_length_eq_dist_of_add_two_lt
+    realization.path realization.geodesic leftIndex.val rightIndex.val
+    hleftBound hrightBound
+  · change realization.block.val * blockLength + left.val + 2 <
+      realization.block.val * blockLength + right.val
+    omega
+  · exact ⟨internalNeighbor, hleftInternal, hrightInternal.symm⟩
+
+/-- Side faces selected from source-corridor positions separated by more than
+two steps are distinct.  A common side face would be a full-dual neighbor of
+both axis faces, which the retained L1 geodesic excludes.  This reduces the
+remaining rail-intersection analysis to a bounded local window. -/
+theorem BoundaryCleanCorridorRealization.placementSideNeighbor_ne_of_add_two_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    {left right : CorridorInterior blockLength}
+    (leftPlacement : InternalHexRungPlacement
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique left)
+    (rightPlacement : InternalHexRungPlacement
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique right)
+    (leftPosition : {position // position ∈ placementSidePositions leftPlacement})
+    (rightPosition : {position // position ∈ placementSidePositions rightPlacement})
+    (hseparated : left.center.val + 2 < right.center.val) :
+    placementSideNeighbor realization.toCleanOrbitHexCorridorSkeleton htwoSided
+      hunique leftPlacement leftPosition ≠
+      placementSideNeighbor realization.toCleanOrbitHexCorridorSkeleton htwoSided
+        hunique rightPlacement rightPosition := by
+  intro hsame
+  apply realization.no_common_fullNeighbor_of_add_two_lt
+    left.center right.center hseparated
+  refine ⟨placementSideNeighbor realization.toCleanOrbitHexCorridorSkeleton
+    htwoSided hunique leftPlacement leftPosition, ?_, ?_⟩
+  · exact internalSideNeighbor_adjacent realization.toCleanOrbitHexCorridorSkeleton
+      htwoSided hunique left (placementSideEdge htwoSided leftPlacement leftPosition)
+  · rw [hsame]
+    exact internalSideNeighbor_adjacent realization.toCleanOrbitHexCorridorSkeleton
+      htwoSided hunique right (placementSideEdge htwoSided rightPlacement rightPosition)
 
 /-- Framed weighted L1 supplies a source-realized clean corridor, including
 the actual geodesic and block that the subsequent interface construction must

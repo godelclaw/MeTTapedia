@@ -164,6 +164,44 @@ theorem not_adj_getVert_of_length_eq_dist_of_add_one_lt
     SimpleGraph.dist_eq_one_iff_adj.mpr hadj] at hsegmentGeodesic
   omega
 
+omit [Fintype Vertex] [DecidableEq Vertex] in
+/-- Two positions of a geodesic path separated by more than two steps cannot
+share a neighbor.  This is the distance-two version of the no-shortcut fact:
+such a neighbor would replace the intervening subwalk by a two-edge walk. -/
+theorem not_exists_common_neighbor_getVert_of_length_eq_dist_of_add_two_lt
+    {G : SimpleGraph Vertex} {start finish : Vertex}
+    (path : G.Walk start finish)
+    (hgeodesic : path.length = G.dist start finish)
+    (left right : Nat) (hleft : left ≤ path.length)
+    (hright : right ≤ path.length) (hseparated : left + 2 < right) :
+    ¬ ∃ middle : Vertex,
+      G.Adj (path.getVert left) middle ∧ G.Adj middle (path.getVert right) := by
+  rintro ⟨middle, hleftMiddle, hmiddleRight⟩
+  let segment := (path.drop left).take (right - left)
+  have hsegmentSubwalk : segment.IsSubwalk path :=
+    (Walk.isSubwalk_take (path.drop left) (right - left)).trans
+      (Walk.isSubwalk_drop path left)
+  have hsegmentGeodesic :=
+    SimpleGraph.length_eq_dist_of_subwalk hgeodesic hsegmentSubwalk
+  have hsegmentLength : segment.length = right - left := by
+    simp only [segment, Walk.take_length, Walk.drop_length]
+    omega
+  have hsegmentFinish :
+      (path.drop left).getVert (right - left) = path.getVert right := by
+    rw [Walk.drop_getVert]
+    congr 1
+    omega
+  let shortcut : G.Walk (path.getVert left) (path.getVert right) :=
+    SimpleGraph.Walk.cons hleftMiddle
+      (SimpleGraph.Walk.cons hmiddleRight SimpleGraph.Walk.nil)
+  have hshort : G.dist (path.getVert left) (path.getVert right) ≤ 2 := by
+    calc
+      G.dist (path.getVert left) (path.getVert right) ≤ shortcut.length :=
+        SimpleGraph.dist_le shortcut
+      _ = 2 := by simp [shortcut]
+  rw [hsegmentLength, hsegmentFinish] at hsegmentGeodesic
+  omega
+
 section FaceIncidence
 
 variable {Face Edge : Type*} [Fintype Face] [DecidableEq Face]
