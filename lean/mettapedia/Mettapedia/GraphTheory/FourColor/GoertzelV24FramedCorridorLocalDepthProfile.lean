@@ -91,19 +91,6 @@ theorem localLayerDepthProfile_profile
       interface.localLayerProfileData.profile coloring hcoloring := by
   rfl
 
-/-- All source slab states land in one finite carrier of fixed width four;
-this is the exact finite-state prerequisite for the source's corridor
-pigeonhole step. -/
-theorem finite_localLayerDepthProfile_range
-    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
-      leftInterior hnext)
-    (coloring : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
-    (hcoloring : embedded.cellulation.rotation.toRotationSystem.IsTaitEdgeColoring
-      coloring) :
-    Set.Finite { profile : ClosedWebDepthProfile 4 |
-      profile = interface.localLayerDepthProfile coloring hcoloring } := by
-  exact Set.finite_singleton _
-
 end SourceConsecutiveSlabInterface
 
 end AnnularEmbedding
