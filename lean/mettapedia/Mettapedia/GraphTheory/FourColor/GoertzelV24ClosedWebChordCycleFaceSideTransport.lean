@@ -694,6 +694,121 @@ theorem filledFaceComponentSide_iff_of_not_mem
     filledFaceComponentSide support faceSide vertex ↔ faceSide vertex := by
   simp [filledFaceComponentSide, hvertex]
 
+/-! A port-reachability form of the remaining support seam.  If a non-wall
+edge leaves the chord support, it is enough to route the facial orbit of its
+off-support port back to the selected seed.  The endpoint theorem below then
+turns that route into membership in the selected component. -/
+
+theorem faceComponentSide_of_off_cycleWalk_endpoint_of_seed_reaches_dart
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    (dart : embedded.RS.D)
+    (haway : embedded.RS.edgeOf dart ∉
+      (chord.boundary htriple).wall)
+    (hoff : embedded.RS.vertOf (embedded.RS.alpha dart) ∉
+      chord.cycleWalk.support)
+    (hseed :
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary embedded.RS)
+        (Finset.univ : Finset (OrbitFace embedded.RS))
+        (chord.boundary htriple).wall).Reachable
+        seed (orbitFaceVertex embedded.RS dart)) :
+    faceComponentSide embedded.RS (chord.boundary htriple).wall seed
+      (embedded.RS.vertOf (embedded.RS.alpha dart)) := by
+  rw [faceComponentSide_iff_of_vertex_off_cycleWalk_support
+    embedded chord htriple htwoSided seed (embedded.RS.alpha dart) rfl hoff]
+  exact hseed.trans
+    (faceAdjacencyAvoiding_reachable_of_alpha
+      embedded.RS htwoSided (chord.boundary htriple).wall dart haway)
+
+/-! The support seam can therefore be stated without an existential side
+predicate.  This is the useful interface for a later annulus/Jordan proof:
+only the two oriented off-support port routes are geometric input. -/
+
+theorem filledFaceComponentSide_wallDartSideSeam_of_externalPortReachability
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    (hreach : ∀ (edge : G.edgeSet), edge ∉
+      (chord.boundary htriple).wall →
+      ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
+      ((embedded.RS.vertOf dart ∈ chord.cycleWalk.support →
+          embedded.RS.vertOf (embedded.RS.alpha dart) ∉
+            chord.cycleWalk.support →
+          (faceAdjacencyAvoiding
+            (orbitFaceBoundary embedded.RS)
+            (Finset.univ : Finset (OrbitFace embedded.RS))
+            (chord.boundary htriple).wall).Reachable
+            seed (orbitFaceVertex embedded.RS
+              (embedded.RS.alpha dart))) ∧
+       (embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+          chord.cycleWalk.support →
+          embedded.RS.vertOf dart ∉ chord.cycleWalk.support →
+          (faceAdjacencyAvoiding
+            (orbitFaceBoundary embedded.RS)
+            (Finset.univ : Finset (OrbitFace embedded.RS))
+            (chord.boundary htriple).wall).Reachable
+            seed (orbitFaceVertex embedded.RS dart)))) :
+    ∀ (edge : G.edgeSet), edge ∉ (chord.boundary htriple).wall →
+      ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
+      (embedded.RS.vertOf dart ∈ chord.cycleWalk.support ∨
+        embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+          chord.cycleWalk.support) →
+      (filledFaceComponentSide chord.cycleWalk.support
+          (faceComponentSide embedded.RS
+            (chord.boundary htriple).wall seed)
+          (embedded.RS.vertOf dart) ↔
+       filledFaceComponentSide chord.cycleWalk.support
+          (faceComponentSide embedded.RS
+            (chord.boundary htriple).wall seed)
+          (embedded.RS.vertOf (embedded.RS.alpha dart))) := by
+  intro edge hedge dart hdart htouch
+  by_cases hleft : embedded.RS.vertOf dart ∈ chord.cycleWalk.support
+  · by_cases hright : embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+        chord.cycleWalk.support
+    · change dart.fst ∈ chord.cycleWalk.support at hleft
+      change dart.snd ∈ chord.cycleWalk.support at hright
+      simp [filledFaceComponentSide, hleft, hright]
+    · change dart.fst ∈ chord.cycleWalk.support at hleft
+      change dart.snd ∉ chord.cycleWalk.support at hright
+      have hrightSide : faceComponentSide embedded.RS
+          (chord.boundary htriple).wall seed dart.snd := by
+        change faceComponentSide embedded.RS
+          (chord.boundary htriple).wall seed
+          (embedded.RS.vertOf (embedded.RS.alpha dart))
+        rw [faceComponentSide_iff_of_vertex_off_cycleWalk_support
+          embedded chord htriple htwoSided seed
+          (embedded.RS.alpha dart) rfl hright]
+        exact (hreach edge hedge dart hdart).1 hleft hright
+      simp [filledFaceComponentSide, hleft, hright, hrightSide]
+  · have hright : embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+      chord.cycleWalk.support := by
+      exact htouch.resolve_left hleft
+    change dart.fst ∉ chord.cycleWalk.support at hleft
+    change dart.snd ∈ chord.cycleWalk.support at hright
+    have hleftSide : faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed dart.fst := by
+      change faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed
+        (embedded.RS.vertOf dart)
+      rw [faceComponentSide_iff_of_vertex_off_cycleWalk_support
+        embedded chord htriple htwoSided seed dart rfl hleft]
+      exact (hreach edge hedge dart hdart).2 hright hleft
+    simp [filledFaceComponentSide, hleft, hright, hleftSide]
+
 noncomputable def cyclicEdgeCutRealization_of_filledFaceComponentSide
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
