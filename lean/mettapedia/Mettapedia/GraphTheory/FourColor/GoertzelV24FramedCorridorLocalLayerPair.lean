@@ -195,6 +195,147 @@ theorem localLayerLoop_support_near_centers
           interface.nextCenterLayerFace_adjacent_secondLayerFace))
       · simp at hnone
 
+/-- Literal layer loops based at source positions with a three-cell gap have
+disjoint facial-dual supports.  Their supports are contained in the two
+adjacent source-centre neighbourhoods, and the retained clean geodesic rules
+out every equality, adjacency, and common-neighbour collision between those
+neighbourhoods. -/
+theorem localLayerLoop_support_disjoint_of_add_three_lt
+    {rightInterior : CorridorInterior blockLength}
+    {hrightNext : rightInterior.center.val + 2 < blockLength}
+    (left : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (right : SourceConsecutiveSlabInterface realization htwoSided hunique
+      rightInterior hrightNext)
+    (hseparated : leftInterior.center.val + 3 < rightInterior.center.val) :
+    left.localLayerLoop.support.Disjoint right.localLayerLoop.support := by
+  have h00ne : left.centerLayerFace ≠ right.centerLayerFace := by
+    simpa [centerLayerFace] using
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          omega)
+  have h01ne : left.centerLayerFace ≠ right.nextCenterLayerFace := by
+    simpa [centerLayerFace, nextCenterLayerFace] using
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          change leftInterior.center.val = rightInterior.center.val + 1 at hvalues
+          omega)
+  have h10ne : left.nextCenterLayerFace ≠ right.centerLayerFace := by
+    simpa [nextCenterLayerFace, centerLayerFace] using
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          change leftInterior.center.val + 1 = rightInterior.center.val at hvalues
+          omega)
+  have h11ne : left.nextCenterLayerFace ≠ right.nextCenterLayerFace := by
+    simpa [nextCenterLayerFace] using
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          change leftInterior.center.val + 1 = rightInterior.center.val + 1 at hvalues
+          omega)
+  have h00notadj : ¬ (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+      left.centerLayerFace right.centerLayerFace := by
+    simpa [centerLayerFace] using
+      (realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent
+        leftInterior.center rightInterior.center (by omega)
+  have h01notadj : ¬ (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+      left.centerLayerFace right.nextCenterLayerFace := by
+    simpa [centerLayerFace, nextCenterLayerFace] using
+      (realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent
+        leftInterior.center
+          (nextCorridorInterior rightInterior hrightNext).center (by
+            change leftInterior.center.val + 1 < rightInterior.center.val + 1
+            omega)
+  have h10notadj : ¬ (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+      left.nextCenterLayerFace right.centerLayerFace := by
+    simpa [nextCenterLayerFace, centerLayerFace] using
+      (realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent
+        (nextCorridorInterior leftInterior hnext).center
+          rightInterior.center (by
+            change leftInterior.center.val + 1 + 1 < rightInterior.center.val
+            omega)
+  have h11notadj : ¬ (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+      left.nextCenterLayerFace right.nextCenterLayerFace := by
+    simpa [nextCenterLayerFace] using
+      (realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent
+        (nextCorridorInterior leftInterior hnext).center
+          (nextCorridorInterior rightInterior hrightNext).center (by
+            change leftInterior.center.val + 1 + 1 < rightInterior.center.val + 1
+            omega)
+  rw [List.disjoint_left]
+  intro face hleft hright
+  rcases left.localLayerLoop_support_near_centers face hleft with
+    hleft0 | hleft1 | hleft0adj | hleft1adj
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · exact h00ne (hleft0.symm.trans hright0)
+    · exact h01ne (hleft0.symm.trans hright1)
+    · subst face
+      exact h00notadj hright0adj.symm
+    · subst face
+      exact h01notadj hright1adj.symm
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · exact h10ne (hleft1.symm.trans hright0)
+    · exact h11ne (hleft1.symm.trans hright1)
+    · subst face
+      exact h10notadj hright0adj.symm
+    · subst face
+      exact h11notadj hright1adj.symm
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · subst face
+      exact h00notadj hleft0adj
+    · subst face
+      exact h01notadj hleft0adj
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        leftInterior.center rightInterior.center (by omega)
+        ⟨face, hleft0adj, hright0adj⟩
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        leftInterior.center (nextCorridorInterior rightInterior hrightNext).center
+        (by
+          change leftInterior.center.val + 2 < rightInterior.center.val + 1
+          omega)
+        ⟨face, hleft0adj, hright1adj⟩
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · subst face
+      exact h10notadj hleft1adj
+    · subst face
+      exact h11notadj hleft1adj
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        (nextCorridorInterior leftInterior hnext).center rightInterior.center
+        (by
+          change leftInterior.center.val + 1 + 2 < rightInterior.center.val
+          omega)
+        ⟨face, hleft1adj, hright0adj⟩
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        (nextCorridorInterior leftInterior hnext).center
+        (nextCorridorInterior rightInterior hrightNext).center
+        (by
+          change leftInterior.center.val + 1 + 2 < rightInterior.center.val + 1
+          omega)
+        ⟨face, hleft1adj, hright1adj⟩
+
 /-- Every primal edge crossing the local cell loop occurs at one unique dual
 position.  This is the finite face-incidence fact that prevents the two
 layer boundaries from secretly reusing a source edge. -/

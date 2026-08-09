@@ -363,6 +363,71 @@ theorem exists_equal_sourceSlabOrderedDepthProfiles_separated
   simp [card_closedWebDepthProfile] at hcard
   omega
 
+/-- Two literal source layers whose indexed starts have a three-position gap
+are disjoint simple facial-dual loops.  This is the geometric companion to
+the separated finite-profile repeat: it retains the actual source loops,
+rather than replacing their separation by an abstract profile premise. -/
+theorem sourceSlabLocalLayerLoops_support_disjoint_of_add_three_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (first second : Fin (blockLength - 3))
+    (hseparated : first.val + 3 < second.val) :
+    (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique first).localLayerLoop.support.Disjoint
+    (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique second).localLayerLoop.support := by
+  exact (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique first).localLayerLoop_support_disjoint_of_add_three_lt
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique second) (by
+        change first.val + 1 + 3 < second.val + 1
+        omega)
+
+/-- A long source corridor therefore supplies two equal finite profile states
+on literal, disjoint local layer loops.  This packages precisely the
+finite-state and geometric input available before the later annular formation
+and region-gluing steps. -/
+theorem exists_equal_sourceSlabOrderedDepthProfiles_with_disjointLocalLayerLoops
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hlarge : 4 * closedWebCutProfileCount 4 + 1 ≤ blockLength - 3)
+    (coloring : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcoloring : embedded.cellulation.rotation.toRotationSystem.IsTaitEdgeColoring
+      coloring) :
+    ∃ first second : Fin (4 * closedWebCutProfileCount 4 + 1),
+      first.val + 3 < second.val ∧
+      sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge first) coloring hcoloring =
+      sourceSlabOrderedDepthProfile realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge second) coloring hcoloring ∧
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge first)).localLayerLoop.support.Disjoint
+      (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        (Fin.castLE hlarge second)).localLayerLoop.support := by
+  rcases exists_equal_sourceSlabOrderedDepthProfiles_separated realization hcubic
+      hrotation htwoSided hunique hlarge coloring hcoloring with
+    ⟨first, second, hseparated, hequal⟩
+  refine ⟨first, second, hseparated, hequal, ?_⟩
+  apply sourceSlabLocalLayerLoops_support_disjoint_of_add_three_lt
+  change first.val + 3 < second.val
+  exact hseparated
+
 end AnnularEmbedding
 
 end SourceTrail
