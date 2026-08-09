@@ -1619,6 +1619,62 @@ theorem labels_ne_of_exact_cut_of_wall_dart_face_assignment
         (embedded.RS.alpha wallDart)) := by
       rw [hportVFace]
 
+/-! The preceding binary-label lemma is the local end of the wall seam.  The
+following adapter gives the geometric caller one named obligation: for each
+wall edge, identify an oriented wall dart and the two off-wall endpoint ports
+with its two incident faces.  Once that obligation is supplied, exact-cut
+transport produces the label packet consumed by the crossing theorem.  No
+Jordan or side-separation claim is hidden in this adapter. -/
+
+theorem wall_port_label_packet_of_wall_dart_face_assignment
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (hfaceAssignment : ∀ (edge : G.edgeSet),
+      edge ∈ (chord.boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ (wallDart portU portV : embedded.RS.D),
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf portU = u ∧
+        embedded.RS.vertOf portV = v ∧
+        embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
+        embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
+        dartOrbitFace embedded.RS portU =
+          dartOrbitFace embedded.RS wallDart ∧
+        dartOrbitFace embedded.RS portV =
+          dartOrbitFace embedded.RS (embedded.RS.alpha wallDart)) :
+    ∀ (edge : G.edgeSet), edge ∈ (chord.boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ (portU portV : embedded.RS.D),
+        embedded.RS.vertOf portU = u ∧
+        embedded.RS.vertOf portV = v ∧
+        embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
+        embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
+        labels (dartOrbitFace embedded.RS portU) ≠
+          labels (dartOrbitFace embedded.RS portV) := by
+  intro edge hedge u v hu hv
+  rcases hfaceAssignment edge hedge hu hv with
+    ⟨wallDart, portU, portV, hwallDartEdge, hportU, hportV,
+      hportUAway, hportVAway, hportUFace, hportVFace⟩
+  refine ⟨portU, portV, hportU, hportV, hportUAway, hportVAway, ?_⟩
+  apply labels_ne_of_exact_cut_of_wall_dart_face_assignment
+    embedded chord labels hexact
+      (wallDart := wallDart) (portU := portU) (portV := portV)
+  rw [hwallDartEdge]
+  exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge).1 hedge
+  · exact hportUFace
+  · exact hportVFace
+
 theorem edgeCrossesVertexSide_of_chord_wall_of_port_label_inequality
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
