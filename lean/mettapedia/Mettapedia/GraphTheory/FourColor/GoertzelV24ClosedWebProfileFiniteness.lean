@@ -102,6 +102,41 @@ noncomputable def vertexSetClosedWebCutProfileOfDartOccurrences
       Nat.lt_succ_of_le hwidth⟩
   profile := vertexSetBoundaryBoundedProfileOfDartOccurrences RS inside C hC
 
+/-- L7 packaging with a caller-selected crossing coordinate.  A future
+geometric transversal may use this to retain its actual port order while
+still entering exactly the same finite varying-width carrier. -/
+noncomputable def vertexSetClosedWebCutProfileWithIndexing
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (widthBound : Nat)
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (inside : Finset V) (indexing : VertexSetCrossingIndexing RS inside)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (hwidth : Fintype.card (VertexSetCrossingEdge RS inside) ≤ widthBound) :
+    ClosedWebCutProfile widthBound where
+  crossingEdgeCount :=
+    ⟨Fintype.card (VertexSetCrossingEdge RS inside),
+      Nat.lt_succ_of_le hwidth⟩
+  profile := vertexSetBoundaryBoundedProfileWithIndexing RS htwoSided inside
+    indexing C hC
+
+/-- Occurrence-sensitive L7 packaging with a caller-selected crossing
+coordinate, for framed closed webs with bridge stubs. -/
+noncomputable def vertexSetClosedWebCutProfileOfDartOccurrencesWithIndexing
+    {V E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (widthBound : Nat)
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (hwidth : Fintype.card (VertexSetCrossingEdge RS inside) ≤ widthBound) :
+    ClosedWebCutProfile widthBound where
+  crossingEdgeCount :=
+    ⟨Fintype.card (VertexSetCrossingEdge RS inside),
+      Nat.lt_succ_of_le hwidth⟩
+  profile := vertexSetBoundaryBoundedProfileOfDartOccurrencesWithIndexing
+    RS inside indexing C hC
+
 /-- Pigeonhole form of L7: any sequence containing one more boundary than the
 explicit state count repeats a profile. -/
 theorem exists_profile_repeat

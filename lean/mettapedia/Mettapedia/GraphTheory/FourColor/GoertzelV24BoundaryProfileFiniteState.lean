@@ -154,6 +154,41 @@ def vertexSetBoundaryBoundedProfileOfDartOccurrences
           RS inside)⟩
   profile := (vertexSetBoundaryGraphCutData RS inside).profile C hC
 
+/-- The bounded boundary profile under a caller-selected crossing coordinate.
+It has the same finite carrier and fragment bound as the canonical profile;
+only the port coordinates are supplied by the prospective transversal. -/
+def vertexSetBoundaryBoundedProfileWithIndexing
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (inside : Finset V) (indexing : VertexSetCrossingIndexing RS inside)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C) :
+    BoundedCorridorCutProfile
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0
+      (2 * Fintype.card (VertexSetCrossingEdge RS inside)) where
+  faceFragmentCount :=
+    ⟨Fintype.card (BoundaryRegionalFragment RS
+        (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)),
+      Nat.lt_succ_of_le
+        (vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount
+          RS htwoSided inside)⟩
+  profile := (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).profile C hC
+
+/-- Occurrence-sensitive bounded profile under a caller-selected crossing
+coordinate.  This is the framed-closed-web variant of the transversal hook. -/
+def vertexSetBoundaryBoundedProfileOfDartOccurrencesWithIndexing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C) :
+    BoundedCorridorCutProfile
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0
+      (2 * Fintype.card (VertexSetCrossingEdge RS inside)) where
+  faceFragmentCount :=
+    ⟨Fintype.card (BoundaryRegionalFragment RS
+        (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)),
+      Nat.lt_succ_of_le
+        (vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount_of_dartOccurrences
+          RS inside)⟩
+  profile := (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).profile C hC
+
 @[simp]
 theorem vertexSetBoundaryBoundedProfileOfDartOccurrences_faceFragmentCount_val
     (RS : RotationSystem V E) (inside : Finset V)

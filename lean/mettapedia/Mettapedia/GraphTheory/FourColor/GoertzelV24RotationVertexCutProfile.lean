@@ -154,11 +154,71 @@ abbrev VertexSetCrossingEdge
     (RS : RotationSystem V E) (inside : Finset V) :=
   ↥(vertexSetCrossingEdges RS inside)
 
+/-- A caller-selected coordinate map for the actual crossing edges of a
+vertex-side cut.  Its `Fin` coordinate is where a geometric transversal
+construction may carry its order; this equivalence itself asserts only full,
+duplicate-free coverage and does not pretend to establish that geometry. -/
+abbrev VertexSetCrossingIndexing
+    (RS : RotationSystem V E) (inside : Finset V) :=
+  Fin (Fintype.card (VertexSetCrossingEdge RS inside)) ≃
+    VertexSetCrossingEdge RS inside
+
+/-- The existing finite-type enumeration, exposed as one particular crossing
+indexing. -/
+def canonicalVertexSetCrossingIndexing
+    (RS : RotationSystem V E) (inside : Finset V) :
+    VertexSetCrossingIndexing RS inside :=
+  (Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm
+
+/-- Read a crossing edge through a caller-supplied coordinate map. -/
+def vertexSetCrossingEdgeAtWithIndexing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) : E :=
+  (indexing index).1
+
+theorem vertexSetCrossingEdgeAtWithIndexing_mem_crossing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    vertexSetCrossingEdgeAtWithIndexing RS inside indexing index ∈
+      vertexSetCrossingEdges RS inside :=
+  (indexing index).2
+
+theorem vertexSetCrossingEdgeAtWithIndexing_injective
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    Function.Injective (vertexSetCrossingEdgeAtWithIndexing RS inside indexing) := by
+  intro first second heq
+  apply indexing.injective
+  exact Subtype.ext heq
+
+/-- Every actual crossing edge has a unique coordinate under a supplied
+indexing. -/
+theorem exists_vertexSetCrossingEdgeAtWithIndexing_eq
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    {edge : E} (hedge : edge ∈ vertexSetCrossingEdges RS inside) :
+    ∃ index : Fin (Fintype.card (VertexSetCrossingEdge RS inside)),
+      vertexSetCrossingEdgeAtWithIndexing RS inside indexing index = edge := by
+  let crossing : VertexSetCrossingEdge RS inside := ⟨edge, hedge⟩
+  refine ⟨indexing.symm crossing, ?_⟩
+  exact congrArg Subtype.val (indexing.apply_symm_apply crossing)
+
 /-- Canonical finite enumeration of every actual crossing edge. -/
 def vertexSetCrossingEdgeAt
     (RS : RotationSystem V E) (inside : Finset V)
     (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) : E :=
   ((Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm index).1
+
+@[simp]
+theorem vertexSetCrossingEdgeAtWithIndexing_canonical
+    (RS : RotationSystem V E) (inside : Finset V)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    vertexSetCrossingEdgeAtWithIndexing RS inside
+      (canonicalVertexSetCrossingIndexing RS inside) index =
+      vertexSetCrossingEdgeAt RS inside index :=
+  rfl
 
 theorem vertexSetCrossingEdgeAt_mem_crossing
     (RS : RotationSystem V E) (inside : Finset V)
@@ -230,6 +290,49 @@ theorem vertexSetGraphCutData_portsInjective
 theorem vertexSetGraphCutData_fragmentsOnFaceInRegion
     (RS : RotationSystem V E) (inside : Finset V) :
     (vertexSetGraphCutData RS inside).FragmentsOnFaceInRegion := by
+  intro fragment
+  exact Fin.elim0 fragment
+
+/-- The graph-derived cut data with a caller-selected crossing coordinate.
+This is the same finite support as the canonical construction; only the port
+coordinates differ, so a transversal construction can retain its own order. -/
+def vertexSetGraphCutDataWithIndexing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    GraphCorridorCutData RS
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0 0 where
+  regionEdges := vertexSetRegionEdges RS inside
+  crossingEdge := vertexSetCrossingEdgeAtWithIndexing RS inside indexing
+  terminalEdge := fun terminal => Fin.elim0 terminal
+  fragmentFace := fun fragment => Fin.elim0 fragment
+  fragmentEdges := fun fragment => Fin.elim0 fragment
+
+theorem vertexSetGraphCutDataWithIndexing_portsInRegion
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetGraphCutDataWithIndexing RS inside indexing).PortsInRegion := by
+  intro port
+  rcases port with crossing | terminal
+  · exact vertexSetCrossingEdges_subset_regionEdges RS inside
+      (vertexSetCrossingEdgeAtWithIndexing_mem_crossing RS inside indexing crossing)
+  · exact Fin.elim0 terminal
+
+theorem vertexSetGraphCutDataWithIndexing_portsInjective
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetGraphCutDataWithIndexing RS inside indexing).PortsInjective := by
+  intro first second heq
+  rcases first with first | first
+  · rcases second with second | second
+    · congr 1
+      exact vertexSetCrossingEdgeAtWithIndexing_injective RS inside indexing heq
+    · exact Fin.elim0 second
+  · exact Fin.elim0 first
+
+theorem vertexSetGraphCutDataWithIndexing_fragmentsOnFaceInRegion
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetGraphCutDataWithIndexing RS inside indexing).FragmentsOnFaceInRegion := by
   intro fragment
   exact Fin.elim0 fragment
 

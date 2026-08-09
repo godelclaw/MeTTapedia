@@ -484,6 +484,105 @@ theorem vertexSetBoundaryGraphCutData_profile_fragmentContainsPort_nonempty
       RS inside C hC fragment crossing).2 ?_⟩
   simpa only [hcrossing] using hedgeFragment
 
+/-- Boundary-local graph-derived cut data under a caller-selected crossing
+coordinate.  This retains the exact same regional fragments as the canonical
+profile while allowing a genuine transversal construction to supply its own
+port order.  The indexing alone makes no planarity claim. -/
+def vertexSetBoundaryGraphCutDataWithIndexing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    GraphCorridorCutData RS
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0
+      (Fintype.card (BoundaryRegionalFragment RS
+        (vertexSetCrossingEdges RS inside)
+        (vertexSetRegionEdges RS inside))) where
+  regionEdges := vertexSetRegionEdges RS inside
+  crossingEdge := vertexSetCrossingEdgeAtWithIndexing RS inside indexing
+  terminalEdge := fun terminal => Fin.elim0 terminal
+  fragmentFace := fun fragment =>
+    (boundaryRegionalFragmentAt RS (vertexSetCrossingEdges RS inside)
+      (vertexSetRegionEdges RS inside) fragment).1.1
+  fragmentEdges := fun fragment =>
+    boundaryRegionalFragmentEdges RS (vertexSetCrossingEdges RS inside)
+      (vertexSetRegionEdges RS inside)
+      (boundaryRegionalFragmentAt RS (vertexSetCrossingEdges RS inside)
+        (vertexSetRegionEdges RS inside) fragment)
+
+theorem vertexSetBoundaryGraphCutDataWithIndexing_portsInRegion
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).PortsInRegion := by
+  intro port
+  rcases port with crossing | terminal
+  · exact vertexSetCrossingEdges_subset_regionEdges RS inside
+      (vertexSetCrossingEdgeAtWithIndexing_mem_crossing RS inside indexing crossing)
+  · exact Fin.elim0 terminal
+
+theorem vertexSetBoundaryGraphCutDataWithIndexing_portsInjective
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).PortsInjective := by
+  intro first second heq
+  rcases first with first | first
+  · rcases second with second | second
+    · congr 1
+      exact vertexSetCrossingEdgeAtWithIndexing_injective RS inside indexing heq
+    · exact Fin.elim0 second
+  · exact Fin.elim0 first
+
+theorem vertexSetBoundaryGraphCutDataWithIndexing_fragmentsOnFaceInRegion
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).FragmentsOnFaceInRegion := by
+  intro fragment
+  exact boundaryRegionalFragmentEdges_subset_boundary_inter_region RS
+    (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)
+    (boundaryRegionalFragmentAt RS (vertexSetCrossingEdges RS inside)
+      (vertexSetRegionEdges RS inside) fragment)
+
+/-- Under any supplied crossing coordinate, the computed face-port incidence
+still says exactly that the named crossing edge lies in the open fragment. -/
+theorem vertexSetBoundaryGraphCutDataWithIndexing_profile_fragmentContainsPort_iff
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (fragment : Fin (Fintype.card (BoundaryRegionalFragment RS
+      (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside))))
+    (crossing : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    ((vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).profile C hC).fragmentContainsPort
+      fragment (.inl crossing) = true ↔
+      vertexSetCrossingEdgeAtWithIndexing RS inside indexing crossing ∈
+        (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).fragmentEdges
+          fragment := by
+  rw [GraphCorridorCutData.profile_fragmentContainsPort_eq_true_iff]
+  rw [GraphCorridorCutData.regionalFragmentEdges_eq_of_fragmentsOnFaceInRegion
+    (vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing)
+    (vertexSetBoundaryGraphCutDataWithIndexing_fragmentsOnFaceInRegion
+      RS inside indexing)]
+  rfl
+
+/-- Every open fragment retains a crossing port under a caller-selected
+coordinate, with no appeal to the canonical enumeration. -/
+theorem vertexSetBoundaryGraphCutDataWithIndexing_profile_fragmentContainsPort_nonempty
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (fragment : Fin (Fintype.card (BoundaryRegionalFragment RS
+      (vertexSetCrossingEdges RS inside) (vertexSetRegionEdges RS inside)))) :
+    ∃ crossing : Fin (Fintype.card (VertexSetCrossingEdge RS inside)),
+      ((vertexSetBoundaryGraphCutDataWithIndexing RS inside indexing).profile C hC).fragmentContainsPort
+        fragment (.inl crossing) = true := by
+  rcases (boundaryRegionalFragmentAt RS (vertexSetCrossingEdges RS inside)
+    (vertexSetRegionEdges RS inside) fragment).2.2 with
+      ⟨edge, hedgeFragment, hedgeCrossing⟩
+  rcases exists_vertexSetCrossingEdgeAtWithIndexing_eq RS inside indexing
+      hedgeCrossing with ⟨crossing, hcrossing⟩
+  refine ⟨crossing,
+    (vertexSetBoundaryGraphCutDataWithIndexing_profile_fragmentContainsPort_iff
+      RS inside indexing C hC fragment crossing).2 ?_⟩
+  simpa [vertexSetBoundaryGraphCutDataWithIndexing,
+    boundaryRegionalFragmentEdges, hcrossing] using hedgeFragment
+
 /-- The boundary-local face-field count is controlled solely by the actual
 crossing-port count. -/
 theorem vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount
