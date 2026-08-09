@@ -90,6 +90,28 @@ theorem edgeCrosses_of_alternating
     exact ⟨dart.snd, dart.fst, by simp [SimpleGraph.Dart.edge],
       by simp [SimpleGraph.Dart.edge], hsecond, hfirst⟩
 
+/-- A vertex-side realization of every edge of a closed walk can exist only
+when the walk has even length.  In particular, the chord-cycle adapter below
+is not a generic substitute for the source's ordered corridor transversal:
+it applies only after this parity condition has genuinely been established. -/
+theorem length_even
+    {start : V} {cycle : G.Walk start start}
+    (certificate : CycleSideCertificate (G := G) cycle) :
+    Even cycle.length := by
+  apply Nat.not_odd_iff_even.mp
+  intro hodd
+  apply not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length
+    (side := certificate.side) cycle hodd
+  intro edge hedge
+  rcases List.mem_map.mp hedge with ⟨dart, hdart, hdartEdge⟩
+  have hdartEdge' :
+      (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) = edge := by
+    apply Subtype.ext
+    exact hdartEdge
+  rw [← hdartEdge']
+  exact edgeCrosses_of_alternating
+    (certificate.cycle_side_alternates dart hdart)
+
 /-! The converse local fact is useful when a geometric argument already
 supplies an exact cyclic-cut realization.  It turns the existential crossing
 witness into the oriented endpoint statement used by the cycle certificate;
