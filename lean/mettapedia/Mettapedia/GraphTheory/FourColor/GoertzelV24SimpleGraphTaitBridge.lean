@@ -147,7 +147,7 @@ is not a new existence claim and it does not choose a classical finite
 catalogue. -/
 
 def UniformDeletedEdgeTrailCompletability
-    (graphData : Data G) : Prop :=
+    : Prop :=
   ∀ {u v : V}, G.Adj u v →
     ∀ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
       IsTaitEdgeColoring (DeletedEdgeGraph G u v) C →
@@ -157,7 +157,7 @@ def UniformDeletedEdgeTrailCompletability
 theorem graphBackedVertexMinimalTaitCounterexample_false_of_uniformDeletedEdgeTrailCompletability
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
-    (hcompletion : UniformDeletedEdgeTrailCompletability graphData)
+    (hcompletion : UniformDeletedEdgeTrailCompletability (G := G))
     {u v : V} (huv : G.Adj u v)
     (hdeletedColorable :
       ∃ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
