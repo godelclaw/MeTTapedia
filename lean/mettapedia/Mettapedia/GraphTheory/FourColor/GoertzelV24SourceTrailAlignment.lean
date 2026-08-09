@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BetweenRegionDefectPaths
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail
 
 /-!
 # Source trail data and the definitional L10 alignment
@@ -232,6 +233,26 @@ theorem sourceBetweenRegionCompletable_iff_exists_reachable_properTrailExtension
       (source.kempeReachable_iff_sourceBetweenRegionKempeReachable
         hsource C hC C').2 hreach,
       hproper⟩
+
+/-- A completed graph-side source trail over a deleted edge restores a Tait
+coloring of the ambient graph.  This is the concrete endpoint consumed by the
+prime/factored contradiction once Trail Completability has been proved for
+source trails; the remaining work is the universal completion theorem, not an
+extra graph-coloring convention. -/
+theorem exists_taitEdgeColoring_of_sourceBetweenRegionCompletable
+    {u v : V} (source : SourceTrail (GoertzelV24DeletedEdgeTrail.DeletedEdgeGraph G u v))
+    (hsource : source.WellFormed)
+    (hdefectZero : source.toFramedTrailData.defectVertex 0 = u)
+    (hdefectOne : source.toFramedTrailData.defectVertex 1 = v)
+    (C : (GoertzelV24DeletedEdgeTrail.DeletedEdgeGraph G u v).EdgeColoring Color)
+    (hC : IsTaitEdgeColoring (GoertzelV24DeletedEdgeTrail.DeletedEdgeGraph G u v) C)
+    (hcomplete : SourceBetweenRegionCompletable source.toFramedTrailData C) :
+    ∃ ambientColoring : G.EdgeColoring Color,
+      IsTaitEdgeColoring G ambientColoring := by
+  apply GoertzelV24DeletedEdgeTrail.exists_taitColoring_of_framedTangleCompletable
+    source.toFramedTrailData hsource hdefectZero hdefectOne C hC
+  exact (source.completable_iff_sourceBetweenRegionCompletable hsource C hC).2
+    hcomplete
 
 end SourceTrail
 
