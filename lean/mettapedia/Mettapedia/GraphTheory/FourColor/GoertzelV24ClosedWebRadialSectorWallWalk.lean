@@ -140,8 +140,8 @@ def PiecewiseEdgeDisjoint
 
 theorem walk_isTrail_of_piecewiseEdgeDisjoint
     (wall : RadialSectorWallWalk data C first second pair embedded hdata)
-    (houter : wall.outerArc.IsPath)
-    (hinner : wall.innerArc.IsPath)
+    (houter : wall.outerArc.IsTrail)
+    (hinner : wall.innerArc.IsTrail)
     (hpieces : wall.PiecewiseEdgeDisjoint) :
     wall.walk.IsTrail := by
   rcases hpieces with
@@ -154,8 +154,8 @@ theorem walk_isTrail_of_piecewiseEdgeDisjoint
     wall.firstCore.path_isPath.isTrail
   have hsecond : wall.secondCore.path.reverse.IsTrail :=
     wall.secondCore.path_isPath.isTrail.reverse
-  have houter' : wall.outerArc.IsTrail := houter.isTrail
-  have hinner' : wall.innerArc.IsTrail := hinner.isTrail
+  have houter' : wall.outerArc.IsTrail := houter
+  have hinner' : wall.innerArc.IsTrail := hinner
   have hfirstOuter' :
       wall.firstCore.path.edges.Disjoint wall.outerArc.edges := hfirstOuter
   have hfirstSecond' :
@@ -196,13 +196,13 @@ theorem walk_isTrail_of_piecewiseEdgeDisjoint
 
 /-! A positive trail-shaped sector wall contains a genuine simple cycle.
 This is the graph-side bridge; the remaining geometric work is to establish
-the path/disjointness interface above and to place the resulting cycle on the
-desired complementary side. -/
+the trail/disjointness interface above and to place the resulting cycle on
+the desired complementary side. -/
 
 theorem exists_cycle_subsupport_of_piecewiseEdgeDisjoint
     (wall : RadialSectorWallWalk data C first second pair embedded hdata)
-    (houter : wall.outerArc.IsPath)
-    (hinner : wall.innerArc.IsPath)
+    (houter : wall.outerArc.IsTrail)
+    (hinner : wall.innerArc.IsTrail)
     (hpieces : wall.PiecewiseEdgeDisjoint)
     (hpositive : 0 < wall.walk.length) :
     ∃ (cycleStart : V) (cycle : G.Walk cycleStart cycleStart),

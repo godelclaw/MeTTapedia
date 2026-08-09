@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceWalk
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCyclicOrder
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceTwoSided
 
 /-!
 # Ordered arcs of an orbit-face walk
@@ -21,6 +22,7 @@ namespace GoertzelV24OrbitFaceArcWalk
 
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceCyclicOrder
+open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24OrbitFaceWalk
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -265,6 +267,36 @@ theorem faceArcDarts_isChain
   rw [hsuccessor]
   exact dartAdj_phi graphData _
 
+/-! Under local two-sidedness, the strict facial prefix has no repeated
+underlying edge.  This is the prefix form of
+`GoertzelV24OrbitFaceWalk.map_edge_faceOrbitDarts_nodup`; it is the exact
+graph-side fact needed to upgrade a canonical hole arc from a walk to a
+trail, without asserting vertex simplicity or Jordan separation. -/
+
+theorem map_edge_faceArcDarts_nodup
+    (graphData : Data G)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (root target : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root) :
+    ((faceArcDarts graphData root target htarget).map
+      fun dart => dart.edge).Nodup := by
+  rw [faceArcDarts, List.map_ofFn, List.nodup_ofFn]
+  intro left right hedge
+  let left' : Fin (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨left.val, lt_trans left.isLt
+      (faceArcPosition graphData root target htarget).isLt⟩
+  let right' : Fin (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨right.val, lt_trans right.isLt
+      (faceArcPosition graphData root target htarget).isLt⟩
+  have hedge' : faceCycleEdge graphData.toRotationSystem root left' =
+      faceCycleEdge graphData.toRotationSystem root right' := by
+    apply Subtype.ext
+    simpa [left', right', faceCycleEdge] using hedge
+  have hpositions : left' = right' :=
+    faceCycleEdge_injective graphData.toRotationSystem htwoSided root hedge'
+  apply Fin.ext
+  simpa [left', right'] using congrArg Fin.val hpositions
+
 /-- Cutting a face orbit immediately before a target dart gives an actual
 walk between the two dart roots.  Its length is the target's forward cyclic
 position and its darts are exactly the retained facial segment. -/
@@ -358,6 +390,28 @@ theorem exists_faceArcWalk
       rw [hdarts] at hdart
       exact mem_faceOrbit_of_mem_faceArcDarts
         graphData root target dart htarget hdart
+
+/-! A two-sided face turns the canonical arc into a trail.  The endpoint and
+face-orbit facts are retained from `exists_faceArcWalk`; the only new input
+is the edge-injectivity calculation above. -/
+
+theorem exists_faceArcWalk_isTrail
+    (graphData : Data G)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (root target : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root) :
+    ∃ arc : G.Walk root.fst target.fst,
+      arc.IsTrail ∧
+      arc.darts = faceArcDarts graphData root target htarget ∧
+      arc.length = (faceArcPosition graphData root target htarget).val ∧
+      ∀ dart ∈ arc.darts,
+        dart ∈ graphData.toRotationSystem.faceOrbit root := by
+  rcases exists_faceArcWalk graphData root target htarget with
+    ⟨arc, hdarts, hlength, hface⟩
+  refine ⟨arc, ?_, hdarts, hlength, hface⟩
+  refine ⟨?_⟩
+  rw [SimpleGraph.Walk.edges, hdarts]
+  exact map_edge_faceArcDarts_nodup graphData htwoSided root target htarget
 
 end
 

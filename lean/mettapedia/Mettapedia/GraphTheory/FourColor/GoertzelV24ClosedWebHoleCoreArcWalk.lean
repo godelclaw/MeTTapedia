@@ -27,6 +27,7 @@ open GoertzelV24ClosedWebHoleBoundaryOrder
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
 open GoertzelV24OrbitFaceArcWalk
+open GoertzelV24OrbitFaceTwoSided
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -221,6 +222,62 @@ theorem exists_coreFaceArcWalk
     simp
   let arc : G.Walk first.snd second.snd := raw.copy hstart hfinish
   refine ⟨arc, ?_, ?_⟩
+  · intro dart hdart
+    have hdartRaw : dart ∈ raw.darts := by simpa [arc] using hdart
+    have horbit := hrawFace dart hdartRaw
+    rw [← orbitFaceDarts_dartOrbitFace_eq_faceOrbit
+      graphData.toRotationSystem root] at horbit
+    exact (mem_orbitFaceDarts_iff graphData.toRotationSystem
+      (dartOrbitFace graphData.toRotationSystem root) dart).1 horbit |>
+        (fun h => h.trans hrootFace)
+  · have hpositionLt :=
+      (faceArcPosition graphData root target htargetOrbit).isLt
+    have harcLength : arc.length = raw.length := by simp [arc]
+    rw [harcLength]
+    rw [hlength]
+    exact hpositionLt
+
+/-! The same canonical core arc is a trail when the named face is
+two-sided.  This deliberately proves only edge simplicity; vertex simplicity
+and the resulting Jordan placement remain separate obligations. -/
+
+theorem exists_coreFaceArcWalk_isTrail
+    (graphData : Data G)
+    (face : OrbitFace graphData.toRotationSystem)
+    (first second : G.Dart)
+    (hfirst : dartOrbitFace graphData.toRotationSystem first = face)
+    (hsecondAlpha :
+      dartOrbitFace graphData.toRotationSystem
+        (graphData.toRotationSystem.alpha second) = face)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem) :
+    ∃ arc : G.Walk first.snd second.snd,
+      arc.IsTrail ∧
+      (∀ dart ∈ arc.darts,
+        dartOrbitFace graphData.toRotationSystem dart = face) ∧
+      arc.length <
+        (graphData.toRotationSystem.faceOrbit
+          (graphData.toRotationSystem.phi first)).card := by
+  let root := graphData.toRotationSystem.phi first
+  let target := graphData.toRotationSystem.alpha second
+  have hrootFace :
+      dartOrbitFace graphData.toRotationSystem root = face := by
+    exact (dartOrbitFace_phi_eq graphData.toRotationSystem first).trans hfirst
+  have htargetOrbit : target ∈
+      graphData.toRotationSystem.faceOrbit root :=
+    mem_faceOrbit_of_orbitFace_eq graphData root target
+      (hsecondAlpha.trans hrootFace.symm)
+  rcases exists_faceArcWalk_isTrail graphData htwoSided root target
+      htargetOrbit with
+    ⟨raw, hrawTrail, _hdarts, hlength, hrawFace⟩
+  have hstart : root.fst = first.snd := by
+    change (graphData.toRotationSystem.phi first).fst = first.snd
+    simpa using (graphData.toRotationSystem.vert_phi_eq_vert_alpha first)
+  have hfinish : target.fst = second.snd := by
+    change (graphData.toRotationSystem.alpha second).fst = second.snd
+    simp
+  let arc : G.Walk first.snd second.snd := raw.copy hstart hfinish
+  refine ⟨arc, ?_, ?_, ?_⟩
+  · simpa [arc] using hrawTrail
   · intro dart hdart
     have hdartRaw : dart ∈ raw.darts := by simpa [arc] using hdart
     have horbit := hrawFace dart hdartRaw
