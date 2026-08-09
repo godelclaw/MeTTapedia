@@ -273,6 +273,24 @@ structure ChordSideAssignment
     Fintype.card (VertexSetCrossingEdge embedded.RS
       (inside cut side chord)) ≤ widthBound
 
+/-- A coordinate choice for every actual chord side.  This is where a later
+simple-transversal or layer-boundary construction supplies its geometric port
+order.  The structure asserts only that the coordinates cover the computed
+crossing support; it does not claim that a chord cycle itself supplies such an
+order. -/
+structure ChordSideIndexingAssignment
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    (assignment : ChordSideAssignment pair embedded hdata htriple widthBound) where
+  indexing : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    VertexSetCrossingIndexing embedded.RS (assignment.inside cut side chord)
+
 /-- The exact geometric input that is sufficient to build a side assignment:
 each chord receives a cyclic edge-cut realization, together with a uniform
 finite cut bound.  Constructing this family is the remaining Jordan/sector
@@ -465,6 +483,50 @@ def ChordSideAssignment.profile
     (rotationColoringOfGraph_isTait embedded C hC)
     (assignment.crossingWidth cut side chord)
 
+/-- The same graph-derived depth state, read through caller-supplied port
+coordinates.  This is the source-facing form used when the geometry has
+proved an actual transversal order rather than relying on the canonical
+finite-type enumeration. -/
+def ChordSideAssignment.profileWithIndexing
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    (assignment : ChordSideAssignment pair embedded hdata htriple widthBound)
+    (hC : IsTaitEdgeColoring G C)
+    (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side)
+    (indexing : VertexSetCrossingIndexing embedded.RS
+      (assignment.inside cut side chord)) :
+    ClosedWebDepthProfile widthBound :=
+  vertexSetClosedWebCutProfileOfDartOccurrencesWithIndexing widthBound
+    embedded.RS (assignment.inside cut side chord) indexing
+    (rotationColoringOfGraph embedded C)
+    (rotationColoringOfGraph_isTait embedded C hC)
+    (assignment.crossingWidth cut side chord)
+
+/-- Assemble the coordinate-aware profile from a family of actual side
+coordinates. -/
+def ChordSideIndexingAssignment.profile
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    {assignment : ChordSideAssignment pair embedded hdata htriple widthBound}
+    (indexings : ChordSideIndexingAssignment assignment)
+    (hC : IsTaitEdgeColoring G C)
+    (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+    ClosedWebDepthProfile widthBound :=
+  assignment.profileWithIndexing hC cut side chord
+    (indexings.indexing cut side chord)
+
 /-- The abstract depth-repeat theorem instantiated with actual graph-derived
 profiles.  This is the concrete side/profile interface needed before a splice
 can be attempted: no arbitrary profile function remains. -/
@@ -495,6 +557,46 @@ theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
       SectorChord pair embedded hdata htriple cut side →
         ClosedWebDepthProfile widthBound :=
     fun cut side chord => assignment.profile hC cut side chord
+  rcases exists_nested_equal_depthProfile_of_hasDeepChordTransversal
+      embedded hdata pair htriple widthBound hdeep profile with
+    ⟨cut, side, inner, outer, hne, hnested, hequal⟩
+  exact ⟨cut, side, inner, outer, hne, hnested, hequal,
+    ⟨canonicalFaceSide_holeFree embedded hdata htriple inner,
+      canonicalFaceSide_holeFree embedded hdata htriple outer⟩⟩
+
+/-- The depth-pigeonhole theorem in caller-supplied transversal coordinates.
+The returned equality is therefore equality at the same caller-supplied
+interface coordinates on the two nested sides, rather than equality under
+unrelated canonical finite enumerations.  A separate geometric theorem must
+certify that these coordinates have the source's transversal order. -/
+theorem exists_nested_equal_coordinate_depthProfile_of_hasDeepChordTransversal
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (htriple : IsTaitColorTriple majority first second)
+    (hC : IsTaitEdgeColoring G C)
+    (widthBound : Nat)
+    (hdeep : HasDeepChordTransversal C majority first second
+      pair.firstPath (2 * closedWebCutProfileCount widthBound))
+    (assignment : ChordSideAssignment pair embedded hdata htriple widthBound)
+    (indexings : ChordSideIndexingAssignment assignment) :
+    ∃ (cut : Fin pair.firstPath.path.length) (side : Bool)
+        (inner outer : SectorChord pair embedded hdata htriple cut side),
+      (inner ≠ outer) ∧ (inner.1.NestedIn outer.1) ∧
+        ((indexings.profile hC cut side inner =
+          indexings.profile hC cut side outer) ∧
+        (HoleFreeChordSide embedded.cellulation
+            (chordBoundary inner)
+            (canonicalFaceSide embedded hdata htriple inner) ∧
+          HoleFreeChordSide embedded.cellulation
+            (chordBoundary outer)
+            (canonicalFaceSide embedded hdata htriple outer))) := by
+  let profile : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool),
+      SectorChord pair embedded hdata htriple cut side →
+        ClosedWebDepthProfile widthBound :=
+    fun cut side chord => indexings.profile hC cut side chord
   rcases exists_nested_equal_depthProfile_of_hasDeepChordTransversal
       embedded hdata pair htriple widthBound hdeep profile with
     ⟨cut, side, inner, outer, hne, hnested, hequal⟩
@@ -579,6 +681,47 @@ theorem closedWebDepthProfile_edgeColor_eq_of_eq
   intro index
   cases hprofiles
   rfl
+
+/-- Equal coordinate-aware depth profiles identify the actual Tait colors on
+their corresponding crossing edges.  This is the properness entry of the
+source splice checklist, stated against real graph edges rather than only the
+finite profile field.  It is coordinate-faithful; a separate geometric theorem
+must show that the supplied coordinates are the source's transversal order. -/
+theorem ChordSideIndexingAssignment.crossingEdgeColor_eq_of_profile_eq
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    {assignment : ChordSideAssignment pair embedded hdata htriple widthBound}
+    (indexings : ChordSideIndexingAssignment assignment)
+    (hC : IsTaitEdgeColoring G C)
+    (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (inner outer : SectorChord pair embedded hdata htriple cut side)
+    (hprofiles : indexings.profile hC cut side inner =
+      indexings.profile hC cut side outer)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge embedded.RS
+      (assignment.inside cut side inner)))) :
+    C (vertexSetCrossingEdgeAtWithIndexing embedded.RS
+        (assignment.inside cut side inner)
+        (indexings.indexing cut side inner) index) =
+      C (vertexSetCrossingEdgeAtWithIndexing embedded.RS
+        (assignment.inside cut side outer)
+        (indexings.indexing cut side outer)
+        (Fin.cast (closedWebDepthProfile_crossingEdgeCount_val_eq_of_eq
+          hprofiles) index)) := by
+  have hcolors := closedWebDepthProfile_edgeColor_eq_of_eq hprofiles index
+  have htoColor := congrArg GoertzelV24WindingClassification.StrandColor.toColor
+    hcolors
+  simpa [ChordSideIndexingAssignment.profile,
+    ChordSideAssignment.profileWithIndexing,
+    vertexSetClosedWebCutProfileOfDartOccurrencesWithIndexing,
+    Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryProfileFiniteState.vertexSetBoundaryBoundedProfileOfDartOccurrencesWithIndexing,
+    Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedCorridorCutProfile.GraphCorridorCutData.profile_edgeColor_toColor,
+    Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBoundaryFaceCutProfile.vertexSetBoundaryGraphCutDataWithIndexing,
+    rotationColoringOfGraph, SimpleGraph.Coloring.mk] using htoColor
 
 /-
 The remaining profile coordinates have dependent finite indices as well.  The
