@@ -2079,6 +2079,61 @@ noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide_of_rotated_exter
       (wall_port_face_assignment_of_rotated_external_ports
         embedded chord htriple hrotated)
 
+/-! The profile layer consumes a cycle-side certificate, while the exact-label
+constructor above naturally returns a realization for the chord wall.  The
+wall is definitionally the chord cycle's edge support, so this adapter moves
+the result across that representation boundary without adding a new geometric
+premise.  In particular, it makes the remaining Jordan input (`hrotated` and
+the two side-cycle witnesses) visible at the single call site that feeds L7. -/
+
+noncomputable def cycleSideCertificate_of_exactCutLabelSide_of_rotated_external_ports
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (hdata : data.WellFormed)
+    (hC : IsTaitEdgeColoring G C)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (hrotated : ∀ (edge : G.edgeSet), edge ∈
+      (chord.boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ wallDart : embedded.RS.D,
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf (embedded.RS.rho
+          (embedded.RS.alpha wallDart)) = u ∧
+        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
+        embedded.RS.edgeOf (embedded.RS.rho
+          (embedded.RS.alpha wallDart)) ∉
+          (chord.boundary htriple).wall ∧
+        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
+          (chord.boundary htriple).wall)
+    (hinside_cycle : HasCycleOnSide G
+      (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected))
+    (houtside_cycle : HasCycleOnSide G
+      (fun vertex => ¬ exactCutLabelSide embedded.RS
+        (chord.boundary htriple).wall labels selected vertex)) :
+    CycleSideCertificate (G := G) chord.cycleWalk := by
+  let realization :=
+    cyclicEdgeCutRealization_of_exactCutLabelSide_of_rotated_external_ports
+      embedded hdata hC chord htriple labels selected hexact hrotated
+        hinside_cycle houtside_cycle
+  have hwall : (chord.boundary htriple).wall =
+      walkEdgeFinset chord.cycleWalk := by
+    ext edge
+    exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges
+      htriple edge).trans (mem_walkEdgeFinset_iff chord.cycleWalk edge).symm
+  rw [hwall] at realization
+  exact CycleSideCertificate.ofCyclicEdgeCutRealization realization
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/

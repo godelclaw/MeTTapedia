@@ -35,6 +35,8 @@ open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathSectorAnchors
 open GoertzelV24CorridorProfile
+open GoertzelV24FaceOrbitIncidence
+open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24RotationVertexCutProfile
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -325,6 +327,72 @@ noncomputable def ChordCyclicCutAssignment.ofCycleSideCertificates
   width := by
     intro cut side chord
     exact hwidth cut side chord
+
+/-! The exact-label route packages the same geometric input in a form that is
+convenient for a whole sector family.  Keeping the rotated-port orientation
+and the two cycle witnesses as fields is deliberate: this wrapper does not
+silently turn a face label into a primal Jordan side. -/
+
+structure ExactCutLabelSideCertificate
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (chord : SectorChord pair embedded hdata htriple cut side) where
+  labels : OrbitFace embedded.RS → F2
+  selected : F2
+  hexact : ∀ dart : embedded.RS.D,
+    labels (dartOrbitFace embedded.RS dart) ≠
+        labels (dartOrbitFace embedded.RS (embedded.RS.alpha dart)) ↔
+      (embedded.RS.edgeOf dart).1 ∈ (materializedChord chord).cycleWalk.edges
+  hrotated : ∀ (edge : G.edgeSet), edge ∈
+      ((materializedChord chord).boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ wallDart : embedded.RS.D,
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf (embedded.RS.rho
+          (embedded.RS.alpha wallDart)) = u ∧
+        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
+        embedded.RS.edgeOf (embedded.RS.rho
+          (embedded.RS.alpha wallDart)) ∉
+          ((materializedChord chord).boundary htriple).wall ∧
+        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
+          ((materializedChord chord).boundary htriple).wall
+  hinside_cycle : HasCycleOnSide G
+    (exactCutLabelSide embedded.RS
+      ((materializedChord chord).boundary htriple).wall labels selected)
+  houtside_cycle : HasCycleOnSide G
+    (fun vertex => ¬ exactCutLabelSide embedded.RS
+      ((materializedChord chord).boundary htriple).wall labels selected vertex)
+
+noncomputable def ChordCyclicCutAssignment.ofExactCutLabelSideCertificates
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (hC : IsTaitEdgeColoring G C)
+    (htriple : IsTaitColorTriple majority first second)
+    (widthBound : Nat)
+    (certificates : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+      (chord : SectorChord pair embedded hdata htriple cut side),
+      ExactCutLabelSideCertificate chord)
+    (hwidth : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+      (chord : SectorChord pair embedded hdata htriple cut side),
+      (chordBoundary chord).wall.card ≤ widthBound) :
+    ChordCyclicCutAssignment pair embedded hdata htriple widthBound := by
+  apply ChordCyclicCutAssignment.ofCycleSideCertificates
+    embedded hdata htriple widthBound
+  · intro cut side chord
+    let certificate := certificates cut side chord
+    exact cycleSideCertificate_of_exactCutLabelSide_of_rotated_external_ports
+      embedded (materializedChord chord) htriple hdata hC
+      certificate.labels certificate.selected certificate.hexact
+      certificate.hrotated certificate.hinside_cycle certificate.houtside_cycle
+  · exact hwidth
 
 /-- A chord-side assignment exposes the exact side-transport interface needed
 by a radial/Jordan argument.  The geometric caller supplies a local dart
