@@ -1180,6 +1180,107 @@ theorem exactCutLabelSide_iff_of_nonwall_chord_edge
   · simpa [huA, hvD] using hsideDart.symm
   · simpa [huA, hvA] using hsideDart.symm
 
+theorem exactCutLabelSide_iff_of_chord_port
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {vertex : V} (port : embedded.RS.D)
+    (hportVertex : embedded.RS.vertOf port = vertex)
+    (hportAway : embedded.RS.edgeOf port ∉
+      (chord.boundary htriple).wall) :
+    exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected vertex ↔
+      labels (dartOrbitFace embedded.RS port) = selected := by
+  constructor
+  · rintro ⟨incident, hincident, hincidentAway, hselected⟩
+    have hlabels := chord_labels_eq_of_same_vertex_of_nonwall_darts
+      embedded hdata hC chord htriple labels hexact
+      (hportVertex.trans hincident.symm) hincidentAway hportAway
+    exact hlabels.symm.trans hselected
+  · intro hselected
+    exact ⟨port, hportVertex, hportAway, hselected⟩
+
+theorem edgeCrossesVertexSide_of_f2_label_inequality
+    {e : G.edgeSet} {u v : V}
+    {side : V → Prop} {labelU labelV selected : F2}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V))
+    (hsideU : side u ↔ labelU = selected)
+    (hsideV : side v ↔ labelV = selected)
+    (hlabels : labelU ≠ labelV) :
+    EdgeCrossesVertexSide G side e := by
+  by_cases hsu : side u
+  · by_cases hsv : side v
+    · exfalso
+      apply hlabels
+      exact (hsideU.mp hsu).trans (hsideV.mp hsv).symm
+    · exact ⟨u, v, hu, hv, hsu, hsv⟩
+  · by_cases hsv : side v
+    · exact ⟨v, u, hv, hu, hsv, hsu⟩
+    · exfalso
+      have hlabelUne : labelU ≠ selected := by
+        intro heq
+        exact hsu (hsideU.mpr heq)
+      have hlabelVne : labelV ≠ selected := by
+        intro heq
+        exact hsv (hsideV.mpr heq)
+      have heq : labelU = labelV := by
+        fin_cases labelU <;> fin_cases labelV <;> fin_cases selected <;>
+          simp_all
+      exact hlabels heq
+
+theorem edgeCrossesVertexSide_of_chord_wall_of_port_label_inequality
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {edge : G.edgeSet} (_hedge : edge ∈
+      (chord.boundary htriple).wall)
+    {u v : V} (hu : u ∈ (edge : Sym2 V))
+    (hv : v ∈ (edge : Sym2 V))
+    (portU portV : embedded.RS.D)
+    (hportU : embedded.RS.vertOf portU = u)
+    (hportV : embedded.RS.vertOf portV = v)
+    (hportUAway : embedded.RS.edgeOf portU ∉
+      (chord.boundary htriple).wall)
+    (hportVAway : embedded.RS.edgeOf portV ∉
+      (chord.boundary htriple).wall)
+    (hlabels : labels (dartOrbitFace embedded.RS portU) ≠
+      labels (dartOrbitFace embedded.RS portV)) :
+    EdgeCrossesVertexSide G
+      (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected) edge := by
+  apply edgeCrossesVertexSide_of_f2_label_inequality hu hv
+  · exact exactCutLabelSide_iff_of_chord_port
+      embedded hdata hC chord htriple labels selected hexact
+        portU hportU hportUAway
+  · exact exactCutLabelSide_iff_of_chord_port
+      embedded hdata hC chord htriple labels selected hexact
+        portV hportV hportVAway
+  · exact hlabels
+
 noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
