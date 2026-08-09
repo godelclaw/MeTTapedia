@@ -123,6 +123,27 @@ theorem card_componentCrossingEdges_le_removed
   Finset.card_le_card (componentCrossingEdges_subset_removed removed component)
 
 /-!
+The saturation equality is often the only set-theoretic line left after a
+Jordan/annulus argument has identified the two sides of the deleted wall.  We
+keep it as a named generic lemma so callers prove the geometric fact in its
+natural direction (`every removed edge crosses`) instead of reproving the
+computed-boundary subset argument.
+-/
+
+theorem componentCrossingEdges_eq_removed_of_forall_removed_crosses
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    (hcross : ∀ edge : G.edgeSet, edge ∈ removed →
+      EdgeCrossesVertexSide G (fun vertex => vertex ∈ component.supp) edge) :
+    componentCrossingEdges removed component = removed := by
+  apply Finset.Subset.antisymm
+  · exact componentCrossingEdges_subset_removed removed component
+  · intro edge hedge
+    exact (mem_componentCrossingEdges_iff removed component edge).2
+      (hcross edge hedge)
+
+/-!
 The component side is constant along every walk that avoids the deleted
 support.  This is the walk form of the endpoint boundary calculation and is
 the exact graph lemma needed when a planar/Jordan argument supplies an
@@ -202,6 +223,23 @@ def componentCyclicEdgeCutRealization_of_edgeCut_eq
     CyclicEdgeCutRealization G edgeCut := by
   rw [← hboundary]
   exact componentCyclicEdgeCutRealization removed component
+    hinsideCycle houtsideCycle
+
+def componentCyclicEdgeCutRealization_of_forall_removed_crosses
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    (hcross : ∀ edge : G.edgeSet, edge ∈ removed →
+      EdgeCrossesVertexSide G (fun vertex => vertex ∈ component.supp) edge)
+    (hinsideCycle : HasCycleOnSide G
+      (fun vertex => vertex ∈ component.supp))
+    (houtsideCycle : HasCycleOnSide G
+      (fun vertex => ¬ vertex ∈ component.supp)) :
+    CyclicEdgeCutRealization G removed :=
+  componentCyclicEdgeCutRealization_of_edgeCut_eq
+    removed component
+    (componentCrossingEdges_eq_removed_of_forall_removed_crosses
+      removed component hcross)
     hinsideCycle houtsideCycle
 
 /-- Away from the computed component boundary, an ambient edge preserves the
