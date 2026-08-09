@@ -1623,6 +1623,66 @@ noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide
   exact exactCutLabelSide_iff_of_nonwall_chord_edge
     embedded hdata hC chord htriple labels selected hexact hnot hu hv
 
+/-! The global crossing premise for the exact label side can be discharged
+from a finite local packet at the wall: each wall edge has an off-wall dart at
+each endpoint, and the two corresponding face labels differ.  This theorem
+keeps the remaining Jordan/separation work honest and explicit; it does not
+silently manufacture the endpoint ports or their label inequality. -/
+noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide_of_wall_port_label_packet
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (hports : ∀ (edge : G.edgeSet),
+      edge ∈ (chord.boundary htriple).wall →
+      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
+      ∃ (portU portV : embedded.RS.D),
+        embedded.RS.vertOf portU = u ∧
+        embedded.RS.vertOf portV = v ∧
+        embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
+        embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
+        labels (dartOrbitFace embedded.RS portU) ≠
+          labels (dartOrbitFace embedded.RS portV))
+    (hinside_cycle : HasCycleOnSide G
+      (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected))
+    (houtside_cycle : HasCycleOnSide G
+      (fun vertex => ¬ exactCutLabelSide embedded.RS
+        (chord.boundary htriple).wall labels selected vertex)) :
+    CyclicEdgeCutRealization G (chord.boundary htriple).wall := by
+  refine cyclicEdgeCutRealization_of_exactCutLabelSide
+    embedded hdata hC chord htriple labels selected hexact ?_
+      hinside_cycle houtside_cycle
+  intro edge hedge
+  obtain ⟨dart, hdart⟩ := embedded.RS.dartsOn_nonempty edge
+  have hu : embedded.RS.vertOf dart ∈ (edge : Sym2 V) := by
+    apply (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation edge (embedded.RS.vertOf dart)).1
+    exact (embedded.RS.mem_endpoints_iff).2 ⟨dart, hdart, rfl⟩
+  have hv : embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+      (edge : Sym2 V) := by
+    apply (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation edge
+        (embedded.RS.vertOf (embedded.RS.alpha dart))).1
+    exact (embedded.RS.mem_endpoints_iff).2
+      ⟨embedded.RS.alpha dart, by simpa using hdart, rfl⟩
+  rcases hports edge hedge hu hv with
+    ⟨portU, portV, hportU, hportV, hportUAway, hportVAway, hlabels⟩
+  exact edgeCrossesVertexSide_of_chord_wall_of_port_label_inequality
+    embedded hdata hC chord htriple labels selected hexact hedge hu hv
+      portU portV hportU hportV hportUAway hportVAway hlabels
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/
