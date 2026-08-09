@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLaminarProfileRepeat
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebChordRotationNoncrossing
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteDeletionCyclicCut
 
 /-!
 # Graph-derived depth profiles for closed-web chords
@@ -36,6 +37,7 @@ open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathSectorAnchors
 open GoertzelV24CorridorProfile
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24FiniteDeletionCyclicCut
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24RotationVertexCutProfile
 
@@ -293,7 +295,9 @@ structure ChordSideIndexingAssignment
 
 /-- The exact geometric input that is sufficient to build a side assignment:
 each chord receives a cyclic edge-cut realization, together with a uniform
-finite cut bound.  Constructing this family is the remaining Jordan/sector
+finite cut bound.  It is a generic endpoint for a genuine transversal or
+layer boundary; it does not identify the chord-cycle support itself with the
+crossed-edge set.  Constructing this family is the remaining Jordan/sector
 lemma; the conversion to profile data is mechanical and proved below. -/
 structure ChordCyclicCutAssignment
     {data : AnnularBoundaryData G outerCount}
@@ -312,10 +316,74 @@ structure ChordCyclicCutAssignment
     (chord : SectorChord pair embedded hdata htriple cut side),
     (edgeCut cut side chord).card ≤ widthBound
 
+/-- A source-style transversal is represented by the finite set of graph
+edges it crosses.  Deleting those edges exposes the two vertex regions, so a
+chosen deletion component supplies the side used by the finite profile.
+
+The chord merely indexes the geometry that selects the transversal.  In
+particular, this structure deliberately does *not* set `removed` equal to a
+chord boundary wall: Addendum XXVII calls for simple transversals/layer
+boundaries, whose crossed edges are a separate object. -/
+structure ChordTransversalDeletionAssignment
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    (widthBound : Nat) where
+  removed : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (_chord : SectorChord pair embedded hdata htriple cut side), Finset G.edgeSet
+  component : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    (G.deleteEdges (edgeFinsetValueSet (removed cut side chord))).ConnectedComponent
+  boundary : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    componentCrossingEdges (removed cut side chord) (component cut side chord) =
+      removed cut side chord
+  insideCycle : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    HasCycleOnSide G (fun vertex => vertex ∈ (component cut side chord).supp)
+  outsideCycle : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    HasCycleOnSide G (fun vertex => ¬ vertex ∈ (component cut side chord).supp)
+  width : ∀ (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (chord : SectorChord pair embedded hdata htriple cut side),
+    (removed cut side chord).card ≤ widthBound
+
+namespace ChordTransversalDeletionAssignment
+
+/-- The component boundary supplies the exact cut realization consumed by
+the graph-derived profile layer.  All of the nontrivial geometry remains in
+the explicit deletion-boundary and cycle fields of the transversal witness. -/
+noncomputable def toCyclicCutAssignment
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat}
+    (transversal : ChordTransversalDeletionAssignment pair embedded hdata htriple
+      widthBound) :
+    ChordCyclicCutAssignment pair embedded hdata htriple widthBound where
+  edgeCut := fun cut side chord => transversal.removed cut side chord
+  realization := by
+    intro cut side chord
+    exact componentCyclicEdgeCutRealization_of_edgeCut_eq
+      (transversal.removed cut side chord)
+      (transversal.component cut side chord)
+      (transversal.boundary cut side chord)
+      (transversal.insideCycle cut side chord)
+      (transversal.outsideCycle cut side chord)
+  width := transversal.width
+
+end ChordTransversalDeletionAssignment
+
 /-! This constructor makes the remaining geometric obligation explicit in
-the language of the route.  A family of primal cycle-side certificates is
-enough; the wall/cycle support equality and the exact crossing classification
-are inherited from the generic separator bridge.  No catalogue or finite
+the language of the route, but only for the stronger special case in which
+the chord-cycle support really is a primal cut.  The ordinary source path is
+`ChordTransversalDeletionAssignment` above.  No catalogue or finite
 configuration data is introduced. -/
 
 noncomputable def ChordCyclicCutAssignment.ofCycleSideCertificates
@@ -636,6 +704,38 @@ theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal_of_
             (canonicalFaceSide embedded hdata htriple outer))) := by
   exact exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal
     embedded hdata pair htriple hC widthBound hdeep cuts.toSideAssignment
+
+/-- The ordinary source-facing depth route: a simple transversal/layer
+boundary is supplied as a deleted edge set, its component boundary gives the
+profile side, and finite repetition produces two nested equal states.  This
+uses no identification of a chord cycle with a primal edge cut. -/
+theorem exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal_of_deletionTransversals
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (htriple : IsTaitColorTriple majority first second)
+    (hC : IsTaitEdgeColoring G C)
+    (widthBound : Nat)
+    (hdeep : HasDeepChordTransversal C majority first second
+      pair.firstPath (2 * closedWebCutProfileCount widthBound))
+    (transversals : ChordTransversalDeletionAssignment pair embedded hdata
+      htriple widthBound) :
+    ∃ (cut : Fin pair.firstPath.path.length) (side : Bool)
+        (inner outer : SectorChord pair embedded hdata htriple cut side),
+      (inner ≠ outer) ∧ (inner.1.NestedIn outer.1) ∧
+        ((transversals.toCyclicCutAssignment.toSideAssignment.profile hC cut side inner =
+          transversals.toCyclicCutAssignment.toSideAssignment.profile hC cut side outer) ∧
+        (HoleFreeChordSide embedded.cellulation
+            (chordBoundary inner)
+            (canonicalFaceSide embedded hdata htriple inner) ∧
+          HoleFreeChordSide embedded.cellulation
+            (chordBoundary outer)
+            (canonicalFaceSide embedded hdata htriple outer))) := by
+  exact exists_nested_equal_computed_depthProfile_of_hasDeepChordTransversal_of_cyclicCuts
+    embedded hdata pair htriple hC widthBound hdeep
+      transversals.toCyclicCutAssignment
 
 /-!
 The two equal-state projections below are intentionally small, but they are
