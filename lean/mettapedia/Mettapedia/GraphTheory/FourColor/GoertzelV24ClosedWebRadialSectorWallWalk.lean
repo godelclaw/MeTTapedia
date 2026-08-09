@@ -122,6 +122,102 @@ theorem radialCore_edges_disjoint
       exact (Set.disjoint_left.1 pair.ambientPathVerts_disjoint)
         hleftFirst hleftSecond
 
+/-! The sector constructor deliberately leaves simplicity and separation to
+the geometric layer.  The following finite interface records the exact
+cross-piece edge obligations needed for the graph-theoretic part.  The
+radial-core pair is omitted because `radialCore_edges_disjoint` proves it
+from the path-component invariant; the five remaining pairs are supplied by
+the geometric layer.  It is stronger than the fields needed to form the
+closed walk, but weaker than any Jordan conclusion. -/
+
+def PiecewiseEdgeDisjoint
+    (wall : RadialSectorWallWalk data C first second pair embedded hdata) : Prop :=
+  wall.firstCore.path.edges.Disjoint wall.outerArc.edges ∧
+    wall.firstCore.path.edges.Disjoint wall.innerArc.edges ∧
+    wall.outerArc.edges.Disjoint wall.secondCore.path.edges ∧
+    wall.outerArc.edges.Disjoint wall.innerArc.edges ∧
+    wall.secondCore.path.edges.Disjoint wall.innerArc.edges
+
+theorem walk_isTrail_of_piecewiseEdgeDisjoint
+    (wall : RadialSectorWallWalk data C first second pair embedded hdata)
+    (houter : wall.outerArc.IsPath)
+    (hinner : wall.innerArc.IsPath)
+    (hpieces : wall.PiecewiseEdgeDisjoint) :
+    wall.walk.IsTrail := by
+  rcases hpieces with
+    ⟨hfirstOuter, hfirstInner, houterSecond,
+      houterInner, hsecondInner⟩
+  have hfirstSecond :
+      wall.firstCore.path.edges.Disjoint wall.secondCore.path.edges :=
+    wall.radialCore_edges_disjoint
+  have hfirst : wall.firstCore.path.IsTrail :=
+    wall.firstCore.path_isPath.isTrail
+  have hsecond : wall.secondCore.path.reverse.IsTrail :=
+    wall.secondCore.path_isPath.isTrail.reverse
+  have houter' : wall.outerArc.IsTrail := houter.isTrail
+  have hinner' : wall.innerArc.IsTrail := hinner.isTrail
+  have hfirstOuter' :
+      wall.firstCore.path.edges.Disjoint wall.outerArc.edges := hfirstOuter
+  have hfirstSecond' :
+      wall.firstCore.path.edges.Disjoint wall.secondCore.path.reverse.edges := by
+    simpa using hfirstSecond
+  have hfirstInner' :
+      wall.firstCore.path.edges.Disjoint wall.innerArc.edges := hfirstInner
+  have houterSecond' :
+      wall.outerArc.edges.Disjoint wall.secondCore.path.reverse.edges := by
+    simpa using houterSecond
+  have houterInner' :
+      wall.outerArc.edges.Disjoint wall.innerArc.edges := houterInner
+  have hsecondInner' :
+      wall.secondCore.path.reverse.edges.Disjoint wall.innerArc.edges := by
+    simpa using hsecondInner
+  unfold walk
+  rw [SimpleGraph.Walk.isTrail_append,
+    SimpleGraph.Walk.isTrail_append,
+    SimpleGraph.Walk.isTrail_append]
+  refine ⟨?_, hinner', ?_⟩
+  ·
+    refine ⟨⟨hfirst, houter', hfirstOuter'⟩, hsecond, ?_⟩
+    rw [SimpleGraph.Walk.edges_append, List.disjoint_left]
+    intro edge hedge hsecondEdge
+    rcases List.mem_append.mp hedge with hfirstEdge | houterEdge
+    · exact (List.disjoint_left.mp hfirstSecond') hfirstEdge hsecondEdge
+    · exact (List.disjoint_left.mp houterSecond') houterEdge hsecondEdge
+  · rw [SimpleGraph.Walk.edges_append, List.disjoint_left]
+    intro edge hedge hinnerEdge
+    rcases List.mem_append.mp hedge with hfirstSecondEdge | hsecondEdge
+    · have hfirstSecondEdge' :
+          edge ∈ wall.firstCore.path.edges ++ wall.outerArc.edges := by
+        simpa only [SimpleGraph.Walk.edges_append] using hfirstSecondEdge
+      rcases List.mem_append.mp hfirstSecondEdge' with hfirstEdge | houterEdge
+      · exact (List.disjoint_left.mp hfirstInner') hfirstEdge hinnerEdge
+      · exact (List.disjoint_left.mp houterInner') houterEdge hinnerEdge
+    · exact (List.disjoint_left.mp hsecondInner') hsecondEdge hinnerEdge
+
+/-! A positive trail-shaped sector wall contains a genuine simple cycle.
+This is the graph-side bridge; the remaining geometric work is to establish
+the path/disjointness interface above and to place the resulting cycle on the
+desired complementary side. -/
+
+theorem exists_cycle_subsupport_of_piecewiseEdgeDisjoint
+    (wall : RadialSectorWallWalk data C first second pair embedded hdata)
+    (houter : wall.outerArc.IsPath)
+    (hinner : wall.innerArc.IsPath)
+    (hpieces : wall.PiecewiseEdgeDisjoint)
+    (hpositive : 0 < wall.walk.length) :
+    ∃ (cycleStart : V) (cycle : G.Walk cycleStart cycleStart),
+      cycle.IsCycle ∧ cycle.edges ⊆ wall.walk.edges := by
+  have htrail := wall.walk_isTrail_of_piecewiseEdgeDisjoint
+    houter hinner hpieces
+  have hnotnil : wall.walk ≠ .nil := by
+    intro hnil
+    have hzero : wall.walk.length = 0 := by simp [hnil]
+    omega
+  let cycle := wall.walk.cycleBypass
+  have hcycle : cycle.IsCycle := htrail.isCycle_cycleBypass hnotnil
+  exact ⟨_, cycle, hcycle,
+    wall.walk.edges_cycleBypass_subset_edges⟩
+
 end RadialSectorWallWalk
 
 /-- The two distinct radial paths canonically supply all four compatible
