@@ -181,6 +181,99 @@ theorem faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex
       exact RS.rho.injective hback
     exact (hincidentExternal hincidentEq).elim
 
+/-! The preceding lemma fixes one orientation of the unused port: its
+successor is assumed to be a wall dart.  An ambient edge has no preferred
+orientation, so the useful interface must also accept the other local
+orientation.  In a cubic fiber the two alternatives exhaust the cases. -/
+
+theorem faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_adjacent_wall
+    (RS : RotationSystem V E)
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E)
+    (labels : OrbitFace RS → F2)
+    (hexact : ∀ dart : RS.D,
+      labels (dartOrbitFace RS dart) ≠
+          labels (dartOrbitFace RS (RS.alpha dart)) ↔
+        RS.edgeOf dart ∈ wall)
+    (external : RS.D)
+    (hcard : (RS.dartsAt (RS.vertOf external)).card = 3)
+    (haway : RS.edgeOf external ∉ wall)
+    (hadjacent :
+      RS.edgeOf (RS.rho external) ∈ wall ∨
+        RS.edgeOf (RS.rho (RS.rho external)) ∈ wall)
+    {incident : RS.D}
+    (hincident : RS.vertOf incident = RS.vertOf external)
+    (hsame : labels (dartOrbitFace RS incident) =
+      labels (dartOrbitFace RS external)) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+      (orbitFaceVertex RS external) (orbitFaceVertex RS incident) := by
+  rcases hadjacent with hwallRho | hwallRho2
+  · exact faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex
+      RS htwoSided hrotation wall labels hexact external hcard haway
+      hwallRho hincident hsame
+  have hlabelExternalRho :
+      labels (dartOrbitFace RS external) =
+        labels (dartOrbitFace RS (RS.rho external)) := by
+    have hnot : ¬ labels (dartOrbitFace RS external) ≠
+        labels (dartOrbitFace RS (RS.alpha external)) := by
+      intro hne
+      exact haway ((hexact external).1 hne)
+    have heq := not_ne_iff.mp hnot
+    simpa only [dartOrbitFace_alpha_eq_dartOrbitFace_rho] using heq
+  have hexternalMem : external ∈ RS.dartsAt (RS.vertOf external) := by
+    simp [RotationSystem.dartsAt]
+  have hpow :=
+    (rho_isCycleOn_dartsAt RS hrotation (RS.vertOf external)).pow_card_apply
+      hexternalMem
+  rw [hcard] at hpow
+  have hcube : RS.rho (RS.rho (RS.rho external)) = external := by
+    simpa [pow_succ] using hpow
+  have hlabelThirdExternal :
+      labels (dartOrbitFace RS (RS.rho (RS.rho external))) ≠
+        labels (dartOrbitFace RS external) := by
+    have hne := (hexact (RS.rho (RS.rho external))).2 hwallRho2
+    have hface :
+        dartOrbitFace RS (RS.alpha (RS.rho (RS.rho external))) =
+          dartOrbitFace RS external := by
+      calc
+        dartOrbitFace RS (RS.alpha (RS.rho (RS.rho external))) =
+            dartOrbitFace RS
+              (RS.rho (RS.rho (RS.rho external))) :=
+          dartOrbitFace_alpha_eq_dartOrbitFace_rho RS
+            (RS.rho (RS.rho external))
+        _ = dartOrbitFace RS external := by rw [hcube]
+    rw [hface] at hne
+    exact hne
+  have hcardRho :
+      (RS.dartsAt (RS.vertOf (RS.rho external))).card = 3 := by
+    simpa only [RS.vert_rho] using hcard
+  have hreachableRho := faceAdjacencyAvoiding_reachable_of_rho
+    RS htwoSided wall external haway
+  by_cases hincidentExternal : incident = external
+  · subst incident
+    exact SimpleGraph.Reachable.refl _
+  by_cases hincidentRho : incident = RS.rho external
+  · subst incident
+    exact hreachableRho
+  have hincidentBase : RS.vertOf incident = RS.vertOf (RS.rho external) :=
+    hincident.trans (RS.vert_rho external).symm
+  have hneRhoIncident : RS.rho external ≠ incident := by
+    intro heq
+    exact hincidentRho heq.symm
+  rcases RotationSystem.rho_eq_or_rho_eq_of_card_dartsAt_eq_three
+      RS hrotation hcardRho hincidentBase hneRhoIncident with
+    hthird | hback
+  · exfalso
+    apply hlabelThirdExternal
+    rw [hthird]
+    exact hsame
+  · have hincidentEq : incident = external := by
+      exact RS.rho.injective hback
+    exact (hincidentExternal hincidentEq).elim
+
 /-! Hole-free face regions also have a direct primal consequence.  At a
 wall-free vertex, all incident face choices are connected by rotation; hence
 a vertex incident with a forbidden hole face cannot belong to the selected
