@@ -309,6 +309,170 @@ theorem hasCycleOnSide_of_faceComponentSide_cycle
 
 end SimpleGraphDartRotation.Data
 
+namespace SimpleGraphDartRotation.Data
+
+local instance faceComponentCycleGraphEdgeSetDecidableEqOpposite :
+    DecidableEq G.edgeSet :=
+  Subtype.instDecidableEq
+
+/-! The opposite facial side is transported by reversing the local turn.  At
+the common vertex of consecutive cycle darts `first, second`, the flipped
+pair `alpha second, alpha first` has exactly the same unused third dart. -/
+
+theorem hasCycleOnSide_of_faceComponentSide_cycle_opposite
+    (graphData : SimpleGraphDartRotation.Data G)
+    {root : V} (cycle : G.Walk root root)
+    (hcycle : cycle.IsCycle)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (hlocalCubic : ∀ dart ∈ cycle.darts,
+      (graphData.toRotationSystem.dartsAt
+        (graphData.toRotationSystem.vertOf dart)).card = 3)
+    (wall : Finset G.edgeSet)
+    (hwall : ∀ edge : G.edgeSet,
+      edge ∈ wall ↔ edge.1 ∈ cycle.edges)
+    (seed : AmbientFace (Finset.univ : Finset
+      (OrbitFace graphData.toRotationSystem)))
+    (hseed :
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary graphData.toRotationSystem)
+        (Finset.univ : Finset (OrbitFace graphData.toRotationSystem)) wall).Reachable
+        seed
+        (orbitFaceVertex graphData.toRotationSystem
+          (graphData.toRotationSystem.rho
+            (cycle.firstDart hcycle.not_nil)))) :
+    HasCycleOnSide G
+      (faceComponentSide graphData.toRotationSystem wall seed) := by
+  let RS := graphData.toRotationSystem
+  have hdartsNe : cycle.darts ≠ [] :=
+    SimpleGraph.Walk.darts_eq_nil.not.mpr hcycle.not_nil
+  have hchain :=
+    SimpleGraphDartRotation.Data.isChain_faceCutCycleTurnStep_darts_of_local_cubic
+      graphData cycle hcycle hlocalCubic
+  have hchainWall : cycle.darts.IsChain
+      (RS.FaceCutCycleTurnStep (fun edge => edge ∈ wall)) := by
+    simpa [hwall] using hchain
+  have hlist : cycle.darts.head hdartsNe :: cycle.darts.tail = cycle.darts := by
+    apply List.cons_head?_tail
+    rw [List.head?_eq_some_head hdartsNe]
+    simp
+  have hchainHead :
+      (cycle.darts.head hdartsNe :: cycle.darts.tail : List RS.D).IsChain
+        (RS.FaceCutCycleTurnStep (fun edge => edge ∈ wall)) := by
+    change (cycle.darts.head hdartsNe :: cycle.darts.tail).IsChain
+      (graphData.toRotationSystem.FaceCutCycleTurnStep
+        (fun edge => edge ∈ wall))
+    rw [hlist]
+    exact hchainWall
+  have hhead : cycle.darts.head hdartsNe =
+      cycle.firstDart hcycle.not_nil := by
+    exact cycle.firstDart_eq_head_darts hcycle.not_nil |>.symm
+  have hreachable_mem : ∀ (first : RS.D) (rest : List RS.D)
+      (target : RS.D),
+      (first :: rest).IsChain (RS.FaceCutCycleTurnStep
+        (fun edge => edge ∈ wall)) →
+      target ∈ first :: rest →
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+        (orbitFaceVertex RS (RS.rho first))
+        (orbitFaceVertex RS (RS.rho target)) := by
+    intro first rest target
+    induction rest generalizing first with
+    | nil =>
+        intro _ hmem
+        rcases List.mem_singleton.mp hmem with rfl
+        exact SimpleGraph.Reachable.refl _
+    | cons second rest ih =>
+        intro hturnChain hmem
+        rcases List.mem_cons.mp hmem with rfl | htail
+        · exact SimpleGraph.Reachable.refl _
+        · have hstep : RS.FaceCutCycleTurnStep
+              (fun edge => edge ∈ wall) first second :=
+            hturnChain.rel
+          have hsecond :
+              (faceAdjacencyAvoiding
+                (orbitFaceBoundary RS)
+                (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+                (orbitFaceVertex RS (RS.rho first))
+                (orbitFaceVertex RS (RS.rho second)) := by
+            have hbaseOpp : RS.vertOf (RS.alpha first) =
+                RS.vertOf (RS.alpha (RS.alpha second)) := by
+              simpa [RS.alpha_involutive] using hstep.1.symm
+            have hnonbackOpp : RS.alpha (RS.alpha second) ≠
+                RS.alpha first := by
+              simpa only [RS.alpha_involutive] using hstep.2.1.symm
+            have hotherOpp : ∀ dart : RS.D,
+                RS.vertOf dart = RS.vertOf (RS.alpha first) →
+                dart ≠ RS.alpha (RS.alpha second) →
+                dart ≠ RS.alpha first →
+                RS.edgeOf dart ∉ wall := by
+              intro dart hdart hneSecond hneFirst
+              apply hstep.2.2.2 dart
+              · calc
+                  RS.vertOf dart = RS.vertOf (RS.alpha first) := hdart
+                  _ = RS.vertOf second := by
+                    simpa only [RS.alpha_involutive] using hstep.1.symm
+              · exact hneFirst
+              · simpa only [RS.alpha_involutive] using hneSecond
+            have hcardOpp :
+                (RS.dartsAt (RS.vertOf (RS.alpha first))).card = 3 := by
+              simpa only [hstep.1] using hstep.2.2.1
+            have hturnOpp :=
+              faceAdjacencyAvoiding_reachable_of_faceCutCycleTurn
+                RS htwoSided hrotation wall
+                (previous := RS.alpha second)
+                (outgoing := RS.alpha first)
+                hbaseOpp hnonbackOpp hcardOpp hotherOpp
+            have hturnOpp' :
+                (faceAdjacencyAvoiding
+                  (orbitFaceBoundary RS)
+                  (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+                  (orbitFaceVertex RS (RS.rho second))
+                  (orbitFaceVertex RS (RS.rho first)) := by
+              simpa only [orbitFaceVertex_alpha_eq_orbitFaceVertex_rho] using
+                hturnOpp
+            exact hturnOpp'.symm
+          exact hsecond.trans
+            (ih second hturnChain.of_cons htail)
+  have hreachable_to : ∀ (target : RS.D), target ∈ cycle.darts →
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+        seed (orbitFaceVertex RS (RS.rho target)) := by
+    intro target htarget
+    have htargetList : target ∈
+        (cycle.darts.head hdartsNe :: cycle.darts.tail : List RS.D) := by
+      change target ∈ cycle.darts.head hdartsNe :: cycle.darts.tail
+      rw [hlist]
+      exact htarget
+    have htransport := hreachable_mem (cycle.darts.head hdartsNe)
+      (cycle.darts.tail) target hchainHead htargetList
+    rw [hhead] at htransport
+    exact hseed.trans htransport
+  have hfirstSide : faceComponentSide RS wall seed root := by
+    refine ⟨RS.rho (cycle.firstDart hcycle.not_nil), ?_, ?_⟩
+    · simpa [RS, hhead] using RS.vert_rho
+        (cycle.firstDart hcycle.not_nil)
+    · exact hreachable_to (cycle.firstDart hcycle.not_nil)
+        (cycle.firstDart_mem_darts hcycle.not_nil)
+  refine ⟨root, hfirstSide, cycle, hcycle, ?_⟩
+  intro vertex hvertex
+  by_cases hroot : vertex = root
+  · simpa [hroot] using hfirstSide
+  · have hneLast : vertex ≠ cycle.support.getLast (by simp) := by
+      rw [cycle.getLast_support]
+      exact hroot
+    have hdrop : vertex ∈ cycle.support.dropLast :=
+      List.mem_dropLast_of_mem_of_ne_getLast hvertex hneLast
+    rw [← cycle.map_fst_darts] at hdrop
+    rcases List.mem_map.mp hdrop with ⟨dart, hdart, hfst⟩
+    refine ⟨RS.rho dart, ?_, ?_⟩
+    · simpa [RS, hfst] using RS.vert_rho dart
+    · exact hreachable_to dart hdart
+
+end SimpleGraphDartRotation.Data
+
 end
 
 end GoertzelV24ClosedWebFaceComponentCycleTransport
