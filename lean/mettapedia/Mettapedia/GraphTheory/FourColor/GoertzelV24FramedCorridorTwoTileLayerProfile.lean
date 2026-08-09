@@ -10,10 +10,11 @@ used by the pumping argument, retaining the order in which its six primal
 ports are crossed.  The coordinate is therefore supplied by the actual
 source layer walk, not by an arbitrary finite enumeration.
 
-The chosen deletion component is only a certified side of this individual
-layer.  Establishing which two distant layers bound the pumpable annulus is a
-separate corridor-assembly obligation; nothing here treats a local cycle as
-that global annulus.
+The retained deletion component is selected by the distinguished outer vertex,
+so the profile has a real outside and a real deleted vertex.  Establishing
+which two distant layers bound the pumpable annulus is still a separate
+corridor-assembly obligation; nothing here treats one local cycle as that
+global annulus.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -65,18 +66,51 @@ variable {source : SourceTrail G}
   {second : SourceCornerAlignedSlabInterface realization htwoSided hunique
     (nextCorridorInterior leftInterior hnext) hnextNext}
 
-/-- A retained graph-side component of the concrete six-edge source layer. -/
+/-- The retained graph-side component of the concrete six-edge source layer:
+the one containing the distinguished outer vertex. -/
 noncomputable def component
     (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) :
     (G.deleteEdges (edgeFinsetValueSet boundary.cutEdges)).ConnectedComponent :=
-  Classical.choose boundary.exists_component_exactBoundary
+  Classical.choose boundary.exists_outer_component_exactBoundary_and_removed
 
-/-- The selected component has exactly the primal wall crossed by the
+/-- The outer retained component has an actual removed vertex and exactly the
+primal wall crossed by the source's simple two-tile layer. -/
+theorem exists_removed_outer_and_exactBoundary
+    (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) :
+    ∃ removed : V,
+      embedded.cellulation.rotation.toRotationSystem.vertOf
+          embedded.cellulation.rotation.toRotationSystem.outer ∈ boundary.component.supp ∧
+      removed ∉ boundary.component.supp ∧
+      componentCrossingEdges boundary.cutEdges boundary.component = boundary.cutEdges := by
+  exact Classical.choose_spec
+    boundary.exists_outer_component_exactBoundary_and_removed
+
+/-- The selected retained component contains the distinguished outer vertex. -/
+theorem outer_mem_component
+    (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) :
+    embedded.cellulation.rotation.toRotationSystem.vertOf
+        embedded.cellulation.rotation.toRotationSystem.outer ∈ boundary.component.supp := by
+  rcases boundary.exists_removed_outer_and_exactBoundary with
+    ⟨_removed, houter, _hremoved, _hboundary⟩
+  exact houter
+
+/-- A vertex genuinely lies on the deleted side of the selected outer
+component. -/
+noncomputable def removed
+    (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) : V :=
+  Classical.choose boundary.exists_removed_outer_and_exactBoundary
+
+theorem removed_not_mem_component
+    (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) :
+    boundary.removed ∉ boundary.component.supp := by
+  exact (Classical.choose_spec boundary.exists_removed_outer_and_exactBoundary).2.1
+
+/-- The selected outer component has exactly the primal wall crossed by the
 source's simple two-tile layer. -/
 theorem component_boundary
     (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) :
     componentCrossingEdges boundary.cutEdges boundary.component = boundary.cutEdges := by
-  exact Classical.choose_spec boundary.exists_component_exactBoundary
+  exact (Classical.choose_spec boundary.exists_removed_outer_and_exactBoundary).2.2
 
 /-- The finite vertex side carried by the selected deletion component. -/
 noncomputable def componentSide

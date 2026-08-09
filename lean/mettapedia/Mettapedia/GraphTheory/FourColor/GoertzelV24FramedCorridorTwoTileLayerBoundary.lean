@@ -245,6 +245,111 @@ theorem SourceCornerAlignedTwoTileLayerBoundary.exists_component_exactBoundary
   rw [componentCrossingEdges_eq_crossingEdgeFinset]
   exact hboundary
 
+/-- Select the deletion side containing the distinguished outer vertex.  A
+simple source layer leaves a different component across its six-edge wall, so
+this also produces a genuinely removed vertex.  This is the retained/removed
+orientation required by a later source splice, rather than an arbitrary
+choice of one side of a local layer. -/
+theorem SourceCornerAlignedTwoTileLayerBoundary.exists_outer_component_exactBoundary_and_removed
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext :
+      (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext}
+    (boundary : SourceCornerAlignedTwoTileLayerBoundary first second) :
+    ∃ component : (G.deleteEdges
+        (edgeFinsetValueSet boundary.cutEdges)).ConnectedComponent,
+      ∃ removed : V,
+        embedded.cellulation.rotation.toRotationSystem.vertOf
+            embedded.cellulation.rotation.toRotationSystem.outer ∈ component.supp ∧
+        removed ∉ component.supp ∧
+        componentCrossingEdges boundary.cutEdges component = boundary.cutEdges := by
+  have hcut :
+      dualWalkPrimalCut embedded.cellulation.rotation hunique boundary.walk =
+        edgeFinsetValueSet boundary.cutEdges := by
+    exact dualWalkPrimalCut_eq_edgeFinsetValueSet_dualWalkCrossingEdges
+      embedded.cellulation.rotation hunique boundary.walk
+  have hnotConnected : ¬ (G.deleteEdges
+      (edgeFinsetValueSet boundary.cutEdges)).Connected := by
+    rw [← hcut]
+    exact not_connected_deleteEdges_dualWalkPrimalCut_of_isCycle
+      embedded.cellulation.rotation
+      embedded.cellulation.fullOrbitFaceInteriorDual_connected
+      embedded.cellulation.connected embedded.cellulation.euler hunique
+      boundary.walk boundary.isCycle
+  let outerVertex := embedded.cellulation.rotation.toRotationSystem.vertOf
+    embedded.cellulation.rotation.toRotationSystem.outer
+  let outerComponent : (G.deleteEdges
+      (edgeFinsetValueSet boundary.cutEdges)).ConnectedComponent :=
+    (G.deleteEdges (edgeFinsetValueSet boundary.cutEdges)).connectedComponentMk
+      outerVertex
+  have houterMem : outerVertex ∈ outerComponent.supp := by
+    dsimp [outerComponent]
+    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+  rcases exists_distinct_components_of_not_connected
+      embedded.cellulation.connected boundary.cutEdges hnotConnected with
+    ⟨inside, outside, hdistinct⟩
+  have outerBoundary_of_distinct
+      (other : (G.deleteEdges
+        (edgeFinsetValueSet boundary.cutEdges)).ConnectedComponent)
+      (hdistinct : outerComponent ≠ other) :
+      componentCrossingEdges boundary.cutEdges outerComponent = boundary.cutEdges := by
+    have hsubset : crossingEdgeFinset G
+        (fun vertex => vertex ∈ outerComponent.supp) ⊆ boundary.cutEdges := by
+      rw [← componentCrossingEdges_eq_crossingEdgeFinset
+        boundary.cutEdges outerComponent]
+      exact componentCrossingEdges_subset_removed boundary.cutEdges outerComponent
+    have hnonempty : (crossingEdgeFinset G
+        (fun vertex => vertex ∈ outerComponent.supp)).Nonempty := by
+      rw [← componentCrossingEdges_eq_crossingEdgeFinset
+        boundary.cutEdges outerComponent]
+      exact componentCrossingEdges_nonempty_of_distinct
+        embedded.cellulation.connected boundary.cutEdges outerComponent other hdistinct
+    have hboundary : crossingEdgeFinset G
+        (fun vertex => vertex ∈ outerComponent.supp) = boundary.cutEdges := by
+      exact crossingEdgeFinset_eq_dualWalkCrossingEdges_of_isCycle_of_subset
+        embedded.cellulation.rotation htwoSided hunique boundary.walk
+        boundary.isCycle (fun vertex => vertex ∈ outerComponent.supp)
+        hsubset hnonempty
+    rw [componentCrossingEdges_eq_crossingEdgeFinset]
+    exact hboundary
+  by_cases hinside : inside = outerComponent
+  · have houterNeOutside : outerComponent ≠ outside := by
+      intro heq
+      exact hdistinct (hinside.trans heq)
+    rcases outside.nonempty_supp with ⟨removed, hremoved⟩
+    have hremovedNotOuter : removed ∉ outerComponent.supp := by
+      intro houter
+      have heq : outside = outerComponent :=
+        SimpleGraph.ConnectedComponent.eq_of_common_vertex hremoved houter
+      exact hdistinct (hinside.trans heq.symm)
+    refine ⟨outerComponent, removed, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact outerBoundary_of_distinct outside houterNeOutside
+  · have houterNeInside : outerComponent ≠ inside := by
+      intro heq
+      exact hinside heq.symm
+    rcases inside.nonempty_supp with ⟨removed, hremoved⟩
+    have hremovedNotOuter : removed ∉ outerComponent.supp := by
+      intro houter
+      exact hinside (SimpleGraph.ConnectedComponent.eq_of_common_vertex
+        hremoved houter)
+    refine ⟨outerComponent, removed, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact outerBoundary_of_distinct inside houterNeInside
+
 end AnnularEmbedding
 
 end SourceTrail
