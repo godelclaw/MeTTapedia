@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutSeparator
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathTransversalAppend
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutComponent
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutBond
 
@@ -57,6 +58,38 @@ def primalCutEdges
   dualWalkCrossingEdges
     (orbitFaceBoundary data.toRotationSystem)
     (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique pair.dualLoop
+
+/-- The finite separator of the closed dual loop is exactly the disjoint
+union of the two source transversal supports.  This is the bookkeeping
+bridge from the loop used for separation back to the individual interfaces
+used by the source splice. -/
+theorem primalCutEdges_eq_sourceCrossingSupport
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    pair.primalCutEdges data =
+      pair.left.crossingEdges hunique ∪ pair.right.crossingEdges hunique := by
+  change dualWalkCrossingEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique
+        (pair.left.walk.append pair.right.walk.reverse) =
+      dualWalkCrossingEdges
+        (orbitFaceBoundary data.toRotationSystem)
+        (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique
+          pair.left.walk ∪
+        dualWalkCrossingEdges
+          (orbitFaceBoundary data.toRotationSystem)
+          (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique
+            pair.right.walk
+  rw [dualWalkCrossingEdges_append,
+    dualWalkCrossingEdges_reverse]
 
 /-- The set-valued separator is precisely the value image of its finite edge
 carrier.  This makes the generic deletion-component construction applicable
