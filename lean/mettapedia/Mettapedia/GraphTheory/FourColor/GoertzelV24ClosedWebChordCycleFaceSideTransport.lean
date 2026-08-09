@@ -907,6 +907,314 @@ theorem hasCycleOnSide_of_faceComponentSide_chord_cycle
     exact chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge
   · exact hseed
 
+/-! Any wall vertex can be based at a consecutive pair of cycle darts.  The
+rotated cycle makes the predecessor/successor choice canonical; the cycle
+nondegeneracy supplies the required nonbacktracking fact. -/
+
+theorem exists_chord_cycle_turn_at_vertex_of_external_port
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    {vertex : V} (hvertex : vertex ∈ chord.cycleWalk.support)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external = vertex)
+    (_haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall) :
+    ∃ (previous cycleDart : embedded.RS.D),
+      previous ∈ chord.cycleWalk.darts ∧
+      cycleDart ∈ chord.cycleWalk.darts ∧
+      embedded.RS.vertOf cycleDart =
+        embedded.RS.vertOf (embedded.RS.alpha previous) ∧
+      embedded.RS.alpha previous ≠ cycleDart ∧
+      embedded.RS.vertOf external = embedded.RS.vertOf cycleDart := by
+  let rotated := chord.cycleWalk.rotate vertex hvertex
+  have hrotCycle : rotated.IsCycle := by
+    exact (SimpleGraph.Walk.isCycle_rotate hvertex).2
+      (chord.cycleWalk_isCycle htriple)
+  have hrotNil : ¬ rotated.Nil := hrotCycle.not_nil
+  let previous : embedded.RS.D := rotated.lastDart hrotNil
+  let cycleDart : embedded.RS.D := rotated.firstDart hrotNil
+  have hrotDarts : rotated.darts ~r chord.cycleWalk.darts := by
+    exact chord.cycleWalk.rotate_darts vertex hvertex
+  have hpreviousRot : previous ∈ rotated.darts := by
+    exact rotated.lastDart_mem_darts hrotNil
+  have hcycleDartRot : cycleDart ∈ rotated.darts := by
+    exact rotated.firstDart_mem_darts hrotNil
+  have hprevious : previous ∈ chord.cycleWalk.darts := by
+    exact (hrotDarts.mem_iff).1 hpreviousRot
+  have hcycleDart : cycleDart ∈ chord.cycleWalk.darts := by
+    exact (hrotDarts.mem_iff).1 hcycleDartRot
+  have hbase : embedded.RS.vertOf cycleDart =
+      embedded.RS.vertOf (embedded.RS.alpha previous) := by
+    change cycleDart.fst = (embedded.RS.alpha previous).fst
+    change (rotated.firstDart hrotNil).fst =
+      (SimpleGraph.Dart.symm (rotated.lastDart hrotNil)).fst
+    rfl
+  have hnonback : embedded.RS.alpha previous ≠ cycleDart := by
+    intro heq
+    have hbad : rotated.penultimate = rotated.snd := by
+      have hsnd := congrArg (fun dart : embedded.RS.D => dart.snd) heq
+      simpa [previous, cycleDart, SimpleGraph.Walk.firstDart,
+        SimpleGraph.Walk.lastDart] using hsnd
+    exact hrotCycle.snd_ne_penultimate hbad.symm
+  refine ⟨previous, cycleDart, hprevious, hcycleDart, hbase, hnonback, ?_⟩
+  change external.fst = cycleDart.fst
+  simpa [cycleDart, SimpleGraph.Walk.firstDart] using hexternalVertex
+
+theorem exists_external_port_dart_at_chord_cycle_vertex
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (edge : G.edgeSet) (hedge : edge.1 ∈ chord.cycleWalk.edges)
+    {vertex : V} (hvertex : vertex ∈ (edge.1 : Sym2 V)) :
+    ∃ port : embedded.RS.D,
+      embedded.RS.vertOf port = vertex ∧
+      embedded.RS.edgeOf port ∉ (chord.boundary htriple).wall := by
+  rcases chord.exists_external_port_at_cycleWalk_vertex hdata hC htriple
+      edge hedge hvertex with
+    ⟨port, hportVertex, hportOutside⟩
+  obtain ⟨dart, hdart⟩ := embedded.RS.dartsOn_nonempty port
+  have hendpoints : embedded.RS.endpoints port =
+      {embedded.RS.vertOf dart,
+        embedded.RS.vertOf (embedded.RS.alpha dart)} :=
+    embedded.RS.endpoints_eq_pair_of_mem hdart
+  have hvertexEndpoints : vertex ∈ embedded.RS.endpoints port := by
+    exact (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation port vertex).2 hportVertex
+  have hvertexCases : vertex = embedded.RS.vertOf dart ∨
+      vertex = embedded.RS.vertOf (embedded.RS.alpha dart) := by
+    rw [hendpoints] at hvertexEndpoints
+    simpa using hvertexEndpoints
+  have hdartEdge : embedded.RS.edgeOf dart = port :=
+    embedded.RS.mem_dartsOn.mp hdart
+  have hportAway : embedded.RS.edgeOf dart ∉
+      (chord.boundary htriple).wall := by
+    intro hwall
+    rw [hdartEdge] at hwall
+    apply hportOutside
+    exact (chord.mem_boundary_wall_iff_mem_cycleWalk_edges
+      htriple port).1 hwall
+  rcases hvertexCases with hvertexDart | hvertexAlpha
+  · refine ⟨dart, hvertexDart.symm, hportAway⟩
+  · refine ⟨embedded.RS.alpha dart, hvertexAlpha.symm, ?_⟩
+    simpa only [embedded.RS.edge_alpha] using hportAway
+
+theorem chord_labels_eq_of_same_vertex_on_cycleWalk_support
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    {vertex : V} (hvertex : vertex ∈ chord.cycleWalk.support)
+    (labels : OrbitFace embedded.RS → F2)
+    {firstDart secondDart : embedded.RS.D}
+    (hfirst : embedded.RS.vertOf firstDart = vertex)
+    (hsecond : embedded.RS.vertOf secondDart = vertex)
+    (hfirstAway : embedded.RS.edgeOf firstDart ∉
+      (chord.boundary htriple).wall)
+    (hsecondAway : embedded.RS.edgeOf secondDart ∉
+      (chord.boundary htriple).wall) :
+    labels (dartOrbitFace embedded.RS firstDart) =
+      labels (dartOrbitFace embedded.RS secondDart) := by
+  have hcycle : chord.cycleWalk.IsCycle :=
+    chord.cycleWalk_isCycle htriple
+  rcases (SimpleGraph.Walk.mem_support_iff_exists_mem_edges_of_not_nil
+      hcycle.not_nil).1 hvertex with
+    ⟨edgeValue, hedgeValue, hvertexEdge⟩
+  let edge : G.edgeSet :=
+    ⟨edgeValue, chord.cycleWalk.edges_subset_edgeSet hedgeValue⟩
+  rcases exists_external_port_dart_at_chord_cycle_vertex
+      embedded hdata hC chord htriple edge hedgeValue hvertexEdge with
+    ⟨external, hexternalVertex, haway⟩
+  rcases exists_chord_cycle_turn_at_vertex_of_external_port
+      embedded chord htriple hvertex external hexternalVertex haway with
+    ⟨previous, cycleDart, hprevious, hcycleDart, hbase, hnonback,
+      hexternalCycleDart⟩
+  exact labels_eq_of_same_vertex_of_chord_cycle_turn_of_nonwall_darts
+    embedded hdata chord htriple hprevious hcycleDart hbase hnonback
+      external hexternalCycleDart haway labels
+      (hfirst.trans hexternalVertex.symm)
+      (hsecond.trans hexternalVertex.symm) hfirstAway hsecondAway
+
+theorem chord_labels_eq_of_same_vertex_of_nonwall_darts
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {firstDart secondDart : embedded.RS.D}
+    (hbase : embedded.RS.vertOf secondDart =
+      embedded.RS.vertOf firstDart)
+    (hfirstAway : embedded.RS.edgeOf firstDart ∉
+      (chord.boundary htriple).wall)
+    (hsecondAway : embedded.RS.edgeOf secondDart ∉
+      (chord.boundary htriple).wall) :
+    labels (dartOrbitFace embedded.RS firstDart) =
+      labels (dartOrbitFace embedded.RS secondDart) := by
+  by_cases hvertex : embedded.RS.vertOf firstDart ∈ chord.cycleWalk.support
+  · exact chord_labels_eq_of_same_vertex_on_cycleWalk_support
+      embedded hdata hC chord htriple hvertex labels rfl hbase
+        hfirstAway hsecondAway
+  · exact chord_labels_eq_of_same_vertex_off_cycleWalk_support
+      embedded chord htriple hvertex labels hexact
+      rfl hbase
+
+theorem exactCutLabelSide_iff_of_nonwall_chord_dart
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (dart : embedded.RS.D)
+    (haway : embedded.RS.edgeOf dart ∉
+      (chord.boundary htriple).wall) :
+    exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected (embedded.RS.vertOf dart) ↔
+      exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected (embedded.RS.vertOf (embedded.RS.alpha dart)) := by
+  have hexactWall : ∀ candidate : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS candidate) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha candidate)) ↔
+        embedded.RS.edgeOf candidate ∈ (chord.boundary htriple).wall := by
+    intro candidate
+    rw [chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple]
+    exact hexact candidate
+  apply exactCutLabelSide_iff_of_nonwall_dart_of_local_label_coherence
+    embedded.RS (chord.boundary htriple).wall labels selected hexactWall
+  · intro firstDart secondDart hbase hfirstAway hsecondAway
+    exact chord_labels_eq_of_same_vertex_of_nonwall_darts
+      embedded hdata hC chord htriple labels hexact hbase
+        hfirstAway hsecondAway
+  · exact haway
+
+theorem exactCutLabelSide_iff_of_nonwall_chord_edge
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {edge : G.edgeSet} (haway : edge ∉
+      (chord.boundary htriple).wall)
+    {u v : V} (hu : u ∈ (edge : Sym2 V))
+    (hv : v ∈ (edge : Sym2 V)) :
+    exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected u ↔
+      exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected v := by
+  obtain ⟨dart, hdart⟩ := embedded.RS.dartsOn_nonempty edge
+  have hdartEdge : embedded.RS.edgeOf dart = edge :=
+    embedded.RS.mem_dartsOn.mp hdart
+  have hdartAway : embedded.RS.edgeOf dart ∉
+      (chord.boundary htriple).wall := by
+    rw [hdartEdge]
+    exact haway
+  have hdartEndpoints : embedded.RS.endpoints edge =
+      {embedded.RS.vertOf dart,
+        embedded.RS.vertOf (embedded.RS.alpha dart)} :=
+    embedded.RS.endpoints_eq_pair_of_mem hdart
+  have huEndpoints : u ∈ embedded.RS.endpoints edge := by
+    exact (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation edge u).2 hu
+  have hvEndpoints : v ∈ embedded.RS.endpoints edge := by
+    exact (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation edge v).2 hv
+  have huCases : u = embedded.RS.vertOf dart ∨
+      u = embedded.RS.vertOf (embedded.RS.alpha dart) := by
+    rw [hdartEndpoints] at huEndpoints
+    simpa using huEndpoints
+  have hvCases : v = embedded.RS.vertOf dart ∨
+      v = embedded.RS.vertOf (embedded.RS.alpha dart) := by
+    rw [hdartEndpoints] at hvEndpoints
+    simpa using hvEndpoints
+  have hsideDart := exactCutLabelSide_iff_of_nonwall_chord_dart
+    embedded hdata hC chord htriple labels selected hexact dart hdartAway
+  rcases huCases with huD | huA <;>
+    rcases hvCases with hvD | hvA
+  · simpa [huD, hvD] using hsideDart
+  · simpa [huD, hvA] using hsideDart
+  · simpa [huA, hvD] using hsideDart.symm
+  · simpa [huA, hvA] using hsideDart.symm
+
+noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} (hC : IsTaitEdgeColoring G C)
+    {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (labels : OrbitFace embedded.RS → F2) (selected : F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (hcut_crosses : ∀ edge : G.edgeSet,
+      edge ∈ (chord.boundary htriple).wall →
+      EdgeCrossesVertexSide G
+        (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+          labels selected) edge)
+    (hinside_cycle : HasCycleOnSide G
+      (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+        labels selected))
+    (houtside_cycle : HasCycleOnSide G
+      (fun vertex => ¬ exactCutLabelSide embedded.RS
+        (chord.boundary htriple).wall labels selected vertex)) :
+    CyclicEdgeCutRealization G (chord.boundary htriple).wall := by
+  refine CyclicEdgeCutRealization.of_edge_side_classification
+    (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
+      labels selected) hcut_crosses ?_ hinside_cycle houtside_cycle
+  intro edge hnot u v hu hv
+  exact exactCutLabelSide_iff_of_nonwall_chord_edge
+    embedded hdata hC chord htriple labels selected hexact hnot hu hv
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/
