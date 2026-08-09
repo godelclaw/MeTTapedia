@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedBoundaryCleanCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorInterfaceMatching
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrientedHexSlab
 
 /-!
@@ -24,6 +25,7 @@ open GoertzelV24BoundedDegreePath
 open GoertzelV24BulkCorridor
 open GoertzelV24CleanHexCorridor
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSlab
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexCorridorSkeleton
@@ -493,6 +495,89 @@ theorem BoundaryCleanCorridorRealization.placementSideNeighbor_ne_of_add_two_lt
   · rw [hsame]
     exact internalSideNeighbor_adjacent realization.toCleanOrbitHexCorridorSkeleton
       htwoSided hunique right (placementSideEdge htwoSided rightPlacement rightPosition)
+
+/-- Two walks whose faces are each anchored at a pair of consecutive source
+corridor cells have disjoint supports once the pairs are separated by a
+three-cell gap.  Any shared face would be a full-dual neighbor of two axis
+positions more than two steps apart, contradicting the retained L1 geodesic.
+This is the nonlocal part of rail simplicity; only a bounded local window
+remains for the source-cell case analysis. -/
+theorem BoundaryCleanCorridorRealization.walkSupports_disjoint_of_two_source_anchor_pairs_of_add_three_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    {leftInterior rightInterior : CorridorInterior blockLength}
+    (hleftNext : leftInterior.center.val + 2 < blockLength)
+    (hrightNext : rightInterior.center.val + 2 < blockLength)
+    {leftStart leftFinish rightStart rightFinish : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    (leftWalk : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Walk
+      leftStart leftFinish)
+    (rightWalk : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Walk
+      rightStart rightFinish)
+    (hleft : ∀ face ∈ leftWalk.support,
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (realization.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton.faceAt leftInterior.center) face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (realization.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior leftInterior hleftNext).center) face)
+    (hright : ∀ face ∈ rightWalk.support,
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (realization.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton.faceAt rightInterior.center) face ∨
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (realization.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior rightInterior hrightNext).center) face)
+    (hseparated : leftInterior.center.val + 3 < rightInterior.center.val) :
+    leftWalk.support.Disjoint rightWalk.support := by
+  rw [List.disjoint_left]
+  intro face hleftFace hrightFace
+  rcases hleft face hleftFace with hleftStart | hleftNextFace
+  · rcases hright face hrightFace with hrightStart | hrightNextFace
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        leftInterior.center rightInterior.center (by omega)
+        ⟨face, hleftStart, hrightStart⟩
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        leftInterior.center (nextCorridorInterior rightInterior hrightNext).center
+        (by
+          change leftInterior.center.val + 2 < rightInterior.center.val + 1
+          omega)
+        ⟨face, hleftStart, hrightNextFace⟩
+  · rcases hright face hrightFace with hrightStart | hrightNextFace
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        (nextCorridorInterior leftInterior hleftNext).center rightInterior.center
+        (by
+          change leftInterior.center.val + 1 + 2 < rightInterior.center.val
+          omega)
+        ⟨face, hleftNextFace, hrightStart⟩
+    · exact realization.no_common_fullNeighbor_of_add_two_lt
+        (nextCorridorInterior leftInterior hleftNext).center
+        (nextCorridorInterior rightInterior hrightNext).center
+        (by
+          change leftInterior.center.val + 1 + 2 < rightInterior.center.val + 1
+          omega)
+        ⟨face, hleftNextFace, hrightNextFace⟩
 
 /-- Framed weighted L1 supplies a source-realized clean corridor, including
 the actual geodesic and block that the subsequent interface construction must
