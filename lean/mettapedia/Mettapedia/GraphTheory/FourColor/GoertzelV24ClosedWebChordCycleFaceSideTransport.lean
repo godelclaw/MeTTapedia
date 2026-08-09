@@ -136,6 +136,70 @@ theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_
     embedded.RS htwoSided hrotation (chord.boundary htriple).wall labels
       hexactWall external hcardExternal haway hadjacent hincident hsame
 
+/-! The preceding interface exposed the final rotational disjunction.  This
+adapter exposes the more geometric premise instead: once every other dart in
+the cubic fiber is known to be a wall dart, the disjunction is automatic.
+The remaining proof obligation is therefore visibly the local primal
+side/Jordan construction, not an arbitrary face-label choice. -/
+
+theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_vertex_of_all_other_incident_edges_in_wall
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (cycleDart : G.Dart) (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external = cycleDart.fst)
+    (haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall)
+    (hother : ∀ dart : embedded.RS.D,
+      embedded.RS.vertOf dart = embedded.RS.vertOf external →
+      dart ≠ external →
+      embedded.RS.edgeOf dart ∈ (chord.boundary htriple).wall)
+    {incident : embedded.RS.D}
+    (hincident : embedded.RS.vertOf incident =
+      embedded.RS.vertOf external)
+    (hsame : labels (dartOrbitFace embedded.RS incident) =
+      labels (dartOrbitFace embedded.RS external)) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary embedded.RS)
+      (Finset.univ : Finset (OrbitFace embedded.RS))
+      (chord.boundary htriple).wall).Reachable
+      (orbitFaceVertex embedded.RS external)
+      (orbitFaceVertex embedded.RS incident) := by
+  have hrotation : VertexRotationCyclic embedded.RS :=
+    hasCyclicVertexRotations_implies_vertexRotationCyclic
+      G embedded.cellulation.rotation
+        embedded.cellulation.vertexRotation_cyclic
+  have hcardCycle := cycleWalk_dartsAt_card_eq_three
+    embedded hdata chord htriple cycleDart hcycleDart
+  have hcardExternal :
+      (embedded.RS.dartsAt (embedded.RS.vertOf external)).card = 3 := by
+    rw [hexternalVertex]
+    exact hcardCycle
+  have hexactWall : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        embedded.RS.edgeOf dart ∈ (chord.boundary htriple).wall := by
+    intro dart
+    rw [chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple]
+    exact hexact dart
+  exact faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_all_other_incident_edges_in_wall
+    embedded.RS htwoSided hrotation (chord.boundary htriple).wall labels
+      hexactWall external hcardExternal haway hother hincident hsame
+
 /-!
 At a vertex outside the chord wall, the cut facial component already gives a
 well-defined primal side.  The only input beyond the generic face-tracing

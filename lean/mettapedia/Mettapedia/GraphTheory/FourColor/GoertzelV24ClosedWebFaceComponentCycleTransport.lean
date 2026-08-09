@@ -274,6 +274,83 @@ theorem faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_a
       exact RS.rho.injective hback
     exact (hincidentExternal hincidentEq).elim
 
+/-! The adjacent-wall disjunction need not be supplied by a later face
+argument.  It follows directly from the cubic rotation fiber once the
+geometric part has established that every incident dart other than the
+off-wall dart belongs to the wall.  Keeping this small counting step
+separate makes the primal Jordan/seam obligation explicit. -/
+
+theorem exists_adjacent_wall_of_all_other_incident_darts_in_wall
+    (RS : RotationSystem V E)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E)
+    (external : RS.D)
+    (hcard : (RS.dartsAt (RS.vertOf external)).card = 3)
+    (hother : ∀ dart : RS.D,
+      RS.vertOf dart = RS.vertOf external →
+      dart ≠ external → RS.edgeOf dart ∈ wall) :
+    RS.edgeOf (RS.rho external) ∈ wall ∨
+      RS.edgeOf (RS.rho (RS.rho external)) ∈ wall := by
+  by_cases hρ : RS.edgeOf (RS.rho external) ∈ wall
+  · exact Or.inl hρ
+  · right
+    apply hother (RS.rho (RS.rho external))
+    · exact (RS.vert_rho (RS.rho external)).trans (RS.vert_rho external)
+    · intro hρ2
+      have hexternalMem : external ∈ RS.dartsAt (RS.vertOf external) := by
+        simp [RotationSystem.dartsAt]
+      have hpow :=
+        (rho_isCycleOn_dartsAt RS hrotation (RS.vertOf external)).pow_card_apply
+          hexternalMem
+      rw [hcard] at hpow
+      have hcube : RS.rho (RS.rho (RS.rho external)) = external := by
+        simpa [pow_succ] using hpow
+      have hfixed : RS.rho external = external := by
+        simpa [hρ2] using hcube
+      have hnontrivialFinset :
+          (RS.dartsAt (RS.vertOf external)).Nontrivial := by
+        apply Finset.one_lt_card_iff_nontrivial.mp
+        rw [hcard]
+        omega
+      have hnontrivial :
+          (RS.dartsAt (RS.vertOf external) : Set RS.D).Nontrivial := by
+        simpa only [Finset.coe_sort_coe] using hnontrivialFinset
+      exact ((rho_isCycleOn_dartsAt RS hrotation
+        (RS.vertOf external)).apply_ne hnontrivial hexternalMem) hfixed
+
+/-! Combining the counting lemma with the exact-label transport gives the
+wall-avoiding connection needed at a primal cycle vertex. -/
+
+theorem faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_all_other_incident_edges_in_wall
+    (RS : RotationSystem V E)
+    (htwoSided : OrbitFacesTwoSided RS)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E)
+    (labels : OrbitFace RS → F2)
+    (hexact : ∀ dart : RS.D,
+      labels (dartOrbitFace RS dart) ≠
+          labels (dartOrbitFace RS (RS.alpha dart)) ↔
+        RS.edgeOf dart ∈ wall)
+    (external : RS.D)
+    (hcard : (RS.dartsAt (RS.vertOf external)).card = 3)
+    (haway : RS.edgeOf external ∉ wall)
+    (hother : ∀ dart : RS.D,
+      RS.vertOf dart = RS.vertOf external →
+      dart ≠ external → RS.edgeOf dart ∈ wall)
+    {incident : RS.D}
+    (hincident : RS.vertOf incident = RS.vertOf external)
+    (hsame : labels (dartOrbitFace RS incident) =
+      labels (dartOrbitFace RS external)) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) wall).Reachable
+      (orbitFaceVertex RS external) (orbitFaceVertex RS incident) := by
+  exact faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_adjacent_wall
+    RS htwoSided hrotation wall labels hexact external hcard haway
+    (exists_adjacent_wall_of_all_other_incident_darts_in_wall
+      RS hrotation wall external hcard hother)
+    hincident hsame
+
 /-! Hole-free face regions also have a direct primal consequence.  At a
 wall-free vertex, all incident face choices are connected by rotation; hence
 a vertex incident with a forbidden hole face cannot belong to the selected
