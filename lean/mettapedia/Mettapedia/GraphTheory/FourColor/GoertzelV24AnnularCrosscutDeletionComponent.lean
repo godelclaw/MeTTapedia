@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutSeparator
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutComponent
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutBond
 
 /-!
 # Deletion components of an annular crosscut separator
@@ -15,7 +16,9 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24AnnularCrosscut
 
 open GoertzelV24AnnularCrosscutSlitRotation
+open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24DualCycleSeparator
+open GoertzelV24DualCycleBond
 open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
@@ -142,6 +145,108 @@ theorem connected_induce_primalCutComponent
       (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent) :
     (G.induce component.supp).Connected :=
   connected_induce_delete_component (pair.primalCutEdges data) component
+
+/-- Distinct deletion components have a genuine original-graph boundary
+between them.  Connectivity supplies a path from one component to the other,
+and the first change of side along that path is a crossing edge. -/
+theorem componentCrossingEdges_nonempty_of_distinct
+    (data : Data G)
+    (hconnected : G.Connected)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (inside outside : (G.deleteEdges
+      (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent)
+    (hdistinct : inside ≠ outside) :
+    (componentCrossingEdges (pair.primalCutEdges data) inside).Nonempty := by
+  rcases inside.nonempty_supp with ⟨insideVertex, hinside⟩
+  rcases outside.nonempty_supp with ⟨outsideVertex, houtside⟩
+  have houtsideNotInside : outsideVertex ∉ inside.supp := by
+    intro hcommon
+    apply hdistinct
+    exact SimpleGraph.ConnectedComponent.eq_of_common_vertex hcommon houtside
+  rcases hconnected insideVertex outsideVertex with ⟨walk⟩
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides
+      (fun vertex => vertex ∈ inside.supp) walk hinside houtsideNotInside with
+    ⟨edge, _hwalkEdge, hcross⟩
+  exact ⟨edge,
+    (mem_componentCrossingEdges_iff (pair.primalCutEdges data) inside edge).2
+      hcross⟩
+
+/-- A component selected from the paired annular separator has exactly the
+separator as its original-graph boundary.  This is the planar bond step: the
+inclusion from edge deletion is upgraded to equality by parity propagation
+around the simple dual loop. -/
+theorem componentCrossingEdges_eq_primalCutEdges_of_distinct
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hconnected : G.Connected)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (inside outside : (G.deleteEdges
+      (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent)
+    (hdistinct : inside ≠ outside) :
+    componentCrossingEdges (pair.primalCutEdges data) inside =
+      pair.primalCutEdges data := by
+  let side : V → Prop := fun vertex => vertex ∈ inside.supp
+  have hsubset : crossingEdgeFinset G side ⊆ pair.primalCutEdges data := by
+    rw [← componentCrossingEdges_eq_crossingEdgeFinset
+      (pair.primalCutEdges data) inside]
+    exact pair.componentCrossingEdges_subset_primalCutEdges data inside
+  have hnonempty : (crossingEdgeFinset G side).Nonempty := by
+    rw [← componentCrossingEdges_eq_crossingEdgeFinset
+      (pair.primalCutEdges data) inside]
+    exact pair.componentCrossingEdges_nonempty_of_distinct data hconnected
+      inside outside hdistinct
+  have hboundary :=
+    crossingEdgeFinset_eq_dualWalkCrossingEdges_of_isCycle_of_subset
+      data htwoSided hunique pair.dualLoop pair.dualLoop_isCycle side hsubset
+        hnonempty
+  change componentCrossingEdges (pair.primalCutEdges data) inside = _
+  rw [componentCrossingEdges_eq_crossingEdgeFinset]
+  exact hboundary
+
+/-- The paired source transversals therefore construct a retained component
+whose boundary is exactly their finite primal separator. -/
+theorem exists_primalCutComponent_exactBoundary
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (hsphere : OrbitSphericalCubicMapData data.toRotationSystem)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    ∃ component : (G.deleteEdges
+        (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent,
+      componentCrossingEdges (pair.primalCutEdges data) component =
+        pair.primalCutEdges data := by
+  rcases pair.exists_distinct_primalCutComponents data htwoSided hdual
+      hconnected hsphere with ⟨inside, outside, hdistinct⟩
+  exact ⟨inside,
+    pair.componentCrossingEdges_eq_primalCutEdges_of_distinct data htwoSided
+      hconnected inside outside hdistinct⟩
 
 end SeparatedAlignedSimpleDualCrosscuts
 
