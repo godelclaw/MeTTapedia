@@ -77,6 +77,11 @@ structure SourceCornerAlignedRailPair
       first.toInterface.secondLayerFace second.toInterface.secondLayerFace
   firstRail_isPath : firstRail.IsPath
   secondRail_isPath : secondRail.IsPath
+  /-- The two rails through one source tile are the two distinct sides of a
+  genuine layer boundary.  This local separation is proved from the actual
+  three-way rung geometry, not inferred from a finite profile code. -/
+  firstRail_support_disjoint_secondRail :
+    firstRail.support.Disjoint secondRail.support
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
   /-- Every face on a local rail is an actual side neighbor of one of the
@@ -282,6 +287,18 @@ theorem sourceCornerAlignedRailPair_of_forwardTwo
           simpa only [SourceCornerAlignedForwardTwoRailWitness.middleFace] using hBM
         simpa only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
           List.mem_cons, List.not_mem_nil, or_false, not_or] using And.intro hBM' hBD
+    firstRail_support_disjoint_secondRail := by
+      apply List.disjoint_left.mpr
+      intro face hfirst hsecond
+      simp only [SimpleGraph.Walk.support_copy, SimpleGraph.Walk.support_nil,
+        SimpleGraph.Walk.support_cons, List.mem_cons, List.not_mem_nil,
+        or_false] at hfirst hsecond
+      rcases hfirst with rfl
+      rcases hsecond with hsecond | hsecond | hsecond
+      · exact hAB hsecond
+      · exact hAM (by
+          simpa [SourceCornerAlignedForwardTwoRailWitness.middleFace] using hsecond)
+      · exact hAD hsecond
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
     firstRail_support_adjacent_to_source := by
@@ -366,11 +383,26 @@ theorem sourceCornerAlignedRailPair_of_forwardThree
       InternalHexRungPlacement.outgoingPosition6] using hopposite6
   let rails := sourceCornerAlignedRailStep_of_oppositeRungs hcubic hrotation
     first second (by simpa [sharedPlacement] using hopposite)
+  rcases sourceCornerAlignedExteriorFaces_pairwise_ne_of_oppositeRungs
+      first second (by simpa [sharedPlacement] using hopposite) with
+    ⟨hAB, hAC, hAD, hBC, hBD, hCD⟩
   exact ⟨{
     firstRail := rails.1.toWalk
     secondRail := rails.2.toWalk
     firstRail_isPath := SimpleGraph.Walk.IsPath.of_adj rails.1
     secondRail_isPath := SimpleGraph.Walk.IsPath.of_adj rails.2
+    firstRail_support_disjoint_secondRail := by
+      apply List.disjoint_left.mpr
+      intro face hfirst hsecond
+      simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
+        List.mem_cons, List.not_mem_nil, or_false] at hfirst hsecond
+      rcases hfirst with rfl | rfl
+      · rcases hsecond with hsecond | hsecond
+        · exact hAB hsecond
+        · exact hAD hsecond
+      · rcases hsecond with hsecond | hsecond
+        · exact hBC.symm hsecond
+        · exact hCD hsecond
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
     firstRail_support_adjacent_to_source := by
@@ -443,6 +475,17 @@ theorem sourceCornerAlignedRailPair_of_forwardFour
         simpa only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
           List.mem_cons, List.not_mem_nil, or_false, not_or] using And.intro hAM' hAC
     secondRail_isPath := by simp
+    firstRail_support_disjoint_secondRail := by
+      apply List.disjoint_left.mpr
+      intro face hfirst hsecond
+      simp only [SimpleGraph.Walk.support_copy, SimpleGraph.Walk.support_nil,
+        SimpleGraph.Walk.support_cons, List.mem_cons, List.not_mem_nil,
+        or_false] at hfirst hsecond
+      rcases hfirst with rfl | rfl | rfl
+      · exact hAB hsecond
+      · exact hBM.symm (by
+          simpa [SourceCornerAlignedForwardFourRailWitness.middleFace] using hsecond)
+      · exact hBC.symm hsecond
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
     firstRail_support_adjacent_to_source := by
