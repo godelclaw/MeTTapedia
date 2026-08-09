@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebRadialPathChords
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebAnnularEmbedding
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebFaceComponentCycleTransport
 import Mettapedia.GraphTheory.FourColor.GoertzelV24LocalFaceCutCycleWalkTransport
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
@@ -23,6 +24,7 @@ namespace GoertzelV24ClosedWebChordCycleFaceSideTransport
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebFaceTracing
+open GoertzelV24ClosedWebFaceComponentCycleTransport
 open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24FaceDualConnectedness
@@ -69,6 +71,70 @@ theorem cycleWalk_dartsAt_card_eq_three
   rw [G.dart_fst_fiber_card_eq_degree]
   rw [← incidentEdgeFinset_card_eq_degree]
   exact hincident
+
+/-! The generic cubic seam is now exposed at the actual chord interface.  A
+cycle dart supplies the local degree-three certificate; the caller still has
+to provide the exact-cut labels and identify which rotational successor edge
+is on the chord wall.  This is plumbing, not a hidden Jordan assumption. -/
+
+theorem faceAdjacencyAvoiding_reachable_of_same_exact_chordCycle_label_at_cycle_vertex
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    (cycleDart : G.Dart) (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external = cycleDart.fst)
+    (haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall)
+    (hadjacent :
+      embedded.RS.edgeOf (embedded.RS.rho external) ∈
+          (chord.boundary htriple).wall ∨
+        embedded.RS.edgeOf (embedded.RS.rho (embedded.RS.rho external)) ∈
+          (chord.boundary htriple).wall)
+    {incident : embedded.RS.D}
+    (hincident : embedded.RS.vertOf incident =
+      embedded.RS.vertOf external)
+    (hsame : labels (dartOrbitFace embedded.RS incident) =
+      labels (dartOrbitFace embedded.RS external)) :
+    (faceAdjacencyAvoiding
+      (orbitFaceBoundary embedded.RS)
+      (Finset.univ : Finset (OrbitFace embedded.RS))
+      (chord.boundary htriple).wall).Reachable
+      (orbitFaceVertex embedded.RS external)
+      (orbitFaceVertex embedded.RS incident) := by
+  have hrotation : VertexRotationCyclic embedded.RS :=
+    hasCyclicVertexRotations_implies_vertexRotationCyclic
+      G embedded.cellulation.rotation
+        embedded.cellulation.vertexRotation_cyclic
+  have hcardCycle := cycleWalk_dartsAt_card_eq_three
+    embedded hdata chord htriple cycleDart hcycleDart
+  have hcardExternal :
+      (embedded.RS.dartsAt (embedded.RS.vertOf external)).card = 3 := by
+    rw [hexternalVertex]
+    exact hcardCycle
+  have hexactWall : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        embedded.RS.edgeOf dart ∈ (chord.boundary htriple).wall := by
+    intro dart
+    rw [chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple]
+    exact hexact dart
+  exact faceAdjacencyAvoiding_reachable_of_same_exact_label_at_cubic_vertex_of_adjacent_wall
+    embedded.RS htwoSided hrotation (chord.boundary htriple).wall labels
+      hexactWall external hcardExternal haway hadjacent hincident hsame
 
 /-!
 At a vertex outside the chord wall, the cut facial component already gives a
