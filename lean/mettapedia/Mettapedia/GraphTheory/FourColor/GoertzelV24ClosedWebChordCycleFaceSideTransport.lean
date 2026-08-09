@@ -742,8 +742,9 @@ theorem filledFaceComponentSide_wallDartSideSeam_of_externalPortReachability
     (htriple : IsTaitColorTriple majority first second)
     (htwoSided : OrbitFacesTwoSided embedded.RS)
     (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    {edgeCut : Finset G.edgeSet}
     (hreach : ∀ (edge : G.edgeSet), edge ∉
-      (chord.boundary htriple).wall →
+      edgeCut →
       ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
       ((embedded.RS.vertOf dart ∈ chord.cycleWalk.support →
           embedded.RS.vertOf (embedded.RS.alpha dart) ∉
@@ -762,7 +763,7 @@ theorem filledFaceComponentSide_wallDartSideSeam_of_externalPortReachability
             (Finset.univ : Finset (OrbitFace embedded.RS))
             (chord.boundary htriple).wall).Reachable
             seed (orbitFaceVertex embedded.RS dart)))) :
-    ∀ (edge : G.edgeSet), edge ∉ (chord.boundary htriple).wall →
+    ∀ (edge : G.edgeSet), edge ∉ edgeCut →
       ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
       (embedded.RS.vertOf dart ∈ chord.cycleWalk.support ∨
         embedded.RS.vertOf (embedded.RS.alpha dart) ∈
@@ -880,6 +881,71 @@ noncomputable def cyclicEdgeCutRealization_of_filledFaceComponentSide
   · exact hcut_crosses
   · exact hinside_cycle
   · exact houtside_cycle
+
+/-! The route-facing constructor takes the port routes directly.  The generic
+filled-side constructor still owns the mechanical endpoint classification;
+this adapter only converts the route-level side equivalence into its
+off-support component-membership seam. -/
+
+noncomputable def cyclicEdgeCutRealization_of_filledFaceComponentSide_of_externalPortReachability
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    {edgeCut : Finset G.edgeSet}
+    (hreach : ∀ (edge : G.edgeSet), edge ∉ edgeCut →
+      ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
+      ((embedded.RS.vertOf dart ∈ chord.cycleWalk.support →
+          embedded.RS.vertOf (embedded.RS.alpha dart) ∉
+            chord.cycleWalk.support →
+          (faceAdjacencyAvoiding
+            (orbitFaceBoundary embedded.RS)
+            (Finset.univ : Finset (OrbitFace embedded.RS))
+            (chord.boundary htriple).wall).Reachable
+            seed (orbitFaceVertex embedded.RS
+              (embedded.RS.alpha dart))) ∧
+       (embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+          chord.cycleWalk.support →
+          embedded.RS.vertOf dart ∉ chord.cycleWalk.support →
+          (faceAdjacencyAvoiding
+            (orbitFaceBoundary embedded.RS)
+            (Finset.univ : Finset (OrbitFace embedded.RS))
+            (chord.boundary htriple).wall).Reachable
+            seed (orbitFaceVertex embedded.RS dart))))
+    (hcut_crosses : ∀ edge : G.edgeSet, edge ∈ edgeCut →
+      EdgeCrossesVertexSide G
+        (filledFaceComponentSide chord.cycleWalk.support
+          (faceComponentSide embedded.RS (chord.boundary htriple).wall seed))
+        edge)
+    (hinside_cycle : HasCycleOnSide G
+      (filledFaceComponentSide chord.cycleWalk.support
+        (faceComponentSide embedded.RS (chord.boundary htriple).wall seed)))
+    (houtside_cycle : HasCycleOnSide G
+      (fun vertex => ¬ filledFaceComponentSide chord.cycleWalk.support
+        (faceComponentSide embedded.RS (chord.boundary htriple).wall seed)
+          vertex)) :
+    CyclicEdgeCutRealization G edgeCut := by
+  have hsideSeam :=
+    filledFaceComponentSide_wallDartSideSeam_of_externalPortReachability
+      (edgeCut := edgeCut) embedded chord htriple htwoSided seed hreach
+  refine cyclicEdgeCutRealization_of_filledFaceComponentSide
+    (edgeCut := edgeCut) embedded chord htriple htwoSided seed ?_
+    hcut_crosses hinside_cycle houtside_cycle
+  intro edge hedge dart hdart
+  constructor
+  · intro hleft hright
+    have hiff := hsideSeam edge hedge dart hdart (Or.inl hleft)
+    exact (filledFaceComponentSide_iff_of_not_mem hright).1
+      (hiff.mp (Or.inl hleft))
+  · intro hright hleft
+    have hiff := hsideSeam edge hedge dart hdart (Or.inr hright)
+    exact (filledFaceComponentSide_iff_of_not_mem hleft).1
+      (hiff.mpr (Or.inl hright))
 
 /-!
 The existential `faceComponentSide` is intentionally not used as the
