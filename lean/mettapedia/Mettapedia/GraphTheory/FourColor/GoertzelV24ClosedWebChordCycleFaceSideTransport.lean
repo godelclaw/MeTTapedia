@@ -4,6 +4,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebFaceComponentCycleTr
 import Mettapedia.GraphTheory.FourColor.GoertzelV24LocalFaceCutCycleWalkTransport
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceCutVertexAvoidingTransport
 
 /-!
 # Oriented face-side transport around a closed-web chord cycle
@@ -768,6 +769,103 @@ theorem labels_eq_of_same_vertex_of_unique_nonwall_port
   subst first
   subst second
   rfl
+
+theorem labels_eq_of_same_vertex_of_all_incident_edges_not_wall
+    {E : Type*} [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E)
+    (hrotation : VertexRotationCyclic RS)
+    (wall : Finset E) (labels : OrbitFace RS → F2)
+    (hexact : ∀ dart : RS.D,
+      labels (dartOrbitFace RS dart) ≠
+          labels (dartOrbitFace RS (RS.alpha dart)) ↔
+        RS.edgeOf dart ∈ wall)
+    {first second : RS.D}
+    (hbase : RS.vertOf second = RS.vertOf first)
+    (hnot : ∀ incident : RS.D,
+      RS.vertOf incident = RS.vertOf first →
+      RS.edgeOf incident ∉ wall) :
+    labels (dartOrbitFace RS first) =
+      labels (dartOrbitFace RS second) :=
+  GoertzelV24FaceCutVertexAvoidingTransport.labels_eq_of_same_vertex_of_all_edges_not_cut
+    RS hrotation labels (fun edge => edge ∈ wall) hexact first second hbase hnot
+
+/-! The off-support half of the chord-side local coherence field. -/
+
+theorem chord_labels_eq_of_same_vertex_off_cycleWalk_support
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    {vertex : V} (hvertex : vertex ∉ chord.cycleWalk.support)
+    (labels : OrbitFace embedded.RS → F2)
+    (hexact : ∀ dart : embedded.RS.D,
+      labels (dartOrbitFace embedded.RS dart) ≠
+          labels (dartOrbitFace embedded.RS
+            (embedded.RS.alpha dart)) ↔
+        (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
+    {firstDart secondDart : embedded.RS.D}
+    (hfirst : embedded.RS.vertOf firstDart = vertex)
+    (hsecond : embedded.RS.vertOf secondDart = vertex) :
+    labels (dartOrbitFace embedded.RS firstDart) =
+      labels (dartOrbitFace embedded.RS secondDart) := by
+  have hrotation : VertexRotationCyclic embedded.RS :=
+    hasCyclicVertexRotations_implies_vertexRotationCyclic
+      G embedded.cellulation.rotation
+        embedded.cellulation.vertexRotation_cyclic
+  apply labels_eq_of_same_vertex_of_all_incident_edges_not_wall
+    embedded.RS hrotation (chord.boundary htriple).wall labels
+  · intro dart
+    rw [chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple]
+    exact hexact dart
+  · exact hsecond.trans hfirst.symm
+  · intro incident hincident hwall
+    have hnotCycle :=
+      chord.toRotationSystem_edge_not_mem_cycleWalk_of_vertex_not_mem_support
+        embedded.cellulation.rotation hvertex incident (hincident.trans hfirst)
+    exact hnotCycle ((chord.mem_boundary_wall_iff_mem_cycleWalk_edges
+      htriple (embedded.RS.edgeOf incident)).1 hwall)
+
+theorem labels_eq_of_same_vertex_of_chord_cycle_turn_of_nonwall_darts
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    {previous cycleDart : embedded.RS.D}
+    (hprevious : previous ∈ chord.cycleWalk.darts)
+    (hcycleDart : cycleDart ∈ chord.cycleWalk.darts)
+    (hbase : embedded.RS.vertOf cycleDart =
+      embedded.RS.vertOf (embedded.RS.alpha previous))
+    (hnonback : embedded.RS.alpha previous ≠ cycleDart)
+    (external : embedded.RS.D)
+    (hexternalVertex : embedded.RS.vertOf external =
+      embedded.RS.vertOf cycleDart)
+    (haway : embedded.RS.edgeOf external ∉
+      (chord.boundary htriple).wall)
+    (labels : OrbitFace embedded.RS → F2)
+    {firstDart secondDart : embedded.RS.D}
+    (hfirstBase : embedded.RS.vertOf firstDart =
+      embedded.RS.vertOf external)
+    (hsecondBase : embedded.RS.vertOf secondDart =
+      embedded.RS.vertOf external)
+    (hfirstAway : embedded.RS.edgeOf firstDart ∉
+      (chord.boundary htriple).wall)
+    (hsecondAway : embedded.RS.edgeOf secondDart ∉
+      (chord.boundary htriple).wall) :
+    labels (dartOrbitFace embedded.RS firstDart) =
+      labels (dartOrbitFace embedded.RS secondDart) := by
+  exact labels_eq_of_same_vertex_of_unique_nonwall_port
+    embedded.RS (chord.boundary htriple).wall labels
+    (all_other_incident_edges_in_wall_of_chord_cycle_turn
+      embedded chord htriple hdata hprevious hcycleDart hbase hnonback
+        external hexternalVertex haway)
+    hfirstBase hsecondBase hfirstAway hsecondAway
 
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
