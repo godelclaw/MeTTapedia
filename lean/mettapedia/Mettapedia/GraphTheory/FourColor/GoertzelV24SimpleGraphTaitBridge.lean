@@ -139,6 +139,33 @@ theorem graphBackedVertexMinimalTaitCounterexample_false_of_deletedEdgeColorable
           graphData minimal.spherical.cubic)
         hdeletedColorable hcompletable)
 
+/-! The final Trail-Completability input is uniform in the chosen deleted
+edge. Naming that input here makes the endgame contract explicit: the
+geometric/combinatorial work must prove this predicate, while the graph-side
+minimal-counterexample contradiction is already closed. In particular, this
+is not a new existence claim and it does not choose a classical finite
+catalogue. -/
+
+def UniformDeletedEdgeTrailCompletability
+    (graphData : Data G) : Prop :=
+  ∀ {u v : V}, G.Adj u v →
+    ∀ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
+      IsTaitEdgeColoring (DeletedEdgeGraph G u v) C →
+        FramedTangleCompletable
+          (unrestrictedDeletedEdgeFrame G u v) C
+
+theorem graphBackedVertexMinimalTaitCounterexample_false_of_uniformDeletedEdgeTrailCompletability
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (hcompletion : UniformDeletedEdgeTrailCompletability graphData)
+    {u v : V} (huv : G.Adj u v)
+    (hdeletedColorable :
+      ∃ C : (DeletedEdgeGraph G u v).EdgeColoring Color,
+        IsTaitEdgeColoring (DeletedEdgeGraph G u v) C) :
+    False := by
+  exact graphBackedVertexMinimalTaitCounterexample_false_of_deletedEdgeColorable_and_completable
+    graphData minimal huv hdeletedColorable (fun C hC => hcompletion huv C hC)
+
 end
 
 end GoertzelV24SimpleGraphTaitBridge
