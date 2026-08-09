@@ -676,6 +676,97 @@ noncomputable def cyclicEdgeCutRealization_of_faceComponentSide
     wallDartSideSeam hcut_crosses hinside_cycle houtside_cycle
 
 /-!
+The final primal side should fill the selected facial component across the
+wall vertices, rather than use the existential component predicate there.
+This definition makes that normal-form choice explicit.  The only new input
+needed for an unlisted edge touching the wall is that its off-wall endpoint
+belongs to the selected component; edges with both endpoints off the wall use
+the already-proved facial transport.
+-/
+
+def filledFaceComponentSide
+    (support : List V) (faceSide : V → Prop) (vertex : V) : Prop :=
+  vertex ∈ support ∨ faceSide vertex
+
+theorem filledFaceComponentSide_iff_of_not_mem
+    {support : List V} {faceSide : V → Prop} {vertex : V}
+    (hvertex : vertex ∉ support) :
+    filledFaceComponentSide support faceSide vertex ↔ faceSide vertex := by
+  simp [filledFaceComponentSide, hvertex]
+
+noncomputable def cyclicEdgeCutRealization_of_filledFaceComponentSide
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    {edgeCut : Finset G.edgeSet}
+    (hsupport_seam : ∀ (edge : G.edgeSet), edge ∉ edgeCut →
+      ∀ (dart : embedded.RS.D), embedded.RS.edgeOf dart = edge →
+      ((embedded.RS.vertOf dart ∈ chord.cycleWalk.support →
+          embedded.RS.vertOf (embedded.RS.alpha dart) ∉
+            chord.cycleWalk.support →
+          faceComponentSide embedded.RS (chord.boundary htriple).wall
+            seed (embedded.RS.vertOf (embedded.RS.alpha dart))) ∧
+       (embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+          chord.cycleWalk.support →
+          embedded.RS.vertOf dart ∉ chord.cycleWalk.support →
+          faceComponentSide embedded.RS (chord.boundary htriple).wall
+            seed (embedded.RS.vertOf dart))))
+    (hcut_crosses : ∀ edge : G.edgeSet, edge ∈ edgeCut →
+      EdgeCrossesVertexSide G
+        (filledFaceComponentSide chord.cycleWalk.support
+          (faceComponentSide embedded.RS (chord.boundary htriple).wall seed))
+        edge)
+    (hinside_cycle : HasCycleOnSide G
+      (filledFaceComponentSide chord.cycleWalk.support
+        (faceComponentSide embedded.RS (chord.boundary htriple).wall seed)))
+    (houtside_cycle : HasCycleOnSide G
+      (fun vertex => ¬ filledFaceComponentSide chord.cycleWalk.support
+        (faceComponentSide embedded.RS (chord.boundary htriple).wall seed)
+          vertex)) :
+    CyclicEdgeCutRealization G edgeCut := by
+  let side : V → Prop := filledFaceComponentSide chord.cycleWalk.support
+    (faceComponentSide embedded.RS (chord.boundary htriple).wall seed)
+  apply cyclicEdgeCutRealization_of_faceComponentSide_with_wallDartSideSeam
+    embedded chord htriple htwoSided seed side
+  · intro vertex hvertex
+    exact filledFaceComponentSide_iff_of_not_mem hvertex
+  · intro edge hedge dart hdart htouch
+    by_cases hleft : embedded.RS.vertOf dart ∈ chord.cycleWalk.support
+    · by_cases hright : embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+          chord.cycleWalk.support
+      · change dart.fst ∈ chord.cycleWalk.support at hleft
+        change dart.snd ∈ chord.cycleWalk.support at hright
+        simp [side, filledFaceComponentSide, hleft, hright]
+      · have hrightSide := (hsupport_seam edge hedge dart hdart).1 hleft hright
+        change dart.fst ∈ chord.cycleWalk.support at hleft
+        change dart.snd ∉ chord.cycleWalk.support at hright
+        change faceComponentSide embedded.RS (chord.boundary htriple).wall
+          seed dart.snd at hrightSide
+        simp [side, filledFaceComponentSide, hleft, hright, hrightSide]
+    · by_cases hright : embedded.RS.vertOf (embedded.RS.alpha dart) ∈
+          chord.cycleWalk.support
+      · have hleftSide := (hsupport_seam edge hedge dart hdart).2 hright hleft
+        change dart.fst ∉ chord.cycleWalk.support at hleft
+        change dart.snd ∈ chord.cycleWalk.support at hright
+        change faceComponentSide embedded.RS (chord.boundary htriple).wall
+          seed dart.fst at hleftSide
+        simp [side, filledFaceComponentSide, hleft, hright, hleftSide]
+      · have hface := faceComponentSide_iff_of_edge_off_cycleWalk_support
+          embedded chord htriple htwoSided seed dart hleft hright
+        change dart.fst ∉ chord.cycleWalk.support at hleft
+        change dart.snd ∉ chord.cycleWalk.support at hright
+        simpa [side, filledFaceComponentSide, hleft, hright] using hface
+  · exact hcut_crosses
+  · exact hinside_cycle
+  · exact houtside_cycle
+
+/-!
 The existential `faceComponentSide` is intentionally not used as the
 definition of a primal side at a wall vertex: a wall vertex can see faces on
 both sides.  The exact binary face cut already supplies the missing canonical
@@ -906,6 +997,41 @@ theorem hasCycleOnSide_of_faceComponentSide_chord_cycle
   · intro edge
     exact chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge
   · exact hseed
+
+/-! Filling the wall vertices only enlarges the selected side, so the same
+positive cycle remains a witness for the filled primal predicate.  This is a
+pure transport fact; it does not discharge the opposite-side/Jordan premise.
+-/
+
+theorem hasCycleOnSide_of_filledFaceComponentSide_chord_cycle
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    (hseed :
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary embedded.RS)
+        (Finset.univ : Finset (OrbitFace embedded.RS))
+        (chord.boundary htriple).wall).Reachable
+        seed
+        (orbitFaceVertex embedded.RS
+          (chord.cycleWalk.firstDart
+            (chord.cycleWalk_isCycle htriple).not_nil))) :
+    HasCycleOnSide G
+      (filledFaceComponentSide chord.cycleWalk.support
+        (faceComponentSide embedded.RS
+          (chord.boundary htriple).wall seed)) := by
+  apply HasCycleOnSide.mono
+  · intro vertex hvertex
+    exact Or.inr hvertex
+  · exact hasCycleOnSide_of_faceComponentSide_chord_cycle
+      embedded hdata chord htriple htwoSided seed hseed
 
 /-! Any wall vertex can be based at a consecutive pair of cycle darts.  The
 rotated cycle makes the predecessor/successor choice canonical; the cycle
