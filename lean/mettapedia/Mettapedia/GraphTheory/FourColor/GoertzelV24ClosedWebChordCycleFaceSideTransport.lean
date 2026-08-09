@@ -867,6 +867,46 @@ theorem labels_eq_of_same_vertex_of_chord_cycle_turn_of_nonwall_darts
         external hexternalVertex haway)
     hfirstBase hsecondBase hfirstAway hsecondAway
 
+/-! The existing cycle-transport theorem supplies the positive side cycle
+once the selected seed face is known to touch the chord wall. -/
+
+theorem hasCycleOnSide_of_faceComponentSide_chord_cycle
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second)
+    (htwoSided : OrbitFacesTwoSided embedded.RS)
+    (seed : AmbientFace (Finset.univ : Finset (OrbitFace embedded.RS)))
+    (hseed :
+      (faceAdjacencyAvoiding
+        (orbitFaceBoundary embedded.RS)
+        (Finset.univ : Finset (OrbitFace embedded.RS))
+        (chord.boundary htriple).wall).Reachable
+        seed
+        (orbitFaceVertex embedded.RS
+          (chord.cycleWalk.firstDart
+            (chord.cycleWalk_isCycle htriple).not_nil))) :
+    HasCycleOnSide G
+      (faceComponentSide embedded.RS
+        (chord.boundary htriple).wall seed) := by
+  apply SimpleGraphDartRotation.Data.hasCycleOnSide_of_faceComponentSide_cycle
+    embedded.cellulation.rotation chord.cycleWalk
+      (chord.cycleWalk_isCycle htriple)
+      (hasCyclicVertexRotations_implies_vertexRotationCyclic
+        G embedded.cellulation.rotation
+          embedded.cellulation.vertexRotation_cyclic)
+      htwoSided
+  · intro dart hdart
+    exact cycleWalk_dartsAt_card_eq_three
+      embedded hdata chord htriple dart hdart
+  · intro edge
+    exact chord.mem_boundary_wall_iff_mem_cycleWalk_edges htriple edge
+  · exact hseed
+
 /-- Every edge incident to a radial-path position strictly outside a chord's
 closed endpoint interval avoids that chord cycle.  Simplicity of the radial
 path rules out a second occurrence of the same endpoint inside the interval. -/
