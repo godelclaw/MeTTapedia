@@ -21,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24OrbitFaceArcWalk
 
 open GoertzelV24HexFaceRungType
+open GoertzelV24FaceOrbitIncidence
 open GoertzelV24OrbitFaceCyclicOrder
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24OrbitFaceWalk
@@ -297,6 +298,76 @@ theorem map_edge_faceArcDarts_nodup
   apply Fin.ext
   simpa [left', right'] using congrArg Fin.val hpositions
 
+/-! The same calculation can be localized to the retained prefix.  This is
+the form appropriate to annular hole faces: the full face may contain a
+bridge stub and therefore fail global two-sidedness, while the particular
+open arc can still be certified edge-simple. -/
+
+theorem map_edge_faceArcDarts_nodup_of_local_twoSided
+    (graphData : Data G)
+    (root target : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root)
+    (hlocal : ∀ dart ∈ faceArcDarts graphData root target htarget,
+      dartOrbitFace graphData.toRotationSystem dart ≠
+        dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha dart)) :
+    ((faceArcDarts graphData root target htarget).map
+      fun dart => dart.edge).Nodup := by
+  rw [faceArcDarts, List.map_ofFn, List.nodup_ofFn]
+  intro left right hedge
+  let left' : Fin (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨left.val, lt_trans left.isLt
+      (faceArcPosition graphData root target htarget).isLt⟩
+  let right' : Fin (graphData.toRotationSystem.faceOrbit root).card :=
+    ⟨right.val, lt_trans right.isLt
+      (faceArcPosition graphData root target htarget).isLt⟩
+  let leftDart := faceCycleDart graphData.toRotationSystem root left'
+  let rightDart := faceCycleDart graphData.toRotationSystem root right'
+  have hleftArc : leftDart ∈ faceArcDarts graphData root target htarget := by
+    dsimp [leftDart, left']
+    rw [faceArcDarts]
+    apply List.mem_ofFn.mpr
+    exact ⟨left, rfl⟩
+  have hrightArc : rightDart ∈ faceArcDarts graphData root target htarget := by
+    dsimp [rightDart, right']
+    rw [faceArcDarts]
+    apply List.mem_ofFn.mpr
+    exact ⟨right, rfl⟩
+  have hedge' : graphData.toRotationSystem.edgeOf leftDart =
+      graphData.toRotationSystem.edgeOf rightDart := by
+    apply Subtype.ext
+    simpa [leftDart, rightDart, left', right', faceCycleEdge] using hedge
+  rcases graphData.toRotationSystem.edge_fiber_two_cases rfl hedge' with
+    heq | halpha
+  · have hpositions : left' = right' := by
+      apply faceCycleDart_injective graphData.toRotationSystem root
+      exact heq
+    apply Fin.ext
+    simpa [left', right'] using congrArg Fin.val hpositions
+  · have hleftFull : leftDart ∈ faceOrbitDarts graphData root := by
+      dsimp [leftDart, left']
+      rw [faceOrbitDarts]
+      apply List.mem_ofFn.mpr
+      exact ⟨left', rfl⟩
+    have hrightFull : rightDart ∈ faceOrbitDarts graphData root := by
+      dsimp [rightDart, right']
+      rw [faceOrbitDarts]
+      apply List.mem_ofFn.mpr
+      exact ⟨right', rfl⟩
+    have hleftFace := dartOrbitFace_eq_of_mem_faceOrbitDarts
+      graphData root leftDart hleftFull
+    have hrightFace := dartOrbitFace_eq_of_mem_faceOrbitDarts
+      graphData root rightDart hrightFull
+    have hsame : dartOrbitFace graphData.toRotationSystem leftDart =
+        dartOrbitFace graphData.toRotationSystem rightDart :=
+      hleftFace.trans hrightFace.symm
+    have hsameAlpha : dartOrbitFace graphData.toRotationSystem rightDart =
+        dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha rightDart) := by
+      rw [← halpha]
+      exact hsame.symm
+    exact (hlocal rightDart hrightArc hsameAlpha).elim
+
 /-- Cutting a face orbit immediately before a target dart gives an actual
 walk between the two dart roots.  Its length is the target's forward cyclic
 position and its darts are exactly the retained facial segment. -/
@@ -412,6 +483,28 @@ theorem exists_faceArcWalk_isTrail
   refine ⟨?_⟩
   rw [SimpleGraph.Walk.edges, hdarts]
   exact map_edge_faceArcDarts_nodup graphData htwoSided root target htarget
+
+theorem exists_faceArcWalk_isTrail_of_local_twoSided
+    (graphData : Data G)
+    (root target : G.Dart)
+    (htarget : target ∈ graphData.toRotationSystem.faceOrbit root)
+    (hlocal : ∀ dart ∈ faceArcDarts graphData root target htarget,
+      dartOrbitFace graphData.toRotationSystem dart ≠
+        dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha dart)) :
+    ∃ arc : G.Walk root.fst target.fst,
+      arc.IsTrail ∧
+      arc.darts = faceArcDarts graphData root target htarget ∧
+      arc.length = (faceArcPosition graphData root target htarget).val ∧
+      ∀ dart ∈ arc.darts,
+        dart ∈ graphData.toRotationSystem.faceOrbit root := by
+  rcases exists_faceArcWalk graphData root target htarget with
+    ⟨arc, hdarts, hlength, hface⟩
+  refine ⟨arc, ?_, hdarts, hlength, hface⟩
+  refine ⟨?_⟩
+  rw [SimpleGraph.Walk.edges, hdarts]
+  exact map_edge_faceArcDarts_nodup_of_local_twoSided
+    graphData root target htarget hlocal
 
 end
 
