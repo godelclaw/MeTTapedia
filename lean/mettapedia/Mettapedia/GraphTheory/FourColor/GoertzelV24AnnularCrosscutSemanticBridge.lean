@@ -81,6 +81,35 @@ theorem sourceCrosscutOpenExtendableWords_eq_complementSeamExtendableWords
     ← pair.sourceCrosscutComplementSeamColorCount_pos_iff data boundary hcubic word]
   exact hsupport word
 
+/-- A finite profile factor whose target codes agree gives the concrete
+generated `Count` support agreement consumed by the literal source-crosscut
+gluing theorem.  This is only the finite-to-support adapter: constructing the
+factor from a realized corridor remains the source's transfer obligation. -/
+theorem sourceCrosscutSeamSupportAgreement_ofFactor
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (factor : SemanticProfileFactor pair.left.walk.length)
+    (hinner : factor.inner =
+      pair.sourceCrosscutOpenExtendableWords data boundary)
+    (houter : factor.outer =
+      pair.sourceCrosscutComplementSeamExtendableWords data boundary hcubic)
+    (htarget : factor.innerCode = factor.outerCode) :
+    pair.SourceCrosscutSeamSupportAgreement data boundary hcubic := by
+  intro word
+  rw [pair.sourceCrosscutLiteralOpenSeamColorCount_pos_iff data boundary word,
+    pair.sourceCrosscutComplementSeamColorCount_pos_iff data boundary hcubic word,
+    ← hinner, ← houter, factor.equal_of_target_eq htarget]
+
 /-- Construct the source crosscut semantic bridge directly from the concrete
 generated `Count` support agreement.  Literal open-tangle gluing discharges
 completion; no abstract extension axiom and no one-code factorization are
@@ -159,16 +188,10 @@ noncomputable def sourceCrosscutSemanticProfileBridge_ofFactor
       pair.sourceCrosscutComplementSeamExtendableWords data boundary hcubic)
     (htarget : factor.innerCode = factor.outerCode) :
     (pair.sourceCrosscutSpliceData data boundary seamEndpoints).SemanticProfileBridge := by
-  apply SemanticProfileBridge.ofFactor
-    (pair.sourceCrosscutSpliceData data boundary seamEndpoints) factor htarget
-  · intro coloring hcoloring
-    rw [hinner]
-    exact pair.seamColorWord_mem_sourceCrosscutOpenExtendableWords
-      data boundary seamEndpoints coloring hcoloring
-  · intro coloring hcoloring hmember
-    rw [houter] at hmember
-    exact pair.sourceCrosscutComplete_of_complementSeamWord
-      data boundary hcubic seamEndpoints coloring hcoloring hmember
+  exact pair.sourceCrosscutSemanticProfileBridge_ofSeamSupport data boundary hcubic
+    seamEndpoints
+    (pair.sourceCrosscutSeamSupportAgreement_ofFactor data boundary hcubic factor
+      hinner houter htarget)
 
 /-- The source crosscut's finite transfer factor gives a genuine reverse
 completion theorem for the shortened splice. -/
