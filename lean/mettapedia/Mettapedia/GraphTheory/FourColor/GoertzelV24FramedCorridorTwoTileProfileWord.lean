@@ -201,6 +201,68 @@ theorem exists_equal_sourceTwoTileLayerDepthProfiles
   rcases exists_depthProfile_repeat 6 profiles with ⟨first, second, hne, heq⟩
   exact ⟨first, second, hne, heq⟩
 
+/-- A sufficiently long source corridor has two equal, literal two-tile
+six-port depth profiles whose starts are separated by at least three whole
+corridor positions.  This is the finite-state spacing refinement required by
+the already-proved remote rail-separation lemmas: pair a profile with its
+source offset modulo four, so a repeated pair cannot occur too near itself.
+
+This theorem supplies an explicit geometric separation budget; it does not
+yet replace the two boundaries by an abstract splice premise. -/
+theorem exists_equal_sourceTwoTileLayerDepthProfiles_separated
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hlarge : 4 * closedWebCutProfileCount 6 + 1 ≤ blockLength - 4)
+    (coloring : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcoloring : embedded.cellulation.rotation.toRotationSystem.IsTaitEdgeColoring
+      coloring) :
+    ∃ first second : Fin (4 * closedWebCutProfileCount 6 + 1),
+      first.val + 3 < second.val ∧
+      sourceTwoTileLayerDepthProfile realization hcubic hrotation htwoSided
+        hunique (Fin.castLE hlarge first) coloring hcoloring =
+      sourceTwoTileLayerDepthProfile realization hcubic hrotation htwoSided
+        hunique (Fin.castLE hlarge second) coloring hcoloring := by
+  let profiles : Fin (4 * closedWebCutProfileCount 6 + 1) →
+      ClosedWebDepthProfile 6 := fun offset =>
+    sourceTwoTileLayerDepthProfile realization hcubic hrotation htwoSided
+      hunique (Fin.castLE hlarge offset) coloring hcoloring
+  by_contra hrepeat
+  have hseparated : ∀ first second,
+      first.val + 3 < second.val → profiles first ≠ profiles second := by
+    intro first second hfar heq
+    exact hrepeat ⟨first, second, hfar, heq⟩
+  let encode : Fin (4 * closedWebCutProfileCount 6 + 1) →
+      ClosedWebDepthProfile 6 × Fin 4 := fun offset =>
+    (profiles offset, ⟨offset.val % 4, Nat.mod_lt _ (by omega)⟩)
+  have hinjective : Function.Injective encode := by
+    intro first second heq
+    have hprofile : profiles first = profiles second := by
+      exact congrArg Prod.fst heq
+    have hmod : first.val % 4 = second.val % 4 := by
+      have hresidue := congrArg (fun pair => pair.2.val) heq
+      simpa [encode] using hresidue
+    apply Fin.ext
+    by_cases hval : first.val = second.val
+    · exact hval
+    · rcases lt_or_gt_of_ne hval with hfirst | hsecond
+      · have hfar : first.val + 3 < second.val := by omega
+        exact False.elim (hseparated first second hfar hprofile)
+      · have hfar : second.val + 3 < first.val := by omega
+        exact False.elim (hseparated second first hfar hprofile.symm)
+  have hcard := Fintype.card_le_of_injective encode hinjective
+  simp [card_closedWebDepthProfile] at hcard
+  omega
+
 end AnnularEmbedding
 
 end SourceTrail
