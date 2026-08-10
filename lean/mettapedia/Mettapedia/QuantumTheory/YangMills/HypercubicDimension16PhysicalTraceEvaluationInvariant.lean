@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldEightPhysicalTrace
-import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEvaluationSemantics
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEvaluationMatrices
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceEvaluation
 
 /-!
 # Standard trace relations vanish under the explicit matrix evaluations
@@ -24,7 +25,7 @@ namespace HypercubicDimension16PhysicalTraceEvaluationInvariant
 open HypercubicDimension16LocalWordCarrier
 open HypercubicDimension16TraceEvaluation
 open HypercubicDimension16FieldEightPhysicalTrace
-open HypercubicDimension16PhysicalTraceEvaluationExecutable
+open HypercubicDimension16PhysicalTraceEvaluationMatrices
 open SU2LatticeFDCensusNoGo
 open V14HypercubicFDCensus
 open V14HypercubicQuarticCensus
