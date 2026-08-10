@@ -109,6 +109,16 @@ theorem edgeCrossesVertexSet_compl
     · simpa using houterOutside
     · simpa using hinnerInside
 
+/-- The concrete crossing-edge carrier of a vertex cut is unchanged when the
+two vertex sides are exchanged.  This is the finite-set form needed when an
+open tangle is read from either side of the same geometric transversal. -/
+theorem vertexSetCrossingEdges_compl
+    (RS : RotationSystem V E) (inside : Finset V) :
+    vertexSetCrossingEdges RS insideᶜ = vertexSetCrossingEdges RS inside := by
+  ext edge
+  rw [mem_vertexSetCrossingEdges_iff, mem_vertexSetCrossingEdges_iff]
+  exact edgeCrossesVertexSet_compl RS inside edge
+
 /-- Because every rotation-system edge has exactly two distinct endpoints,
 crossing a finite vertex side is equivalent to having exactly one endpoint in
 that side. -/
