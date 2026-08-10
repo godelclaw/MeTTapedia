@@ -17,40 +17,17 @@ open HypercubicRawFDCharacterCensus
 
 theorem decodedPowerTraceReplayCheckAt_certificate_block1 :
     decodedPowerTraceReplayCheckAt 1 = true := by
-  (norm_num [decodedPowerTraceReplayCheckAt, allFin16,
-    recurrentVectorPowerTrace, recurrentVectorPowerTraceTerm,
-    powerAxis, powerReflected, powerTraceClassOf, powerTraceClassFrom,
-    classPowerTraceInt, powerTraceRows,
-    decodedHypercubicCharacterElement, characterReflectionCode,
-    characterReflectionEntry, permutationCode,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-    Matrix.cons_val_three]; simp_all)
+  decide +kernel
 
 theorem decodedOrientationReplayCheckAt_certificate_block1 :
     decodedOrientationReplayCheckAt 1 = true := by
-  unfold decodedOrientationReplayCheckAt allFin16
-  simp_rw [orientationSign_certificate]
-  (norm_num [powerTraceClassOf, powerTraceClassFrom,
-    recurrentVectorPowerTrace, recurrentVectorPowerTraceTerm,
-    powerAxis, powerReflected, classOrientationSign,
-    expectedOrientationSign, decodedHypercubicCharacterElement,
-    characterReflectionCode, characterReflectionEntry, permutationCode,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-    Matrix.cons_val_three]; simp_all)
+  decide +kernel
 
 theorem decodedPowerTraceClassAt_certificate_block1
     (reflectionMask : Fin 16) :
     decodedPowerTraceClassAt 1 reflectionMask =
       expectedPowerTraceClassAt 1 reflectionMask := by
-  fin_cases reflectionMask <;>
-    norm_num [decodedPowerTraceClassAt, expectedPowerTraceClassAt,
-      expectedPowerTraceClassRows, powerTraceClassOf, powerTraceClassFrom,
-      recurrentVectorPowerTrace, recurrentVectorPowerTraceTerm,
-      powerAxis, powerReflected, decodedHypercubicCharacterElement,
-      characterReflectionCode, characterReflectionEntry, permutationCode,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-      Matrix.cons_val_three]
-  all_goals simp_all
+  decide +kernel +revert
 
 end HypercubicDimension16CompressionCensus
 end YangMills

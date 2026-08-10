@@ -62,22 +62,13 @@ theorem classCompressedInvariantMultiplicity_certificate
     classCompressedInvariantMultiplicity parity (fieldIndex.1 + 1) =
       expectedCompressedInvariantMultiplicity parity
         (fieldIndex.1 + 1) := by
-  unfold classCompressedInvariantMultiplicity
-  simp_rw [classCompressedSectorCharacter_certificate]
-  cases parity <;> fin_cases fieldIndex <;>
-    norm_num [expectedClassCompressedSectorCharacter,
-      expectedCompressedInvariantMultiplicity, classOrientationSign,
-      classMultiplicity, Fin.sum_univ_succ]
+  decide +kernel +revert
 
 theorem compressedCarrierCardinality_certificate
     (fieldIndex : Fin 8) :
     compressedCarrierCardinality (fieldIndex.1 + 1) =
       expectedCompressedCarrierCardinality (fieldIndex.1 + 1) := by
-  fin_cases fieldIndex <;>
-    norm_num (config := { maxSteps := 1000000 })
-      [compressedCarrierCardinality, fieldPartitions,
-      identityPartitionDerivativeCount, derivativeCountForFields,
-      expectedCompressedCarrierCardinality, Finset.sum_range_succ]
+  decide +kernel +revert
 
 end HypercubicDimension16CompressionCensus
 end YangMills

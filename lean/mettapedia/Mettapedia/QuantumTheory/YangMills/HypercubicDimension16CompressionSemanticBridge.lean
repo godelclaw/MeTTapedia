@@ -188,9 +188,7 @@ theorem compressedInvariantMultiplicity_eq_classCompressed
   unfold classCompressedInvariantMultiplicity
   simp_rw [classCompressedSectorCharacter_certificate]
   cases parity <;> fin_cases fieldIndex <;>
-    norm_num [classParityCharacter, expectedPowerTraceClassAt,
-      expectedPowerTraceClassRows, expectedClassCompressedSectorCharacter,
-      classMultiplicity, classOrientationSign, Fin.sum_univ_succ]
+    decide +kernel
 
 theorem compressedInvariantMultiplicity_certificate
     (parity : ContractionParity) (fieldIndex : Fin 8) :

@@ -48,11 +48,9 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEval
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEvaluationChunk047
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEvaluationChunk048
 
-/-! # Kernel-checked exact standard trace evaluation matrix -/
+/-! # OUR bounded kernel replay of the exact physical trace evaluation matrix -/
 
 set_option autoImplicit false
-set_option maxRecDepth 10000000
-set_option maxHeartbeats 0
 noncomputable section
 
 namespace Mettapedia
