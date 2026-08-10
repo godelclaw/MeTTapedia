@@ -22,6 +22,7 @@ open GoertzelV24OpenRegionRotation
 open GoertzelV24OpenRegionTaitInheritance
 open GoertzelV24RotationCutDartDecomposition
 open GoertzelV24RotationVertexCutProfile
+open GoertzelV24SpliceUnification.OrderedCutSpliceData
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -213,6 +214,135 @@ theorem sourceCrosscutLiteralOpenProfile_right_edgeColor_eq_insideBoundaryWord
       pair.sourceCrosscutLiteralColorOnVertexSide_eq_boundaryDartColor
         data boundary coloring
         (pair.sourceCrosscutBoundaryDartAt data boundary (.inr step))
+
+/-- The finite profile of a coloring of the shortened source splice reads the
+sewn left seam word in its first source-order block. -/
+theorem sourceCrosscutSpliceOutputLiteralOpenProfile_left_edgeColor_eq_seamColorWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (seamEndpoints : ∀ step,
+      data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1.1 ≠
+        data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (fun index => pair.right.crossingEdge hunique
+              (Fin.cast pair.length_eq index))
+            (fun index => boundary.rightCrosses
+              (Fin.cast pair.length_eq index)) step).1.1.1)
+    (output :
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output.EdgeColoring
+        Color)
+    (houtput : RotationSystem.IsTaitEdgeColoring
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output output)
+    (step : Fin pair.left.walk.length) :
+    ((pair.sourceCrosscutLiteralOpenProfile data boundary
+      (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+      (pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary seamEndpoints
+        output houtput)).edgeColor
+      (Fin.cast
+        (pair.componentSide_crossingCard_eq_interfaceWidths data
+          boundary.component boundary.component_boundary).symm
+        (Fin.castAdd pair.right.walk.length step))).toColor =
+      seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+        output step := by
+  calc
+    ((pair.sourceCrosscutLiteralOpenProfile data boundary
+        (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+        (pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary seamEndpoints
+          output houtput)).edgeColor
+        (Fin.cast
+          (pair.componentSide_crossingCard_eq_interfaceWidths data
+            boundary.component boundary.component_boundary).symm
+          (Fin.castAdd pair.right.walk.length step))).toColor =
+        pair.sourceCrosscutInsideBoundaryWord data boundary
+          (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+          (.inl step) :=
+      pair.sourceCrosscutLiteralOpenProfile_left_edgeColor_eq_insideBoundaryWord
+        data boundary
+        (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+        (pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary seamEndpoints
+          output houtput) step
+    _ = seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+          output step :=
+      pair.sourceCrosscutOutputInsideBoundaryWord_left_eq_seamColorWord
+        data boundary seamEndpoints output step
+
+/-- The aligned right block of the shortened splice's finite profile reads the
+same sewn seam word.  The cast is the source crosscut alignment, not an
+identification of the two transversals. -/
+theorem sourceCrosscutSpliceOutputLiteralOpenProfile_right_edgeColor_eq_seamColorWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (seamEndpoints : ∀ step,
+      data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1.1 ≠
+        data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (fun index => pair.right.crossingEdge hunique
+              (Fin.cast pair.length_eq index))
+            (fun index => boundary.rightCrosses
+              (Fin.cast pair.length_eq index)) step).1.1.1)
+    (output :
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output.EdgeColoring
+        Color)
+    (houtput : RotationSystem.IsTaitEdgeColoring
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output output)
+    (step : Fin pair.left.walk.length) :
+    ((pair.sourceCrosscutLiteralOpenProfile data boundary
+      (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+      (pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary seamEndpoints
+        output houtput)).edgeColor
+      (Fin.cast
+        (pair.componentSide_crossingCard_eq_interfaceWidths data
+          boundary.component boundary.component_boundary).symm
+        (Fin.natAdd pair.left.walk.length (Fin.cast pair.length_eq step)))).toColor =
+      seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+        output step := by
+  calc
+    ((pair.sourceCrosscutLiteralOpenProfile data boundary
+        (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+        (pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary seamEndpoints
+          output houtput)).edgeColor
+        (Fin.cast
+          (pair.componentSide_crossingCard_eq_interfaceWidths data
+            boundary.component boundary.component_boundary).symm
+          (Fin.natAdd pair.left.walk.length (Fin.cast pair.length_eq step)))).toColor =
+        pair.sourceCrosscutInsideBoundaryWord data boundary
+          (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+          (.inr (Fin.cast pair.length_eq step)) :=
+      pair.sourceCrosscutLiteralOpenProfile_right_edgeColor_eq_insideBoundaryWord
+        data boundary
+        (pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints output)
+        (pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary seamEndpoints
+          output houtput) (Fin.cast pair.length_eq step)
+    _ = seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+          output step :=
+      pair.sourceCrosscutOutputInsideBoundaryWord_right_eq_seamColorWord
+        data boundary seamEndpoints output step
 
 end SeparatedAlignedSimpleDualCrosscuts
 
