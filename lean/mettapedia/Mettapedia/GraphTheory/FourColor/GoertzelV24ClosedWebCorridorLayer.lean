@@ -98,6 +98,30 @@ structure LocalLayerPair
 
 namespace LocalLayerPair
 
+/-- The source corridor face through which the first local layer passes. -/
+def centerFace
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (_layers : LocalLayerPair web corridor leftInterior hnext) :
+    AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)) :=
+  corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+    leftInterior.center
+
+/-- The source corridor face through which the next local layer passes. -/
+def nextCenterFace
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (_layers : LocalLayerPair web corridor leftInterior hnext) :
+    AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)) :=
+  corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+    (nextCorridorInterior leftInterior hnext).center
+
 /-- The first local simple layer runs through the left selected corridor
 hexagon. -/
 noncomputable def firstWalk
@@ -262,6 +286,185 @@ theorem localLayerLoop_isCycle
   exact SimpleGraph.Walk.IsPath.isCycle_append layers.firstWalk_isPath
     layers.secondWalk_isPath.reverse layers.localLayers_tail_disjoint
       (Or.inl (by simp [firstWalk]))
+
+/-- Every face of a local Cell-3 layer loop lies in the one-neighbourhood of
+one of its two consecutive corridor centres.  The later remote-separation
+argument therefore needs only the source geodesic, not a topological drawing
+of the annulus. -/
+theorem localLayerLoop_support_near_centers
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hface : face ∈ layers.localLayerLoop.support) :
+    face = layers.centerFace ∨ face = layers.nextCenterFace ∨
+      (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          layers.centerFace face ∨
+      (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          layers.nextCenterFace face := by
+  rw [localLayerLoop, SimpleGraph.Walk.mem_support_append_iff] at hface
+  rcases hface with hfirst | hsecond
+  · change face ∈ layers.firstWalk.support at hfirst
+    simp only [firstWalk, SimpleGraph.Walk.support_cons,
+      SimpleGraph.Walk.support_nil, List.mem_cons] at hfirst
+    rcases hfirst with hfirst | hcenter | hsecond
+    · subst face
+      exact Or.inr (Or.inr (Or.inl layers.first_adjacent_center.symm))
+    · subst face
+      exact Or.inl rfl
+    · rcases hsecond with hsecond | hnone
+      · subst face
+        exact Or.inr (Or.inr (Or.inl layers.center_adjacent_second))
+      · simp at hnone
+  · change face ∈ layers.secondWalk.reverse.support at hsecond
+    rw [SimpleGraph.Walk.support_reverse] at hsecond
+    simp only [secondWalk, SimpleGraph.Walk.support_cons,
+      SimpleGraph.Walk.support_nil, List.mem_reverse, List.mem_cons] at hsecond
+    rcases hsecond with hfirst | hcenter | hsecond
+    · subst face
+      exact Or.inr (Or.inr (Or.inr layers.first_adjacent_nextCenter.symm))
+    · subst face
+      exact Or.inr (Or.inl rfl)
+    · rcases hsecond with hsecond | hnone
+      · subst face
+        exact Or.inr (Or.inr (Or.inr layers.nextCenter_adjacent_second))
+      · simp at hnone
+
+/-- Local layer loops based at Cell-3 corridor positions with a three-cell
+gap have disjoint facial-dual supports.  The finite corridor skeleton rules
+out direct adjacency, and the retained L1 geodesic rules out the only
+remaining common-neighbour collision. -/
+theorem localLayerLoop_support_disjoint_of_add_three_lt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {rightInterior : CorridorInterior blockLength}
+    {hrightNext : rightInterior.center.val + 2 < blockLength}
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (left : LocalLayerPair web corridor leftInterior hnext)
+    (right : LocalLayerPair web corridor rightInterior hrightNext)
+    (hseparated : leftInterior.center.val + 3 < rightInterior.center.val) :
+    left.localLayerLoop.support.Disjoint right.localLayerLoop.support := by
+  have h00ne : left.centerFace ≠ right.centerFace := by
+    simpa [centerFace] using
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          omega)
+  have h01ne : left.centerFace ≠ right.nextCenterFace := by
+    simpa [centerFace, nextCenterFace] using
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          change leftInterior.center.val = rightInterior.center.val + 1 at hvalues
+          omega)
+  have h10ne : left.nextCenterFace ≠ right.centerFace := by
+    simpa [centerFace, nextCenterFace] using
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          change leftInterior.center.val + 1 = rightInterior.center.val at hvalues
+          omega)
+  have h11ne : left.nextCenterFace ≠ right.nextCenterFace := by
+    simpa [nextCenterFace] using
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+        (by
+          intro h
+          have hvalues := congrArg Fin.val h
+          change leftInterior.center.val + 1 = rightInterior.center.val + 1 at hvalues
+          omega)
+  have h00notadj : ¬ (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+      left.centerFace right.centerFace := by
+    simpa [centerFace] using
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent leftInterior.center rightInterior.center (by omega)
+  have h01notadj : ¬ (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+      left.centerFace right.nextCenterFace := by
+    simpa [centerFace, nextCenterFace] using
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent leftInterior.center
+          (nextCorridorInterior rightInterior hrightNext).center (by
+            change leftInterior.center.val + 1 < rightInterior.center.val + 1
+            omega)
+  have h10notadj : ¬ (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+      left.nextCenterFace right.centerFace := by
+    simpa [centerFace, nextCenterFace] using
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent
+          (nextCorridorInterior leftInterior hnext).center rightInterior.center (by
+            change leftInterior.center.val + 1 + 1 < rightInterior.center.val
+            omega)
+  have h11notadj : ¬ (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+      left.nextCenterFace right.nextCenterFace := by
+    simpa [nextCenterFace] using
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).separated_not_adjacent
+          (nextCorridorInterior leftInterior hnext).center
+          (nextCorridorInterior rightInterior hrightNext).center (by
+            change leftInterior.center.val + 1 + 1 < rightInterior.center.val + 1
+            omega)
+  rw [List.disjoint_left]
+  intro face hleft hright
+  rcases left.localLayerLoop_support_near_centers face hleft with
+    hleft0 | hleft1 | hleft0adj | hleft1adj
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · exact h00ne (hleft0.symm.trans hright0)
+    · exact h01ne (hleft0.symm.trans hright1)
+    · subst face
+      exact h00notadj hright0adj.symm
+    · subst face
+      exact h01notadj hright1adj.symm
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · exact h10ne (hleft1.symm.trans hright0)
+    · exact h11ne (hleft1.symm.trans hright1)
+    · subst face
+      exact h10notadj hright0adj.symm
+    · subst face
+      exact h11notadj hright1adj.symm
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · subst face
+      exact h00notadj hleft0adj
+    · subst face
+      exact h01notadj hleft0adj
+    · exact corridor.no_common_fullNeighbor_of_add_two_lt hsource
+        leftInterior.center rightInterior.center (by omega)
+        ⟨face, hleft0adj, hright0adj⟩
+    · exact corridor.no_common_fullNeighbor_of_add_two_lt hsource
+        leftInterior.center (nextCorridorInterior rightInterior hrightNext).center (by
+          change leftInterior.center.val + 2 < rightInterior.center.val + 1
+          omega)
+        ⟨face, hleft0adj, hright1adj⟩
+  · rcases right.localLayerLoop_support_near_centers face hright with
+      hright0 | hright1 | hright0adj | hright1adj
+    · subst face
+      exact h10notadj hleft1adj
+    · subst face
+      exact h11notadj hleft1adj
+    · exact corridor.no_common_fullNeighbor_of_add_two_lt hsource
+        (nextCorridorInterior leftInterior hnext).center rightInterior.center (by
+          change leftInterior.center.val + 1 + 2 < rightInterior.center.val
+          omega)
+        ⟨face, hleft1adj, hright0adj⟩
+    · exact corridor.no_common_fullNeighbor_of_add_two_lt hsource
+        (nextCorridorInterior leftInterior hnext).center
+        (nextCorridorInterior rightInterior hrightNext).center (by
+          change leftInterior.center.val + 1 + 2 < rightInterior.center.val + 1
+          omega)
+        ⟨face, hleft1adj, hright1adj⟩
 
 /-- A simple local layer loop crosses every primal edge at most once.  This
 is the finite incidence fact that keeps the two sides of the local layer

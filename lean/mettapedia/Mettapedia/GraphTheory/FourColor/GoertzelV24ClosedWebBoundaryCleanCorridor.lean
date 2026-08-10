@@ -228,6 +228,35 @@ def boundaryCleanHexBlockThreshold
   (weight + 7) ^
     (((embedded.boundaryCleanContaminationBudget + 1) * blockLength) - 1)
 
+/-- The local full-dual cleanliness condition at one selected block of an
+annular facial-dual path.  Naming it keeps the source realization carrier
+small while retaining exactly the L1 certificate used by the corridor. -/
+def BoundaryCleanHexagonalBlockAt
+    (embedded : ClosedWebAnnularEmbedding data)
+    {start finish : AmbientFace embedded.cellulation.interiorFaces}
+    (path : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      embedded.cellulation.interiorFaces).Walk start finish)
+    (blockLength : Nat)
+    (block : Fin (embedded.boundaryCleanContaminationBudget + 1)) : Prop :=
+  ∀ offset : Fin blockLength,
+    let position := corridorBlockIndex
+      (defectBudget := embedded.boundaryCleanContaminationBudget)
+      block offset
+    let selected := path.getVert position.val
+    (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+      selected.1).card = 6 ∧
+      ∀ neighbor : AmbientFace (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)),
+        (interiorDualGraph
+          (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+          (Finset.univ : Finset
+            (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+            (embedded.internalFaceToFull selected) neighbor →
+          neighbor.1 ∈ embedded.cellulation.interiorFaces ∧
+            (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+              neighbor.1).card = 6
+
 /-- A Cell-3 clean block whose selected faces and all full-dual neighbors are
 hexagonal internal faces.  This is the exact L1 form required before those
 faces may be used as a pumped corridor. -/
@@ -246,26 +275,7 @@ def HasBoundaryCleanHexagonalGeodesicBlock
         (embedded.boundaryCleanContaminationBudget + 1) * blockLength ≤
             path.length + 1 ∧
         ∃ block : Fin (embedded.boundaryCleanContaminationBudget + 1),
-          ∀ offset : Fin blockLength,
-            let position := corridorBlockIndex
-              (defectBudget := embedded.boundaryCleanContaminationBudget)
-              block offset
-            let selected := path.getVert position.val
-            (orbitFaceBoundary
-              embedded.cellulation.rotation.toRotationSystem
-              selected.1).card = 6 ∧
-            ∀ neighbor : AmbientFace (Finset.univ : Finset
-                (OrbitFace embedded.cellulation.rotation.toRotationSystem)),
-              (interiorDualGraph
-                (orbitFaceBoundary
-                  embedded.cellulation.rotation.toRotationSystem)
-                (Finset.univ : Finset
-                  (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
-                  (embedded.internalFaceToFull selected) neighbor →
-                neighbor.1 ∈ embedded.cellulation.interiorFaces ∧
-                  (orbitFaceBoundary
-                    embedded.cellulation.rotation.toRotationSystem
-                    neighbor.1).card = 6
+          embedded.BoundaryCleanHexagonalBlockAt path blockLength block
 
 /-- Boundary-aware weighted L1 for the actual Cell-3 annulus.  The added
 contamination cost is the literal hole perimeter, so no selected position can
@@ -399,16 +409,45 @@ structure BoundaryCleanOrbitHexCorridor
           neighbor →
         neighbor.1 ∈ embedded.cellulation.interiorFaces
 
-/-- A boundary-clean Cell-3 block is a literal clean corridor skeleton in the
-full quotient-face carrier, retaining both its hexagonal neighbourhood and
-its annular-interior neighbourhood.  This is the adapter from source L1 data
-to the finite-interface corridor machinery; it does not introduce an
-arbitrary transversal. -/
-theorem nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
+/-- The bare finite corridor skeleton is actually the literal clean interval
+selected by Cell-3 L1.  Keeping this as a proposition rather than duplicating
+the full dependent path witness in the finite carrier keeps the compiled
+interface small while still exposing the geodesic when remote separation is
+proved. -/
+def SourceRealizesBoundaryCleanOrbitHexCorridor
+    (embedded : ClosedWebAnnularEmbedding data) (blockLength : Nat)
+    (corridor : BoundaryCleanOrbitHexCorridor embedded blockLength) : Prop :=
+  ∃ start finish : AmbientFace embedded.cellulation.interiorFaces,
+    ∃ path : (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        embedded.cellulation.interiorFaces).Walk start finish,
+      path.IsPath ∧
+        path.length =
+          (interiorDualGraph
+            (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+            embedded.cellulation.interiorFaces).dist start finish ∧
+        (embedded.boundaryCleanContaminationBudget + 1) * blockLength ≤
+            path.length + 1 ∧
+        ∃ block : Fin (embedded.boundaryCleanContaminationBudget + 1),
+          embedded.BoundaryCleanHexagonalBlockAt path blockLength block ∧
+            ∀ offset : Fin blockLength,
+              corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+                offset =
+                embedded.internalFaceToFull
+                  (path.getVert
+                    (corridorBlockIndex
+                      (defectBudget := embedded.boundaryCleanContaminationBudget)
+                      block offset).val)
+
+/-- A boundary-clean Cell-3 block supplies a literal clean corridor skeleton
+in the full quotient-face carrier, together with the specific source geodesic
+from which it came.  This does not introduce an arbitrary transversal. -/
+theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
     (embedded : ClosedWebAnnularEmbedding data)
     (blockLength : Nat)
     (hclean : embedded.HasBoundaryCleanHexagonalGeodesicBlock blockLength) :
-    Nonempty (BoundaryCleanOrbitHexCorridor embedded blockLength) := by
+    ∃ corridor : BoundaryCleanOrbitHexCorridor embedded blockLength,
+      embedded.SourceRealizesBoundaryCleanOrbitHexCorridor blockLength corridor := by
   classical
   rcases hclean with
     ⟨start, finish, path, hpath, hgeodesic, hpositionCount, block, hblock⟩
@@ -526,7 +565,7 @@ theorem nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
           omega))
       exact (hadj_iff _ _).2 hfull
   }
-  exact ⟨{
+  refine ⟨{
     toCleanOrbitHexCorridorSkeleton := {
       toOrbitHexCorridorSkeleton := corridor
       neighbor_hexagonal := by
@@ -540,7 +579,96 @@ theorem nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
     neighbor_internal := by
       intro offset neighbor hadj
       exact ((hblock offset).2 neighbor hadj).1
-  }⟩
+  }, start, finish, path, hpath, hgeodesic, hpositionCount, block, hblock, ?_⟩
+  intro offset
+  rfl
+
+/-- Forgetting the retained source-geodesic witness recovers the earlier
+nonempty finite-interface corridor result. -/
+theorem nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
+    (embedded : ClosedWebAnnularEmbedding data)
+    (blockLength : Nat)
+    (hclean : embedded.HasBoundaryCleanHexagonalGeodesicBlock blockLength) :
+    Nonempty (BoundaryCleanOrbitHexCorridor embedded blockLength) := by
+  rcases embedded.exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
+      blockLength hclean with ⟨corridor, _⟩
+  exact ⟨corridor⟩
+
+/-- A full-dual face cannot meet two selected Cell-3 corridor positions more
+than two steps apart.  Boundary cleanliness returns such a face to the
+internal annular dual, and the retained L1 geodesic then rules out the
+resulting two-step shortcut.  Thus remote layer intersections reduce to the
+bounded local window described by the source's rail cases. -/
+theorem BoundaryCleanOrbitHexCorridor.no_common_fullNeighbor_of_add_two_lt
+    {embedded : ClosedWebAnnularEmbedding data} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor embedded blockLength)
+    (hsource : embedded.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (left right : Fin blockLength) (hseparated : left.val + 2 < right.val) :
+    ¬ ∃ neighbor : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)),
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton.faceAt left) neighbor ∧
+        (interiorDualGraph
+          (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+          (Finset.univ : Finset
+            (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton.faceAt right) neighbor := by
+  rcases hsource with
+    ⟨start, finish, path, hpath, hgeodesic, hpositionCount, block, hblock,
+      hfaceAt⟩
+  rintro ⟨neighbor, hleft, hright⟩
+  rw [hfaceAt left] at hleft
+  rw [hfaceAt right] at hright
+  let boundary := orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+  let internalFaces := embedded.cellulation.interiorFaces
+  let allFaces : Finset (OrbitFace embedded.cellulation.rotation.toRotationSystem) :=
+    Finset.univ
+  let internalDual := interiorDualGraph boundary internalFaces
+  let leftIndex := corridorBlockIndex
+    (defectBudget := embedded.boundaryCleanContaminationBudget)
+    block left
+  let rightIndex := corridorBlockIndex
+    (defectBudget := embedded.boundaryCleanContaminationBudget)
+    block right
+  have hneighborInternal : neighbor.1 ∈ internalFaces := by
+    exact ((hblock left).2 neighbor hleft).1
+  let internalNeighbor : AmbientFace internalFaces :=
+    ⟨neighbor.1, hneighborInternal⟩
+  have hleftInternal : internalDual.Adj
+      (path.getVert leftIndex.val) internalNeighbor := by
+    rcases (interiorDualGraph_adj_iff boundary allFaces).1 hleft with
+      ⟨hne, edge, _hinterior, hleftEdge, hneighborEdge⟩
+    exact interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      boundary internalFaces (internalFace_incidence_le_two embedded)
+      hne hleftEdge (by simpa [internalNeighbor] using hneighborEdge)
+  have hrightInternal : internalDual.Adj
+      (path.getVert rightIndex.val) internalNeighbor := by
+    rcases (interiorDualGraph_adj_iff boundary allFaces).1 hright with
+      ⟨hne, edge, _hinterior, hrightEdge, hneighborEdge⟩
+    exact interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      boundary internalFaces (internalFace_incidence_le_two embedded)
+      hne hrightEdge (by simpa [internalNeighbor] using hneighborEdge)
+  have hleftBound : leftIndex.val ≤ path.length := by
+    have hindex := leftIndex.isLt
+    dsimp [leftIndex, corridorBlockIndex] at hindex ⊢
+    omega
+  have hrightBound : rightIndex.val ≤ path.length := by
+    have hindex := rightIndex.isLt
+    dsimp [rightIndex, corridorBlockIndex] at hindex ⊢
+    omega
+  apply not_exists_common_neighbor_getVert_of_length_eq_dist_of_add_two_lt
+    path hgeodesic leftIndex.val rightIndex.val
+    hleftBound hrightBound
+  · change block.val * blockLength + left.val + 2 <
+      block.val * blockLength + right.val
+    omega
+  · exact ⟨internalNeighbor, hleftInternal, hrightInternal.symm⟩
 
 /-- Forgetting the annular-interior half of a Cell-3 clean corridor recovers
 the earlier finite-interface corridor carrier. -/
