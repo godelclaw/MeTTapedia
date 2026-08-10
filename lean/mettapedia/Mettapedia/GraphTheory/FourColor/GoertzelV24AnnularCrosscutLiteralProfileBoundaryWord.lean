@@ -215,6 +215,68 @@ theorem sourceCrosscutLiteralOpenProfile_right_edgeColor_eq_insideBoundaryWord
         data boundary coloring
         (pair.sourceCrosscutBoundaryDartAt data boundary (.inr step))
 
+/-- Equality of the full finite source profiles forces equality of the
+literal source boundary words.  This is the color-coordinate part of the
+source's profile-factorization claim: it is proved from the actual open
+tangle, not inferred from an ambient closed coloring. -/
+theorem sourceCrosscutLiteralOpenProfile_eq_implies_insideBoundaryWord_eq
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (first second : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color)
+    (hfirst : (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring first)
+    (hsecond : (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring second)
+    (hprofile : pair.sourceCrosscutLiteralOpenProfile data boundary first hfirst =
+      pair.sourceCrosscutLiteralOpenProfile data boundary second hsecond) :
+    pair.sourceCrosscutInsideBoundaryWord data boundary first =
+      pair.sourceCrosscutInsideBoundaryWord data boundary second := by
+  funext index
+  rcases index with step | step
+  · calc
+      pair.sourceCrosscutInsideBoundaryWord data boundary first (.inl step) =
+          ((pair.sourceCrosscutLiteralOpenProfile data boundary first hfirst).edgeColor
+            (Fin.cast
+              (pair.componentSide_crossingCard_eq_interfaceWidths data
+                boundary.component boundary.component_boundary).symm
+              (Fin.castAdd pair.right.walk.length step))).toColor :=
+        (pair.sourceCrosscutLiteralOpenProfile_left_edgeColor_eq_insideBoundaryWord
+          data boundary first hfirst step).symm
+      _ = ((pair.sourceCrosscutLiteralOpenProfile data boundary second hsecond).edgeColor
+            (Fin.cast
+              (pair.componentSide_crossingCard_eq_interfaceWidths data
+                boundary.component boundary.component_boundary).symm
+              (Fin.castAdd pair.right.walk.length step))).toColor := by
+        rw [hprofile]
+      _ = pair.sourceCrosscutInsideBoundaryWord data boundary second (.inl step) :=
+        pair.sourceCrosscutLiteralOpenProfile_left_edgeColor_eq_insideBoundaryWord
+          data boundary second hsecond step
+  · calc
+      pair.sourceCrosscutInsideBoundaryWord data boundary first (.inr step) =
+          ((pair.sourceCrosscutLiteralOpenProfile data boundary first hfirst).edgeColor
+            (Fin.cast
+              (pair.componentSide_crossingCard_eq_interfaceWidths data
+                boundary.component boundary.component_boundary).symm
+              (Fin.natAdd pair.left.walk.length step))).toColor :=
+        (pair.sourceCrosscutLiteralOpenProfile_right_edgeColor_eq_insideBoundaryWord
+          data boundary first hfirst step).symm
+      _ = ((pair.sourceCrosscutLiteralOpenProfile data boundary second hsecond).edgeColor
+            (Fin.cast
+              (pair.componentSide_crossingCard_eq_interfaceWidths data
+                boundary.component boundary.component_boundary).symm
+              (Fin.natAdd pair.left.walk.length step))).toColor := by
+        rw [hprofile]
+      _ = pair.sourceCrosscutInsideBoundaryWord data boundary second (.inr step) :=
+        pair.sourceCrosscutLiteralOpenProfile_right_edgeColor_eq_insideBoundaryWord
+          data boundary second hsecond step
+
 /-- The finite profile of a coloring of the shortened source splice reads the
 sewn left seam word in its first source-order block. -/
 theorem sourceCrosscutSpliceOutputLiteralOpenProfile_left_edgeColor_eq_seamColorWord
