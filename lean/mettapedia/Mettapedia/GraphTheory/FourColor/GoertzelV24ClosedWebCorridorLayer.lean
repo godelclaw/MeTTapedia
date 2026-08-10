@@ -1,4 +1,5 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebMinimalCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebAtGoodWord
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebBoundaryCleanCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutLoop
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathTransversalAppend
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualCycleCrossingInjective
@@ -36,7 +37,6 @@ open GoertzelV24HexCorridorSlab
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24OrientedHexSlab
-open GoertzelV24TwoEdgeCutMinimality
 open SimpleGraphDartRotation
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -705,84 +705,6 @@ theorem separatedLocalLayerPair_dualLoop_length_eq_four
     separatedLocalLayerPair, firstLayer, secondLayer, firstWalk, secondWalk]
 
 end LocalLayerPair
-
-/-- Consecutive source-selected Cell-3 hexagons construct a pair of simple
-local layer boundaries.  This is the local, source-faithful replacement for
-assuming that a chord cycle itself was already a transversal. -/
-theorem exists_localLayerPair_of_minimal
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring)
-    (minimal : GraphBackedVertexMinimalTaitCounterexample
-      web.annular.cellulation.rotation)
-    {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
-    (leftInterior : CorridorInterior blockLength)
-    (hnext : leftInterior.center.val + 2 < blockLength) :
-    Nonempty (LocalLayerPair web corridor leftInterior hnext) := by
-  let clean := corridor.toCleanOrbitHexCorridorSkeleton
-  let htwoSided := web.facesTwoSided_of_minimal minimal
-  let hunique := web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal
-  let leftPlacement := Classical.choice
-    (exists_internalHexRungPlacement
-      clean.toOrbitHexCorridorSkeleton htwoSided hunique leftInterior)
-  let rightInterior := nextCorridorInterior leftInterior hnext
-  let rightPlacement := Classical.choice
-    (exists_internalHexRungPlacement
-      clean.toOrbitHexCorridorSkeleton htwoSided hunique rightInterior)
-  rcases consecutiveSlabInterfacesMatch clean minimal.spherical.cubic
-      minimal.vertexRotationCyclic htwoSided hunique leftInterior hnext
-      leftPlacement rightPlacement with
-    ⟨leftBefore, leftAfter, rightBefore, rightAfter,
-      hleftDistinct, _hrightDistinct, hbeforeMatch, hafterMatch⟩
-  let firstFace := placementSideNeighbor clean htwoSided hunique
-    leftPlacement leftBefore
-  let secondFace := placementSideNeighbor clean htwoSided hunique
-    leftPlacement leftAfter
-  refine ⟨{
-    firstFace := firstFace
-    secondFace := secondFace
-    first_ne_second := by
-      intro hfaces
-      apply hleftDistinct
-      apply placementSideNeighbor_injective clean htwoSided hunique leftPlacement
-      simpa [firstFace, secondFace] using hfaces
-    center_ne_nextCenter := by
-      apply clean.toOrbitHexCorridorSkeleton.faceAt_ne
-      intro hindices
-      have hvalues := congrArg Fin.val hindices
-      change leftInterior.center.val = leftInterior.center.val + 1 at hvalues
-      omega
-    first_adjacent_center := by
-      simpa [firstFace, placementSideNeighbor] using
-        (internalSideNeighbor_adjacent clean htwoSided hunique leftInterior
-          (placementSideEdge htwoSided leftPlacement leftBefore)).symm
-    center_adjacent_second := by
-      simpa [secondFace, placementSideNeighbor] using
-        internalSideNeighbor_adjacent clean htwoSided hunique leftInterior
-          (placementSideEdge htwoSided leftPlacement leftAfter)
-    first_adjacent_nextCenter := by
-      rw [show firstFace = placementSideNeighbor clean htwoSided hunique
-        rightPlacement rightBefore by simpa [firstFace] using hbeforeMatch]
-      simpa [rightInterior, placementSideNeighbor] using
-        (internalSideNeighbor_adjacent clean htwoSided hunique rightInterior
-          (placementSideEdge htwoSided rightPlacement rightBefore)).symm
-    nextCenter_adjacent_second := by
-      rw [show secondFace = placementSideNeighbor clean htwoSided hunique
-        rightPlacement rightAfter by simpa [secondFace] using hafterMatch]
-      simpa [rightInterior, placementSideNeighbor] using
-        internalSideNeighbor_adjacent clean htwoSided hunique rightInterior
-          (placementSideEdge htwoSided rightPlacement rightAfter)
-    first_internal := by
-      apply corridor.neighbor_internal leftInterior.center firstFace
-      simpa [firstFace, placementSideNeighbor] using
-        internalSideNeighbor_adjacent clean htwoSided hunique leftInterior
-          (placementSideEdge htwoSided leftPlacement leftBefore)
-    second_internal := by
-      apply corridor.neighbor_internal leftInterior.center secondFace
-      simpa [secondFace, placementSideNeighbor] using
-        internalSideNeighbor_adjacent clean htwoSided hunique leftInterior
-          (placementSideEdge htwoSided leftPlacement leftAfter)
-  }⟩
 
 end Instance
 
