@@ -335,6 +335,31 @@ theorem localLayerLoop_support_near_centers
         exact Or.inr (Or.inr (Or.inr layers.nextCenter_adjacent_second))
       · simp at hnone
 
+/-- A literal Cell-3 layer loop remains wholly inside the annular interior.
+The two centre faces are selected from the source's boundary-clean corridor,
+and every other loop face is a full-dual neighbour of one of those centres.
+Thus neither named hole can be silently swept into the local pumped region. -/
+theorem localLayerLoop_support_internal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hface : face ∈ layers.localLayerLoop.support) :
+    face.1 ∈ web.annular.cellulation.interiorFaces := by
+  rcases layers.localLayerLoop_support_near_centers face hface with
+    hcenter | hnextCenter | hcenterAdj | hnextCenterAdj
+  · subst face
+    simpa [centerFace] using corridor.face_internal leftInterior.center
+  · subst face
+    simpa [nextCenterFace] using
+      corridor.face_internal (nextCorridorInterior leftInterior hnext).center
+  · exact corridor.neighbor_internal leftInterior.center face hcenterAdj
+  · exact corridor.neighbor_internal
+      (nextCorridorInterior leftInterior hnext).center face hnextCenterAdj
+
 /-- Local layer loops based at Cell-3 corridor positions with a three-cell
 gap have disjoint facial-dual supports.  The finite corridor skeleton rules
 out direct adjacency, and the retained L1 geodesic rules out the only
@@ -625,6 +650,27 @@ noncomputable def separatedLocalLayerPair
   transverse_disjoint := layers.localLayers_tail_disjoint
   nondegenerate := Or.inl (by
     simp [firstLayer, firstWalk])
+
+/-- The generic crosscut loop of the packaged local layers has the same
+annular-interior support as the literal Cell-3 layer loop.  Keeping this
+bridge explicit lets later deletion arguments use the real paired-crosscut
+carrier rather than reason from a picture of the tile. -/
+theorem separatedLocalLayerPair_dualLoop_support_internal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hface : face ∈ (layers.separatedLocalLayerPair hunique).dualLoop.support) :
+    face.1 ∈ web.annular.cellulation.interiorFaces := by
+  apply layers.localLayerLoop_support_internal face
+  change face ∈ layers.localLayerLoop.support at hface
+  exact hface
 
 /-- The generic dual loop of the packaged local pair is the checked layer
 cycle constructed above. -/

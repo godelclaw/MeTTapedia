@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutSpliceBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCorridorLayer
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCrosscutHoleBoundary
 
 /-!
 # Source-crosscut boundary data for a Cell-3 local layer
@@ -90,6 +91,59 @@ noncomputable def sourceCrosscutBoundaryData_of_minimal
       (layers.separatedLocalLayerPair
         (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal)) :=
   Classical.choice (layers.sourceCrosscutBoundaryData_nonempty_of_minimal minimal)
+
+/-- The primal edges crossed by a literal Cell-3 local layer avoid the
+designated inner-hole boundary.  This is a concrete incidence consequence of
+the source layer being wholly annular-interior; it does not yet claim that the
+inner hole lies on the chosen retained component. -/
+theorem sourceCrosscutPrimalCutEdges_disjoint_innerHoleBoundary_of_minimal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      web.annular.cellulation.rotation) :
+    Disjoint
+      ((layers.separatedLocalLayerPair
+        (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal)).primalCutEdges
+          web.annular.cellulation.rotation)
+      (orbitFaceBoundary web.annular.RS web.annular.cellulation.innerHole) := by
+  exact Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCrosscutHoleBoundary.ClosedWebAnnularEmbedding.dualWalkCrossingEdges_disjoint_innerHoleBoundary_of_support_internal
+      web.annular
+      (layers.separatedLocalLayerPair
+        (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal)).dualLoop
+      (by
+        intro face hface
+        exact layers.separatedLocalLayerPair_dualLoop_support_internal
+          (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal) face hface)
+
+/-- The same literal Cell-3 separator also avoids the designated outer-hole
+boundary.  Together with the inner-boundary result this is the incidence
+part of the source's requirement that named holes are not cut through. -/
+theorem sourceCrosscutPrimalCutEdges_disjoint_outerHoleBoundary_of_minimal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      web.annular.cellulation.rotation) :
+    Disjoint
+      ((layers.separatedLocalLayerPair
+        (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal)).primalCutEdges
+          web.annular.cellulation.rotation)
+      (orbitFaceBoundary web.annular.RS web.annular.cellulation.outerHole) := by
+  exact Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCrosscutHoleBoundary.ClosedWebAnnularEmbedding.dualWalkCrossingEdges_disjoint_outerHoleBoundary_of_support_internal
+    web.annular
+    (layers.separatedLocalLayerPair
+      (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal)).dualLoop
+    (by
+      intro face hface
+      exact layers.separatedLocalLayerPair_dualLoop_support_internal
+        (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal) face hface)
 
 end LocalLayerPair
 
