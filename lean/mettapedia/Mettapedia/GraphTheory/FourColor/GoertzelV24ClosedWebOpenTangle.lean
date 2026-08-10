@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebAtGoodWord
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebHoleBoundaryOrder
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness
 
@@ -26,7 +27,10 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24ClosedWebHoleBoundaryOrder
+open GoertzelV24RetainedVertexRotationSplice
 open GoertzelV24SimpleGraphFaceDualConnectedness
+open GoertzelV24SpliceUnification
 open GoertzelV24TwoEdgeCutMinimality
 open SimpleGraph
 
@@ -152,6 +156,102 @@ theorem vertexRotationCyclic
   exact hasCyclicVertexRotations_implies_vertexRotationCyclic G
     web.annular.cellulation.rotation
     web.annular.cellulation.vertexRotation_cyclic
+
+namespace ProtectedInnerInterface
+
+attribute [local instance]
+  GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
+  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
+
+/-- The source-oriented dart at an inner stub determines its retained output
+vertex whenever the source layer stays outside the inner hole. -/
+noncomputable def retainedInnerStub
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hkept : InnerBoundaryKept splice) (port : Fin 5) :
+    RetainedVertex splice.keep :=
+  ⟨data.innerStub port, by
+    rw [← innerBoundaryDart_fst data web.boundary_wellFormed port]
+    exact hkept port
+      (innerBoundaryDart data web.boundary_wellFormed port)
+      (innerBoundaryDart_mem_dartsOn web.annular web.boundary_wellFormed port)⟩
+
+/-- A splice whose pumped region avoids the inner hole retains each named
+inner stub with its exact degree-one local rotation.  This is a concrete
+piece of the source's hole-gathering checklist, not a closed-cubic output
+claim. -/
+theorem output_dartsAt_card_eq_one_of_innerBoundaryKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hkept : InnerBoundaryKept splice) (port : Fin 5) :
+    (splice.output.dartsAt (retainedInnerStub splice hkept port)).card = 1 := by
+  change
+    ((orderedCutRetainedVertexRotationSystem web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge splice.leftCrosses
+      splice.rightCrosses splice.leftInjective splice.rightInjective
+      splice.cover splice.disjoint splice.outer_kept splice.seamEndpoints).dartsAt
+        (retainedInnerStub splice hkept port)).card = 1
+  rw [orderedCutRetainedVertexRotationSystem_dartsAt_card web.annular.RS
+    splice.keep splice.left.crossingEdge splice.right.crossingEdge
+    splice.leftCrosses splice.rightCrosses splice.leftInjective
+    splice.rightInjective splice.cover splice.disjoint splice.outer_kept
+    splice.seamEndpoints (retainedInnerStub splice hkept port)]
+  change ({dart : G.Dart | dart.fst = data.innerStub port} : Finset G.Dart).card = 1
+  rw [G.dart_fst_fiber_card_eq_degree (data.innerStub port)]
+  rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+    (G := G)]
+  exact web.boundary_wellFormed.inner_stub_degree_one port
+
+/-- The source-oriented dart at an outer stub determines its retained output
+vertex whenever the source layer stays outside the outer hole. -/
+noncomputable def retainedOuterStub
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hkept : OuterBoundaryKept splice) (port : Fin 5) :
+    RetainedVertex splice.keep :=
+  ⟨data.outerStub port, by
+    rw [← outerBoundaryDart_fst data web.boundary_wellFormed port]
+    exact hkept port
+      (outerBoundaryDart data web.boundary_wellFormed port)
+      (outerBoundaryDart_mem_dartsOn web.annular web.boundary_wellFormed port)⟩
+
+/-- A splice whose pumped region avoids the outer hole retains each named
+outer stub with its exact degree-one local rotation. -/
+theorem output_dartsAt_card_eq_one_of_outerBoundaryKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hkept : OuterBoundaryKept splice) (port : Fin 5) :
+    (splice.output.dartsAt (retainedOuterStub splice hkept port)).card = 1 := by
+  change
+    ((orderedCutRetainedVertexRotationSystem web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge splice.leftCrosses
+      splice.rightCrosses splice.leftInjective splice.rightInjective
+      splice.cover splice.disjoint splice.outer_kept splice.seamEndpoints).dartsAt
+        (retainedOuterStub splice hkept port)).card = 1
+  rw [orderedCutRetainedVertexRotationSystem_dartsAt_card web.annular.RS
+    splice.keep splice.left.crossingEdge splice.right.crossingEdge
+    splice.leftCrosses splice.rightCrosses splice.leftInjective
+    splice.rightInjective splice.cover splice.disjoint splice.outer_kept
+    splice.seamEndpoints (retainedOuterStub splice hkept port)]
+  change ({dart : G.Dart | dart.fst = data.outerStub port} : Finset G.Dart).card = 1
+  rw [G.dart_fst_fiber_card_eq_degree (data.outerStub port)]
+  rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+    (G := G)]
+  exact web.boundary_wellFormed.outer_stub_degree_one port
+
+end ProtectedInnerInterface
 
 end Instance
 

@@ -123,6 +123,20 @@ def InnerBoundaryKept
     dart ∈ web.annular.RS.dartsOn (data.innerBoundaryEdge port) →
       splice.keep (web.annular.RS.vertOf dart)
 
+/-- The analogous geometric condition for the outer container.  The source
+splice checklist keeps both named holes and all their feet outside the pumped
+region; this condition records the outer half separately from the inner-word
+condition. -/
+def OuterBoundaryKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount) : Prop :=
+  ∀ port dart,
+    dart ∈ web.annular.RS.dartsOn (data.outerBoundaryEdge port) →
+      splice.keep (web.annular.RS.vertOf dart)
+
 /-- A retained inner boundary constructs the protected interface certificate
 used by the good-word transport.  This selects a real dart on each named
 source edge and proves that its opposite is retained too; no arbitrary
