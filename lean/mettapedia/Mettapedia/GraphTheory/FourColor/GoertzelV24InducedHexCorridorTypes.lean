@@ -44,16 +44,26 @@ theorem rho_isCycleOn_dartsAt (RS : RotationSystem V E)
       simpa [RotationSystem.dartsAt] using hright
     exact hrotation left right (hleft'.trans hright'.symm)
 
+/-- A three-dart cyclic vertex fiber has rotation period three at each of
+its darts.  Keeping the cardinality local lets the corridor calculus apply
+inside an open tangle without asserting cubicity at its interface stubs. -/
+theorem rho_cube_apply_of_dartsAt_card_eq_three (RS : RotationSystem V E)
+    (hrotation : VertexRotationCyclic RS) (dart : RS.D)
+    (hcard : (RS.dartsAt (RS.vertOf dart)).card = 3) :
+    RS.rho (RS.rho (RS.rho dart)) = dart := by
+  have hdart : dart ∈ RS.dartsAt (RS.vertOf dart) := by
+    simp [RotationSystem.dartsAt]
+  have hpow := (rho_isCycleOn_dartsAt RS hrotation (RS.vertOf dart)).pow_card_apply hdart
+  rw [hcard] at hpow
+  simpa [pow_succ] using hpow
+
 /-- Cubicity makes the cyclic vertex rotation have period three on every
 dart. -/
 theorem rho_cube_apply_of_isCubic (RS : RotationSystem V E)
     (hcubic : RS.IsCubic) (hrotation : VertexRotationCyclic RS) (dart : RS.D) :
     RS.rho (RS.rho (RS.rho dart)) = dart := by
-  have hdart : dart ∈ RS.dartsAt (RS.vertOf dart) := by
-    simp [RotationSystem.dartsAt]
-  have hpow := (rho_isCycleOn_dartsAt RS hrotation (RS.vertOf dart)).pow_card_apply hdart
-  rw [hcubic (RS.vertOf dart)] at hpow
-  simpa [pow_succ] using hpow
+  exact rho_cube_apply_of_dartsAt_card_eq_three RS hrotation dart
+    (hcubic (RS.vertOf dart))
 
 /-- If another quotient face contains a dart's edge, two-sidedness identifies
 it with the face on the opposite dart. -/
@@ -73,11 +83,13 @@ theorem dartOrbitFace_alpha_eq_of_mem_other_face
   · exact (hne hsame.symm).elim
   · exact hopposite.symm
 
-/-- At a cubic rotated corner, the two faces across its consecutive boundary
-edges share the third edge at the corner. -/
-theorem oppositeFaces_adjacent_at_cubic_corner
-    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
-    (hrotation : VertexRotationCyclic RS) (dart : RS.D)
+/-- At a locally cubic rotated corner, the two faces across its consecutive
+boundary edges share the third edge at the corner.  The local condition is at
+the endpoint of the opposite dart, which is the only vertex used in the
+three-turn calculation. -/
+theorem oppositeFaces_adjacent_at_locally_cubic_corner
+    (RS : RotationSystem V E) (hrotation : VertexRotationCyclic RS) (dart : RS.D)
+    (hcard : (RS.dartsAt (RS.vertOf (RS.alpha dart))).card = 3)
     (hne : dartOrbitFace RS (RS.alpha dart) ≠
       dartOrbitFace RS (RS.alpha (RS.phi dart))) :
     (interiorDualGraph (orbitFaceBoundary RS)
@@ -86,7 +98,8 @@ theorem oppositeFaces_adjacent_at_cubic_corner
         ⟨dartOrbitFace RS (RS.alpha (RS.phi dart)), Finset.mem_univ _⟩ := by
   let third := RS.rho (RS.phi dart)
   have hthirdRho : RS.rho third = RS.alpha dart := by
-    have hcube := rho_cube_apply_of_isCubic RS hcubic hrotation (RS.alpha dart)
+    have hcube := rho_cube_apply_of_dartsAt_card_eq_three RS hrotation
+      (RS.alpha dart) hcard
     simpa only [third, RotationSystem.phi_apply] using hcube
   have hleftFace : dartOrbitFace RS (RS.alpha third) =
       dartOrbitFace RS (RS.alpha dart) := by
@@ -106,6 +119,20 @@ theorem oppositeFaces_adjacent_at_cubic_corner
   exact interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
     (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))
       (orbitFace_incidence_le_two RS) hne hleft hright
+
+/-- At a cubic rotated corner, the two faces across its consecutive boundary
+edges share the third edge at the corner. -/
+theorem oppositeFaces_adjacent_at_cubic_corner
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : VertexRotationCyclic RS) (dart : RS.D)
+    (hne : dartOrbitFace RS (RS.alpha dart) ≠
+      dartOrbitFace RS (RS.alpha (RS.phi dart))) :
+    (interiorDualGraph (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Adj
+        ⟨dartOrbitFace RS (RS.alpha dart), Finset.mem_univ _⟩
+        ⟨dartOrbitFace RS (RS.alpha (RS.phi dart)), Finset.mem_univ _⟩ := by
+  exact oppositeFaces_adjacent_at_locally_cubic_corner RS hrotation dart
+    (hcubic (RS.vertOf (RS.alpha dart))) hne
 
 /-- A bounded power of the face permutation stays in the quotient face of
 its root. -/
