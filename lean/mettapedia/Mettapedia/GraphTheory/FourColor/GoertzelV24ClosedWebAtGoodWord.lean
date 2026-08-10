@@ -110,6 +110,62 @@ structure ProtectedInnerInterface
 
 namespace ProtectedInnerInterface
 
+/-- The concrete form of the source statement that the inner hole is outside
+the pumped region: both endpoints of every one of its five boundary edges
+remain on the retained side. -/
+def InnerBoundaryKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount) : Prop :=
+  ∀ port dart,
+    dart ∈ web.annular.RS.dartsOn (data.innerBoundaryEdge port) →
+      splice.keep (web.annular.RS.vertOf dart)
+
+/-- A retained inner boundary constructs the protected interface certificate
+used by the good-word transport.  This selects a real dart on each named
+source edge and proves that its opposite is retained too; no arbitrary
+boundary enumeration is introduced. -/
+noncomputable def of_innerBoundaryKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    {splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount}
+    (hkept : InnerBoundaryKept splice) :
+    ProtectedInnerInterface web splice := by
+  have hexists : ∀ port : Fin 5, ∃ dart : web.annular.RS.D,
+      dart ∈ web.annular.RS.dartsOn (data.innerBoundaryEdge port) := by
+    intro port
+    have hcard := web.annular.RS.dartsOn_card_two (data.innerBoundaryEdge port)
+    have hpositive : 0 < (web.annular.RS.dartsOn
+        (data.innerBoundaryEdge port)).card := by
+      omega
+    rcases Finset.card_pos.mp hpositive with ⟨dart, hdart⟩
+    exact ⟨dart, hdart⟩
+  let selected : Fin 5 → web.annular.RS.D :=
+    fun port => Classical.choose (hexists port)
+  have hselected : ∀ port,
+      selected port ∈ web.annular.RS.dartsOn (data.innerBoundaryEdge port) :=
+    fun port => Classical.choose_spec (hexists port)
+  have hselectedEdge : ∀ port,
+      web.annular.RS.edgeOf (selected port) = data.innerBoundaryEdge port :=
+    fun port => (web.annular.RS.mem_dartsOn).1 (hselected port)
+  have halphaSelected : ∀ port,
+      web.annular.RS.alpha (selected port) ∈
+        web.annular.RS.dartsOn (data.innerBoundaryEdge port) := by
+    intro port
+    apply (web.annular.RS.mem_dartsOn).2
+    rw [web.annular.RS.edge_alpha]
+    exact hselectedEdge port
+  refine {
+    dart := fun port =>
+      ⟨⟨selected port, hkept port (selected port) (hselected port)⟩,
+        hkept port (web.annular.RS.alpha (selected port))
+          (halphaSelected port)⟩
+    edge_eq := fun port => hselectedEdge port }
+
 /-- Read the five protected source-interface colors from the canonical
 forward splice coloring.  The output need not yet be packaged as an annular
 tangle for this word-level preservation theorem to be meaningful. -/
