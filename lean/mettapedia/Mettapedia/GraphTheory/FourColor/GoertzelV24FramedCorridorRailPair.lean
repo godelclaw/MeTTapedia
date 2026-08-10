@@ -197,6 +197,86 @@ theorem SourceCornerAlignedRailPair.secondRail_support_adjacent_to_axis
   · exact Or.inr (by
       simpa [SourceConsecutiveSlabInterface.centerLayerFace] using hsecond)
 
+/-- Every face used by the first concrete rail is an internal annular face.
+The rail is anchored at clean corridor cells, and boundary cleanliness proves
+that every full-dual neighbor of either anchor stays away from both container
+holes.  This is the first geometric part of the source assertion that the
+holes lie outside the pumped strip. -/
+theorem SourceCornerAlignedRailPair.firstRail_support_internal
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext}
+    (pair : SourceCornerAlignedRailPair first second)
+    (face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hface : face ∈ pair.firstRail.support) :
+    face.1 ∈ embedded.cellulation.interiorFaces := by
+  have hpositive : 0 < blockLength := by omega
+  rcases pair.firstRail_support_adjacent_to_axis face hface with hleft | hright
+  · apply realization.coreWalk_neighbor_internal hpositive
+      leftInterior.center face
+    rw [realization.toCleanOrbitHexCorridorSkeleton_faceAt,
+      ← realization.coreWalk_getVert hpositive leftInterior.center] at hleft
+    exact hleft
+  · apply realization.coreWalk_neighbor_internal hpositive
+      (nextCorridorInterior leftInterior hnext).center face
+    rw [realization.toCleanOrbitHexCorridorSkeleton_faceAt,
+      ← realization.coreWalk_getVert hpositive
+        (nextCorridorInterior leftInterior hnext).center] at hright
+    exact hright
+
+/-- The same boundary-clean argument keeps the second concrete rail inside
+the annular interior.  Both rails therefore have source provenance that is
+incompatible with entering either named container hole. -/
+theorem SourceCornerAlignedRailPair.secondRail_support_internal
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext}
+    (pair : SourceCornerAlignedRailPair first second)
+    (face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hface : face ∈ pair.secondRail.support) :
+    face.1 ∈ embedded.cellulation.interiorFaces := by
+  have hpositive : 0 < blockLength := by omega
+  rcases pair.secondRail_support_adjacent_to_axis face hface with hleft | hright
+  · apply realization.coreWalk_neighbor_internal hpositive
+      leftInterior.center face
+    rw [realization.toCleanOrbitHexCorridorSkeleton_faceAt,
+      ← realization.coreWalk_getVert hpositive leftInterior.center] at hleft
+    exact hleft
+  · apply realization.coreWalk_neighbor_internal hpositive
+      (nextCorridorInterior leftInterior hnext).center face
+    rw [realization.toCleanOrbitHexCorridorSkeleton_faceAt,
+      ← realization.coreWalk_getVert hpositive
+        (nextCorridorInterior leftInterior hnext).center] at hright
+    exact hright
+
 /-- First rails from two source cells separated by a three-cell gap cannot
 meet.  This instantiates the L1 geodesic noncollision theorem with the
 concrete provenance retained by the source rail construction. -/
