@@ -1,5 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierWeightedCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebRadialLength
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebComputedDepthProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SpliceUnification
 
 /-!
 # Closed-web-at-good-word instances
@@ -26,13 +28,21 @@ open GoertzelV24AnnularFrontierWeightedCorridor
 open GoertzelV24AnnularFrontierWeightedCurvature.AnnularFrontier
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebComputedDepthProfile
 open GoertzelV24ClosedWebRadialLength
 open GoertzelV24ClosedWebTotalClosure
+open GoertzelV24RotationCutDartDecomposition
+open GoertzelV24SpliceUnification
+open GoertzelV24SpliceUnification.OrderedCutSpliceData
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
 
 noncomputable section
+
+local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+  Subtype.instDecidableEq
+attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 /-- The Cell-3 source instance consumed by the shrinking argument.  The
 five-stub outer boundary is the sharp closed-web regime in Addenda XXI--XXVII:
@@ -83,6 +93,87 @@ theorem exists_longRadialSectorWitness
       web.annular web.boundary_wellFormed web.connected
       coloring web.tait web.totallyClosed web.goodWord
       bound hlarge
+
+/-- The source's good word is protected by a splice precisely when each of
+its five named interface edges is represented by an old internal dart on the
+retained side.  This is a geometric certificate to be constructed from the
+chosen pumped region, not an assumption that follows from profile equality. -/
+structure ProtectedInnerInterface
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    {n terminalCount faceFragmentCount : Nat}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount) where
+  dart : Fin 5 → InternalDart web.annular.RS splice.keep
+  edge_eq : ∀ port,
+    web.annular.RS.edgeOf (dart port).1.1 = data.innerBoundaryEdge port
+
+namespace ProtectedInnerInterface
+
+/-- Read the five protected source-interface colors from the canonical
+forward splice coloring.  The output need not yet be packaged as an annular
+tangle for this word-level preservation theorem to be meaningful. -/
+def splicedInnerWord
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    {splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount}
+    (interface : ProtectedInnerInterface web splice)
+    (profile : splice.EqualProfile) : CAP5BoundaryWord :=
+  fun port => splice.splicedColoring profile
+    (splice.output.edgeOf (Sum.inl (interface.dart port)))
+
+/-- The protected five-edge word is unchanged by the canonical forward
+splice.  Thus the `(3,1,1)` good-word predicate survives once the concrete
+layer construction certifies that the inner interface is outside the pumped
+region. -/
+theorem splicedInnerWord_eq_source
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    {splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount}
+    (interface : ProtectedInnerInterface web splice)
+    (profile : splice.EqualProfile)
+    (hcoloring : profile.coloring =
+      rotationColoringOfGraph web.annular coloring) :
+    interface.splicedInnerWord profile = data.innerBoundaryWord coloring := by
+  funext port
+  change splice.splicedColoring profile
+      (splice.output.edgeOf (Sum.inl (interface.dart port))) =
+    coloring (data.innerBoundaryEdge port)
+  calc
+    splice.splicedColoring profile
+        (splice.output.edgeOf (Sum.inl (interface.dart port))) =
+      profile.coloring (web.annular.RS.edgeOf (interface.dart port).1.1) :=
+        splice.splicedColoring_internal_edgeOf profile (interface.dart port)
+    _ = (rotationColoringOfGraph web.annular coloring)
+        (web.annular.RS.edgeOf (interface.dart port).1.1) := by
+      rw [hcoloring]
+    _ = coloring (data.innerBoundaryEdge port) := by
+      change coloring (web.annular.RS.edgeOf (interface.dart port).1.1) =
+        coloring (data.innerBoundaryEdge port)
+      rw [interface.edge_eq]
+
+/-- A source good word remains good in the protected output word.  This
+closes the good-word part of Addendum XXVII's splice checklist at the exact
+point where its geometric ``outside the pumped region'' premise is supplied. -/
+theorem splicedInnerWord_good
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    {splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount}
+    (interface : ProtectedInnerInterface web splice)
+    (profile : splice.EqualProfile)
+    (hcoloring : profile.coloring =
+      rotationColoringOfGraph web.annular coloring) :
+    CAP5BoundaryWordHasColoredBlock311 (interface.splicedInnerWord profile) := by
+  rw [interface.splicedInnerWord_eq_source profile hcoloring]
+  exact web.goodWord
+
+end ProtectedInnerInterface
 
 end Instance
 

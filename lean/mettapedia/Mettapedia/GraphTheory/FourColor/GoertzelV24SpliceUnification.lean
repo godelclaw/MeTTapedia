@@ -532,6 +532,35 @@ def splicedColoring
     data.seamEndpoints profile.coloring
     (fun step => profile_boundary_color_eq data profile step)
 
+/-- On an old dart whose two endpoints are retained, the canonical forward
+splice coloring is literally the old edge color.  This is the local transport
+used when a source interface is certified outside the pumped region. -/
+theorem splicedColoring_internal_edgeOf
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (profile : data.EqualProfile)
+    (dart : InternalDart RS data.keep) :
+    data.splicedColoring profile
+        (data.output.edgeOf (Sum.inl dart)) =
+      profile.coloring (RS.edgeOf dart.1.1) := by
+  change
+    orderedCutRetainedVertexSplicedColoring RS data.keep
+        data.left.crossingEdge data.right.crossingEdge
+        data.leftCrosses data.rightCrosses data.leftInjective
+        data.rightInjective data.cover data.disjoint data.outer_kept
+        data.seamEndpoints profile.coloring
+        (fun step => profile_boundary_color_eq data profile step)
+        ((orderedCutRetainedVertexRewiredDartSystem RS data.keep
+          data.left.crossingEdge data.right.crossingEdge
+          data.leftCrosses data.rightCrosses data.leftInjective
+          data.rightInjective data.cover data.disjoint data.outer_kept
+          data.seamEndpoints).edgeOf (Sum.inl dart)) = _
+  exact orderedCutRetainedVertexSplicedColoring_internal_edgeOf
+    RS data.keep data.left.crossingEdge data.right.crossingEdge
+    data.leftCrosses data.rightCrosses data.leftInjective
+    data.rightInjective data.cover data.disjoint data.outer_kept
+    data.seamEndpoints profile.coloring
+    (fun step => profile_boundary_color_eq data profile step) dart
+
 theorem splicedColoring_isTait
     (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
     (profile : data.EqualProfile) :
