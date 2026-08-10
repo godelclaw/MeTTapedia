@@ -30,6 +30,26 @@ def inheritedDartColor (RS : RotationSystem V E) (keep : V → Prop)
   | Sum.inl dart => coloring (RS.edgeOf dart.1)
   | Sum.inr boundary => coloring (RS.edgeOf boundary.1.1)
 
+/-- Read any literal open-region edge coloring at one of its oriented darts.
+This applies to arbitrary open colorings, not only ones inherited from an
+ambient closed map. -/
+def dartColor (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (coloring : (rotationSystem RS keep outer).EdgeColoring Color)
+    (dart : Dart RS keep) : Color :=
+  coloring ((rotationSystem RS keep outer).edgeOf dart)
+
+/-- A Tait coloring of a literal open region is nonzero at every old dart and
+every newly created boundary stub. -/
+theorem dartColor_ne_zero
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (coloring : (rotationSystem RS keep outer).EdgeColoring Color)
+    (hcoloring : (rotationSystem RS keep outer).IsTaitEdgeColoring coloring)
+    (dart : Dart RS keep) :
+    dartColor RS keep outer coloring dart ≠ 0 :=
+  hcoloring _
+
 /-- The inherited colors are constant on every new open-region edge. -/
 theorem inheritedDartColor_alpha
     (RS : RotationSystem V E) (keep : V → Prop)

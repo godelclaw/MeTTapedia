@@ -124,6 +124,7 @@ theorem alpha_stub (RS : RotationSystem V E) (keep : V → Prop)
 lie away from the ambient map's distinguished outer dart, so it takes its own
 chosen dart as the rotation-system root. -/
 def rewiredDartSystem (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) :
     RewiredDartSystem (Vertex RS keep) (Dart RS keep) where
   vertOf := vertOf RS keep
@@ -171,12 +172,14 @@ def rewiredDartSystem (RS : RotationSystem V E) (keep : V → Prop)
 
 /-- The actual rotation system of the literal open region. -/
 noncomputable def rotationSystem (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) :
     RotationSystem (Vertex RS keep) (rewiredDartSystem RS keep outer).Edge :=
   (rewiredDartSystem RS keep outer).toRotationSystem
 
 @[simp]
 theorem rotationSystem_vertOf_old (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (dart : RetainedDart RS keep) :
     (rotationSystem RS keep outer).vertOf (Sum.inl dart) =
       Sum.inl ⟨RS.vertOf dart.1, dart.2⟩ :=
@@ -184,6 +187,7 @@ theorem rotationSystem_vertOf_old (RS : RotationSystem V E) (keep : V → Prop)
 
 @[simp]
 theorem rotationSystem_vertOf_stub (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (boundary : BoundaryDart RS keep) :
     (rotationSystem RS keep outer).vertOf (Sum.inr boundary) =
       Sum.inr boundary :=
@@ -191,6 +195,7 @@ theorem rotationSystem_vertOf_stub (RS : RotationSystem V E) (keep : V → Prop)
 
 @[simp]
 theorem rotationSystem_rho_old (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (dart : RetainedDart RS keep) :
     (rotationSystem RS keep outer).rho (Sum.inl dart) =
       Sum.inl (retainedRho RS keep dart) :=
@@ -198,6 +203,7 @@ theorem rotationSystem_rho_old (RS : RotationSystem V E) (keep : V → Prop)
 
 @[simp]
 theorem rotationSystem_rho_stub (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (boundary : BoundaryDart RS keep) :
     (rotationSystem RS keep outer).rho (Sum.inr boundary) = Sum.inr boundary :=
   rfl
@@ -205,6 +211,7 @@ theorem rotationSystem_rho_stub (RS : RotationSystem V E) (keep : V → Prop)
 @[simp]
 theorem rotationSystem_alpha_old_of_internal
     (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (dart : RetainedDart RS keep)
     (hinternal : keep (RS.vertOf (RS.alpha dart.1))) :
     (rotationSystem RS keep outer).alpha (Sum.inl dart) =
@@ -214,6 +221,7 @@ theorem rotationSystem_alpha_old_of_internal
 @[simp]
 theorem rotationSystem_alpha_old_of_boundary
     (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (dart : RetainedDart RS keep)
     (hboundary : ¬ keep (RS.vertOf (RS.alpha dart.1))) :
     (rotationSystem RS keep outer).alpha (Sum.inl dart) =
@@ -223,6 +231,7 @@ theorem rotationSystem_alpha_old_of_boundary
 @[simp]
 theorem rotationSystem_alpha_stub
     (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
     (outer : Dart RS keep) (boundary : BoundaryDart RS keep) :
     (rotationSystem RS keep outer).alpha (Sum.inr boundary) = Sum.inl boundary.1 :=
   alpha_stub RS keep boundary

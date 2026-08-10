@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutSpliceBoundary
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutOpenRegionalProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionTaitInheritance
 
 /-!
@@ -16,9 +17,13 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24AnnularCrosscut
 
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24AnnularCrosscutOpenRegionalProfile
+open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24OpenRegionRotation
 open GoertzelV24OpenRegionTaitInheritance
+open GoertzelV24RotationBoundaryFaceCutProfile
 open GoertzelV24RotationCutDartDecomposition
+open GoertzelV24RotationVertexCutProfile
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -28,16 +33,6 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 noncomputable section
 
 attribute [local instance] graphEdgeSetDecidableEq
-
-local instance sourceOpenRegionRetainedVertexFintype (side : Finset V) :
-    Fintype (GoertzelV24OpenRegionRotation.RetainedVertex
-      (fun vertex : V => vertex ∈ side)) :=
-  GoertzelV24OpenRegionRotation.retainedVertexFintype _
-
-local instance sourceOpenRegionRetainedVertexDecidableEq (side : Finset V) :
-    DecidableEq (GoertzelV24OpenRegionRotation.RetainedVertex
-      (fun vertex : V => vertex ∈ side)) :=
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq _
 
 namespace SeparatedAlignedSimpleDualCrosscuts
 
@@ -73,14 +68,8 @@ noncomputable def sourceCrosscutOpenRegion
       (orbitFaceBoundary data.toRotationSystem)
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
-    (boundary : SourceCrosscutBoundaryData data pair) :
-    RotationSystem
-      (Vertex data.toRotationSystem
-        (fun vertex => vertex ∈ pair.componentSide boundary.component))
-      (rewiredDartSystem data.toRotationSystem
-        (fun vertex => vertex ∈ pair.componentSide boundary.component)
-        (pair.sourceCrosscutOpenRoot data boundary)).Edge :=
-  rotationSystem data.toRotationSystem
+    (boundary : SourceCrosscutBoundaryData data pair) := by
+  exact rotationSystem data.toRotationSystem
     (fun vertex => vertex ∈ pair.componentSide boundary.component)
     (pair.sourceCrosscutOpenRoot data boundary)
 
@@ -98,9 +87,8 @@ noncomputable def sourceCrosscutInheritedOpenColoring
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
     (boundary : SourceCrosscutBoundaryData data pair)
-    (coloring : data.toRotationSystem.EdgeColoring Color) :
-    (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color :=
-  inheritedColoring data.toRotationSystem
+    (coloring : data.toRotationSystem.EdgeColoring Color) := by
+  exact inheritedColoring data.toRotationSystem
     (fun vertex => vertex ∈ pair.componentSide boundary.component)
     (pair.sourceCrosscutOpenRoot data boundary) coloring
 
@@ -155,6 +143,138 @@ theorem sourceCrosscutInheritedOpenColoring_stubColor
   exact inheritedColoring_edgeOf data.toRotationSystem
     (fun vertex => vertex ∈ pair.componentSide boundary.component)
     (pair.sourceCrosscutOpenRoot data boundary) coloring (Sum.inr exposed)
+
+/-- The source boundary profile's raw regional edges are genuinely carried by
+the selected deletion component.  This is the structural bridge that permits
+its five finite coordinates to be read from the literal open tangle. -/
+theorem sourceCrosscutBoundaryProfileData_regionEdges_subset
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair) :
+    (pair.sourceCrosscutBoundaryProfileData data boundary).regionEdges ⊆
+      vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component) := by
+  intro edge hedge
+  simpa [sourceCrosscutBoundaryProfileData,
+    vertexSetBoundaryGraphCutDataWithIndexing] using hedge
+
+/-- Read a regional ambient edge from an arbitrary coloring of the literal
+open source component.  A region edge is represented by its endpoint-side
+dart; values outside the component are zero and cannot enter a profile port. -/
+noncomputable def sourceCrosscutLiteralColorOnVertexSide
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color) :
+    G.edgeSet → Color :=
+  fun edge =>
+    if hedge : edge ∈ vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component) then
+      dartColor data.toRotationSystem
+        (fun vertex => vertex ∈ pair.componentSide boundary.component)
+        (pair.sourceCrosscutOpenRoot data boundary) coloring
+        (Sum.inl ⟨vertexSideDart data.toRotationSystem
+          (pair.componentSide boundary.component) edge hedge,
+          vertexSideDart_mem_inside data.toRotationSystem
+            (pair.componentSide boundary.component) edge hedge⟩)
+    else 0
+
+/-- A regional edge receives a nonzero color from every literal open Tait
+coloring. -/
+theorem sourceCrosscutLiteralColorOnVertexSide_ne_zero
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color)
+    (hcoloring : (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring
+      coloring)
+    {edge : G.edgeSet}
+    (hedge : edge ∈ vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)) :
+    pair.sourceCrosscutLiteralColorOnVertexSide data boundary coloring edge ≠ 0 := by
+  rw [sourceCrosscutLiteralColorOnVertexSide]
+  simp only [dif_pos hedge]
+  exact dartColor_ne_zero data.toRotationSystem
+    (fun vertex => vertex ∈ pair.componentSide boundary.component)
+    (pair.sourceCrosscutOpenRoot data boundary) coloring hcoloring _
+
+/-- The source's full finite five-coordinate profile, now read from a literal
+open coloring of the component bounded by the paired transversals. -/
+noncomputable def sourceCrosscutLiteralOpenProfile
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color)
+    (hcoloring : (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring
+      coloring) :=
+  let hregion := pair.sourceCrosscutBoundaryProfileData_regionEdges_subset
+    data boundary
+  let hports := pair.sourceCrosscutBoundaryProfileData_portsInRegion
+    data boundary
+  (pair.sourceCrosscutBoundaryProfileData data boundary).regionalProfile
+    (pair.sourceCrosscutLiteralColorOnVertexSide data boundary coloring)
+    (fun crossing =>
+      pair.sourceCrosscutLiteralColorOnVertexSide_ne_zero data boundary
+        coloring hcoloring (hregion (hports (.inl crossing))))
+
+/-- The color coordinate of the literal open profile is exactly the color of
+the selected component-side edge in its open tangle. -/
+@[simp]
+theorem sourceCrosscutLiteralOpenProfile_edgeColor_toColor
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color)
+    (hcoloring : (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring
+      coloring)
+    (crossing : Fin (Fintype.card (VertexSetCrossingEdge
+      data.toRotationSystem (pair.componentSide boundary.component)))) :
+    ((pair.sourceCrosscutLiteralOpenProfile data boundary coloring hcoloring).edgeColor
+      crossing).toColor =
+      pair.sourceCrosscutLiteralColorOnVertexSide data boundary coloring
+        ((pair.sourceCrosscutBoundaryProfileData data boundary).crossingEdge crossing) := by
+  unfold sourceCrosscutLiteralOpenProfile
+  exact GraphCorridorCutData.regionalProfile_edgeColor_toColor _ _ _ crossing
 
 end SeparatedAlignedSimpleDualCrosscuts
 
