@@ -139,6 +139,56 @@ theorem orderedCutRetainedVertexSplicedColoring_edgeOf
       hcover hdisjoint houter C hcutColors)]
   rfl
 
+/-- An old dart wholly retained away from the two cut boundaries keeps its
+edge color in the spliced rotation system.  This is the local color transport
+used later for the protected hole interfaces in the source's good-word
+checklist; it makes no claim that a particular interface is outside a given
+splice. -/
+theorem orderedCutRetainedVertexSplicedColoring_internal_edgeOf
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (leftCrossing rightCrossing : Fin n → E)
+    (hleftCrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = leftCrossing step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (hrightCrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = rightCrossing step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (hleftInjective : Function.Injective leftCrossing)
+    (hrightInjective : Function.Injective rightCrossing)
+    (hcover : ∀ dart : BoundaryDart RS keep,
+      RS.edgeOf dart.1.1 ∈ orderedCut leftCrossing ∨
+        RS.edgeOf dart.1.1 ∈ orderedCut rightCrossing)
+    (hdisjoint : Disjoint (orderedCut leftCrossing)
+      (orderedCut rightCrossing))
+    (houter : keep (RS.vertOf RS.outer))
+    (hseamEndpoints : ∀ step,
+      RS.vertOf
+          (orderedBoundaryDart RS keep leftCrossing
+            hleftCrosses step).1.1.1 ≠
+        RS.vertOf
+          (orderedBoundaryDart RS keep rightCrossing
+            hrightCrosses step).1.1.1)
+    (C : RS.EdgeColoring Color)
+    (hcutColors : ∀ step,
+      C (leftCrossing step) = C (rightCrossing step))
+    (dart : InternalDart RS keep) :
+    orderedCutRetainedVertexSplicedColoring RS keep
+        leftCrossing rightCrossing hleftCrosses hrightCrosses
+        hleftInjective hrightInjective hcover hdisjoint houter
+        hseamEndpoints C hcutColors
+        ((orderedCutRetainedVertexRewiredDartSystem RS keep
+          leftCrossing rightCrossing hleftCrosses hrightCrosses
+          hleftInjective hrightInjective hcover hdisjoint houter
+          hseamEndpoints).edgeOf (Sum.inl dart)) =
+      C (RS.edgeOf dart.1.1) := by
+  simpa [matchedPartUnderlyingDart] using
+    orderedCutRetainedVertexSplicedColoring_edgeOf
+      RS keep leftCrossing rightCrossing hleftCrosses hrightCrosses
+      hleftInjective hrightInjective hcover hdisjoint houter
+      hseamEndpoints C hcutColors (Sum.inl dart)
+
 /-- A Tait coloring with equal colors on the matched interfaces remains a
 Tait coloring on the corrected retained-vertex splice. -/
 theorem orderedCutRetainedVertexSplicedColoring_isTait
