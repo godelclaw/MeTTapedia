@@ -372,16 +372,43 @@ theorem exists_boundaryCleanHexagonalGeodesicBlock_of_weightedAnnularExcess
     exact mem_faceDefectClosedNeighborhood_of_adj_defect
       boundary internalFaces hadjInternal hnonhex
 
+/-- A Cell-3 corridor together with the part of L1 that a bare clean skeleton
+does not remember: every full-dual neighbour of every selected corridor face
+is an annular interior face.  This is the precise ``both holes lie outside
+the pumped region'' invariant needed when local layer walks are assembled.
+
+Keeping this information on the source carrier avoids the invalid shortcut of
+inferring it merely from hexagonality: a named hole could itself have length
+six. -/
+structure BoundaryCleanOrbitHexCorridor
+    (embedded : ClosedWebAnnularEmbedding data) (blockLength : Nat) where
+  toCleanOrbitHexCorridorSkeleton :
+    CleanOrbitHexCorridorSkeleton
+      embedded.cellulation.rotation.toRotationSystem blockLength
+  face_internal : ∀ offset : Fin blockLength,
+    (toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt offset).1 ∈
+      embedded.cellulation.interiorFaces
+  neighbor_internal : ∀ offset : Fin blockLength,
+    ∀ neighbor : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)),
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Adj
+          (toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt offset)
+          neighbor →
+        neighbor.1 ∈ embedded.cellulation.interiorFaces
+
 /-- A boundary-clean Cell-3 block is a literal clean corridor skeleton in the
-full quotient-face carrier.  This is the adapter from source L1 data to the
-existing finite-interface corridor machinery; it retains the actual chosen
-path and does not introduce an arbitrary transversal. -/
-theorem nonempty_cleanOrbitHexCorridorSkeleton_of_boundaryCleanBlock
+full quotient-face carrier, retaining both its hexagonal neighbourhood and
+its annular-interior neighbourhood.  This is the adapter from source L1 data
+to the finite-interface corridor machinery; it does not introduce an
+arbitrary transversal. -/
+theorem nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
     (embedded : ClosedWebAnnularEmbedding data)
     (blockLength : Nat)
     (hclean : embedded.HasBoundaryCleanHexagonalGeodesicBlock blockLength) :
-    Nonempty (CleanOrbitHexCorridorSkeleton
-      embedded.cellulation.rotation.toRotationSystem blockLength) := by
+    Nonempty (BoundaryCleanOrbitHexCorridor embedded blockLength) := by
   classical
   rcases hclean with
     ⟨start, finish, path, hpath, hgeodesic, hpositionCount, block, hblock⟩
@@ -500,11 +527,32 @@ theorem nonempty_cleanOrbitHexCorridorSkeleton_of_boundaryCleanBlock
       exact (hadj_iff _ _).2 hfull
   }
   exact ⟨{
-    toOrbitHexCorridorSkeleton := corridor
-    neighbor_hexagonal := by
+    toCleanOrbitHexCorridorSkeleton := {
+      toOrbitHexCorridorSkeleton := corridor
+      neighbor_hexagonal := by
+        intro offset neighbor hadj
+        exact ((hblock offset).2 neighbor hadj).2
+    }
+    face_internal := by
+      intro offset
+      exact (path.getVert
+        (corridorBlockIndex (defectBudget := badBudget) block offset).val).2
+    neighbor_internal := by
       intro offset neighbor hadj
-      exact ((hblock offset).2 neighbor hadj).2
+      exact ((hblock offset).2 neighbor hadj).1
   }⟩
+
+/-- Forgetting the annular-interior half of a Cell-3 clean corridor recovers
+the earlier finite-interface corridor carrier. -/
+theorem nonempty_cleanOrbitHexCorridorSkeleton_of_boundaryCleanBlock
+    (embedded : ClosedWebAnnularEmbedding data)
+    (blockLength : Nat)
+    (hclean : embedded.HasBoundaryCleanHexagonalGeodesicBlock blockLength) :
+    Nonempty (CleanOrbitHexCorridorSkeleton
+      embedded.cellulation.rotation.toRotationSystem blockLength) := by
+  rcases embedded.nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
+      blockLength hclean with ⟨corridor⟩
+  exact ⟨corridor.toCleanOrbitHexCorridorSkeleton⟩
 
 end ClosedWebAnnularEmbedding
 
