@@ -236,6 +236,49 @@ theorem deletedBoundarySuccessor_eq_next_dualCycleCrossing
           (boundaryAt (finRotate walk.length step)).1.1 :=
         (hboundaryEdge (finRotate walk.length step)).symm
 
+/-- If the concrete retained boundary darts enumerate every boundary port,
+the local dual-cycle successor calculation upgrades to an equality of whole
+boundary permutations.  This is the exact finite bridge from a source layer
+formation to the order premise of the planar splice; no topological
+``homeomorphism'' is left implicit. -/
+theorem deletedBoundarySuccessor_eq_dualCycleBoundaryOrder
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Walk start start)
+    (hcycle : walk.IsCycle) (deleted : Finset V)
+    (hboundary : vertexSetCrossingEdges data.toRotationSystem deleted =
+      dualWalkCrossingEdges
+        (orbitFaceBoundary data.toRotationSystem)
+        (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk)
+    (boundaryAt : Fin walk.length →
+      BoundaryDart data.toRotationSystem (deletedRegionKeep deleted))
+    (hboundaryAt : Function.Bijective boundaryAt)
+    (hboundaryEdge : ∀ step,
+      data.toRotationSystem.edgeOf (boundaryAt step).1.1 =
+        dualWalkCrossingEdge
+          (orbitFaceBoundary data.toRotationSystem)
+          (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk step)
+    (htargetFace : BoundaryDartsUseDualCycleTargetFaces
+      data walk deleted boundaryAt) :
+    deletedRegionBoundarySuccessor data.toRotationSystem deleted =
+      (Equiv.ofBijective boundaryAt hboundaryAt).permCongr
+        (finRotate walk.length) := by
+  apply Equiv.ext
+  intro boundary
+  obtain ⟨step, hstep⟩ := hboundaryAt.2 boundary
+  subst boundary
+  rw [deletedBoundarySuccessor_eq_next_dualCycleCrossing
+    data htwoSided walk hcycle deleted hboundary boundaryAt hboundaryEdge
+    htargetFace step]
+  simp
+
 end
 
 end GoertzelV24DualCycleDeletedBoundaryOrder
