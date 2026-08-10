@@ -143,6 +143,93 @@ theorem componentCrossingEdges_eq_removed_of_forall_removed_crosses
     exact (mem_componentCrossingEdges_iff removed component edge).2
       (hcross edge hedge)
 
+/-- If every deletion component sees the same nonempty removed boundary,
+then the complement of any chosen component is connected.  This is the
+finite graph form of the two-side conclusion needed after a simple dual
+separator: a removed edge has only two endpoints, so it cannot cross three
+different saturated components. -/
+theorem induce_complement_connected_of_component_boundary_saturation
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    (hremoved : removed.Nonempty)
+    (hsaturation : ∀ other :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent,
+      componentCrossingEdges removed other = removed) :
+    (G.induce (fun vertex => vertex ∉ component.supp)).Connected := by
+  rcases hremoved with ⟨edge, hedge⟩
+  have hcrossComponent : EdgeCrossesVertexSide G
+      (fun vertex => vertex ∈ component.supp) edge := by
+    apply (mem_componentCrossingEdges_iff removed component edge).1
+    rw [hsaturation component]
+    exact hedge
+  rcases hcrossComponent with ⟨inside, outside, hinsideEdge, houtsideEdge,
+    hinside, houtside⟩
+  have hinsideNeOutside : inside ≠ outside := by
+    intro heq
+    exact houtside (heq ▸ hinside)
+  have hedgePair : (edge : Sym2 V) = s(inside, outside) :=
+    sym2_eq_mk_of_mem_of_mem_of_ne hinsideEdge houtsideEdge hinsideNeOutside
+  let otherComponent :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent :=
+    (G.deleteEdges (edgeFinsetValueSet removed)).connectedComponentMk outside
+  have houtsideOther : outside ∈ otherComponent.supp := by
+    dsimp [otherComponent]
+    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+  have hotherNeComponent : otherComponent ≠ component := by
+    intro heq
+    exact houtside (heq ▸ houtsideOther)
+  have outside_mem_of_ne
+      (candidate :
+        (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+      (hcandidate : candidate ≠ component) :
+      outside ∈ candidate.supp := by
+    have hcrossCandidate : EdgeCrossesVertexSide G
+        (fun vertex => vertex ∈ candidate.supp) edge := by
+      apply (mem_componentCrossingEdges_iff removed candidate edge).1
+      rw [hsaturation candidate]
+      exact hedge
+    rcases hcrossCandidate with ⟨endpoint, opposite, hendpointEdge,
+      _hoppositeEdge, hendpointCandidate, _hopposite⟩
+    rw [hedgePair] at hendpointEdge
+    rcases (Sym2.mem_iff.mp hendpointEdge) with hinsideEq | houtsideEq
+    · exfalso
+      apply hcandidate
+      have hinsideCandidate : inside ∈ candidate.supp := by
+        simpa [hinsideEq] using hendpointCandidate
+      exact SimpleGraph.ConnectedComponent.eq_of_common_vertex
+        hinsideCandidate hinside
+    · simpa [houtsideEq] using hendpointCandidate
+  have hcomplement_eq_other :
+      (fun vertex => vertex ∉ component.supp) = otherComponent.supp := by
+    funext vertex
+    apply propext
+    constructor
+    · intro hnotComponent
+      let candidate :
+          (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent :=
+        (G.deleteEdges (edgeFinsetValueSet removed)).connectedComponentMk vertex
+      have hvertexCandidate : vertex ∈ candidate.supp := by
+        dsimp [candidate]
+        exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+      have hcandidateNe : candidate ≠ component := by
+        intro heq
+        exact hnotComponent (heq ▸ hvertexCandidate)
+      have houtsideCandidate : outside ∈ candidate.supp :=
+        outside_mem_of_ne candidate hcandidateNe
+      have hcandidateEq : candidate = otherComponent :=
+        SimpleGraph.ConnectedComponent.eq_of_common_vertex
+          houtsideCandidate houtsideOther
+      exact hcandidateEq ▸ hvertexCandidate
+    · intro hvertexOther hvertexComponent
+      apply hotherNeComponent
+      exact SimpleGraph.ConnectedComponent.eq_of_common_vertex
+        hvertexOther hvertexComponent
+  rw [hcomplement_eq_other]
+  exact otherComponent.connected_toSimpleGraph.mono (by
+    intro left right hadj
+    exact (G.deleteEdges_le (edgeFinsetValueSet removed)) hadj)
+
 /-!
 The component side is constant along every walk that avoids the deleted
 support.  This is the walk form of the endpoint boundary calculation and is
