@@ -17,13 +17,7 @@ theorem classCompressedSectorCharacter_certificate_block3
     classCompressedSectorCharacter 3 (fieldIndex.1 + 1) =
       expectedClassCompressedSectorCharacter 3
         (fieldIndex.1 + 1) := by
-  fin_cases fieldIndex <;>
-    norm_num (config := { maxSteps := 1000000 })
-      [classCompressedSectorCharacter,
-      classPartitionDerivativeCharacter, classCycleLetterCharacter,
-      classPowerTrace, classPowerTraceInt, powerTraceRows, fieldPartitions,
-      derivativeCountForFields, expectedClassCompressedSectorCharacter,
-      Finset.sum_range_succ]
+  decide +kernel +revert
 
 end HypercubicDimension16CompressionCensus
 end YangMills
