@@ -77,24 +77,32 @@ theorem faceCycleEdge_mem (RS : RotationSystem V E) (root : RS.D)
   exact Finset.mem_image.2
     ⟨faceCycleDart RS root position, faceCycleDart_mem RS root position, rfl⟩
 
-/-- On a two-sided facial cycle, the cyclic edge positions are distinct. -/
-theorem faceCycleEdge_injective (RS : RotationSystem V E)
-    (htwoSided : OrbitFacesTwoSided RS) (root : RS.D) :
+/-- On one facial cycle with a certified simple boundary, the cyclic edge
+positions are distinct.  This local form is what an open annular tangle
+provides away from its degree-one boundary stubs. -/
+theorem faceCycleEdge_injective_of_boundarySimple (RS : RotationSystem V E)
+    (root : RS.D)
+    (hsimple :
+      (orbitFaceBoundary RS (dartOrbitFace RS root)).card =
+        (orbitFaceDarts RS (dartOrbitFace RS root)).card) :
     Function.Injective (faceCycleEdge RS root) := by
   intro left right hedge
   apply faceCycleDart_injective RS root
   have hinjective : Set.InjOn RS.edgeOf (RS.faceOrbit root) := by
     rw [← orbitFaceDarts_dartOrbitFace_eq_faceOrbit RS root]
     apply Finset.card_image_iff.mp
-    exact orbitFaceBoundarySimple_of_twoSided RS htwoSided
-      (dartOrbitFace RS root)
+    exact hsimple
   exact hinjective (faceCycleDart_mem RS root left)
     (faceCycleDart_mem RS root right) hedge
 
-/-- Every boundary edge of a two-sided face has a unique cyclic position in
-the actual face-permutation orbit. -/
-theorem existsUnique_faceCycleEdge_eq (RS : RotationSystem V E)
-    (htwoSided : OrbitFacesTwoSided RS) (root : RS.D) (edge : E)
+/-- Every boundary edge of a face with a certified simple boundary has a
+unique cyclic position in the actual face-permutation orbit. -/
+theorem existsUnique_faceCycleEdge_eq_of_boundarySimple (RS : RotationSystem V E)
+    (root : RS.D)
+    (hsimple :
+      (orbitFaceBoundary RS (dartOrbitFace RS root)).card =
+        (orbitFaceDarts RS (dartOrbitFace RS root)).card)
+    (edge : E)
     (hedge : edge ∈ orbitFaceBoundary RS (dartOrbitFace RS root)) :
     ∃! position : Fin (RS.faceOrbit root).card,
       faceCycleEdge RS root position = edge := by
@@ -108,8 +116,27 @@ theorem existsUnique_faceCycleEdge_eq (RS : RotationSystem V E)
     exact hdartEdge
   refine ⟨position, hpositionEdge, ?_⟩
   · intro other hother
-    exact faceCycleEdge_injective RS htwoSided root
+    exact faceCycleEdge_injective_of_boundarySimple RS root hsimple
       (hother.trans hpositionEdge.symm)
+
+/-- On a two-sided facial cycle, the cyclic edge positions are distinct. -/
+theorem faceCycleEdge_injective (RS : RotationSystem V E)
+    (htwoSided : OrbitFacesTwoSided RS) (root : RS.D) :
+    Function.Injective (faceCycleEdge RS root) :=
+  faceCycleEdge_injective_of_boundarySimple RS root
+    (orbitFaceBoundarySimple_of_twoSided RS htwoSided
+      (dartOrbitFace RS root))
+
+/-- Every boundary edge of a two-sided face has a unique cyclic position in
+the actual face-permutation orbit. -/
+theorem existsUnique_faceCycleEdge_eq (RS : RotationSystem V E)
+    (htwoSided : OrbitFacesTwoSided RS) (root : RS.D) (edge : E)
+    (hedge : edge ∈ orbitFaceBoundary RS (dartOrbitFace RS root)) :
+    ∃! position : Fin (RS.faceOrbit root).card,
+      faceCycleEdge RS root position = edge :=
+  existsUnique_faceCycleEdge_eq_of_boundarySimple RS root
+    (orbitFaceBoundarySimple_of_twoSided RS htwoSided
+      (dartOrbitFace RS root)) edge hedge
 
 /-- An internal face index of a corridor, with both a predecessor and a
 successor. -/

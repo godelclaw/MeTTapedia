@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebAtGoodWord
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebHoleBoundaryOrder
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexFaceRungType
 
 /-!
 # The Cell-3 carrier is an open tangle
@@ -28,6 +29,7 @@ open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24ClosedWebHoleBoundaryOrder
+open GoertzelV24HexFaceRungType
 open GoertzelV24RetainedVertexRotationSplice
 open GoertzelV24SimpleGraphFaceDualConnectedness
 open GoertzelV24SpliceUnification
@@ -156,6 +158,85 @@ theorem vertexRotationCyclic
   exact hasCyclicVertexRotations_implies_vertexRotationCyclic G
     web.annular.cellulation.rotation
     web.annular.cellulation.vertexRotation_cyclic
+
+/-- An annular-interior face has the simple edge boundary certified by the
+Cell-3 geometry.  This is the local replacement for a global two-sided-face
+hypothesis, which would be false at the named degree-one holes. -/
+theorem orbitFaceBoundary_card_eq_orbitFaceDarts_card_of_mem_interiorFaces
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) (dart : web.annular.RS.D)
+    (hface : dartOrbitFace web.annular.RS dart ∈
+      web.annular.cellulation.interiorFaces) :
+    (orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS dart)).card =
+        (orbitFaceDarts web.annular.RS
+          (dartOrbitFace web.annular.RS dart)).card := by
+  simpa [GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.faceLength] using
+    web.geometry.internalBoundarySimple
+      (dartOrbitFace web.annular.RS dart) hface
+
+/-- A dart incident to an annular-interior face has a genuinely different
+face on its opposite side.  The Cell-3 tangle need not be globally two-sided:
+the degree-one stub edges deliberately run twice around a named hole.  What
+the source corridor uses is this local fact, obtained from the certified
+simple boundary of each interior face. -/
+theorem dartOrbitFace_ne_alpha_of_mem_interiorFaces
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) (dart : web.annular.RS.D)
+    (hface : dartOrbitFace web.annular.RS dart ∈
+      web.annular.cellulation.interiorFaces) :
+    dartOrbitFace web.annular.RS dart ≠
+      dartOrbitFace web.annular.RS (web.annular.RS.alpha dart) := by
+  intro hsame
+  have hsimple :=
+    web.orbitFaceBoundary_card_eq_orbitFaceDarts_card_of_mem_interiorFaces
+      dart hface
+  have hinjective : Set.InjOn web.annular.RS.edgeOf
+      (orbitFaceDarts web.annular.RS
+        (dartOrbitFace web.annular.RS dart)) := by
+    apply Finset.card_image_iff.mp
+    exact hsimple
+  have hdart : dart ∈ orbitFaceDarts web.annular.RS
+      (dartOrbitFace web.annular.RS dart) :=
+    (mem_orbitFaceDarts_iff web.annular.RS
+      (dartOrbitFace web.annular.RS dart) dart).2 rfl
+  have halpha : web.annular.RS.alpha dart ∈ orbitFaceDarts web.annular.RS
+      (dartOrbitFace web.annular.RS dart) :=
+    (mem_orbitFaceDarts_iff web.annular.RS
+      (dartOrbitFace web.annular.RS dart)
+      (web.annular.RS.alpha dart)).2 hsame.symm
+  have heq := hinjective hdart halpha
+    (web.annular.RS.edge_alpha dart).symm
+  exact web.annular.RS.alpha_fixfree dart heq.symm
+
+/-- The cyclic edge positions of an annular-interior face are distinct.  The
+corridor may use this local fact without treating the open Cell-3 tangle as a
+globally two-sided spherical map. -/
+theorem faceCycleEdge_injective_of_dartOrbitFace_mem_interiorFaces
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) (root : web.annular.RS.D)
+    (hface : dartOrbitFace web.annular.RS root ∈
+      web.annular.cellulation.interiorFaces) :
+    Function.Injective (faceCycleEdge web.annular.RS root) :=
+  faceCycleEdge_injective_of_boundarySimple web.annular.RS root
+    (web.orbitFaceBoundary_card_eq_orbitFaceDarts_card_of_mem_interiorFaces
+      root hface)
+
+/-- A selected edge on an annular-interior face has a unique position in that
+face's real cyclic boundary. -/
+theorem existsUnique_faceCycleEdge_eq_of_dartOrbitFace_mem_interiorFaces
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) (root : web.annular.RS.D)
+    (hface : dartOrbitFace web.annular.RS root ∈
+      web.annular.cellulation.interiorFaces)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS root)) :
+    ∃! position : Fin (web.annular.RS.faceOrbit root).card,
+      faceCycleEdge web.annular.RS root position = edge :=
+  existsUnique_faceCycleEdge_eq_of_boundarySimple web.annular.RS root
+    (web.orbitFaceBoundary_card_eq_orbitFaceDarts_card_of_mem_interiorFaces
+      root hface) edge hedge
 
 namespace ProtectedInnerInterface
 
