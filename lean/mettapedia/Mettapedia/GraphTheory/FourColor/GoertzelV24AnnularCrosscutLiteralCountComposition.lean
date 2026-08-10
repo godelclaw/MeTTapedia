@@ -22,6 +22,7 @@ open GoertzelV24OpenRegionTaitInheritance
 open GoertzelV24RotationCutDartDecomposition
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24SpliceUnification
+open GoertzelV24SpliceUnification.OrderedCutSpliceData
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -266,6 +267,50 @@ theorem sourceCrosscutComplementBoundaryColorCount_apply
       (pair.sourceCrosscutComplementTaitColoringFiber data boundary hcubic left right).card :=
   rfl
 
+/-- The older one-word complementary seam count is exactly the diagonal of
+the genuine two-boundary `Count` matrix.  The right coordinate is transported
+along the source's certified equality of the two crosscut lengths; it is not
+silently identified with the left coordinate. -/
+theorem sourceCrosscutComplementSeamColorCount_eq_boundaryColorCount_diagonal
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (word : Fin pair.left.walk.length → Color) :
+    pair.sourceCrosscutComplementSeamColorCount data boundary hcubic word =
+      pair.sourceCrosscutComplementBoundaryColorCount data boundary hcubic word
+        (fun step => word (Fin.cast pair.length_eq.symm step)) := by
+  unfold sourceCrosscutComplementSeamColorCount
+    sourceCrosscutComplementBoundaryColorCount
+    sourceCrosscutComplementSeamColoringFiber
+    sourceCrosscutComplementTaitColoringFiber
+    sourceCrosscutComplementLeftBoundaryWord
+    sourceCrosscutComplementRightBoundaryWord
+  congr 1
+  ext coloring
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨hcoloring, hleft, hright⟩
+    refine ⟨hcoloring, ?_, ?_⟩
+    · funext step
+      exact hleft step
+    · funext step
+      exact hright step
+  · rintro ⟨hcoloring, hleft, hright⟩
+    refine ⟨hcoloring, ?_, ?_⟩
+    · intro step
+      exact congrFun hleft step
+    · intro step
+      exact congrFun hright step
+
 /-- Membership in a complementary `Count` fiber has precisely its intended
 open-coloring and two-boundary-word meaning. -/
 theorem mem_sourceCrosscutComplementTaitColoringFiber_iff
@@ -365,6 +410,53 @@ theorem taitColorable_iff_exists_positive_sourceCrosscutBoundaryColorCounts
             right step := congrFun hinsideRight step
         _ = pair.sourceCrosscutOutsideBoundaryWord data boundary hcubic outside
             (.inr step) := (congrFun houtsideRight step).symm
+
+/-- The reverse completion step stated at the actual two-boundary `Count`
+matrix entry.  A sewn output supplies the diagonal retained-side entry; a
+positive complementary diagonal entry then glues the original source map
+back together. -/
+theorem sourceCrosscutComplete_of_positiveComplementBoundaryColorCount
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (seamEndpoints : ∀ step,
+      data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1.1 ≠
+        data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (fun index => pair.right.crossingEdge hunique
+              (Fin.cast pair.length_eq index))
+            (fun index => boundary.rightCrosses
+              (Fin.cast pair.length_eq index)) step).1.1.1)
+    (output :
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output.EdgeColoring
+        Color)
+    (houtput : RotationSystem.IsTaitEdgeColoring
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output output)
+    (hcomplement :
+      0 < pair.sourceCrosscutComplementBoundaryColorCount data boundary hcubic
+        (seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+          output)
+        (fun step =>
+          seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+            output (Fin.cast pair.length_eq.symm step))) :
+    TaitColorable (RS := data.toRotationSystem) := by
+  apply pair.sourceCrosscutComplete_of_positiveComplementSeamColorCount
+    data boundary hcubic seamEndpoints output houtput
+  rw [pair.sourceCrosscutComplementSeamColorCount_eq_boundaryColorCount_diagonal]
+  exact hcomplement
 
 end SeparatedAlignedSimpleDualCrosscuts
 
