@@ -223,6 +223,118 @@ def hilbert_series(policy: str, maximum: int) -> tuple[list[int], list[list[int]
     return result, class_rows
 
 
+def plethystic_bigraded_series(
+    policy: str, trace_class: int, maximum: int
+) -> dict[tuple[int, int], ColorPolynomial]:
+    """Plethystic series graded by dimension and field-letter count."""
+    maximum_fields = maximum // 2
+    particles = [None] + [
+        single_particle_series(policy, trace_class, power, maximum // power)
+        for power in range(1, maximum + 1)
+    ]
+    weighted_log: dict[tuple[int, int], ColorPolynomial] = {}
+    for dimension in range(1, maximum + 1):
+        for field_count in range(1, min(maximum_fields, dimension) + 1):
+            if dimension % field_count:
+                continue
+            source_degree = dimension // field_count
+            coefficient = particles[field_count][source_degree]
+            if coefficient:
+                weighted_log[dimension, field_count] = {
+                    exponent: source_degree * coefficient * value
+                    for exponent, value in adjoint_character(field_count).items()
+                }
+
+    values: dict[tuple[int, int], ColorPolynomial] = {(0, 0): {0: 1}}
+    for dimension in range(1, maximum + 1):
+        for field_count in range(maximum_fields + 1):
+            numerator: defaultdict[int, int] = defaultdict(int)
+            for (source_dimension, source_fields), logarithm in weighted_log.items():
+                if source_dimension > dimension or source_fields > field_count:
+                    continue
+                prior = values.get(
+                    (dimension - source_dimension, field_count - source_fields)
+                )
+                if prior is not None:
+                    add_scaled(numerator, multiply(logarithm, prior), 1)
+            assert all(value % dimension == 0 for value in numerator.values()), (
+                policy,
+                trace_class,
+                dimension,
+                field_count,
+            )
+            quotient = {
+                exponent: value // dimension
+                for exponent, value in numerator.items()
+                if value
+            }
+            if quotient:
+                values[dimension, field_count] = quotient
+    return values
+
+
+def ibp_bigraded_series(
+    policy: str, trace_class: int, maximum: int
+) -> dict[tuple[int, int], ColorPolynomial]:
+    plethystic = plethystic_bigraded_series(policy, trace_class, maximum)
+    result: dict[tuple[int, int], ColorPolynomial] = {}
+    for dimension in range(maximum + 1):
+        for field_count in range(maximum // 2 + 1):
+            coefficient: defaultdict[int, int] = defaultdict(int)
+            for shift in range(0, min(4, dimension) + 1):
+                source = plethystic.get((dimension - shift, field_count))
+                if source is not None:
+                    add_scaled(
+                        coefficient,
+                        source,
+                        determinant_coefficient(trace_class, 1, shift),
+                    )
+            row = {
+                exponent: value
+                for exponent, value in coefficient.items()
+                if value
+            }
+            if row:
+                result[dimension, field_count] = row
+    return result
+
+
+def hilbert_bigraded_series(
+    policy: str, maximum: int
+) -> tuple[list[list[int]], list[list[list[int]]]]:
+    """H(4) × SU(2) coefficients indexed by field count, then dimension."""
+    maximum_fields = maximum // 2
+    class_tables: list[list[list[int]]] = []
+    for trace_class in range(14):
+        series = ibp_bigraded_series(policy, trace_class, maximum)
+        class_tables.append([
+            [
+                su2_singlet_multiplicity(series.get((dimension, field_count), {}))
+                for dimension in range(maximum + 1)
+            ]
+            for field_count in range(maximum_fields + 1)
+        ])
+
+    values: list[list[int]] = []
+    for field_count in range(maximum_fields + 1):
+        row: list[int] = []
+        for dimension in range(maximum + 1):
+            numerator = sum(
+                MULTIPLICITY[trace_class]
+                * class_tables[trace_class][field_count][dimension]
+                for trace_class in range(14)
+            )
+            assert numerator % 384 == 0, (
+                policy,
+                dimension,
+                field_count,
+                numerator,
+            )
+            row.append(numerator // 384)
+        values.append(row)
+    return values, class_tables
+
+
 def dense_color_row(row: ColorPolynomial, maximum: int) -> list[int]:
     return [row.get(index - 2 * maximum, 0) for index in range(4 * maximum + 1)]
 
@@ -407,7 +519,20 @@ def main() -> None:
     payload = {"maximum": args.maximum, "realization": "H4_SU2_singlet_Hilbert"}
     for policy in ("off_shell", "on_shell"):
         values, class_rows = hilbert_series(policy, args.maximum)
-        payload[policy] = {"values": values, "class_rows": class_rows}
+        field_count_values, field_count_class_rows = hilbert_bigraded_series(
+            policy, args.maximum
+        )
+        reconstructed = [
+            sum(row[dimension] for row in field_count_values)
+            for dimension in range(args.maximum + 1)
+        ]
+        assert reconstructed == values, (policy, reconstructed, values)
+        payload[policy] = {
+            "values": values,
+            "class_rows": class_rows,
+            "field_count_values": field_count_values,
+            "field_count_class_rows": field_count_class_rows,
+        }
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
 
 
