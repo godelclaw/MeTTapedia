@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSourceProfileWord
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailPair
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorTwoTileLayerProfile
 
 /-!
@@ -262,6 +263,132 @@ theorem exists_equal_sourceTwoTileLayerDepthProfiles_separated
   have hcard := Fintype.card_le_of_injective encode hinjective
   simp [card_closedWebDepthProfile] at hcard
   omega
+
+/-- The finite two-tile profile coordinate also retains the actual paired
+facial-dual rails between its two consecutive source interfaces.  This is
+chosen from the source's three checked rung cases, so a later layer assembly
+can use concrete paths rather than reconstructing rails from a profile word. -/
+noncomputable def sourceTwoTileRailPairAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 4)) :
+    SourceCornerAlignedRailPair
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique offset)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique offset) :=
+  Classical.choice (exists_sourceCornerAlignedRailPair hcubic hrotation
+    (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+      hunique offset)
+    (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+      hunique offset))
+
+/-- Two two-tile source layers whose starts differ by at least three corridor
+positions have no remote rail collision, on either source track or across the
+two tracks.  This turns the spacing built into the L7 repeat into concrete
+noncrossing geometry for the source's layer-boundary construction. -/
+theorem sourceTwoTileRailPairSupports_disjoint_of_add_three_lt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (first second : Fin (blockLength - 4))
+    (hseparated : first.val + 3 < second.val) :
+    (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+      first).firstRail.support.Disjoint
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second).firstRail.support ∧
+    (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+      first).secondRail.support.Disjoint
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second).secondRail.support ∧
+    (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+      first).firstRail.support.Disjoint
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second).secondRail.support ∧
+    (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+      first).secondRail.support.Disjoint
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second).firstRail.support := by
+  have hcenter : (sourceTwoTileLeftInterior first).center.val + 3 <
+      (sourceTwoTileLeftInterior second).center.val := by
+    change first.val + 1 + 3 < second.val + 1
+    omega
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact sourceCornerAlignedRailPair_firstRail_support_disjoint_of_add_three_lt
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        first)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second)
+      hcenter
+  · exact sourceCornerAlignedRailPair_secondRail_support_disjoint_of_add_three_lt
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        first)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second)
+      hcenter
+  · exact sourceCornerAlignedRailPair_first_second_support_disjoint_of_add_three_lt
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        first)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second)
+      hcenter
+  · exact sourceCornerAlignedRailPair_second_first_support_disjoint_of_add_three_lt
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique first)
+      (sourceTwoTileFirstInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileSecondInterfaceAt realization hcubic hrotation htwoSided
+        hunique second)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        first)
+      (sourceTwoTileRailPairAt realization hcubic hrotation htwoSided hunique
+        second)
+      hcenter
 
 end AnnularEmbedding
 
