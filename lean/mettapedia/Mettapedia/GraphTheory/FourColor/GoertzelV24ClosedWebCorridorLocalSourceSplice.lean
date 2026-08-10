@@ -1,6 +1,8 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutSpliceBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCorridorLayer
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCrosscutHoleBoundary
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FourEdgeCutGluing
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalCutCollar
 
 /-!
 # Source-crosscut boundary data for a Cell-3 local layer
@@ -39,6 +41,10 @@ noncomputable section
 local instance closedWebCorridorLocalSourceSpliceEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
+
+attribute [local instance]
+  collarFiniteGraphLocallyFinite
+  GoertzelV24DualCycleSeparator.graphEdgeSetDecidableEq
 
 namespace Instance
 
@@ -144,6 +150,67 @@ theorem sourceCrosscutPrimalCutEdges_disjoint_outerHoleBoundary_of_minimal
       intro face hface
       exact layers.separatedLocalLayerPair_dualLoop_support_internal
         (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal) face hface)
+
+/-- The literal two-tile layer loop is a genuine four-edge separator with a
+two-vertex collar on one side.  This is a local geometric characterization,
+not the eventual profile-repeat splice: the global construction must still
+choose two separated equal-profile layer boundaries. -/
+theorem exists_primalCut_adjacent_pair_collar_of_minimal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      web.annular.cellulation.rotation) :
+    let pair := layers.separatedLocalLayerPair
+      (web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal)
+    ∃ component :
+        (G.deleteEdges (pair.primalCut web.annular.cellulation.rotation)).ConnectedComponent,
+      ∃ first second : V,
+        first ≠ second ∧ component.supp = {first, second} ∧
+          G.Adj first second ∧
+          GoertzelV24CubicSmallBoundaryCycle.crossingEdgeFinset G
+              (fun vertex => vertex ∈ component.supp) =
+            pair.primalCutEdges web.annular.cellulation.rotation ∧
+          ∃ internalEdge : G.edgeSet,
+            internalEdge.1 = s(first, second) ∧
+              internalEdge ∉ pair.primalCutEdges web.annular.cellulation.rotation ∧
+              (pair.primalCutEdges web.annular.cellulation.rotation ∩
+                incidentEdgeFinset G first).card = 2 ∧
+              (pair.primalCutEdges web.annular.cellulation.rotation ∩
+                incidentEdgeFinset G second).card = 2 := by
+  dsimp
+  let htwoSided := web.facesTwoSided_of_minimal minimal
+  let hunique := web.pairwiseUniqueSharedInteriorEdges_of_minimal minimal
+  let hsphere : OrbitSphericalCubicMapData
+      web.annular.cellulation.rotation.toRotationSystem := {
+    cubic := minimal.spherical.cubic
+    euler := web.annular.cellulation.euler
+  }
+  have hregular : G.IsRegularOfDegree 3 :=
+    web.annular.cellulation.rotation.toRotationSystem_isCubic_iff.mp
+      minimal.spherical.cubic
+  have hconnected : G.Connected :=
+    web.connected
+  have hcyclic : CyclicallyFiveEdgeConnected G :=
+    _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24FourEdgeCutGluing.cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample
+      web.annular.cellulation.rotation minimal
+  have hdelete :
+      ¬ (G.deleteEdges
+        ((layers.separatedLocalLayerPair hunique).primalCut
+          web.annular.cellulation.rotation)).Connected :=
+    (layers.separatedLocalLayerPair hunique).primalCut_not_connected
+      web.annular.cellulation.rotation htwoSided
+      web.annular.cellulation.fullOrbitFaceInteriorDual_connected hconnected hsphere
+  simpa only [SeparatedAlignedSimpleDualCrosscuts.primalCut,
+    SeparatedAlignedSimpleDualCrosscuts.primalCutEdges] using
+    _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24DualCycleSeparator.exists_primalCut_adjacent_pair_collar_of_isCycle_of_length_eq_four
+      web.annular.cellulation.rotation hregular hconnected hcyclic htwoSided hunique
+      (layers.separatedLocalLayerPair hunique).dualLoop
+      (layers.separatedLocalLayerPair_dualLoop_isCycle hunique)
+      (layers.separatedLocalLayerPair_dualLoop_length_eq_four hunique) hdelete
 
 end LocalLayerPair
 

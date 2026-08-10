@@ -687,6 +687,23 @@ theorem separatedLocalLayerPair_dualLoop_isCycle
     (layers.separatedLocalLayerPair hunique).dualLoop.IsCycle := by
   exact (layers.separatedLocalLayerPair hunique).dualLoop_isCycle
 
+/-- The literal Cell-3 two-tile layer loop has exactly four dual steps.  This
+is kept separate from its simplicity certificate because the four-edge collar
+analysis consumes the numerical fact directly. -/
+theorem separatedLocalLayerPair_dualLoop_length_eq_four
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    (layers.separatedLocalLayerPair hunique).dualLoop.length = 4 := by
+  simp [SeparatedAlignedSimpleDualCrosscuts.dualLoop,
+    separatedLocalLayerPair, firstLayer, secondLayer, firstWalk, secondWalk]
+
 end LocalLayerPair
 
 /-- Consecutive source-selected Cell-3 hexagons construct a pair of simple
