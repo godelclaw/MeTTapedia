@@ -16,6 +16,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24FramedTrail
 
 open GoertzelV24CleanHexCorridor
+open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorInterfaceMatching
@@ -41,6 +42,77 @@ local instance corridorRailPairGraphEdgeSetDecidableEq : DecidableEq G.edgeSet :
 namespace SourceTrail
 
 namespace AnnularEmbedding
+
+/-- A facial-dual walk contained in the annular interior cannot cross an edge
+of a named hole boundary.  Its two incident dual faces are already distinct
+internal faces; a third incidence at a hole would violate the rotation
+system's two-face bound.  This is the graph-level form of keeping a rail away
+from a container, and does not rely on a drawing of the annulus. -/
+theorem dualWalkCrossingEdges_disjoint_holeBoundary_of_support_internal
+    {source : SourceTrail G} (embedded : source.AnnularEmbedding)
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {start finish : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))).Walk
+      start finish)
+    (hsupport : ∀ face ∈ walk.support,
+      face.1 ∈ embedded.cellulation.interiorFaces)
+    (hole : OrbitFace embedded.cellulation.rotation.toRotationSystem)
+    (hhole : hole ∉ embedded.cellulation.interiorFaces) :
+    Disjoint
+      (dualWalkCrossingEdges
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk)
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem hole) := by
+  rw [Finset.disjoint_left]
+  intro edge hcrossing hholeBoundary
+  rcases (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+      walk edge).1 hcrossing with ⟨step, hstep⟩
+  let leftFace := walk.getVert step.val
+  let rightFace := walk.getVert (step.val + 1)
+  have hleftRight : leftFace.1 ≠ rightFace.1 := by
+    intro hfaces
+    exact (walk.adj_getVert_succ step.isLt).ne (Subtype.ext hfaces)
+  have hleft : edge ∈ orbitFaceBoundary
+      embedded.cellulation.rotation.toRotationSystem leftFace.1 := by
+    rw [← hstep]
+    exact dualWalkCrossingEdge_mem_leftFace
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk step
+  have hright : edge ∈ orbitFaceBoundary
+      embedded.cellulation.rotation.toRotationSystem rightFace.1 := by
+    rw [← hstep]
+    exact dualWalkCrossingEdge_mem_rightFace
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique walk step
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))
+      (orbitFace_incidence_le_two embedded.cellulation.rotation.toRotationSystem)
+      leftFace.2 rightFace.2 (Finset.mem_univ hole)
+      hleftRight hleft hright hholeBoundary
+  rcases hcases with hholeLeft | hholeRight
+  · apply hhole
+    have hint := hsupport leftFace (walk.getVert_mem_support step.val)
+    simpa [hholeLeft] using hint
+  · apply hhole
+    have hint := hsupport rightFace
+      (walk.getVert_mem_support (step.val + 1))
+    simpa [hholeRight] using hint
 
 /-- The two exterior rails between a pair of consecutive source interfaces.
 Each rail is retained as a genuine simple walk, with its local length bound,
@@ -276,6 +348,72 @@ theorem SourceCornerAlignedRailPair.secondRail_support_internal
       ← realization.coreWalk_getVert hpositive
         (nextCorridorInterior leftInterior hnext).center] at hright
     exact hright
+
+/-- The first source rail crosses no edge of any hole boundary disjoint from
+the annular interior.  In particular, a later global layer construction can
+use this theorem to keep the source containers outside its pumped strip. -/
+theorem SourceCornerAlignedRailPair.firstRail_crossingEdges_disjoint_holeBoundary
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext}
+    (pair : SourceCornerAlignedRailPair first second)
+    (hole : OrbitFace embedded.cellulation.rotation.toRotationSystem)
+    (hhole : hole ∉ embedded.cellulation.interiorFaces) :
+    Disjoint
+      (dualWalkCrossingEdges
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+        pair.firstRail)
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem hole) := by
+  exact dualWalkCrossingEdges_disjoint_holeBoundary_of_support_internal
+    (hunique := hunique) embedded pair.firstRail
+    (fun face hface => pair.firstRail_support_internal face hface) hole hhole
+
+/-- The same no-hole-crossing statement for the second source rail. -/
+theorem SourceCornerAlignedRailPair.secondRail_crossingEdges_disjoint_holeBoundary
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext}
+    (pair : SourceCornerAlignedRailPair first second)
+    (hole : OrbitFace embedded.cellulation.rotation.toRotationSystem)
+    (hhole : hole ∉ embedded.cellulation.interiorFaces) :
+    Disjoint
+      (dualWalkCrossingEdges
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+        pair.secondRail)
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem hole) := by
+  exact dualWalkCrossingEdges_disjoint_holeBoundary_of_support_internal
+    (hunique := hunique) embedded pair.secondRail
+    (fun face hface => pair.secondRail_support_internal face hface) hole hhole
 
 /-- First rails from two source cells separated by a three-cell gap cannot
 meet.  This instantiates the L1 geodesic noncollision theorem with the
