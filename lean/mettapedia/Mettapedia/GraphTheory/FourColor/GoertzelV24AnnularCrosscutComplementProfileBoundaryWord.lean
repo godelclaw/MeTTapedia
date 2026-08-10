@@ -210,6 +210,189 @@ theorem sourceCrosscutComplementLiteralOpenRightProfile_edgeColor_eq_boundaryWor
       pair.sourceCrosscutComplementLiteralColorOnVertexSide_eq_outsideBoundaryDartColor
         data boundary hcubic coloring (.inr (Fin.cast pair.length_eq step))
 
+/-- Project the color coordinate of a removed-side left interface profile to
+its literal source boundary word. -/
+noncomputable def sourceCrosscutComplementInterfaceProfileLeftColorWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (profile : pair.SourceCrosscutComplementInterfaceProfile data boundary) :
+    Fin pair.left.walk.length → Color :=
+  fun step => (profile.edgeColor step).toColor
+
+/-- Project the color coordinate of an aligned removed-side right interface
+profile back to the literal right source-boundary order. -/
+noncomputable def sourceCrosscutComplementInterfaceProfileRightColorWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (profile : pair.SourceCrosscutComplementInterfaceProfile data boundary) :
+    Fin pair.right.walk.length → Color :=
+  fun step => (profile.edgeColor (Fin.cast pair.length_eq.symm step)).toColor
+
+/-- The color projection of a literal complementary left profile is its
+literal left source boundary word. -/
+theorem sourceCrosscutComplementLiteralOpenLeftProfile_colorWord_eq_boundaryWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (coloring : (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).EdgeColoring
+      Color)
+    (hcoloring : (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).IsTaitEdgeColoring
+      coloring) :
+    pair.sourceCrosscutComplementInterfaceProfileLeftColorWord data boundary
+      (pair.sourceCrosscutComplementLiteralOpenLeftProfile data boundary hcubic
+        coloring hcoloring) =
+      pair.sourceCrosscutComplementLeftBoundaryWord data boundary hcubic coloring := by
+  funext step
+  exact pair.sourceCrosscutComplementLiteralOpenLeftProfile_edgeColor_eq_boundaryWord
+    data boundary hcubic coloring hcoloring step
+
+/-- The color projection of a literal complementary aligned right profile is
+its literal right source boundary word. -/
+theorem sourceCrosscutComplementLiteralOpenRightProfile_colorWord_eq_boundaryWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (coloring : (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).EdgeColoring
+      Color)
+    (hcoloring : (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).IsTaitEdgeColoring
+      coloring) :
+    pair.sourceCrosscutComplementInterfaceProfileRightColorWord data boundary
+      (pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+        coloring hcoloring) =
+      pair.sourceCrosscutComplementRightBoundaryWord data boundary hcubic coloring := by
+  funext step
+  change ((pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+    coloring hcoloring).edgeColor (Fin.cast pair.length_eq.symm step)).toColor = _
+  simpa using
+    (pair.sourceCrosscutComplementLiteralOpenRightProfile_edgeColor_eq_boundaryWord
+      data boundary hcubic coloring hcoloring (Fin.cast pair.length_eq.symm step))
+
+/-- The ordinary two-boundary `Count` support on the removed tangle is the
+projection of its literal full-profile matrix support.  Every realized pair
+of words therefore has a computed connectivity/face refinement, and every
+positive full-profile entry realizes its displayed two boundary words. -/
+theorem sourceCrosscutComplementBoundaryColorCount_pos_iff_exists_profilePair
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (leftWord : Fin pair.left.walk.length → Color)
+    (rightWord : Fin pair.right.walk.length → Color) :
+    0 < pair.sourceCrosscutComplementBoundaryColorCount data boundary hcubic
+      leftWord rightWord ↔
+      ∃ leftProfile rightProfile :
+          pair.SourceCrosscutComplementInterfaceProfile data boundary,
+        pair.sourceCrosscutComplementInterfaceProfileLeftColorWord data boundary
+            leftProfile = leftWord ∧
+          pair.sourceCrosscutComplementInterfaceProfileRightColorWord data boundary
+            rightProfile = rightWord ∧
+          0 < pair.sourceCrosscutComplementLiteralOpenProfileCount data boundary
+            hcubic leftProfile rightProfile := by
+  constructor
+  · rw [pair.sourceCrosscutComplementBoundaryColorCount_apply]
+    intro hpositive
+    rcases Finset.card_pos.mp hpositive with ⟨coloring, hmember⟩
+    rcases (pair.mem_sourceCrosscutComplementTaitColoringFiber_iff data boundary
+      hcubic leftWord rightWord coloring).1 hmember with ⟨hcoloring, hleft, hright⟩
+    refine ⟨pair.sourceCrosscutComplementLiteralOpenLeftProfile data boundary hcubic
+        coloring hcoloring,
+      pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+        coloring hcoloring, ?_, ?_, ?_⟩
+    · calc
+        pair.sourceCrosscutComplementInterfaceProfileLeftColorWord data boundary
+            (pair.sourceCrosscutComplementLiteralOpenLeftProfile data boundary hcubic
+              coloring hcoloring) =
+            pair.sourceCrosscutComplementLeftBoundaryWord data boundary hcubic coloring :=
+          pair.sourceCrosscutComplementLiteralOpenLeftProfile_colorWord_eq_boundaryWord
+            data boundary hcubic coloring hcoloring
+        _ = leftWord := hleft
+    · calc
+        pair.sourceCrosscutComplementInterfaceProfileRightColorWord data boundary
+            (pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+              coloring hcoloring) =
+            pair.sourceCrosscutComplementRightBoundaryWord data boundary hcubic coloring :=
+          pair.sourceCrosscutComplementLiteralOpenRightProfile_colorWord_eq_boundaryWord
+            data boundary hcubic coloring hcoloring
+        _ = rightWord := hright
+    · exact pair.sourceCrosscutComplementLiteralOpenProfileCount_pos_of_coloring
+        data boundary hcubic ⟨coloring, hcoloring⟩
+  · rintro ⟨leftProfile, rightProfile, hleftWord, hrightWord, hpositive⟩
+    rw [pair.sourceCrosscutComplementBoundaryColorCount_apply]
+    rcases (pair.sourceCrosscutComplementLiteralOpenProfileCount_pos_iff
+      data boundary hcubic leftProfile rightProfile).1 hpositive with
+      ⟨coloring, hleft, hright⟩
+    apply Finset.card_pos.mpr
+    refine ⟨coloring.1, ?_⟩
+    apply (pair.mem_sourceCrosscutComplementTaitColoringFiber_iff data boundary hcubic
+      leftWord rightWord coloring.1).2
+    refine ⟨coloring.2, ?_, ?_⟩
+    · calc
+        pair.sourceCrosscutComplementLeftBoundaryWord data boundary hcubic coloring.1 =
+            pair.sourceCrosscutComplementInterfaceProfileLeftColorWord data boundary
+              (pair.sourceCrosscutComplementLiteralOpenLeftProfile data boundary hcubic
+                coloring.1 coloring.2) :=
+          (pair.sourceCrosscutComplementLiteralOpenLeftProfile_colorWord_eq_boundaryWord
+            data boundary hcubic coloring.1 coloring.2).symm
+        _ = pair.sourceCrosscutComplementInterfaceProfileLeftColorWord data boundary
+            leftProfile := by
+          rw [hleft]
+        _ = leftWord := hleftWord
+    · calc
+        pair.sourceCrosscutComplementRightBoundaryWord data boundary hcubic coloring.1 =
+            pair.sourceCrosscutComplementInterfaceProfileRightColorWord data boundary
+              (pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+                coloring.1 coloring.2) :=
+          (pair.sourceCrosscutComplementLiteralOpenRightProfile_colorWord_eq_boundaryWord
+            data boundary hcubic coloring.1 coloring.2).symm
+        _ = pair.sourceCrosscutComplementInterfaceProfileRightColorWord data boundary
+            rightProfile := by
+          rw [hright]
+        _ = rightWord := hrightWord
+
 end SeparatedAlignedSimpleDualCrosscuts
 
 end
