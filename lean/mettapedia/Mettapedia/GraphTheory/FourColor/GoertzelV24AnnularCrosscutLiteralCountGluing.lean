@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutLiteralProfileMatrix
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutOutputOpenRestriction
 
 /-!
 # Literal `Count` support under source-crosscut gluing
@@ -177,6 +178,73 @@ noncomputable def sourceCrosscutLiteralOpenSeamColorCount
     (word : Fin pair.left.walk.length → Color) : Nat :=
   pair.sourceCrosscutLiteralOpenBoundaryColorCount data boundary word
     (fun step => word (Fin.cast pair.length_eq.symm step))
+
+/-- Positive generated retained-side seam count is exactly semantic seam
+extendability through the literal retained tangle.  Both source boundaries
+are required here: the earlier left-boundary-only reading is insufficient for
+the sewn crosscut, whose two port blocks must carry one aligned word. -/
+theorem sourceCrosscutLiteralOpenSeamColorCount_pos_iff
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (word : Fin pair.left.walk.length → Color) :
+    0 < pair.sourceCrosscutLiteralOpenSeamColorCount data boundary word ↔
+      word ∈ pair.sourceCrosscutOpenExtendableWords data boundary := by
+  rw [sourceCrosscutLiteralOpenSeamColorCount,
+    pair.sourceCrosscutLiteralOpenBoundaryColorCount_apply]
+  constructor
+  · intro hpositive
+    rcases Finset.card_pos.mp hpositive with ⟨coloring, hmember⟩
+    rcases (pair.mem_sourceCrosscutLiteralOpenTaitColoringFiber_iff data boundary
+      word (fun step => word (Fin.cast pair.length_eq.symm step)) coloring).1 hmember with
+      ⟨hcoloring, hleft, hright⟩
+    refine ⟨coloring, hcoloring, ?_, ?_⟩
+    · intro step
+      change word step =
+        pair.sourceCrosscutLiteralOpenLeftBoundaryWord data boundary coloring step
+      exact (congrFun hleft step).symm
+    · intro step
+      change word step =
+        pair.sourceCrosscutLiteralOpenRightBoundaryWord data boundary coloring
+          (Fin.cast pair.length_eq step)
+      have hcast : Fin.cast pair.length_eq.symm (Fin.cast pair.length_eq step) = step := by
+        apply Fin.ext
+        rfl
+      calc
+        word step = word (Fin.cast pair.length_eq.symm
+            (Fin.cast pair.length_eq step)) := by rw [hcast]
+        _ = pair.sourceCrosscutLiteralOpenRightBoundaryWord data boundary coloring
+            (Fin.cast pair.length_eq step) :=
+          (congrFun hright (Fin.cast pair.length_eq step)).symm
+  · rintro ⟨coloring, hcoloring, hleft, hright⟩
+    apply Finset.card_pos.mpr
+    refine ⟨coloring, ?_⟩
+    apply (pair.mem_sourceCrosscutLiteralOpenTaitColoringFiber_iff data boundary
+      word (fun step => word (Fin.cast pair.length_eq.symm step)) coloring).2
+    refine ⟨hcoloring, ?_, ?_⟩
+    · funext step
+      exact (hleft step).symm
+    · funext step
+      let leftStep : Fin pair.left.walk.length := Fin.cast pair.length_eq.symm step
+      have hcast : Fin.cast pair.length_eq leftStep = step := by
+        apply Fin.ext
+        rfl
+      change pair.sourceCrosscutLiteralOpenRightBoundaryWord data boundary coloring step =
+        word (Fin.cast pair.length_eq.symm step)
+      calc
+        pair.sourceCrosscutLiteralOpenRightBoundaryWord data boundary coloring step =
+            pair.sourceCrosscutLiteralOpenRightBoundaryWord data boundary coloring
+              (Fin.cast pair.length_eq leftStep) := by rw [hcast]
+        _ = word leftStep := (hright leftStep).symm
+        _ = word (Fin.cast pair.length_eq.symm step) := rfl
 
 /-- Positive retained and complementary seam counts at one word glue to a
 proper ambient Tait coloring.  This is the source's compositional gluing law

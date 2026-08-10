@@ -145,9 +145,13 @@ theorem sourceCrosscutSpliceOutputOpenColoring_edgeOf
   exact _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionOutputRestriction.OrderedCutSpliceData.outputOpenColoring_edgeOf
     (pair.sourceCrosscutSpliceData data boundary seamEndpoints) coloring dart
 
-/-- The actual boundary words that extend to a Tait coloring of the literal
-source crosscut tangle.  This is a semantic set: membership is witnessed by
-a concrete open-tangle coloring, not a syntactic profile code. -/
+/-- The actual *seam* words that extend to a Tait coloring of the literal
+source crosscut tangle.  Both source transversals must read the same word
+(after the certified length transport): a sewn output has this property, and
+it is the condition required to glue the complementary tangle back in.
+
+This is a semantic set: membership is witnessed by a concrete open-tangle
+coloring, not by a syntactic profile code. -/
 def sourceCrosscutOpenExtendableWords
     (data : Data G)
     {start finish : AmbientFace
@@ -163,11 +167,19 @@ def sourceCrosscutOpenExtendableWords
     SemanticBoundaryProfile pair.left.walk.length :=
   { word | ∃ coloring : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color,
       (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring coloring ∧
+        (∀ step,
+          word step = coloring ((pair.sourceCrosscutOpenRegion data boundary).edgeOf
+            (Sum.inl (orderedBoundaryDart data.toRotationSystem
+              (fun vertex => vertex ∈ pair.componentSide boundary.component)
+              (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1))) ∧
         ∀ step,
           word step = coloring ((pair.sourceCrosscutOpenRegion data boundary).edgeOf
             (Sum.inl (orderedBoundaryDart data.toRotationSystem
               (fun vertex => vertex ∈ pair.componentSide boundary.component)
-              (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1)) }
+              (fun index => pair.right.crossingEdge hunique
+                (Fin.cast pair.length_eq index))
+              (fun index => boundary.rightCrosses
+                (Fin.cast pair.length_eq index)) step).1.1)) }
 
 /-- At every ordered left source-crosscut port, the literal open tangle reads
 the seam word of the shortened splice.  This is the concrete map from a
@@ -212,6 +224,52 @@ theorem sourceCrosscutSpliceOutputOpenColoring_leftBoundary_eq_seamColorWord
   exact _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionOutputRestriction.OrderedCutSpliceData.outputOpenDartColor_leftBoundary_eq_seamColorWord
     (pair.sourceCrosscutSpliceData data boundary seamEndpoints) coloring step
 
+/-- The aligned right source boundary of a sewn output reads the very same
+seam word as the left boundary.  This is the second half of seam compatibility
+for the literal retained open tangle. -/
+theorem sourceCrosscutSpliceOutputOpenColoring_rightBoundary_eq_seamColorWord
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (seamEndpoints : ∀ step,
+      data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1.1 ≠
+        data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (fun index => pair.right.crossingEdge hunique
+              (Fin.cast pair.length_eq index))
+            (fun index => boundary.rightCrosses
+              (Fin.cast pair.length_eq index)) step).1.1.1)
+    (coloring :
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints).output.EdgeColoring
+        Color)
+    (step : Fin pair.left.walk.length) :
+    pair.sourceCrosscutSpliceOutputOpenColoring data boundary seamEndpoints
+        coloring ((pair.sourceCrosscutOpenRegion data boundary).edgeOf
+          (Sum.inl (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (fun index => pair.right.crossingEdge hunique
+              (Fin.cast pair.length_eq index))
+            (fun index => boundary.rightCrosses
+              (Fin.cast pair.length_eq index)) step).1.1)) =
+      seamColorWord (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+        coloring step := by
+  rw [pair.sourceCrosscutSpliceOutputOpenColoring_edgeOf data boundary
+    seamEndpoints coloring]
+  exact _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionOutputRestriction.OrderedCutSpliceData.outputOpenDartColor_rightBoundary_eq_seamColorWord
+    (pair.sourceCrosscutSpliceData data boundary seamEndpoints) coloring step
+
 /-- Every Tait coloring of the shortened source splice supplies a witnessed
 member of the literal source tangle's semantic boundary-word set.  This is
 the `shortened_word_mem_inner` half of the reverse-completion interface for
@@ -251,11 +309,15 @@ theorem seamColorWord_mem_sourceCrosscutOpenExtendableWords
   refine ⟨pair.sourceCrosscutSpliceOutputOpenColoring data boundary
     seamEndpoints coloring,
     pair.sourceCrosscutSpliceOutputOpenColoring_isTait data boundary
-      seamEndpoints coloring hcoloring, ?_⟩
-  intro step
-  symm
-  exact pair.sourceCrosscutSpliceOutputOpenColoring_leftBoundary_eq_seamColorWord
-    data boundary seamEndpoints coloring step
+      seamEndpoints coloring hcoloring, ?_, ?_⟩
+  · intro step
+    symm
+    exact pair.sourceCrosscutSpliceOutputOpenColoring_leftBoundary_eq_seamColorWord
+      data boundary seamEndpoints coloring step
+  · intro step
+    symm
+    exact pair.sourceCrosscutSpliceOutputOpenColoring_rightBoundary_eq_seamColorWord
+      data boundary seamEndpoints coloring step
 
 end SeparatedAlignedSimpleDualCrosscuts
 
