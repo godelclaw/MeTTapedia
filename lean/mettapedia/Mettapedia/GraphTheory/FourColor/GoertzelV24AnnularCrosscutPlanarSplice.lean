@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutConnectedSides
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutDualLoopBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PlanarBondSpliceEuler
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCapGeometry
 
@@ -62,6 +63,29 @@ def SourceCrosscutBoundaryData.FollowsOppositeDeletedBoundaryOrder
     boundary.leftInjective
     (pair.sourceCrosscutOrderedCutSidesData data boundary).rightInjective
     (pair.sourceCrosscutOrderedCutSidesData data boundary).disjoint
+
+/-- The actual source crosscut boundary has the planar splice order once its
+concrete retained-side darts are oriented by the corresponding facial-dual
+loop.  Thus the remaining source-formation obligation is precisely the
+target-face incidence, not an abstract boundary permutation. -/
+theorem SourceCrosscutBoundaryData.followsOppositeDeletedBoundaryOrder_of_dualLoopFacesTarget
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hfaces : boundary.DualLoopBoundaryFacesTarget data pair) :
+    boundary.FollowsOppositeDeletedBoundaryOrder data pair := by
+  unfold SourceCrosscutBoundaryData.FollowsOppositeDeletedBoundaryOrder
+  exact pair.sourceCrosscut_deletedBoundarySuccessor_eq_oppositeBoundaryOrder
+    data htwoSided boundary hfaces
 
 /-- A nondegenerate aligned crosscut has a positive common interface width. -/
 theorem sourceCrosscut_width_pos
