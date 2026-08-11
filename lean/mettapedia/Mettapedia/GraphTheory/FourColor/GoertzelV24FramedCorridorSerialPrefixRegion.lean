@@ -27,6 +27,7 @@ open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24RegionalBoundaryProfileFiniteState
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -241,6 +242,95 @@ theorem sourceSlabLiteralCellRegionAt_subset_serialPrefix_succ
   rw [sourceCorridorSerialPrefixRegion_succ realization hcubic hrotation
     htwoSided hunique hcut]
   exact Finset.subset_union_right
+
+/-- The open prefix at one moving cut.  Besides the Cells strictly to its
+left, it contains the two incoming cut edges themselves.  At cut zero this
+is the identity interface rather than an empty edge carrier; at later cuts
+the same two edges are the shared boundary with the next literal Cell. -/
+noncomputable def sourceCorridorSerialCutRegionAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) : Finset G.edgeSet :=
+  sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+      hunique offset.val ∪
+    indexedCrossingEdgeSet
+      ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        offset).localLayerPrefixCrossing)
+
+/-- Each incoming coordinate is an actual edge of the corresponding open
+prefix carrier, including at the zero-length identity prefix. -/
+theorem sourceCorridorSerialCutRegionAt_inputCrossing
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) (step : Fin 2) :
+    (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        offset).localLayerPrefixCrossing step ∈
+      sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+        hunique offset := by
+  apply Finset.mem_union_right
+  exact (mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, rfl⟩
+
+/-- Gluing the next literal Cell to its open input prefix gives exactly the
+successor prefix.  The displayed input stubs add no spurious edges because
+they are already part of that Cell's literal regional carrier. -/
+theorem sourceCorridorSerialCutRegionAt_union_cell
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+          hunique offset ∪
+        sourceSlabLiteralCellRegionAt realization hcubic hrotation htwoSided
+          hunique offset =
+      sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1) := by
+  rw [sourceCorridorSerialPrefixRegion_succ realization hcubic hrotation
+    htwoSided hunique offset.isLt]
+  ext edge
+  constructor
+  · intro hedge
+    rcases Finset.mem_union.1 hedge with hcut | hcell
+    · rcases Finset.mem_union.1 hcut with hprefix | hcrossing
+      · exact Finset.mem_union_left _ hprefix
+      · rcases (mem_indexedCrossingEdgeSet_iff _ _).1 hcrossing with
+          ⟨step, rfl⟩
+        exact Finset.mem_union_right _
+          (sourceSlabLiteralCellRegionAt_leftCrossing realization hcubic
+            hrotation htwoSided hunique offset step)
+    · exact Finset.mem_union_right _ hcell
+  · intro hedge
+    rcases Finset.mem_union.1 hedge with hprefix | hcell
+    · exact Finset.mem_union_left _ (Finset.mem_union_left _ hprefix)
+    · exact Finset.mem_union_right _ hcell
 
 end AnnularEmbedding
 

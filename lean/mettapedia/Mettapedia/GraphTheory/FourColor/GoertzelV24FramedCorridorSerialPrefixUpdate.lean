@@ -244,6 +244,81 @@ theorem sourceCorridorSerialPrefixFaceReachable_succ_iff
     hcubic hrotation htwoSided hunique hcut root]
   exact reachable_sup_sup_iff_threeFactorComponentClosure _ _ _ _ _
 
+/-- Complete graph-derived cut data on the open prefix immediately before
+one indexed Cell.  The region contains the two displayed input stubs even at
+offset zero, so this is a genuine finite interface rather than an empty
+carrier with external decorations. -/
+noncomputable def sourceCorridorSerialInputCutDataAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :=
+  regionalBoundaryGraphCutData embedded.cellulation.rotation.toRotationSystem
+    (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).localLayerPrefixCrossing)
+
+/-- Both coordinates of the incoming source cut lie in its open-prefix
+carrier by construction. -/
+theorem sourceCorridorSerialInputCutDataAt_portsInRegion
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceCorridorSerialInputCutDataAt realization hcubic hrotation
+      htwoSided hunique offset).PortsInRegion := by
+  apply regionalBoundaryGraphCutData_portsInRegion
+  exact sourceCorridorSerialCutRegionAt_inputCrossing realization hcubic
+    hrotation htwoSided hunique offset
+
+/-- The complete bounded manuscript profile of the open prefix before one
+indexed Cell.  This and the successor profile below share the existing
+finite carrier `BoundedCorridorCutProfile 2 0 4`. -/
+noncomputable def sourceCorridorSerialInputBoundedProfileAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+        hunique offset).localLayerPrefixCrossing step) ≠ 0) :=
+  regionalBoundaryBoundedProfile
+    embedded.cellulation.rotation.toRotationSystem
+    (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).localLayerPrefixCrossing)
+    color hcolor
+
 /-- Complete graph-derived cut data on the literal source prefix after one
 indexed Cell, using that Cell's actual outgoing two-edge interface. -/
 noncomputable def sourceCorridorSerialPrefixCutDataAt
@@ -290,6 +365,31 @@ theorem sourceCorridorSerialPrefixCutDataAt_portsInRegion
     hcubic hrotation htwoSided hunique offset.isLt
   exact sourceSlabLiteralCellRegionAt_rightCrossing realization hcubic
     hrotation htwoSided hunique offset step
+
+/-- The successor profile's regional carrier is literally the open input
+prefix glued to the indexed Cell. -/
+theorem sourceCorridorSerialPrefixCutDataAt_regionEdges_eq_input_union_cell
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+        htwoSided hunique offset).regionEdges =
+      sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+          hunique offset ∪
+        sourceSlabLiteralCellRegionAt realization hcubic hrotation htwoSided
+          hunique offset := by
+  exact (sourceCorridorSerialCutRegionAt_union_cell realization hcubic
+    hrotation htwoSided hunique offset).symm
 
 /-- The complete bounded manuscript profile of one literal source prefix.
 All five fields are computed from the same regional carrier. -/
