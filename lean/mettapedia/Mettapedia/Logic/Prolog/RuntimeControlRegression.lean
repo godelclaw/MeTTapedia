@@ -248,7 +248,7 @@ def structuredControlIsExplicitlyUnsupported : Bool :=
   let state : State qSig := {
     memory
     control := {
-      current := [.ifThenElse [] [] []]
+      current := [.softIfThenElse [] [] []]
       cutDepth := 0
       frames := []
     }
@@ -368,6 +368,47 @@ def calleeCutRetainsCallerDisj : Goal qSig :=
     (.call (unary .choose (.var .x)))
     (.unify (.var .x) (.const .c))
 
+/-- Hard if commits to the condition's first answer. -/
+def hardIfFirstConditionSuccess : Goal qSig :=
+  .ifThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+/-- Failure in `Then` does not retry the condition or enter `Else`. -/
+def hardIfThenFailureDoesNotRetry : Goal qSig :=
+  .ifThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    .fail
+    (.unify (.var .x) (.const .c))
+
+def hardIfFalseUsesElse : Goal qSig :=
+  .ifThenElse .fail
+    (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .c))
+
+/-- A cut in the condition removes its inner right disjunct but preserves the
+conditional's else marker; subsequent failure therefore enters `Else`. -/
+def hardIfConditionCutPreservesElse : Goal qSig :=
+  .ifThenElse
+    (.disj
+      (.conj (.unify (.var .x) (.const .a))
+        (.conj .cut .fail))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+/-- After condition success, `Then` runs at the caller's normal cut depth, so
+its cut can prune an older surrounding disjunction. -/
+def hardIfThenCutPrunesOuterDisj : Goal qSig :=
+  .disj
+    (.ifThenElse .succeed
+      (.conj (.unify (.var .x) (.const .a)) .cut)
+      (.unify (.var .x) (.const .b)))
+    (.unify (.var .x) (.const .c))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -386,5 +427,10 @@ def calleeCutRetainsCallerDisj : Goal qSig :=
 #guard runTyped [] disjCutPrunesRight == some ([.a], 0, 0)
 #guard runTyped calleeCutRetainsCallerDisjProgram calleeCutRetainsCallerDisj ==
   some ([.a, .c], 0, 0)
+#guard runTyped [] hardIfFirstConditionSuccess == some ([.a], 0, 0)
+#guard runTyped [] hardIfThenFailureDoesNotRetry == some ([], 0, 0)
+#guard runTyped [] hardIfFalseUsesElse == some ([.c], 0, 0)
+#guard runTyped [] hardIfConditionCutPreservesElse == some ([.c], 0, 0)
+#guard runTyped [] hardIfThenCutPrunesOuterDisj == some ([.a], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

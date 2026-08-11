@@ -43,6 +43,7 @@ inductive QueryError where
   | staleScopeSupply (queryScope nextScope : Nat)
   | malformedCut
   | invalidCutDepth (mark depth : Nat)
+  | invalidCommitDepth (mark depth : Nat)
   | predicateMismatch
   | stalledUnifier
   | unsupportedInstruction
@@ -55,6 +56,9 @@ frame representation. -/
 structure ReturnFrameCore (σ : LPSignature) (Instruction : Type*) where
   continuation : List Instruction
   callerCutDepth : Nat
+  /-- `some mark` turns this success continuation into a hard-conditional
+  commit delimiter.  Ordinary predicate returns carry `none`. -/
+  commitDepth : Option Nat := none
 
 /-- The established pure-LP return frame. -/
 abbrev ReturnFrame (σ : LPSignature) :=
@@ -416,14 +420,29 @@ def emptyCurrentStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   match state.control.frames with
   | frame :: frames =>
-      .next {
-        state with
-        control := {
-          current := frame.continuation
-          cutDepth := frame.callerCutDepth
-          frames
-        }
-      } none
+      match frame.commitDepth with
+      | none =>
+          .next {
+            state with
+            control := {
+              current := frame.continuation
+              cutDepth := frame.callerCutDepth
+              frames
+            }
+          } none
+      | some mark =>
+          if _hDepth : mark ≤ state.choices.length then
+            .next {
+              state with
+              control := {
+                current := frame.continuation
+                cutDepth := frame.callerCutDepth
+                frames
+              }
+              choices := retainBottom mark state.choices
+            } none
+          else
+            failWith state (.invalidCommitDepth mark state.choices.length)
   | [] =>
       .next { state with phase := .afterAnswer }
         (some (.answer {
@@ -528,6 +547,39 @@ def branchStep {σ : LPSignature}
     choices := .branch alternative :: state.choices
   } none
 
+/-- Enter a hard if-then-else through the same branch choice and success-frame
+machinery.  The condition's local cut depth retains the else marker while
+pruning choices created inside the condition.  First condition success commits
+that marker through `emptyCurrentStep` before entering `thenBranch`. -/
+@[simp]
+def ifThenElseStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (condition thenBranch elseBranch rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let mark := state.choices.length
+  let alternative : BranchChoiceCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    control := {
+      current := elseBranch ++ rest
+      cutDepth := state.control.cutDepth
+      frames := state.control.frames
+    }
+  }
+  let success : ReturnFrameCore σ Instruction := {
+    continuation := thenBranch ++ rest
+    callerCutDepth := state.control.cutDepth
+    commitDepth := some mark
+  }
+  .next {
+    state with
+    control := {
+      current := condition
+      cutDepth := mark + 1
+      frames := success :: state.control.frames
+    }
+    choices := .branch alternative :: state.choices
+  } none
+
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
 (`src/pl-prims.c`) and body unification instructions (`src/pl-vmi.c`). -/
@@ -582,6 +634,7 @@ inductive DispatchAction (σ : LPSignature)
   | fail
   | cut
   | branch (left right : List Instruction)
+  | ifThenElse (condition thenBranch elseBranch : List Instruction)
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -599,6 +652,8 @@ def dispatchActionStep {σ : LPSignature}
   | .fail => .next { state with phase := .backtrack } none
   | .cut => cutStep state rest
   | .branch left right => branchStep state left right rest
+  | .ifThenElse condition thenBranch elseBranch =>
+      ifThenElseStep state condition thenBranch elseBranch rest
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
@@ -713,6 +768,56 @@ theorem cutStep_prunes_newest_branch {σ : LPSignature}
         choices := older
       } none := by
   simp [cutStep, hChoices, hDepth, retainBottom]
+
+/-- A hard conditional stores its else branch at the current checkpoint, runs
+the condition under a local cut depth that retains that branch, and installs a
+success frame that will commit to the pre-conditional depth. -/
+theorem ifThenElseStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (condition thenBranch elseBranch rest : List Instruction) :
+    ifThenElseStep state condition thenBranch elseBranch rest =
+      .next {
+        state with
+        control := {
+          current := condition
+          cutDepth := state.choices.length + 1
+          frames := {
+            continuation := thenBranch ++ rest
+            callerCutDepth := state.control.cutDepth
+            commitDepth := some state.choices.length
+          } :: state.control.frames
+        }
+        choices := .branch {
+          checkpoint := state.memory.checkpoint
+          control := {
+            current := elseBranch ++ rest
+            cutDepth := state.control.cutDepth
+            frames := state.control.frames
+          }
+        } :: state.choices
+      } none := rfl
+
+/-- Reaching a hard conditional's success frame commits the else marker and
+all condition-local choices before resuming the then continuation. -/
+theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (frame : ReturnFrameCore σ Instruction)
+    (frames : List (ReturnFrameCore σ Instruction))
+    (mark : Nat)
+    (hFrames : state.control.frames = frame :: frames)
+    (hCommit : frame.commitDepth = some mark)
+    (hDepth : mark ≤ state.choices.length) :
+    emptyCurrentStep state =
+      .next {
+        state with
+        control := {
+          current := frame.continuation
+          cutDepth := frame.callerCutDepth
+          frames
+        }
+        choices := retainBottom mark state.choices
+      } none := by
+  simp [emptyCurrentStep, hFrames, hCommit, hDepth]
 
 /-- A well-formed cut transition retains exactly the choices older than the
 current predicate activation.  The theorem is stated directly about the one

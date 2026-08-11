@@ -12,4 +12,11 @@ main(_) :-
     emit(source_order, (X = a ; X = b), X),
     emit(restore_before_right, (Y = a, fail ; var(Y), Y = b), Y),
     emit(cut_prunes_right, (Z = a, ! ; Z = b), Z),
-    emit(callee_cut_retains_caller, (choose(W) ; W = c), W).
+    emit(callee_cut_retains_caller, (choose(W) ; W = c), W),
+    emit(if_first_success, ((I = a ; I = b) -> true ; I = c), I),
+    emit(if_then_failure, ((J = a ; J = b) -> fail ; J = c), J),
+    emit(if_false_else, (fail -> K = a ; K = c), K),
+    emit(if_condition_cut_else,
+        (((L = a, !, fail ; L = b)) -> true ; L = c), L),
+    emit(if_then_cut_outer,
+        ((true -> (M = a, !) ; M = b) ; M = c), M).

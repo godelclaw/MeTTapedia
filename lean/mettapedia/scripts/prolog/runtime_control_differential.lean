@@ -29,3 +29,10 @@ def main : IO Unit := do
   renderAnswers "cut_prunes_right" (runTyped [] disjCutPrunesRight)
   renderAnswers "callee_cut_retains_caller"
     (runTyped calleeCutRetainsCallerDisjProgram calleeCutRetainsCallerDisj)
+  renderAnswers "if_first_success" (runTyped [] hardIfFirstConditionSuccess)
+  renderAnswers "if_then_failure" (runTyped [] hardIfThenFailureDoesNotRetry)
+  renderAnswers "if_false_else" (runTyped [] hardIfFalseUsesElse)
+  renderAnswers "if_condition_cut_else"
+    (runTyped [] hardIfConditionCutPreservesElse)
+  renderAnswers "if_then_cut_outer"
+    (runTyped [] hardIfThenCutPrunesOuterDisj)

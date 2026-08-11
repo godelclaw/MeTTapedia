@@ -27,6 +27,7 @@ def mapReturnFrame (instruction : Instruction₁ → Instruction₂)
     ReturnFrameCore sigma Instruction₂ where
   continuation := frame.continuation.map instruction
   callerCutDepth := frame.callerCutDepth
+  commitDepth := frame.commitDepth
 
 /-- Map only the instruction payload of backtrackable control. -/
 def mapControl (instruction : Instruction₁ → Instruction₂)
@@ -124,6 +125,9 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .cut => .cut
   | .branch left right =>
       .branch (left.map instruction) (right.map instruction)
+  | .ifThenElse condition thenBranch elseBranch =>
+      .ifThenElse (condition.map instruction) (thenBranch.map instruction)
+        (elseBranch.map instruction)
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .error reason => .error reason
@@ -255,9 +259,26 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
       rcases control with ⟨current, cutDepth, frames⟩
       cases current with
       | nil =>
-          cases frames <;>
-            simp [stepCore, mapState, mapPhase, mapControl, mapReturnFrame,
-              mapStepResult, emptyCurrentStep]
+          cases frames with
+          | nil =>
+              simp [stepCore, mapState, mapPhase, mapControl,
+                mapStepResult, emptyCurrentStep]
+          | cons frame frames =>
+              rcases frame with ⟨continuation, callerCutDepth, commitDepth⟩
+              cases commitDepth with
+              | none =>
+                  simp [stepCore, mapState, mapPhase, mapControl,
+                    mapReturnFrame, mapStepResult, emptyCurrentStep]
+              | some mark =>
+                  by_cases hDepth : mark ≤ choices.length
+                  · simp [stepCore, mapState, mapPhase, mapControl,
+                      mapReturnFrame, mapChoicePoint, mapStepResult,
+                      emptyCurrentStep, retainBottom, hDepth]
+                  · cases hCleanup : memory.restore checkpoint <;>
+                      simp [stepCore, mapState, mapPhase, mapControl,
+                        mapReturnFrame, mapChoicePoint, mapStepResult,
+                        emptyCurrentStep, failWith, closeMemory, hDepth,
+                        hCleanup]
       | cons next rest =>
           simp only [stepCore, mapState, mapPhase, mapControl, List.map_cons]
           rw [realizes.classify next]
@@ -281,6 +302,10 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
                     hDepth, hCleanup]
           | branch left right =>
               simp [mapDispatchAction, dispatchActionStep, branchStep,
+                mapState, mapControl, mapBranchChoice, mapChoicePoint,
+                mapPhase, mapReturnFrame, mapStepResult, List.map_append]
+          | ifThenElse condition thenBranch elseBranch =>
+              simp [mapDispatchAction, dispatchActionStep, ifThenElseStep,
                 mapState, mapControl, mapBranchChoice, mapChoicePoint,
                 mapPhase, mapReturnFrame, mapStepResult, List.map_append]
           | unify left right =>

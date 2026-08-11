@@ -1395,7 +1395,8 @@ def AtomsWF {σ : LPSignature} (heap : Heap σ.scoped)
 /-- Every stored continuation is well-formed over the heap. -/
 def FramesWF {σ : LPSignature} (heap : Heap σ.scoped)
     (frames : List (ReturnFrame σ)) : Prop :=
-  ∀ frame ∈ frames, AtomsWF heap frame.continuation
+  ∀ frame ∈ frames,
+    frame.commitDepth = none ∧ AtomsWF heap frame.continuation
 
 /-- Every query variable's cell is present, carrying its identity. -/
 def VarMapCellsWF {σ : LPSignature} (heap : Heap σ.scoped)
@@ -1419,7 +1420,8 @@ theorem FramesWF.mono {σ : LPSignature} {heap heap' : Heap σ.scoped}
     {frames : List (ReturnFrame σ)}
     (hle : heap.size ≤ heap'.size) (h : FramesWF heap frames) :
     FramesWF heap' frames :=
-  fun frame hframe => (h frame hframe).mono hle
+  fun frame hframe =>
+    ⟨(h frame hframe).1, (h frame hframe).2.mono hle⟩
 
 /-- Cells survive verbatim under prefix-preserving growth. -/
 theorem VarMapCellsWF.of_prefix {σ : LPSignature}
@@ -1770,7 +1772,7 @@ theorem ControlWF.framePop {σ : LPSignature} {state : State σ}
     (h : ControlWF state)
     (hframes : state.control.frames = frame :: frames') :
     ControlWF (framePopState state frame frames') :=
-  ⟨h.2 frame (by rw [hframes]; exact List.mem_cons_self ..),
+  ⟨(h.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).2,
     fun f hf => h.2 f (by rw [hframes]; exact List.mem_cons_of_mem _ hf)⟩
 
 /-- A predicate call: the dispatch arm packages the caller into a cursor
@@ -1793,8 +1795,8 @@ theorem ControlWF.callCursor {σ : LPSignature}
     h.1 goal (by rw [hcurrent]; exact List.mem_cons_self ..),
     fun f hf => by
       rcases List.mem_cons.mp hf with rfl | hf'
-      · exact fun atom hatom => h.1 atom
-          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom)
+      · exact ⟨rfl, fun atom hatom => h.1 atom
+          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom)⟩
       · exact h.2 f hf',
     fun c hc => hc⟩
 
@@ -3035,10 +3037,12 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       show heapSubst state.memory.heap pair.1 = term
                       simp [heapSubst, hcellOf, hterm]
                   | cons frame frames' =>
+                      have hcommit : frame.commitDepth = none :=
+                        (hCW.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).1
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (framePopState state frame frames') none := by
                         simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
-                          hcurrent, hframes,
+                          hcurrent, hframes, hcommit,
                           framePopState]
                       rw [hstep] at hPull
                       dsimp only at hPull

@@ -171,11 +171,13 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares four exact ordered answer traces against SWI-Prolog 10.1.9:
+It compares nine exact ordered answer traces against SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
-disjunction choice.  Lean-side cleanup is additionally required to restore an
-empty heap and trail.
+disjunction choice; plus hard-if first-answer commitment, then-failure without
+condition retry, false-condition else entry, condition-local cut scope, and
+restoration of ordinary caller cut scope inside the then branch.  Lean-side
+cleanup is additionally required to restore an empty heap and trail.
 
 ## What a pass means
 
