@@ -323,6 +323,14 @@ def inlineUnifyFailureAfterBinding : Goal qSig :=
   .conj (.unify (.var .x) (.const .a))
     (.unify (.var .x) (.const .b))
 
+def isVarBeforeBinding : Goal qSig :=
+  .conj (.isVar (.var .x))
+    (.unify (.var .x) (.const .a))
+
+def isVarAfterBinding : Goal qSig :=
+  .conj (.unify (.var .x) (.const .a))
+    (.isVar (.var .x))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -334,5 +342,7 @@ def inlineUnifyFailureAfterBinding : Goal qSig :=
 #guard typedCutSessionRun == some ([.a], 0, 0)
 #guard runTyped [] inlineUnifySuccess == some ([.a], 0, 0)
 #guard runTyped [] inlineUnifyFailureAfterBinding == some ([], 0, 0)
+#guard runTyped [] isVarBeforeBinding == some ([.a], 0, 0)
+#guard runTyped [] isVarAfterBinding == some ([], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

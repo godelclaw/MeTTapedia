@@ -471,6 +471,7 @@ def dispatchAction {sigma : LP.LPSignature}
   | .fail => .fail
   | .cut => .cut
   | .unify left right => .unify left right
+  | .isVar address => .isVar address
   | _ => .error .unsupportedInstruction
 
 /-- Execute one typed Prolog transition through the same phase loop, clause

@@ -490,6 +490,30 @@ def beginUnifyStep {σ : LPSignature}
       (RuntimeUnification.startMany state.memory [(left, right)])
   } none
 
+/-- Test whether one dereferenced heap root is an unbound variable.  This is
+the canonical finite-graph counterpart of SWI-Prolog V10.1.9 `var/1`, whose
+implementation delegates to `PL_is_variable` (`src/pl-prims.c`).  A false
+test enters ordinary backtracking; corrupt addresses and variable-only cycles
+remain typed runtime errors. -/
+@[simp]
+def isVarStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (address : Addr) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.memory.heap.deref address with
+  | .error error => failWith state (.memory error)
+  | .ok (.variableCycle cycle) =>
+      failWith state (.memory (.variableReferenceCycle cycle))
+  | .ok (.root root) =>
+      match state.memory.heap[root]? with
+      | none => failWith state (.memory (.invalidAddress root))
+      | some (.var _ none) =>
+          .next {
+            state with
+            control := { state.control with current := rest }
+          } none
+      | some _ => .next { state with phase := .backtrack } none
+
 /-- The complete authority granted to an instruction classifier.  It may name
 an ordinary call's source clauses or identify base control, but it cannot emit
 answers/effects, mutate memory, select a clause, or schedule a body. -/
@@ -498,6 +522,7 @@ inductive DispatchAction (σ : LPSignature) (SourceClause : Type*) where
   | fail
   | cut
   | unify (left right : Addr)
+  | isVar (address : Addr)
   | error (reason : QueryError)
 
 /-- Apply one narrow classification to the canonical state.  The current
@@ -513,6 +538,7 @@ def dispatchActionStep {σ : LPSignature}
   | .fail => .next { state with phase := .backtrack } none
   | .cut => cutStep state rest
   | .unify left right => beginUnifyStep state left right rest
+  | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
 
 /-- The one phase loop shared by LP atoms and typed Prolog control.  Language
