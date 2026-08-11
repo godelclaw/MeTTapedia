@@ -45,6 +45,7 @@ inductive QueryError where
   | invalidCutDepth (mark depth : Nat)
   | predicateMismatch
   | stalledUnifier
+  | unsupportedInstruction
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
 
@@ -434,6 +435,58 @@ def callStep {σ : LPSignature}
   }
   .next { state with phase := .select cursor } none
 
+/-- The complete authority granted to an instruction classifier.  It may name
+an ordinary call's source clauses or identify base control, but it cannot emit
+answers/effects, mutate memory, select a clause, or schedule a body. -/
+inductive DispatchAction (σ : LPSignature) (SourceClause : Type*) where
+  | call (goal : RuntimeAtom σ.scoped) (clauses : List SourceClause)
+  | fail
+  | cut
+  | error (reason : QueryError)
+
+/-- Apply one narrow classification to the canonical state.  The current
+instruction has already been removed; `rest` always comes from the live goal
+stack rather than from the classifier. -/
+@[simp]
+def dispatchActionStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (rest : List Instruction) :
+    DispatchAction σ SourceClause →
+      StepResultCore σ Instruction SourceClause
+  | .call goal clauses => callStep state goal clauses rest
+  | .fail => .next { state with phase := .backtrack } none
+  | .cut => cutStep state rest
+  | .error reason => failWith state reason
+
+/-- The one phase loop shared by LP atoms and typed Prolog control.  Language
+code supplies only clause materialization and the narrow instruction
+classification above; all search transitions remain in this definition. -/
+def stepCore {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ SourceClause)
+    (state : StateCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.phase with
+  | .afterAnswer => afterAnswerStep state
+  | .backtrack => backtrackStep state
+  | .dispatch =>
+      match state.control.current with
+      | [] => emptyCurrentStep state
+      | instruction :: rest =>
+          dispatchActionStep state rest (classify instruction)
+  | .select cursor => selectStep materializer state cursor
+  | .unifying attempt machine => unifyingStep state attempt machine
+
+/-- Classify an established LP runtime atom for the shared phase loop. -/
+def lpDispatchAction {σ : LPSignature} [DecidableEq σ.relationSymbols]
+    (builtins : Builtins σ) (program : Program σ)
+    (goal : RuntimeAtom σ.scoped) : DispatchAction σ (Clause σ) :=
+  if builtins.isCut goal.symbol = true then
+    if goal.args.isEmpty then .cut else .error .malformedCut
+  else
+    .call goal (clausesFor program goal.symbol)
+
 /-- Execute one query transition.  A running graph unifier contributes exactly
 one of its own microsteps. -/
 def step {σ : LPSignature} [DecidableEq σ.vars]
@@ -441,27 +494,7 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
     [DecidableEq σ.relationSymbols]
     (builtins : Builtins σ) (program : Program σ) (state : State σ) :
     StepResult σ :=
-  match state.phase with
-  | .afterAnswer =>
-      afterAnswerStep state
-  | .backtrack =>
-      backtrackStep state
-  | .dispatch =>
-      match state.control.current with
-      | [] =>
-          emptyCurrentStep state
-      | goal :: rest =>
-          if _hCut : builtins.isCut goal.symbol = true then
-            if goal.args.isEmpty then
-              cutStep state rest
-            else
-              failWith state .malformedCut
-          else
-            callStep state goal (clausesFor program goal.symbol) rest
-  | .select cursor =>
-      selectStep lpClauseMaterializer state cursor
-  | .unifying attempt machine =>
-      unifyingStep state attempt machine
+  stepCore lpClauseMaterializer (lpDispatchAction builtins program) state
 
 /-! ## Local control laws -/
 
@@ -484,7 +517,8 @@ theorem step_cut_of_dispatch {σ : LPSignature} [DecidableEq σ.vars]
         control := { state.control with current := rest }
         choices := retainBottom state.control.cutDepth state.choices
       } none := by
-  simp [step, hPhase, hCurrent, hCut, hEmpty, hDepth]
+  simp [step, stepCore, lpDispatchAction, hPhase, hCurrent, hCut,
+    hEmpty, hDepth]
 
 /-- Consequently, cut leaves exactly the choice depth captured on predicate
 entry; neither a nested call's alternatives nor later clauses survive. -/
@@ -522,7 +556,7 @@ theorem step_empty_backtrack_completes {σ : LPSignature}
     (hChoices : state.choices = [])
     (hRestore : state.memory.restore state.queryCheckpoint = .ok memory) :
     step builtins program state = .terminal (.completed memory) := by
-  simp [step, hPhase, hChoices, complete, closeMemory, hRestore]
+  simp [step, stepCore, hPhase, hChoices, complete, closeMemory, hRestore]
 
 /-- Run until one answer, terminal completion/error, or an open fuel boundary.
 Resuming the returned state continues the same DFS search. -/

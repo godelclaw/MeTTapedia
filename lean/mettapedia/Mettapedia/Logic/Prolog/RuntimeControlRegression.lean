@@ -182,8 +182,8 @@ def typedCallUsesSharedDispatch : Bool :=
             nextScope := 1
             phase := .dispatch
           }
-          match dispatchBaseStep [sourceClause] state with
-          | some (.next next none) =>
+          match step [sourceClause] state with
+          | .next next none =>
               match next.phase with
               | .select cursor =>
                   match cursor.clauses, cursor.frames with
@@ -233,13 +233,35 @@ def typedCutRetainsCallerChoice : Bool :=
             nextScope := 1
             phase := .dispatch
           }
-          match dispatchBaseStep [] state with
-          | some (.next next none) =>
+          match step [] state with
+          | .next next none =>
               match next.control.current, next.choices with
               | [.fail], [_] => true
               | _, _ => false
           | _ => false
       | _ => false
+
+/-- Unimplemented structured control is a typed runtime error, never Prolog
+failure, success, or an erased instruction. -/
+def structuredControlIsExplicitlyUnsupported : Bool :=
+  let memory := Memory.empty qSig.scoped
+  let state : State qSig := {
+    memory
+    control := {
+      current := [.disj [] []]
+      cutDepth := 0
+      frames := []
+    }
+    choices := []
+    queryCheckpoint := memory.checkpoint
+    queryVarMap := []
+    nextScope := 1
+    phase := .dispatch
+  }
+  match step [] state with
+  | .terminal (.runtimeError .unsupportedInstruction restored) =>
+      restored.heap.isEmpty && restored.trail.isEmpty
+  | _ => false
 
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
@@ -247,5 +269,6 @@ def typedCutRetainsCallerChoice : Bool :=
 #guard typedBodyUsesSharedUnifyingStep
 #guard typedCallUsesSharedDispatch
 #guard typedCutRetainsCallerChoice
+#guard structuredControlIsExplicitlyUnsupported
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

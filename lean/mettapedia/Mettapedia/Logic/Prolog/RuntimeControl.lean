@@ -399,30 +399,37 @@ theorem clausesFor_ofLP {sigma : LP.LPSignature}
       · simp [Program.clausesFor, Program.ofLP,
           LP.RuntimeQuery.clausesFor, Clause.ofLP, hMatches, hRest]
 
-/-- Execute the base instructions whose control effects are already owned by
-the canonical LP query runtime.  `none` means that a structured instruction
-such as disjunction, collection, or exception handling requires its dedicated
-extension; it must not be interpreted as logical failure.
+/-- The canonical query state specialized only by typed Prolog instructions
+and source clauses. -/
+abbrev State (sigma : LP.LPSignature) :=
+  LP.RuntimeQuery.StateCore sigma (RuntimeGoal sigma.scoped) (Clause sigma)
 
-This function classifies typed instructions only.  Calls, cut pruning, empty
-stack return, and alternative restoration are the shared `RuntimeQuery`
-transitions above, over the same `StateCore`. -/
-def dispatchBaseStep {sigma : LP.LPSignature}
+/-- One canonical typed-query transition result. -/
+abbrev StepResult (sigma : LP.LPSignature) :=
+  LP.RuntimeQuery.StepResultCore sigma (RuntimeGoal sigma.scoped) (Clause sigma)
+
+/-- Classify a typed runtime instruction into the narrow authority accepted by
+the shared phase loop.  Structured controls remain explicit errors until their
+dedicated state transitions extend `RuntimeQuery`; they are never treated as
+failure or erased. -/
+def dispatchAction {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
     (program : Program sigma)
-    (state : LP.RuntimeQuery.StateCore sigma (RuntimeGoal sigma.scoped)
-      (Clause sigma)) :
-    Option (LP.RuntimeQuery.StepResultCore sigma (RuntimeGoal sigma.scoped)
-      (Clause sigma)) :=
-  match state.control.current with
-  | [] => some (LP.RuntimeQuery.emptyCurrentStep state)
-  | .call goal :: rest =>
-      some (LP.RuntimeQuery.callStep state goal
-        (Program.clausesFor program goal.symbol) rest)
-  | .fail :: _ =>
-      some (.next { state with phase := .backtrack } none)
-  | .cut :: rest =>
-      some (LP.RuntimeQuery.cutStep state rest)
-  | _ => none
+    (instruction : RuntimeGoal sigma.scoped) :
+    LP.RuntimeQuery.DispatchAction sigma (Clause sigma) :=
+  match instruction with
+  | .call goal =>
+      .call goal (Program.clausesFor program goal.symbol)
+  | .fail => .fail
+  | .cut => .cut
+  | _ => .error .unsupportedInstruction
+
+/-- Execute one typed Prolog transition through the same phase loop, clause
+entry, graph unifier, restoration, and answer mechanism as `Logic.LP`. -/
+def step {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (program : Program sigma) (state : State sigma) : StepResult sigma :=
+  LP.RuntimeQuery.stepCore clauseMaterializer (dispatchAction program) state
 
 end Mettapedia.Logic.Prolog.RuntimeControl

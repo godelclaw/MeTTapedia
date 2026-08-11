@@ -550,7 +550,7 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
           | some next =>
               have hstep : RuntimeQuery.step builtins program state =
                   .next { state with phase := .unifying attempt next } none := by
-                simp [RuntimeQuery.step, hPhase, hms]
+                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase, hms]
               rw [hstep] at hPull
               dsimp only at hPull
               obtain ⟨k, rest, hfuel, hdisj⟩ :=
@@ -564,7 +564,7 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
           | none =>
               have hstep : RuntimeQuery.step builtins program state =
                   failWith state .stalledUnifier := by
-                simp [RuntimeQuery.step, hPhase, hms]
+                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase, hms]
               rw [hstep] at hPull
               obtain ⟨result, hres⟩ := failWith_terminal state .stalledUnifier
               rw [hres] at hPull
@@ -575,21 +575,22 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
           | success m =>
               have hstep : RuntimeQuery.step builtins program state = .next
                   (unifySuccessState state attempt m) none := by
-                simp [RuntimeQuery.step, hPhase, unifySuccessState]
+                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase,
+                  unifySuccessState]
               rw [hstep] at hPull
               dsimp only at hPull
               exact ⟨0, fuel, by omega, .inl ⟨m, rfl, hPull⟩⟩
           | failure m =>
               have hstep : RuntimeQuery.step builtins program state = .next
                   { state with memory := m, phase := .backtrack } none := by
-                simp [RuntimeQuery.step, hPhase]
+                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase]
               rw [hstep] at hPull
               dsimp only at hPull
               exact ⟨0, fuel, by omega, .inr ⟨m, rfl, hPull⟩⟩
           | runtimeError e m =>
               have hstep : RuntimeQuery.step builtins program state =
                   failWith { state with memory := m } (.memory e) := by
-                simp [RuntimeQuery.step, hPhase]
+                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase]
               rw [hstep] at hPull
               obtain ⟨result, hres⟩ :=
                 failWith_terminal { state with memory := m } (.memory e)
@@ -2363,7 +2364,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
           | afterAnswer =>
               have hstep : RuntimeQuery.step builtins program state =
                   .next { state with phase := .backtrack } none := by
-                simp [RuntimeQuery.step, hphase]
+                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase]
               rw [hstep] at hPull
               dsimp only at hPull
               exact ih fuel (Nat.lt_succ_self _) { state with phase := .backtrack } ans resumed hPull
@@ -2375,7 +2376,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
               | nil =>
                   have hstep : RuntimeQuery.step builtins program state =
                       complete state := by
-                    simp [RuntimeQuery.step, hphase, hchoices]
+                    simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
+                      hchoices]
                   rw [hstep] at hPull
                   obtain ⟨result, hres⟩ := complete_terminal state
                   rw [hres] at hPull
@@ -2386,7 +2388,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                     backtrackPop_inv hq hchoices
                   have hstep : RuntimeQuery.step builtins program state =
                       .next { state with memory := m₀, choices := older, phase := .select cursor } none := by
-                    simp [RuntimeQuery.step, hphase, hchoices, hres]
+                    simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
+                      hchoices, hres]
                   rw [hstep] at hPull
                   dsimp only at hPull
                   rw [hchoices] at hLC
@@ -2406,7 +2409,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hstep : RuntimeQuery.step builtins program state =
                           .next { state with phase := .afterAnswer }
                             (some (.answer { memory := state.memory, queryVarMap := state.queryVarMap })) := by
-                        simp [RuntimeQuery.step, hphase, hcurrent, hframes]
+                        simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
+                          hcurrent, hframes]
                       rw [hstep] at hPull
                       dsimp only at hPull
                       cases hPull
@@ -2441,7 +2445,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                   | cons frame frames' =>
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (framePopState state frame frames') none := by
-                        simp [RuntimeQuery.step, hphase, hcurrent, hframes,
+                        simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
+                          hcurrent, hframes,
                           framePopState]
                       rw [hstep] at hPull
                       dsimp only at hPull
@@ -2464,7 +2469,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                         cutDepth := state.choices.length
                         frames := { continuation := rest, callerCutDepth := state.control.cutDepth } :: state.control.frames
                       } } none := by
-                    simp [RuntimeQuery.step, hphase, hcurrent, hnotCut]
+                    simp [RuntimeQuery.step, RuntimeQuery.stepCore,
+                      RuntimeQuery.lpDispatchAction, hphase, hcurrent, hnotCut]
                   rw [hstep] at hPull
                   dsimp only at hPull
                   refine ih fuel (Nat.lt_succ_self _) { state with phase := .select { checkpoint := state.memory.checkpoint, goal := goal, clauses := clausesFor program goal.symbol, cutDepth := state.choices.length, frames := { continuation := rest, callerCutDepth := state.control.cutDepth } :: state.control.frames } } ans resumed
@@ -2482,7 +2488,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
               | nil =>
                   have hstep : RuntimeQuery.step builtins program state =
                       .next { state with phase := .backtrack } none := by
-                    simp [RuntimeQuery.step, RuntimeQuery.selectStep, hphase,
+                    simp [RuntimeQuery.step, RuntimeQuery.stepCore,
+                      RuntimeQuery.selectStep, hphase,
                       hclauses]
                   rw [hstep] at hPull
                   dsimp only at hPull
@@ -2494,7 +2501,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                   | error e =>
                       have hstep : RuntimeQuery.step builtins program state =
                           failWith state (.memory e) := by
-                        simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                        simp [RuntimeQuery.step, RuntimeQuery.stepCore,
+                          RuntimeQuery.selectStep,
                           RuntimeQuery.lpClauseMaterializer, hphase, hclauses,
                           hMat]
                       rw [hstep] at hPull
@@ -2508,7 +2516,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       case neg =>
                           have hstep : RuntimeQuery.step builtins program
                             state = failWith state .predicateMismatch := by
-                            simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                            simp [RuntimeQuery.step, RuntimeQuery.stepCore,
+                              RuntimeQuery.selectStep,
                               RuntimeQuery.lpClauseMaterializer, hphase,
                               hclauses, hMat, RuntimeClauseEntry.enter,
                               hPredicate]
@@ -2523,7 +2532,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       case neg =>
                           have hstep : RuntimeQuery.step builtins program
                             state = failWith state .predicateMismatch := by
-                            simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                            simp [RuntimeQuery.step, RuntimeQuery.stepCore,
+                              RuntimeQuery.selectStep,
                               RuntimeQuery.lpClauseMaterializer, hphase,
                               hclauses, hMat, RuntimeClauseEntry.enter,
                               hPredicate, hArity]
@@ -2536,7 +2546,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (unifyEntryState state cursor remaining
                             copied) none := by
-                        simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                        simp [RuntimeQuery.step, RuntimeQuery.stepCore,
+                          RuntimeQuery.selectStep,
                           RuntimeQuery.lpClauseMaterializer, hphase, hclauses,
                           hMat, RuntimeClauseEntry.enter, hPredicate, hArity,
                           unifyEntryState]
