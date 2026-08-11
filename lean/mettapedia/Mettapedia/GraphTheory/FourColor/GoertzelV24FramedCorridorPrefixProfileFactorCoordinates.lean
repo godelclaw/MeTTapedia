@@ -36,12 +36,15 @@ local instance framedCorridorPrefixProfileFactorCoordinatesEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
-/-- A boundary fragment paired with an explicit equation for its edge
-support.  Keeping this generic makes construction definitionally cheap. -/
+/-- A boundary fragment paired with explicit equations for its ambient face
+and edge support.  Keeping both observations stored prevents downstream
+profile-coordinate proofs from unfolding a large source-specific constructor. -/
 structure BoundaryFragmentSupportWitness
     (RS : RotationSystem V G.edgeSet) (cut region support : Finset G.edgeSet)
+    (face : OrbitFace RS)
     where
   boundaryFragment : BoundaryRegionalFragment RS cut region
+  face_eq : boundaryFragment.1.1 = face
   edges_eq : boundaryRegionalFragmentEdges RS cut region boundaryFragment =
     support
 
@@ -54,14 +57,15 @@ def boundaryFragmentSupportWitnessOf
     (htouch : FaceFragmentTouchesCut RS cut region face fragment) :
     BoundaryFragmentSupportWitness RS cut region
       (faceRegionalFragmentEdges RS (orbitFaceRoot RS face.1) region
-        fragment) :=
-  ⟨⟨face, ⟨fragment, htouch⟩⟩, rfl⟩
+        fragment) face.1 :=
+  ⟨⟨face, ⟨fragment, htouch⟩⟩, rfl, rfl⟩
 
 /-- Every packaged support witness has a canonical coordinate in the finite
 boundary-fragment enumeration. -/
 theorem BoundaryFragmentSupportWitness.exists_index
     {RS : RotationSystem V G.edgeSet} {cut region support : Finset G.edgeSet}
-    (witness : BoundaryFragmentSupportWitness RS cut region support) :
+    {face : OrbitFace RS}
+    (witness : BoundaryFragmentSupportWitness RS cut region support face) :
     ∃ index : Fin (Fintype.card (BoundaryRegionalFragment RS cut region)),
       boundaryRegionalFragmentEdges RS cut region
           (boundaryRegionalFragmentAt RS cut region index) = support := by
@@ -197,7 +201,7 @@ abbrev LocalLayerLeftFactorBoundaryWitness
     embedded.cellulation.rotation.toRotationSystem
     (indexedCrossingEdgeSet aligned.toInterface.localLayerPrefixCrossing)
     aligned.toInterface.localLayerLeftPrefixRegion
-    (aligned.localLayerLeftFactorEdges fragment factor)
+    (aligned.localLayerLeftFactorEdges fragment factor) fragment.1.1
 
 /-- Package an old-prefix factor as an incoming boundary fragment from one
 literal incoming crossing in its support. -/
