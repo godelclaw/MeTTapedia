@@ -6,10 +6,11 @@ import Mettapedia.Logic.Prolog.SourceRuntimeRegression
 import Mettapedia.Logic.LP.RuntimeReadback
 
 /-!
-Execute real pinned `parser.pl` DCG clauses and the `parse/2` and `repr/2`
-wrappers from pinned `metta.pl` through the canonical shared runtime.  The
-loaded source slice retains unresolved loader obligations; this canary claims
-only the explicitly exercised writer and reader paths.
+Execute real pinned `parser.pl` DCG clauses, the `parse/2` and `repr/2`
+wrappers from pinned `metta.pl`, and atomic `eval/2` through pinned
+`translator.pl` on the canonical shared runtime.  The loaded source slice
+retains unresolved loader obligations; this canary claims only the explicitly
+exercised parser and evaluator paths.
 -/
 
 open Mettapedia.Logic
@@ -64,13 +65,14 @@ private def calledSymbols : SourceSignature.Goal →
       calledSymbols guarded ++ calledSymbols recovery
   | _ => []
 
-/-- Link the real pinned `metta.pl` and `parser.pl` closures without pretending
-that `metta.pl`'s conditional load-time goal has executed.  Both closures are
-read independently, their already-loaded source units are combined by key,
-and module qualification is applied to the same canonical clauses consumed by
-the shared runtime. -/
-def loadMettaSlice (parserClosure : ReaderUnitClosure.Closure String)
-    (mettaSource dcgBasicsSource listsSource errorSource : String) :
+/-- Link the real pinned `metta.pl`, `parser.pl`, and `translator.pl` closures
+without pretending that `metta.pl`'s conditional load-time goal has executed.
+The closures are read independently, their already-loaded source units are
+combined by key, and module qualification is applied to the same canonical
+clauses consumed by the shared runtime. -/
+def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
+    (mettaSource translatorSource dcgBasicsSource listsSource
+      errorSource : String) :
     IO SourceSignature.Program := do
   let mettaClosure ← match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
@@ -78,18 +80,33 @@ def loadMettaSlice (parserClosure : ReaderUnitClosure.Closure String)
       (resolver dcgBasicsSource listsSource errorSource) "metta" mettaSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "metta source-unit closure failed"
+  let translatorClosure ← match ReaderUnitClosure.loadWith 4
+      (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
+      ReaderOperator.defaults
+      (resolver dcgBasicsSource listsSource errorSource)
+      "translator" translatorSource with
+    | .ok closure => pure closure
+    | .error _ => throw <| IO.userError "translator source-unit closure failed"
+  let userUnits := appendNewUnits mettaClosure.units parserClosure.units
   let combined : ReaderUnitClosure.Closure String := {
-    units := appendNewUnits mettaClosure.units parserClosure.units
-    external := mettaClosure.external ++ parserClosure.external
+    units := appendNewUnits userUnits translatorClosure.units
+    external := mettaClosure.external ++ parserClosure.external ++
+      translatorClosure.external
   }
   let linked ← match ReaderModuleLink.link ReaderSWIProfile.sourceKey? combined with
     | .ok linked => pure linked
     | .error _ => throw <| IO.userError "module-aware source link failed"
   let some mettaUnit := mettaClosure.units.find? fun named => named.key = "metta"
     | throw <| IO.userError "metta root unit missing"
+  let some translatorUnit := translatorClosure.units.find? fun named =>
+      named.key = "translator"
+    | throw <| IO.userError "translator root unit missing"
   if mettaUnit.unit.program.length != 159 then
     throw <| IO.userError s!"metta source boundary changed: \
       clauses={mettaUnit.unit.program.length}"
+  if translatorUnit.unit.program.length != 52 then
+    throw <| IO.userError s!"translator source boundary changed: \
+      clauses={translatorUnit.unit.program.length}"
   let numberSymbol : SourceSignature.PredicateIndicator := {
     name := "dcg_basics:number"
     arity := 3
@@ -100,7 +117,7 @@ def loadMettaSlice (parserClosure : ReaderUnitClosure.Closure String)
       clause.head.symbol = { name := "sexpr", arity := 5 } &&
         numberSymbol ∈ calledSymbols clause.body) then
     throw <| IO.userError "parser number//1 call was not module-qualified"
-  if linked.program.length != 456 then
+  if linked.program.length != 508 then
     throw <| IO.userError s!"module-aware source boundary changed: \
       clauses={linked.program.length}"
   pure linked.program
@@ -154,6 +171,9 @@ def parseQuery (input : SourceSignature.Term) : SourceSignature.Goal :=
 
 def reprQuery (input : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "repr" [input, .var termIdentity]
+
+def evalQuery (input : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "eval" [input, .var termIdentity]
 
 /-- Exercise the parser in its forward direction on the smallest nonempty
 S-expression.  This reaches pinned `dcg/basics:string_without//2`, including
@@ -342,16 +362,19 @@ def separatesVariablesInTwoElementList :
   | _ => false
 
 def main (arguments : List String) : IO Unit := do
-  let [mettaPath, parserPath, dcgBasicsPath, listsPath, errorPath] := arguments
+  let [mettaPath, parserPath, translatorPath, dcgBasicsPath, listsPath,
+      errorPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
-         <metta.pl> <parser.pl> <dcg/basics.pl> <lists.pl> <error.pl>"
+         <metta.pl> <parser.pl> <translator.pl> \
+         <dcg/basics.pl> <lists.pl> <error.pl>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
-  let program ← loadMettaSlice parserClosure (← IO.FS.readFile mettaPath)
+  let program ← loadPeTTaSlice parserClosure (← IO.FS.readFile mettaPath)
+    (← IO.FS.readFile translatorPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
@@ -428,3 +451,6 @@ def main (arguments : List String) : IO Unit := do
     (reprQuery (SourceSignature.compound "pair"
       [SourceSignature.atom "a", SourceSignature.atom "b"]))
     (SourceSignature.string "(pair a b)")
+  checkGoal program "metta_eval_atomic"
+    (evalQuery (SourceSignature.atom "a"))
+    (SourceSignature.atom "a")

@@ -173,18 +173,18 @@ as explicit obligations rather than silently dropping them:
 scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
-The corresponding source-execution gate combines the real pinned `metta.pl`
-and `parser.pl` units with those three SWI libraries using the static
+The corresponding source-execution gate combines the real pinned `metta.pl`,
+`parser.pl`, and `translator.pl` units with those three SWI libraries using the static
 module-aware linker.  The linker separates user `exp/2` from
 `dcg_basics:exp/2`, resolves explicit imports and the unique loaded export
 used by SWI autoload, and fails on ambiguous exports or a literal predicate
-that would collide with generated qualification.  The resulting 456
+that would collide with generated qualification.  The resulting 508
 canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
 `(1.5)`, `(1e2)`, `("a")`, `((a))`, `(a-b)`, `(1_2_3)`, `(#foo)`, an
 escaped string, `$x`, `$x $x`, and `$_ $_` through the same
-canonical `Logic.Prolog.SourceRuntime`, with those 456 linked clauses and no
+canonical `Logic.Prolog.SourceRuntime`, with those 508 linked clauses and no
 translated replacement.  It requires the exact SWI answers `[40,41]` and
 `[40,97,41]`, and `[45,52,50]` for the writers and `[a]`, `[a,b]`, `[1]`,
 `[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the original readers.
@@ -195,7 +195,9 @@ clean final heap and trail.  Five further paths call the actual exported
 reuse, lists, and compounds rather than invoking their internal DCGs directly.
 Two final paths execute the actual pinned `metta.pl` wrappers `parse/2` and
 `repr/2`; the SWI oracle reads those exact source clauses from the pinned file
-without executing unrelated load-time effects:
+without executing unrelated load-time effects.  A further path executes
+`eval(a, Out)` through the actual `eval/2`, `translate_expr/3`, and
+`call_goals/1` clauses, pinning the first PeTTa evaluator path on atomic data:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
