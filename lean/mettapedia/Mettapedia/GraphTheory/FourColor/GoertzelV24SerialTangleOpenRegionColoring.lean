@@ -253,6 +253,59 @@ theorem splitVertexSideColoring_openRegionColoringOfSplitVertexSideColoring
   rw [openRegionColoringOfSplitVertexSideColoring_openOldDartColor]
   simp
 
+/-- Reading a literal open-region coloring on the serial carrier and then
+restoring the fresh stubs returns the original edge coloring.  Together with
+the preceding theorem this makes the two Tait-coloring presentations inverse
+at the level of actual colorings, not merely equisatisfiable supports. -/
+theorem openRegionColoringOfSplitVertexSideColoring_splitVertexSideColoring
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : RetainedDart RS keep)
+    (split : BoundaryDart RS keep ≃ L ⊕ R)
+    (coloring : (rotationSystem RS keep (Sum.inl root)).EdgeColoring Color)
+    (hcoloring :
+      (rotationSystem RS keep (Sum.inl root)).IsTaitEdgeColoring coloring) :
+    openRegionColoringOfSplitVertexSideColoring RS keep root split
+        (splitVertexSideColoring RS keep root split coloring)
+        (splitVertexSideColoring_isTait RS keep root split coloring hcoloring) =
+      coloring := by
+  apply DFunLike.ext _ _
+  intro edge
+  let dart := GoertzelV24RotationDartColoring.dartRepresentative
+    (rotationSystem RS keep (Sum.inl root)) edge
+  rw [← GoertzelV24RotationDartColoring.edgeOf_dartRepresentative
+    (rotationSystem RS keep (Sum.inl root)) edge]
+  unfold openRegionColoringOfSplitVertexSideColoring
+  rw [GoertzelV24RotationDartColoring.edgeColoringOfDartColor_edgeOf]
+  change openRegionDartColorOfSplitVertexSideColoring RS keep split
+      (splitVertexSideColoring RS keep root split coloring) dart =
+    coloring ((rotationSystem RS keep (Sum.inl root)).edgeOf dart)
+  rcases dart with retained | boundary
+  · change coloring ((rotationSystem RS keep (Sum.inl root)).edgeOf
+        (Sum.inl (splitVertexSideDartEquiv RS keep split
+          (splitVertexSideOpenRegionDart RS keep split (Sum.inl retained))))) =
+      coloring ((rotationSystem RS keep (Sum.inl root)).edgeOf (Sum.inl retained))
+    rw [show splitVertexSideDartEquiv RS keep split
+        (splitVertexSideOpenRegionDart RS keep split (Sum.inl retained)) =
+          retained by
+      change splitVertexSideDartEquiv RS keep split
+          ((splitVertexSideDartEquiv RS keep split).symm retained) = retained
+      exact (splitVertexSideDartEquiv RS keep split).apply_symm_apply retained]
+  · have hdisplay : splitVertexSideDartEquiv RS keep split
+        (splitVertexSideOpenRegionDart RS keep split (Sum.inr boundary)) =
+        boundary.1 := by
+      rw [splitVertexSideOpenRegionDart_stub,
+        splitVertexSideDartEquiv_boundary, Equiv.symm_apply_apply]
+    change splitVertexSideColoring RS keep root split coloring
+        (Sum.inr (split boundary)) =
+      coloring ((rotationSystem RS keep (Sum.inl root)).edgeOf (Sum.inr boundary))
+    unfold splitVertexSideColoring
+    trans GoertzelV24OpenRegionColorGluing.openOldDartColor RS keep
+      (Sum.inl root) coloring boundary.1.1 boundary.1.2
+    · apply openOldDartColor_eq_of_dart_eq
+      exact congrArg Subtype.val hdisplay
+    · exact GoertzelV24OpenRegionColorGluing.openOldDartColor_eq_boundaryStubColor
+        RS keep (Sum.inl root) coloring boundary.1.1 boundary.1.2 boundary.2
+
 end
 
 end GoertzelV24OpenRegionSerialTangleColoring

@@ -121,6 +121,198 @@ theorem sourceCrosscutComplementSerialColoring_openRegionColoringOfSerial
     (pair.sourceCrosscutComplementRetainedRoot data boundary hcubic)
     (pair.sourceCrosscutComplementBoundarySplit data boundary) coloring hcoloring
 
+/-- Conversely, serializing a literal removed-region Tait coloring and then
+restoring its stubs returns that literal coloring exactly. -/
+theorem sourceCrosscutComplementOpenRegionColoringOfSerial_serialColoring
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).EdgeColoring Color)
+    (hcoloring :
+      (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).IsTaitEdgeColoring
+        coloring) :
+    pair.sourceCrosscutComplementOpenRegionColoringOfSerial data boundary hcubic
+        (pair.sourceCrosscutComplementSerialColoring data boundary hcubic coloring)
+        (pair.sourceCrosscutComplementSerialColoring_isTait data boundary hcubic
+          coloring hcoloring) =
+      coloring := by
+  exact openRegionColoringOfSplitVertexSideColoring_splitVertexSideColoring
+    data.toRotationSystem
+    (fun vertex => vertex ∉ pair.componentSide boundary.component)
+    (pair.sourceCrosscutComplementRetainedRoot data boundary hcubic)
+    (pair.sourceCrosscutComplementBoundarySplit data boundary) coloring hcoloring
+
+/-- Tait colorings of the source Cell in its serial presentation. -/
+abbrev SourceCrosscutComplementSerialTaitColoring
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic) :=
+  { coloring :
+      (pair.sourceCrosscutComplementTwoSidedOpenTangle data boundary hcubic).Coloring //
+    (pair.sourceCrosscutComplementTwoSidedOpenTangle data boundary hcubic).IsTaitColoring
+      coloring }
+
+/-- Restore a serial source-Cell Tait coloring as a literal open-region Tait
+coloring, retaining the proof that the result is Tait. -/
+noncomputable def sourceCrosscutComplementOpenTaitColoringOfSerial
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (coloring : pair.SourceCrosscutComplementSerialTaitColoring data boundary hcubic) :
+    pair.SourceCrosscutComplementLiteralOpenTaitColoring data boundary hcubic :=
+  ⟨pair.sourceCrosscutComplementOpenRegionColoringOfSerial data boundary hcubic
+      coloring.1 coloring.2,
+    pair.sourceCrosscutComplementOpenRegionColoringOfSerial_isTait
+      data boundary hcubic coloring.1 coloring.2⟩
+
+/-- Display a literal removed-region Tait coloring on the serial source Cell. -/
+noncomputable def sourceCrosscutComplementSerialTaitColoringOfOpen
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (coloring : pair.SourceCrosscutComplementLiteralOpenTaitColoring
+      data boundary hcubic) :
+    pair.SourceCrosscutComplementSerialTaitColoring data boundary hcubic :=
+  ⟨pair.sourceCrosscutComplementSerialColoring data boundary hcubic coloring.1,
+    pair.sourceCrosscutComplementSerialColoring_isTait data boundary hcubic
+      coloring.1 coloring.2⟩
+
+/-- The subtype-level literal-to-serial-to-literal composite is the identity. -/
+theorem sourceCrosscutComplementOpenTaitColoringOfSerial_serialTaitColoringOfOpen
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (coloring : pair.SourceCrosscutComplementLiteralOpenTaitColoring
+      data boundary hcubic) :
+    pair.sourceCrosscutComplementOpenTaitColoringOfSerial data boundary hcubic
+        (pair.sourceCrosscutComplementSerialTaitColoringOfOpen data boundary hcubic
+          coloring) =
+      coloring := by
+  apply Subtype.ext
+  exact pair.sourceCrosscutComplementOpenRegionColoringOfSerial_serialColoring
+    data boundary hcubic coloring.1 coloring.2
+
+/-- A pair of full source profiles is serially realized when one serial Tait
+coloring reconstructs to a literal coloring computing exactly those profiles.
+This retains connectivity and capped-face data rather than projecting to
+boundary colors. -/
+def SourceCrosscutComplementSerialRealizesProfiles
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (left right : pair.SourceCrosscutComplementInterfaceProfile data boundary) : Prop :=
+  ∃ coloring : pair.SourceCrosscutComplementSerialTaitColoring data boundary hcubic,
+    pair.sourceCrosscutComplementLiteralOpenLeftProfile data boundary hcubic
+        (pair.sourceCrosscutComplementOpenTaitColoringOfSerial
+          data boundary hcubic coloring).1
+        (pair.sourceCrosscutComplementOpenTaitColoringOfSerial
+          data boundary hcubic coloring).2 = left ∧
+      pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+        (pair.sourceCrosscutComplementOpenTaitColoringOfSerial
+          data boundary hcubic coloring).1
+        (pair.sourceCrosscutComplementOpenTaitColoringOfSerial
+          data boundary hcubic coloring).2 = right
+
+/-- The serial full-profile semantics is exactly positivity of the source's
+existing literal full-profile `Count` entry. -/
+theorem sourceCrosscutComplementSerialRealizesProfiles_iff
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (left right : pair.SourceCrosscutComplementInterfaceProfile data boundary) :
+    pair.SourceCrosscutComplementSerialRealizesProfiles data boundary hcubic
+        left right ↔
+      0 < pair.sourceCrosscutComplementLiteralOpenProfileCount data boundary hcubic
+        left right := by
+  constructor
+  · rintro ⟨coloring, hleft, hright⟩
+    let openColoring := pair.sourceCrosscutComplementOpenTaitColoringOfSerial
+      data boundary hcubic coloring
+    have hpositive :=
+      pair.sourceCrosscutComplementLiteralOpenProfileCount_pos_of_coloring
+        data boundary hcubic openColoring
+    simpa only [openColoring, hleft, hright] using hpositive
+  · intro hpositive
+    rcases (pair.sourceCrosscutComplementLiteralOpenProfileCount_pos_iff
+      data boundary hcubic left right).1 hpositive with
+      ⟨openColoring, hleft, hright⟩
+    let coloring := pair.sourceCrosscutComplementSerialTaitColoringOfOpen
+      data boundary hcubic openColoring
+    have hroundtrip :=
+      pair.sourceCrosscutComplementOpenTaitColoringOfSerial_serialTaitColoringOfOpen
+        data boundary hcubic openColoring
+    refine ⟨coloring, ?_, ?_⟩
+    · exact (congrArg (fun reconstructed =>
+          pair.sourceCrosscutComplementLiteralOpenLeftProfile data boundary hcubic
+            reconstructed.1 reconstructed.2) hroundtrip).trans hleft
+    · exact (congrArg (fun reconstructed =>
+          pair.sourceCrosscutComplementLiteralOpenRightProfile data boundary hcubic
+            reconstructed.1 reconstructed.2) hroundtrip).trans hright
+
 /-- The reconstructed literal coloring reads the serial input word exactly. -/
 theorem sourceCrosscutComplementOpenRegionColoringOfSerial_leftBoundaryWord
     (data : Data G)
