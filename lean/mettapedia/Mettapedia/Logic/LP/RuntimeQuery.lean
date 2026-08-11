@@ -664,6 +664,29 @@ def softIfThenElseStep {σ : LPSignature}
     choices := .softElse alternative :: state.choices
   } none
 
+/-- Enter `once/1` as a hard commit without an else marker.  Failure simply
+backtracks through the caller's pre-existing alternatives; first success
+removes every choice created by the guarded goal and resumes the caller. -/
+@[simp]
+def onceStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (goals rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let mark := state.choices.length
+  let success : ReturnFrameCore σ Instruction := {
+    continuation := rest
+    callerCutDepth := state.control.cutDepth
+    commit := .hard mark
+  }
+  .next {
+    state with
+    control := {
+      current := goals
+      cutDepth := mark
+      frames := success :: state.control.frames
+    }
+  } none
+
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
 (`src/pl-prims.c`) and body unification instructions (`src/pl-vmi.c`). -/
@@ -720,6 +743,7 @@ inductive DispatchAction (σ : LPSignature)
   | branch (left right : List Instruction)
   | ifThenElse (condition thenBranch elseBranch : List Instruction)
   | softIfThenElse (condition thenBranch elseBranch : List Instruction)
+  | once (goals : List Instruction)
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -741,6 +765,7 @@ def dispatchActionStep {σ : LPSignature}
       ifThenElseStep state condition thenBranch elseBranch rest
   | .softIfThenElse condition thenBranch elseBranch =>
       softIfThenElseStep state condition thenBranch elseBranch rest
+  | .once goals => onceStep state goals rest
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
@@ -990,6 +1015,25 @@ theorem emptyCurrentStep_soft_of_marker {σ : LPSignature}
   simp [emptyCurrentStep, hFrames, hCommit, hChoices,
     eraseSoftElseAboveBottom_marker]
   omega
+
+/-- `once/1` installs one hard-success frame at the current choice depth and
+does not create an alternative of its own. -/
+theorem onceStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (goals rest : List Instruction) :
+    onceStep state goals rest =
+      .next {
+        state with
+        control := {
+          current := goals
+          cutDepth := state.choices.length
+          frames := {
+            continuation := rest
+            callerCutDepth := state.control.cutDepth
+            commit := .hard state.choices.length
+          } :: state.control.frames
+        }
+      } none := rfl
 
 /-- A well-formed cut transition retains exactly the choices older than the
 current predicate activation.  The theorem is stated directly about the one

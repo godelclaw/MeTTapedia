@@ -154,6 +154,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .softIfThenElse condition thenBranch elseBranch =>
       .softIfThenElse (condition.map instruction) (thenBranch.map instruction)
         (elseBranch.map instruction)
+  | .once goals => .once (goals.map instruction)
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .error reason => .error reason
@@ -356,6 +357,9 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
               simp [mapDispatchAction, dispatchActionStep, softIfThenElseStep,
                 mapState, mapControl, mapBranchChoice, mapChoicePoint,
                 mapPhase, mapReturnFrame, mapStepResult, List.map_append]
+          | once goals =>
+              simp [mapDispatchAction, dispatchActionStep, onceStep,
+                mapState, mapControl, mapPhase, mapReturnFrame, mapStepResult]
           | unify left right =>
               simp [mapDispatchAction, dispatchActionStep, beginUnifyStep,
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,

@@ -45,3 +45,11 @@ def main : IO Unit := do
     (runTyped [] softIfConditionCutPreservesElse)
   renderAnswers "soft_if_then_cut_outer"
     (runTyped [] softIfThenCutPrunesOuterDisj)
+  renderAnswers "once_first" (runTyped [] onceKeepsFirstAnswer)
+  renderAnswers "once_failure" (runTyped [] onceFailureHasNoAnswer)
+  renderAnswers "once_cut_caller"
+    (runTyped [] onceCutPreservesCallerDisj)
+  renderAnswers "once_then_cut_outer"
+    (runTyped [] onceThenCutPrunesCallerDisj)
+  renderAnswers "once_restore_caller"
+    (runTyped [] onceFailureRestoresCallerAlternative)

@@ -248,7 +248,7 @@ def structuredControlIsExplicitlyUnsupported : Bool :=
   let state : State qSig := {
     memory
     control := {
-      current := [.once []]
+      current := [.neg []]
       cutDepth := 0
       frames := []
     }
@@ -448,6 +448,35 @@ def softIfThenCutPrunesOuterDisj : Goal qSig :=
       (.unify (.var .x) (.const .b)))
     (.unify (.var .x) (.const .c))
 
+def onceKeepsFirstAnswer : Goal qSig :=
+  .once (.disj (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .b)))
+
+def onceFailureHasNoAnswer : Goal qSig :=
+  .once .fail
+
+/-- A cut inside `once/1` prunes its guarded alternatives but preserves the
+caller's older right branch. -/
+def onceCutPreservesCallerDisj : Goal qSig :=
+  .disj
+    (.once (.disj
+      (.conj (.unify (.var .x) (.const .a)) (.conj .cut .fail))
+      (.unify (.var .x) (.const .b))))
+    (.unify (.var .x) (.const .c))
+
+def onceThenCutPrunesCallerDisj : Goal qSig :=
+  .disj
+    (.conj (.once .succeed)
+      (.conj (.unify (.var .x) (.const .a)) .cut))
+    (.unify (.var .x) (.const .c))
+
+/-- A failed guarded goal restores its binding before the caller's alternative
+is resumed. -/
+def onceFailureRestoresCallerAlternative : Goal qSig :=
+  .disj
+    (.once (.conj (.unify (.var .x) (.const .a)) .fail))
+    (.conj (.isVar (.var .x)) (.unify (.var .x) (.const .b)))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -476,5 +505,10 @@ def softIfThenCutPrunesOuterDisj : Goal qSig :=
 #guard runTyped [] softIfFalseUsesElse == some ([.c], 0, 0)
 #guard runTyped [] softIfConditionCutPreservesElse == some ([.c], 0, 0)
 #guard runTyped [] softIfThenCutPrunesOuterDisj == some ([.a], 0, 0)
+#guard runTyped [] onceKeepsFirstAnswer == some ([.a], 0, 0)
+#guard runTyped [] onceFailureHasNoAnswer == some ([], 0, 0)
+#guard runTyped [] onceCutPreservesCallerDisj == some ([.c], 0, 0)
+#guard runTyped [] onceThenCutPrunesCallerDisj == some ([.a], 0, 0)
+#guard runTyped [] onceFailureRestoresCallerAlternative == some ([.b], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

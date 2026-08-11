@@ -28,4 +28,12 @@ main(_) :-
     emit(soft_if_condition_cut_else,
         (((Q = a, !, fail ; Q = b)) *-> true ; Q = c), Q),
     emit(soft_if_then_cut_outer,
-        ((true *-> (R = a, !) ; R = b) ; R = c), R).
+        ((true *-> (R = a, !) ; R = b) ; R = c), R),
+    emit(once_first, once((S = a ; S = b)), S),
+    emit(once_failure, once(fail), _T),
+    emit(once_cut_caller,
+        (once((U = a, !, fail ; U = b)) ; U = c), U),
+    emit(once_then_cut_outer,
+        ((once(true), V = a, !) ; V = c), V),
+    emit(once_restore_caller,
+        (once((W = a, fail)) ; (var(W), W = b)), W).
