@@ -60,6 +60,35 @@ def atomListQuery : SourceSignature.Goal :=
     SourceSignature.nil
   ]
 
+def termIdentity : SourceSignature.Variable := {
+  spelling := "Term"
+  occurrence := 0
+}
+
+def environmentIdentity : SourceSignature.Variable := {
+  spelling := "Environment"
+  occurrence := 0
+}
+
+/-- Exercise the parser in its forward direction on the smallest nonempty
+S-expression.  This reaches pinned `dcg/basics:string_without//2`, including
+its finite-list `memberchk/2` test, rather than merely exercising PeTTa's
+writer DCGs. -/
+def readAtomQuery : SourceSignature.Goal :=
+  SourceSignature.call "phrase" [
+    SourceSignature.compound "sexpr" [
+      .var termIdentity,
+      SourceSignature.nil,
+      .var environmentIdentity
+    ],
+    SourceSignature.list [
+      SourceSignature.integer 40,
+      SourceSignature.integer 97,
+      SourceSignature.integer 41
+    ],
+    SourceSignature.nil
+  ]
+
 def integerListAux : Nat -> LP.Term SourceRuntime.Sigma.scoped ->
     Option (List Int)
   | 0, _ => none
@@ -86,6 +115,14 @@ def answerCodes? (answer : LP.RuntimeQuery.Answer SourceRuntime.Sigma) :
     | .ok term => some term
     | .error _ => none
   integerList? term
+
+def answerTerm? (answer : LP.RuntimeQuery.Answer SourceRuntime.Sigma) :
+    Option (LP.Term SourceRuntime.Sigma.scoped) := do
+  let (_, address) <- answer.queryVarMap.find? fun entry =>
+    decide (entry.1 = LP.ScopedVar.at 0 termIdentity)
+  match LP.RuntimeReadback.Heap.readTerm answer.memory.heap address with
+  | .ok term => some term
+  | .error _ => none
 
 def renderCodes (values : List Int) : String :=
   "[" ++ String.intercalate "," (values.map toString) ++ "]"
@@ -130,6 +167,31 @@ def execute (program : SourceSignature.Program)
   | .open _ => throw <| IO.userError "runtime remained open after answer"
   | .terminal _ _ => throw <| IO.userError "runtime did not complete"
 
+def executeTerm (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) :
+    IO (LP.Term SourceRuntime.Sigma.scoped × Nat × Nat) := do
+  let session <- match SourceRuntime.openEmpty program goal with
+    | .ok session => pure session
+    | .error _ => throw <| IO.userError "runtime failed to open"
+  let (term, resumed) <- match SourceRuntime.pullSession 32768 session with
+    | .answer answer resumed =>
+        match answerTerm? answer with
+        | some term => pure (term, resumed)
+        | none => throw <| IO.userError "term answer readback failed"
+    | .open _ => throw <| IO.userError "runtime remained open"
+    | .terminal (.completed _) _ =>
+        throw <| IO.userError "runtime completed without a term answer"
+    | .terminal (.runtimeError error _) _ =>
+        throw <| IO.userError s!"runtime error: {repr error}"
+    | .terminal (.raised packet _) _ =>
+        throw <| IO.userError s!"runtime raised: {renderTerm packet.term}"
+  match SourceRuntime.pullSession 32768 resumed with
+  | .terminal (.completed memory) _ =>
+      pure (term, memory.heap.size, memory.trail.size)
+  | .answer _ _ => throw <| IO.userError "runtime produced an extra term answer"
+  | .open _ => throw <| IO.userError "runtime remained open after term answer"
+  | .terminal _ _ => throw <| IO.userError "runtime term query did not complete"
+
 def main (arguments : List String) : IO Unit := do
   let [parserPath, dcgBasicsPath, listsPath, errorPath] := arguments
     | throw <| IO.userError
@@ -143,7 +205,11 @@ def main (arguments : List String) : IO Unit := do
   let (emptyCodes, emptyHeap, emptyTrail) <- execute program query
   let (atomListCodes, atomListHeap, atomListTrail) <-
     execute program atomListQuery
+  let (readAtom, readAtomHeap, readAtomTrail) <-
+    executeTerm program readAtomQuery
   IO.println s!"empty_codes={renderCodes emptyCodes}"
   IO.println s!"empty_cleanup={emptyHeap}/{emptyTrail}"
   IO.println s!"atom_list_codes={renderCodes atomListCodes}"
   IO.println s!"atom_list_cleanup={atomListHeap}/{atomListTrail}"
+  IO.println s!"read_atom={renderTerm readAtom}"
+  IO.println s!"read_cleanup={readAtomHeap}/{readAtomTrail}"

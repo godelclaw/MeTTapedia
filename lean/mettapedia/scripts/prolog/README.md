@@ -174,11 +174,13 @@ scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
 The corresponding source-execution gate then runs the real pinned
-`parser.pl` DCG clauses `phrase(swrite_exp([]), Codes)` and
-`phrase(swrite_exp([a]), Codes)` through the same
+`parser.pl` DCG clauses `phrase(swrite_exp([]), Codes)`,
+`phrase(swrite_exp([a]), Codes)`, and
+`phrase(sexpr(Term, [], _), "(a)")` through the same
 canonical `Logic.Prolog.SourceRuntime`, with those 297 linked clauses and no
 translated replacement.  It requires the exact SWI answers `[40,41]` and
-`[40,97,41]`, respectively, and a clean final heap and trail after both runs:
+`[40,97,41]` for the writers and `[a]` for the reader, together with a clean
+final heap and trail after all three runs:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa

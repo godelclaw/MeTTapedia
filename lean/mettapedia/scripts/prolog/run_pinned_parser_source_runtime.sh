@@ -39,13 +39,15 @@ empty_codes=[40,41]
 empty_cleanup=0/0
 atom_list_codes=[40,97,41]
 atom_list_cleanup=0/0
+read_atom=[|](a,[])
+read_cleanup=0/0
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
 swipl -q -s "$TMP/src/parser.pl" \
-  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, halt" \
+  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, phrase(sexpr(ReadAtom, [], _), [40,97,41]), write_canonical(ReadAtom), nl, halt" \
   > "$TMP/swi.out"
-printf '%s\n' '[40,41]' '[40,97,41]' > "$TMP/swi.expected"
+printf '%s\n' '[40,41]' '[40,97,41]' '[a]' > "$TMP/swi.expected"
 diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
-echo "Pinned parser source runtime: PASS (empty and atomic-list writes exact; clean closure)"
+echo "Pinned parser source runtime: PASS (writes and one atomic read exact; clean closure)"

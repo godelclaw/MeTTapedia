@@ -19,6 +19,48 @@ private def succeeds (source : String) (goal : SourceSignature.Goal) : Bool :=
   | some program =>
       SourceRuntimeRegression.runCount program goal == some (1, 0, 0)
 
+/-- The first three clauses are SWI 10.1.9 `library(lists):member/2`; the
+remaining clauses are local discriminators for the `memberchk/2` expansion. -/
+def memberRegressionSource : String :=
+  "member(El, [H|T]) :- member_(T, El, H).\n\
+   member_(_, El, El).\n\
+   member_([H|T], El, _) :- member_(T, El, H).\n\
+   ordinary(X) :- memberchk(X, [a,b]).\n\
+   dynamic(X) :- call(memberchk(X, [a,b])).\n\
+   restored(X) :- memberchk(pair(X,X), [pair(a,b),pair(c,c)])."
+
+def memberRegressionProgram : SourceSignature.Program :=
+  load memberRegressionSource |>.getD []
+
+def memberchkOrdinaryGoal : SourceSignature.Goal :=
+  SourceSignature.call "ordinary" [var "X" 0]
+
+def memberchkDynamicGoal : SourceSignature.Goal :=
+  SourceSignature.call "dynamic" [var "X" 0]
+
+def memberchkRestoredGoal : SourceSignature.Goal :=
+  SourceSignature.call "restored" [var "X" 0]
+
+/-- Source `memberchk/2` commits to the first answer of the real loaded
+`member/2` definition instead of installing a second list scanner. -/
+def memberchkUsesLoadedMemberOnce : Bool :=
+  SourceRuntimeRegression.runAtoms
+      memberRegressionProgram memberchkOrdinaryGoal ==
+    some (["a"], 0, 0)
+
+/-- Heap-built meta-calls use the same typed expansion as written source. -/
+def dynamicMemberchkUsesSameExpansion : Bool :=
+  SourceRuntimeRegression.runAtoms
+      memberRegressionProgram memberchkDynamicGoal ==
+    some (["a"], 0, 0)
+
+/-- A failed earlier member candidate cannot leak trial bindings into the
+selected candidate; the canonical choice checkpoint restores `X` first. -/
+def memberchkRestoresBeforeSelectedCandidate : Bool :=
+  SourceRuntimeRegression.runAtoms
+      memberRegressionProgram memberchkRestoredGoal ==
+    some (["c"], 0, 0)
+
 def terminalSharingExecutes : Bool :=
   succeeds "pair(X) --> [X, X]."
     (SourceSignature.call "pair"
@@ -138,6 +180,9 @@ def variableBodyUsesPhrase : Bool :=
   | _ => false
 
 #guard terminalSharingExecutes
+#guard memberchkUsesLoadedMemberOnce
+#guard dynamicMemberchkUsesSameExpansion
+#guard memberchkRestoresBeforeSelectedCandidate
 #guard bracedGoalExecutes
 #guard disjunctionExecutes
 #guard stringTerminalExecutes

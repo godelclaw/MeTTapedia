@@ -216,6 +216,12 @@ def decodeCallableAux : Nat → Heap Sigma.scoped → Addr → List Addr →
             | "once", [goal] => do
                 let decoded ← decodeCallableAux fuel heap goal []
                 pure [.once decoded]
+            /- Keep heap-built `call(memberchk(E,L))` on the same typed
+            expansion as source `memberchk/2`.  Decoding is read-only; the
+            shared engine runs the loaded `member/2` clauses and owns the
+            once checkpoint.  This is the finite proper-list law only. -/
+            | "memberchk", [element, list] =>
+                pure [.once [ordinaryCall "member" [element, list]]]
             | "\\+", [goal] => do
                 let decoded ← decodeCallableAux fuel heap goal []
                 pure [.neg decoded]

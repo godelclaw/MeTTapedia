@@ -100,6 +100,18 @@ def main : IO Unit := do
     (runTyped [] onceThenCutPrunesCallerDisj)
   renderAnswers "once_restore_caller"
     (runTyped [] onceFailureRestoresCallerAlternative)
+  renderStringAnswers "memberchk_first"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms
+      Mettapedia.Logic.Prolog.ReaderDCGRegression.memberRegressionProgram
+      Mettapedia.Logic.Prolog.ReaderDCGRegression.memberchkOrdinaryGoal)
+  renderStringAnswers "memberchk_dynamic"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms
+      Mettapedia.Logic.Prolog.ReaderDCGRegression.memberRegressionProgram
+      Mettapedia.Logic.Prolog.ReaderDCGRegression.memberchkDynamicGoal)
+  renderStringAnswers "memberchk_restores"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms
+      Mettapedia.Logic.Prolog.ReaderDCGRegression.memberRegressionProgram
+      Mettapedia.Logic.Prolog.ReaderDCGRegression.memberchkRestoredGoal)
   renderStringAnswers "meta_dynamic_disj"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.dynamicDisjunction)

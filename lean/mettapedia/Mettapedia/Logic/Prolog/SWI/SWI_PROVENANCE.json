@@ -98,6 +98,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "boot/init.pl",
+      "sha256": "bc95f48bff7b19325c6a6462dbe03203b2d4df1b77ca69a68680ad6d8102ce38"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/os/pl-fmt.c",
       "sha256": "4e466c4b11c2af60f323f11e23e4a9c3b8fe853410a778d6d5a7f2fa0f4be27f"
     },
@@ -402,6 +407,36 @@
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
         "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.memberchk-finite-list",
+      "project": "swi-prolog",
+      "sources": ["boot/init.pl", "library/lists.pl"],
+      "anchors": [
+        "memberchk(E, List)",
+        "Semantically equivalent to once(member(E,List))",
+        "member(El, [H|T])",
+        "member_(T, El, H)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
         "scripts/prolog/pinned_parser_source_runtime.lean",
         "scripts/prolog/run_pinned_parser_source_runtime.sh"
       ]

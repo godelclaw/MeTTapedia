@@ -84,6 +84,14 @@ private def toGoalAux : Nat -> SourceSignature.Term ->
                   let parsedThen <- toGoalAux fuel thenBranch
                   pure (.softIfThenElse parsedCondition parsedThen .fail)
               | "once", [goal] => .once <$> toGoalAux fuel goal
+              /- SWI defines `memberchk/2` as semantically equivalent to
+              `once(member/2)`.  This source elaboration deliberately covers
+              that finite proper-list law; SWI's additional partial- and
+              cyclic-list error behavior remains outside this rule.  The
+              actual `member/2` clauses still come from the loaded source
+              program and execute on the shared choice/checkpoint machinery. -/
+              | "memberchk", [element, list] =>
+                  .ok (.once (ordinaryCall "member" [element, list]))
               | "\\+", [goal] => .neg <$> toGoalAux fuel goal
               | "=", [left, right] => .ok (.unify left right)
               | "\\=", [left, right] => .ok (.notUnify left right)
