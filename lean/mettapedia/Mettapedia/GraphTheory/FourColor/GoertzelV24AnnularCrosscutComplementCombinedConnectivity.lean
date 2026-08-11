@@ -333,6 +333,63 @@ theorem sourceCrosscutComplementLiteralOpenProfile_serialConnectivity
           data boundary hcubic coloring hcoloring (rightIndex second)]
         exact hsecondColor
 
+/-- Positive `Count` support is therefore equivalent to one realizable
+combined state whose two restrictions are the requested matrix indices and
+which satisfies the finite serial-connectivity law.  This is the support-level
+bridge from the source's matrix semantics to the combined four-port state. -/
+theorem sourceCrosscutComplementLiteralOpenProfileCount_pos_iff_exists_combined_serial
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (left right : pair.SourceCrosscutComplementInterfaceProfile data boundary) :
+    0 < pair.sourceCrosscutComplementLiteralOpenProfileCount data boundary
+        hcubic left right ↔
+      ∃ combined : pair.SourceCrosscutComplementCombinedProfile data boundary,
+        pair.SourceCrosscutComplementCombinedProfileRealizable data boundary
+            hcubic combined ∧
+          CorridorCutProfile.restrictCrossings combined
+              (pair.sourceCrosscutComplementLeftCombinedIndex data boundary) =
+            left ∧
+          CorridorCutProfile.restrictCrossings combined
+              (pair.sourceCrosscutComplementRightCombinedIndex data boundary) =
+            right ∧
+          SerialProfileConnectivity left combined right
+            (pair.sourceCrosscutComplementLeftCombinedIndex data boundary)
+            (pair.sourceCrosscutComplementRightCombinedIndex data boundary) := by
+  constructor
+  · intro hpositive
+    rcases (pair.sourceCrosscutComplementLiteralOpenProfileCount_pos_iff
+        data boundary hcubic left right).1 hpositive with
+      ⟨coloring, hleft, hright⟩
+    let combined := pair.sourceCrosscutComplementLiteralOpenProfile data
+      boundary hcubic coloring.1 coloring.2
+    have hrestrictLeft : CorridorCutProfile.restrictCrossings combined
+          (pair.sourceCrosscutComplementLeftCombinedIndex data boundary) = left :=
+      (pair.sourceCrosscutComplementLiteralOpenProfile_restrict_left data
+        boundary hcubic coloring.1 coloring.2).trans hleft
+    have hrestrictRight : CorridorCutProfile.restrictCrossings combined
+          (pair.sourceCrosscutComplementRightCombinedIndex data boundary) = right :=
+      (pair.sourceCrosscutComplementLiteralOpenProfile_restrict_right data
+        boundary hcubic coloring.1 coloring.2).trans hright
+    refine ⟨combined, ⟨coloring, rfl⟩, hrestrictLeft, hrestrictRight, ?_⟩
+    rw [← hrestrictLeft, ← hrestrictRight]
+    exact pair.sourceCrosscutComplementLiteralOpenProfile_serialConnectivity
+      data boundary hcubic coloring.1 coloring.2
+  · rintro ⟨combined, hrealizable, hleft, hright, _hserial⟩
+    exact
+      (pair.sourceCrosscutComplementLiteralOpenProfileCount_pos_iff_exists_combined
+        data boundary hcubic left right).2
+        ⟨combined, hrealizable, hleft, hright⟩
+
 end SeparatedAlignedSimpleDualCrosscuts
 
 end
