@@ -1085,6 +1085,116 @@ theorem SourceLocalLayerPairWitness.secondWalk_crossingEdge_one_eq_afterThirdEdg
   simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
     LocalLayerPair.secondWalk, outgoingDart] using hshared
 
+/-- A two-step facial-dual walk has exactly the two explicitly identified
+crossing edges.  This tiny finite reader is kept local to the source layer:
+the facts passed to it are genuine edge equalities, not a cardinality claim. -/
+private theorem dualWalkCrossingEdges_eq_pair_of_length_two
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring}
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (walk : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk start finish)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hlength : walk.length = 2) (first second : G.edgeSet)
+    (hzero : dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      hunique walk ⟨0, by omega⟩ = first)
+    (hone : dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      hunique walk ⟨1, by omega⟩ = second) :
+    dualWalkCrossingEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      hunique walk = {first, second} := by
+  ext edge
+  rw [mem_dualWalkCrossingEdges_iff]
+  constructor
+  · rintro ⟨step, hstep⟩
+    have hstepLt : step.val < 2 := by simpa [hlength] using step.isLt
+    have hcases : step.val = 0 ∨ step.val = 1 := by omega
+    simp only [Finset.mem_insert, Finset.mem_singleton]
+    rcases hcases with hfirst | hsecond
+    · have hcross : dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+          walk step = first := by
+        have hstepEq : step = (⟨0, by omega⟩ : Fin walk.length) := by
+          apply Fin.ext
+          exact hfirst
+        simpa only [hstepEq] using hzero
+      exact Or.inl (hstep.symm.trans hcross)
+    · have hcross : dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+          walk step = second := by
+        have hstepEq : step = (⟨1, by omega⟩ : Fin walk.length) := by
+          apply Fin.ext
+          exact hsecond
+        simpa only [hstepEq] using hone
+      exact Or.inr (hstep.symm.trans hcross)
+  · simp only [Finset.mem_insert, Finset.mem_singleton]
+    intro hmem
+    rcases hmem with hfirst | hsecond
+    · refine ⟨⟨0, by omega⟩, ?_⟩
+      exact hzero.trans hfirst.symm
+    · refine ⟨⟨1, by omega⟩, ?_⟩
+      exact hone.trans hsecond.symm
+
+/-- The literal Cell-3 dual loop cuts the four source edges read from its
+two flanking slots and their two locally cubic corners.  This is the exact
+finite wall, not merely a four-edge cardinality bound. -/
+theorem SourceLocalLayerPairWitness.localLayerLoop_crossingEdges_eq_sourceCorners
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    dualWalkCrossingEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      witness.toLocalLayerPair.localLayerLoop =
+      {web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS witness.placement.root witness.before.1),
+        web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS witness.placement.root witness.after.1)} ∪
+      {web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.before.1))),
+        web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.placement.outgoingPosition)))} := by
+  have hfirstLength : witness.toLocalLayerPair.firstWalk.length = 2 := by
+    simp [LocalLayerPair.firstWalk]
+  have hsecondLength : witness.toLocalLayerPair.secondWalk.length = 2 := by
+    simp [LocalLayerPair.secondWalk]
+  have hfirst := dualWalkCrossingEdges_eq_pair_of_length_two
+    witness.toLocalLayerPair.firstWalk hunique hfirstLength
+    (web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS witness.placement.root witness.before.1))
+    (web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS witness.placement.root witness.after.1))
+    witness.firstWalk_crossingEdge_zero_eq_beforeEdge
+    witness.firstWalk_crossingEdge_one_eq_afterEdge
+  have hsecond := dualWalkCrossingEdges_eq_pair_of_length_two
+    witness.toLocalLayerPair.secondWalk hunique hsecondLength
+    (web.annular.RS.edgeOf
+      (web.annular.RS.rho (web.annular.RS.phi
+        (faceCycleDart web.annular.RS witness.placement.root
+          witness.before.1))))
+    (web.annular.RS.edgeOf
+      (web.annular.RS.rho (web.annular.RS.phi
+        (faceCycleDart web.annular.RS witness.placement.root
+          witness.placement.outgoingPosition))))
+    witness.secondWalk_crossingEdge_zero_eq_beforeThirdEdge
+    witness.secondWalk_crossingEdge_one_eq_afterThirdEdge
+  rw [LocalLayerPair.localLayerLoop, dualWalkCrossingEdges_append,
+    dualWalkCrossingEdges_reverse, hfirst, hsecond]
+
 end LocalLayerFormation
 
 end Instance
