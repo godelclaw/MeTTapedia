@@ -61,13 +61,13 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 
 | File | Contents |
 |------|----------|
-| `Syntax` | canonical `Goal` and `Clause` over `Logic.LP`, exact pure-Horn embedding |
+| `Syntax` | canonical `Goal` and `Clause` over `Logic.LP`, exact pure-Horn embedding, optional source-clause provenance |
 | `SourceSignature` | name/arity-indexed concrete source symbols and exact atomic payloads |
 | `ReaderLexer` | SWI-shaped located tokens for the concrete source reader |
 | `ReaderNumber` | exact integer, character-code, and IEEE float token interpretation |
 | `ReaderOperator` | checked ISO/SWI operator declarations and dynamic updates |
 | `ReaderTerm` | operator-aware parsing directly into canonical `Logic.LP.Term` |
-| `ReaderSource` | direct clause/directive/DCG classification on canonical terms |
+| `ReaderSource` | direct clause/directive/DCG classification and normalized clause provenance on canonical terms |
 | `ReaderLoader` | sequential term loading with explicit between-term effects |
 | `ReaderDirective` | local and imported read-time operator effects |
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |

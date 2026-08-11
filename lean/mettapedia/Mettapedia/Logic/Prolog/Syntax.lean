@@ -134,11 +134,19 @@ end Goal
 
 /-! ## Prolog clauses and the exact pure-Horn embedding -/
 
-/-- A Prolog clause has an LP head and a control-aware body. -/
+/-- A Prolog clause has an LP head and a control-aware body.
+
+`sourceTerm` retains the normalized ordinary clause term when a clause enters
+through the source reader or a dynamic database operation.  Search and clause
+materialization do not inspect it.  Database reflection such as `retract/1`
+may use it only after the source-language service checks it against the same
+reader that produced `head` and `body`.  Hand-constructed and embedded LP
+clauses may leave it absent. -/
 @[ext]
 structure Clause (sigma : LP.LPSignature) where
   head : LP.Atom sigma
   body : Goal sigma
+  sourceTerm : Option (LP.Term sigma) := none
 
 /-- A source-ordered Prolog program. -/
 abbrev Program (sigma : LP.LPSignature) := List (Clause sigma)
@@ -150,6 +158,7 @@ order. -/
 def ofLP {sigma : LP.LPSignature} (clause : LP.Clause sigma) : Clause sigma where
   head := clause.head
   body := Goal.calls clause.body
+  sourceTerm := none
 
 /-- Project a clause back to LP exactly when its body is a pure conjunction of
 ordinary calls. -/
@@ -182,6 +191,13 @@ def atScope {sigma : LP.LPSignature} (scope : Nat)
     (clause : Clause sigma) : Clause sigma.scoped where
   head := clause.head.atScope scope
   body := clause.body.atScope scope
+  sourceTerm := clause.sourceTerm.map (LP.Term.atScope scope)
+
+@[simp]
+theorem atScope_sourceTerm {sigma : LP.LPSignature} (scope : Nat)
+    (clause : Clause sigma) :
+    (atScope scope clause).sourceTerm =
+      clause.sourceTerm.map (LP.Term.atScope scope) := rfl
 
 @[simp]
 theorem atScope_ofLP {sigma : LP.LPSignature} (scope : Nat)
@@ -192,6 +208,7 @@ theorem atScope_ofLP {sigma : LP.LPSignature} (scope : Nat)
       apply Clause.ext
       · rfl
       · exact Goal.atScope_calls scope body
+      · rfl
 
 end Clause
 

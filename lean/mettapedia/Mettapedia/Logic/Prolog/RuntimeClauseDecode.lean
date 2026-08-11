@@ -99,6 +99,27 @@ def classifyClause (term : LP.Term Sigma.scoped) :
   | .ok (.clause clause) => .ok clause
   | .ok _ => .error .notClause
 
+/-- Every successful dynamic clause classification carries the normalized
+source term needed by later reflective operations.  The fact is inherited
+from `ReaderSource`; the heap decoder does not invent a parallel clause
+representation. -/
+theorem classifyClause_sourceTerm_present
+    {term : LP.Term Sigma.scoped} {clause : SourceSignature.Clause}
+    (hClassify : classifyClause term = .ok clause) :
+    clause.sourceTerm.isSome := by
+  unfold classifyClause at hClassify
+  cases hSource : ReaderSource.classify (rebaseTerm term) with
+  | error error => simp [hSource] at hClassify
+  | ok form =>
+      cases form with
+      | clause decoded =>
+          simp [hSource] at hClassify
+          subst clause
+          exact ReaderSource.classify_clause_sourceTerm_present hSource
+      | directive goal => simp [hSource] at hClassify
+      | query goal => simp [hSource] at hClassify
+      | dcg head body => simp [hSource] at hClassify
+
 /-- Read and decode one heap root.  Rational terms are rejected explicitly by
 the shared finite-readback boundary; no truncation or cyclic unfolding occurs.
 -/

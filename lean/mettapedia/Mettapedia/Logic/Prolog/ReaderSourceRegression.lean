@@ -1,4 +1,5 @@
 import Mettapedia.Logic.Prolog.ReaderSource
+import Mettapedia.Logic.Prolog.ReaderTermRegression
 
 namespace Mettapedia.Logic.Prolog.ReaderSourceRegression
 
@@ -96,5 +97,64 @@ def readShape (source : String) : Option FormShape :=
 #guard readShape "p :- Goal." == some (.clause "p" 0 (.call "call" 1))
 
 #guard readShape "1." == none
+
+def readClauseSourceTerm (source : String) : Option SourceSignature.Term := do
+  let result <- (ReaderTerm.readOne defaults source).toOption
+  let form <- (classify result.term).toOption
+  match form with
+  | .clause clause => clause.sourceTerm
+  | _ => none
+
+def sourceTermExact (source : String) (expected : SourceSignature.Term) : Bool :=
+  match readClauseSourceTerm source with
+  | some actual =>
+      ReaderTermRegression.shape actual == ReaderTermRegression.shape expected
+  | none => false
+
+-- Facts are normalized to the same explicit `Head :- true` data shape that
+-- `retract/1` matches in SWI, rather than retaining an execution-only AST.
+#guard sourceTermExact "fact(a)." (normalizedClauseTerm
+  (compound "fact" [atom "a"]) (atom "true"))
+
+-- The original control spelling is retained before typed classification
+-- forgets that the left child of `;/2` was syntactically `->/2`.
+#guard sourceTermExact "p :- (a -> b ; c)." (normalizedClauseTerm
+  (atom "p")
+  (compound ";" [compound "->" [atom "a", atom "b"], atom "c"]))
+
+def sourceTermReclassifies (source : String) : Bool :=
+  match ReaderTerm.readOne defaults source with
+  | .error _ => false
+  | .ok result =>
+      match classify result.term with
+      | .ok (.clause original) =>
+          match original.sourceTerm with
+          | none => false
+          | some normalized =>
+              match classify normalized with
+              | .ok (.clause replayed) =>
+                  formShape (.clause original) == formShape (.clause replayed) &&
+                    replayed.sourceTerm.map ReaderTermRegression.shape ==
+                      some (ReaderTermRegression.shape normalized)
+              | _ => false
+      | _ => false
+
+#guard sourceTermReclassifies
+  "p(X) :- (q(X), ! ; catch(r(X), E, throw(E)))."
+
+def ambiguousControlShape : Option GoalShape :=
+  match toGoal (compound ";" [
+      compound "->" [atom "a", atom "b"], atom "c"]) with
+  | .ok goal => some (goalShape goal)
+  | .error _ => none
+
+-- A total typed-AST reifier would be unsound: this ordinary term is
+-- necessarily classified as hard if-then-else, not as a `disj` whose left
+-- call happens to be named `->/2`. Retaining the source term is therefore
+-- load-bearing rather than duplicate data.
+#guard ambiguousControlShape == some
+  (.ifThenElse (.call "a" 0) (.call "b" 0) (.call "c" 0))
+#guard ambiguousControlShape != some
+  (.disj (.call "->" 2) (.call "c" 0))
 
 end Mettapedia.Logic.Prolog.ReaderSourceRegression

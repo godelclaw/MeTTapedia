@@ -368,6 +368,8 @@
       "implementation_evidence": [
         "Mettapedia/Logic/LP/RuntimeDatabase.lean",
         "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/Syntax.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
         "Mettapedia/Logic/Prolog/RuntimeClauseDecode.lean",
         "Mettapedia/Logic/Prolog/RuntimeControl.lean",
         "Mettapedia/Logic/Prolog/SourceRuntime.lean"
@@ -376,11 +378,13 @@
       "proof_evidence": [
         "Mettapedia/Logic/LP/RuntimeDatabase.lean",
         "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
         "Mettapedia/Logic/Prolog/RuntimeClauseDecodeAudit.lean",
         "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
       ],
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
         "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
         "scripts/prolog/runtime_control_differential.lean",
         "scripts/prolog/runtime_control_oracle.pl",
