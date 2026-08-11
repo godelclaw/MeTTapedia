@@ -163,6 +163,15 @@ arity, ordered children, variable spelling and sharing, and atomic payloads.
 The comparison fails on a version mismatch, a changed term count, malformed
 JSON, or any structural difference.
 
+The source-unit closure gate reads pinned PeTTa's `parser.pl` together with
+SWI 10.1.9's real `library(dcg/basics)` source.  It checks 88 canonical clauses
+after DCG expansion and retains `library(lists)` and `library(error)` as
+explicit external dependencies rather than silently dropping them:
+
+```bash
+scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
+```
+
 ### Shared-runtime control differential
 
 The canonical runtime's structured-choice path has a separate observable gate:

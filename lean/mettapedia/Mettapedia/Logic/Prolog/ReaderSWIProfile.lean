@@ -69,10 +69,12 @@ private def pathAux : Nat -> SourceSignature.Term -> Option String
       | _, _ => none
   | _ + 1, _ => none
 
-private def path? (term : SourceSignature.Term) : Option String :=
+def path? (term : SourceSignature.Term) : Option String :=
   pathAux (term.size + 1) term
 
-private def sourceKey? (term : SourceSignature.Term) : Option String :=
+/-- Canonical stable spelling used by both the read-time operator profile and
+source-unit dependency resolvers. -/
+def sourceKey? (term : SourceSignature.Term) : Option String :=
   match term with
   | .const (.atom name) => some name
   | .app indicator arguments =>

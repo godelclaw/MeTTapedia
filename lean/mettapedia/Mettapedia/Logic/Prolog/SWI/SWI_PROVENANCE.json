@@ -153,6 +153,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "library/dcg/basics.pl",
+      "sha256": "7beb43f3161cb3eaac4903cb7fdb3061d75b39a26934af0806ee60569c49edd8"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-bag.c",
       "sha256": "94818d9d14312c5e3776436d33f46762653dd0c04ca578827aa5417004b14182"
     },
@@ -556,7 +561,12 @@
     {
       "id": "runtime.source-loader",
       "project": "swi-prolog",
-      "sources": ["src/pl-srcfile.c", "src/pl-comp.c", "boot/dcg.pl"],
+      "sources": [
+        "src/pl-srcfile.c",
+        "src/pl-comp.c",
+        "boot/dcg.pl",
+        "library/dcg/basics.pl"
+      ],
       "anchors": [
         "startReconsultFile",
         "endReconsult",
@@ -568,14 +578,19 @@
       "implementation_status": "adapted",
       "implementation_evidence": [
         "Mettapedia/Logic/Prolog/ReaderProgram.lean",
-        "Mettapedia/Logic/Prolog/ReaderDCG.lean"
+        "Mettapedia/Logic/Prolog/ReaderDCG.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnit.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitClosure.lean"
       ],
       "proof_status": "partial",
       "proof_evidence": [
         "Mettapedia/Logic/Prolog/ReaderProgramRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderProgramAudit.lean",
         "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean",
-        "Mettapedia/Logic/Prolog/ReaderDCGAudit.lean"
+        "Mettapedia/Logic/Prolog/ReaderDCGAudit.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitClosureRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderUnitAudit.lean"
       ],
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
@@ -585,6 +600,8 @@
         "scripts/prolog/pinned_dcg_expansion.lean",
         "scripts/prolog/pinned_dcg_oracle.pl",
         "scripts/prolog/run_pinned_dcg_expansion.sh",
+        "scripts/prolog/pinned_parser_unit_closure.lean",
+        "scripts/prolog/run_pinned_parser_unit_closure.sh",
         "scripts/prolog/runtime_control_differential.lean",
         "scripts/prolog/runtime_control_oracle.pl",
         "scripts/prolog/run_runtime_control_differential.sh"

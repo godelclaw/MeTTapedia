@@ -24,6 +24,11 @@ import Mettapedia.Logic.Prolog.ReaderLoaderRegression
 import Mettapedia.Logic.Prolog.ReaderProgram
 import Mettapedia.Logic.Prolog.ReaderProgramRegression
 import Mettapedia.Logic.Prolog.ReaderProgramAudit
+import Mettapedia.Logic.Prolog.ReaderUnit
+import Mettapedia.Logic.Prolog.ReaderUnitRegression
+import Mettapedia.Logic.Prolog.ReaderUnitClosure
+import Mettapedia.Logic.Prolog.ReaderUnitClosureRegression
+import Mettapedia.Logic.Prolog.ReaderUnitAudit
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.RuntimeControlSoundness
@@ -85,6 +90,9 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
 | `ReaderProgram` | strict clause/DCG admission into the canonical executable program |
 | `ReaderProgramAudit` | trusted-base gate for exact clause-only admission |
+| `ReaderUnit` | source-ordered module/import/declaration/initializer obligations over canonical clauses and goals |
+| `ReaderUnitClosure` | finite import discovery and collision-safe flat linking with unresolved obligations retained |
+| `ReaderUnitAudit` | trusted-base gate for exact canonical clause admission into source units |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |
 | `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
