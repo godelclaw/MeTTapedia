@@ -48,53 +48,82 @@ inductive QueryError where
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
 
-/-- Caller state saved while one predicate body is active. -/
-structure ReturnFrame (σ : LPSignature) where
-  continuation : List (RuntimeAtom σ.scoped)
+/-- Caller state saved while one predicate body is active.  The instruction
+type is abstract so pure LP atoms and typed Prolog control share this exact
+frame representation. -/
+structure ReturnFrameCore (σ : LPSignature) (Instruction : Type*) where
+  continuation : List Instruction
   callerCutDepth : Nat
 
-/-- Backtrackable execution control.  `cutDepth` counts the choice points that
-predate the current predicate activation. -/
-structure Control (σ : LPSignature) where
-  current : List (RuntimeAtom σ.scoped)
+/-- The established pure-LP return frame. -/
+abbrev ReturnFrame (σ : LPSignature) :=
+  ReturnFrameCore σ (RuntimeAtom σ.scoped)
+
+/-- Backtrackable execution control, generic only in the instruction payload.
+`cutDepth` counts the choice points that predate the current predicate
+activation. -/
+structure ControlCore (σ : LPSignature) (Instruction : Type*) where
+  current : List Instruction
   cutDepth : Nat
-  frames : List (ReturnFrame σ)
+  frames : List (ReturnFrameCore σ Instruction)
+
+/-- The established pure-LP control state. -/
+abbrev Control (σ : LPSignature) :=
+  ControlCore σ (RuntimeAtom σ.scoped)
 
 /-- A frozen, ordered clause cursor.  `checkpoint` is the state immediately
-before entering this predicate call. -/
-structure ClauseCursor (σ : LPSignature) where
+before entering this predicate call.  Retained clauses use the source-clause
+type of the one instantiated language. -/
+structure ClauseCursorCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   checkpoint : Memory.Checkpoint
   goal : RuntimeAtom σ.scoped
-  clauses : List (Clause σ)
+  clauses : List SourceClause
   cutDepth : Nat
-  frames : List (ReturnFrame σ)
+  frames : List (ReturnFrameCore σ Instruction)
+
+/-- The established pure-LP clause cursor. -/
+abbrev ClauseCursor (σ : LPSignature) :=
+  ClauseCursorCore σ (RuntimeAtom σ.scoped) (Clause σ)
 
 /-- Information retained while the graph unifier executes one selected head. -/
-structure Attempt (σ : LPSignature) where
-  body : List (RuntimeAtom σ.scoped)
+structure AttemptCore (σ : LPSignature) (Instruction : Type*) where
+  body : List Instruction
   cutDepth : Nat
-  frames : List (ReturnFrame σ)
+  frames : List (ReturnFrameCore σ Instruction)
+
+/-- The established pure-LP unification attempt. -/
+abbrev Attempt (σ : LPSignature) :=
+  AttemptCore σ (RuntimeAtom σ.scoped)
 
 /-- Query phases are explicit so retry, restore, and every unification
 microstep remain resumable. -/
-inductive Phase (σ : LPSignature) where
+inductive PhaseCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   | dispatch
-  | select (cursor : ClauseCursor σ)
-  | unifying (attempt : Attempt σ)
+  | select (cursor : ClauseCursorCore σ Instruction SourceClause)
+  | unifying (attempt : AttemptCore σ Instruction)
       (machine : RuntimeUnification.Machine σ.scoped)
   | backtrack
   | afterAnswer
 
+/-- The established pure-LP query phase. -/
+abbrev Phase (σ : LPSignature) :=
+  PhaseCore σ (RuntimeAtom σ.scoped) (Clause σ)
+
 /-- One live query.  `nextScope` is persistent across choice restoration; the
 heap, control, and choice stack are the backtrackable lane. -/
-structure State (σ : LPSignature) where
+structure StateCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   memory : Memory σ.scoped
-  control : Control σ
-  choices : List (ClauseCursor σ)
+  control : ControlCore σ Instruction
+  choices : List (ClauseCursorCore σ Instruction SourceClause)
   queryCheckpoint : Memory.Checkpoint
   queryVarMap : List (ScopedVar σ.vars × Addr)
   nextScope : Nat
-  phase : Phase σ
+  phase : PhaseCore σ Instruction SourceClause
+
+/-- The established pure-LP query state.  Existing execution and soundness
+theorems continue to use this exact specialization. -/
+abbrev State (σ : LPSignature) :=
+  StateCore σ (RuntimeAtom σ.scoped) (Clause σ)
 
 /-- A yielded answer keeps the live memory and roots of the source query
 variables.  The state returned alongside it is resumed for the next answer. -/
@@ -109,15 +138,23 @@ inductive Terminal (σ : LPSignature) where
   | completed (memory : Memory σ.scoped)
   | runtimeError (error : QueryError) (memory : Memory σ.scoped)
 
-inductive StepResult (σ : LPSignature) where
-  | next (state : State σ) (observation : Option (Observation σ))
+inductive StepResultCore (σ : LPSignature) (Instruction SourceClause : Type*) where
+  | next (state : StateCore σ Instruction SourceClause)
+      (observation : Option (Observation σ))
   | terminal (result : Terminal σ)
 
+abbrev StepResult (σ : LPSignature) :=
+  StepResultCore σ (RuntimeAtom σ.scoped) (Clause σ)
+
 /-- Fuel exhaustion is explicitly open; it never fabricates completion. -/
-inductive PullResult (σ : LPSignature) where
-  | open (state : State σ)
-  | answer (value : Answer σ) (state : State σ)
+inductive PullResultCore (σ : LPSignature) (Instruction SourceClause : Type*) where
+  | open (state : StateCore σ Instruction SourceClause)
+  | answer (value : Answer σ)
+      (state : StateCore σ Instruction SourceClause)
   | terminal (result : Terminal σ)
+
+abbrev PullResult (σ : LPSignature) :=
+  PullResultCore σ (RuntimeAtom σ.scoped) (Clause σ)
 
 /-! ## Fresh-scope boundary -/
 
@@ -188,16 +225,20 @@ def openQuery {σ : LPSignature} [DecidableEq σ.vars]
     .error (.staleScopeSupply queryScope nextScope)
 
 def closeMemory {σ : LPSignature}
-    (state : State σ) : Except MemoryError (Memory σ.scoped) :=
+    (state : StateCore σ Instruction SourceClause) :
+    Except MemoryError (Memory σ.scoped) :=
   state.memory.restore state.queryCheckpoint
 
-def complete {σ : LPSignature} (state : State σ) : StepResult σ :=
+def complete {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
   match closeMemory state with
   | .ok memory => .terminal (.completed memory)
   | .error error => .terminal (.runtimeError (.memory error) state.memory)
 
 def failWith {σ : LPSignature}
-    (state : State σ) (error : QueryError) : StepResult σ :=
+    (state : StateCore σ Instruction SourceClause) (error : QueryError) :
+    StepResultCore σ Instruction SourceClause :=
   match closeMemory state with
   | .ok memory => .terminal (.runtimeError error memory)
   | .error cleanup =>
@@ -206,8 +247,10 @@ def failWith {σ : LPSignature}
 /-! ## One query transition -/
 
 def replacementChoices {σ : LPSignature}
-    (cursor : ClauseCursor σ) (remaining : List (Clause σ))
-    (older : List (ClauseCursor σ)) : List (ClauseCursor σ) :=
+    (cursor : ClauseCursorCore σ Instruction SourceClause)
+    (remaining : List SourceClause)
+    (older : List (ClauseCursorCore σ Instruction SourceClause)) :
+    List (ClauseCursorCore σ Instruction SourceClause) :=
   match remaining with
   | [] => older
   | _ => { cursor with clauses := remaining } :: older
