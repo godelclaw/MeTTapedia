@@ -1,5 +1,6 @@
 import Mettapedia.Logic.Prolog.Syntax
 import Mettapedia.Logic.LP.RuntimeQuery
+import Mettapedia.Logic.LP.RuntimeDatabase
 
 /-!
 # Runtime form of canonical Prolog control
@@ -574,12 +575,22 @@ def pullWith {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
   LP.RuntimeQuery.pullCoreWithMeta clauseMaterializer services.decoder
     (dispatchActionWith services program)
 
-/-- A resumable typed session retains source clauses beside the one canonical
-query state; it owns no additional execution or substitution state. -/
+/-- A resumable typed session retains the persistent logical-update database
+beside the one canonical query state.  The database is structurally outside
+the backtrackable `State`, choice points, and return frames; restoring any of
+those resources therefore cannot restore a stale database generation. -/
 structure Session (sigma : LP.LPSignature) where
-  program : Program sigma
+  database : LP.RuntimeDatabase.Database (Clause sigma)
   state : State sigma
   services : Services sigma := noServices sigma
+
+namespace Session
+
+/-- Source clauses currently visible to a newly opened predicate call. -/
+def program (session : Session sigma) : Program sigma :=
+  session.database.visibleClauses.map Prod.snd
+
+end Session
 
 /-- Open a resumable session with explicit read-only runtime services. -/
 def openSessionWith {sigma : LP.LPSignature}
@@ -589,7 +600,30 @@ def openSessionWith {sigma : LP.LPSignature}
     (program : Program sigma) (goal : Goal sigma) :
     Except LP.RuntimeQuery.QueryError (Session sigma) := do
   let state ← openQuery memory queryScope nextScope goal
-  pure { program, state, services }
+  pure {
+    database := LP.RuntimeDatabase.Database.ofProgram program
+    state
+    services
+  }
+
+/-- Opening a session installs exactly the supplied source program as the
+generation-zero visible database.  Adding stable references is representation
+preserving and does not reorder or deduplicate clauses. -/
+theorem openSessionWith_program {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars]
+    (services : Services sigma)
+    (memory : Memory sigma.scoped) (queryScope nextScope : Nat)
+    (program : Program sigma) (goal : Goal sigma) (session : Session sigma)
+    (hOpen : openSessionWith services memory queryScope nextScope program goal =
+      .ok session) :
+    session.program = program := by
+  unfold openSessionWith at hOpen
+  cases hQuery : openQuery memory queryScope nextScope goal with
+  | error error => simp [hQuery] at hOpen
+  | ok state =>
+      simp [hQuery] at hOpen
+      subst session
+      exact LP.RuntimeDatabase.Database.ofProgram_visibleClause_values program
 
 /-- Open one resumable typed session. -/
 def openSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]

@@ -3,6 +3,8 @@ import Mettapedia.Logic.LP.StandardizeApart
 import Mettapedia.Logic.LP.RuntimeTerm
 import Mettapedia.Logic.LP.RuntimeUnification
 import Mettapedia.Logic.LP.RuntimeMaterialize
+import Mettapedia.Logic.LP.RuntimeDatabase
+import Mettapedia.Logic.LP.RuntimeDatabaseRegression
 import Mettapedia.Logic.LP.RuntimeQuery
 import Mettapedia.Logic.LP.RuntimeQueryConservation
 import Mettapedia.Logic.LP.Substitution
@@ -42,6 +44,8 @@ Barrel import for the LP module stack:
 | `RuntimeTerm` | Checked rational-term graph heap, destructive binding trail, and exact rollback |
 | `RuntimeUnification` | Small-step graph unification with cycle-pair memoization and transactional failure |
 | `RuntimeMaterialize` | Checked source-term and standardized-clause allocation with structural trail preservation |
+| `RuntimeDatabase` | Persistent generation-stamped clauses, stable references, and logical-update snapshots |
+| `RuntimeDatabaseRegression` | Source-order, snapshot-isolation, and non-retroactivity canaries |
 | `RuntimeQuery` | Demand-driven clause selection, source-order DFS, resumable answers, backtracking, and predicate-scoped cut |
 | `RuntimeQueryConservation` | Representation conservation for query opening, shared-machine steps, and finite pull prefixes |
 | `Substitution` | Subst, apply, compose, identity/composition laws, Grounding |

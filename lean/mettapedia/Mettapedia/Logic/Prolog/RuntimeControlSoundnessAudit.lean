@@ -30,6 +30,15 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.collectAnswerStep_conserves
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.finalizeCollectionStep_conserves
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_collectionEncoding
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Entry.eraseAt_visible_previous
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Entry.eraseAt_not_visible_current
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.ofProgram_visibleClause_values
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.visibleClausesAt_asserta_previous
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.visibleClausesAt_assertz_previous
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_generation
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_preserves_previous
+#print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_nextRef
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.openSessionWith_program
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshIdentity_injective
 #print axioms Mettapedia.Logic.LP.RuntimeException.scope_lt_scopeCeiling
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshenTerm_scope_range
