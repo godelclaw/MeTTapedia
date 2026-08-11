@@ -1,4 +1,5 @@
 import Mettapedia.Logic.Prolog.RuntimeControlSoundness
+import Mettapedia.Logic.LP.RuntimeCompoundQueryRegression
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 
 /-!
