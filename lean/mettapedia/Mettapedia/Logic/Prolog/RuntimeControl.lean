@@ -470,6 +470,7 @@ def dispatchAction {sigma : LP.LPSignature}
       .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
+  | .unify left right => .unify left right
   | _ => .error .unsupportedInstruction
 
 /-- Execute one typed Prolog transition through the same phase loop, clause

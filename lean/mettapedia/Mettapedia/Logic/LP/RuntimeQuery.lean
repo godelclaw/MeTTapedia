@@ -471,6 +471,25 @@ def callStep {σ : LPSignature}
   }
   .next { state with phase := .select cursor } none
 
+/-- Enter body unification through the same canonical graph unifier used for
+clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
+(`src/pl-prims.c`) and body unification instructions (`src/pl-vmi.c`). -/
+@[simp]
+def beginUnifyStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let attempt : AttemptCore σ Instruction := {
+    body := rest
+    cutDepth := state.control.cutDepth
+    frames := state.control.frames
+  }
+  .next {
+    state with
+    phase := .unifying attempt
+      (RuntimeUnification.startMany state.memory [(left, right)])
+  } none
+
 /-- The complete authority granted to an instruction classifier.  It may name
 an ordinary call's source clauses or identify base control, but it cannot emit
 answers/effects, mutate memory, select a clause, or schedule a body. -/
@@ -478,6 +497,7 @@ inductive DispatchAction (σ : LPSignature) (SourceClause : Type*) where
   | call (goal : RuntimeAtom σ.scoped) (clauses : List SourceClause)
   | fail
   | cut
+  | unify (left right : Addr)
   | error (reason : QueryError)
 
 /-- Apply one narrow classification to the canonical state.  The current
@@ -492,6 +512,7 @@ def dispatchActionStep {σ : LPSignature}
   | .call goal clauses => callStep state goal clauses rest
   | .fail => .next { state with phase := .backtrack } none
   | .cut => cutStep state rest
+  | .unify left right => beginUnifyStep state left right rest
   | .error reason => failWith state reason
 
 /-- The one phase loop shared by LP atoms and typed Prolog control.  Language

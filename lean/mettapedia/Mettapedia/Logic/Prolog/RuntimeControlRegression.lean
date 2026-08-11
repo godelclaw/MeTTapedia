@@ -309,6 +309,20 @@ def typedCutSessionRun : Option (List QConst × Nat × Nat) :=
   | .error _ => none
   | .ok session => collectTyped 3 session
 
+/-- Execute one typed source goal from an isolated empty session. -/
+def runTyped (program : Program qSig) (goal : Goal qSig) :
+    Option (List QConst × Nat × Nat) :=
+  match openEmpty program goal with
+  | .error _ => none
+  | .ok session => collectTyped 3 session
+
+def inlineUnifySuccess : Goal qSig :=
+  .unify (.var .x) (.const .a)
+
+def inlineUnifyFailureAfterBinding : Goal qSig :=
+  .conj (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .b))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -318,5 +332,7 @@ def typedCutSessionRun : Option (List QConst × Nat × Nat) :=
 #guard structuredControlIsExplicitlyUnsupported
 #guard typedGoalUsesSharedOpenQuery
 #guard typedCutSessionRun == some ([.a], 0, 0)
+#guard runTyped [] inlineUnifySuccess == some ([.a], 0, 0)
+#guard runTyped [] inlineUnifyFailureAfterBinding == some ([], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression
