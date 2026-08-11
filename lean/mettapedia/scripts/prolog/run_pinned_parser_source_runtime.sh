@@ -29,12 +29,14 @@ LISTS="$(swipl -q -g \
   "absolute_file_name(library(lists), P, [file_type(prolog), access(read)]), write(P), halt")"
 ERROR="$(swipl -q -g \
   "absolute_file_name(library(error), P, [file_type(prolog), access(read)]), write(P), halt")"
+APPLY="$(swipl -q -g \
+  "absolute_file_name(library(apply), P, [file_type(prolog), access(read)]), write(P), halt")"
 
 pushd "$ROOT_DIR" >/dev/null
 if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
     "$TMP/src/metta.pl" "$TMP/src/parser.pl" \
     "$TMP/src/translator.pl" \
-    "$DCG_BASICS" "$LISTS" "$ERROR" > "$TMP/lean.out"; then
+    "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" > "$TMP/lean.out"; then
   cat "$TMP/lean.out" >&2
   popd >/dev/null
   exit 1
@@ -73,6 +75,8 @@ swrite_compound=exact
 metta_parse=exact
 metta_repr=exact
 metta_eval_atomic=exact
+metta_fun_id_registered=exact
+metta_id_direct=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
@@ -82,4 +86,10 @@ swipl -q -s "$TMP/src/parser.pl" -s "$TMP/src/translator.pl" \
 printf '%s\n' '[40,41]' '[40,97,41]' '[45,52,50]' '[a]' '[a,b]' '[1]' '[-2]' '[1.5]' '[100.0]' '["a"]' '[[a]]' "['a-b']" "['1_2_3']" "['#foo']" '["a\nb"]' 'variable' 'reused' 'anonymous_distinct' '[a,b]' '[1]' 'sread_reused' '"(a b)"' '"(pair a b)"' '[a,b]' '"(pair a b)"' 'a' > "$TMP/swi.expected"
 diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
-echo "Pinned PeTTa source runtime: PASS (parser wrappers plus atomic eval path exact; module-aware closure)"
+swipl -q -f scripts/prolog/pinned_petta_registration_oracle.pl -- \
+  "$TMP/src/metta.pl" > "$TMP/swi-registration.out"
+printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
+  > "$TMP/swi-registration.expected"
+diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
+
+echo "Pinned PeTTa source runtime: PASS (parser wrappers, atomic eval, and source registration exact; module-aware closure)"

@@ -198,6 +198,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "library/apply.pl",
+      "sha256": "7d943241474dcab43688a41b43c0a446916adbe12beec69f90cc2a5937a2f576"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-bag.c",
       "sha256": "94818d9d14312c5e3776436d33f46762653dd0c04ca578827aa5417004b14182"
     },
@@ -895,6 +900,20 @@
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
         "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "library.apply",
+      "project": "swi-prolog",
+      "sources": ["library/apply.pl"],
+      "anchors": ["maplist", "maplist_"],
+      "implementation_status": "pinned-source",
+      "proof_status": "not-started",
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
         "scripts/prolog/run_pinned_parser_source_runtime.sh"
       ]
     },

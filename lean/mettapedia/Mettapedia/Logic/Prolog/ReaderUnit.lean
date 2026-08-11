@@ -43,13 +43,20 @@ structure ModuleDecl where
   name : SourceSignature.Term
   exports : SourceSignature.Term
 
+/-- A source initialization obligation.  The optional second argument is
+retained as loader scheduling data even though `Unit.pendingGoals` projects
+only the executable goal. -/
+structure Initialization where
+  goal : SourceSignature.Goal
+  when : Option SourceSignature.Term
+
 /-- Loader-visible source directives.  Unknown directives are not discarded:
 they remain explicit load-time goals. -/
 inductive Directive where
   | moduleDecl (value : ModuleDecl)
   | import (value : Import)
   | declaration (goal : SourceSignature.Goal)
-  | initialization (goal : SourceSignature.Goal)
+  | initialization (value : Initialization)
   | loadGoal (goal : SourceSignature.Goal)
 
 /-- One source-ordered unit item after DCG expansion. -/
@@ -113,8 +120,20 @@ private def directiveOfGoal (position : Nat) : SourceSignature.Goal ->
           .ok (.import { kind := .reexport, source, options := [selection] })
       | "reexport", _ =>
           .error (.malformedDirective position "reexport")
-      | "initialization", [_] | "initialization", [_, _] =>
-          .ok (.initialization goal)
+      | "initialization", [entry] =>
+          match ReaderSource.toGoal entry with
+          | .ok entryGoal => .ok (.initialization {
+              goal := entryGoal
+              when := none
+            })
+          | .error _ => .error (.malformedDirective position "initialization")
+      | "initialization", [entry, when] =>
+          match ReaderSource.toGoal entry with
+          | .ok entryGoal => .ok (.initialization {
+              goal := entryGoal
+              when := some when
+            })
+          | .error _ => .error (.malformedDirective position "initialization")
       | "initialization", _ =>
           .error (.malformedDirective position "initialization")
       | name, _ =>
@@ -188,7 +207,8 @@ def moduleDecls (unit : Unit) : List ModuleDecl :=
 
 def pendingGoals (unit : Unit) : List SourceSignature.Goal :=
   unit.directives.filterMap fun
-    | .initialization goal | .loadGoal goal => some goal
+    | .initialization value => some value.goal
+    | .loadGoal goal => some goal
     | _ => none
 
 def declarations (unit : Unit) : List SourceSignature.Goal :=

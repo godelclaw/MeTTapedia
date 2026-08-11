@@ -53,10 +53,28 @@ def sourceOrderAndObligationsAreRetained : Bool :=
             unit.program.length == 2 &&
             unit.imports.length == 1 &&
             unit.declarations.length == 1 &&
-            unit.pendingGoals.length == 2
+            match unit.pendingGoals with
+            | [.call initialization, .call loadGoal] =>
+                initialization.symbol.name == "setup" &&
+                  loadGoal.symbol.name == "set_prolog_flag"
+            | _ => false
       | _ => false
 
 #guard sourceOrderAndObligationsAreRetained
+
+/-- Extracting the executable initializer does not discard the optional SWI
+loader-timing argument. -/
+def initializationTimingIsRetained : Bool :=
+  match load ":- initialization(setup, after_load)." with
+  | some unit =>
+      match unit.directives, unit.pendingGoals with
+      | [.initialization value], [.call goal] =>
+          value.when.bind atomName? == some "after_load" &&
+            goal.symbol.name == "setup"
+      | _, _ => false
+  | none => false
+
+#guard initializationTimingIsRetained
 
 /-- A query is an execution request and cannot be laundered into a source
 unit.  Its exact source-form position remains visible. -/

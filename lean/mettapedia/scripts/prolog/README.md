@@ -174,11 +174,12 @@ scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
 The corresponding source-execution gate combines the real pinned `metta.pl`,
-`parser.pl`, and `translator.pl` units with those three SWI libraries using the static
+`parser.pl`, and `translator.pl` units with those three SWI libraries and
+`library(apply)` using the static
 module-aware linker.  The linker separates user `exp/2` from
 `dcg_basics:exp/2`, resolves explicit imports and the unique loaded export
 used by SWI autoload, and fails on ambiguous exports or a literal predicate
-that would collide with generated qualification.  The resulting 508
+that would collide with generated qualification.  The resulting 566
 canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
@@ -197,19 +198,28 @@ Two final paths execute the actual pinned `metta.pl` wrappers `parse/2` and
 `repr/2`; the SWI oracle reads those exact source clauses from the pinned file
 without executing unrelated load-time effects.  A further path executes
 `eval(a, Out)` through the actual `eval/2`, `translate_expr/3`, and
-`call_goals/1` clauses, pinning the first PeTTa evaluator path on atomic data:
+`call_goals/1` clauses, pinning the first PeTTa evaluator path on atomic data.
+Finally, the gate executes the exact retained
+`maplist(register_fun, ...)` source goal through SWI's real `apply:maplist/2`
+clauses using the canonical persistent runtime.  The returned database must
+make `fun(id)` visible to a fresh query, and the actual pinned `id/2` clause
+must then produce `a`; an independent SWI oracle reads and executes the same
+registration directive:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
 ```
 
-This is a deliberately narrow executable slice.  The retained external
-imports, declarations, and load-time goals remain explicit closure
-obligations; linked clauses retain their original units as provenance while
-the qualified executable projection clears context-dependent source-term
-reflection.  Meta-predicate argument qualification, reexports, and runtime
-module creation remain unsupported.  Passing this gate does not claim that
-the entire PeTTa source closure is yet executable.  Numeric reading covers the
+This is a deliberately narrow executable slice.  Loader goals other than the
+named registration directive remain explicit closure obligations; linked
+clauses retain their original units as provenance while the qualified
+executable projection clears context-dependent source-term reflection.
+General meta-predicate argument qualification, reexports, runtime module
+creation, and full source-order loader scheduling remain unsupported.  The
+compound evaluator path currently stops at SWI `sort/4`, required by the real
+`lists:list_to_set/2`; no PeTTa-specific replacement is substituted.  Passing
+this gate therefore does not claim that the entire PeTTa source closure is yet
+executable.  Numeric reading covers the
 decimal and scientific forms
 produced by pinned `dcg/basics:number//1`; integer writing is exact, while
 float-to-code rendering remains explicitly unsupported.

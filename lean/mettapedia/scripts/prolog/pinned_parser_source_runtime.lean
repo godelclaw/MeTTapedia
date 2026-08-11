@@ -1,5 +1,6 @@
 import Mettapedia.Logic.Prolog.ReaderSWIProfile
 import Mettapedia.Logic.Prolog.ReaderModuleLink
+import Mettapedia.Logic.Prolog.ReaderLoadRuntime
 import Mettapedia.Logic.Prolog.ReaderUnitClosure
 import Mettapedia.Logic.Prolog.SourceRuntime
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
@@ -7,22 +8,26 @@ import Mettapedia.Logic.LP.RuntimeReadback
 
 /-!
 Execute real pinned `parser.pl` DCG clauses, the `parse/2` and `repr/2`
-wrappers from pinned `metta.pl`, and atomic `eval/2` through pinned
-`translator.pl` on the canonical shared runtime.  The loaded source slice
-retains unresolved loader obligations; this canary claims only the explicitly
-exercised parser and evaluator paths.
+wrappers from pinned `metta.pl`, and `eval/2` through pinned `translator.pl`
+on the canonical shared runtime.  The registration path executes the real
+retained `maplist(register_fun, ...)` load goal through SWI's pinned
+`library(apply)` clauses and carries its persistent database forward.  Other
+retained loader obligations stay explicit; this canary claims only the named
+paths.  Compound evaluation remains gated by the standard-term-ordering
+operations used by pinned `lists:list_to_set/2`.
 -/
 
 open Mettapedia.Logic
 open Mettapedia.Logic.Prolog
 
-def resolver (dcgBasicsSource listsSource errorSource : String) :
+def resolver (dcgBasicsSource listsSource errorSource applySource : String) :
     ReaderUnitClosure.Resolver String Unit := fun request =>
   match ReaderSWIProfile.sourceKey? request.source with
   | some "library(dcg/basics)" =>
       .ok [.source "library(dcg/basics)" dcgBasicsSource]
   | some "library(lists)" => .ok [.source "library(lists)" listsSource]
   | some "library(error)" => .ok [.source "library(error)" errorSource]
+  | some "library(apply)" => .ok [.source "library(apply)" applySource]
   | some key => .ok [.external key]
   | none => .error ()
 
@@ -32,7 +37,7 @@ def loadParserClosure
   let closure <- match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
       ReaderOperator.defaults
-      (resolver dcgBasicsSource listsSource errorSource) "parser" parserSource with
+      (resolver dcgBasicsSource listsSource errorSource "") "parser" parserSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "source-unit closure failed"
   let linked <- match ReaderUnitClosure.linkDisjoint closure with
@@ -72,18 +77,19 @@ combined by key, and module qualification is applied to the same canonical
 clauses consumed by the shared runtime. -/
 def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
     (mettaSource translatorSource dcgBasicsSource listsSource
-      errorSource : String) :
-    IO SourceSignature.Program := do
+      errorSource applySource : String) :
+    IO (ReaderUnitClosure.FlatLink String) := do
   let mettaClosure ← match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
       ReaderOperator.defaults
-      (resolver dcgBasicsSource listsSource errorSource) "metta" mettaSource with
+      (resolver dcgBasicsSource listsSource errorSource applySource)
+      "metta" mettaSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "metta source-unit closure failed"
   let translatorClosure ← match ReaderUnitClosure.loadWith 4
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
       ReaderOperator.defaults
-      (resolver dcgBasicsSource listsSource errorSource)
+      (resolver dcgBasicsSource listsSource errorSource applySource)
       "translator" translatorSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "translator source-unit closure failed"
@@ -117,10 +123,10 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       clause.head.symbol = { name := "sexpr", arity := 5 } &&
         numberSymbol ∈ calledSymbols clause.body) then
     throw <| IO.userError "parser number//1 call was not module-qualified"
-  if linked.program.length != 508 then
+  if linked.program.length != 566 then
     throw <| IO.userError s!"module-aware source boundary changed: \
       clauses={linked.program.length}"
-  pure linked.program
+  pure linked
 
 def codesIdentity : SourceSignature.Variable := {
   spelling := "Codes"
@@ -278,12 +284,8 @@ def execute (program : SourceSignature.Program)
   | .open _ => throw <| IO.userError "runtime remained open after answer"
   | .terminal _ _ => throw <| IO.userError "runtime did not complete"
 
-def executeTerm (program : SourceSignature.Program)
-    (goal : SourceSignature.Goal) :
+def executeTermSession (session : SourceRuntime.Session) :
     IO (LP.Term SourceRuntime.Sigma.scoped × Nat × Nat) := do
-  let session <- match SourceRuntime.openEmpty program goal with
-    | .ok session => pure session
-    | .error _ => throw <| IO.userError "runtime failed to open"
   let (term, resumed) <- match SourceRuntime.pullSession 32768 session with
     | .answer answer resumed =>
         match answerTerm? answer with
@@ -303,6 +305,22 @@ def executeTerm (program : SourceSignature.Program)
   | .open _ => throw <| IO.userError "runtime remained open after term answer"
   | .terminal _ _ => throw <| IO.userError "runtime term query did not complete"
 
+def executeTerm (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) :
+    IO (LP.Term SourceRuntime.Sigma.scoped × Nat × Nat) := do
+  let session <- match SourceRuntime.openEmpty program goal with
+    | .ok session => pure session
+    | .error _ => throw <| IO.userError "runtime failed to open"
+  executeTermSession session
+
+def executeTermDatabase (database : ReaderLoadRuntime.Database)
+    (goal : SourceSignature.Goal) :
+    IO (LP.Term SourceRuntime.Sigma.scoped × Nat × Nat) := do
+  let session <- match SourceRuntime.openDatabase database goal with
+    | .ok session => pure session
+    | .error _ => throw <| IO.userError "runtime database query failed to open"
+  executeTermSession session
+
 def checkGoal (program : SourceSignature.Program) (label : String)
     (goal : SourceSignature.Goal) (expected : SourceSignature.Term) : IO Unit := do
   let (actual, heapSize, trailSize) ← executeTerm program goal
@@ -317,6 +335,35 @@ def checkGoal (program : SourceSignature.Program) (label : String)
   if heapSize != 0 || trailSize != 0 then
     throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
   IO.println s!"{label}=exact"
+
+def checkDatabaseGoal (database : ReaderLoadRuntime.Database) (label : String)
+    (goal : SourceSignature.Goal) (expected : SourceSignature.Term) : IO Unit := do
+  let (actual, heapSize, trailSize) ← executeTermDatabase database goal
+  let actualShape := SourceRuntimeRegression.runtimeTermShape actual
+  let expectedShape :=
+    SourceRuntimeRegression.runtimeTermShape (LP.Term.atScope 0 expected)
+  if actualShape != expectedShape then
+    throw <| IO.userError s!"{label}: expected {repr expectedShape}, \
+      got {repr actualShape}"
+  if heapSize != 0 || trailSize != 0 then
+    throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
+  IO.println s!"{label}=exact"
+
+def requireDatabaseGoal (database : ReaderLoadRuntime.Database) (label : String)
+    (goal : SourceSignature.Goal) : IO Unit := do
+  let session ← match SourceRuntime.openDatabase database goal with
+    | .ok session => pure session
+    | .error error =>
+        throw <| IO.userError s!"{label}: failed to open: {repr error}"
+  match SourceRuntime.pullSession 32768 session with
+  | .answer _ _ => IO.println s!"{label}=exact"
+  | .open _ => throw <| IO.userError s!"{label}: remained open"
+  | .terminal (.completed _) _ =>
+      throw <| IO.userError s!"{label}: completed without an answer"
+  | .terminal (.runtimeError error _) _ =>
+      throw <| IO.userError s!"{label}: runtime error: {repr error}"
+  | .terminal (.raised packet _) _ =>
+      throw <| IO.userError s!"{label}: raised: {renderTerm packet.term}"
 
 def checkRead (program : SourceSignature.Program) (label : String)
     (codes : List Int) (expected : SourceSignature.Term) : IO Unit :=
@@ -361,23 +408,60 @@ def separatesVariablesInTwoElementList :
         leftOccurrence == rightOccurrence)
   | _ => false
 
+private def registrationGoal? :
+    String × SourceSignature.Goal → Option SourceSignature.Goal
+  | ("metta", goal@(.call atom)) =>
+      if atom.symbol.name != "apply:maplist" || atom.symbol.arity != 2 then
+        none
+      else
+        match List.ofFn atom.args with
+        | [.const (.atom "register_fun"), _] => some goal
+        | _ => none
+  | _ => none
+
+/-- Execute exactly the pinned registration directive selected from the
+retained source obligations.  All other load goals stay retained and outside
+this narrow source-execution claim. -/
+def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
+    IO ReaderLoadRuntime.Database := do
+  let goals := linked.pendingGoals.filterMap registrationGoal?
+  let [goal] := goals
+    | throw <| IO.userError s!"registration source boundary changed: \
+        matching_goals={goals.length}"
+  let database := LP.RuntimeDatabase.Database.ofProgram linked.program
+  match ReaderLoadRuntime.runFirst 262144 database goal with
+  | .ok (.succeeded database) => pure database
+  | .ok (.failed _ _) =>
+      throw <| IO.userError "pinned registration goal failed"
+  | .ok (.open _) =>
+      throw <| IO.userError "pinned registration goal remained open"
+  | .ok (.raised packet _ _) =>
+      throw <| IO.userError s!"pinned registration raised: \
+        {renderTerm packet.term}"
+  | .ok (.runtimeError error _ _) =>
+      throw <| IO.userError s!"pinned registration runtime error: {repr error}"
+  | .error error =>
+      throw <| IO.userError s!"pinned registration failed to open: {repr error}"
+
 def main (arguments : List String) : IO Unit := do
   let [mettaPath, parserPath, translatorPath, dcgBasicsPath, listsPath,
-      errorPath] := arguments
+      errorPath, applyPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
          <metta.pl> <parser.pl> <translator.pl> \
-         <dcg/basics.pl> <lists.pl> <error.pl>"
+         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
-  let program ← loadPeTTaSlice parserClosure (← IO.FS.readFile mettaPath)
+  let linked ← loadPeTTaSlice parserClosure (← IO.FS.readFile mettaPath)
     (← IO.FS.readFile translatorPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
+    (← IO.FS.readFile applyPath)
+  let program := linked.program
   let (emptyCodes, emptyHeap, emptyTrail) <- execute program query
   let (atomListCodes, atomListHeap, atomListTrail) <-
     execute program atomListQuery
@@ -453,4 +537,11 @@ def main (arguments : List String) : IO Unit := do
     (SourceSignature.string "(pair a b)")
   checkGoal program "metta_eval_atomic"
     (evalQuery (SourceSignature.atom "a"))
+    (SourceSignature.atom "a")
+  let registeredDatabase ← executeRegistration linked
+  requireDatabaseGoal registeredDatabase "metta_fun_id_registered"
+    (SourceSignature.call "fun" [SourceSignature.atom "id"])
+  checkDatabaseGoal registeredDatabase "metta_id_direct"
+    (SourceSignature.call "id"
+      [SourceSignature.atom "a", .var termIdentity])
     (SourceSignature.atom "a")

@@ -30,6 +30,9 @@ import Mettapedia.Logic.Prolog.ReaderUnitClosure
 import Mettapedia.Logic.Prolog.ReaderUnitClosureRegression
 import Mettapedia.Logic.Prolog.ReaderModuleLink
 import Mettapedia.Logic.Prolog.ReaderModuleLinkRegression
+import Mettapedia.Logic.Prolog.ReaderLoadRuntime
+import Mettapedia.Logic.Prolog.ReaderLoadRuntimeRegression
+import Mettapedia.Logic.Prolog.ReaderLoadRuntimeAudit
 import Mettapedia.Logic.Prolog.ReaderUnitAudit
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
@@ -94,7 +97,8 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderProgramAudit` | trusted-base gate for exact clause-only admission |
 | `ReaderUnit` | source-ordered module/import/declaration/initializer obligations over canonical clauses and goals |
 | `ReaderUnitClosure` | finite import discovery and collision-safe flat linking with unresolved obligations retained |
-| `ReaderModuleLink` | static module/export/import qualification over the same canonical clauses, with unsupported loader semantics retained |
+| `ReaderModuleLink` | static module/export/import qualification over the same canonical clauses and direct retained goals, with execution separate |
+| `ReaderLoadRuntime` | first-solution source-goal policy over the same persistent canonical runtime, with failure/open/raise/error kept distinct |
 | `ReaderUnitAudit` | trusted-base gate for exact canonical clause admission into source units |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |

@@ -9,6 +9,7 @@ private def emptyImports : ReaderDirective.ImportProfile Unit := fun _ => .ok []
 
 private def rootSource : String :=
   ":- use_module(lib).\n\
+   :- initialization(boot(started)).\n\
    exp(user).\n\
    run(X) :- helper(X).\n\
    auto(X) :- available(X)."
@@ -21,8 +22,9 @@ private def librarySource : String :=
    exp(module)."
 
 private def otherSource : String :=
-  ":- module(other, [available/1]).\n\
-   available(implicit)."
+  ":- module(other, [available/1, boot/1]).\n\
+   available(implicit).\n\
+   boot(ready)."
 
 private def sourceKey? : SourceSignature.Term → Option String
   | .const (.atom name) => some name
@@ -66,7 +68,7 @@ def linkedNames : Option (List String) := do
 keeps the user predicate and qualifies every library-local definition. -/
 #guard linkedNames == some
   ["exp", "run", "auto", "lib:helper", "lib:worker", "lib:exp",
-    "other:available"]
+    "other:available", "other:boot"]
 
 def runTarget : Option String := do
   let linked ← linked?
@@ -99,6 +101,19 @@ def autoTarget : Option String := do
 /- An otherwise unresolved call uses the unique loaded export.  The private
 `lib:worker/1` above is deliberately not eligible for this path. -/
 #guard autoTarget == some "other:available"
+
+def pendingTarget : Option String := do
+  let linked ← linked?
+  let (_, pending) ← linked.pendingGoals.head?
+  match pending with
+  | .call atom => some atom.symbol.name
+  | _ => none
+
+/- Retained initialization goals use the same resolution plan as clause
+bodies.  `boot/1` appears nowhere in the root program, so this also proves
+that a direct call used only by a loader goal participates in unique-export
+resolution rather than escaping qualification. -/
+#guard pendingTarget == some "other:boot"
 
 private def ambiguousRootSource : String :=
   ":- use_module(loader).\n\

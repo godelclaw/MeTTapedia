@@ -10,11 +10,14 @@ DCG exports, ordinary import lists, and unambiguous lookup in the loaded export
 index.  It rewrites only relation symbols in the existing `SourceSignature`;
 it introduces no term language or evaluator.
 
-Meta-predicate argument qualification, reexports, runtime module creation, and
-execution of retained loader goals remain outside this fragment.  Because a
-qualified executable clause no longer reclassifies from its original source
-term without module context, linked clauses deliberately clear `sourceTerm`.
-The original source units remain in the result as the provenance authority.
+Meta-predicate argument qualification, predicate indicators embedded as data,
+reexports, runtime module creation, and execution of retained loader goals
+remain outside this fragment.  Direct calls in retained declarations and
+loader goals are qualified by the same plan as clause bodies; this does not
+claim the unsupported meta-argument transformations.  Because a qualified
+executable clause no longer reclassifies from its original source term without
+module context, linked clauses deliberately clear `sourceTerm`.  The original
+source units remain in the result as the provenance authority.
 -/
 
 namespace Mettapedia.Logic.Prolog.ReaderModuleLink
@@ -193,7 +196,9 @@ private def calledSymbols : SourceSignature.Goal →
 
 private def usedSymbols (plan : Plan) :
     List SourceSignature.PredicateIndicator :=
-  (plan.unit.program.flatMap fun clause => calledSymbols clause.body).eraseDups
+  ((plan.unit.program.flatMap fun clause => calledSymbols clause.body) ++
+    (plan.unit.declarations.flatMap calledSymbols) ++
+    (plan.unit.pendingGoals.flatMap calledSymbols)).eraseDups
 
 private def exportedProviders (plans : List Plan)
     (symbol : SourceSignature.PredicateIndicator) : List ImportBinding :=
@@ -319,18 +324,27 @@ def link (sourceKey? : SourceSignature.Term → Option String)
     Except Error (ReaderUnitClosure.FlatLink String) := do
   let plans ← closure.units.mapM planOf
   validateQualifiedNames plans
-  let program ← plans.foldlM (fun program plan => do
+  let planned ← plans.mapM fun plan => do
     let bindings ← symbolBindings sourceKey? plans plan
+    pure (plan, bindings)
+  let program ← planned.foldlM (fun program entry => do
+    let (plan, bindings) := entry
     let resolve := resolveSymbol plan bindings
     appendProgram program (plan.unit.program.map (mapClause resolve))) []
   pure {
     program
     units := closure.units
     external := closure.external
-    declarations := closure.units.flatMap fun named =>
-      named.unit.declarations.map fun goal => (named.key, goal)
-    pendingGoals := closure.units.flatMap fun named =>
-      named.unit.pendingGoals.map fun goal => (named.key, goal)
+    declarations := planned.flatMap fun entry =>
+      let (plan, bindings) := entry
+      let resolve := resolveSymbol plan bindings
+      plan.unit.declarations.map fun goal =>
+        (plan.key, mapGoal resolve goal)
+    pendingGoals := planned.flatMap fun entry =>
+      let (plan, bindings) := entry
+      let resolve := resolveSymbol plan bindings
+      plan.unit.pendingGoals.map fun goal =>
+        (plan.key, mapGoal resolve goal)
   }
 
 end Mettapedia.Logic.Prolog.ReaderModuleLink
