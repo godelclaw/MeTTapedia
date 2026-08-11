@@ -207,7 +207,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .metaCall callable extraArgs => .metaCall callable extraArgs
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
-  | .throw ball => .throw ball
+  | .throw ball unboundError => .throw ball unboundError
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .error reason => .error reason
@@ -220,6 +220,75 @@ def mapStepResult (instruction : Instruction₁ → Instruction₂)
   | .next state observation =>
       .next (mapState instruction sourceClause state) observation
   | .terminal result => .terminal result
+
+/-- Ordinary finite packet capture is independent of instruction and clause
+representations. -/
+theorem captureThrowStep_conserves
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (ball : Addr) :
+    captureThrowStep (mapState instruction sourceClause state) ball =
+      mapStepResult instruction sourceClause (captureThrowStep state ball) := by
+  rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  cases hCapture : RuntimeException.capture memory.heap ball with
+  | error error =>
+      cases hCleanup : memory.restore checkpoint <;>
+        simp [captureThrowStep, mapState, mapControl, mapPhase,
+          mapStepResult, failWith, closeMemory, hCapture, hCleanup]
+  | ok packet =>
+      simp [captureThrowStep, mapState, mapControl, mapPhase,
+        mapStepResult, hCapture]
+
+/-- The engine-owned unbound-root check and its language-supplied packet also
+commute with instruction and clause representation changes. -/
+theorem throwStep_conserves
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (ball : Addr) (unboundError : Option (RuntimeException.Packet sigma)) :
+    throwStep (mapState instruction sourceClause state) ball unboundError =
+      mapStepResult instruction sourceClause
+        (throwStep state ball unboundError) := by
+  cases unboundError with
+  | none =>
+      simpa [throwStep] using
+        captureThrowStep_conserves instruction sourceClause state ball
+  | some errorPacket =>
+      cases hDeref : state.memory.heap.deref ball with
+      | error error =>
+          simpa [throwStep, mapState, hDeref] using
+            captureThrowStep_conserves instruction sourceClause state ball
+      | ok result =>
+          cases result with
+          | variableCycle cycle =>
+              simpa [throwStep, mapState, hDeref] using
+                captureThrowStep_conserves instruction sourceClause state ball
+          | root root =>
+              cases hCell : state.memory.heap[root]? with
+              | none =>
+                  simpa [throwStep, mapState, hDeref, hCell] using
+                    captureThrowStep_conserves instruction sourceClause state ball
+              | some cell =>
+                  cases cell with
+                  | var identity link =>
+                      cases link with
+                      | none =>
+                          simp [throwStep, mapState, mapControl, mapPhase,
+                            mapStepResult, hDeref, hCell]
+                      | some target =>
+                          simpa [throwStep, mapState, hDeref, hCell] using
+                            captureThrowStep_conserves instruction sourceClause
+                              state ball
+                  | const symbol =>
+                      simpa [throwStep, mapState, hDeref, hCell] using
+                        captureThrowStep_conserves instruction sourceClause
+                          state ball
+                  | app symbol arguments =>
+                      simpa [throwStep, mapState, hDeref, hCell] using
+                        captureThrowStep_conserves instruction sourceClause
+                          state ball
 
 set_option linter.unusedSimpArgs false in
 theorem passException_conserves
@@ -615,17 +684,22 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               simp [mapDispatchAction, dispatchActionStep, catchStep,
                 mapState, mapControl, mapPhase, mapReturnFrame,
                 mapCatchHandler, mapStepResult]
-          | throw ball =>
-              cases hCapture : RuntimeException.capture memory.heap ball with
-              | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
-                    simp [mapDispatchAction, dispatchActionStep, throwStep,
-                      mapState, mapControl, mapPhase, mapReturnFrame,
-                      mapStepResult, failWith, closeMemory, hCapture, hCleanup]
-              | ok packet =>
-                  simp [mapDispatchAction, dispatchActionStep, throwStep,
-                    mapState, mapControl, mapPhase, mapReturnFrame,
-                    mapStepResult, hCapture]
+          | throw ball unboundError =>
+              simpa [mapDispatchAction, dispatchActionStep, mapState,
+                mapControl, mapPhase, mapReturnFrame, mapChoicePoint] using
+                throwStep_conserves instruction sourceClause
+                  { memory := memory
+                    control := {
+                      current := next :: rest
+                      cutDepth
+                      frames
+                    }
+                    choices
+                    queryCheckpoint := checkpoint
+                    queryVarMap
+                    nextScope
+                    phase := .dispatch }
+                  ball unboundError
           | unify left right =>
               simp [mapDispatchAction, dispatchActionStep, beginUnifyStep,
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,

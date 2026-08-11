@@ -1,4 +1,5 @@
 import Mettapedia.Logic.Prolog.RuntimeControlSoundness
+import Mettapedia.Logic.Prolog.SourceRuntime
 import Mettapedia.Logic.LP.RuntimeExceptionSoundness
 
 /-!
@@ -30,6 +31,10 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeException.Packet.install_roundtrip
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.catchStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.throwStep_of_capture
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.throwStep_unbound_override
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.throwStep_conserves
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.throwInstantiationError_term
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_unboundThrowError
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.findCatchTarget_head
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.raiseUnhandled_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.passException_no_outer

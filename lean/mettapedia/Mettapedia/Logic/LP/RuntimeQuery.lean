@@ -637,15 +637,37 @@ def catchStep {σ : LPSignature}
     }
   } none
 
-/-- Capture the throw-time finite term before any frame or choice is unwound.
-The detached packet, rather than the original heap address, crosses rollback. -/
-@[simp]
-def throwStep {σ : LPSignature}
+/-- Capture an ordinary throw-time finite term before any frame or choice is
+unwound.  The detached packet, rather than the original heap address, crosses
+rollback. -/
+def captureThrowStep {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause) (ball : Addr) :
     StepResultCore σ Instruction SourceClause :=
   match RuntimeException.capture state.memory.heap ball with
   | .error error => failWith state (.exceptionReadback error)
   | .ok packet => .next { state with phase := .raising packet } none
+
+/-- Execute `throw/1` through the canonical exception path.  The engine owns
+the heap inspection: if the root is an unbound variable, it raises the
+language realization's explicit instantiation-error packet when supplied.
+The realization cannot inspect memory, unwind a frame, or schedule recovery.
+Without that optional capability, the generic typed layer retains its finite
+packet behavior. -/
+@[simp]
+def throwStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) (ball : Addr)
+    (unboundError : Option (RuntimeException.Packet σ)) :
+    StepResultCore σ Instruction SourceClause :=
+  match unboundError with
+  | none => captureThrowStep state ball
+  | some errorPacket =>
+      match state.memory.heap.deref ball with
+      | .ok (.root root) =>
+          match state.memory.heap[root]? with
+          | some (.var _ none) =>
+              .next { state with phase := .raising errorPacket } none
+          | _ => captureThrowStep state ball
+      | _ => captureThrowStep state ball
 
 /-- Continue catcher search at the next outer delimiter without unwinding.
 All candidate catchers must observe the same throw-time bindings, matching
@@ -1004,9 +1026,10 @@ def isVarStep {σ : LPSignature}
       | some _ => .next { state with phase := .backtrack } none
 
 /-- The complete authority granted to an instruction classifier.  It may name
-an ordinary call's source clauses, identify base control, or expose the two
-already-materialized payloads of a branch.  It cannot emit answers/effects,
-mutate memory, select a clause, choose branch order, create checkpoints, or
+an ordinary call's source clauses, identify base control, expose
+already-materialized control payloads, or carry language-owned finite error
+content for a throw operation.  It cannot inspect or mutate memory, emit
+answers/effects, select a clause, choose branch order, create checkpoints, or
 resume an alternative. -/
 inductive DispatchAction (σ : LPSignature)
     (Instruction SourceClause : Type*) where
@@ -1021,6 +1044,7 @@ inductive DispatchAction (σ : LPSignature)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
   | throw (ball : Addr)
+      (unboundError : Option (RuntimeException.Packet σ))
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -1048,15 +1072,16 @@ def dispatchActionStep {σ : LPSignature}
       metaCallStep decoder state callable extraArgs rest
   | .catch guarded catcher recovery =>
       catchStep state guarded catcher recovery rest
-  | .throw ball => throwStep state ball
+  | .throw ball unboundError => throwStep state ball unboundError
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
 
 /-- The full phase loop shared by LP atoms and typed Prolog control.  Language
 code supplies only clause materialization, read-only callable decoding, and
-the narrow instruction classification above; all search transitions remain
-in this definition. -/
+the narrow instruction classification above (including optional finite error
+content); all heap inspection and search transitions remain in this
+definition. -/
 @[simp]
 def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
     [DecidableEq σ.constants]
@@ -1443,9 +1468,21 @@ theorem throwStep_of_capture {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause) (ball : Addr)
     (packet : RuntimeException.Packet σ)
     (hCapture : RuntimeException.capture state.memory.heap ball = .ok packet) :
-    throwStep state ball =
+    throwStep state ball none =
       .next { state with phase := .raising packet } none := by
-  simp [throwStep, hCapture]
+  simp [throwStep, captureThrowStep, hCapture]
+
+/-- An unbound throw root selects the supplied language-level error packet
+without changing memory, choices, frames, or the persistent scope supply. -/
+theorem throwStep_unbound_override {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) (ball root : Addr)
+    (identity : ScopedVar σ.vars)
+    (errorPacket : RuntimeException.Packet σ)
+    (hDeref : state.memory.heap.deref ball = .ok (.root root))
+    (hCell : state.memory.heap[root]? = some (.var identity none)) :
+    throwStep state ball (some errorPacket) =
+      .next { state with phase := .raising errorPacket } none := by
+  simp [throwStep, hDeref, hCell]
 
 /-- The nearest handler is selected positionally from the head of the one
 return-frame stack; equal-valued outer frames cannot be chosen instead. -/

@@ -119,3 +119,6 @@ def main : IO Unit := do
   renderCount "catch_copy_preserves_separation"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.packetCopyPreservesSeparation)
+  renderCount "throw_variable_instantiation_error"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.throwVariableRaisesInstantiationError)

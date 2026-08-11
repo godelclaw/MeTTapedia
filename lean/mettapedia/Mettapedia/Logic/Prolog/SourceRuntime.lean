@@ -27,6 +27,29 @@ abbrev Sigma := SourceSignature.signature
 abbrev State := RuntimeControl.State Sigma
 abbrev Session := RuntimeControl.Session Sigma
 
+/-- SWI-Prolog's ISO instantiation-error term for `throw/1`, including the
+predicate context reported by version 10.1.9. -/
+def throwInstantiationErrorTerm : SourceSignature.Term :=
+  compound "error" [
+    atom "instantiation_error",
+    compound "context" [
+      compound ":" [atom "system", compound "/" [atom "throw", integer 1]],
+      var "_" 0
+    ]
+  ]
+
+/-- Language-owned packet content for an unbound throw root.  `RuntimeQuery`
+detects that root and owns every raise, match, unwind, and recovery
+transition. -/
+def throwInstantiationError : LP.RuntimeException.Packet Sigma := {
+  term := LP.Term.atScope 0 throwInstantiationErrorTerm
+}
+
+@[simp]
+theorem throwInstantiationError_term :
+    throwInstantiationError.term =
+      LP.Term.atScope 0 throwInstantiationErrorTerm := rfl
+
 /-- The exact function-symbol to relation-symbol bridge used by ordinary
 callable compounds.  Extra `call/N` arguments extend, rather than replace,
 the compound's existing arity. -/
@@ -183,6 +206,11 @@ def metaCall? (goal : RuntimeAtom Sigma.scoped) :
 def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
   decoder := { decode := decodeCallable }
+  unboundThrowError := some throwInstantiationError
+
+@[simp]
+theorem services_unboundThrowError :
+    services.unboundThrowError = some throwInstantiationError := rfl
 
 /-- Execute concrete source terms through the one shared runtime with
 callable decoding enabled. -/

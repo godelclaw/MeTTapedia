@@ -71,4 +71,9 @@ main(_) :-
     emit_count(catch_copy_preserves_sharing,
         catch(throw(pair(F, F)), pair(H, I), (H = a, I = b))),
     emit_count(catch_copy_preserves_separation,
-        catch(throw(pair(J, K)), pair(L, N), (L = a, N = b))).
+        catch(throw(pair(J, K)), pair(L, N), (L = a, N = b))),
+    emit_count(throw_variable_instantiation_error,
+        catch(throw(_),
+            error(instantiation_error,
+                context(system:throw/1, _)),
+            true)).

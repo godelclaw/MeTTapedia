@@ -171,7 +171,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 33 exact answer and exception traces against SWI-Prolog 10.1.9:
+It compares 34 exact answer and exception traces against SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
 disjunction choice; plus hard-if first-answer commitment, then-failure without
@@ -185,20 +185,12 @@ caller scope.  Five `once/1` cases cover first-answer commitment, total
 failure, cut opacity, caller-scope restoration after success, and binding
 restoration before a caller alternative.  Four meta-call cases cover dynamic
 heap decoding, local cut scope, argument extension, and heap-built callables.
-Ten `catch/3` and `throw/1` cases cover throw-time catcher selection,
+Eleven `catch/3` and `throw/1` cases cover throw-time catcher selection,
 entry-context recovery, rethrow, guarded and recovery cut opacity, retained
 guarded answers, nested-catcher throw-time preservation, variable-copy
-separation, sharing, and non-collapse.
-
-The still-open `throw(Variable)` runtime-error producer is pinned separately:
-
-```bash
-scripts/prolog/run_runtime_control_expected_divergence.sh
-```
-
-That gate requires Lean's current accepted-variable behavior and SWI's
-`instantiation_error` to remain visibly different.  It cannot silently enter
-the matched count.
+separation, sharing, non-collapse, and SWI's exact
+`error(instantiation_error, context(system:throw/1,_))` behavior for a bare
+variable ball.
 
 ## What a pass means
 

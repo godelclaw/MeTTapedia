@@ -417,19 +417,25 @@ abbrev State (sigma : LP.LPSignature) :=
 abbrev StepResult (sigma : LP.LPSignature) :=
   LP.RuntimeQuery.StepResultCore sigma (RuntimeGoal sigma.scoped) (Clause sigma)
 
-/-- Read-only services available to the typed Prolog realization of the one
+/-- Narrow services available to the typed Prolog realization of the one
 shared runtime.  `metaCall?` only recognizes a call instruction and exposes
-its heap roots; decoding remains a separate capability invoked by the engine
-itself. -/
+its heap roots; decoding remains a read-only capability invoked by the engine
+itself.  Optional exception content carries no heap, trail, or control
+authority. -/
 structure Services (sigma : LP.LPSignature) where
   metaCall? : RuntimeAtom sigma.scoped → Option (Addr × List Addr)
   decoder : LP.RuntimeQuery.MetaCallDecoder sigma (RuntimeGoal sigma.scoped)
+  /-- Optional language-level payload for `throw(Variable)`.  The shared
+  engine alone decides whether the heap root is unbound and raises it through
+  the canonical exception phases. -/
+  unboundThrowError : Option (LP.RuntimeException.Packet sigma) := none
 
 /-- Base typed control has no implicit meta-call authority. -/
 def noServices (sigma : LP.LPSignature) : Services sigma where
   metaCall? _ := none
   decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
     (RuntimeGoal sigma.scoped)
+  unboundThrowError := none
 
 /-- Typed source goals instantiate the shared query opener's narrow
 materializer interface.  The adapter supplies only heap materialization,
@@ -507,7 +513,7 @@ def dispatchActionWith {sigma : LP.LPSignature}
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .catch guarded catcher recovery => .catch guarded catcher recovery
-  | .throw ball => .throw ball
+  | .throw ball => .throw ball services.unboundThrowError
   | _ => .error .unsupportedInstruction
 
 /-- The established typed classifier has no meta-call service.  Concrete

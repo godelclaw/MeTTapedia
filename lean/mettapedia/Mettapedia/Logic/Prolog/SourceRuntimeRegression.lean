@@ -189,12 +189,18 @@ def packetCopySeparatesCaller : SourceSignature.Goal :=
   .catch (.throw (compound "box" [y])) (compound "box" [x])
     (.conj (.unify x (atom "a")) (.isVar y))
 
-/-- Known conformance boundary: SWI raises `instantiation_error` for a bare
-variable ball, while the current finite-packet transition accepts it.  This
-canary is intentionally paired with the expected-divergence gate. -/
-def throwVariableCurrentlyAccepted : SourceSignature.Goal :=
-  .catch (.throw y) x
-    (.conj (.unify x (atom "a")) (.isVar y))
+/-- A bare variable ball raises SWI's exact `throw/1` instantiation-error
+shape.  Recovery also verifies that unwinding did not bind the caller's
+original variable. -/
+def throwVariableRaisesInstantiationError : SourceSignature.Goal :=
+  let catcher := compound "error" [
+    atom "instantiation_error",
+    compound "context" [
+      compound ":" [atom "system", compound "/" [atom "throw", integer 1]],
+      z
+    ]
+  ]
+  .catch (.throw y) catcher (.isVar y)
 
 /-- One repeated packet variable remains shared after capture, freshening, and
 reinstallation, so incompatible recovery bindings fail. -/
@@ -224,6 +230,6 @@ def packetCopyPreservesSeparation : SourceSignature.Goal :=
 #guard runCount [] packetCopySeparatesCaller == some (1, 0, 0)
 #guard runCount [] packetCopyPreservesSharing == some (0, 0, 0)
 #guard runCount [] packetCopyPreservesSeparation == some (1, 0, 0)
-#guard runCount [] throwVariableCurrentlyAccepted == some (1, 0, 0)
+#guard runCount [] throwVariableRaisesInstantiationError == some (1, 0, 0)
 
 end Mettapedia.Logic.Prolog.SourceRuntimeRegression
