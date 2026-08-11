@@ -116,10 +116,12 @@ theorem cutEdges_card_eq_four
   change (dualWalkCrossingEdges (orbitFaceBoundary web.annular.RS)
     (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
     layers.localLayerLoop).card = 4
-  rw [dualWalkCrossingEdges,
-    Finset.card_image_of_injective _
-      (layers.localLayerLoop_crossingEdge_injective hunique),
-    Finset.card_univ, Fintype.card_fin]
+  rw [card_dualWalkCrossingEdges_eq_length_of_isCycle_core
+    (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))
+    (orbitFace_incidence_le_two web.annular.RS) hunique
+    layers.localLayerLoop
+    (layers.separatedLocalLayerPair_dualLoop_isCycle hunique)]
   simp [localLayerLoop, firstWalk, secondWalk]
 
 end LocalLayerPair

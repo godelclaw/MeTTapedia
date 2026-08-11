@@ -134,6 +134,25 @@ theorem dualWalkCrossingEdge_injective_of_isCycle_core
     exact hgraphEdge
   exact Fin.cast_injective walk.length_edges.symm (hinjective hget)
 
+/-- A simple facial-dual cycle of length `n` crosses exactly `n` distinct
+primal edges.  This belongs with the lightweight cycle-injectivity lemma, so
+open-tangle layer arguments need not import a closed-cubic collar stack just
+to count their literal boundary. -/
+theorem card_dualWalkCrossingEdges_eq_length_of_isCycle_core
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (hall : ∀ edge, totalIncidenceCount faceBoundary allFaces edge ≤ 2)
+    (hunique : PairwiseUniqueSharedInteriorEdges faceBoundary allFaces)
+    {start : AmbientFace allFaces}
+    (walk : (interiorDualGraph faceBoundary allFaces).Walk start start)
+    (hcycle : walk.IsCycle) :
+    (dualWalkCrossingEdges faceBoundary allFaces hunique walk).card =
+      walk.length := by
+  rw [dualWalkCrossingEdges,
+    Finset.card_image_of_injective _
+      (dualWalkCrossingEdge_injective_of_isCycle_core faceBoundary allFaces
+        hall hunique walk hcycle),
+    Finset.card_univ, Fintype.card_fin]
+
 end
 
 end GoertzelV24DualPathTransversal
