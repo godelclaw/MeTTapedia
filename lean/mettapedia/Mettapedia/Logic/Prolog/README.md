@@ -1,14 +1,26 @@
-# Prolog Goal Language
+# Prolog over the Logic Programming Kernel
+
+The engine-facing syntax is [`Goal`](Syntax.lean), parameterized by the same
+`LPSignature` used throughout `Logic.LP`. Predicate calls contain `LP.Atom`
+directly, data arguments are `LP.Term`, and a definite `LP.Program` embeds into
+the richer Prolog program clause-for-clause. The inverse projection is proved
+exact on that pure fragment. This is the representation intended for the one
+executable Prolog lane.
+
+The older `PrologGoal`/`PEnv` relation in `Core.lean` and `Eval.lean` is a
+`MeTTaIL.Pattern`-level characterization used by the ISO fixture corpus. It is
+not an executable resolver and does not replace or specify the `Logic.LP`
+runtime.
 
 Prolog runs a program by *searching* for a proof and *backtracking* when a branch
 fails — and one operator, the **cut** (`!`), prunes that search by committing to
 choices already made. Getting cut right (where it is "caught", what it discards) is
-the subtle heart of Prolog's control flow. This directory gives a Prolog-style goal
-language a precise operational semantics in Lean 4, including cut, and then *proves*
-that the formal semantics agrees with a real ISO Prolog on a corpus of conformance
-tests.
+the subtle heart of Prolog's control flow. The characterization relation gives
+these operators a precise semantics in Lean 4, while a separate executable
+harness differentially checks aligned fixtures against SWI-Prolog. The external
+comparison is evidence, not a Lean proof about SWI.
 
-The goal language (`PrologGoal` in [Core.lean](Core.lean)) has 14 constructors:
+The characterization language (`PrologGoal` in [Core.lean](Core.lean)) has 14 constructors:
 ISO control predicates (`succeed`, `fail`, `cut`), logical connectives (`conj`,
 `disj`, `ite`), determinism and negation-as-failure (`once`, `neg`), unification
 (`unify`, `notUnify`), meta-predicates (`findall`, `isVar`), and MeTTa-specific
@@ -36,7 +48,8 @@ lake build Mettapedia.Logic.Prolog.Prolog
 
 | Module | What it does |
 |--------|-------------|
-| [Core.lean](Core.lean) | `PrologGoal` inductive (14 constructors), `PEnv` environment, helper functions |
+| [Syntax.lean](Syntax.lean) | canonical LP-based `Goal`, control-aware `Clause`, and exact pure-Horn embedding |
+| [Core.lean](Core.lean) | pattern-level `PrologGoal`, `PEnv`, and fixture helpers |
 | [Eval.lean](Eval.lean) | `PrologEval` operational semantics with cut-aware control flow |
 | [RuntimeErrorSpec.lean](RuntimeErrorSpec.lean) | ISO runtime-error boundary: maps 4 out-of-model ISO IDs to error classes |
 | [FixtureCorpus.lean](FixtureCorpus.lean) | 242 proven fixture theorems sourced from Logtalk ISO tests |
@@ -68,7 +81,8 @@ rather than executed in `PrologEval`.
 
 ## Formalization status
 
-All 5 `.lean` files in this directory are `sorry`-free. The semantics is an
+The canonical syntax and its embedding theorems are `sorry`-free. The older
+characterization files are also `sorry`-free. The characterization semantics is an
 inductive relation (`PrologEval`); the 242 fixture theorems and the 4 runtime-error
 boundary declarations are discharged constructively (many by `rfl`).
 
