@@ -6,8 +6,8 @@ import Mettapedia.Logic.Prolog.Syntax
 This module instantiates the canonical `Logic.LP` representation with the
 symbols and atomic values needed by a Prolog reader. Predicate and compound
 symbols include their arity, matching SWI-Prolog's predicate-indicator and
-functor discipline. Compounds have positive arity by construction; source
-atoms and other zero-arity values use `Constant` instead.
+functor discipline. Atoms and zero-arity compounds such as `f()` remain
+distinct, as they are in modern SWI-Prolog.
 
 Variables carry an occurrence identity in addition to their source spelling.
 A reader can therefore share repeated named variables while assigning every
@@ -39,28 +39,12 @@ structure PredicateIndicator where
   arity : Nat
 deriving DecidableEq, Repr
 
-/-- A compound functor has positive arity. Zero-arity syntax is represented
-by `Constant.atom`, so the two source forms cannot be confused. -/
+/-- Compound identity includes arity. Arity zero represents explicit `f()`
+syntax and remains distinct from the atom `f`. -/
 structure CompoundIndicator where
   name : String
   arity : Nat
-  positive : 0 < arity
-
-@[ext]
-theorem CompoundIndicator.ext
-    {first second : CompoundIndicator}
-    (name : first.name = second.name) (arity : first.arity = second.arity) :
-    first = second := by
-  cases first
-  cases second
-  simp_all
-
-instance : DecidableEq CompoundIndicator := fun first second =>
-  if hName : first.name = second.name then
-    if hArity : first.arity = second.arity then
-      isTrue (CompoundIndicator.ext hName hArity)
-    else isFalse fun equal => hArity (congrArg CompoundIndicator.arity equal)
-  else isFalse fun equal => hName (congrArg CompoundIndicator.name equal)
+deriving DecidableEq, Repr
 
 /-- The concrete signature consumed by the source reader and the same LP
 runtime used by hand-constructed and verified programs. -/
@@ -86,22 +70,10 @@ def string (value : String) : Term := .const (.string value)
 def var (spelling : String) (occurrence : Nat) : Term :=
   .var { spelling, occurrence }
 
-/-- Build a positive-arity compound from an already ordered, nonempty
-argument list. Its arity index is the list length, so malformed compounds
-cannot be constructed by the reader. -/
-def compound (name : String) : (args : List Term) → args ≠ [] → Term
-  | [], nonempty => nomatch nonempty rfl
-  | first :: rest, _ =>
-      .app {
-        name
-        arity := (first :: rest).length
-        positive := by simp
-      } (first :: rest).get
-
-/-- Checked compound constructor used at the parser boundary. -/
-def compound? (name : String) : List Term → Option Term
-  | [] => none
-  | first :: rest => some (compound name (first :: rest) (by simp))
+/-- Build a compound whose arity index is exactly its ordered argument-list
+length. The empty list constructs explicit zero-arity compound syntax. -/
+def compound (name : String) (args : List Term) : Term :=
+  .app { name, arity := args.length } args.get
 
 /-- Build one relation atom with arity exactly equal to its ordered argument
 list length. Name-equal predicates at different arities remain distinct. -/
@@ -117,18 +89,10 @@ def call (name : String) (args : List Term) : Goal :=
 def nil : Term := atom "[]"
 
 def cons (head tail : Term) : Term :=
-  compound "[|]" [head, tail] (by simp)
+  compound "[|]" [head, tail]
 
 def list (elements : List Term) (tail : Term := nil) : Term :=
   elements.foldr cons tail
-
-@[simp]
-theorem compound?_nil (name : String) : compound? name [] = none := rfl
-
-@[simp]
-theorem compound?_cons (name : String) (first : Term) (rest : List Term) :
-    compound? name (first :: rest) =
-      some (compound name (first :: rest) (by simp)) := rfl
 
 @[simp]
 theorem predicate_arity (name : String) (args : List Term) :
@@ -147,5 +111,10 @@ theorem anonymous_occurrences_distinct (first second : Nat)
       { spelling := "_", occurrence := second } := by
   intro equal
   exact different (congrArg Variable.occurrence equal)
+
+theorem atom_ne_zero_arity_compound (name : String) :
+    atom name ≠ compound name [] := by
+  intro equal
+  cases equal
 
 end Mettapedia.Logic.Prolog.SourceSignature
