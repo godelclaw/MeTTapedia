@@ -171,31 +171,95 @@ theorem readTermFuel_of_root {σ : LPSignature} {heap : Heap σ}
                 readTermFuel_const heap extra address symbol hcell]
           | app symbol args => exact absurd hcell (ff address symbol args)
 
-/-- Converged addresses have equal finite readbacks: the load-bearing bridge
-from machine facts to term equality.  Stated `.ok`-conditionally so cyclic
-(rational) readbacks are excluded honestly rather than silently. -/
-theorem ConvergedAt.readTerm_eq {σ : LPSignature} {heap : Heap σ}
-    (ff : FunctionFree heap) {left right : Addr}
-    (converged : ConvergedAt heap left right)
+/-- Walking a dereference chain down to its root never needs more readback
+fuel.  Unlike `readTermFuel_of_root`, this statement is valid for application
+roots: it transports one *successful* finite readback instead of equating two
+different fuel budgets syntactically. -/
+theorem readTermFuel_descend {σ : LPSignature} {heap : Heap σ} :
+    ∀ (chainFuel : Nat) (address root : Addr),
+      Heap.derefLoop heap chainFuel address = .ok (.root root) →
+      ∀ (readFuel : Nat) (term : Term σ),
+        readTermFuel heap readFuel address = .ok term →
+        ∃ rootFuel ≤ readFuel,
+          readTermFuel heap rootFuel root = .ok term := by
+  intro chainFuel
+  induction chainFuel with
+  | zero =>
+      intro address root h
+      simp [Heap.derefLoop] at h
+  | succ chainFuel ih =>
+      intro address root h readFuel term hread
+      cases hcell : heap[address]? with
+      | none => simp [Heap.derefLoop, hcell] at h
+      | some cell =>
+          cases cell with
+          | var identity link =>
+              cases link with
+              | some target =>
+                  simp only [Heap.derefLoop, hcell] at h
+                  cases readFuel with
+                  | zero => simp [readTermFuel] at hread
+                  | succ readFuel =>
+                      rw [readTermFuel_link heap readFuel address target
+                        identity hcell] at hread
+                      obtain ⟨rootFuel, hle, hroot⟩ :=
+                        ih target root h readFuel term hread
+                      exact ⟨rootFuel, Nat.le_succ_of_le hle, hroot⟩
+              | none =>
+                  simp only [Heap.derefLoop, hcell] at h
+                  obtain rfl : address = root := by simpa using h
+                  exact ⟨readFuel, Nat.le_refl _, hread⟩
+          | const symbol =>
+              simp only [Heap.derefLoop, hcell] at h
+              obtain rfl : address = root := by simpa using h
+              exact ⟨readFuel, Nat.le_refl _, hread⟩
+          | app symbol args =>
+              simp only [Heap.derefLoop, hcell] at h
+              obtain rfl : address = root := by simpa using h
+              exact ⟨readFuel, Nat.le_refl _, hread⟩
+
+/-- Converged addresses have equal finite readbacks on arbitrary heaps.
+Application nodes are allowed; rational cycles remain excluded explicitly by
+the two `.ok` premises. -/
+theorem ConvergedAt.readTerm_eq_finite {σ : LPSignature} {heap : Heap σ}
+    {left right : Addr} (converged : ConvergedAt heap left right)
     {leftTerm rightTerm : Term σ}
     (hLeft : Heap.readTerm heap left = .ok leftTerm)
     (hRight : Heap.readTerm heap right = .ok rightTerm) :
     leftTerm = rightTerm := by
-  obtain ⟨fuel, root, hL, hR⟩ := converged
-  have hLBig : readTermFuel heap (fuel + (heap.size + 1)) left = .ok leftTerm :=
-    readTermFuel_mono_le heap (by omega) left leftTerm hLeft
-  have hRBig : readTermFuel heap (fuel + (heap.size + 1)) right = .ok rightTerm :=
-    readTermFuel_mono_le heap (by omega) right rightTerm hRight
-  have hLRoot := readTermFuel_of_root ff fuel left root hL (heap.size + 1)
-  have hRRoot := readTermFuel_of_root ff fuel right root hR (heap.size + 1)
-  have chain : (Except.ok leftTerm : Except ReadbackError (Term σ)) =
-      .ok rightTerm := by
-    calc (Except.ok leftTerm : Except ReadbackError (Term σ))
-        = readTermFuel heap (fuel + (heap.size + 1)) left := hLBig.symm
-      _ = readTermFuel heap (1 + (heap.size + 1)) root := hLRoot
-      _ = readTermFuel heap (fuel + (heap.size + 1)) right := hRRoot.symm
-      _ = Except.ok rightTerm := hRBig
-  simpa using chain
+  obtain ⟨chainFuel, root, hL, hR⟩ := converged
+  let commonFuel := chainFuel + (heap.size + 1)
+  have hLBig : readTermFuel heap commonFuel left = .ok leftTerm :=
+    readTermFuel_mono_le heap (by
+      dsimp [commonFuel]
+      omega) left leftTerm hLeft
+  have hRBig : readTermFuel heap commonFuel right = .ok rightTerm :=
+    readTermFuel_mono_le heap (by
+      dsimp [commonFuel]
+      omega) right rightTerm hRight
+  obtain ⟨leftFuel, hLeftLe, hLeftRoot⟩ :=
+    readTermFuel_descend chainFuel left root hL commonFuel leftTerm hLBig
+  obtain ⟨rightFuel, hRightLe, hRightRoot⟩ :=
+    readTermFuel_descend chainFuel right root hR commonFuel rightTerm hRBig
+  have hLeftCommon : readTermFuel heap commonFuel root = .ok leftTerm :=
+    readTermFuel_mono_le heap hLeftLe root leftTerm hLeftRoot
+  have hRightCommon : readTermFuel heap commonFuel root = .ok rightTerm :=
+    readTermFuel_mono_le heap hRightLe root rightTerm hRightRoot
+  have : (Except.ok leftTerm : Except ReadbackError (Term σ)) =
+      .ok rightTerm := hLeftCommon.symm.trans hRightCommon
+  simpa using this
+
+/-- Converged addresses have equal finite readbacks: the load-bearing bridge
+from machine facts to term equality.  Stated `.ok`-conditionally so cyclic
+(rational) readbacks are excluded honestly rather than silently. -/
+theorem ConvergedAt.readTerm_eq {σ : LPSignature} {heap : Heap σ}
+    (_ff : FunctionFree heap) {left right : Addr}
+    (converged : ConvergedAt heap left right)
+    {leftTerm rightTerm : Term σ}
+    (hLeft : Heap.readTerm heap left = .ok leftTerm)
+    (hRight : Heap.readTerm heap right = .ok rightTerm) :
+    leftTerm = rightTerm :=
+  converged.readTerm_eq_finite hLeft hRight
 
 /-! ## Write-frame facts for machine bindings -/
 
