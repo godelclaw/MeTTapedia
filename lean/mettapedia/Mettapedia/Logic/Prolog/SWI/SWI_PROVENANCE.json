@@ -158,6 +158,16 @@
     },
     {
       "project": "swi-prolog",
+      "path": "library/lists.pl",
+      "sha256": "386f3c5f1ee00bc79103cc12628d6ad83b6141e1bf3fdbf41e7bf6b579e902ce"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/error.pl",
+      "sha256": "c405f2f07a41028dcab5e7f45d1fb1dc076793fa5c77370c5f9dfaa753a4eb78"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-bag.c",
       "sha256": "94818d9d14312c5e3776436d33f46762653dd0c04ca578827aa5417004b14182"
     },
@@ -565,7 +575,9 @@
         "src/pl-srcfile.c",
         "src/pl-comp.c",
         "boot/dcg.pl",
-        "library/dcg/basics.pl"
+        "library/dcg/basics.pl",
+        "library/lists.pl",
+        "library/error.pl"
       ],
       "anchors": [
         "startReconsultFile",

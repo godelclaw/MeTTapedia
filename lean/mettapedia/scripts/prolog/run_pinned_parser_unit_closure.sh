@@ -24,22 +24,28 @@ trap 'rm -rf "$TMP"' EXIT
 git -C "$PETTA_TREE" archive "$PIN" src/parser.pl | tar -x -C "$TMP"
 DCG_BASICS="$(swipl -q -g \
   "absolute_file_name(library('dcg/basics'), P, [file_type(prolog), access(read)]), write(P), halt")"
+LISTS="$(swipl -q -g \
+  "absolute_file_name(library(lists), P, [file_type(prolog), access(read)]), write(P), halt")"
+ERROR="$(swipl -q -g \
+  "absolute_file_name(library(error), P, [file_type(prolog), access(read)]), write(P), halt")"
 
 pushd "$ROOT_DIR" >/dev/null
 lake env lean --run scripts/prolog/pinned_parser_unit_closure.lean \
-  "$TMP/src/parser.pl" "$DCG_BASICS" > "$TMP/actual"
+  "$TMP/src/parser.pl" "$DCG_BASICS" "$LISTS" "$ERROR" > "$TMP/actual"
 popd >/dev/null
 
 cat > "$TMP/expected" <<'EOF'
-units=2
+units=4
 unit:parser clauses=30 imports=1 directives=1
 unit:library(dcg/basics) clauses=58 imports=2 directives=3
-external=library(lists) options=0
-external=library(error) options=0
-linked_clauses=88
-declarations=0
-pending_goals=0
+unit:library(lists) clauses=110 imports=2 directives=5
+unit:library(error) clauses=99 imports=1 directives=7
+external=library(pairs) options=1
+external=library(debug) options=1
+linked_clauses=297
+declarations=4
+pending_goals=3
 EOF
 
 diff -u "$TMP/expected" "$TMP/actual"
-echo "Pinned parser source-unit closure: PASS (88 canonical clauses; externals explicit)"
+echo "Pinned parser source-unit closure: PASS (297 canonical clauses; obligations explicit)"

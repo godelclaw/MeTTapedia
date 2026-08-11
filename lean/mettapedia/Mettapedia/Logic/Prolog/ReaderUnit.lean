@@ -79,6 +79,11 @@ private def declarationName : String -> Bool
   | "volatile" | "table" => true
   | _ => false
 
+private def declarationGoal : SourceSignature.Goal -> Bool
+  | .call atom => declarationName atom.symbol.name
+  | .conj left right => declarationGoal left && declarationGoal right
+  | _ => false
+
 private def directiveOfGoal (position : Nat) : SourceSignature.Goal ->
     Except (Error epsilon) Directive
   | goal@(.call atom) =>
@@ -115,7 +120,9 @@ private def directiveOfGoal (position : Nat) : SourceSignature.Goal ->
       | name, _ =>
           if declarationName name then .ok (.declaration goal)
           else .ok (.loadGoal goal)
-  | goal => .ok (.loadGoal goal)
+  | goal =>
+      if declarationGoal goal then .ok (.declaration goal)
+      else .ok (.loadGoal goal)
 
 private def itemsAux : Nat -> List ReaderSource.Form ->
     Except (Error epsilon) (List Item)

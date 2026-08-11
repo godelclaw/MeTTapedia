@@ -122,4 +122,14 @@ def unknownImportFailsClosed : Bool :=
 
 #guard unknownImportFailsClosed
 
+def parserLibraryFrontierHasNoImportedOperators : Bool :=
+  match loadSourceWith
+      (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa) defaults
+      ":- use_module(library(pairs)). \
+       :- use_module(library(debug)). p." with
+  | .ok result => result.forms.length = 3
+  | .error _ => false
+
+#guard parserLibraryFrontierHasNoImportedOperators
+
 end Mettapedia.Logic.Prolog.ReaderLoaderRegression

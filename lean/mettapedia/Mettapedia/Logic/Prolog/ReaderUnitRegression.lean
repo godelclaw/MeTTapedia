@@ -89,4 +89,12 @@ def excessiveImportArityFailsClosed : Bool :=
 
 #guard excessiveImportArityFailsClosed
 
+def groupedDeclarationsRemainDeclarations : Bool :=
+  match load
+      ":- meta_predicate first(0), second(1)." with
+  | some unit => unit.declarations.length == 1 && unit.pendingGoals.isEmpty
+  | none => false
+
+#guard groupedDeclarationsRemainDeclarations
+
 end Mettapedia.Logic.Prolog.ReaderUnitRegression
