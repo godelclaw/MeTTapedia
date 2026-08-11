@@ -1,4 +1,6 @@
 import Mettapedia.Logic.Prolog.Syntax
+import Mettapedia.Logic.Prolog.PureRuntimeSoundness
+import Mettapedia.Logic.Prolog.PureRuntimeRegression
 import Mettapedia.Logic.Prolog.Core
 import Mettapedia.Logic.Prolog.Eval
 import Mettapedia.Logic.Prolog.RuntimeErrorSpec
@@ -35,6 +37,9 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | File | Contents |
 |------|----------|
 | `Syntax` | canonical `Goal` and `Clause` over `Logic.LP`, exact pure-Horn embedding |
+| `PureRuntime` | demand-driven pure-Prolog entrypoint delegating to the canonical LP runtime |
+| `PureRuntimeSoundness` | transport of runtime answers to standardized-apart SLD and the least Herbrand model |
+| `PureRuntimeRegression` | ordered-answer and control-rejection executable gates |
 | `Core` | pattern-level `PrologGoal`, `PEnv`, and fixture helpers |
 | `Eval` | `EvalOracle`, `PrologSpace`, `PrologEvalResult` (normal/cutThrown), `PrologEval` (inductive), `PrologConjAll` (derived Prop) |
 | `RuntimeErrorSpec` | theorem-level ISO runtime-error boundary map (`instantiation_error`, `type_error(callable, ...)`) |
