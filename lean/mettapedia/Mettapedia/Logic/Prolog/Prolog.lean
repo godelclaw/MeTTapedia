@@ -11,6 +11,9 @@ import Mettapedia.Logic.Prolog.ReaderTerm
 import Mettapedia.Logic.Prolog.ReaderTermRegression
 import Mettapedia.Logic.Prolog.ReaderSource
 import Mettapedia.Logic.Prolog.ReaderSourceRegression
+import Mettapedia.Logic.Prolog.ClauseReflection
+import Mettapedia.Logic.Prolog.ClauseReflectionRegression
+import Mettapedia.Logic.Prolog.ClauseReflectionAudit
 import Mettapedia.Logic.Prolog.ReaderLoader
 import Mettapedia.Logic.Prolog.ReaderDirective
 import Mettapedia.Logic.Prolog.ReaderSWIProfile
@@ -68,6 +71,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderOperator` | checked ISO/SWI operator declarations and dynamic updates |
 | `ReaderTerm` | operator-aware parsing directly into canonical `Logic.LP.Term` |
 | `ReaderSource` | direct clause/directive/DCG classification and normalized clause provenance on canonical terms |
+| `ClauseReflection` | fail-closed source-clause reclassification and complete executable-code agreement |
 | `ReaderLoader` | sequential term loading with explicit between-term effects |
 | `ReaderDirective` | local and imported read-time operator effects |
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
