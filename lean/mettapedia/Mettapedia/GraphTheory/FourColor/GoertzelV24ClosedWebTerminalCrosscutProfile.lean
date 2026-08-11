@@ -26,6 +26,7 @@ namespace GoertzelV24ClosedWebAtGoodWord
 
 open GoertzelV24AnnularCrosscut
 open GoertzelV24AnnularCrosscut.SeparatedAlignedSimpleDualCrosscuts
+open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
@@ -33,6 +34,7 @@ open GoertzelV24DualPathTransversal
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24GraphDerivedTerminalProfile
+open GoertzelV24RotationBoundaryFaceCutProfile
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24SpliceUnification
 open GoertzelV24SpliceUnification.OrderedCutSidesData
@@ -238,6 +240,102 @@ theorem sourceCrosscutTerminalLayerSpliceData_innerBoundaryKept
       (sourceCrosscutTerminalLayerSpliceData web pair boundary hseparated) := by
   intro terminal dart hdart
   exact hinner terminal dart hdart
+
+/-- A width-two source crosscut pair has at most eight occurrence-sensitive
+face fragments.  The bound comes from the literal four-edge deletion boundary:
+two crossings on each of the aligned transversals. -/
+theorem sourceCrosscutTerminal_faceFragmentCount_le_eight
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring}
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData
+      web.annular.cellulation.rotation pair)
+    (hwidth : pair.left.walk.length = 2) :
+    pair.sourceCrosscutFaceFragmentCount
+        web.annular.cellulation.rotation boundary ≤ 8 := by
+  let inside := pair.componentSide boundary.component
+  have hrightWidth : pair.right.walk.length = 2 :=
+    pair.length_eq.symm.trans hwidth
+  calc
+    pair.sourceCrosscutFaceFragmentCount
+        web.annular.cellulation.rotation boundary =
+        Fintype.card (BoundaryRegionalFragment web.annular.RS
+          (vertexSetCrossingEdges web.annular.RS inside)
+          (vertexSetRegionEdges web.annular.RS inside)) := rfl
+    _ ≤ 2 * Fintype.card (VertexSetCrossingEdge web.annular.RS inside) :=
+      vertexSetBoundaryGraphCutData_fragmentCount_le_two_mul_crossingPortCount_of_dartOccurrences
+        web.annular.RS inside
+    _ = 8 := by
+      rw [pair.componentSide_crossingCard_eq_interfaceWidths
+        web.annular.cellulation.rotation boundary.component
+        boundary.component_boundary]
+      omega
+
+/-- The left terminal-aware source profile in the common width-two,
+five-terminal, eight-fragment carrier.  Every coordinate is the existing
+graph-computed profile; only its dependent fragment count is packaged. -/
+noncomputable def sourceCrosscutLeftTerminalBoundedProfile
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData
+      web.annular.cellulation.rotation pair)
+    (hwidth : pair.left.walk.length = 2)
+    (ambientColoring : web.annular.RS.EdgeColoring Color)
+    (hambientColoring : web.annular.RS.IsTaitEdgeColoring ambientColoring) :
+    Cell3TerminalAwareProfile := by
+  refine {
+    faceFragmentCount := ⟨_, Nat.lt_succ_of_le
+      (sourceCrosscutTerminal_faceFragmentCount_le_eight pair boundary hwidth)⟩
+    profile := ?_ }
+  rw [← hwidth]
+  exact (sourceCrosscutLeftCutDataWithInnerTerminals web pair boundary).profile
+    ambientColoring hambientColoring
+
+/-- The aligned right source profile in the same fixed terminal-aware
+carrier.  Its crossing coordinate is already transported to the left source
+order by the crosscut construction. -/
+noncomputable def sourceCrosscutRightTerminalBoundedProfile
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData
+      web.annular.cellulation.rotation pair)
+    (hwidth : pair.left.walk.length = 2)
+    (ambientColoring : web.annular.RS.EdgeColoring Color)
+    (hambientColoring : web.annular.RS.IsTaitEdgeColoring ambientColoring) :
+    Cell3TerminalAwareProfile := by
+  refine {
+    faceFragmentCount := ⟨_, Nat.lt_succ_of_le
+      (sourceCrosscutTerminal_faceFragmentCount_le_eight pair boundary hwidth)⟩
+    profile := ?_ }
+  rw [← hwidth]
+  exact (sourceCrosscutRightCutDataWithInnerTerminals web pair boundary).profile
+    ambientColoring hambientColoring
 
 /-- Every crossing and terminal port of the terminal-aware left source
 profile is a literal edge of its retained-side region. -/
