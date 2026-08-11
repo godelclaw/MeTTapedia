@@ -244,6 +244,205 @@ theorem sourceCorridorSerialPrefixFaceReachable_succ_iff
     hcubic hrotation htwoSided hunique hcut root]
   exact reachable_sup_sup_iff_threeFactorComponentClosure _ _ _ _ _
 
+/-- The tracked seam between the genuine open input prefix and its next
+literal Cell.  Unlike the older bare-prefix seam, the left factor contains
+the displayed incoming cut edges even at offset zero. -/
+def sourceCorridorSerialInputTrackedSeamGraphAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color) (first second : Color) :
+    SimpleGraph G.edgeSet :=
+  regionalTrackedSeamGraph
+    embedded.cellulation.rotation.toRotationSystem
+    (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    (sourceSlabLiteralCellRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    color first second
+
+/-- The tracked graph of the output profile is exactly the open input
+profile graph, the literal Cell graph, and their residual seam. -/
+theorem sourceCorridorSerialPrefixTrackedGraph_eq_input_three_factor
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color) (first second : Color) :
+    regionalTrackedEdgeGraph embedded.cellulation.rotation.toRotationSystem
+        (sourceCorridorSerialPrefixRegion realization hcubic hrotation
+          htwoSided hunique (offset.val + 1)) color first second =
+      (regionalTrackedEdgeGraph embedded.cellulation.rotation.toRotationSystem
+          (sourceCorridorSerialCutRegionAt realization hcubic hrotation
+            htwoSided hunique offset) color first second ⊔
+        regionalTrackedEdgeGraph embedded.cellulation.rotation.toRotationSystem
+          (sourceSlabLiteralCellRegionAt realization hcubic hrotation
+            htwoSided hunique offset) color first second) ⊔
+        sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic
+          hrotation htwoSided hunique offset color first second := by
+  rw [← sourceCorridorSerialCutRegionAt_union_cell realization hcubic
+    hrotation htwoSided hunique offset]
+  exact regionalTrackedEdgeGraph_union_eq_sup_sup_seam
+    embedded.cellulation.rotation.toRotationSystem
+    (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    (sourceSlabLiteralCellRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    color first second
+
+/-- Output-profile tracked connectivity is the three-factor closure of the
+open input profile, the literal Cell, and their residual seam. -/
+theorem sourceCorridorSerialPrefixTrackedReachable_input_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color) (first second : Color)
+    (left right : G.edgeSet) :
+    (regionalTrackedEdgeGraph embedded.cellulation.rotation.toRotationSystem
+      (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1)) color first second).Reachable left right ↔
+      Relation.ReflTransGen
+        (ThreeFactorComponentStep
+          (regionalTrackedEdgeGraph
+            embedded.cellulation.rotation.toRotationSystem
+            (sourceCorridorSerialCutRegionAt realization hcubic hrotation
+              htwoSided hunique offset) color first second)
+          (regionalTrackedEdgeGraph
+            embedded.cellulation.rotation.toRotationSystem
+            (sourceSlabLiteralCellRegionAt realization hcubic hrotation
+              htwoSided hunique offset) color first second)
+          (sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic
+            hrotation htwoSided hunique offset color first second)) left right := by
+  rw [sourceCorridorSerialPrefixTrackedGraph_eq_input_three_factor realization
+    hcubic hrotation htwoSided hunique offset color first second]
+  exact reachable_sup_sup_iff_threeFactorComponentClosure _ _ _ _ _
+
+/-- The occurrence-sensitive facial seam between the genuine open input
+prefix and its next literal Cell. -/
+def sourceCorridorSerialInputFaceSeamGraphAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (root : embedded.cellulation.rotation.toRotationSystem.D) :=
+  faceRegionalSeamGraph embedded.cellulation.rotation.toRotationSystem root
+    (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+    (sourceSlabLiteralCellRegionAt realization hcubic hrotation htwoSided
+      hunique offset)
+
+/-- The output profile's occurrence graph has the same exact open-input,
+Cell, and residual-seam decomposition as its tracked graph. -/
+theorem sourceCorridorSerialPrefixFaceGraph_eq_input_three_factor
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (root : embedded.cellulation.rotation.toRotationSystem.D) :
+    faceRegionalAmbientPositionGraph
+        embedded.cellulation.rotation.toRotationSystem root
+        (sourceCorridorSerialPrefixRegion realization hcubic hrotation
+          htwoSided hunique (offset.val + 1)) =
+      (faceRegionalAmbientPositionGraph
+          embedded.cellulation.rotation.toRotationSystem root
+          (sourceCorridorSerialCutRegionAt realization hcubic hrotation
+            htwoSided hunique offset) ⊔
+        faceRegionalAmbientPositionGraph
+          embedded.cellulation.rotation.toRotationSystem root
+          (sourceSlabLiteralCellRegionAt realization hcubic hrotation
+            htwoSided hunique offset)) ⊔
+        sourceCorridorSerialInputFaceSeamGraphAt realization hcubic hrotation
+          htwoSided hunique offset root := by
+  rw [← sourceCorridorSerialCutRegionAt_union_cell realization hcubic
+    hrotation htwoSided hunique offset]
+  exact faceRegionalAmbientPositionGraph_union_eq_sup_sup_seam _ _ _ _
+
+/-- Output-profile facial continuation is the three-factor closure of the
+open input profile, the literal Cell, and their residual seam. -/
+theorem sourceCorridorSerialPrefixFaceReachable_input_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (root : embedded.cellulation.rotation.toRotationSystem.D)
+    (left right : Fin
+      (embedded.cellulation.rotation.toRotationSystem.faceOrbit root).card) :
+    (faceRegionalAmbientPositionGraph
+      embedded.cellulation.rotation.toRotationSystem root
+      (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1))).Reachable left right ↔
+      Relation.ReflTransGen
+        (ThreeFactorComponentStep
+          (faceRegionalAmbientPositionGraph
+            embedded.cellulation.rotation.toRotationSystem root
+            (sourceCorridorSerialCutRegionAt realization hcubic hrotation
+              htwoSided hunique offset))
+          (faceRegionalAmbientPositionGraph
+            embedded.cellulation.rotation.toRotationSystem root
+            (sourceSlabLiteralCellRegionAt realization hcubic hrotation
+              htwoSided hunique offset))
+          (sourceCorridorSerialInputFaceSeamGraphAt realization hcubic
+            hrotation htwoSided hunique offset root)) left right := by
+  rw [sourceCorridorSerialPrefixFaceGraph_eq_input_three_factor realization
+    hcubic hrotation htwoSided hunique offset root]
+  exact reachable_sup_sup_iff_threeFactorComponentClosure _ _ _ _ _
+
 /-- Complete graph-derived cut data on the open prefix immediately before
 one indexed Cell.  The region contains the two displayed input stubs even at
 offset zero, so this is a genuine finite interface rather than an empty
