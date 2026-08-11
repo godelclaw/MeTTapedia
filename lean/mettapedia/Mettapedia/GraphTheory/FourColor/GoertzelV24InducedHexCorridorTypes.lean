@@ -83,19 +83,20 @@ theorem dartOrbitFace_alpha_eq_of_mem_other_face
   · exact (hne hsame.symm).elim
   · exact hopposite.symm
 
-/-- At a locally cubic rotated corner, the two faces across its consecutive
-boundary edges share the third edge at the corner.  The local condition is at
-the endpoint of the opposite dart, which is the only vertex used in the
-three-turn calculation. -/
-theorem oppositeFaces_adjacent_at_locally_cubic_corner
+/-- At a locally cubic rotated corner, the two faces across consecutive
+boundary edges share the literal third edge at that corner.  Keeping the
+edge, rather than only the resulting dual adjacency, is needed when a source
+layer is read back as an exact primal cut. -/
+theorem thirdEdge_mem_sharedInteriorEdges_at_locally_cubic_corner
     (RS : RotationSystem V E) (hrotation : VertexRotationCyclic RS) (dart : RS.D)
     (hcard : (RS.dartsAt (RS.vertOf (RS.alpha dart))).card = 3)
     (hne : dartOrbitFace RS (RS.alpha dart) ≠
       dartOrbitFace RS (RS.alpha (RS.phi dart))) :
-    (interiorDualGraph (orbitFaceBoundary RS)
-      (Finset.univ : Finset (OrbitFace RS))).Adj
-        ⟨dartOrbitFace RS (RS.alpha dart), Finset.mem_univ _⟩
-        ⟨dartOrbitFace RS (RS.alpha (RS.phi dart)), Finset.mem_univ _⟩ := by
+    RS.edgeOf (RS.rho (RS.phi dart)) ∈
+      sharedInteriorEdges (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))
+        (dartOrbitFace RS (RS.alpha dart))
+        (dartOrbitFace RS (RS.alpha (RS.phi dart))) := by
   let third := RS.rho (RS.phi dart)
   have hthirdRho : RS.rho third = RS.alpha dart := by
     have hcube := rho_cube_apply_of_dartsAt_card_eq_three RS hrotation
@@ -116,9 +117,36 @@ theorem oppositeFaces_adjacent_at_locally_cubic_corner
       orbitFaceBoundary RS (dartOrbitFace RS (RS.alpha (RS.phi dart))) := by
     rw [dartOrbitFace_alpha_eq_dartOrbitFace_rho RS (RS.phi dart)]
     exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS third
-  exact interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
-    (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))
-      (orbitFace_incidence_le_two RS) hne hleft hright
+  apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary RS)
+    (Finset.univ : Finset (OrbitFace RS))).2
+  refine ⟨?_, hleft, hright⟩
+  exact (mem_interiorEdgeSupport_iff (orbitFaceBoundary RS)
+    (Finset.univ : Finset (OrbitFace RS))).2
+      ⟨Finset.mem_biUnion.2
+          ⟨dartOrbitFace RS (RS.alpha dart), Finset.mem_univ _, hleft⟩,
+        totalIncidenceCount_eq_two_of_mem_faceBoundary_of_mem_faceBoundary_of_ne
+          (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))
+          (orbitFace_incidence_le_two RS) (Finset.mem_univ _)
+          (Finset.mem_univ _) hne hleft hright⟩
+
+/-- At a locally cubic rotated corner, the two faces across its consecutive
+boundary edges share the third edge at the corner.  The local condition is at
+the endpoint of the opposite dart, which is the only vertex used in the
+three-turn calculation. -/
+theorem oppositeFaces_adjacent_at_locally_cubic_corner
+    (RS : RotationSystem V E) (hrotation : VertexRotationCyclic RS) (dart : RS.D)
+    (hcard : (RS.dartsAt (RS.vertOf (RS.alpha dart))).card = 3)
+    (hne : dartOrbitFace RS (RS.alpha dart) ≠
+      dartOrbitFace RS (RS.alpha (RS.phi dart))) :
+    (interiorDualGraph (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Adj
+        ⟨dartOrbitFace RS (RS.alpha dart), Finset.mem_univ _⟩
+        ⟨dartOrbitFace RS (RS.alpha (RS.phi dart)), Finset.mem_univ _⟩ := by
+  exact (interiorDualGraph_adj_iff_sharedInteriorEdges_nonempty
+    (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))).2
+      ⟨hne, ⟨RS.edgeOf (RS.rho (RS.phi dart)),
+        thirdEdge_mem_sharedInteriorEdges_at_locally_cubic_corner
+          RS hrotation dart hcard hne⟩⟩
 
 /-- At a cubic rotated corner, the two faces across its consecutive boundary
 edges share the third edge at the corner. -/

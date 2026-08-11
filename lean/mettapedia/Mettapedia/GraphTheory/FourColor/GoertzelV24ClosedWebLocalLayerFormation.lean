@@ -19,6 +19,7 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebBoundaryData.AnnularBoundaryData
+open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorInterfaceMatching
@@ -42,6 +43,31 @@ attribute [-instance]
 namespace Instance
 
 namespace LocalLayerFormation
+
+/-- The actual finite Cell-3 data from which a local layer pair is formed.
+Keeping the placement and its two flanking slots alongside the resulting
+faces is what lets later separator arguments read the four primal cut edges
+from the source face, instead of treating a bare dual adjacency as if it
+remembered its witnessing edge. -/
+structure SourceLocalLayerPairWitness
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) where
+  placement : InternalHexRungPlacement
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+    hunique leftInterior
+  before : {position // position ∈ placementSidePositions placement}
+  after : {position // position ∈ placementSidePositions placement}
+  before_ne_after : before ≠ after
+  outgoing_after_before : placement.outgoingPosition.val ≡
+    before.1.val + 1 [MOD 6]
+  after_after_outgoing : after.1.val ≡
+    placement.outgoingPosition.val + 1 [MOD 6]
 
 /-- The face across one non-rung position of a locally placed Cell-3
 hexagon.  Its definition is the literal face of the opposite dart; the
@@ -571,11 +597,209 @@ theorem localPlacementSideFace_adjacent_next_of_after_outgoing
   rw [← hsideEq, ← hnextEq]
   exact hadj.symm
 
+/-- The rail from the side slot immediately before an outgoing rung to the
+next corridor face crosses the third local edge at that corner. -/
+theorem localPlacementThirdEdge_mem_sharedInteriorEdges_of_before_outgoing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (position : {position // position ∈ placementSidePositions placement})
+    (hsuccessor : placement.outgoingPosition.val ≡ position.1.val + 1 [MOD 6]) :
+    web.annular.RS.edgeOf
+        (web.annular.RS.rho
+          (web.annular.RS.phi
+            (faceCycleDart web.annular.RS placement.root position.1))) ∈
+      sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        (localPlacementSideFace placement position).1
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1 := by
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  let outgoingDart := faceCycleDart web.annular.RS placement.root
+    placement.outgoingPosition
+  have hdarts : outgoingDart = web.annular.RS.phi sideDart :=
+    faceCycleDart_successor_of_modEq web.annular.RS placement.root
+      placement.orbit_card position.1 placement.outgoingPosition hsuccessor
+  have houtgoingOpposite := localOutgoingAlphaFace_eq_nextCenter
+    (corridor := corridor) hnext placement
+  have hcornerNe : dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha sideDart) ≠ dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha (web.annular.RS.phi sideDart)) := by
+    intro hfaces
+    apply localPlacementSideFace_val_ne_nextCenter (corridor := corridor)
+      hnext placement position
+    change dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha sideDart) =
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1
+    calc
+      dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) =
+          dartOrbitFace web.annular.RS
+            (web.annular.RS.alpha (web.annular.RS.phi sideDart)) := hfaces
+      _ = dartOrbitFace web.annular.RS
+          (web.annular.RS.alpha outgoingDart) := by rw [← hdarts]
+      _ = ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1 := houtgoingOpposite
+  have hcornerCard : (web.annular.RS.dartsAt
+      (web.annular.RS.vertOf (web.annular.RS.alpha sideDart))).card = 3 := by
+    apply InteriorFace.dartsAt_card_eq_three web
+    change (localPlacementSideFace placement position).1 ∈
+      web.annular.cellulation.interiorFaces
+    exact localPlacementSideFace_internal (corridor := corridor)
+      placement position
+  change web.annular.RS.edgeOf
+      (web.annular.RS.rho (web.annular.RS.phi sideDart)) ∈
+    sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart))
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1
+  have hnextEq : dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha (web.annular.RS.phi sideDart)) =
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1 := by
+    rw [← hdarts]
+    exact houtgoingOpposite
+  have hthird := thirdEdge_mem_sharedInteriorEdges_at_locally_cubic_corner
+    web.annular.RS (InteriorFace.vertexRotationCyclic web) sideDart
+    hcornerCard hcornerNe
+  rw [hnextEq] at hthird
+  exact hthird
+
+/-- The rail from the next corridor face to the side slot immediately after
+an outgoing rung crosses the other third local edge at that rung. -/
+theorem localPlacementThirdEdge_mem_sharedInteriorEdges_of_after_outgoing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (position : {position // position ∈ placementSidePositions placement})
+    (hsuccessor : position.1.val ≡ placement.outgoingPosition.val + 1 [MOD 6]) :
+    web.annular.RS.edgeOf
+        (web.annular.RS.rho
+          (web.annular.RS.phi
+            (faceCycleDart web.annular.RS placement.root
+              placement.outgoingPosition))) ∈
+      sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1
+        (localPlacementSideFace placement position).1 := by
+  let outgoingDart := faceCycleDart web.annular.RS placement.root
+    placement.outgoingPosition
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  have hdarts : sideDart = web.annular.RS.phi outgoingDart :=
+    faceCycleDart_successor_of_modEq web.annular.RS placement.root
+      placement.orbit_card placement.outgoingPosition position.1 hsuccessor
+  have houtgoingOpposite := localOutgoingAlphaFace_eq_nextCenter
+    (corridor := corridor) hnext placement
+  have hcornerNe : dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha outgoingDart) ≠ dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha (web.annular.RS.phi outgoingDart)) := by
+    intro hfaces
+    apply localPlacementSideFace_val_ne_nextCenter (corridor := corridor)
+      hnext placement position
+    change dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha sideDart) =
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1
+    rw [hdarts]
+    exact hfaces.symm.trans houtgoingOpposite
+  have hcornerCard : (web.annular.RS.dartsAt
+      (web.annular.RS.vertOf (web.annular.RS.alpha outgoingDart))).card = 3 := by
+    apply InteriorFace.dartsAt_card_eq_three web
+    rw [houtgoingOpposite]
+    exact corridor.face_internal (nextCorridorInterior interior hnext).center
+  change web.annular.RS.edgeOf
+      (web.annular.RS.rho (web.annular.RS.phi outgoingDart)) ∈
+    sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1
+      (dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart))
+  have hnextEq : dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha outgoingDart) =
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1 := houtgoingOpposite
+  have hsideEq : dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha (web.annular.RS.phi outgoingDart)) =
+      dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) := by
+    rw [← hdarts]
+  have hthird := thirdEdge_mem_sharedInteriorEdges_at_locally_cubic_corner
+    web.annular.RS (InteriorFace.vertexRotationCyclic web) outgoingDart
+    hcornerCard hcornerNe
+  rw [hnextEq, hsideEq] at hthird
+  exact hthird
+
+/-- Turn the literal source placement and its two slots into the local
+two-rail interface.  This is deliberately a definition, not a forgetful
+existence theorem: later cut calculations can keep referring to
+`placement`, `before`, and `after`. -/
+noncomputable def SourceLocalLayerPairWitness.toLocalLayerPair
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    LocalLayerPair web corridor leftInterior hnext := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  refine {
+    firstFace := localPlacementSideFace witness.placement witness.before
+    secondFace := localPlacementSideFace witness.placement witness.after
+    first_ne_second := ?_
+    center_ne_nextCenter := ?_
+    first_adjacent_center :=
+      localPlacementSideFace_adjacent_center (corridor := corridor)
+        witness.placement witness.before |>.symm
+    center_adjacent_second :=
+      localPlacementSideFace_adjacent_center (corridor := corridor)
+        witness.placement witness.after
+    first_adjacent_nextCenter :=
+      localPlacementSideFace_adjacent_next_of_before_outgoing
+        (corridor := corridor) hnext witness.placement witness.before
+        witness.outgoing_after_before
+    nextCenter_adjacent_second :=
+      localPlacementSideFace_adjacent_next_of_after_outgoing
+        (corridor := corridor) hnext witness.placement witness.after
+        witness.after_after_outgoing |>.symm
+    first_internal := localPlacementSideFace_internal (corridor := corridor)
+      witness.placement witness.before
+    second_internal := localPlacementSideFace_internal (corridor := corridor)
+      witness.placement witness.after }
+  · intro hfaces
+    exact witness.before_ne_after
+      (localPlacementSideFace_injective (corridor := corridor)
+        witness.placement hfaces)
+  · intro hfaces
+    have hindices := skeleton.faceAt_injective hfaces
+    have hvalues := congrArg Fin.val hindices
+    change leftInterior.center.val = leftInterior.center.val + 1 at hvalues
+    omega
+
 /-- Two consecutive internal Cell-3 corridor faces construct their local
-layer pair directly.  The two rails are selected from the actual source face
+layer data directly.  The two rails are selected from the actual source face
 slots immediately flanking the outgoing rung; no caller supplies exterior
 faces or a synthetic transversal. -/
-theorem exists_localLayerPair
+theorem exists_sourceLocalLayerPairWitness
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
@@ -584,8 +808,7 @@ theorem exists_localLayerPair
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
     (leftInterior : CorridorInterior blockLength)
     (hnext : leftInterior.center.val + 2 < blockLength) :
-    Nonempty (LocalLayerPair web corridor leftInterior hnext) := by
-  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+    Nonempty (SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) := by
   let placement := localInternalHexRungPlacement corridor hunique leftInterior
   have hnonadjacent : placement.rungType ≠ HexRungType.adjacent :=
     GoertzelV24ClosedWebAtGoodWord.Instance.InternalHexRungPlacement.rungType_ne_adjacent_of_cell3
@@ -610,36 +833,44 @@ theorem exists_localLayerPair
       placement.outgoingPosition.val + 1 [MOD 6] := by
     simpa [after, placementSidePositionOfSix, placementPositionOfSix,
       InternalHexRungPlacement.outgoingPosition6] using hafterMod
-  refine ⟨{
-    firstFace := localPlacementSideFace placement before
-    secondFace := localPlacementSideFace placement after
-    first_ne_second := ?_
-    center_ne_nextCenter := ?_
-    first_adjacent_center :=
-      localPlacementSideFace_adjacent_center (corridor := corridor)
-        placement before |>.symm
-    center_adjacent_second :=
-      localPlacementSideFace_adjacent_center (corridor := corridor)
-        placement after
-    first_adjacent_nextCenter :=
-      localPlacementSideFace_adjacent_next_of_before_outgoing
-        (corridor := corridor) hnext placement before hbeforeActual
-    nextCenter_adjacent_second :=
-      localPlacementSideFace_adjacent_next_of_after_outgoing
-        (corridor := corridor) hnext placement after hafterActual |>.symm
-    first_internal := localPlacementSideFace_internal (corridor := corridor)
-      placement before
-    second_internal := localPlacementSideFace_internal (corridor := corridor)
-      placement after }⟩
-  · intro hfaces
-    exact hbeforeNeAfter
-      (localPlacementSideFace_injective (corridor := corridor)
-        placement hfaces)
-  · intro hfaces
-    have hindices := skeleton.faceAt_injective hfaces
-    have hvalues := congrArg Fin.val hindices
-    change leftInterior.center.val = leftInterior.center.val + 1 at hvalues
-    omega
+  exact ⟨{
+    placement := placement
+    before := before
+    after := after
+    before_ne_after := hbeforeNeAfter
+    outgoing_after_before := hbeforeActual
+    after_after_outgoing := hafterActual }⟩
+
+/-- Forgetting the source slots yields the existing local-layer interface.
+This remains available for generic dual-cycle reasoning, while the canonical
+source construction below retains the slots for exact cut calculations. -/
+theorem exists_localLayerPair
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    Nonempty (LocalLayerPair web corridor leftInterior hnext) := by
+  rcases exists_sourceLocalLayerPairWitness corridor hunique leftInterior hnext with
+    ⟨witness⟩
+  exact ⟨witness.toLocalLayerPair⟩
+
+/-- The canonical source witness keeps the real Cell-3 placement and flanking
+slots available after the finite choice. -/
+noncomputable def localLayerPairWitnessOfCorridor
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    SourceLocalLayerPairWitness web corridor hunique leftInterior hnext :=
+  Classical.choice (exists_sourceLocalLayerPairWitness corridor hunique leftInterior hnext)
 
 /-- The canonical Cell-3 local layer pair generated by the real corridor
 geometry.  It is a choice only from the finite, source-proved placement and
@@ -654,7 +885,205 @@ noncomputable def localLayerPairOfCorridor
     (leftInterior : CorridorInterior blockLength)
     (hnext : leftInterior.center.val + 2 < blockLength) :
     LocalLayerPair web corridor leftInterior hnext :=
-  Classical.choice (exists_localLayerPair corridor hunique leftInterior hnext)
+  (localLayerPairWitnessOfCorridor corridor hunique leftInterior hnext).toLocalLayerPair
+
+/-- The first step of the source-local layer crosses the literal boundary
+edge at the slot immediately before the outgoing rung. -/
+theorem SourceLocalLayerPairWitness.firstWalk_crossingEdge_zero_eq_beforeEdge
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      witness.toLocalLayerPair.firstWalk
+      ⟨0, by simp [LocalLayerPair.firstWalk]⟩ =
+      web.annular.RS.edgeOf
+        (faceCycleDart web.annular.RS witness.placement.root witness.before.1) := by
+  let beforeDart := faceCycleDart web.annular.RS witness.placement.root
+    witness.before.1
+  have hbeforeInternal : dartOrbitFace web.annular.RS beforeDart ∈
+      web.annular.cellulation.interiorFaces := by
+    simpa [beforeDart] using
+      localPlacementSideDart_internal (corridor := corridor)
+        witness.placement witness.before
+  have hcenterBoundary : web.annular.RS.edgeOf beforeDart ∈
+      orbitFaceBoundary web.annular.RS
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          leftInterior.center).1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace
+      web.annular.RS beforeDart
+    rw [dartOrbitFace_faceCycleDart, witness.placement.root_face] at hraw
+    exact hraw
+  have hsideBoundary : web.annular.RS.edgeOf beforeDart ∈
+      orbitFaceBoundary web.annular.RS
+        (localPlacementSideFace witness.placement witness.before).1 := by
+    change web.annular.RS.edgeOf beforeDart ∈
+      orbitFaceBoundary web.annular.RS
+        (dartOrbitFace web.annular.RS (web.annular.RS.alpha beforeDart))
+    rw [← web.annular.RS.edge_alpha beforeDart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha beforeDart)
+  have hshared : web.annular.RS.edgeOf beforeDart ∈
+      sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        (localPlacementSideFace witness.placement witness.before).1
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          leftInterior.center).1 := by
+    apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+    exact ⟨InteriorFace.edge_mem_interiorEdgeSupport web beforeDart hbeforeInternal,
+      hsideBoundary, hcenterBoundary⟩
+  change sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      (witness.toLocalLayerPair.firstWalk.adj_getVert_succ (by simp
+        [LocalLayerPair.firstWalk])) = web.annular.RS.edgeOf beforeDart
+  apply sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+  simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
+    LocalLayerPair.firstWalk] using hshared
+
+/-- The second step of the source-local layer crosses the literal boundary
+edge at the slot immediately after the outgoing rung. -/
+theorem SourceLocalLayerPairWitness.firstWalk_crossingEdge_one_eq_afterEdge
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      witness.toLocalLayerPair.firstWalk
+      ⟨1, by simp [LocalLayerPair.firstWalk]⟩ =
+      web.annular.RS.edgeOf
+        (faceCycleDart web.annular.RS witness.placement.root witness.after.1) := by
+  let afterDart := faceCycleDart web.annular.RS witness.placement.root
+    witness.after.1
+  have hafterInternal : dartOrbitFace web.annular.RS afterDart ∈
+      web.annular.cellulation.interiorFaces := by
+    simpa [afterDart] using
+      localPlacementSideDart_internal (corridor := corridor)
+        witness.placement witness.after
+  have hcenterBoundary : web.annular.RS.edgeOf afterDart ∈
+      orbitFaceBoundary web.annular.RS
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          leftInterior.center).1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace
+      web.annular.RS afterDart
+    rw [dartOrbitFace_faceCycleDart, witness.placement.root_face] at hraw
+    exact hraw
+  have hsideBoundary : web.annular.RS.edgeOf afterDart ∈
+      orbitFaceBoundary web.annular.RS
+        (localPlacementSideFace witness.placement witness.after).1 := by
+    change web.annular.RS.edgeOf afterDart ∈
+      orbitFaceBoundary web.annular.RS
+        (dartOrbitFace web.annular.RS (web.annular.RS.alpha afterDart))
+    rw [← web.annular.RS.edge_alpha afterDart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha afterDart)
+  have hshared : web.annular.RS.edgeOf afterDart ∈
+      sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          leftInterior.center).1
+        (localPlacementSideFace witness.placement witness.after).1 := by
+    apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+    exact ⟨InteriorFace.edge_mem_interiorEdgeSupport web afterDart hafterInternal,
+      hcenterBoundary, hsideBoundary⟩
+  change sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      (witness.toLocalLayerPair.firstWalk.adj_getVert_succ (by simp
+        [LocalLayerPair.firstWalk])) = web.annular.RS.edgeOf afterDart
+  apply sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+  simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
+    LocalLayerPair.firstWalk] using hshared
+
+/-- The first step through the next corridor hexagon crosses the third edge
+at the corner before the outgoing rung. -/
+theorem SourceLocalLayerPairWitness.secondWalk_crossingEdge_zero_eq_beforeThirdEdge
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      witness.toLocalLayerPair.secondWalk
+      ⟨0, by simp [LocalLayerPair.secondWalk]⟩ =
+      web.annular.RS.edgeOf
+        (web.annular.RS.rho
+          (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.before.1))) := by
+  let beforeDart := faceCycleDart web.annular.RS witness.placement.root
+    witness.before.1
+  have hshared :=
+    localPlacementThirdEdge_mem_sharedInteriorEdges_of_before_outgoing
+      (corridor := corridor) hnext witness.placement witness.before
+      witness.outgoing_after_before
+  change sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      (witness.toLocalLayerPair.secondWalk.adj_getVert_succ (by simp
+        [LocalLayerPair.secondWalk])) =
+      web.annular.RS.edgeOf
+        (web.annular.RS.rho (web.annular.RS.phi beforeDart))
+  apply sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+  simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
+    LocalLayerPair.secondWalk, beforeDart] using hshared
+
+/-- The second step through the next corridor hexagon crosses the other third
+edge at the outgoing rung. -/
+theorem SourceLocalLayerPairWitness.secondWalk_crossingEdge_one_eq_afterThirdEdge
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    dualWalkCrossingEdge (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      witness.toLocalLayerPair.secondWalk
+      ⟨1, by simp [LocalLayerPair.secondWalk]⟩ =
+      web.annular.RS.edgeOf
+        (web.annular.RS.rho
+          (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.placement.outgoingPosition))) := by
+  let outgoingDart := faceCycleDart web.annular.RS witness.placement.root
+    witness.placement.outgoingPosition
+  have hshared :=
+    localPlacementThirdEdge_mem_sharedInteriorEdges_of_after_outgoing
+      (corridor := corridor) hnext witness.placement witness.after
+      witness.after_after_outgoing
+  change sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+      (witness.toLocalLayerPair.secondWalk.adj_getVert_succ (by simp
+        [LocalLayerPair.secondWalk])) =
+      web.annular.RS.edgeOf
+        (web.annular.RS.rho (web.annular.RS.phi outgoingDart))
+  apply sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+  simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
+    LocalLayerPair.secondWalk, outgoingDart] using hshared
 
 end LocalLayerFormation
 
