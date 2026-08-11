@@ -27,6 +27,8 @@ open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FiniteEdgeDeletion
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexSlabConnectivityProfile
+open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24RotationFaceFragments
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24TerminalProfileConnectivityUpdate
 open GoertzelV24TerminalProfileFaceCapUpdate
@@ -259,6 +261,88 @@ theorem min_card_union_eq_min_caps_sub_inter_of_inter_subset_sourceCrosscut
     5 hinter
   exact pair.sourceCrosscutRetainedRemovedRegion_inter_card_lt_five
     data boundary hwidth
+
+/-- The occurrence-sensitive face cap of a width-two source crosscut is the
+overlap-corrected sum of its retained and removed contributions.  Thus the
+numerical coordinate of the terminal-aware update is derived from the literal
+source regions, rather than supplied as an abstract transfer premise. -/
+theorem sourceCrosscutRetainedRemoved_faceFragmentPositionCap_eq
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (root : data.toRotationSystem.D)
+    (fragment :
+      let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)
+      let removedRegion := vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)ᶜ
+      FaceRegionalFragment data.toRotationSystem root
+        (retainedRegion ∪ removedRegion))
+    (hwidth : pair.left.walk.length = 2) :
+    let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)
+    let removedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ
+    min (faceRegionalFragmentPositions data.toRotationSystem root
+          (retainedRegion ∪ removedRegion) fragment).card 5 =
+      min
+        (min (faceRegionalFragmentPositionSlice data.toRotationSystem root
+            (retainedRegion ∪ removedRegion) retainedRegion fragment).card 5 +
+          min (faceRegionalFragmentPositionSlice data.toRotationSystem root
+            (retainedRegion ∪ removedRegion) removedRegion fragment).card 5 -
+          (faceRegionalFragmentPositionSlice data.toRotationSystem root
+                (retainedRegion ∪ removedRegion) retainedRegion fragment ∩
+            faceRegionalFragmentPositionSlice data.toRotationSystem root
+                (retainedRegion ∪ removedRegion) removedRegion fragment).card)
+        5 := by
+  dsimp only
+  exact min_card_faceRegionalFragmentPositions_union_eq_min_slices_sub_inter
+    data.toRotationSystem htwoSided root
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component))
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ)
+    fragment
+    (pair.sourceCrosscutRetainedRemovedRegion_inter_card_lt_five
+      data boundary hwidth)
+
+/-- The same source-specialized update in the edge-cardinality representation
+stored by `CorridorCutProfile.faceLengthCap`. -/
+theorem sourceCrosscutRetainedRemoved_faceFragmentEdgeCap_eq
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (root : data.toRotationSystem.D)
+    (fragment :
+      let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)
+      let removedRegion := vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)ᶜ
+      FaceRegionalFragment data.toRotationSystem root
+        (retainedRegion ∪ removedRegion))
+    (hwidth : pair.left.walk.length = 2) :
+    let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)
+    let removedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ
+    min (faceRegionalFragmentEdges data.toRotationSystem root
+          (retainedRegion ∪ removedRegion) fragment).card 5 =
+      min
+        (min (faceRegionalFragmentPositionSlice data.toRotationSystem root
+            (retainedRegion ∪ removedRegion) retainedRegion fragment).card 5 +
+          min (faceRegionalFragmentPositionSlice data.toRotationSystem root
+            (retainedRegion ∪ removedRegion) removedRegion fragment).card 5 -
+          (faceRegionalFragmentPositionSlice data.toRotationSystem root
+                (retainedRegion ∪ removedRegion) retainedRegion fragment ∩
+            faceRegionalFragmentPositionSlice data.toRotationSystem root
+                (retainedRegion ∪ removedRegion) removedRegion fragment).card)
+        5 := by
+  dsimp only
+  exact min_card_faceRegionalFragmentEdges_union_eq_min_slices_sub_inter
+    data.toRotationSystem htwoSided root
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component))
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ)
+    fragment
+    (pair.sourceCrosscutRetainedRemovedRegion_inter_card_lt_five
+      data boundary hwidth)
 
 end SourceCrosscut
 

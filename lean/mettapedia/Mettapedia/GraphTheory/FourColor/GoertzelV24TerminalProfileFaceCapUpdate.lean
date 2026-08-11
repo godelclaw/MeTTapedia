@@ -85,6 +85,129 @@ theorem min_card_union_eq_min_caps_sub_inter_of_inter_subset_seam_card_le_two
     left right seam 5 hinter
   omega
 
+/-- The part of one enlarged regional face fragment contributed by a named
+factor region.  Positions, rather than only underlying edges, are retained so
+that the decomposition remains correct before two-sidedness is invoked. -/
+def faceRegionalFragmentPositionSlice
+    (RS : RotationSystem V E) (root : RS.D)
+    (unionRegion factorRegion : Finset E)
+    (fragment : FaceRegionalFragment RS root unionRegion) :
+    Finset (Fin (RS.faceOrbit root).card) :=
+  (faceRegionalFragmentPositions RS root unionRegion fragment).filter
+    fun position => faceCycleEdge RS root position ∈ factorRegion
+
+/-- An enlarged fragment over `leftRegion ∪ rightRegion` is exactly the
+union of its two factor slices.  No face occurrence is lost or introduced. -/
+theorem faceRegionalFragmentPositionSlice_union_eq
+    (RS : RotationSystem V E) (root : RS.D)
+    (leftRegion rightRegion : Finset E)
+    (fragment : FaceRegionalFragment RS root (leftRegion ∪ rightRegion)) :
+    faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+          leftRegion fragment ∪
+        faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+          rightRegion fragment =
+      faceRegionalFragmentPositions RS root (leftRegion ∪ rightRegion)
+        fragment := by
+  classical
+  ext position
+  constructor
+  · intro hposition
+    rcases Finset.mem_union.1 hposition with hleft | hright
+    · exact (Finset.mem_filter.1 hleft).1
+    · exact (Finset.mem_filter.1 hright).1
+  · intro hposition
+    rcases (mem_faceRegionalFragmentPositions_iff RS root
+      (leftRegion ∪ rightRegion) fragment position).1 hposition with
+      ⟨regionalPosition, hfragment, hvalue⟩
+    have hregion : faceCycleEdge RS root position ∈
+        leftRegion ∪ rightRegion := by
+      have hregional := regionalPosition.2
+      rw [mem_faceRegionalPositions_iff] at hregional
+      simpa [hvalue] using hregional
+    rcases Finset.mem_union.1 hregion with hleft | hright
+    · exact Finset.mem_union_left _
+        (Finset.mem_filter.2 ⟨hposition, hleft⟩)
+    · exact Finset.mem_union_right _
+        (Finset.mem_filter.2 ⟨hposition, hright⟩)
+
+/-- Every occurrence counted by both factor slices lies over an actual edge
+of their common seam. -/
+theorem image_faceRegionalFragmentPositionSlice_inter_subset_region_inter
+    (RS : RotationSystem V E) (root : RS.D)
+    (leftRegion rightRegion : Finset E)
+    (fragment : FaceRegionalFragment RS root (leftRegion ∪ rightRegion)) :
+    (faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+          leftRegion fragment ∩
+        faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+          rightRegion fragment).image (faceCycleEdge RS root) ⊆
+      leftRegion ∩ rightRegion := by
+  intro edge hedge
+  rcases Finset.mem_image.1 hedge with ⟨position, hposition, rfl⟩
+  rcases Finset.mem_inter.1 hposition with ⟨hleft, hright⟩
+  exact Finset.mem_inter.2
+    ⟨(Finset.mem_filter.1 hleft).2, (Finset.mem_filter.1 hright).2⟩
+
+/-- On a two-sided face, the overlap of the two occurrence slices is no
+larger than the ambient edge seam. -/
+theorem card_faceRegionalFragmentPositionSlice_inter_le_region_inter
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (root : RS.D) (leftRegion rightRegion : Finset E)
+    (fragment : FaceRegionalFragment RS root (leftRegion ∪ rightRegion)) :
+    (faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+          leftRegion fragment ∩
+        faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+          rightRegion fragment).card ≤
+      (leftRegion ∩ rightRegion).card := by
+  let overlap :=
+    faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+        leftRegion fragment ∩
+      faceRegionalFragmentPositionSlice RS root (leftRegion ∪ rightRegion)
+        rightRegion fragment
+  calc
+    overlap.card =
+        (overlap.image (faceCycleEdge RS root)).card :=
+      (Finset.card_image_of_injective overlap
+        (faceCycleEdge_injective RS htwoSided root)).symm
+    _ ≤ (leftRegion ∩ rightRegion).card :=
+      Finset.card_le_card
+        (image_faceRegionalFragmentPositionSlice_inter_subset_region_inter
+          RS root leftRegion rightRegion fragment)
+
+/-- Exact occurrence-level cap update for one enlarged regional fragment.
+The two contributions are saturated separately and their genuine shared
+occurrences are subtracted once. -/
+theorem min_card_faceRegionalFragmentPositions_union_eq_min_slices_sub_inter
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (root : RS.D) (leftRegion rightRegion : Finset E)
+    (fragment : FaceRegionalFragment RS root (leftRegion ∪ rightRegion))
+    (hseam : (leftRegion ∩ rightRegion).card < 5) :
+    min (faceRegionalFragmentPositions RS root
+          (leftRegion ∪ rightRegion) fragment).card 5 =
+      min
+        (min (faceRegionalFragmentPositionSlice RS root
+            (leftRegion ∪ rightRegion) leftRegion fragment).card 5 +
+          min (faceRegionalFragmentPositionSlice RS root
+            (leftRegion ∪ rightRegion) rightRegion fragment).card 5 -
+          (faceRegionalFragmentPositionSlice RS root
+                (leftRegion ∪ rightRegion) leftRegion fragment ∩
+            faceRegionalFragmentPositionSlice RS root
+                (leftRegion ∪ rightRegion) rightRegion fragment).card)
+        5 := by
+  let leftSlice := faceRegionalFragmentPositionSlice RS root
+    (leftRegion ∪ rightRegion) leftRegion fragment
+  let rightSlice := faceRegionalFragmentPositionSlice RS root
+    (leftRegion ∪ rightRegion) rightRegion fragment
+  have hoverlap : (leftSlice ∩ rightSlice).card < 5 :=
+    lt_of_le_of_lt
+      (card_faceRegionalFragmentPositionSlice_inter_le_region_inter
+        RS htwoSided root leftRegion rightRegion fragment)
+      hseam
+  have hcap := min_card_union_eq_min_caps_sub_inter_of_inter_card_lt
+    leftSlice rightSlice 5 hoverlap
+  rw [faceRegionalFragmentPositionSlice_union_eq RS root leftRegion
+    rightRegion fragment] at hcap
+  exact hcap
+
 /-- On a two-sided face, passing from occurrence support to edge support loses
 no cardinality.  This is the bridge that permits the occurrence-sensitive
 component update to feed the edge-count cap stored in the finite profile. -/
@@ -108,6 +231,29 @@ theorem min_card_faceRegionalFragmentEdges_eq_positions
       min (faceRegionalFragmentPositions RS root region fragment).card
         threshold := by
   rw [card_faceRegionalFragmentEdges_eq_positions RS htwoSided]
+
+/-- The same overlap-corrected cap law in the edge-cardinality representation
+stored by `CorridorCutProfile.faceLengthCap`. -/
+theorem min_card_faceRegionalFragmentEdges_union_eq_min_slices_sub_inter
+    (RS : RotationSystem V E) (htwoSided : OrbitFacesTwoSided RS)
+    (root : RS.D) (leftRegion rightRegion : Finset E)
+    (fragment : FaceRegionalFragment RS root (leftRegion ∪ rightRegion))
+    (hseam : (leftRegion ∩ rightRegion).card < 5) :
+    min (faceRegionalFragmentEdges RS root
+          (leftRegion ∪ rightRegion) fragment).card 5 =
+      min
+        (min (faceRegionalFragmentPositionSlice RS root
+            (leftRegion ∪ rightRegion) leftRegion fragment).card 5 +
+          min (faceRegionalFragmentPositionSlice RS root
+            (leftRegion ∪ rightRegion) rightRegion fragment).card 5 -
+          (faceRegionalFragmentPositionSlice RS root
+                (leftRegion ∪ rightRegion) leftRegion fragment ∩
+            faceRegionalFragmentPositionSlice RS root
+                (leftRegion ∪ rightRegion) rightRegion fragment).card)
+        5 := by
+  rw [min_card_faceRegionalFragmentEdges_eq_positions RS htwoSided]
+  exact min_card_faceRegionalFragmentPositions_union_eq_min_slices_sub_inter
+    RS htwoSided root leftRegion rightRegion fragment hseam
 
 end
 
