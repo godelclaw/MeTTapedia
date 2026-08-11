@@ -283,6 +283,25 @@ def main : IO Unit := do
   renderCount "atom_chars_mismatch"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsMismatch)
+  renderStringAnswers "atom_string_forward"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runStringsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomStringForward
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "atom_string_reverse_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomStringReverseString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "atom_string_reverse_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomStringReverseAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "atom_string_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomStringMismatch)
+  renderStringAnswers "atom_string_meta_reverse"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaAtomStringReverse
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
   renderCount "number_codes_forward_integer"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesForwardIntegerExact)

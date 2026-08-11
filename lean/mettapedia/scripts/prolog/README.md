@@ -185,7 +185,9 @@ translated replacement.  It requires the exact SWI answers `[40,41]` and
 `[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the original readers.
 The additional checks pin atom token boundaries, escape decoding, named
 variable reuse, and distinct anonymous occurrences.  Every run must leave a
-clean final heap and trail:
+clean final heap and trail.  Five further paths call the actual exported
+`sread/2` and `swrite/2` wrappers on string and atom input, named-variable
+reuse, lists, and compounds rather than invoking their internal DCGs directly:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
@@ -251,6 +253,10 @@ the bound-atom code-list and string modes, element binding, and ground
 mismatch.  The real parser gate additionally
 uses the integer-code input mode to preserve `$name` sharing and keep `$_`
 occurrences distinct.
+Five `atom_string/2` cases cover atom-to-string conversion, reverse conversion
+from both SWI strings and atoms, ground mismatch, and heap-built meta-call.
+The real parser gate uses this same decoder at the `sread/2` entry point; both
+arguments unbound and non-text values remain typed errors in Lean canaries.
 Eight `number_codes/2` cases cover exact integer rendering; positive and
 negative integer reading; positive and negative decimal floats; exponent
 syntax; ground mismatch; and heap-built meta-call.  Lean canaries additionally

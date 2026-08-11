@@ -456,6 +456,7 @@
         "PRED_IMPL(\"atom_codes\", 2, atom_codes, PL_FA_ISO)",
         "string_x",
         "PRED_IMPL(\"string_codes\", 2, string_codes, 0)",
+        "PRED_IMPL(\"atom_string\", 2, atom_string, 0)",
         "PRED_IMPL(\"number_codes\", 2, number_codes, PL_FA_ISO)",
         "PL_get_text",
         "PL_unify_text"

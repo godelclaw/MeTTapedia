@@ -493,6 +493,39 @@ private def decodeAtomChars (heap : Heap Sigma.scoped)
 def atomCharsDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
   decode := decodeAtomChars
 
+private def sourceTextValue? : SourceSignature.Constant → Option String
+  | .atom value | .string value => some value
+  | _ => none
+
+/-- Decode the atom/string modes exercised by pinned PeTTa's `sread/2` and
+`swrite/2` wrappers.  Either a source atom or string may supply the textual
+value; conversion still returns only one bounded constant-unification plan. -/
+private def decodeAtomString (heap : Heap Sigma.scoped)
+    (atom string : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.TextConversionPlan Sigma) := do
+  let stringCell ← dereferencedCell heap string
+  match stringCell with
+  | .const value =>
+      match sourceTextValue? value with
+      | some text => pure (.text atom (.atom text))
+      | none => .error .invalidTextValue
+  | .app _ _ => .error .invalidTextValue
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .var _ none =>
+      let atomCell ← dereferencedCell heap atom
+      match atomCell with
+      | .const value =>
+          match sourceTextValue? value with
+          | some text => pure (.text string (.string text))
+          | none => .error .invalidTextValue
+      | .app _ _ => .error .invalidTextValue
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | .var _ none => .error .textConversionUnbound
+
+def atomStringDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
+  decode := decodeAtomString
+
 private def negateNumberConstant : SourceSignature.Constant →
     Except LP.RuntimeQuery.QueryError SourceSignature.Constant
   | .integer value => pure (.integer (-value))
@@ -568,6 +601,9 @@ def textConversion? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | "atom_chars", [atom, characters] =>
       if goal.symbol.arity = 2 then some (atom, characters, atomCharsDecoder)
+      else none
+  | "atom_string", [atom, string] =>
+      if goal.symbol.arity = 2 then some (atom, string, atomStringDecoder)
       else none
   | "number_codes", [number, codes] =>
       if goal.symbol.arity = 2 then some (number, codes, numberCodesDecoder)

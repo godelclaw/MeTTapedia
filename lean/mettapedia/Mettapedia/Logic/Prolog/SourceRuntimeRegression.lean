@@ -454,6 +454,26 @@ def atomCharsRejectsStringElement : SourceSignature.Goal :=
 def atomCharsCyclicList : SourceSignature.Goal :=
   .conj (.unify y (compound "[|]" [atom "a", y])) (atomChars x y)
 
+def atomString (atomValue stringValue : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "atom_string" [atomValue, stringValue]
+
+def atomStringForward : SourceSignature.Goal := atomString (atom "aλ") x
+
+def atomStringReverseString : SourceSignature.Goal := atomString x (string "aλ")
+
+def atomStringReverseAtom : SourceSignature.Goal := atomString x (atom "aλ")
+
+def atomStringMismatch : SourceSignature.Goal := atomString (atom "a") (string "b")
+
+def atomStringBothUnbound : SourceSignature.Goal := atomString x y
+
+def atomStringInvalidValue : SourceSignature.Goal :=
+  atomString x (compound "pair" [atom "a", atom "b"])
+
+def metaAtomStringReverse : SourceSignature.Goal :=
+  metaGoal (compound "atom_string" [x, string "a"])
+
 def numberCodes (number codes : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "number_codes" [number, codes]
 
@@ -1400,6 +1420,11 @@ def laterCallSeesAssertion :
 #guard runCount [] atomCharsBoundString == some (1, 0, 0)
 #guard runAtomsFor [] atomCharsBindsElement xIdentity == some (["a"], 0, 0)
 #guard runCount [] atomCharsMismatch == some (0, 0, 0)
+#guard runStringsFor [] atomStringForward xIdentity == some (["aλ"], 0, 0)
+#guard runAtomsFor [] atomStringReverseString xIdentity == some (["aλ"], 0, 0)
+#guard runAtomsFor [] atomStringReverseAtom xIdentity == some (["aλ"], 0, 0)
+#guard runCount [] atomStringMismatch == some (0, 0, 0)
+#guard runAtomsFor [] metaAtomStringReverse xIdentity == some (["a"], 0, 0)
 #guard runShapesFor [] numberCodesForwardInteger xIdentity ==
   some ([runtimeTermShape (expectedScoped
     (SourceSignature.list [integer 45, integer 52, integer 50]))], 0, 0)
@@ -1458,6 +1483,12 @@ def laterCallSeesAssertion :
   | _ => false
 #guard match runQueryError? [] atomCharsCyclicList with
   | some .invalidTextCodes => true
+  | _ => false
+#guard match runQueryError? [] atomStringBothUnbound with
+  | some .textConversionUnbound => true
+  | _ => false
+#guard match runQueryError? [] atomStringInvalidValue with
+  | some .invalidTextValue => true
   | _ => false
 #guard runCount [] codeTypeSpace == some (1, 0, 0)
 #guard runCount [] codeTypeNewlineSpace == some (1, 0, 0)

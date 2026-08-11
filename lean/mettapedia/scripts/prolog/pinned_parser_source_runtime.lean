@@ -78,6 +78,12 @@ def environmentIdentity : SourceSignature.Variable := {
   occurrence := 0
 }
 
+def sreadQuery (input : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "sread" [input, .var termIdentity]
+
+def swriteQuery (input : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "swrite" [input, .var termIdentity]
+
 /-- Exercise the parser in its forward direction on the smallest nonempty
 S-expression.  This reaches pinned `dcg/basics:string_without//2`, including
 its finite-list `memberchk/2` test, rather than merely exercising PeTTa's
@@ -199,9 +205,9 @@ def executeTerm (program : SourceSignature.Program)
   | .open _ => throw <| IO.userError "runtime remained open after term answer"
   | .terminal _ _ => throw <| IO.userError "runtime term query did not complete"
 
-def checkRead (program : SourceSignature.Program) (label : String)
-    (codes : List Int) (expected : SourceSignature.Term) : IO Unit := do
-  let (actual, heapSize, trailSize) ← executeTerm program (readQuery codes)
+def checkGoal (program : SourceSignature.Program) (label : String)
+    (goal : SourceSignature.Goal) (expected : SourceSignature.Term) : IO Unit := do
+  let (actual, heapSize, trailSize) ← executeTerm program goal
   if SourceRuntimeRegression.runtimeTermShape actual ==
       SourceRuntimeRegression.runtimeTermShape (LP.Term.atScope 0 expected) then
     pure ()
@@ -211,10 +217,14 @@ def checkRead (program : SourceSignature.Program) (label : String)
     throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
   IO.println s!"{label}=exact"
 
-def checkVariableRead (program : SourceSignature.Program) (label : String)
-    (codes : List Int) (relation :
+def checkRead (program : SourceSignature.Program) (label : String)
+    (codes : List Int) (expected : SourceSignature.Term) : IO Unit :=
+  checkGoal program label (readQuery codes) expected
+
+def checkVariableGoal (program : SourceSignature.Program) (label : String)
+    (goal : SourceSignature.Goal) (relation :
       SourceRuntimeRegression.RuntimeTermShape → Bool) : IO Unit := do
-  let (actual, heapSize, trailSize) ← executeTerm program (readQuery codes)
+  let (actual, heapSize, trailSize) ← executeTerm program goal
   if relation (SourceRuntimeRegression.runtimeTermShape actual) then
     pure ()
   else
@@ -222,6 +232,11 @@ def checkVariableRead (program : SourceSignature.Program) (label : String)
   if heapSize != 0 || trailSize != 0 then
     throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
   IO.println s!"{label}=exact"
+
+def checkVariableRead (program : SourceSignature.Program) (label : String)
+    (codes : List Int) (relation :
+      SourceRuntimeRegression.RuntimeTermShape → Bool) : IO Unit :=
+  checkVariableGoal program label (readQuery codes) relation
 
 def isSingleVariableList : SourceRuntimeRegression.RuntimeTermShape → Bool
   | .compound "[|]" [.variable _ _ _, .atom "[]"] => true
@@ -302,3 +317,20 @@ def main (arguments : List String) : IO Unit := do
   checkVariableRead program "read_anonymous_separation"
     [40, 36, 95, 32, 36, 95, 41]
     separatesVariablesInTwoElementList
+  checkGoal program "sread_string"
+    (sreadQuery (SourceSignature.string "(a b)"))
+    (SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"])
+  checkGoal program "sread_atom"
+    (sreadQuery (SourceSignature.atom "(1)"))
+    (SourceSignature.list [SourceSignature.integer 1])
+  checkVariableGoal program "sread_variable_reuse"
+    (sreadQuery (SourceSignature.string "($x $x)"))
+    reusesVariableInTwoElementList
+  checkGoal program "swrite_list"
+    (swriteQuery (SourceSignature.list
+      [SourceSignature.atom "a", SourceSignature.atom "b"]))
+    (SourceSignature.string "(a b)")
+  checkGoal program "swrite_compound"
+    (swriteQuery (SourceSignature.compound "pair"
+      [SourceSignature.atom "a", SourceSignature.atom "b"]))
+    (SourceSignature.string "(pair a b)")
