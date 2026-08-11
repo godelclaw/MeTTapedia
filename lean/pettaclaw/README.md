@@ -23,6 +23,10 @@ are derived from the models, deployed, and re-observed live.
   failure-transactional transformations, the separation between advertised
   and executable tools, one-cycle hot reload, burst pacing, restart behavior,
   and a proved necessary-feature gap for hosting PettaClaw unchanged.
+- `ProtectedPlasticity.lean` — the essential Iter–PettaClaw fusion: an
+  invariant constitution, freely transformable development, lawfully evolving
+  life, and conservative projection of every mixed trace back to both source
+  architectures.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -33,7 +37,8 @@ Check with:
 lean HeartModel.lean
 lean -o ClawArchitectures.olean ClawArchitectures.lean
 lean -o PresentMoment.olean PresentMoment.lean
-LEAN_PATH=. lean IterArchitecture.lean
+LEAN_PATH=. lean -o IterArchitecture.olean IterArchitecture.lean
+LEAN_PATH=. lean ProtectedPlasticity.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
