@@ -213,6 +213,42 @@ theorem faceRegionalAmbientPositionGraph_union_reachable_iff_componentClosure
     (faceRegionalAmbientPositionGraph_switch_mem_inter
       RS root leftRegion rightRegion)
 
+/-- The endpoint-complete facial update.  A new regional fragment can begin
+or end away from the shared cut, so its two queried cyclic occurrences are
+included in the closure carrier while every genuine switch between prefix and
+Cell fragments remains confined to a shared occurrence. -/
+theorem faceRegionalAmbientPositionGraph_union_reachable_iff_componentClosureWithEndpoints
+    (RS : RotationSystem V E) (root : RS.D)
+    (leftRegion rightRegion : Finset E)
+    (hcovered : RegionalFaceAdjacencyCovered RS root
+      leftRegion rightRegion)
+    (start finish : Fin (RS.faceOrbit root).card) :
+    (faceRegionalAmbientPositionGraph RS root
+      (leftRegion ∪ rightRegion)).Reachable start finish ↔
+      Relation.ReflTransGen
+        (fun left right : Subtype (fun position =>
+            faceCycleEdge RS root position ∈ leftRegion ∩ rightRegion ∨
+              position = start ∨ position = finish) =>
+          (faceRegionalAmbientPositionGraph RS root leftRegion).Reachable
+              left.1 right.1 ∨
+            (faceRegionalAmbientPositionGraph RS root rightRegion).Reachable
+              left.1 right.1)
+        ⟨start, Or.inr (Or.inl rfl)⟩
+        ⟨finish, Or.inr (Or.inr rfl)⟩ := by
+  rw [faceRegionalAmbientPositionGraph_union_eq_sup_of_adjacencyCovered
+    RS root leftRegion rightRegion hcovered]
+  apply reachable_sup_iff_subtype_componentClosure
+    (faceRegionalAmbientPositionGraph RS root leftRegion)
+    (faceRegionalAmbientPositionGraph RS root rightRegion)
+    (fun position =>
+      faceCycleEdge RS root position ∈ leftRegion ∩ rightRegion ∨
+        position = start ∨ position = finish)
+    start finish
+    (Or.inr (Or.inl rfl)) (Or.inr (Or.inr rfl))
+  intro left middle right hleftMiddle hmiddleRight hleft hright
+  exact Or.inl (faceRegionalAmbientPositionGraph_switch_mem_inter
+    RS root leftRegion rightRegion hleftMiddle hmiddleRight hleft hright)
+
 end
 
 end GoertzelV24TerminalProfileFaceUpdate

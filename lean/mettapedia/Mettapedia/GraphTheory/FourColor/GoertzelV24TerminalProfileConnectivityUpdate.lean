@@ -104,6 +104,40 @@ theorem regionalTrackedEdgeGraph_union_reachable_iff_componentClosure
     (regionalTrackedEdgeGraph_switch_mem_inter
       RS leftRegion rightRegion C a b)
 
+/-- The endpoint-complete connectivity update.  Unlike the seam-only form
+above, this version also covers terminal-to-terminal, terminal-to-new-cut,
+and new-cut-to-new-cut queries in the outgoing profile.  Genuine factor
+switches still occur only on the shared interface; the two queried endpoints
+are added to the finite closure carrier solely so they need not themselves
+belong to that interface. -/
+theorem regionalTrackedEdgeGraph_union_reachable_iff_componentClosureWithEndpoints
+    (RS : RotationSystem V E) (leftRegion rightRegion : Finset E)
+    (C : E → Color) (a b : Color)
+    (hcovered : RegionalTrackedAdjacencyCovered RS leftRegion rightRegion C a b)
+    (start finish : E) :
+    (regionalTrackedEdgeGraph RS (leftRegion ∪ rightRegion) C a b).Reachable
+        start finish ↔
+      Relation.ReflTransGen
+        (fun x y : Subtype (fun edge =>
+            edge ∈ leftRegion ∩ rightRegion ∨
+              edge = start ∨ edge = finish) =>
+          (regionalTrackedEdgeGraph RS leftRegion C a b).Reachable x y ∨
+            (regionalTrackedEdgeGraph RS rightRegion C a b).Reachable x y)
+        ⟨start, Or.inr (Or.inl rfl)⟩
+        ⟨finish, Or.inr (Or.inr rfl)⟩ := by
+  rw [regionalTrackedEdgeGraph_union_eq_sup_of_adjacencyCovered
+    RS leftRegion rightRegion C a b hcovered]
+  apply reachable_sup_iff_subtype_componentClosure
+    (regionalTrackedEdgeGraph RS leftRegion C a b)
+    (regionalTrackedEdgeGraph RS rightRegion C a b)
+    (fun edge => edge ∈ leftRegion ∩ rightRegion ∨
+      edge = start ∨ edge = finish)
+    start finish
+    (Or.inr (Or.inl rfl)) (Or.inr (Or.inr rfl))
+  intro x middle y hx hy hleft hright
+  exact Or.inl (regionalTrackedEdgeGraph_switch_mem_inter
+    RS leftRegion rightRegion C a b hx hy hleft hright)
+
 end
 
 end GoertzelV24TerminalProfileConnectivityUpdate
