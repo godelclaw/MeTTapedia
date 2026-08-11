@@ -536,6 +536,65 @@ theorem localLayerFactorFragmentOverlapCard_eq_ite
     rw [hoverlap]
     simp
 
+/-- The exact outgoing fragment cap after adjoining one source Cell.  The
+old-prefix factor sum is the only nonlocal input: the new hexagon contributes
+`5` to its own face and `1` to every other outgoing face, while the common
+rung is subtracted exactly on the new face. -/
+theorem localLayerRightPrefixBoundaryFragment_cap_eq_cellUpdate
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (fragment : aligned.toInterface.LocalLayerComposedBoundaryFragment) :
+    min (boundaryRegionalFragmentEdges
+          embedded.cellulation.rotation.toRotationSystem
+          (indexedCrossingEdgeSet
+            aligned.toInterface.nextLocalLayerPrefixCrossing)
+          (aligned.toInterface.localLayerLeftPrefixRegion ∪
+            aligned.toInterface.localLayerCellBoundaryRegion)
+          fragment).card 5 =
+      min
+        (aligned.toInterface.localLayerFactorFragmentCapSum
+            aligned.toInterface.localLayerLeftPrefixRegion fragment +
+          (if fragment.1.1 = aligned.toInterface.nextCenterLayerFace.1 then 5
+            else 1) -
+          (if fragment.1.1 = aligned.toInterface.nextCenterLayerFace.1 then 1
+            else 0))
+        5 := by
+  rw [aligned.toInterface.localLayerRightPrefixBoundaryFragment_cap_eq_factorCaps,
+    aligned.localLayerCellFactorFragmentCapSum_eq_ite,
+    aligned.localLayerFactorFragmentOverlapCard_eq_ite]
+
+/-- Coordinate form of the exact one-Cell cap update on the actual outgoing
+finite profile. -/
+theorem localLayerRightPrefixBoundedProfile_faceLengthCap_eq_cellUpdate
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color (aligned.toInterface.nextLocalLayerPrefixCrossing step) ≠ 0)
+    (index : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        aligned.toInterface.nextLocalLayerPrefixCrossing)
+      aligned.toInterface.localLayerRightPrefixRegion))) :
+    (((aligned.toInterface.localLayerRightPrefixBoundedProfile color hcolor)
+        |>.profile.faceLengthCap index).val) =
+      min
+        (aligned.toInterface.localLayerFactorFragmentCapSum
+            aligned.toInterface.localLayerLeftPrefixRegion
+            (aligned.toInterface.localLayerRightPrefixBoundaryFragmentAt
+              index) +
+          (if (aligned.toInterface.localLayerRightPrefixBoundaryFragmentAt
+                  index).1.1 = aligned.toInterface.nextCenterLayerFace.1 then 5
+            else 1) -
+          (if (aligned.toInterface.localLayerRightPrefixBoundaryFragmentAt
+                  index).1.1 = aligned.toInterface.nextCenterLayerFace.1 then 1
+            else 0))
+        5 := by
+  rw [aligned.toInterface
+      |>.localLayerRightPrefixBoundedProfile_faceLengthCap_eq_factorCaps,
+    aligned.localLayerCellFactorFragmentCapSum_eq_ite,
+    aligned.localLayerFactorFragmentOverlapCard_eq_ite]
+
 end SourceCornerAlignedSlabInterface
 
 end AnnularEmbedding
