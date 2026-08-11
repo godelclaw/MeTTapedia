@@ -7,6 +7,8 @@ import Mettapedia.Logic.Prolog.ReaderNumber
 import Mettapedia.Logic.Prolog.ReaderNumberRegression
 import Mettapedia.Logic.Prolog.ReaderOperator
 import Mettapedia.Logic.Prolog.ReaderOperatorRegression
+import Mettapedia.Logic.Prolog.ReaderTerm
+import Mettapedia.Logic.Prolog.ReaderTermRegression
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.PureRuntimeSoundness
@@ -51,6 +53,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderLexer` | SWI-shaped located tokens for the concrete source reader |
 | `ReaderNumber` | exact integer, character-code, and IEEE float token interpretation |
 | `ReaderOperator` | checked ISO/SWI operator declarations and dynamic updates |
+| `ReaderTerm` | operator-aware parsing directly into canonical `Logic.LP.Term` |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |
 | `PureRuntime` | demand-driven pure-Prolog entrypoint delegating to the canonical LP runtime |
