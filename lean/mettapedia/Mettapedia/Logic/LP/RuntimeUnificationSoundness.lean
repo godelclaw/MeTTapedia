@@ -2506,7 +2506,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                           have hstep : RuntimeQuery.step builtins program
                               state = failWith state .predicateMismatch := by
                             simp [RuntimeQuery.step, hphase, hclauses, hMat,
-                              hPredicate]
+                              RuntimeClauseEntry.enter, hPredicate]
                           rw [hstep] at hPull
                           obtain ⟨result, hres⟩ := failWith_terminal state _
                           rw [hres] at hPull
@@ -2519,7 +2519,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                           have hstep : RuntimeQuery.step builtins program
                               state = failWith state .predicateMismatch := by
                             simp [RuntimeQuery.step, hphase, hclauses, hMat,
-                              hPredicate, hArity]
+                              RuntimeClauseEntry.enter, hPredicate, hArity]
                           rw [hstep] at hPull
                           obtain ⟨result, hres⟩ := failWith_terminal state _
                           rw [hres] at hPull
@@ -2530,7 +2530,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                           .next (unifyEntryState state cursor remaining
                             copied) none := by
                         simp [RuntimeQuery.step, hphase, hclauses, hMat,
-                          hPredicate, hArity, unifyEntryState]
+                          RuntimeClauseEntry.enter, hPredicate, hArity,
+                          unifyEntryState]
                       rw [hstep] at hPull
                       dsimp only at hPull
                       obtain ⟨hqE, hExtMat, hClauseWF, hFresh⟩ :=

@@ -1,5 +1,5 @@
 import Mettapedia.Logic.LP.RuntimeMaterialize
-import Mettapedia.Logic.LP.RuntimeUnification
+import Mettapedia.Logic.LP.RuntimeClauseEntry
 
 /-!
 # Demand-driven execution of typed LP clauses
@@ -289,27 +289,22 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
           match materializeClause state.memory activation with
           | .error error => failWith state (.memory error)
           | .ok copied =>
-              if _hPredicate : cursor.goal.symbol = copied.clause.head.symbol then
-                if _hArity : cursor.goal.args.size = copied.clause.head.args.size then
-                  let agenda :=
-                    cursor.goal.args.toList.zip copied.clause.head.args.toList
+              match RuntimeClauseEntry.enter cursor.goal copied.clause.head
+                  copied.memory copied.clause.body with
+              | .error _ => failWith state .predicateMismatch
+              | .ok entered =>
                   let attempt : Attempt σ := {
-                    body := copied.clause.body
+                    body := entered.body
                     cutDepth := cursor.cutDepth
                     frames := cursor.frames
                   }
                   .next {
                     state with
-                    memory := copied.memory
+                    memory := entered.memory
                     choices := replacementChoices cursor remaining state.choices
                     nextScope := state.nextScope + 1
-                    phase := .unifying attempt
-                      (RuntimeUnification.startMany copied.memory agenda)
+                    phase := .unifying attempt entered.unifier
                   } none
-                else
-                  failWith state .predicateMismatch
-              else
-                failWith state .predicateMismatch
   | .unifying attempt machine =>
       match machine with
       | .running _ =>
