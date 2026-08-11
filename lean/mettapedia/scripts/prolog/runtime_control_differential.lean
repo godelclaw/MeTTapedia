@@ -124,6 +124,21 @@ def main : IO Unit := do
   renderStringAnswers "not_unify_restores_trial_bindings"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.notUnifyRestoresTrialBindings)
+  renderCount "meta_nonvar_bound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaNonvarBound)
+  renderCount "meta_nonvar_variable"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaNonvarVariable)
+  renderCount "meta_forall_succeeds"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaForallSucceeds)
+  renderCount "meta_forall_fails"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaForallFails)
+  renderStringAnswers "meta_forall_restores_bindings"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaForallRestoresBindings)
   renderStringAnswers "catch_ground"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)

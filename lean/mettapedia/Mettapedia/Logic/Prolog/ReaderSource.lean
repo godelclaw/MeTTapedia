@@ -88,6 +88,11 @@ private def toGoalAux : Nat -> SourceSignature.Term ->
               | "=", [left, right] => .ok (.unify left right)
               | "\\=", [left, right] => .ok (.notUnify left right)
               | "var", [argument] => .ok (.isVar argument)
+              | "nonvar", [argument] => .ok (.neg (.isVar argument))
+              | "forall", [condition, action] => do
+                  let parsedCondition <- toGoalAux fuel condition
+                  let parsedAction <- toGoalAux fuel action
+                  pure (.neg (.conj parsedCondition (.neg parsedAction)))
               | "findall", [template, generator, bag] => do
                   let parsedGenerator <- toGoalAux fuel generator
                   pure (.findall template parsedGenerator bag)

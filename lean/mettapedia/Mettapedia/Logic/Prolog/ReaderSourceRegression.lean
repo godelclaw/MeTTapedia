@@ -88,6 +88,11 @@ def readShape (source : String) : Option FormShape :=
     (.conj (.neg (.call "b" 0))
       (.conj .unify (.conj .notUnify .isVar)))))
 
+#guard readShape "p :- nonvar(X), forall(q(X), r(X))." == some
+  (.clause "p" 0
+    (.conj (.neg .isVar)
+      (.neg (.conj (.call "q" 1) (.neg (.call "r" 1))))))
+
 #guard readShape "p :- findall(X, q(X), Xs), catch(r, E, throw(E))." == some
   (.clause "p" 0 (.conj (.findall (.call "q" 1))
     (.catch (.call "r" 0) .throw)))

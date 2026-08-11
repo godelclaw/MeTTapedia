@@ -259,6 +259,31 @@ def notUnifyRestoresTrialBindings : SourceSignature.Goal :=
   .disj (.notUnify x (atom "a"))
     (.conj (.isVar x) (.unify x (atom "b")))
 
+/-- These use heap-built callables, pinning the same derived expansion in the
+read-only dynamic meta-call decoder rather than only in source classification. -/
+def metaNonvarBound : SourceSignature.Goal :=
+  metaGoal (compound "nonvar" [atom "a"])
+
+def metaNonvarVariable : SourceSignature.Goal :=
+  metaGoal (compound "nonvar" [x])
+
+def metaForallSucceeds : SourceSignature.Goal :=
+  metaGoal (compound "forall" [
+    disjunction (equality x (atom "a")) (equality x (atom "b")),
+    compound "\\=" [x, atom "c"]
+  ])
+
+def metaForallFails : SourceSignature.Goal :=
+  metaGoal (compound "forall" [
+    disjunction (equality x (atom "a")) (equality x (atom "b")),
+    equality x (atom "a")
+  ])
+
+def metaForallRestoresBindings : SourceSignature.Goal :=
+  .conj
+    (metaGoal (compound "forall" [equality x (atom "a"), atom "true"]))
+    (.conj (.isVar x) (.unify x (atom "c")))
+
 def binaryFactProgram : SourceSignature.Program :=
   [fact "p" [atom "a", atom "b"]]
 
@@ -798,6 +823,11 @@ def laterCallSeesAssertion :
 #guard runCount [] distinctAtomsAreNotUnifiable == some (1, 0, 0)
 #guard runCount [] variableAndAtomAreUnifiable == some (0, 0, 0)
 #guard runAtoms [] notUnifyRestoresTrialBindings == some (["b"], 0, 0)
+#guard runCount [] metaNonvarBound == some (1, 0, 0)
+#guard runCount [] metaNonvarVariable == some (0, 0, 0)
+#guard runCount [] metaForallSucceeds == some (1, 0, 0)
+#guard runCount [] metaForallFails == some (0, 0, 0)
+#guard runAtoms [] metaForallRestoresBindings == some (["c"], 0, 0)
 #guard runAtoms [] caughtGround == some (["ball"], 0, 0)
 #guard runRaisedAtom [] throwTimeBoundCatcherRejects == some ("ball", 0, 0)
 #guard runRaisedAtom [] recoveryRethrowEscapes == some ("b", 0, 0)

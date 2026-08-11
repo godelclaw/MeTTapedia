@@ -171,7 +171,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 66 exact answer, exception, and persistent-store traces against
+It compares 71 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -189,6 +189,9 @@ heap decoding, local cut scope, argument extension, and heap-built callables.
 Seven derived-control cases cover negation-as-failure and non-unifiability,
 including trial-binding restoration and cut opacity; both reuse the canonical
 hard-if checkpoint rather than adding a search path.
+Five dynamic-call cases additionally pin `nonvar/1` and `forall/2` as
+elaborations into those same derived forms, including universal failure and
+binding isolation.
 Eleven `catch/3` and `throw/1` cases cover throw-time catcher selection,
 entry-context recovery, rethrow, guarded and recovery cut opacity, retained
 guarded answers, nested-catcher throw-time preservation, variable-copy

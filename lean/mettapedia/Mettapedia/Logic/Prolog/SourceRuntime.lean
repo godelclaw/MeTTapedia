@@ -189,6 +189,11 @@ def decodeCallableAux : Nat → Heap Sigma.scoped → Addr → List Addr →
             | "=", [left, right] => pure [.unify left right]
             | "\\=", [left, right] => pure [.notUnify left right]
             | "var", [term] => pure [.isVar term]
+            | "nonvar", [term] => pure [.neg [.isVar term]]
+            | "forall", [condition, action] => do
+                let decodedCondition ← decodeCallableAux fuel heap condition []
+                let decodedAction ← decodeCallableAux fuel heap action []
+                pure [.neg (decodedCondition ++ [.neg decodedAction])]
             | "findall", [template, generator, bag] => do
                 let decodedGenerator ← decodeCallableAux fuel heap generator []
                 pure [.findall template decodedGenerator bag]
