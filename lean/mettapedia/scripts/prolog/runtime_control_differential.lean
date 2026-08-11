@@ -222,6 +222,27 @@ def main : IO Unit := do
   renderCount "is_list_cyclic_head"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.isListAcceptsCyclicHead)
+  renderCount "atom_codes_forward"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCodesForward)
+  renderStringAnswers "atom_codes_reverse"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCodesReverse
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "atom_codes_binds_element"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCodesBindsElement
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "atom_codes_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCodesMismatch)
+  renderCount "string_codes_forward"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringCodesForward)
+  renderStringAnswers "string_codes_reverse"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runStringsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringCodesReverse
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
   renderCount "identity_same_variable"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.identitySameVariable)

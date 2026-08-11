@@ -267,6 +267,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .dcgCall body input rest => .dcgCall body input rest
   | .format destination format arguments decoder =>
       .format destination format arguments decoder
+  | .textConversion text codes decoder =>
+      .textConversion text codes decoder
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
   | .throw ball unboundError => .throw ball unboundError
@@ -895,6 +897,58 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                                 dcgAddressTerminalsStep, mapState, mapControl,
                                 mapAttempt, mapPhase, mapReturnFrame,
                                 mapStepResult, hDecode, hAllocate, hSegment]
+          | textConversion text codes decoder =>
+              cases hDecode : decoder.decode memory.heap text codes with
+              | error reason =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      textConversionStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hDecode, hCleanup]
+              | ok plan =>
+                  cases plan with
+                  | codes encoding output values =>
+                      cases hValues : allocateConstants memory values with
+                      | error error =>
+                          cases hCleanup : memory.restore checkpoint <;>
+                            simp [mapDispatchAction, dispatchActionStep,
+                              textConversionStep, mapState, mapControl,
+                              mapPhase, mapReturnFrame, mapStepResult,
+                              failWith, closeMemory, hDecode, hValues,
+                              hCleanup]
+                      | ok allocated =>
+                          rcases allocated with ⟨roots, middle⟩
+                          cases hList : allocateAddressList encoding middle
+                              roots with
+                          | error error =>
+                              cases hCleanup : memory.restore checkpoint <;>
+                                simp [mapDispatchAction, dispatchActionStep,
+                                  textConversionStep, mapState, mapControl,
+                                  mapPhase, mapReturnFrame, mapStepResult,
+                                  failWith, closeMemory, hDecode, hValues,
+                                  hList, hCleanup]
+                          | ok allocatedList =>
+                              rcases allocatedList with ⟨listRoot, final⟩
+                              simp [mapDispatchAction, dispatchActionStep,
+                                textConversionStep, beginUnifyStep, mapState,
+                                mapControl, mapAttempt, mapPhase,
+                                mapReturnFrame, mapStepResult, hDecode,
+                                hValues, hList]
+                  | text output value =>
+                      cases hValue : memory.allocate (.const value) with
+                      | error error =>
+                          cases hCleanup : memory.restore checkpoint <;>
+                            simp [mapDispatchAction, dispatchActionStep,
+                              textConversionStep, mapState, mapControl,
+                              mapPhase, mapReturnFrame, mapStepResult,
+                              failWith, closeMemory, hDecode, hValue,
+                              hCleanup]
+                      | ok allocated =>
+                          rcases allocated with ⟨valueRoot, final⟩
+                          simp [mapDispatchAction, dispatchActionStep,
+                            textConversionStep, beginUnifyStep, mapState,
+                            mapControl, mapAttempt, mapPhase, mapReturnFrame,
+                            mapStepResult, hDecode, hValue]
           | «catch» guarded catcher recovery =>
               simp [mapDispatchAction, dispatchActionStep, catchStep,
                 mapState, mapControl, mapPhase, mapReturnFrame,

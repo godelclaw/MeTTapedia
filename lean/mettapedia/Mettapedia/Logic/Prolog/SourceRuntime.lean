@@ -340,6 +340,96 @@ def decodeFormat (heap : Heap Sigma.scoped) (destination format arguments : Addr
   let rendered ← renderWriteAtomic heap argument
   pure (.codes collectionEncoding head tail (stringCodeConstants rendered))
 
+private inductive TextConversionKind where
+  | atom
+  | string
+
+private def TextConversionKind.value? : TextConversionKind →
+    SourceSignature.Constant → Option String
+  | .atom, .atom value => some value
+  | .string, .string value => some value
+  | _, _ => none
+
+private def TextConversionKind.constant : TextConversionKind → String →
+    SourceSignature.Constant
+  | .atom, value => .atom value
+  | .string, value => .string value
+
+private def codeCharacter (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError Char := do
+  let cell ← dereferencedCell heap root
+  match cell with
+  | .var _ none => .error .textConversionUnbound
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const (.integer value) =>
+      if value < 0 then .error .invalidCharacterCode else
+      let code := value.toNat
+      if h : code.isValidChar then .ok (Char.ofNatAux code h)
+      else .error .invalidCharacterCode
+  | _ => .error .invalidCharacterCode
+
+private def codeCharacters (heap : Heap Sigma.scoped) (roots : List Addr) :
+    Except LP.RuntimeQuery.QueryError (List Char) :=
+  roots.mapM (codeCharacter heap)
+
+private def decodedCodeRoots (heap : Heap Sigma.scoped) (codes : Addr) :
+    Except LP.RuntimeQuery.QueryError (List Addr) :=
+  match LP.RuntimeQuery.decodeAddressList collectionEncoding heap codes with
+  | .ok roots => .ok roots
+  | .error .univListUnbound => .error .textConversionUnbound
+  | .error .invalidUnivList => .error .invalidTextCodes
+  | .error error => .error error
+
+/-- Decode the two ISO directions without binding either argument.  Ground
+text produces code constants after first validating any bound list spine;
+unbound text consumes a finite proper list of valid Unicode scalar codes. -/
+private def decodeTextConversion (kind : TextConversionKind)
+    (heap : Heap Sigma.scoped) (text codes : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.TextConversionPlan Sigma) := do
+  let textCell ← dereferencedCell heap text
+  match textCell with
+  | .var _ none =>
+      let roots ← decodedCodeRoots heap codes
+      let characters ← codeCharacters heap roots
+      pure (.text text (kind.constant (String.ofList characters)))
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const value =>
+      let source ← match kind.value? value with
+        | some source => pure source
+        | none => .error .invalidTextValue
+      let codesCell ← dereferencedCell heap codes
+      match codesCell with
+      | .var _ none =>
+          pure (.codes collectionEncoding codes (stringCodeConstants source))
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | _ =>
+          let proper ← LP.RuntimeQuery.termProperList collectionEncoding heap codes
+          if proper then
+            pure (.codes collectionEncoding codes
+              (stringCodeConstants source))
+          else .error .invalidTextCodes
+  | .app _ _ => .error .invalidTextValue
+
+def atomCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
+  decode := decodeTextConversion .atom
+
+def stringCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
+  decode := decodeTextConversion .string
+
+/-- Recognize the code-list fragment needed by pinned PeTTa source.  Character
+lists and numeric conversions remain separate obligations. -/
+def textConversion? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.TextConversionDecoder Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "atom_codes", [text, codes] =>
+      if goal.symbol.arity = 2 then some (text, codes, atomCodesDecoder)
+      else none
+  | "string_codes", [text, codes] =>
+      if goal.symbol.arity = 2 then some (text, codes, stringCodesDecoder)
+      else none
+  | _, _ => none
+
 /-- Read one dynamic grammar body in the finite fragment needed by the pinned
 PeTTa parser.  Ordinary nonterminals reuse the callable decoder with the two
 state arguments appended.  Proper lists and strings become terminal plans;
@@ -541,6 +631,7 @@ def services : RuntimeControl.Services Sigma where
   integerComparison? := integerComparison?
   format? := format?
   formatter := { decode := decodeFormat }
+  textConversion? := textConversion?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -568,6 +659,10 @@ theorem services_format : services.format? = format? := rfl
 
 @[simp]
 theorem services_formatter : services.formatter.decode = decodeFormat := rfl
+
+@[simp]
+theorem services_textConversion :
+    services.textConversion? = textConversion? := rfl
 
 @[simp]
 theorem services_decodeDcg : services.decoder.decodeDcg = decodeDcg := rfl

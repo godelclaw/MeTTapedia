@@ -460,6 +460,12 @@ structure Services (sigma : LP.LPSignature) where
     fun _ => none
   formatter : LP.RuntimeQuery.FormatDecoder sigma :=
     LP.RuntimeQuery.rejectingFormatDecoder sigma
+  /-- Recognize one bidirectional text/code call without inspecting either
+  root.  The returned decoder has read-only heap access and no control or
+  mutation authority. -/
+  textConversion? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.TextConversionDecoder sigma) :=
+      fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -498,6 +504,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   integerComparison? _ := none
   format? _ := none
   formatter := LP.RuntimeQuery.rejectingFormatDecoder sigma
+  textConversion? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -598,12 +605,17 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                       .format destination format arguments
                                         services.formatter
                                   | none =>
-                                      match services.dcgCall? goal with
-                                      | some (body, input, rest) =>
-                                          .dcgCall body input rest
+                                      match services.textConversion? goal with
+                                      | some (text, codes, decoder) =>
+                                          .textConversion text codes decoder
                                       | none =>
-                                          .call goal
-                                            (Program.clausesFor program goal.symbol)
+                                          match services.dcgCall? goal with
+                                          | some (body, input, rest) =>
+                                              .dcgCall body input rest
+                                          | none =>
+                                              .call goal
+                                                (Program.clausesFor program
+                                                  goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -730,6 +742,27 @@ theorem dispatchActionWith_format {sigma : LP.LPSignature}
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison, hFormat]
 
+/-- Text/code classification exposes only two existing roots and a read-only
+decoder.  The classifier cannot precompute bindings or allocate output. -/
+theorem dispatchActionWith_textConversion {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (text codes : Addr)
+    (decoder : LP.RuntimeQuery.TextConversionDecoder sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = some (text, codes, decoder)) :
+    dispatchActionWith services program (.call goal) =
+      .textConversion text codes decoder := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat, hText]
+
 /-- `phrase/3` reaches its distinct dynamic-grammar action only after every
 earlier disjoint service declines the call.  The classifier supplies three
 roots and no decoded instructions or memory. -/
@@ -745,11 +778,12 @@ theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
     (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = none)
     (hDcg : services.dcgCall? goal = some (body, input, rest)) :
     dispatchActionWith services program (.call goal) =
       .dcgCall body input rest := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
-    hComparison, hFormat, hDcg]
+    hComparison, hFormat, hText, hDcg]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

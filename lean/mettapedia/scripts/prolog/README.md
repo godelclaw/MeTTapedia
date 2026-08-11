@@ -197,7 +197,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 141 exact answer, exception, and persistent-store traces against
+It compares 147 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -231,6 +231,11 @@ Five `is_list/1` cases cover a finite list, an improper tail, an unbound root,
 a rationally cyclic spine, and a proper spine whose head is cyclic.  The last
 case pins the SWI distinction between list-spine recognition and whole-term
 acyclicity or groundness.
+Six bidirectional text-code cases cover Unicode `atom_codes/2` and
+`string_codes/2` in both directions, binding a variable list element, and a
+ground mismatch that fails without binding.  Lean canaries additionally pin
+typed rejection of both-unbound arguments, improper and cyclic code lists,
+and invalid Unicode scalar values.
 Fourteen strict-identity cases compare `==/2` and `\==/2` through the shared
 read-only heap traversal: same and distinct variables, structural compounds,
 variable sharing, separately allocated rational cycles, non-binding failure,

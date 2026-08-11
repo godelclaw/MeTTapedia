@@ -36,6 +36,11 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_format
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_format
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_formatter
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.textConversionStep_codes_of_decode_allocate
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.textConversionStep_text_of_decode_allocate
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.textConversionStep_error_of_decode
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_textConversion
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_textConversion
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentityStep_of_result
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentical_same_of_deref
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termIdentity

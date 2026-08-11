@@ -56,6 +56,10 @@ inductive QueryError where
   | invalidFormatString
   | invalidFormatArguments
   | unsupportedFormatDirective
+  | textConversionUnbound
+  | invalidTextValue
+  | invalidTextCodes
+  | invalidCharacterCode
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
   | termGroundBudgetExhausted
@@ -148,6 +152,21 @@ structure FormatDecoder (σ : LPSignature) where
 /-- Runtimes without formatted output fail closed. -/
 def rejectingFormatDecoder (σ : LPSignature) : FormatDecoder σ where
   decode _ _ _ _ := .error .unsupportedInstruction
+
+/-- A bidirectional text conversion produces one of two bounded plans.  A
+ground text value becomes a fresh proper code list; a ground code list becomes
+one fresh language constant.  Neither plan can name control or observations. -/
+inductive TextConversionPlan (σ : LPSignature) where
+  | codes (encoding : CollectionEncoding σ) (output : Addr)
+      (values : List σ.constants)
+  | text (output : Addr) (value : σ.constants)
+
+/-- Read-only interpretation of one language text/code predicate.  The
+language owns its atomic representation and Unicode conversion; the engine
+retains all allocation, unification, restoration, and scheduling. -/
+structure TextConversionDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Addr → Addr →
+    Except QueryError (TextConversionPlan σ)
 
 /-- Language-owned symbols for `=../2`.  The engine owns heap traversal,
 allocation, and unification.  A realization supplies only the existing list
@@ -2298,6 +2317,30 @@ def beginUnifyStep {σ : LPSignature}
       (RuntimeUnification.startMany state.memory [(left, right)])
   } none
 
+/-- Execute one bidirectional text/code plan.  Both directions allocate only
+fresh canonical cells and enter the ordinary graph unifier; the decoder never
+binds an output or decides a mismatching ground result itself. -/
+def textConversionStep {σ : LPSignature}
+    (decoder : TextConversionDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (text codes : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap text codes with
+  | .error reason => failWith state reason
+  | .ok (.codes encoding output values) =>
+      match allocateConstants state.memory values with
+      | .error error => failWith state (.memory error)
+      | .ok (roots, memory) =>
+          match allocateAddressList encoding memory roots with
+          | .error error => failWith state (.memory error)
+          | .ok (listRoot, memory) =>
+              beginUnifyStep { state with memory } output listRoot continuation
+  | .ok (.text output value) =>
+      match state.memory.allocate (.const value) with
+      | .error error => failWith state (.memory error)
+      | .ok (valueRoot, memory) =>
+          beginUnifyStep { state with memory } output valueRoot continuation
+
 /-- Bind a successful database insertion's stable identity through the same
 canonical graph unifier as every other Prolog binding.  The session supplies
 only the opaque atomic value; it cannot write the heap or schedule the
@@ -2646,6 +2689,7 @@ inductive DispatchAction (σ : LPSignature)
   | metaCall (callable : Addr) (extraArgs : List Addr)
   | dcgCall (body input rest : Addr)
   | format (destination format arguments : Addr) (decoder : FormatDecoder σ)
+  | textConversion (text codes : Addr) (decoder : TextConversionDecoder σ)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
   | throw (ball : Addr)
@@ -2779,6 +2823,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       dcgCallStep decoder state body input restRoot rest
   | .format destination format arguments formatDecoder =>
       formatStep formatDecoder state destination format arguments rest
+  | .textConversion text codes textDecoder =>
+      textConversionStep textDecoder state text codes rest
   | .catch guarded catcher recovery =>
       catchStep state guarded catcher recovery rest
   | .throw ball unboundError => throwStep state ball unboundError
@@ -3257,6 +3303,43 @@ theorem formatStep_error_of_decode {σ : LPSignature}
     formatStep decoder state destination format arguments continuation =
       failWith state reason := by
   simp [formatStep, hDecode]
+
+theorem textConversionStep_codes_of_decode_allocate {σ : LPSignature}
+    (decoder : TextConversionDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (text codes output listRoot : Addr) (continuation : List Instruction)
+    (encoding : CollectionEncoding σ) (values : List σ.constants)
+    (roots : List Addr) (memory₁ memory₂ : Memory σ.scoped)
+    (hDecode : decoder.decode state.memory.heap text codes =
+      .ok (.codes encoding output values))
+    (hValues : allocateConstants state.memory values = .ok (roots, memory₁))
+    (hList : allocateAddressList encoding memory₁ roots =
+      .ok (listRoot, memory₂)) :
+    textConversionStep decoder state text codes continuation =
+      beginUnifyStep { state with memory := memory₂ }
+        output listRoot continuation := by
+  simp [textConversionStep, hDecode, hValues, hList]
+
+theorem textConversionStep_text_of_decode_allocate {σ : LPSignature}
+    (decoder : TextConversionDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (text codes output valueRoot : Addr) (continuation : List Instruction)
+    (value : σ.constants) (memory : Memory σ.scoped)
+    (hDecode : decoder.decode state.memory.heap text codes =
+      .ok (.text output value))
+    (hValue : state.memory.allocate (.const value) = .ok (valueRoot, memory)) :
+    textConversionStep decoder state text codes continuation =
+      beginUnifyStep { state with memory } output valueRoot continuation := by
+  simp [textConversionStep, hDecode, hValue]
+
+theorem textConversionStep_error_of_decode {σ : LPSignature}
+    (decoder : TextConversionDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (text codes : Addr) (continuation : List Instruction) (reason : QueryError)
+    (hDecode : decoder.decode state.memory.heap text codes = .error reason) :
+    textConversionStep decoder state text codes continuation =
+      failWith state reason := by
+  simp [textConversionStep, hDecode]
 
 /-- Meta-call decoding is reached through the canonical dispatch phase, not a
 wrapper-side resolution path.  The theorem pins the exact executable seam. -/
