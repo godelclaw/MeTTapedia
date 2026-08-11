@@ -125,6 +125,22 @@ noncomputable def localLayerCellFactorPositionSlice
       aligned.toInterface.localLayerCellBoundaryRegion)
     aligned.toInterface.localLayerCellBoundaryRegion fragment.2.1
 
+/-- The literal occurrence overlap of the old-prefix and new-hexagon slices.
+The two edge regions meet only on the shared rung, but this definition retains
+the actual occurrence until two-sidedness is used. -/
+noncomputable def localLayerFactorPositionOverlap
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (fragment : aligned.toInterface.LocalLayerComposedBoundaryFragment) :=
+  faceRegionalFragmentPositionSlice
+      embedded.cellulation.rotation.toRotationSystem
+      (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
+        fragment.1.1)
+      (aligned.toInterface.localLayerLeftPrefixRegion ∪
+        aligned.toInterface.localLayerCellBoundaryRegion)
+      aligned.toInterface.localLayerLeftPrefixRegion fragment.2.1 ∩
+    aligned.localLayerCellFactorPositionSlice fragment
+
 /-- The occurrence slice contributed by the newly exposed hexagon has six
 positions on that hexagon's own face and one position on every other outgoing
 face. -/
@@ -314,6 +330,211 @@ theorem localLayerCellFactorFragmentCapSum_eq_ite
   by_cases hface : fragment.1.1 = interface.nextCenterLayerFace.1
   · simp [hface]
   · simp [hface]
+
+/-- An occurrence in both factor slices forces the outgoing fragment to be
+carried by the newly exposed hexagon.  Otherwise its selected outgoing cut
+edge and the shared rung would be two distinct edges shared by the same pair
+of faces. -/
+theorem localLayerFactorPositionOverlap_face_eq_nextCenter
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (fragment : aligned.toInterface.LocalLayerComposedBoundaryFragment)
+    (position : Fin (embedded.cellulation.rotation.toRotationSystem.faceOrbit
+      (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
+        fragment.1.1)).card)
+    (hposition : position ∈
+      aligned.localLayerFactorPositionOverlap fragment) :
+    fragment.1.1 = aligned.toInterface.nextCenterLayerFace.1 := by
+  let interface := aligned.toInterface
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let root := orbitFaceRoot RS fragment.1.1
+  let cut := indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing
+  let leftRegion := interface.localLayerLeftPrefixRegion
+  let cellRegion := interface.localLayerCellBoundaryRegion
+  let largeRegion := leftRegion ∪ cellRegion
+  change position ∈
+      faceRegionalFragmentPositionSlice RS root largeRegion leftRegion
+          fragment.2.1 ∩
+        faceRegionalFragmentPositionSlice RS root largeRegion cellRegion
+          fragment.2.1 at hposition
+  rcases Finset.mem_inter.1 hposition with ⟨hpositionLeft, hpositionCell⟩
+  have hedgeLeft : faceCycleEdge RS root position ∈ leftRegion :=
+    (Finset.mem_filter.1 hpositionLeft).2
+  have hedgeCell : faceCycleEdge RS root position ∈ cellRegion :=
+    (Finset.mem_filter.1 hpositionCell).2
+  have hedgeBoth : faceCycleEdge RS root position ∈ leftRegion ∩ cellRegion :=
+    Finset.mem_inter.2 ⟨hedgeLeft, hedgeCell⟩
+  rw [interface.localLayerLeftPrefixRegion_inter_cellBoundary_eq_singleton]
+    at hedgeBoth
+  have hedgeRung : faceCycleEdge RS root position =
+      interface.localLayerSharedRungEdge :=
+    Finset.mem_singleton.1 hedgeBoth
+  by_contra hface
+  let selectedPosition :=
+    boundaryRegionalFragmentCutPosition RS cut largeRegion fragment
+  have hselectedCut : boundaryRegionalFragmentCutEdge RS cut largeRegion
+      fragment ∈ cut :=
+    boundaryRegionalFragmentCutEdge_mem_cut RS cut largeRegion fragment
+  rcases (mem_indexedCrossingEdgeSet_iff
+    interface.nextLocalLayerPrefixCrossing
+      (boundaryRegionalFragmentCutEdge RS cut largeRegion fragment)).1
+      hselectedCut with ⟨step, hstep⟩
+  have hselectedCell : faceCycleEdge RS root selectedPosition ∈ cellRegion := by
+    rw [boundaryRegionalFragmentCutPosition_edge, ← hstep]
+    exact aligned.nextLocalLayerPrefixCrossing_mem_cellBoundaryRegion step
+  have hselectedFace : faceCycleEdge RS root selectedPosition ∈
+      orbitFaceBoundary RS fragment.1.1 := by
+    simpa [root] using faceCycleEdge_mem RS root selectedPosition
+  have hselectedNext : faceCycleEdge RS root selectedPosition ∈
+      orbitFaceBoundary RS interface.nextCenterLayerFace.1 := by
+    simpa [cellRegion,
+      SourceConsecutiveSlabInterface.localLayerCellBoundaryRegion, RS] using
+      hselectedCell
+  have hrungFace : interface.localLayerSharedRungEdge ∈
+      orbitFaceBoundary RS fragment.1.1 := by
+    rw [← hedgeRung]
+    simpa [root] using faceCycleEdge_mem RS root position
+  have hrungNext : interface.localLayerSharedRungEdge ∈
+      orbitFaceBoundary RS interface.nextCenterLayerFace.1 := by
+    exact interface.localLayerSharedRungEdge_mem_cellBoundary
+  have hselectedInterior : faceCycleEdge RS root selectedPosition ∈
+      interiorEdgeSupport (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) := by
+    apply (mem_interiorEdgeSupport_iff (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).2
+    exact ⟨Finset.mem_biUnion.2
+        ⟨fragment.1.1, Finset.mem_univ _, hselectedFace⟩,
+      orbitFace_totalIncidenceCount_eq_two_of_twoSided RS htwoSided _⟩
+  have hrungInterior : interface.localLayerSharedRungEdge ∈
+      interiorEdgeSupport (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) := by
+    apply (mem_interiorEdgeSupport_iff (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).2
+    exact ⟨Finset.mem_biUnion.2
+        ⟨fragment.1.1, Finset.mem_univ _, hrungFace⟩,
+      orbitFace_totalIncidenceCount_eq_two_of_twoSided RS htwoSided _⟩
+  have hselectedShared : faceCycleEdge RS root selectedPosition ∈
+      sharedInteriorEdges (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) fragment.1.1
+          interface.nextCenterLayerFace.1 :=
+    (mem_sharedInteriorEdges_iff (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).2
+        ⟨hselectedInterior, hselectedFace, hselectedNext⟩
+  have hrungShared : interface.localLayerSharedRungEdge ∈
+      sharedInteriorEdges (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) fragment.1.1
+          interface.nextCenterLayerFace.1 :=
+    (mem_sharedInteriorEdges_iff (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).2
+        ⟨hrungInterior, hrungFace, hrungNext⟩
+  have hedgeEq : faceCycleEdge RS root selectedPosition =
+      interface.localLayerSharedRungEdge :=
+    (Finset.card_le_one_iff.1
+      (hunique fragment.1.1 (Finset.mem_univ _)
+        interface.nextCenterLayerFace.1 (Finset.mem_univ _) hface))
+      hselectedShared hrungShared
+  exact aligned.nextLocalLayerPrefixCrossing_ne_sharedRungEdge step
+    (hstep.trans
+      (boundaryRegionalFragmentCutPosition_edge RS cut largeRegion fragment
+        |>.symm.trans hedgeEq))
+
+/-- The subtraction term in the one-Cell face-cap update is exactly one on
+the new hexagon and zero on every other outgoing face. -/
+theorem localLayerFactorFragmentOverlapCard_eq_ite
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (fragment : aligned.toInterface.LocalLayerComposedBoundaryFragment) :
+    aligned.toInterface.localLayerFactorFragmentOverlapCard fragment =
+      if fragment.1.1 = aligned.toInterface.nextCenterLayerFace.1 then 1
+      else 0 := by
+  let interface := aligned.toInterface
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let root := orbitFaceRoot RS fragment.1.1
+  let leftRegion := interface.localLayerLeftPrefixRegion
+  let cellRegion := interface.localLayerCellBoundaryRegion
+  let largeRegion := leftRegion ∪ cellRegion
+  change (aligned.localLayerFactorPositionOverlap fragment).card = _
+  by_cases hface : fragment.1.1 = interface.nextCenterLayerFace.1
+  · rw [if_pos hface]
+    have hrungFace : interface.localLayerSharedRungEdge ∈
+        orbitFaceBoundary RS (dartOrbitFace RS root) := by
+      simpa [root, hface,
+        SourceConsecutiveSlabInterface.localLayerCellBoundaryRegion, RS] using
+        interface.localLayerSharedRungEdge_mem_cellBoundary
+    rcases existsUnique_faceCycleEdge_eq RS htwoSided root
+      interface.localLayerSharedRungEdge hrungFace with
+      ⟨rungPosition, hrungPosition, _hrungUnique⟩
+    have hboundary : orbitFaceBoundary RS (dartOrbitFace RS root) ⊆
+        largeRegion := by
+      intro edge hedge
+      apply Finset.mem_union_right
+      simpa [cellRegion,
+        SourceConsecutiveSlabInterface.localLayerCellBoundaryRegion,
+        root, hface] using hedge
+    have hpositions : faceRegionalFragmentPositions RS root largeRegion
+        fragment.2.1 = Finset.univ :=
+      faceRegionalFragmentPositions_eq_univ_of_boundary_subset
+        RS root largeRegion hboundary fragment.2.1
+    have hrungLarge : rungPosition ∈
+        faceRegionalFragmentPositions RS root largeRegion fragment.2.1 := by
+      rw [hpositions]
+      simp
+    have hrungLeft : faceCycleEdge RS root rungPosition ∈ leftRegion := by
+      rw [hrungPosition]
+      exact interface.localLayerSharedRungEdge_mem_leftPrefix
+    have hrungCell : faceCycleEdge RS root rungPosition ∈ cellRegion := by
+      rw [hrungPosition]
+      change interface.localLayerSharedRungEdge ∈
+        interface.localLayerCellBoundaryRegion
+      exact interface.localLayerSharedRungEdge_mem_cellBoundary
+    have hrungOverlap : rungPosition ∈
+        aligned.localLayerFactorPositionOverlap fragment := by
+      change rungPosition ∈
+          faceRegionalFragmentPositionSlice RS root largeRegion leftRegion
+              fragment.2.1 ∩
+            faceRegionalFragmentPositionSlice RS root largeRegion cellRegion
+              fragment.2.1
+      exact Finset.mem_inter.2
+        ⟨Finset.mem_filter.2 ⟨hrungLarge, hrungLeft⟩,
+          Finset.mem_filter.2 ⟨hrungLarge, hrungCell⟩⟩
+    have hoverlap : aligned.localLayerFactorPositionOverlap fragment =
+        {rungPosition} := by
+      apply Finset.Subset.antisymm
+      · intro position hposition
+        change position ∈
+            faceRegionalFragmentPositionSlice RS root largeRegion leftRegion
+                fragment.2.1 ∩
+              faceRegionalFragmentPositionSlice RS root largeRegion cellRegion
+                fragment.2.1 at hposition
+        rcases Finset.mem_inter.1 hposition with ⟨hleft, hcell⟩
+        have hedgeBoth : faceCycleEdge RS root position ∈
+            leftRegion ∩ cellRegion :=
+          Finset.mem_inter.2
+            ⟨(Finset.mem_filter.1 hleft).2,
+              (Finset.mem_filter.1 hcell).2⟩
+        rw [interface.localLayerLeftPrefixRegion_inter_cellBoundary_eq_singleton]
+          at hedgeBoth
+        have hedgeRung : faceCycleEdge RS root position =
+            interface.localLayerSharedRungEdge :=
+          Finset.mem_singleton.1 hedgeBoth
+        exact Finset.mem_singleton.2
+          (faceCycleEdge_injective RS htwoSided root
+            (hedgeRung.trans hrungPosition.symm))
+      · intro position hposition
+        rw [Finset.mem_singleton] at hposition
+        simpa [hposition] using hrungOverlap
+    rw [hoverlap]
+    simp
+  · rw [if_neg hface]
+    have hoverlap : aligned.localLayerFactorPositionOverlap fragment = ∅ := by
+      apply Finset.Subset.antisymm
+      · intro position hposition
+        exact (hface
+          (aligned.localLayerFactorPositionOverlap_face_eq_nextCenter
+            fragment position hposition)).elim
+      · exact Finset.empty_subset _
+    rw [hoverlap]
+    simp
 
 end SourceCornerAlignedSlabInterface
 
