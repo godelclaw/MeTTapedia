@@ -25,6 +25,10 @@ inductive Constant where
   | integer (value : Int)
   | floatBits (bits : UInt64)
   | string (value : String)
+  /-- Opaque stable identity returned by `asserta/2` and `assertz/2`.
+  The source reader has no constructor for this case, so a program cannot
+  forge a database occurrence reference from textual syntax. -/
+  | clauseReference (reference : Nat)
 deriving DecidableEq, Repr
 
 /-- Clause- or query-local source variable identity. -/
@@ -67,6 +71,8 @@ def atom (name : String) : Term := .const (.atom name)
 def integer (value : Int) : Term := .const (.integer value)
 def floatBits (bits : UInt64) : Term := .const (.floatBits bits)
 def string (value : String) : Term := .const (.string value)
+def clauseReference (reference : Nat) : Term :=
+  .const (.clauseReference reference)
 def var (spelling : String) (occurrence : Nat) : Term :=
   .var { spelling, occurrence }
 

@@ -450,6 +450,9 @@ structure Services (sigma : LP.LPSignature) where
   /-- Optional canonical symbols used by the engine to normalize retract
   patterns before matching them against reflected clause data. -/
   clauseEncoding : Option (LP.RuntimeQuery.ClauseEncoding sigma) := none
+  /-- Opaque, source-unforgeable representation of one stable database
+  occurrence.  The shared engine alone materializes and unifies this value. -/
+  clauseReference : Option (Nat → sigma.constants) := none
 
 /-- Base typed control has no implicit meta-call authority. -/
 def noServices (sigma : LP.LPSignature) : Services sigma where
@@ -462,6 +465,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   unboundThrowError := none
   collectionEncoding := none
   clauseEncoding := none
+  clauseReference := none
 
 /-- Typed source goals instantiate the shared query opener's narrow
 materializer interface.  The adapter supplies only heap materialization,
@@ -732,6 +736,46 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
             database := (session.database.assertz clause).2
             state
           } none
+  | .assertaWithReference root referenceRoot =>
+      match session.services.clauseReference with
+      | none => failSession session state .unsupportedInstruction
+      | some encode =>
+          match session.services.decodeClause state.memory.heap root with
+          | .error error => failSession session state error
+          | .ok clause =>
+              let inserted := session.database.asserta clause
+              match LP.RuntimeQuery.bindDatabaseReferenceStep state
+                  referenceRoot (encode inserted.1) with
+              | .next next observation =>
+                  .next {
+                    session with
+                    database := inserted.2
+                    state := next
+                  } observation
+              | .terminal terminal =>
+                  .terminal terminal session.database
+              | .databaseRequest _ next =>
+                  failSession session next .unhandledDatabaseRequest
+  | .assertzWithReference root referenceRoot =>
+      match session.services.clauseReference with
+      | none => failSession session state .unsupportedInstruction
+      | some encode =>
+          match session.services.decodeClause state.memory.heap root with
+          | .error error => failSession session state error
+          | .ok clause =>
+              let inserted := session.database.assertz clause
+              match LP.RuntimeQuery.bindDatabaseReferenceStep state
+                  referenceRoot (encode inserted.1) with
+              | .next next observation =>
+                  .next {
+                    session with
+                    database := inserted.2
+                    state := next
+                  } observation
+              | .terminal terminal =>
+                  .terminal terminal session.database
+              | .databaseRequest _ next =>
+                  failSession session next .unhandledDatabaseRequest
   | .retract pattern =>
       match session.services.clauseEncoding with
       | none => failSession session state .unsupportedInstruction
@@ -779,6 +823,58 @@ theorem applyDatabaseRequest_assertz_of_decode
         state := state
       } none := by
   simp [applyDatabaseRequest, hDecode]
+
+/-- `asserta/2` inserts exactly once only after the shared engine has begun
+canonical binding of the stable reference output. -/
+theorem applyDatabaseRequest_assertaWithReference_of_decode_bind
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state next : State sigma)
+    (root referenceRoot : Addr) (clause : Clause sigma)
+    (encode : Nat → sigma.constants)
+    (observation : Option (LP.RuntimeQuery.Observation sigma))
+    (hEncoding : session.services.clauseReference = some encode)
+    (hDecode : session.services.decodeClause state.memory.heap root =
+      .ok clause)
+    (hBind : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
+      (encode (session.database.asserta clause).1) =
+        .next next observation) :
+    applyDatabaseRequest session state
+        (.assertaWithReference root referenceRoot) =
+      .next {
+        session with
+        database := (session.database.asserta clause).2
+        state := next
+      } observation := by
+  have hBind' : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
+      (encode session.database.nextRef) = .next next observation := by
+    simpa using hBind
+  simp [applyDatabaseRequest, hEncoding, hDecode, hBind']
+
+/-- `assertz/2` has the analogous single-insertion/reference-binding handoff
+for source-order back insertion. -/
+theorem applyDatabaseRequest_assertzWithReference_of_decode_bind
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state next : State sigma)
+    (root referenceRoot : Addr) (clause : Clause sigma)
+    (encode : Nat → sigma.constants)
+    (observation : Option (LP.RuntimeQuery.Observation sigma))
+    (hEncoding : session.services.clauseReference = some encode)
+    (hDecode : session.services.decodeClause state.memory.heap root =
+      .ok clause)
+    (hBind : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
+      (encode (session.database.assertz clause).1) =
+        .next next observation) :
+    applyDatabaseRequest session state
+        (.assertzWithReference root referenceRoot) =
+      .next {
+        session with
+        database := (session.database.assertz clause).2
+        state := next
+      } observation := by
+  have hBind' : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
+      (encode session.database.nextRef) = .next next observation := by
+    simpa using hBind
+  simp [applyDatabaseRequest, hEncoding, hDecode, hBind']
 
 /-- Successful occurrence erasure advances exactly to the database returned
 by the stable-reference operation and preserves the live query state. -/

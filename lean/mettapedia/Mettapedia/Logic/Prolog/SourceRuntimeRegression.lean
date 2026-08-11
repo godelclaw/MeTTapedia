@@ -24,6 +24,8 @@ def rightVar : SourceSignature.Term := var "Right" 0
 def bagVar : SourceSignature.Term := var "Bag" 0
 def innerVar : SourceSignature.Term := var "Inner" 0
 def outerVar : SourceSignature.Term := var "Outer" 0
+def referenceVar : SourceSignature.Term := var "Reference" 0
+def otherReferenceVar : SourceSignature.Term := var "OtherReference" 0
 
 def equality (left right : SourceSignature.Term) : SourceSignature.Term :=
   compound "=" [left, right]
@@ -123,6 +125,7 @@ inductive RuntimeTermShape where
   | integer (value : Int)
   | floatBits (bits : UInt64)
   | string (value : String)
+  | clauseReference (reference : Nat)
   | compound (name : String) (arguments : List RuntimeTermShape)
 deriving BEq, Repr
 
@@ -133,6 +136,7 @@ def runtimeTermShape : LP.Term Sigma.scoped → RuntimeTermShape
   | .const (.integer value) => .integer value
   | .const (.floatBits bits) => .floatBits bits
   | .const (.string value) => .string value
+  | .const (.clauseReference reference) => .clauseReference reference
   | .app indicator arguments =>
       .compound indicator.name
         (List.ofFn fun index => runtimeTermShape (arguments index))
@@ -460,6 +464,14 @@ def assertzGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
 def assertaGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "asserta" [clause]
 
+def assertzWithReferenceGoal (clause reference : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "assertz" [clause, reference]
+
+def assertaWithReferenceGoal (clause reference : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "asserta" [clause, reference]
+
 def retractGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "retract" [clause]
 
@@ -479,6 +491,46 @@ def assertaAndAssertzOrder : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "b"))
     (.conj (assertaGoal (assertedP "a"))
       (SourceSignature.call "p" [x]))
+
+/-- `assertz/2` binds its fresh output through the canonical graph unifier to
+an opaque stable occurrence identity. -/
+def assertzReferenceIsBound : SourceSignature.Goal :=
+  .conj (assertzWithReferenceGoal (assertedP "a") referenceVar)
+    (.ifThenElse (.isVar referenceVar) .fail .succeed)
+
+/-- The front-insertion form exposes the same kind of opaque identity. -/
+def assertaReferenceIsBound : SourceSignature.Goal :=
+  .conj (assertaWithReferenceGoal (assertedP "a") referenceVar)
+    (.ifThenElse (.isVar referenceVar) .fail .succeed)
+
+/-- Stable occurrence identities are never reused for two insertions. -/
+def assertedReferencesAreDistinct : SourceSignature.Goal :=
+  .conj (assertzWithReferenceGoal (assertedP "a") referenceVar)
+    (.conj
+      (assertzWithReferenceGoal (assertedP "b") otherReferenceVar)
+      (.ifThenElse (.unify referenceVar otherReferenceVar) .fail .succeed))
+
+/-- The opaque identity remains ordinary Prolog data: a later asserted fact
+can store it and canonical clause execution reads back the same value. -/
+def assertedReferenceRoundTrip : SourceSignature.Goal :=
+  .conj (assertzWithReferenceGoal (assertedP "a") referenceVar)
+    (.conj (assertzGoal (compound "saved" [referenceVar]))
+      (SourceSignature.call "saved" [otherReferenceVar]))
+
+/-- The second argument is output-only.  A bound value is rejected by the
+shared engine before the session can advance the persistent database. -/
+def preboundAssertReferenceRejectedBeforeInsert : Bool :=
+  match SourceRuntime.openEmpty []
+      (assertzWithReferenceGoal (assertedP "a") (atom "forged")) with
+  | .error _ => false
+  | .ok session =>
+      match SourceRuntime.pullSession 256 session with
+      | .terminal
+          (.runtimeError (.databaseReferenceOutputNotVariable) memory)
+          database =>
+          memory.heap.size == 0 && memory.trail.size == 0 &&
+            database.generation == 0 && database.visibleClauses.isEmpty
+      | _ => false
 
 /-- `retract/1` is nondeterministic over the call-time clause snapshot and
 uses the shared leftmost choice stack, so matching occurrences are erased and
@@ -657,6 +709,11 @@ def laterCallSeesAssertion :
 #guard runAtoms [] assertzThenCall == some (["a"], 0, 0)
 #guard runAtoms [] failedBranchAssertionPersists == some (["a"], 0, 0)
 #guard runAtoms [] assertaAndAssertzOrder == some (["a", "b"], 0, 0)
+#guard runCount [] assertzReferenceIsBound == some (1, 0, 0)
+#guard runCount [] assertaReferenceIsBound == some (1, 0, 0)
+#guard runCount [] assertedReferencesAreDistinct == some (1, 0, 0)
+#guard runCount [] assertedReferenceRoundTrip == some (1, 0, 0)
+#guard preboundAssertReferenceRejectedBeforeInsert
 #guard runAtoms [] retractFactsInOrder == some (["a", "b"], 0, 0)
 #guard runAtoms [] retractCutPrunesLater == some (["a"], 0, 0)
 #guard runAtoms [] retractFactSkipsRule == some (["b"], 0, 0)

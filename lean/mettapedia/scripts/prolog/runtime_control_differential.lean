@@ -169,6 +169,18 @@ def main : IO Unit := do
   renderStringAnswers "db_asserta_assertz_order"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertaAndAssertzOrder)
+  renderCount "db_assertz_ref_bound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertzReferenceIsBound)
+  renderCount "db_asserta_ref_bound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertaReferenceIsBound)
+  renderCount "db_assert_refs_distinct"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertedReferencesAreDistinct)
+  renderCount "db_assert_ref_roundtrip"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertedReferenceRoundTrip)
   renderStringAnswers "db_retract_source_order"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractFactsInOrder)

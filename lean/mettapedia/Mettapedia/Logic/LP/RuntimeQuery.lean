@@ -52,6 +52,7 @@ inductive QueryError where
   | collectionReadback (error : RuntimeReadback.ReadbackError)
   | dynamicClauseReadback (error : RuntimeReadback.ReadbackError)
   | invalidDynamicClause
+  | databaseReferenceOutputNotVariable
   | unhandledDatabaseRequest
   | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
@@ -318,6 +319,10 @@ session outside backtrackable state owns the actual database update. -/
 inductive DatabaseRequest where
   | asserta (clauseRoot : Addr)
   | assertz (clauseRoot : Addr)
+  /-- Assert and bind the caller's fresh output to the inserted occurrence's
+  opaque stable identity. -/
+  | assertaWithReference (clauseRoot referenceRoot : Addr)
+  | assertzWithReference (clauseRoot referenceRoot : Addr)
   /-- Ask the persistent session for the call-time visible clause snapshot.
   Candidate matching remains an engine phase. -/
   | retract (patternRoot : Addr)
@@ -1475,6 +1480,51 @@ def beginUnifyStep {σ : LPSignature}
       (RuntimeUnification.startMany state.memory [(left, right)])
   } none
 
+/-- Bind a successful database insertion's stable identity through the same
+canonical graph unifier as every other Prolog binding.  The session supplies
+only the opaque atomic value; it cannot write the heap or schedule the
+continuation. -/
+def bindDatabaseReferenceStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (referenceRoot : Addr) (reference : σ.constants) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.memory.allocate (.const reference) with
+  | .error error => failWith state (.memory error)
+  | .ok (valueRoot, memory) =>
+      let attempt : AttemptCore σ Instruction := {
+        body := state.control.current
+        cutDepth := state.control.cutDepth
+        frames := state.control.frames
+      }
+      .next {
+        state with
+        memory
+        phase := .unifying attempt
+          (RuntimeUnification.startMany memory
+            [(referenceRoot, valueRoot)])
+      } none
+
+/-- Once allocation succeeds, reference binding is exactly one canonical
+unifier activation over the caller's output root and the opaque value cell. -/
+theorem bindDatabaseReferenceStep_of_allocate {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (referenceRoot valueRoot : Addr) (reference : σ.constants)
+    (memory : Memory σ.scoped)
+    (hAllocate : state.memory.allocate (.const reference) =
+      .ok (valueRoot, memory)) :
+    bindDatabaseReferenceStep state referenceRoot reference =
+      .next {
+        state with
+        memory
+        phase := .unifying {
+          body := state.control.current
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany memory
+          [(referenceRoot, valueRoot)])
+      } none := by
+  simp [bindDatabaseReferenceStep, hAllocate]
+
 /-- Test whether one dereferenced heap root is an unbound variable.  This is
 the canonical finite-graph counterpart of SWI-Prolog V10.1.9 `var/1`, whose
 implementation delegates to `PL_is_variable` (`src/pl-prims.c`).  A false
@@ -1551,6 +1601,70 @@ theorem databaseRequestStep_exact {σ : LPSignature}
         control := { state.control with current := rest }
       } := rfl
 
+/-- Check the output-only argument of `asserta/2` and `assertz/2` without
+changing memory.  This helper is also the compact conservation seam: mapped
+instruction representations share the exact same heap and therefore the same
+check result. -/
+def checkDatabaseReferenceOutput {σ : LPSignature}
+    (memory : Memory σ.scoped) (referenceRoot : Addr) :
+    Except QueryError Unit :=
+  match memory.heap.deref referenceRoot with
+  | .error error => .error (.memory error)
+  | .ok (.variableCycle cycle) =>
+      .error (.memory (.variableReferenceCycle cycle))
+  | .ok (.root root) =>
+      match memory.heap[root]? with
+      | some (.var _ none) => .ok ()
+      | some _ => .error .databaseReferenceOutputNotVariable
+      | none => .error (.memory (.invalidAddress root))
+
+/-- SWI requires the second argument of `asserta/2` and `assertz/2` to be a
+fresh output variable.  The engine checks this before the persistent session
+can mutate the database.  Exact ISO error-packet construction remains a
+language boundary; this first fragment fails closed with a typed error. -/
+def checkedDatabaseRequestStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (request : DatabaseRequest) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match request with
+  | .assertaWithReference _ referenceRoot
+  | .assertzWithReference _ referenceRoot =>
+      match checkDatabaseReferenceOutput state.memory referenceRoot with
+      | .ok _ => databaseRequestStep state request rest
+      | .error error => failWith state error
+  | _ => databaseRequestStep state request rest
+
+/-- A fresh aliased output reaches the persistent session unchanged and only
+after the shared engine has verified its unbound terminal root. -/
+theorem checkedDatabaseRequestStep_assertzWithReference_unbound
+    {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (clauseRoot referenceRoot root : Addr)
+    (identity : σ.scoped.vars) (rest : List Instruction)
+    (hDeref : state.memory.heap.deref referenceRoot = .ok (.root root))
+    (hCell : state.memory.heap[root]? = some (.var identity none)) :
+    checkedDatabaseRequestStep state
+        (.assertzWithReference clauseRoot referenceRoot) rest =
+      databaseRequestStep state
+        (.assertzWithReference clauseRoot referenceRoot) rest := by
+  simp [checkedDatabaseRequestStep, checkDatabaseReferenceOutput,
+    hDeref, hCell]
+
+/-- A bound second argument is rejected before any database request exists;
+the persistent store therefore has no opportunity to insert the clause. -/
+theorem checkedDatabaseRequestStep_assertzWithReference_bound
+    {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (clauseRoot referenceRoot root : Addr)
+    (value : σ.constants) (rest : List Instruction)
+    (hDeref : state.memory.heap.deref referenceRoot = .ok (.root root))
+    (hCell : state.memory.heap[root]? = some (.const value)) :
+    checkedDatabaseRequestStep state
+        (.assertzWithReference clauseRoot referenceRoot) rest =
+      failWith state .databaseReferenceOutputNotVariable := by
+  simp [checkedDatabaseRequestStep, checkDatabaseReferenceOutput,
+    hDeref, hCell]
+
 /-- Apply one narrow classification to the canonical state.  The current
 instruction has already been removed; `rest` always comes from the live goal
 stack rather than from the classifier. -/
@@ -1579,7 +1693,7 @@ def dispatchActionStep {σ : LPSignature}
   | .throw ball unboundError => throwStep state ball unboundError
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
-  | .database request => databaseRequestStep state request rest
+  | .database request => checkedDatabaseRequestStep state request rest
   | .error reason => failWith state reason
 
 /-- The full phase loop shared by LP atoms and typed Prolog control.  Language

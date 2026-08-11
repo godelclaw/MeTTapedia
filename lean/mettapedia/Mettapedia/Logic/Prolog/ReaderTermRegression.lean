@@ -12,6 +12,7 @@ inductive Shape where
   | integer (value : Int)
   | floatBits (bits : UInt64)
   | string (value : String)
+  | clauseReference (reference : Nat)
   | compound (name : String) (arguments : List Shape)
 deriving BEq, Repr
 
@@ -21,6 +22,7 @@ def shape : SourceSignature.Term -> Shape
   | .const (.integer value) => .integer value
   | .const (.floatBits bits) => .floatBits bits
   | .const (.string value) => .string value
+  | .const (.clauseReference reference) => .clauseReference reference
   | .app indicator arguments =>
       .compound indicator.name (List.ofFn fun index => shape (arguments index))
 

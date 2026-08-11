@@ -31,6 +31,9 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.finalizeCollectionStep_conserves
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_collectionEncoding
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.databaseRequestStep_exact
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.bindDatabaseReferenceStep_of_allocate
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.checkedDatabaseRequestStep_assertzWithReference_unbound
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.checkedDatabaseRequestStep_assertzWithReference_bound
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.replacementRetractChoices_cons
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.retractSelectStep_empty
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.retractSelectStep_cons_of_materialize
@@ -38,6 +41,8 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.unifyingStep_eraseRef_success
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_asserta_of_decode
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_assertz_of_decode
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_assertaWithReference_of_decode_bind
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_assertzWithReference_of_decode_bind
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_eraseRef_of_some
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_eraseRef_of_none
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.stepSession_next_of_stepWith
@@ -50,6 +55,7 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_preserves_previous
 #print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_nextRef
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.openSessionWith_program
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_clauseReference
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshIdentity_injective
 #print axioms Mettapedia.Logic.LP.RuntimeException.scope_lt_scopeCeiling
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshenTerm_scope_range

@@ -226,8 +226,16 @@ def databaseRequest? (goal : RuntimeAtom Sigma.scoped) :
   match goal.symbol.name, goal.args.toList with
   | "asserta", [clauseRoot] =>
       if goal.symbol.arity = 1 then some (.asserta clauseRoot) else none
+  | "asserta", [clauseRoot, referenceRoot] =>
+      if goal.symbol.arity = 2 then
+        some (.assertaWithReference clauseRoot referenceRoot)
+      else none
   | "assertz", [clauseRoot] =>
       if goal.symbol.arity = 1 then some (.assertz clauseRoot) else none
+  | "assertz", [clauseRoot, referenceRoot] =>
+      if goal.symbol.arity = 2 then
+        some (.assertzWithReference clauseRoot referenceRoot)
+      else none
   | "retract", [patternRoot] =>
       if goal.symbol.arity = 1 then some (.retract patternRoot) else none
   | _, _ => none
@@ -251,10 +259,16 @@ def services : RuntimeControl.Services Sigma where
   unboundThrowError := some throwInstantiationError
   collectionEncoding := some collectionEncoding
   clauseEncoding := some clauseEncoding
+  clauseReference := some SourceSignature.Constant.clauseReference
 
 @[simp]
 theorem services_unboundThrowError :
     services.unboundThrowError = some throwInstantiationError := rfl
+
+@[simp]
+theorem services_clauseReference :
+    services.clauseReference =
+      some SourceSignature.Constant.clauseReference := rfl
 
 @[simp]
 theorem services_collectionEncoding :

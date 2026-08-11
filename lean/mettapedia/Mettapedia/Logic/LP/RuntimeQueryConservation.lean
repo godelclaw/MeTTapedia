@@ -900,9 +900,57 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                                 isVarStep, mapState, mapControl, mapPhase,
                                 mapReturnFrame, mapStepResult, hDeref, hCell]
           | database request =>
-              simp [mapDispatchAction, dispatchActionStep,
-                databaseRequestStep, mapState, mapControl, mapPhase,
-                mapReturnFrame, mapStepResult]
+              cases request with
+              | asserta clauseRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | assertz clauseRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | retract patternRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | eraseRef reference =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | assertaWithReference clauseRoot referenceRoot =>
+                  cases hCheck : checkDatabaseReferenceOutput memory
+                      referenceRoot with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          checkedDatabaseRequestStep, databaseRequestStep,
+                          mapState, mapControl, mapPhase, mapReturnFrame,
+                          mapStepResult, hCheck, failWith, closeMemory,
+                          hCleanup]
+                  | ok _ =>
+                      simp [mapDispatchAction, dispatchActionStep,
+                        checkedDatabaseRequestStep, databaseRequestStep,
+                        mapState, mapControl, mapPhase, mapReturnFrame,
+                        mapStepResult, hCheck]
+              | assertzWithReference clauseRoot referenceRoot =>
+                  cases hCheck : checkDatabaseReferenceOutput memory
+                      referenceRoot with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          checkedDatabaseRequestStep, databaseRequestStep,
+                          mapState, mapControl, mapPhase, mapReturnFrame,
+                          mapStepResult, hCheck, failWith, closeMemory,
+                          hCleanup]
+                  | ok _ =>
+                      simp [mapDispatchAction, dispatchActionStep,
+                        checkedDatabaseRequestStep, databaseRequestStep,
+                        mapState, mapControl, mapPhase, mapReturnFrame,
+                        mapStepResult, hCheck]
           | error reason =>
               cases hCleanup : memory.restore checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, mapState,

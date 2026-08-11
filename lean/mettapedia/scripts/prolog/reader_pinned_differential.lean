@@ -21,6 +21,8 @@ def termJsonAux : Nat -> SourceSignature.Term -> Lean.Json
   | _ + 1, .const (.floatBits bits) =>
       .arr #[.str "f", .str (toString bits)]
   | _ + 1, .const (.string value) => .arr #[.str "s", .str value]
+  | _ + 1, .const (.clauseReference reference) =>
+      .arr #[.str "r", .num reference]
   | fuel + 1, .app indicator arguments =>
       .arr #[.str "c", .str indicator.name,
         .arr ((List.ofFn arguments).map (termJsonAux fuel)).toArray]
