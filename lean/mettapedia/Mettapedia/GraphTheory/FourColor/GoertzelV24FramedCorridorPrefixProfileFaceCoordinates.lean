@@ -57,6 +57,66 @@ theorem boundaryRegionalFragmentEdges_equivCast
   subst rightRegion
   rfl
 
+/-- The edge supports of all factor fragments meeting one enlarged fragment
+are exactly that enlarged fragment's edges belonging to the factor region.
+This is the edge-level companion of
+`biUnion_faceRegionalFactorFragments_eq_positionSlice`. -/
+theorem biUnion_faceRegionalFactorFragmentEdges_eq_inter
+    (RS : RotationSystem V G.edgeSet) (root : RS.D)
+    (largeRegion factorRegion : Finset G.edgeSet)
+    (hregion : factorRegion ⊆ largeRegion)
+    (fragment : FaceRegionalFragment RS root largeRegion) :
+    (faceRegionalFactorFragments RS root largeRegion factorRegion fragment).biUnion
+        (faceRegionalFragmentEdges RS root factorRegion) =
+      faceRegionalFragmentEdges RS root largeRegion fragment ∩ factorRegion := by
+  classical
+  ext edge
+  constructor
+  · intro hedge
+    rcases Finset.mem_biUnion.1 hedge with
+      ⟨factorFragment, hfactor, hedgeFactor⟩
+    rcases (mem_faceRegionalFragmentEdges_iff RS root factorRegion
+      factorFragment edge).1 hedgeFactor with
+      ⟨position, hpositionFactor, hedgePosition⟩
+    have hpositionLarge :=
+      faceRegionalFragmentPositions_subset_of_mem_factorFragments RS root
+        largeRegion factorRegion hregion fragment factorFragment hfactor
+        hpositionFactor
+    have hedgeLarge : edge ∈
+        faceRegionalFragmentEdges RS root largeRegion fragment :=
+      (mem_faceRegionalFragmentEdges_iff RS root largeRegion fragment edge).2
+        ⟨position, hpositionLarge, hedgePosition⟩
+    have hedgeRegion : edge ∈ factorRegion :=
+      (Finset.mem_inter.1
+        (faceRegionalFragmentEdges_subset_boundary_inter_region RS root
+          factorRegion factorFragment hedgeFactor)).2
+    exact Finset.mem_inter.2 ⟨hedgeLarge, hedgeRegion⟩
+  · intro hedge
+    rcases Finset.mem_inter.1 hedge with ⟨hedgeLarge, hedgeRegion⟩
+    rcases (mem_faceRegionalFragmentEdges_iff RS root largeRegion fragment
+      edge).1 hedgeLarge with ⟨position, hpositionLarge, hedgePosition⟩
+    let regionalPosition : FaceRegionalPosition RS root factorRegion :=
+      ⟨position, (mem_faceRegionalPositions_iff RS root factorRegion
+        position).2 (by simpa [hedgePosition] using hedgeRegion)⟩
+    let factorFragment : FaceRegionalFragment RS root factorRegion :=
+      (faceRegionalPositionGraph RS root factorRegion).connectedComponentMk
+        regionalPosition
+    have hpositionFactor : position ∈
+        faceRegionalFragmentPositions RS root factorRegion factorFragment := by
+      apply (mem_faceRegionalFragmentPositions_iff RS root factorRegion
+        factorFragment position).2
+      exact ⟨regionalPosition,
+        SimpleGraph.ConnectedComponent.connectedComponentMk_mem, rfl⟩
+    have hfactor : factorFragment ∈
+        faceRegionalFactorFragments RS root largeRegion factorRegion fragment :=
+      (mem_faceRegionalFactorFragments_iff RS root largeRegion factorRegion
+        fragment factorFragment).2
+        ⟨position, hpositionFactor, hpositionLarge⟩
+    apply Finset.mem_biUnion.2
+    refine ⟨factorFragment, hfactor, ?_⟩
+    exact (mem_faceRegionalFragmentEdges_iff RS root factorRegion
+      factorFragment edge).2 ⟨position, hpositionFactor, hedgePosition⟩
+
 namespace SourceTrail
 
 namespace AnnularEmbedding
@@ -186,6 +246,19 @@ def localLayerFactorFragmentOverlapCard
           interface.localLayerCellBoundaryRegion)
         interface.localLayerCellBoundaryRegion fragment.2.1).card
 
+/-- Cell-region fragments contributing to one composed outgoing fragment. -/
+noncomputable def localLayerCellFactorFragments
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (fragment : interface.LocalLayerComposedBoundaryFragment) :=
+  faceRegionalFactorFragments
+    embedded.cellulation.rotation.toRotationSystem
+    (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
+      fragment.1.1)
+    (interface.localLayerLeftPrefixRegion ∪
+      interface.localLayerCellBoundaryRegion)
+    interface.localLayerCellBoundaryRegion fragment.2.1
+
 /-- Exact cap-at-five update for one outgoing boundary fragment.  All old
 prefix and Cell fragments that meet it contribute, and their common
 occurrences on the single shared rung are removed once. -/
@@ -281,6 +354,98 @@ theorem localLayerRightPrefixBoundedProfile_faceLengthCap_eq_factorCaps
     actualFragment]
   exact interface.localLayerRightPrefixBoundaryFragment_cap_eq_factorCaps
     (interface.localLayerRightPrefixBoundaryFragmentAt index)
+
+/-- The outgoing profile says that a right crossing belongs to a named
+fragment exactly when that crossing belongs to one of the genuine Cell
+factor fragments contributing to it.  Thus `fragmentContainsPort` is joined
+to the same factor decomposition as the cap coordinate. -/
+theorem localLayerRightPrefixBoundedProfile_fragmentContainsPort_eq_true_iff
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color (aligned.toInterface.nextLocalLayerPrefixCrossing step) ≠ 0)
+    (index : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        aligned.toInterface.nextLocalLayerPrefixCrossing)
+      aligned.toInterface.localLayerRightPrefixRegion)))
+    (step : Fin 2) :
+    (((aligned.toInterface.localLayerRightPrefixBoundedProfile color hcolor)
+        |>.profile.fragmentContainsPort index (.inl step)) = true) ↔
+      ∃ factorFragment ∈ aligned.toInterface.localLayerCellFactorFragments
+          (aligned.toInterface.localLayerRightPrefixBoundaryFragmentAt index),
+        aligned.toInterface.nextLocalLayerPrefixCrossing step ∈
+          faceRegionalFragmentEdges
+            embedded.cellulation.rotation.toRotationSystem
+            (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
+              (aligned.toInterface.localLayerRightPrefixBoundaryFragmentAt
+                index).1.1)
+            aligned.toInterface.localLayerCellBoundaryRegion
+            factorFragment := by
+  let interface := aligned.toInterface
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let actualFragment := boundaryRegionalFragmentAt RS
+    (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
+    interface.localLayerRightPrefixRegion index
+  let fragment := interface.localLayerRightPrefixBoundaryFragmentAt index
+  have hfragmentEdges :
+      interface.localLayerRightPrefixGraphCutData.regionalFragmentEdges index =
+        boundaryRegionalFragmentEdges RS
+          (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
+          interface.localLayerRightPrefixRegion actualFragment := by
+    rw [interface.localLayerRightPrefixGraphCutData
+      |>.regionalFragmentEdges_eq_of_fragmentsOnFaceInRegion
+        (regionalBoundaryGraphCutData_fragmentsOnFaceInRegion RS
+          interface.localLayerRightPrefixRegion
+          interface.nextLocalLayerPrefixCrossing)]
+    rfl
+  have hfactorEdges :=
+    biUnion_faceRegionalFactorFragmentEdges_eq_inter RS
+      (orbitFaceRoot RS fragment.1.1)
+      (interface.localLayerLeftPrefixRegion ∪
+        interface.localLayerCellBoundaryRegion)
+      interface.localLayerCellBoundaryRegion Finset.subset_union_right
+      fragment.2.1
+  have hedgeCell := aligned.nextLocalLayerPrefixCrossing_mem_cellBoundaryRegion
+    step
+  change
+    ((aligned.toInterface.localLayerRightPrefixGraphCutData.regionalProfile
+        color hcolor).fragmentContainsPort index (.inl step) = true) ↔ _
+  rw [GraphCorridorCutData.regionalProfile_fragmentContainsPort_eq_true_iff]
+  rw [hfragmentEdges,
+    ← interface.localLayerRightPrefixBoundaryFragmentEquiv_edges
+      actualFragment]
+  change interface.nextLocalLayerPrefixCrossing step ∈
+      faceRegionalFragmentEdges RS
+        (orbitFaceRoot RS fragment.1.1)
+        (interface.localLayerLeftPrefixRegion ∪
+          interface.localLayerCellBoundaryRegion) fragment.2.1 ↔ _
+  constructor
+  · intro hedge
+    have hinter : interface.nextLocalLayerPrefixCrossing step ∈
+        faceRegionalFragmentEdges RS
+            (orbitFaceRoot RS fragment.1.1)
+            (interface.localLayerLeftPrefixRegion ∪
+              interface.localLayerCellBoundaryRegion) fragment.2.1 ∩
+          interface.localLayerCellBoundaryRegion :=
+      Finset.mem_inter.2 ⟨hedge, hedgeCell⟩
+    rw [← hfactorEdges] at hinter
+    rcases Finset.mem_biUnion.1 hinter with
+      ⟨factorFragment, hfactor, hedgeFactor⟩
+    exact ⟨factorFragment, hfactor, hedgeFactor⟩
+  · rintro ⟨factorFragment, hfactor, hedgeFactor⟩
+    have hunion : interface.nextLocalLayerPrefixCrossing step ∈
+        (faceRegionalFactorFragments RS (orbitFaceRoot RS fragment.1.1)
+          (interface.localLayerLeftPrefixRegion ∪
+            interface.localLayerCellBoundaryRegion)
+          interface.localLayerCellBoundaryRegion fragment.2.1).biUnion
+            (faceRegionalFragmentEdges RS
+              (orbitFaceRoot RS fragment.1.1)
+              interface.localLayerCellBoundaryRegion) :=
+      Finset.mem_biUnion.2 ⟨factorFragment, hfactor, hedgeFactor⟩
+    rw [hfactorEdges] at hunion
+    exact (Finset.mem_inter.1 hunion).1
 
 end SourceConsecutiveSlabInterface
 
