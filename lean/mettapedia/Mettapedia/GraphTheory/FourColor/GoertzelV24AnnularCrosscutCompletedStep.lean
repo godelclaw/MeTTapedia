@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutFiniteSeamAudit
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutProfileDiagonalLift
 
 /-!
 # A completed source-crosscut reduction step
@@ -30,6 +31,41 @@ noncomputable section
 attribute [local instance] graphEdgeSetDecidableEq
 
 namespace SeparatedAlignedSimpleDualCrosscuts
+
+/-- A full-profile diagonal lift supplies the completed reductive step
+directly.  This is the source-facing form: the repeated state includes cut
+colors, tracked connectivity, face continuation, fragment incidence, and
+capped face progress, while literal gluing supplies reverse completion. -/
+noncomputable def sourceCrosscutCompletedStep_ofProfileDiagonalLift
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (hcubic : data.toRotationSystem.IsCubic)
+    (seamEndpoints : ∀ step,
+      data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (pair.left.crossingEdge hunique) boundary.leftCrosses step).1.1.1 ≠
+        data.toRotationSystem.vertOf
+          (orderedBoundaryDart data.toRotationSystem
+            (fun vertex => vertex ∈ pair.componentSide boundary.component)
+            (fun index => pair.right.crossingEdge hunique
+              (Fin.cast pair.length_eq index))
+            (fun index => boundary.rightCrosses
+              (Fin.cast pair.length_eq index)) step).1.1.1)
+    (hlift : pair.SourceCrosscutProfileDiagonalLift data boundary hcubic) :
+    (pair.sourceCrosscutSpliceData data boundary seamEndpoints).CompletedStep where
+  reverse_completion :=
+    pair.sourceCrosscutReverseCompletion_ofProfileDiagonalLift
+      data boundary hcubic seamEndpoints hlift
 
 /-- A passed generated seam audit supplies the completed reverse-completion
 step for one concrete source crosscut. -/
