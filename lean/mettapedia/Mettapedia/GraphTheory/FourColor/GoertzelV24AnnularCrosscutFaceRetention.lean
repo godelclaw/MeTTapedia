@@ -16,6 +16,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24AnnularCrosscut
 
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24FiniteDeletionCyclicCut
 open GoertzelV24OrbitFaceWalk
 open SimpleGraph
 open SimpleGraphDartRotation

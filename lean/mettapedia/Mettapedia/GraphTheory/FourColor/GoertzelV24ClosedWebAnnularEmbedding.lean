@@ -59,6 +59,13 @@ designated hole face, rather than merely having a convenient edge count. -/
 structure ClosedWebAnnularEmbedding
     (data : AnnularBoundaryData G outerCount) where
   cellulation : FramedAnnularCellulation G
+  /-- The distinguished root of the graph-backed rotation data is chosen on
+  the named outer hole.  The source splice selects its retained component from
+  this root, so making the relation explicit prevents a purely arbitrary root
+  from being mistaken for the exterior side. -/
+  outer_dart_on_outerHole :
+    dartOrbitFace cellulation.rotation.toRotationSystem
+      cellulation.rotation.toRotationSystem.outer = cellulation.outerHole
   innerBoundaryEdgeDarts_on_innerHole :
     ∀ inner : Fin 5,
       ∀ dart ∈ cellulation.rotation.toRotationSystem.dartsOn
