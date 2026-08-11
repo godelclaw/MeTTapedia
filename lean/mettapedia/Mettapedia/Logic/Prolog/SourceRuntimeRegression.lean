@@ -451,11 +451,17 @@ def packetCopyPreservesSeparation : SourceSignature.Goal :=
 def assertedP (value : String) : SourceSignature.Term :=
   compound "p" [atom value]
 
+def assertedRuleP (value : String) : SourceSignature.Term :=
+  compound ":-" [assertedP value, compound "q" [atom value]]
+
 def assertzGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "assertz" [clause]
 
 def assertaGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "asserta" [clause]
+
+def retractGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "retract" [clause]
 
 def assertzThenCall : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "a"))
@@ -473,6 +479,60 @@ def assertaAndAssertzOrder : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "b"))
     (.conj (assertaGoal (assertedP "a"))
       (SourceSignature.call "p" [x]))
+
+/-- `retract/1` is nondeterministic over the call-time clause snapshot and
+uses the shared leftmost choice stack, so matching occurrences are erased and
+reported in source order. -/
+def retractFactsInOrder : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (retractGoal (compound "p" [x])))
+
+/-- The retained retract cursor is an ordinary shared-engine choice point.
+A cut after the first match therefore prunes the second candidate. -/
+def retractCutPrunesLater : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (.conj (retractGoal (compound "p" [x])) .cut))
+
+/-- A head-only retract pattern denotes `Head :- true`: it skips a
+same-headed non-fact rule and continues to the later matching fact. -/
+def retractFactSkipsRule : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedRuleP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (retractGoal (compound "p" [x])))
+
+/-- Clause erasure is persistent session state rather than part of a
+backtrackable checkpoint: failing after deletion cannot resurrect `p(a)`. -/
+def failedBranchRetractionPersists : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj
+      (.disj
+        (.conj (retractGoal (assertedP "a")) .fail)
+        .succeed)
+      (SourceSignature.call "p" [x]))
+
+/-- The retract cursor is frozen before its first candidate is tried.  The
+first candidate inserts `p(c)` and then fails; retry must advance to the
+already-snapshotted `p(b)`, never drift onto the new occurrence. -/
+def retractSnapshotGoal : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (.conj (retractGoal (compound "p" [x]))
+        (.ifThenElse (.unify x (atom "a"))
+          (.conj (assertzGoal (assertedP "c")) .fail)
+          .succeed)))
+
+/-- A later occurrence erased by a nested operation remains in the outer
+call's frozen logical-update snapshot.  Its stable erase request becomes a
+successful no-op, so the outer call still reports that one snapshotted match. -/
+def retractSnapshotRetainsErasedCandidate : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (.conj (retractGoal (compound "p" [x]))
+        (.ifThenElse (.unify x (atom "a"))
+          (.conj (retractGoal (assertedP "b")) .fail)
+          .succeed)))
 
 def snapshotProgram : SourceSignature.Program := [
   fact "p" [atom "old"],
@@ -493,6 +553,44 @@ def collectCountDatabase : Nat → Nat → Session →
       | .terminal (.runtimeError _ _) _ => none
       | .terminal (.raised _ _) _ => none
       | .terminal (.completed _) database => some (count, database)
+
+def collectAtomsDatabase : Nat → Session →
+    Option (List String × Nat × Nat ×
+      LP.RuntimeDatabase.Database SourceSignature.Clause)
+  | 0, _ => none
+  | budget + 1, session =>
+      match SourceRuntime.pullSession 256 session with
+      | .open _ => none
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
+      | .terminal (.completed memory) database =>
+          some ([], memory.heap.size, memory.trail.size, database)
+      | .answer answer resumed =>
+          match answerAtom? answer, collectAtomsDatabase budget resumed with
+          | some value, some (rest, heapSize, trailSize, database) =>
+              some (value :: rest, heapSize, trailSize, database)
+          | _, _ => none
+
+def retractSnapshotRun :
+    Option (List String × Nat × Nat ×
+      LP.RuntimeDatabase.Database SourceSignature.Clause) :=
+  match SourceRuntime.openEmpty [] retractSnapshotGoal with
+  | .error _ => none
+  | .ok session => collectAtomsDatabase 8 session
+
+/-- Snapshot isolation is observed both in the answer stream (`c` was not a
+candidate) and in the final persistent database (`a` and `b` were erased;
+the later assertion remains visible). -/
+def retractSnapshotDoesNotDrift : Bool :=
+  match retractSnapshotRun with
+  | some (["b"], 0, 0, database) =>
+      database.generation == 5 &&
+      database.visibleClauses.filterMap
+        (fun entry => ClauseReflection.reflect? entry.2 |>.map
+          ClauseReflection.termCode) ==
+          [ClauseReflection.termCode
+            (ReaderSource.normalizedClauseTerm (assertedP "c") (atom "true"))]
+  | _ => false
 
 /-- An open `p/1` cursor was frozen before `p(new)` was asserted.  It reaches
 no new answer, but the completed session still carries the advanced database.
@@ -559,6 +657,13 @@ def laterCallSeesAssertion :
 #guard runAtoms [] assertzThenCall == some (["a"], 0, 0)
 #guard runAtoms [] failedBranchAssertionPersists == some (["a"], 0, 0)
 #guard runAtoms [] assertaAndAssertzOrder == some (["a", "b"], 0, 0)
+#guard runAtoms [] retractFactsInOrder == some (["a", "b"], 0, 0)
+#guard runAtoms [] retractCutPrunesLater == some (["a"], 0, 0)
+#guard runAtoms [] retractFactSkipsRule == some (["b"], 0, 0)
+#guard runAtoms [] failedBranchRetractionPersists == some ([], 0, 0)
+#guard runAtoms [] retractSnapshotRetainsErasedCandidate ==
+  some (["b"], 0, 0)
+#guard retractSnapshotDoesNotDrift
 #guard snapshotDoesNotDrift
 #guard laterCallSeesAssertion == some (["old", "new"], 0, 0)
 

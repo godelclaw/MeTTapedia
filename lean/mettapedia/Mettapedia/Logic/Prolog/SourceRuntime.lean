@@ -1,6 +1,7 @@
 import Mettapedia.Logic.Prolog.SourceSignature
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeClauseDecode
+import Mettapedia.Logic.Prolog.ClauseReflection
 
 /-!
 # Concrete callable decoding for Prolog source terms
@@ -56,6 +57,13 @@ def collectionEncoding : LP.RuntimeQuery.CollectionEncoding Sigma where
   nil := .atom "[]"
   cons := { name := "[|]", arity := 2 }
   cons_arity_two := rfl
+
+/-- Canonical source symbols used by the shared engine to normalize
+`retract/1` facts and rules to one clause-term representation. -/
+def clauseEncoding : LP.RuntimeQuery.ClauseEncoding Sigma where
+  trueConstant := .atom "true"
+  rule := { name := ":-", arity := 2 }
+  rule_arity_two := rfl
 
 /-- The exact function-symbol to relation-symbol bridge used by ordinary
 callable compounds.  Extra `call/N` arguments extend, rather than replace,
@@ -220,6 +228,8 @@ def databaseRequest? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 1 then some (.asserta clauseRoot) else none
   | "assertz", [clauseRoot] =>
       if goal.symbol.arity = 1 then some (.assertz clauseRoot) else none
+  | "retract", [patternRoot] =>
+      if goal.symbol.arity = 1 then some (.retract patternRoot) else none
   | _, _ => none
 
 /-- Map the precise local decoder boundary into runtime errors.  ISO packet
@@ -237,8 +247,10 @@ def services : RuntimeControl.Services Sigma where
   decoder := { decode := decodeCallable }
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
+  reflectClause := ClauseReflection.reflect?
   unboundThrowError := some throwInstantiationError
   collectionEncoding := some collectionEncoding
+  clauseEncoding := some clauseEncoding
 
 @[simp]
 theorem services_unboundThrowError :

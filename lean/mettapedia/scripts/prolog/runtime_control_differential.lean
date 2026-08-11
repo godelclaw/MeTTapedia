@@ -169,6 +169,23 @@ def main : IO Unit := do
   renderStringAnswers "db_asserta_assertz_order"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertaAndAssertzOrder)
+  renderStringAnswers "db_retract_source_order"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractFactsInOrder)
+  renderStringAnswers "db_retract_cut_prunes_later"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractCutPrunesLater)
+  renderStringAnswers "db_retract_fact_skips_rule"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractFactSkipsRule)
+  renderStringAnswers "db_retract_failed_branch_persists"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.failedBranchRetractionPersists)
+  renderBool "db_retract_snapshot_no_drift"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractSnapshotDoesNotDrift
+  renderStringAnswers "db_retract_snapshot_retains_erased"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractSnapshotRetainsErasedCandidate)
   renderBool "db_snapshot_no_drift"
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.snapshotDoesNotDrift
   renderStringAnswers "db_snapshot_later_call"

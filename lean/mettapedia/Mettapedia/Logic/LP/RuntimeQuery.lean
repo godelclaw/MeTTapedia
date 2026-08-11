@@ -97,6 +97,22 @@ def listTerm (encoding : CollectionEncoding σ)
 
 end CollectionEncoding
 
+/-- Language-owned symbols needed to normalize `retract/1`'s argument to
+the ordinary `Head :- Body` representation. The shared engine owns heap
+inspection and allocation; a realization supplies only the canonical `true`
+constant and `(:-)/2` functor. -/
+structure ClauseEncoding (σ : LPSignature) where
+  trueConstant : σ.constants
+  rule : σ.functionSymbols
+  rule_arity_two : σ.functionArity rule = 2
+
+/-- One immutable candidate in a call-time retract snapshot. Stable identity
+is separate from the normalized clause term so matching cannot forge the
+database occurrence that will be erased. -/
+structure RetractCandidate (σ : LPSignature) where
+  reference : Nat
+  clause : Term σ
+
 /-- Saved exception delimiter.  It records only backtrackable entry data;
 the persistent fresh-scope supply remains in `StateCore` and is never restored
 from this frame. -/
@@ -201,6 +217,15 @@ structure CollectionChoiceCore (σ : LPSignature) (Instruction : Type*) where
   outerFrames : List (ReturnFrameCore σ Instruction)
   reversed : List (Term σ.scoped) := []
 
+/-- Frozen candidate cursor for one active `retract/1`. `checkpoint` denotes
+the normalized pattern state shared by every candidate; `control` is the
+already-consumed caller continuation. -/
+structure RetractCursorCore (σ : LPSignature) (Instruction : Type*) where
+  checkpoint : Memory.Checkpoint
+  pattern : Addr
+  candidates : List (RetractCandidate σ)
+  control : ControlCore σ Instruction
+
 /-- The single newest-first alternative stack.  Clause retries and structured
 control branches are different resource kinds, but share restoration, DFS
 ordering, and cut ownership. -/
@@ -214,17 +239,29 @@ inductive ChoicePointCore (σ : LPSignature)
   | softElse (alternative : BranchChoiceCore σ Instruction)
   /-- Backtracking to this sentinel means the generator is exhausted. -/
   | collection (boundary : CollectionChoiceCore σ Instruction)
+  /-- Later clauses retained by nondeterministic `retract/1`. -/
+  | retract (cursor : RetractCursorCore σ Instruction)
 
 /-- The established pure-LP choice-point type.  Pure LP execution constructs
 only `clause` alternatives. -/
 abbrev ChoicePoint (σ : LPSignature) :=
   ChoicePointCore σ (RuntimeAtom σ.scoped) (Clause σ)
 
+/-- Post-success authority attached by an engine-owned unification entry.
+Ordinary clause/control unification merely continues. A retract candidate may
+request erasure of exactly its stable snapshot reference; no classifier or
+session-side matcher can substitute another occurrence. -/
+inductive AttemptSuccess where
+  | continue
+  | eraseRef (reference : Nat)
+deriving DecidableEq, Repr
+
 /-- Information retained while the graph unifier executes one selected head. -/
 structure AttemptCore (σ : LPSignature) (Instruction : Type*) where
   body : List Instruction
   cutDepth : Nat
   frames : List (ReturnFrameCore σ Instruction)
+  onSuccess : AttemptSuccess := .continue
 
 /-- The established pure-LP unification attempt. -/
 abbrev Attempt (σ : LPSignature) :=
@@ -242,6 +279,7 @@ inductive PhaseCore (σ : LPSignature) (Instruction SourceClause : Type*) where
       (machine : RuntimeUnification.Machine σ.scoped)
   | catchRecovering (selection : CatchSelectionCore σ Instruction)
       (machine : RuntimeUnification.Machine σ.scoped)
+  | retractSelect (cursor : RetractCursorCore σ Instruction)
   | backtrack
   | afterAnswer
 
@@ -280,6 +318,11 @@ session outside backtrackable state owns the actual database update. -/
 inductive DatabaseRequest where
   | asserta (clauseRoot : Addr)
   | assertz (clauseRoot : Addr)
+  /-- Ask the persistent session for the call-time visible clause snapshot.
+  Candidate matching remains an engine phase. -/
+  | retract (patternRoot : Addr)
+  /-- Apply the stable occurrence selected by a successful engine unifier. -/
+  | eraseRef (reference : Nat)
 deriving DecidableEq, Repr
 
 inductive Terminal (σ : LPSignature) where
@@ -476,6 +519,96 @@ def replacementChoices {σ : LPSignature}
   | [] => older
   | _ => .clause { cursor with clauses := remaining } :: older
 
+/-- Retain exactly one retract cursor when later call-snapshot candidates
+remain. The cursor is a normal newest-first choice resource, so ordinary cut
+and exception pruning reach it without a second scheduler. -/
+def replacementRetractChoices {σ : LPSignature}
+    (cursor : RetractCursorCore σ Instruction)
+    (remaining : List (RetractCandidate σ))
+    (older : List (ChoicePointCore σ Instruction SourceClause)) :
+    List (ChoicePointCore σ Instruction SourceClause) :=
+  match remaining with
+  | [] => older
+  | _ => .retract { cursor with candidates := remaining } :: older
+
+@[simp]
+theorem replacementRetractChoices_nil {σ : LPSignature}
+    (cursor : RetractCursorCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause)) :
+    replacementRetractChoices cursor [] older = older := rfl
+
+/-- A nonempty remainder is retained as exactly one ordinary choice resource;
+the selected occurrence itself is never copied into that resource. -/
+@[simp]
+theorem replacementRetractChoices_cons {σ : LPSignature}
+    (cursor : RetractCursorCore σ Instruction)
+    (candidate : RetractCandidate σ)
+    (remaining : List (RetractCandidate σ))
+    (older : List (ChoicePointCore σ Instruction SourceClause)) :
+    replacementRetractChoices cursor (candidate :: remaining) older =
+      .retract { cursor with candidates := candidate :: remaining } :: older :=
+  rfl
+
+/-- Normalize one live retract pattern to `Head :- Body`. Existing `(:-)/2`
+terms are reused; a fact pattern is wrapped with a freshly allocated `true`.
+The engine, not the source classifier or persistent session, owns dereference
+and allocation. An unbound top-level pattern fails closed at this first
+fragment rather than being allowed to enumerate and bind arbitrary clauses. -/
+def normalizeRetractPattern {σ : LPSignature}
+    [DecidableEq σ.functionSymbols]
+    (encoding : ClauseEncoding σ) (memory : Memory σ.scoped)
+    (pattern : Addr) : Except QueryError (Memory σ.scoped × Addr) :=
+  match memory.heap.deref pattern with
+  | .error error => .error (.memory error)
+  | .ok (.variableCycle cycle) =>
+      .error (.memory (.variableReferenceCycle cycle))
+  | .ok (.root root) =>
+      match memory.heap[root]? with
+      | none => .error (.memory (.invalidAddress root))
+      | some (.var _ none) => .error .invalidDynamicClause
+      | some (.app symbol _) =>
+          if symbol = encoding.rule then .ok (memory, root)
+          else
+            match memory.allocate (.const encoding.trueConstant) with
+            | .error error => .error (.memory error)
+            | .ok (truth, withTruth) =>
+                match withTruth.allocate
+                    (.app encoding.rule #[root, truth]) with
+                | .error error => .error (.memory error)
+                | .ok (normalized, result) => .ok (result, normalized)
+      | some (.const _) =>
+          match memory.allocate (.const encoding.trueConstant) with
+          | .error error => .error (.memory error)
+          | .ok (truth, withTruth) =>
+              match withTruth.allocate (.app encoding.rule #[root, truth]) with
+              | .error error => .error (.memory error)
+              | .ok (normalized, result) => .ok (result, normalized)
+      | some (.var _ (some _)) => .error .invalidDynamicClause
+
+/-- Install the immutable call-time candidate snapshot supplied by the
+persistent session. All subsequent selection, copying, unification,
+backtracking, and continuation order are owned by the shared engine. -/
+def openRetractStep {σ : LPSignature}
+    [DecidableEq σ.functionSymbols]
+    (encoding : ClauseEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (pattern : Addr) (candidates : List (RetractCandidate σ)) :
+    StepResultCore σ Instruction SourceClause :=
+  match normalizeRetractPattern encoding state.memory pattern with
+  | .error error => failWith state error
+  | .ok (memory, normalized) =>
+      let cursor : RetractCursorCore σ Instruction := {
+        checkpoint := memory.checkpoint
+        pattern := normalized
+        candidates
+        control := state.control
+      }
+      .next {
+        state with
+        memory
+        phase := .retractSelect cursor
+      } none
+
 /-- The only data a language-specific clause materializer may supply to the
 shared selected-clause transition.  The type has no constructors for answers,
 effects, alternatives, pruning, or scheduling. -/
@@ -534,6 +667,76 @@ def selectStep {σ : LPSignature} [DecidableEq σ.relationSymbols]
                 nextScope := state.nextScope + 1
                 phase := .unifying attempt entered.unifier
               } none
+
+/-- Try one frozen retract candidate. The candidate is standardized apart at
+the persistent scope high-water and compared with the normalized live pattern
+by the canonical graph unifier. Success requests erasure of this candidate's
+stable reference before executing the already-consumed continuation. -/
+def retractSelectStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (cursor : RetractCursorCore σ Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match cursor.candidates with
+  | [] => .next { state with phase := .backtrack } none
+  | candidate :: remaining =>
+      match RuntimeMaterialize.materializeTerm state.memory
+          (candidate.clause.atScope state.nextScope) with
+      | .error error => failWith state (.memory error)
+      | .ok copied =>
+          let attempt : AttemptCore σ Instruction := {
+            body := cursor.control.current
+            cutDepth := cursor.control.cutDepth
+            frames := cursor.control.frames
+            onSuccess := .eraseRef candidate.reference
+          }
+          .next {
+            state with
+            memory := copied.memory
+            choices := replacementRetractChoices cursor remaining state.choices
+            nextScope := state.nextScope + 1
+            phase := .unifying attempt
+              (RuntimeUnification.startMany copied.memory
+                [(cursor.pattern, copied.root)])
+          } none
+
+/-- Exhausting the frozen retract snapshot enters the same backtracking phase
+as an exhausted clause cursor; it cannot manufacture completion or failure. -/
+@[simp]
+theorem retractSelectStep_empty {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (cursor : RetractCursorCore σ Instruction) :
+    retractSelectStep state { cursor with candidates := [] } =
+      .next { state with phase := .backtrack } none := rfl
+
+/-- Candidate content and stable identity travel through one constructor
+case: after canonical materialization, the unifier compares exactly that
+candidate and its success authority names exactly that candidate's reference. -/
+theorem retractSelectStep_cons_of_materialize {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (cursor : RetractCursorCore σ Instruction)
+    (candidate : RetractCandidate σ)
+    (remaining : List (RetractCandidate σ))
+    (copied : RuntimeMaterialize.MaterializedTerm σ.scoped)
+    (hCandidates : cursor.candidates = candidate :: remaining)
+    (hMaterialize : RuntimeMaterialize.materializeTerm state.memory
+      (candidate.clause.atScope state.nextScope) = .ok copied) :
+    retractSelectStep state cursor =
+      .next {
+        state with
+        memory := copied.memory
+        choices := replacementRetractChoices cursor remaining state.choices
+        nextScope := state.nextScope + 1
+        phase := .unifying {
+          body := cursor.control.current
+          cutDepth := cursor.control.cutDepth
+          frames := cursor.control.frames
+          onSuccess := .eraseRef candidate.reference
+        } (RuntimeUnification.startMany copied.memory
+          [(cursor.pattern, copied.root)])
+      } none := by
+  simp [retractSelectStep, hCandidates, hMaterialize]
 
 /-- Resume after a yielded answer by entering the shared backtracking phase. -/
 @[simp]
@@ -694,6 +897,16 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   | .softElse alternative :: older => resumeBranchStep state alternative older
   | .collection boundary :: older =>
       finalizeCollectionStep state boundary older
+  | .retract cursor :: older =>
+      match state.memory.restore cursor.checkpoint with
+      | .error error => failWith state (.memory error)
+      | .ok memory =>
+          .next {
+            state with
+            memory
+            choices := older
+            phase := .retractSelect cursor
+          } none
 
 /-- Remove the soft-conditional delimiter immediately above the `mark` oldest
 choices.  The stack is newest first.  If that delimiter was already removed,
@@ -781,7 +994,7 @@ def unifyingStep {σ : LPSignature} [DecidableEq σ.constants]
           .next { state with phase := .unifying attempt next } none
       | none => failWith state .stalledUnifier
   | .terminal (.success memory) =>
-      .next {
+      let succeeded := {
         state with
         memory
         control := {
@@ -790,7 +1003,11 @@ def unifyingStep {σ : LPSignature} [DecidableEq σ.constants]
           frames := attempt.frames
         }
         phase := .dispatch
-      } none
+      }
+      match attempt.onSuccess with
+      | .continue => .next succeeded none
+      | .eraseRef reference =>
+          .databaseRequest (.eraseRef reference) succeeded
   | .terminal (.failure memory) =>
       .next { state with memory, phase := .backtrack } none
   | .terminal (.runtimeError error memory) =>
@@ -1394,6 +1611,7 @@ def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
       catchSelectingStep state selection machine
   | .catchRecovering selection machine =>
       catchRecoveringStep state selection machine
+  | .retractSelect cursor => retractSelectStep state cursor
 
 /-- The established phase loop specialization rejects meta-calls explicitly.
 This wrapper keeps the pure LP API stable while delegating every transition to
@@ -1497,6 +1715,46 @@ theorem backtrackStep_branch_of_restore {σ : LPSignature}
         phase := .dispatch
       } none := by
   simp [backtrackStep, hChoices, hRestore]
+
+/-- Retrying `retract/1` restores the cursor-owned checkpoint, removes that
+choice occurrence exactly once, and resumes only its frozen candidate list. -/
+theorem backtrackStep_retract_of_restore {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (cursor : RetractCursorCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause))
+    (memory : Memory σ.scoped)
+    (hChoices : state.choices = .retract cursor :: older)
+    (hRestore : state.memory.restore cursor.checkpoint = .ok memory) :
+    backtrackStep state =
+      .next {
+        state with
+        memory
+        choices := older
+        phase := .retractSelect cursor
+      } none := by
+  simp [backtrackStep, hChoices, hRestore]
+
+/-- A successful candidate unification exposes exactly the stable occurrence
+selected by the engine and installs the already-consumed continuation before
+the persistent session handles the request. -/
+theorem unifyingStep_eraseRef_success {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (attempt : AttemptCore σ Instruction)
+    (reference : Nat) (memory : Memory σ.scoped) :
+    unifyingStep state { attempt with onSuccess := .eraseRef reference }
+        (.terminal (.success memory)) =
+      .databaseRequest (.eraseRef reference) {
+        state with
+        memory
+        control := {
+          current := attempt.body
+          cutDepth := attempt.cutDepth
+          frames := attempt.frames
+        }
+        phase := .dispatch
+      } := rfl
 
 /-- A cut whose captured depth is exactly the older suffix removes a newest
 structured branch while retaining every older caller alternative. -/

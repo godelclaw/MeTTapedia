@@ -436,6 +436,10 @@ structure Services (sigma : LP.LPSignature) where
   decodeClause : Heap sigma.scoped → Addr →
     Except LP.RuntimeQuery.QueryError (Clause sigma) :=
       fun _ _ => .error .invalidDynamicClause
+  /-- Revalidate and expose the ordinary source term of one stored clause.
+  The persistent session uses this only to build a source-ordered snapshot;
+  matching and occurrence selection remain shared-engine operations. -/
+  reflectClause : Clause sigma → Option (LP.Term sigma) := fun _ => none
   /-- Optional language-level payload for `throw(Variable)`.  The shared
   engine alone decides whether the heap root is unbound and raises it through
   the canonical exception phases. -/
@@ -443,6 +447,9 @@ structure Services (sigma : LP.LPSignature) where
   /-- Optional language-level list symbols for answer collection.  The shared
   engine owns generator execution, copying, ordering, and bag unification. -/
   collectionEncoding : Option (LP.RuntimeQuery.CollectionEncoding sigma) := none
+  /-- Optional canonical symbols used by the engine to normalize retract
+  patterns before matching them against reflected clause data. -/
+  clauseEncoding : Option (LP.RuntimeQuery.ClauseEncoding sigma) := none
 
 /-- Base typed control has no implicit meta-call authority. -/
 def noServices (sigma : LP.LPSignature) : Services sigma where
@@ -451,8 +458,10 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
     (RuntimeGoal sigma.scoped)
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
+  reflectClause _ := none
   unboundThrowError := none
   collectionEncoding := none
+  clauseEncoding := none
 
 /-- Typed source goals instantiate the shared query opener's narrow
 materializer interface.  The adapter supplies only heap materialization,
@@ -686,26 +695,63 @@ def failSession (session : Session sigma)
       .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
         session.database
 
-/-- Apply one engine-issued persistent request.  Decoding is read-only;
-generation advance and database replacement happen exactly here, outside all
-backtrackable query resources. -/
-def applyDatabaseRequest (session : Session sigma)
+/-- Call-time visible and successfully revalidated retract candidates, in
+source order with stable database identities. Invalid or absent provenance is
+skipped rather than allowed to influence matching. -/
+def retractCandidates (session : Session sigma) :
+    List (LP.RuntimeQuery.RetractCandidate sigma) :=
+  session.database.visibleClauses.filterMap fun entry =>
+    session.services.reflectClause entry.2 |>.map fun clause => {
+      reference := entry.1
+      clause
+    }
+
+/-- Apply one engine-issued persistent request. Decoding/reflection is
+read-only; generation advance and database replacement happen exactly here,
+outside all backtrackable query resources. -/
+def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
+    (session : Session sigma)
     (state : State sigma) (request : LP.RuntimeQuery.DatabaseRequest) :
     SessionStepResult sigma :=
-  let root := match request with
-    | .asserta root => root
-    | .assertz root => root
-  match session.services.decodeClause state.memory.heap root with
-  | .error error => failSession session state error
-  | .ok clause =>
-      let database := match request with
-        | .asserta _ => (session.database.asserta clause).2
-        | .assertz _ => (session.database.assertz clause).2
-      .next { session with database, state } none
+  match request with
+  | .asserta root =>
+      match session.services.decodeClause state.memory.heap root with
+      | .error error => failSession session state error
+      | .ok clause =>
+          .next {
+            session with
+            database := (session.database.asserta clause).2
+            state
+          } none
+  | .assertz root =>
+      match session.services.decodeClause state.memory.heap root with
+      | .error error => failSession session state error
+      | .ok clause =>
+          .next {
+            session with
+            database := (session.database.assertz clause).2
+            state
+          } none
+  | .retract pattern =>
+      match session.services.clauseEncoding with
+      | none => failSession session state .unsupportedInstruction
+      | some encoding =>
+          match LP.RuntimeQuery.openRetractStep encoding state pattern
+              (retractCandidates session) with
+          | .next next observation =>
+              .next { session with state := next } observation
+          | .terminal terminal => .terminal terminal session.database
+          | .databaseRequest _ next =>
+              failSession session next .unhandledDatabaseRequest
+  | .eraseRef reference =>
+      match session.database.eraseRef reference with
+      | none => .next { session with state } none
+      | some (_, database) => .next { session with database, state } none
 
 /-- A successfully decoded `asserta/1` request performs exactly one front
 insertion and leaves the already-advanced canonical query state untouched. -/
 theorem applyDatabaseRequest_asserta_of_decode
+    [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) (root : Addr)
     (clause : Clause sigma)
     (hDecode : session.services.decodeClause state.memory.heap root =
@@ -721,6 +767,7 @@ theorem applyDatabaseRequest_asserta_of_decode
 /-- A successfully decoded `assertz/1` request performs exactly one back
 insertion and leaves the already-advanced canonical query state untouched. -/
 theorem applyDatabaseRequest_assertz_of_decode
+    [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) (root : Addr)
     (clause : Clause sigma)
     (hDecode : session.services.decodeClause state.memory.heap root =
@@ -732,6 +779,29 @@ theorem applyDatabaseRequest_assertz_of_decode
         state := state
       } none := by
   simp [applyDatabaseRequest, hDecode]
+
+/-- Successful occurrence erasure advances exactly to the database returned
+by the stable-reference operation and preserves the live query state. -/
+theorem applyDatabaseRequest_eraseRef_of_some
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma) (reference : Nat)
+    (clause : Clause sigma)
+    (database : LP.RuntimeDatabase.Database (Clause sigma))
+    (hErase : session.database.eraseRef reference = some (clause, database)) :
+    applyDatabaseRequest session state (.eraseRef reference) =
+      .next { session with database, state } none := by
+  simp [applyDatabaseRequest, hErase]
+
+/-- A snapshot occurrence already erased by an intervening persistent action
+is a successful no-op on retry, matching SWI's redo discipline; it neither
+rewinds nor advances the database. -/
+theorem applyDatabaseRequest_eraseRef_of_none
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma) (reference : Nat)
+    (hErase : session.database.eraseRef reference = none) :
+    applyDatabaseRequest session state (.eraseRef reference) =
+      .next { session with state } none := by
+  simp [applyDatabaseRequest, hErase]
 
 /-- One session transition delegates search to `stepCoreWithMeta` and handles
 only the persistent request that the shared engine may return. -/

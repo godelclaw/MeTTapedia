@@ -171,7 +171,8 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 34 exact answer and exception traces against SWI-Prolog 10.1.9:
+It compares 48 exact answer, exception, and persistent-store traces against
+SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
 disjunction choice; plus hard-if first-answer commitment, then-failure without
@@ -190,7 +191,13 @@ entry-context recovery, rethrow, guarded and recovery cut opacity, retained
 guarded answers, nested-catcher throw-time preservation, variable-copy
 separation, sharing, non-collapse, and SWI's exact
 `error(instantiation_error, context(system:throw/1,_))` behavior for a bare
-variable ball.
+variable ball.  Findall cases pin answer order and multiplicity, binding
+isolation, empty collection, cut scope, exception transparency, and copied
+variable sharing/separation.  Dynamic-database cases cover persistent
+`asserta/1`/`assertz/1`, call-snapshot isolation, and nondeterministic
+`retract/1`: source-order retry, cut pruning, fact/rule distinction,
+non-backtrackable erasure, snapshot isolation from later assertions, and
+retry of a snapshotted occurrence erased by a nested operation.
 
 ## What a pass means
 

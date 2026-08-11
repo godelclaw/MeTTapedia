@@ -1073,6 +1073,15 @@ theorem failWith_terminal {σ : LPSignature} (state : State σ)
   | ok memory => exact ⟨_, rfl⟩
   | error cleanup => exact ⟨_, rfl⟩
 
+/-- `failPullWith` is always terminal. -/
+theorem failPullWith_terminal {σ : LPSignature} (state : State σ)
+    (error : QueryError) :
+    ∃ result, failPullWith state error = .terminal result := by
+  unfold failPullWith
+  cases closeMemory state with
+  | ok memory => exact ⟨_, rfl⟩
+  | error cleanup => exact ⟨_, rfl⟩
+
 /-- `complete` is always terminal. -/
 theorem complete_terminal {σ : LPSignature} (state : State σ) :
     ∃ result, complete state = .terminal result := by
@@ -1153,13 +1162,28 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
       | terminal t =>
           cases t with
           | success m =>
-              have hstep : RuntimeQuery.step builtins program state = .next
-                  (unifySuccessState state attempt m) none := by
-                simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase,
-                  unifySuccessState]
-              rw [hstep] at hPull
-              dsimp only at hPull
-              exact ⟨0, fuel, by omega, .inl ⟨m, rfl, hPull⟩⟩
+              cases hSuccess : attempt.onSuccess with
+              | «continue» =>
+                  have hstep : RuntimeQuery.step builtins program state = .next
+                      (unifySuccessState state attempt m) none := by
+                    simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase,
+                      hSuccess, unifySuccessState]
+                  rw [hstep] at hPull
+                  dsimp only at hPull
+                  exact ⟨0, fuel, by omega, .inl ⟨m, rfl, hPull⟩⟩
+              | eraseRef reference =>
+                  have hstep : RuntimeQuery.step builtins program state =
+                      .databaseRequest (.eraseRef reference)
+                        (unifySuccessState state attempt m) := by
+                    simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase,
+                      hSuccess, unifySuccessState]
+                  rw [hstep] at hPull
+                  dsimp only at hPull
+                  obtain ⟨result, hTerminal⟩ := failPullWith_terminal
+                    (unifySuccessState state attempt m)
+                    .unhandledDatabaseRequest
+                  rw [hTerminal] at hPull
+                  cases hPull
           | failure m =>
               have hstep : RuntimeQuery.step builtins program state = .next
                   { state with memory := m, phase := .backtrack } none := by
@@ -2889,6 +2913,7 @@ def PhaseLane {σ : LPSignature} [DecidableEq σ.vars]
   | .raising _ => False
   | .catchSelecting _ _ => False
   | .catchRecovering _ _ => False
+  | .retractSelect _ => False
 
 /-- Popping a return frame preserves the flattened resolvent. -/
 theorem flatten_framePop {σ : LPSignature} {control : Control σ}
@@ -2967,6 +2992,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
               simp only [PhaseLane, hphase] at hPL
           | catchRecovering selection machine =>
               simp only [PhaseLane, hphase] at hPL
+          | retractSelect cursor =>
+              simp only [PhaseLane, hphase] at hPL
           | backtrack =>
               cases hchoices : state.choices with
               | nil =>
@@ -3007,6 +3034,10 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       rw [hchoices] at hchain
                       cases hchain
                   | collection boundary =>
+                      have hchain := hq.chain
+                      rw [hchoices] at hchain
+                      cases hchain
+                  | retract cursor =>
                       have hchain := hq.chain
                       rw [hchoices] at hchain
                       cases hchain
