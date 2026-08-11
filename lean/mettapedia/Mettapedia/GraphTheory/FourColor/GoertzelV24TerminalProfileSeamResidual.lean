@@ -19,6 +19,8 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24TerminalProfileSeamResidual
 
 open GoertzelV24HexSlabConnectivityProfile
+open GoertzelV24HexFaceRungType
+open GoertzelV24RotationFaceFragments
 open GoertzelV24SimpleGraphSupResidual
 open GoertzelV24TerminalProfileConnectivityUpdate
 open GoertzelV24TerminalProfileFaceUpdate
@@ -38,6 +40,41 @@ def regionalTrackedSeamGraph
     (regionalTrackedEdgeGraph RS (leftRegion ∪ rightRegion) C a b)
     (regionalTrackedEdgeGraph RS leftRegion C a b)
     (regionalTrackedEdgeGraph RS rightRegion C a b)
+
+/-- A residual tracked edge is exactly a tracked adjacency crossing from the
+left-only part to the right-only part, in either orientation. -/
+theorem regionalTrackedSeamGraph_adj_iff
+    (RS : RotationSystem V E) (leftRegion rightRegion : Finset E)
+    (C : E → Color) (a b : Color) (x y : E) :
+    (regionalTrackedSeamGraph RS leftRegion rightRegion C a b).Adj x y ↔
+      (RS.trackedEdgeGraph C a b).Adj x y ∧
+        ((x ∈ leftRegion ∧ x ∉ rightRegion ∧
+            y ∈ rightRegion ∧ y ∉ leftRegion) ∨
+          (x ∈ rightRegion ∧ x ∉ leftRegion ∧
+            y ∈ leftRegion ∧ y ∉ rightRegion)) := by
+  constructor
+  · rintro ⟨⟨hadj, hx, hy⟩, hnotLeft, hnotRight⟩
+    simp only [Finset.mem_union] at hx hy
+    rcases hx with hxLeft | hxRight <;> rcases hy with hyLeft | hyRight
+    · exact (hnotLeft ⟨hadj, hxLeft, hyLeft⟩).elim
+    · exact ⟨hadj, Or.inl ⟨hxLeft,
+        fun hxRight => hnotRight ⟨hadj, hxRight, hyRight⟩,
+        hyRight, fun hyLeft => hnotLeft ⟨hadj, hxLeft, hyLeft⟩⟩⟩
+    · exact ⟨hadj, Or.inr ⟨hxRight,
+        fun hxLeft => hnotLeft ⟨hadj, hxLeft, hyLeft⟩,
+        hyLeft, fun hyRight => hnotRight ⟨hadj, hxRight, hyRight⟩⟩⟩
+    · exact (hnotRight ⟨hadj, hxRight, hyRight⟩).elim
+  · rintro ⟨hadj, hcross | hcross⟩
+    · exact ⟨
+        ⟨hadj, Finset.mem_union_left _ hcross.1,
+          Finset.mem_union_right _ hcross.2.2.1⟩,
+        (fun hleft => hcross.2.2.2 hleft.2.2),
+        (fun hright => hcross.2.1 hright.2.1)⟩
+    · exact ⟨
+        ⟨hadj, Finset.mem_union_right _ hcross.1,
+          Finset.mem_union_left _ hcross.2.2.1⟩,
+        (fun hleft => hcross.2.1 hleft.2.1),
+        (fun hright => hcross.2.2.2 hright.2.2)⟩
 
 /-- Prefix, Cell, and the explicit seam residual recover the enlarged
 tracked graph exactly, without a coverage hypothesis. -/
@@ -83,6 +120,46 @@ def faceRegionalSeamGraph
     (faceRegionalAmbientPositionGraph RS root (leftRegion ∪ rightRegion))
     (faceRegionalAmbientPositionGraph RS root leftRegion)
     (faceRegionalAmbientPositionGraph RS root rightRegion)
+
+/-- A residual facial step is exactly a face-cycle adjacency crossing between
+the two exclusive regional parts. -/
+theorem faceRegionalSeamGraph_adj_iff
+    (RS : RotationSystem V E) (root : RS.D)
+    (leftRegion rightRegion : Finset E)
+    (x y : Fin (RS.faceOrbit root).card) :
+    (faceRegionalSeamGraph RS root leftRegion rightRegion).Adj x y ↔
+      (faceCyclePositionGraph RS root).Adj x y ∧
+        ((faceCycleEdge RS root x ∈ leftRegion ∧
+            faceCycleEdge RS root x ∉ rightRegion ∧
+            faceCycleEdge RS root y ∈ rightRegion ∧
+            faceCycleEdge RS root y ∉ leftRegion) ∨
+          (faceCycleEdge RS root x ∈ rightRegion ∧
+            faceCycleEdge RS root x ∉ leftRegion ∧
+            faceCycleEdge RS root y ∈ leftRegion ∧
+            faceCycleEdge RS root y ∉ rightRegion)) := by
+  constructor
+  · rintro ⟨⟨hadj, hx, hy⟩, hnotLeft, hnotRight⟩
+    simp only [Finset.mem_union] at hx hy
+    rcases hx with hxLeft | hxRight <;> rcases hy with hyLeft | hyRight
+    · exact (hnotLeft ⟨hadj, hxLeft, hyLeft⟩).elim
+    · exact ⟨hadj, Or.inl ⟨hxLeft,
+        fun hxRight => hnotRight ⟨hadj, hxRight, hyRight⟩,
+        hyRight, fun hyLeft => hnotLeft ⟨hadj, hxLeft, hyLeft⟩⟩⟩
+    · exact ⟨hadj, Or.inr ⟨hxRight,
+        fun hxLeft => hnotLeft ⟨hadj, hxLeft, hyLeft⟩,
+        hyLeft, fun hyRight => hnotRight ⟨hadj, hxRight, hyRight⟩⟩⟩
+    · exact (hnotRight ⟨hadj, hxRight, hyRight⟩).elim
+  · rintro ⟨hadj, hcross | hcross⟩
+    · exact ⟨
+        ⟨hadj, Finset.mem_union_left _ hcross.1,
+          Finset.mem_union_right _ hcross.2.2.1⟩,
+        (fun hleft => hcross.2.2.2 hleft.2.2),
+        (fun hright => hcross.2.1 hright.2.1)⟩
+    · exact ⟨
+        ⟨hadj, Finset.mem_union_right _ hcross.1,
+          Finset.mem_union_left _ hcross.2.2.1⟩,
+        (fun hleft => hcross.2.1 hleft.2.1),
+        (fun hright => hcross.2.2.2 hright.2.2)⟩
 
 /-- Prefix, Cell, and the explicit seam residual recover the enlarged
 occurrence-sensitive face graph exactly. -/
