@@ -9,6 +9,13 @@ dcg_pair(X) --> [X, X].
 dcg_guarded(X) --> { X = a }, [X].
 dcg_choice --> [a] ; [b].
 dcg_hello --> "ab".
+dcg_emit(Cs) --> Cs.
+dcg_one --> [a].
+dcg_via(Input) :- phrase(dcg_one, Input).
+dcg_via_rest(Input, Rest) :- phrase(dcg_one, Input, Rest).
+dcg_delegate(Goal) --> Goal.
+dcg_cut_outer(a) :- phrase(!, []), fail.
+dcg_cut_outer(c).
 
 emit(Label, Goal, Template) :-
     findall(Template, Goal, Answers),
@@ -249,4 +256,14 @@ main(_) :-
     emit_count(dcg_terminal_sharing, phrase(dcg_pair(a), [a, a])),
     emit_count(dcg_braced_goal, phrase(dcg_guarded(a), [a])),
     emit_count(dcg_disjunction, phrase(dcg_choice, [b])),
-    emit_count(dcg_string_terminal, phrase(dcg_hello, [97, 98])).
+    emit_count(dcg_string_terminal, phrase(dcg_hello, [97, 98])),
+    emit_count(dcg_variable_list, phrase(dcg_emit([a,b]), [a,b])),
+    emit_count(dcg_variable_list_sharing,
+        \+ phrase(dcg_emit([X,X]), [a,b])),
+    emit_count(dcg_variable_string, phrase(dcg_emit("ab"), [97,98])),
+    emit_count(dcg_phrase_two, dcg_via([a])),
+    emit_count(dcg_phrase_three_rest, dcg_via_rest([a,b], [b])),
+    emit_count(dcg_variable_braced,
+        phrase(dcg_delegate({a=a}), [])),
+    emit_count(dcg_dynamic_cut_caller,
+        findall(X, dcg_cut_outer(X), [c])).

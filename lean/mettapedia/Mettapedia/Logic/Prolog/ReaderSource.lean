@@ -101,6 +101,8 @@ private def toGoalAux : Nat -> SourceSignature.Term ->
                   let parsedRecovery <- toGoalAux fuel recovery
                   pure (.catch parsedGuarded catcher parsedRecovery)
               | "throw", [ball] => .ok (.throw ball)
+              | "phrase", [body, input] =>
+                  .ok (ordinaryCall "phrase" [body, input, SourceSignature.nil])
               | _, _ => .ok (ordinaryCall name arguments)
 
 /-- Interpret one canonical term in callable goal position. -/

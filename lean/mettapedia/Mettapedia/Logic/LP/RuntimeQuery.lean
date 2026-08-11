@@ -63,25 +63,14 @@ inductive QueryError where
   | invalidArithmeticOperand
   | unsupportedArithmeticFunction
   | arithmeticZeroDivisor
+  | dcgBodyUnbound
+  | invalidDcgState
+  | invalidDcgBody
   | unhandledDatabaseRequest
   | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
-
-/-- Read-only interpretation of a callable heap root.  The shared engine owns
-when the decoder is invoked and the cut boundary installed around its result;
-the decoder can return only an ordered instruction list or an explicit error.
-It receives the heap rather than `Memory`, so it cannot mutate the trail or
-restore checkpoints. -/
-structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
-  decode : Heap σ.scoped → Addr → List Addr →
-    Except QueryError (List Instruction)
-
-/-- Pure LP and typed runtimes without meta-call support fail closed. -/
-def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
-    MetaCallDecoder σ Instruction where
-  decode _ _ _ := .error .unsupportedInstruction
 
 /-- Language-owned encoding of ordinary Prolog-style lists.  The engine owns
 the fold, materialization, and bag unification; a realization supplies only
@@ -108,6 +97,33 @@ def listTerm (encoding : CollectionEncoding σ)
 
 end CollectionEncoding
 
+/-- A read-only DCG decoder may expose either ordinary instructions or a
+terminal sequence.  Terminal roots are existing heap identities; constant
+terminals are values that the shared engine, not the decoder, allocates.
+Neither case carries a continuation, checkpoint, or answer. -/
+inductive DcgPlan (σ : LPSignature) (Instruction : Type*) where
+  | goals (instructions : List Instruction)
+  | addressTerminals (encoding : CollectionEncoding σ) (heads : List Addr)
+  | constantTerminals (encoding : CollectionEncoding σ)
+      (heads : List σ.constants)
+
+/-- Read-only interpretation of dynamic callable and DCG heap roots.  The
+shared engine owns when either decoder is invoked, every allocation, and the
+predicate-like cut boundary installed around decoded goals.  A decoder sees
+only the heap, so it cannot mutate the trail or restore checkpoints. -/
+structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
+  decode : Heap σ.scoped → Addr → List Addr →
+    Except QueryError (List Instruction)
+  decodeDcg : Heap σ.scoped → Addr → Addr → Addr →
+    Except QueryError (DcgPlan σ Instruction) :=
+      fun _ _ _ _ => .error .unsupportedInstruction
+
+/-- Pure LP and typed runtimes without dynamic-call support fail closed. -/
+def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
+    MetaCallDecoder σ Instruction where
+  decode _ _ _ := .error .unsupportedInstruction
+  decodeDcg _ _ _ _ := .error .unsupportedInstruction
+
 /-- Language-owned symbols for `=../2`.  The engine owns heap traversal,
 allocation, and unification.  A realization supplies only the existing list
 encoding and the lossless atom/functor name bridge for its signature. -/
@@ -133,6 +149,102 @@ def allocateAddressList {σ : LPSignature} (encoding : CollectionEncoding σ) :
   | memory, head :: tail => do
       let (tailRoot, memory) ← allocateAddressList encoding memory tail
       memory.allocate (.app encoding.cons #[head, tailRoot])
+
+/-- Allocate a list segment whose final tail is an existing heap root.  Only
+the spine is new; element and tail identities are reused exactly. -/
+def allocateAddressSegment {σ : LPSignature}
+    (encoding : CollectionEncoding σ) :
+    Memory σ.scoped → List Addr → Addr →
+      Except MemoryError (Addr × Memory σ.scoped)
+  | memory, [], tail => .ok (tail, memory)
+  | memory, head :: heads, tail => do
+      let (tailRoot, memory) ←
+        allocateAddressSegment encoding memory heads tail
+      memory.allocate (.app encoding.cons #[head, tailRoot])
+
+/-- Allocate atomic terminal values from left to right, returning their fresh
+roots without constructing any control state. -/
+def allocateConstants {σ : LPSignature} :
+    Memory σ.scoped → List σ.constants →
+      Except MemoryError (List Addr × Memory σ.scoped)
+  | memory, [] => .ok ([], memory)
+  | memory, value :: values => do
+      let (root, memory) ← memory.allocate (.const value)
+      let (roots, memory) ← allocateConstants memory values
+      pure (root :: roots, memory)
+
+/-- Segment allocation is bounded exactly by the number of terminals and
+never writes the trail. -/
+theorem allocateAddressSegment_size_trail {σ : LPSignature}
+    (encoding : CollectionEncoding σ) (memory memory' : Memory σ.scoped)
+    (heads : List Addr) (tail root : Addr)
+    (h : allocateAddressSegment encoding memory heads tail =
+      .ok (root, memory')) :
+    memory'.heap.size = memory.heap.size + heads.length ∧
+      memory'.trailMark = memory.trailMark := by
+  induction heads generalizing memory root memory' with
+  | nil =>
+      simp only [allocateAddressSegment] at h
+      cases h
+      simp
+  | cons head heads ih =>
+      simp only [allocateAddressSegment] at h
+      cases hSegment : allocateAddressSegment encoding memory heads tail with
+      | error error =>
+          rw [hSegment] at h
+          contradiction
+      | ok result =>
+          rcases result with ⟨tailRoot, middle⟩
+          have hAllocation :
+              middle.allocate (.app encoding.cons #[head, tailRoot]) =
+                .ok (root, memory') := by
+            rw [hSegment] at h
+            exact h
+          have hIH := ih memory middle tailRoot hSegment
+          constructor
+          · rw [Memory.allocate_heap_size_succ hAllocation, hIH.1]
+            simp [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
+          · rw [Memory.allocate_trailMark hAllocation, hIH.2]
+
+/-- Allocating atomic terminal roots is likewise an exact finite append with
+no trail traffic. -/
+theorem allocateConstants_size_trail {σ : LPSignature}
+    (memory memory' : Memory σ.scoped) (values : List σ.constants)
+    (roots : List Addr)
+    (h : allocateConstants memory values = .ok (roots, memory')) :
+    memory'.heap.size = memory.heap.size + values.length ∧
+      memory'.trailMark = memory.trailMark := by
+  induction values generalizing memory roots memory' with
+  | nil =>
+      simp only [allocateConstants] at h
+      cases h
+      simp
+  | cons value values ih =>
+      simp only [allocateConstants] at h
+      cases hAllocate : memory.allocate (.const value) with
+      | error error =>
+          rw [hAllocate] at h
+          contradiction
+      | ok allocated =>
+          rcases allocated with ⟨root, middle⟩
+          rw [hAllocate] at h
+          simp only [Bind.bind, Except.bind] at h
+          cases hRest : allocateConstants middle values with
+          | error error =>
+              rw [hRest] at h
+              contradiction
+          | ok result =>
+              rcases result with ⟨tailRoots, final⟩
+              rw [hRest] at h
+              injection h with hResult
+              injection hResult with hRoots hMemory
+              subst roots
+              subst memory'
+              have hIH := ih middle final tailRoots hRest
+              constructor
+              · rw [hIH.1, Memory.allocate_heap_size_succ hAllocate]
+                simp [Nat.add_assoc, Nat.add_comm]
+              · rw [hIH.2, Memory.allocate_trailMark hAllocate]
 
 /-- Decode only the proper-list spine, retaining each element's existing heap
 root.  Rational or malformed spines fail visibly; element graphs themselves
@@ -1950,10 +2062,29 @@ theorem findallStep_exact {σ : LPSignature}
         } :: state.choices
       } none := rfl
 
-/-- Enter one dynamically decoded goal under its own predicate-like cut
-boundary.  This is the WAM `B0 := B` discipline for meta-call: choices older
-than the call survive, while a cut in the decoded goal can prune alternatives
-created by that goal.  Decoding is read-only and occurs exactly once. -/
+/-- Enter already-decoded goals under one predicate-like cut boundary.  This
+is the WAM `B0 := B` discipline shared by ordinary meta-calls and dynamically
+decoded DCG bodies. -/
+@[simp]
+def enterDecodedGoalsStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (goals rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  .next {
+    state with
+    control := {
+      current := goals
+      cutDepth := state.choices.length
+      frames := {
+        continuation := rest
+        callerCutDepth := state.control.cutDepth
+        commit := .ordinary
+      } :: state.control.frames
+    }
+  } none
+
+/-- Enter one dynamically decoded goal.  Decoding is read-only and occurs
+exactly once; all scheduling remains in `enterDecodedGoalsStep`. -/
 @[simp]
 def metaCallStep {σ : LPSignature}
     (decoder : MetaCallDecoder σ Instruction)
@@ -1962,19 +2093,59 @@ def metaCallStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   match decoder.decode state.memory.heap callable extraArgs with
   | .error reason => failWith state reason
-  | .ok goals =>
+  | .ok goals => enterDecodedGoalsStep state goals rest
+
+/-- Allocate one terminal segment above the live heap and unify the DCG input
+with its new spine through the canonical graph unifier.  The final tail is the
+caller's existing `Rest` root, so no variable identity is copied. -/
+def dcgAddressTerminalsStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (encoding : CollectionEncoding σ) (heads : List Addr)
+    (input restRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match allocateAddressSegment encoding state.memory heads restRoot with
+  | .error error => failWith state (.memory error)
+  | .ok (listRoot, memory) =>
+      let attempt : AttemptCore σ Instruction := {
+        body := continuation
+        cutDepth := state.control.cutDepth
+        frames := state.control.frames
+      }
       .next {
         state with
-        control := {
-          current := goals
-          cutDepth := state.choices.length
-          frames := {
-            continuation := rest
-            callerCutDepth := state.control.cutDepth
-            commit := .ordinary
-          } :: state.control.frames
-        }
+        memory
+        phase := .unifying attempt
+          (RuntimeUnification.startMany memory [(input, listRoot)])
       } none
+
+/-- Constant DCG terminals are allocated by the shared engine before the same
+address-segment transition.  A language decoder supplies values only. -/
+def dcgConstantTerminalsStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (encoding : CollectionEncoding σ) (heads : List σ.constants)
+    (input restRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match allocateConstants state.memory heads with
+  | .error error => failWith state (.memory error)
+  | .ok (roots, memory) =>
+      dcgAddressTerminalsStep { state with memory } encoding roots input
+        restRoot continuation
+
+/-- Interpret one dynamic grammar body through a read-only decoder.  Ordinary
+nonterminals and control re-enter the shared instruction loop; terminal
+segments use engine-owned allocation and the canonical unifier. -/
+def dcgCallStep {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (body input restRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decodeDcg state.memory.heap body input restRoot with
+  | .error reason => failWith state reason
+  | .ok (.goals goals) => enterDecodedGoalsStep state goals continuation
+  | .ok (.addressTerminals encoding heads) =>
+      dcgAddressTerminalsStep state encoding heads input restRoot continuation
+  | .ok (.constantTerminals encoding heads) =>
+      dcgConstantTerminalsStep state encoding heads input restRoot continuation
 
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
@@ -2272,6 +2443,7 @@ inductive DispatchAction (σ : LPSignature)
   | findall (template : Addr) (generator : List Instruction) (bag : Addr)
       (encoding : CollectionEncoding σ)
   | metaCall (callable : Addr) (extraArgs : List Addr)
+  | dcgCall (body input rest : Addr)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
   | throw (ball : Addr)
@@ -2401,6 +2573,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       findallStep state template generator bag encoding rest
   | .metaCall callable extraArgs =>
       metaCallStep decoder state callable extraArgs rest
+  | .dcgCall body input restRoot =>
+      dcgCallStep decoder state body input restRoot rest
   | .catch guarded catcher recovery =>
       catchStep state guarded catcher recovery rest
   | .throw ball unboundError => throwStep state ball unboundError
@@ -2799,6 +2973,59 @@ theorem metaCallStep_error {σ : LPSignature}
     metaCallStep decoder state callable extraArgs rest = failWith state reason := by
   simp [metaCallStep, hDecode]
 
+/-- Dynamic DCG decoding cannot schedule around the shared entry transition:
+an ordinary-goal plan is installed exactly as one meta-call body. -/
+theorem dcgCallStep_goals_of_decode {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (body input restRoot : Addr) (continuation goals : List Instruction)
+    (hDecode : decoder.decodeDcg state.memory.heap body input restRoot =
+      .ok (.goals goals)) :
+    dcgCallStep decoder state body input restRoot continuation =
+      enterDecodedGoalsStep state goals continuation := by
+  simp [dcgCallStep, hDecode]
+
+/-- A decoded terminal-address plan reaches only the engine-owned spine
+allocator and canonical-unifier entry. -/
+theorem dcgCallStep_addressTerminals_of_decode {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (body input restRoot : Addr) (continuation : List Instruction)
+    (encoding : CollectionEncoding σ) (heads : List Addr)
+    (hDecode : decoder.decodeDcg state.memory.heap body input restRoot =
+      .ok (.addressTerminals encoding heads)) :
+    dcgCallStep decoder state body input restRoot continuation =
+      dcgAddressTerminalsStep state encoding heads input restRoot
+        continuation := by
+  simp [dcgCallStep, hDecode]
+
+/-- Constant terminal plans likewise pass through engine-owned allocation;
+the decoder has no direct memory authority. -/
+theorem dcgCallStep_constantTerminals_of_decode {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (body input restRoot : Addr) (continuation : List Instruction)
+    (encoding : CollectionEncoding σ) (heads : List σ.constants)
+    (hDecode : decoder.decodeDcg state.memory.heap body input restRoot =
+      .ok (.constantTerminals encoding heads)) :
+    dcgCallStep decoder state body input restRoot continuation =
+      dcgConstantTerminalsStep state encoding heads input restRoot
+        continuation := by
+  simp [dcgCallStep, hDecode]
+
+/-- Decoder rejection is a visible runtime error with exact query cleanup;
+it is never weakened to ordinary grammar failure. -/
+theorem dcgCallStep_error_of_decode {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (body input restRoot : Addr) (continuation : List Instruction)
+    (reason : QueryError)
+    (hDecode : decoder.decodeDcg state.memory.heap body input restRoot =
+      .error reason) :
+    dcgCallStep decoder state body input restRoot continuation =
+      failWith state reason := by
+  simp [dcgCallStep, hDecode]
+
 /-- Meta-call decoding is reached through the canonical dispatch phase, not a
 wrapper-side resolution path.  The theorem pins the exact executable seam. -/
 theorem stepCoreWithMeta_metaCall_of_dispatch {σ : LPSignature}
@@ -2816,6 +3043,25 @@ theorem stepCoreWithMeta_metaCall_of_dispatch {σ : LPSignature}
     (hClassify : classify instruction = .metaCall callable extraArgs) :
     stepCoreWithMeta materializer decoder classify state =
       metaCallStep decoder state callable extraArgs rest := by
+  simp [stepCoreWithMeta, hPhase, hCurrent, hClassify]
+
+/-- Dynamic grammar decoding is reached through the same canonical dispatch
+phase; no source/session wrapper can execute it out of band. -/
+theorem stepCoreWithMeta_dcgCall_of_dispatch {σ : LPSignature}
+    [DecidableEq σ.scoped.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (decoder : MetaCallDecoder σ Instruction)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (state : StateCore σ Instruction SourceClause)
+    (instruction : Instruction) (continuation : List Instruction)
+    (body input restRoot : Addr)
+    (hPhase : state.phase = .dispatch)
+    (hCurrent : state.control.current = instruction :: continuation)
+    (hClassify : classify instruction = .dcgCall body input restRoot) :
+    stepCoreWithMeta materializer decoder classify state =
+      dcgCallStep decoder state body input restRoot continuation := by
   simp [stepCoreWithMeta, hPhase, hCurrent, hClassify]
 
 /-! ## Exception-delimiter laws -/

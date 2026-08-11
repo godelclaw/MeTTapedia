@@ -264,6 +264,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .findall template generator bag encoding =>
       .findall template (generator.map instruction) bag encoding
   | .metaCall callable extraArgs => .metaCall callable extraArgs
+  | .dcgCall body input rest => .dcgCall body input rest
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
   | .throw ball unboundError => .throw ball unboundError
@@ -844,6 +845,12 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | metaCall callable extraArgs =>
               cases hCleanup : memory.restore checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, metaCallStep,
+                  rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
+                  mapReturnFrame, mapStepResult, failWith, closeMemory,
+                  hCleanup]
+          | dcgCall body input restRoot =>
+              cases hCleanup : memory.restore checkpoint <;>
+                simp [mapDispatchAction, dispatchActionStep, dcgCallStep,
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
                   mapReturnFrame, mapStepResult, failWith, closeMemory,
                   hCleanup]

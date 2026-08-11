@@ -42,6 +42,16 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_error
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.stepCoreWithMeta_metaCall_of_dispatch
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.allocateAddressSegment_size_trail
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.allocateConstants_size_trail
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.dcgCallStep_goals_of_decode
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.dcgCallStep_addressTerminals_of_decode
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.dcgCallStep_constantTerminals_of_decode
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.dcgCallStep_error_of_decode
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.stepCoreWithMeta_dcgCall_of_dispatch
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_dcgCall
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_dcgCall
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_decodeDcg
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.recordCollectionChoice_marker
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.collectAnswerStep_of_capture
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.findallStep_exact

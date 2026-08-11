@@ -257,6 +257,90 @@ def metaCall? (goal : RuntimeAtom Sigma.scoped) :
     | [] => none
   else none
 
+/-- Recognize the ISO `phrase/3` entry without inspecting its arguments.
+`phrase/2` is elaborated to this form by the source goal classifier. -/
+def dcgCall? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × Addr) :=
+  match goal.symbol.name, goal.args.toList with
+  | "phrase", [body, input, rest] =>
+      if goal.symbol.arity = 3 then some (body, input, rest) else none
+  | _, _ => none
+
+/-- SWI's `phrase_input/1` accepts an unbound variable, `[]`, or any outer
+list cell.  It deliberately does not traverse the tail at this boundary. -/
+private def checkPhraseState (heap : Heap Sigma.scoped) (address : Addr) :
+    Except LP.RuntimeQuery.QueryError Unit := do
+  let cell ← dereferencedCell heap address
+  match cell with
+  | .var _ none => pure ()
+  | .const value =>
+      if value = collectionEncoding.nil then pure ()
+      else .error .invalidDcgState
+  | .app symbol arguments =>
+      if symbol = collectionEncoding.cons && arguments.size = 2 then pure ()
+      else .error .invalidDcgState
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+
+private def stringCodeConstants (value : String) :
+    List SourceSignature.Constant :=
+  value.toList.map fun character =>
+    .integer (Int.ofNat character.toNat)
+
+/-- Read one dynamic grammar body in the finite fragment needed by the pinned
+PeTTa parser.  Ordinary nonterminals reuse the callable decoder with the two
+state arguments appended.  Proper lists and strings become terminal plans;
+cut and braced goals become ordinary typed instructions under the engine's
+meta-call boundary.  Compound DCG control remains fail-closed until its fresh
+intermediate-state allocation is represented by an engine plan. -/
+def decodeDcgAux : Nat → Heap Sigma.scoped → Addr → Addr → Addr →
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.DcgPlan Sigma (RuntimeGoal Sigma.scoped))
+  | 0, _, _, _, _ => .error .unsupportedInstruction
+  | fuel + 1, heap, body, input, rest => do
+      let cell ← dereferencedCell heap body
+      match cell with
+      | .var _ none => .error .dcgBodyUnbound
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | .const (.atom "[]") =>
+          pure (.addressTerminals collectionEncoding [])
+      | .const (.string value) =>
+          pure (.constantTerminals collectionEncoding
+            (stringCodeConstants value))
+      | .const (.atom "!") =>
+          pure (.goals [.cut, .unify rest input])
+      | .const (.atom "{}") =>
+          pure (.goals [.unify input rest])
+      | .const (.atom name) =>
+          pure (.goals [ordinaryCall name [input, rest]])
+      | .const _ => .error .invalidDcgBody
+      | .app symbol arguments =>
+          let arguments := arguments.toList
+          if arguments.length != symbol.arity then
+            .error (.memory .illFormedHeap)
+          else if symbol = collectionEncoding.cons then
+            match LP.RuntimeQuery.decodeAddressList collectionEncoding heap body with
+            | .ok heads =>
+                pure (.addressTerminals collectionEncoding heads)
+            | .error (.memory error) => .error (.memory error)
+            | .error _ => .error .invalidDcgBody
+          else
+            match symbol.name, arguments with
+            | "{}", [goal] => do
+                let goals ← decodeCallableAux fuel heap goal []
+                pure (.goals (goals ++ [.unify rest input]))
+            | ",", _ | ";", _ | "|", _ | "->", _ | "*->", _
+            | "\\+", _ => .error .unsupportedInstruction
+            | _, _ =>
+                pure (.goals [compoundCall symbol arguments [input, rest]])
+
+/-- Decode `phrase/3` after enforcing its shallow ISO list contract. -/
+def decodeDcg (heap : Heap Sigma.scoped) (body input rest : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.DcgPlan Sigma (RuntimeGoal Sigma.scoped)) := do
+  checkPhraseState heap input
+  checkPhraseState heap rest
+  decodeDcgAux (heap.size + 1) heap body input rest
+
 private def isAtomConstant : SourceSignature.Constant → Bool
   | .atom _ => true
   | _ => false
@@ -386,7 +470,8 @@ def decodeClause (heap : Heap Sigma.scoped) (root : Addr) :
 
 def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
-  decoder := { decode := decodeCallable }
+  decoder := { decode := decodeCallable, decodeDcg := decodeDcg }
+  dcgCall? := dcgCall?
   termTest? := termTest?
   termIdentity? := termIdentity?
   univ? := univ?
@@ -410,6 +495,12 @@ theorem services_clauseEncoding :
 @[simp]
 theorem services_collectionEncoding :
     services.collectionEncoding = some collectionEncoding := rfl
+
+@[simp]
+theorem services_dcgCall : services.dcgCall? = dcgCall? := rfl
+
+@[simp]
+theorem services_decodeDcg : services.decoder.decodeDcg = decodeDcg := rfl
 
 @[simp]
 theorem services_termTest :

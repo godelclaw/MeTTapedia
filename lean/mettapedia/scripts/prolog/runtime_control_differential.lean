@@ -12,6 +12,8 @@ open Mettapedia.Logic.LP.RuntimeQueryRegression
 open Mettapedia.Logic.Prolog
 open Mettapedia.Logic.Prolog.RuntimeControlRegression
 
+set_option maxRecDepth 100000
+
 def renderConstant : QConst -> String
   | .a => "a"
   | .b => "b"
@@ -420,3 +422,17 @@ def main : IO Unit := do
     Mettapedia.Logic.Prolog.ReaderDCGRegression.disjunctionExecutes
   renderBool "dcg_string_terminal"
     Mettapedia.Logic.Prolog.ReaderDCGRegression.stringTerminalExecutes
+  renderBool "dcg_variable_list"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.variableListBodyExecutes
+  renderBool "dcg_variable_list_sharing"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.variableListBodyPreservesSharing
+  renderBool "dcg_variable_string"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.variableStringBodyExecutes
+  renderBool "dcg_phrase_two"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.sourcePhraseTwoExecutes
+  renderBool "dcg_phrase_three_rest"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.sourcePhraseThreeRetainsRest
+  renderBool "dcg_variable_braced"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.variableBracedBodyExecutes
+  renderBool "dcg_dynamic_cut_caller"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.dynamicCutRetainsCallerClause

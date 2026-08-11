@@ -426,6 +426,11 @@ authority. -/
 structure Services (sigma : LP.LPSignature) where
   metaCall? : RuntimeAtom sigma.scoped → Option (Addr × List Addr)
   decoder : LP.RuntimeQuery.MetaCallDecoder sigma (RuntimeGoal sigma.scoped)
+  /-- Recognize `phrase/3` without inspecting the heap.  Dynamic grammar
+  interpretation remains a distinct read-only decoder mode so ordinary
+  `call/N` can never acquire DCG terminal semantics accidentally. -/
+  dcgCall? : RuntimeAtom sigma.scoped → Option (Addr × Addr × Addr) :=
+    fun _ => none
   /-- Recognize read-only shallow term tests without inspecting the heap.
   The shared engine owns dereference, corruption checks, success, and
   backtracking; a realization may classify only its own constant payloads. -/
@@ -478,6 +483,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   metaCall? _ := none
   decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
     (RuntimeGoal sigma.scoped)
+  dcgCall? _ := none
   termTest? _ := none
   termIdentity? _ := none
   univ? _ := none
@@ -578,8 +584,12 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                   .integerCompare leftRoot rightRoot comparison
                                     encoding
                               | none =>
-                                  .call goal
-                                    (Program.clausesFor program goal.symbol)
+                                  match services.dcgCall? goal with
+                                  | some (body, input, rest) =>
+                                      .dcgCall body input rest
+                                  | none =>
+                                      .call goal
+                                        (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -685,6 +695,26 @@ theorem dispatchActionWith_integerComparison {sigma : LP.LPSignature}
       .integerCompare leftRoot rightRoot comparison encoding := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison]
+
+/-- `phrase/3` reaches its distinct dynamic-grammar action only after every
+earlier disjoint service declines the call.  The classifier supplies three
+roots and no decoded instructions or memory. -/
+theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (body input rest : Addr)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hDcg : services.dcgCall? goal = some (body, input, rest)) :
+    dispatchActionWith services program (.call goal) =
+      .dcgCall body input rest := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hDcg]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}
