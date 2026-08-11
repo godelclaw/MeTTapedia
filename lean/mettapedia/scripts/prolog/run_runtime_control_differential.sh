@@ -13,10 +13,12 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 pushd "$ROOT_DIR" >/dev/null
+lake build Mettapedia.Logic.Prolog.RuntimeControlRegression \
+  Mettapedia.Logic.Prolog.SourceRuntimeRegression >/dev/null
 lake env lean --run scripts/prolog/runtime_control_differential.lean \
   > "$TMP/lean.txt"
 swipl -q -f scripts/prolog/runtime_control_oracle.pl > "$TMP/swi.txt"
 popd >/dev/null
 
 diff -u "$TMP/swi.txt" "$TMP/lean.txt"
-echo "Runtime-control differential: PASS (34/34 exact answer/exception traces)"
+echo "Runtime-control differential: PASS (41/41 exact answer/exception traces)"

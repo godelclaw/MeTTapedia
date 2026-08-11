@@ -138,6 +138,16 @@
     },
     {
       "project": "swi-prolog",
+      "path": "boot/bags.pl",
+      "sha256": "366cb51892bad266acc2e1df0979ef0ae3527b5117d5733c92fbe0c672f9d56c"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-bag.c",
+      "sha256": "94818d9d14312c5e3776436d33f46762653dd0c04ca578827aa5417004b14182"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-read.c",
       "sha256": "87743e349b5b986c863aa975dc1318f0d0af0220b62f1c54f1e73f77b2fb4f96"
     },
@@ -280,6 +290,36 @@
       "proof_evidence": [
         "Mettapedia/Logic/LP/RuntimeException.lean",
         "Mettapedia/Logic/LP/RuntimeExceptionSoundness.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.findall",
+      "project": "swi-prolog",
+      "sources": ["boot/bags.pl", "src/pl-bag.c"],
+      "anchors": [
+        "findall_loop",
+        "add_findall_bag",
+        "compileTermToHeap_ex",
+        "collect_findall_bag"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
         "Mettapedia/Logic/LP/RuntimeQuery.lean",
         "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
         "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"

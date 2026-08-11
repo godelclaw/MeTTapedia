@@ -1396,7 +1396,8 @@ def AtomsWF {σ : LPSignature} (heap : Heap σ.scoped)
 def FramesWF {σ : LPSignature} (heap : Heap σ.scoped)
     (frames : List (ReturnFrame σ)) : Prop :=
   ∀ frame ∈ frames,
-    frame.commit = .ordinary ∧ AtomsWF heap frame.continuation
+    frame.commit = .ordinary ∧ AtomsWF heap frame.continuation ∧
+      frame.collection = none
 
 /-- Every query variable's cell is present, carrying its identity. -/
 def VarMapCellsWF {σ : LPSignature} (heap : Heap σ.scoped)
@@ -1421,7 +1422,8 @@ theorem FramesWF.mono {σ : LPSignature} {heap heap' : Heap σ.scoped}
     (hle : heap.size ≤ heap'.size) (h : FramesWF heap frames) :
     FramesWF heap' frames :=
   fun frame hframe =>
-    ⟨(h frame hframe).1, (h frame hframe).2.mono hle⟩
+    ⟨(h frame hframe).1, (h frame hframe).2.1.mono hle,
+      (h frame hframe).2.2⟩
 
 /-- Cells survive verbatim under prefix-preserving growth. -/
 theorem VarMapCellsWF.of_prefix {σ : LPSignature}
@@ -1772,7 +1774,7 @@ theorem ControlWF.framePop {σ : LPSignature} {state : State σ}
     (h : ControlWF state)
     (hframes : state.control.frames = frame :: frames') :
     ControlWF (framePopState state frame frames') :=
-  ⟨(h.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).2,
+  ⟨(h.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).2.1,
     fun f hf => h.2 f (by rw [hframes]; exact List.mem_cons_of_mem _ hf)⟩
 
 /-- A predicate call: the dispatch arm packages the caller into a cursor
@@ -1796,7 +1798,7 @@ theorem ControlWF.callCursor {σ : LPSignature}
     fun f hf => by
       rcases List.mem_cons.mp hf with rfl | hf'
       · exact ⟨rfl, fun atom hatom => h.1 atom
-          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom)⟩
+          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom), rfl⟩
       · exact h.2 f hf',
     fun c hc => hc⟩
 
@@ -3004,6 +3006,10 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hchain := hq.chain
                       rw [hchoices] at hchain
                       cases hchain
+                  | collection boundary =>
+                      have hchain := hq.chain
+                      rw [hchoices] at hchain
+                      cases hchain
           | dispatch =>
               obtain ⟨hCW, barrier, hb, hlane⟩ := by
                 simpa only [PhaseLane, hphase] using hPL
@@ -3052,10 +3058,13 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                   | cons frame frames' =>
                       have hcommit : frame.commit = .ordinary :=
                         (hCW.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).1
+                      have hcollection : frame.collection = none :=
+                        (hCW.2 frame
+                          (by rw [hframes]; exact List.mem_cons_self ..)).2.2
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (framePopState state frame frames') none := by
                         simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
-                          hcurrent, hframes, hcommit,
+                          hcurrent, hframes, hcommit, hcollection,
                           framePopState]
                       rw [hstep] at hPull
                       dsimp only at hPull

@@ -49,6 +49,8 @@ inductive QueryError where
   | stalledUnifier
   | unsupportedInstruction
   | exceptionReadback (error : RuntimeReadback.ReadbackError)
+  | collectionReadback (error : RuntimeReadback.ReadbackError)
+  | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
@@ -67,6 +69,31 @@ def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
     MetaCallDecoder σ Instruction where
   decode _ _ _ := .error .unsupportedInstruction
 
+/-- Language-owned encoding of ordinary Prolog-style lists.  The engine owns
+the fold, materialization, and bag unification; a realization supplies only
+the nil constant and a binary constructor symbol. -/
+structure CollectionEncoding (σ : LPSignature) where
+  nil : σ.constants
+  cons : σ.functionSymbols
+  cons_arity_two : σ.functionArity cons = 2
+
+namespace CollectionEncoding
+
+/-- One encoded list cell. -/
+def consTerm (encoding : CollectionEncoding σ)
+    (head tail : Term σ.scoped) : Term σ.scoped :=
+  let arguments : Fin 2 → Term σ.scoped :=
+    Fin.cases head (Fin.cases tail Fin.elim0)
+  .app encoding.cons fun index =>
+    arguments (Fin.cast encoding.cons_arity_two index)
+
+/-- Encode answers in their supplied order. -/
+def listTerm (encoding : CollectionEncoding σ)
+    (answers : List (Term σ.scoped)) : Term σ.scoped :=
+  answers.foldr encoding.consTerm (.const encoding.nil)
+
+end CollectionEncoding
+
 /-- Saved exception delimiter.  It records only backtrackable entry data;
 the persistent fresh-scope supply remains in `StateCore` and is never restored
 from this frame. -/
@@ -75,6 +102,12 @@ structure CatchHandlerCore (σ : LPSignature) (Instruction : Type*) where
   choiceDepth : Nat
   catcher : Addr
   recovery : List Instruction
+
+/-- Success delimiter for one active answer collector.  `choiceDepth` names
+the collection sentinel by the number of older choices beneath it. -/
+structure CollectionHandlerCore (σ : LPSignature) where
+  choiceDepth : Nat
+  template : Addr
 
 /-- Success behavior attached to one return frame.  `hard` discards the
 conditional marker together with condition-local alternatives.  `soft`
@@ -94,6 +127,7 @@ structure ReturnFrameCore (σ : LPSignature) (Instruction : Type*) where
   callerCutDepth : Nat
   commit : ReturnCommit := .ordinary
   handler : Option (CatchHandlerCore σ Instruction) := none
+  collection : Option (CollectionHandlerCore σ) := none
 
 /-- The nearest exception delimiter together with the outer frames that
 survive if it handles the packet.  Frames above it are exactly the unwound
@@ -151,6 +185,19 @@ structure BranchChoiceCore (σ : LPSignature) (Instruction : Type*) where
   checkpoint : Memory.Checkpoint
   control : ControlCore σ Instruction
 
+/-- Exhaustion delimiter and detached answer store for one `findall/3`.
+The outer continuation is transferred here once; generated alternatives sit
+above this sentinel on the same canonical choice stack. -/
+structure CollectionChoiceCore (σ : LPSignature) (Instruction : Type*) where
+  checkpoint : Memory.Checkpoint
+  template : Addr
+  bag : Addr
+  encoding : CollectionEncoding σ
+  continuation : List Instruction
+  callerCutDepth : Nat
+  outerFrames : List (ReturnFrameCore σ Instruction)
+  reversed : List (Term σ.scoped) := []
+
 /-- The single newest-first alternative stack.  Clause retries and structured
 control branches are different resource kinds, but share restoration, DFS
 ordering, and cut ownership. -/
@@ -162,6 +209,8 @@ inductive ChoicePointCore (σ : LPSignature)
   lets the success frame remove exactly this delimiter while preserving all
   condition alternatives above it. -/
   | softElse (alternative : BranchChoiceCore σ Instruction)
+  /-- Backtracking to this sentinel means the generator is exhausted. -/
+  | collection (boundary : CollectionChoiceCore σ Instruction)
 
 /-- The established pure-LP choice-point type.  Pure LP execution constructs
 only `clause` alternatives. -/
@@ -469,6 +518,88 @@ def afterAnswerStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   .next { state with phase := .backtrack } none
 
+/-- Replace exactly the collection sentinel with `mark` older choices beneath
+it, preserving every newer generator alternative and their order. -/
+def recordCollectionChoice {σ : LPSignature}
+    (mark : Nat) (answer : Term σ.scoped) :
+    List (ChoicePointCore σ Instruction SourceClause) →
+      Option (List (ChoicePointCore σ Instruction SourceClause))
+  | [] => none
+  | choice :: older =>
+      if older.length = mark then
+        match choice with
+        | .collection boundary =>
+            some (.collection {
+              boundary with reversed := answer :: boundary.reversed
+            } :: older)
+        | _ => none
+      else
+        match recordCollectionChoice mark answer older with
+        | none => none
+        | some updated => some (choice :: updated)
+
+/-- A positional collection update reaches exactly its owned sentinel, leaves
+every newer generator alternative and older caller alternative in place, and
+prepends one detached answer. -/
+theorem recordCollectionChoice_marker {σ : LPSignature}
+    (newer older : List (ChoicePointCore σ Instruction SourceClause))
+    (boundary : CollectionChoiceCore σ Instruction)
+    (answer : Term σ.scoped) :
+    recordCollectionChoice older.length answer
+        (newer ++ .collection boundary :: older) =
+      some (newer ++ .collection {
+        boundary with reversed := answer :: boundary.reversed
+      } :: older) := by
+  induction newer with
+  | nil => simp [recordCollectionChoice]
+  | cons choice newer ih =>
+      have hLength : newer.length + (older.length + 1) ≠ older.length := by
+        omega
+      simp [recordCollectionChoice, hLength, ih]
+
+/-- Privately consume one generator success.  The template is detached from
+the live heap and renamed immediately at the persistent high-water, so later
+backtracking cannot erase it and distinct solutions cannot share variables. -/
+def collectAnswerStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (handler : CollectionHandlerCore σ) :
+    StepResultCore σ Instruction SourceClause :=
+  match RuntimeException.capture state.memory.heap handler.template with
+  | .error error => failWith state (.collectionReadback error)
+  | .ok packet =>
+      let answer := packet.freshTerm state.nextScope
+      match recordCollectionChoice handler.choiceDepth answer state.choices with
+      | none => failWith state .missingCollectionBoundary
+      | some choices =>
+          .next {
+            state with
+            choices
+            nextScope := state.nextScope +
+              RuntimeException.scopeCeiling packet.term
+            phase := .backtrack
+          } none
+
+/-- A successful private capture emits no public observation, advances the
+persistent fresh scope by the copied term's exact ceiling, and enters ordinary
+backtracking with the uniquely updated collection stack. -/
+theorem collectAnswerStep_of_capture {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (handler : CollectionHandlerCore σ)
+    (packet : RuntimeException.Packet σ)
+    (choices : List (ChoicePointCore σ Instruction SourceClause))
+    (hCapture : RuntimeException.capture state.memory.heap handler.template =
+      .ok packet)
+    (hRecord : recordCollectionChoice handler.choiceDepth
+      (packet.freshTerm state.nextScope) state.choices = some choices) :
+    collectAnswerStep state handler =
+      .next {
+        state with
+        choices
+        nextScope := state.nextScope + RuntimeException.scopeCeiling packet.term
+        phase := .backtrack
+      } none := by
+  simp [collectAnswerStep, hCapture, hRecord]
+
 /-- Resume one checkpointed control alternative. -/
 @[simp]
 def resumeBranchStep {σ : LPSignature}
@@ -487,10 +618,40 @@ def resumeBranchStep {σ : LPSignature}
         phase := .dispatch
       } none
 
-/-- Restore and re-enter the newest retained cursor, or close the query when
-no alternatives remain. -/
+/-- Close an exhausted collection: restore its entry checkpoint, materialize
+the privately accumulated answers in source order, and unify the caller's bag
+through the canonical graph unifier. -/
 @[simp]
-def backtrackStep {σ : LPSignature}
+def finalizeCollectionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (boundary : CollectionChoiceCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause)) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.memory.restore boundary.checkpoint with
+  | .error error => failWith state (.memory error)
+  | .ok restored =>
+      let listTerm := boundary.encoding.listTerm boundary.reversed.reverse
+      match RuntimeMaterialize.materializeTerm restored listTerm with
+      | .error error => failWith { state with memory := restored } (.memory error)
+      | .ok result =>
+          let attempt : AttemptCore σ Instruction := {
+            body := boundary.continuation
+            cutDepth := boundary.callerCutDepth
+            frames := boundary.outerFrames
+          }
+          .next {
+            state with
+            memory := result.memory
+            choices := older
+            phase := .unifying attempt
+              (RuntimeUnification.startMany result.memory
+                [(boundary.bag, result.root)])
+          } none
+
+/-- Restore and re-enter the newest retained cursor, finalize a collection
+whose generator is exhausted, or close the query when no alternatives remain. -/
+@[simp]
+def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause) :
     StepResultCore σ Instruction SourceClause :=
   match state.choices with
@@ -507,6 +668,8 @@ def backtrackStep {σ : LPSignature}
           } none
   | .branch alternative :: older => resumeBranchStep state alternative older
   | .softElse alternative :: older => resumeBranchStep state alternative older
+  | .collection boundary :: older =>
+      finalizeCollectionStep state boundary older
 
 /-- Remove the soft-conditional delimiter immediately above the `mark` oldest
 choices.  The stack is newest first.  If that delimiter was already removed,
@@ -533,7 +696,9 @@ def emptyCurrentStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   match state.control.frames with
   | frame :: frames =>
-      match frame.commit with
+      match frame.collection with
+      | some handler => collectAnswerStep state handler
+      | none => match frame.commit with
       | .ordinary =>
           .next {
             state with
@@ -956,6 +1121,74 @@ def onceStep {σ : LPSignature}
     }
   } none
 
+/-- Enter `findall/3` by transferring the outer continuation into one
+collection sentinel on the canonical choice stack.  Generator successes are
+consumed by the collection frame; its cut depth retains the sentinel and all
+older caller alternatives while permitting cuts to prune only generator-local
+choices. -/
+@[simp]
+def findallStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (template : Addr) (generator : List Instruction) (bag : Addr)
+    (encoding : CollectionEncoding σ) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let mark := state.choices.length
+  let boundary : CollectionChoiceCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    template
+    bag
+    encoding
+    continuation := rest
+    callerCutDepth := state.control.cutDepth
+    outerFrames := state.control.frames
+  }
+  let frame : ReturnFrameCore σ Instruction := {
+    continuation := rest
+    callerCutDepth := state.control.cutDepth
+    collection := some { choiceDepth := mark, template }
+  }
+  .next {
+    state with
+    control := {
+      current := generator
+      cutDepth := mark + 1
+      frames := frame :: state.control.frames
+    }
+    choices := .collection boundary :: state.choices
+  } none
+
+/-- `findall/3` transfers its continuation into exactly one typed sentinel and
+enters the generator with a cut boundary immediately above that sentinel. -/
+theorem findallStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (template : Addr) (generator : List Instruction) (bag : Addr)
+    (encoding : CollectionEncoding σ) (rest : List Instruction) :
+    findallStep state template generator bag encoding rest =
+      .next {
+        state with
+        control := {
+          current := generator
+          cutDepth := state.choices.length + 1
+          frames := {
+            continuation := rest
+            callerCutDepth := state.control.cutDepth
+            collection := some {
+              choiceDepth := state.choices.length
+              template
+            }
+          } :: state.control.frames
+        }
+        choices := .collection {
+          checkpoint := state.memory.checkpoint
+          template
+          bag
+          encoding
+          continuation := rest
+          callerCutDepth := state.control.cutDepth
+          outerFrames := state.control.frames
+        } :: state.choices
+      } none := rfl
+
 /-- Enter one dynamically decoded goal under its own predicate-like cut
 boundary.  This is the WAM `B0 := B` discipline for meta-call: choices older
 than the call survive, while a cut in the decoded goal can prune alternatives
@@ -1040,6 +1273,8 @@ inductive DispatchAction (σ : LPSignature)
   | ifThenElse (condition thenBranch elseBranch : List Instruction)
   | softIfThenElse (condition thenBranch elseBranch : List Instruction)
   | once (goals : List Instruction)
+  | findall (template : Addr) (generator : List Instruction) (bag : Addr)
+      (encoding : CollectionEncoding σ)
   | metaCall (callable : Addr) (extraArgs : List Addr)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
@@ -1068,6 +1303,8 @@ def dispatchActionStep {σ : LPSignature}
   | .softIfThenElse condition thenBranch elseBranch =>
       softIfThenElseStep state condition thenBranch elseBranch rest
   | .once goals => onceStep state goals rest
+  | .findall template generator bag encoding =>
+      findallStep state template generator bag encoding rest
   | .metaCall callable extraArgs =>
       metaCallStep decoder state callable extraArgs rest
   | .catch guarded catcher recovery =>
@@ -1193,6 +1430,7 @@ theorem branchStep_exact {σ : LPSignature}
 /-- Backtracking through a structured branch restores its owned checkpoint
 before installing the saved right-branch control. -/
 theorem backtrackStep_branch_of_restore {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
     (alternative : BranchChoiceCore σ Instruction)
     (older : List (ChoicePointCore σ Instruction SourceClause))
@@ -1262,6 +1500,7 @@ theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
     (frames : List (ReturnFrameCore σ Instruction))
     (mark : Nat)
     (hFrames : state.control.frames = frame :: frames)
+    (hCollection : frame.collection = none)
     (hCommit : frame.commit = .hard mark)
     (hDepth : mark ≤ state.choices.length) :
     emptyCurrentStep state =
@@ -1274,7 +1513,7 @@ theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
         }
         choices := retainBottom mark state.choices
       } none := by
-  simp [emptyCurrentStep, hFrames, hCommit, hDepth]
+  simp [emptyCurrentStep, hFrames, hCollection, hCommit, hDepth]
 
 /-- Soft success removes its else marker at the marked boundary but preserves
 all choices created by the condition. -/
@@ -1320,6 +1559,7 @@ theorem softIfThenElseStep_exact {σ : LPSignature}
 /-- A failed soft condition resumes the tagged else continuation after exact
 checkpoint restoration. -/
 theorem backtrackStep_softElse_of_restore {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
     (alternative : BranchChoiceCore σ Instruction)
     (older : List (ChoicePointCore σ Instruction SourceClause))
@@ -1345,6 +1585,7 @@ theorem emptyCurrentStep_soft_of_marker {σ : LPSignature}
     (newer older : List (ChoicePointCore σ Instruction SourceClause))
     (alternative : BranchChoiceCore σ Instruction)
     (hFrames : state.control.frames = frame :: frames)
+    (hCollection : frame.collection = none)
     (hCommit : frame.commit = .soft older.length)
     (hChoices : state.choices = newer ++ .softElse alternative :: older) :
     emptyCurrentStep state =
@@ -1357,7 +1598,7 @@ theorem emptyCurrentStep_soft_of_marker {σ : LPSignature}
         }
         choices := newer ++ older
       } none := by
-  simp [emptyCurrentStep, hFrames, hCommit, hChoices,
+  simp [emptyCurrentStep, hFrames, hCollection, hCommit, hChoices,
     eraseSoftElseAboveBottom_marker]
   omega
 

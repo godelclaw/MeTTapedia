@@ -23,6 +23,13 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_error
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.stepCoreWithMeta_metaCall_of_dispatch
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.recordCollectionChoice_marker
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.collectAnswerStep_of_capture
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.findallStep_exact
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.recordCollectionChoice_map
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.collectAnswerStep_conserves
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.finalizeCollectionStep_conserves
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_collectionEncoding
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshIdentity_injective
 #print axioms Mettapedia.Logic.LP.RuntimeException.scope_lt_scopeCeiling
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshenTerm_scope_range

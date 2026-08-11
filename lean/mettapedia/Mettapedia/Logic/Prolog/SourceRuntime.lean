@@ -50,6 +50,12 @@ theorem throwInstantiationError_term :
     throwInstantiationError.term =
       LP.Term.atScope 0 throwInstantiationErrorTerm := rfl
 
+/-- Concrete Prolog list symbols used by the shared collector. -/
+def collectionEncoding : LP.RuntimeQuery.CollectionEncoding Sigma where
+  nil := .atom "[]"
+  cons := { name := "[|]", arity := 2 }
+  cons_arity_two := rfl
+
 /-- The exact function-symbol to relation-symbol bridge used by ordinary
 callable compounds.  Extra `call/N` arguments extend, rather than replace,
 the compound's existing arity. -/
@@ -207,10 +213,15 @@ def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
   decoder := { decode := decodeCallable }
   unboundThrowError := some throwInstantiationError
+  collectionEncoding := some collectionEncoding
 
 @[simp]
 theorem services_unboundThrowError :
     services.unboundThrowError = some throwInstantiationError := rfl
+
+@[simp]
+theorem services_collectionEncoding :
+    services.collectionEncoding = some collectionEncoding := rfl
 
 /-- Execute concrete source terms through the one shared runtime with
 callable decoding enabled. -/

@@ -429,6 +429,9 @@ structure Services (sigma : LP.LPSignature) where
   engine alone decides whether the heap root is unbound and raises it through
   the canonical exception phases. -/
   unboundThrowError : Option (LP.RuntimeException.Packet sigma) := none
+  /-- Optional language-level list symbols for answer collection.  The shared
+  engine owns generator execution, copying, ordering, and bag unification. -/
+  collectionEncoding : Option (LP.RuntimeQuery.CollectionEncoding sigma) := none
 
 /-- Base typed control has no implicit meta-call authority. -/
 def noServices (sigma : LP.LPSignature) : Services sigma where
@@ -436,6 +439,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
     (RuntimeGoal sigma.scoped)
   unboundThrowError := none
+  collectionEncoding := none
 
 /-- Typed source goals instantiate the shared query opener's narrow
 materializer interface.  The adapter supplies only heap materialization,
@@ -512,6 +516,10 @@ def dispatchActionWith {sigma : LP.LPSignature}
   | .once goals => .once goals
   | .unify left right => .unify left right
   | .isVar address => .isVar address
+  | .findall template generator bag =>
+      match services.collectionEncoding with
+      | some encoding => .findall template generator bag encoding
+      | none => .error .unsupportedInstruction
   | .catch guarded catcher recovery => .catch guarded catcher recovery
   | .throw ball => .throw ball services.unboundThrowError
   | _ => .error .unsupportedInstruction

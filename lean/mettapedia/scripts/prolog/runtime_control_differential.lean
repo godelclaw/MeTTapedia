@@ -45,6 +45,20 @@ def renderRaisedAtom (label : String) :
       throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
   | none => throw <| IO.userError s!"{label}: runtime did not raise"
 
+def renderAtomBag (bag : List String) : String :=
+  s!"[{String.intercalate "," bag}]"
+
+def renderAtomBags (label : String) :
+    Option (List (List String) × Nat × Nat) → IO Unit
+  | some (bags, 0, 0) =>
+      IO.println s!"{label}={String.intercalate ";" (bags.map renderAtomBag)}"
+  | some (_, heapSize, trailSize) =>
+      throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
+  | none => throw <| IO.userError s!"{label}: runtime did not close"
+
+def renderBool (label : String) (value : Bool) : IO Unit :=
+  IO.println s!"{label}={if value then 1 else 0}"
+
 def main : IO Unit := do
   renderAnswers "source_order" (runTyped [] disjSourceOrder)
   renderAnswers "restore_before_right" (runTyped [] disjRestoresBeforeRight)
@@ -122,3 +136,27 @@ def main : IO Unit := do
   renderCount "throw_variable_instantiation_error"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.throwVariableRaisesInstantiationError)
+  renderAtomBags "findall_order_multiplicity"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomBagsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.findallOrderMultiplicity
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.bagIdentity)
+  renderAtomBags "findall_binding_isolation"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomBagsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.findallIsolatesGeneratorBindings
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.bagIdentity)
+  renderAtomBags "findall_empty"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomBagsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.findallEmpty
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.bagIdentity)
+  renderAtomBags "findall_cut_retains_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomBagsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.findallCutRetainsCaller
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.bagIdentity)
+  renderAtomBags "findall_exception_discards_partial"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomBagsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.findallExceptionDiscardsPartialBag
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.bagIdentity)
+  renderBool "findall_copy_fresh_shared"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.copiedSolutionsAreFreshAndShared
+  renderBool "findall_copy_separation"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.copiedSolutionPreservesSeparation

@@ -38,6 +38,7 @@ def mapReturnFrame (instruction : Instruction₁ → Instruction₂)
   callerCutDepth := frame.callerCutDepth
   commit := frame.commit
   handler := frame.handler.map (mapCatchHandler instruction)
+  collection := frame.collection
 
 /-- Map the instruction payloads retained by catcher selection. -/
 def mapCatchTarget (instruction : Instruction₁ → Instruction₂)
@@ -100,6 +101,20 @@ def mapBranchChoice (instruction : Instruction₁ → Instruction₂)
   checkpoint := alternative.checkpoint
   control := mapControl instruction alternative.control
 
+/-- Map the transferred outer continuation of a collection sentinel while
+leaving its detached answers and list encoding unchanged. -/
+def mapCollectionChoice (instruction : Instruction₁ → Instruction₂)
+    (boundary : CollectionChoiceCore sigma Instruction₁) :
+    CollectionChoiceCore sigma Instruction₂ where
+  checkpoint := boundary.checkpoint
+  template := boundary.template
+  bag := boundary.bag
+  encoding := boundary.encoding
+  continuation := boundary.continuation.map instruction
+  callerCutDepth := boundary.callerCutDepth
+  outerFrames := boundary.outerFrames.map (mapReturnFrame instruction)
+  reversed := boundary.reversed
+
 /-- Map either resource kind in the one canonical choice stack. -/
 def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
     (sourceClause : SourceClause₁ → SourceClause₂) :
@@ -109,6 +124,32 @@ def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
   | .branch alternative => .branch (mapBranchChoice instruction alternative)
   | .softElse alternative =>
       .softElse (mapBranchChoice instruction alternative)
+  | .collection boundary =>
+      .collection (mapCollectionChoice instruction boundary)
+
+/-- Recording a private collection answer changes only the sentinel's detached
+answer list and therefore commutes with instruction and clause representation
+changes. -/
+@[simp]
+theorem recordCollectionChoice_map
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (mark : Nat) (answer : Term sigma.scoped)
+    (choices : List (ChoicePointCore sigma Instruction₁ SourceClause₁)) :
+    recordCollectionChoice mark answer
+        (choices.map (mapChoicePoint instruction sourceClause)) =
+      (recordCollectionChoice mark answer choices).map
+        (List.map (mapChoicePoint instruction sourceClause)) := by
+  induction choices with
+  | nil => rfl
+  | cons choice older ih =>
+      simp only [List.map_cons, recordCollectionChoice, List.length_map]
+      by_cases h : older.length = mark
+      · simp [h]
+        cases choice <;> rfl
+      · simp only [h, if_false]
+        rw [ih]
+        cases recordCollectionChoice mark answer older <;> rfl
 
 /-- Removing a soft-conditional delimiter is independent of the instruction
 and source-clause representation. -/
@@ -204,6 +245,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .softIfThenElse (condition.map instruction) (thenBranch.map instruction)
         (elseBranch.map instruction)
   | .once goals => .once (goals.map instruction)
+  | .findall template generator bag encoding =>
+      .findall template (generator.map instruction) bag encoding
   | .metaCall callable extraArgs => .metaCall callable extraArgs
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
@@ -220,6 +263,71 @@ def mapStepResult (instruction : Instruction₁ → Instruction₂)
   | .next state observation =>
       .next (mapState instruction sourceClause state) observation
   | .terminal result => .terminal result
+
+/-- Privately capturing one generator answer is representation-independent:
+the shared engine reads the same heap, advances the same persistent scope, and
+updates the same positional collection sentinel. -/
+theorem collectAnswerStep_conserves
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (handler : CollectionHandlerCore sigma) :
+    collectAnswerStep (mapState instruction sourceClause state) handler =
+      mapStepResult instruction sourceClause
+        (collectAnswerStep state handler) := by
+  rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  cases hCapture : RuntimeException.capture memory.heap handler.template with
+  | error error =>
+      cases hCleanup : memory.restore checkpoint <;>
+        simp [collectAnswerStep, mapState, mapControl, mapPhase,
+          mapStepResult, failWith, closeMemory, hCapture, hCleanup]
+  | ok packet =>
+      cases hRecord : recordCollectionChoice handler.choiceDepth
+          (packet.freshTerm nextScope) choices with
+      | none =>
+          cases hCleanup : memory.restore checkpoint <;>
+            simp [collectAnswerStep, mapState, mapControl, mapPhase,
+              mapStepResult, failWith, closeMemory,
+              hCapture, hRecord, hCleanup]
+      | some updated =>
+          simp [collectAnswerStep, mapState, mapControl, mapPhase,
+            mapStepResult, hCapture, hRecord]
+
+/-- Exhausting a collection restores and materializes the same finite answer
+list on either representation; only the saved instruction continuation is
+mapped. -/
+theorem finalizeCollectionStep_conserves [DecidableEq sigma.scoped.vars]
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (boundary : CollectionChoiceCore sigma Instruction₁)
+    (older : List (ChoicePointCore sigma Instruction₁ SourceClause₁)) :
+    finalizeCollectionStep (mapState instruction sourceClause state)
+        (mapCollectionChoice instruction boundary)
+        (older.map (mapChoicePoint instruction sourceClause)) =
+      mapStepResult instruction sourceClause
+        (finalizeCollectionStep state boundary older) := by
+  rcases state with ⟨stateMemory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  cases hRestore : stateMemory.restore boundary.checkpoint with
+  | error error =>
+      cases hCleanup : stateMemory.restore checkpoint <;>
+        simp [finalizeCollectionStep, mapState, mapControl, mapPhase,
+          mapCollectionChoice, mapStepResult, failWith,
+          closeMemory, hRestore, hCleanup]
+  | ok restored =>
+      cases hMaterialize : RuntimeMaterialize.materializeTerm restored
+          (boundary.encoding.listTerm boundary.reversed.reverse) with
+      | error error =>
+          cases hCleanup : restored.restore checkpoint <;>
+            simp [finalizeCollectionStep, mapState, mapControl, mapPhase,
+              mapCollectionChoice, mapStepResult, failWith,
+              closeMemory, hRestore, hMaterialize, hCleanup]
+      | ok result =>
+          simp [finalizeCollectionStep, mapState, mapControl, mapPhase,
+            mapCollectionChoice, mapAttempt,
+            mapStepResult, hRestore, hMaterialize]
 
 /-- Ordinary finite packet capture is independent of instruction and clause
 representations. -/
@@ -603,6 +711,13 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   mapBranchChoice, mapChoicePoint, mapStepResult,
                   backtrackStep, resumeBranchStep, failWith, closeMemory,
                   hRestore, hCleanup]
+          | collection boundary =>
+              simpa [stepCore, mapState, mapPhase, mapControl,
+                mapChoicePoint, backtrackStep] using
+                finalizeCollectionStep_conserves instruction sourceClause
+                  (StateCore.mk memory control
+                    (.collection boundary :: older) checkpoint queryVarMap
+                    nextScope .backtrack) boundary older
   | dispatch =>
       rcases control with ⟨current, cutDepth, frames⟩
       cases current with
@@ -612,31 +727,45 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               simp [stepCore, mapState, mapPhase, mapControl,
                 mapStepResult, emptyCurrentStep]
           | cons frame frames =>
-              rcases frame with ⟨continuation, callerCutDepth, commit⟩
-              cases commit with
-              | ordinary =>
-                  simp [stepCore, mapState, mapPhase, mapControl,
-                    mapReturnFrame, mapStepResult, emptyCurrentStep]
-              | hard mark =>
-                  by_cases hDepth : mark ≤ choices.length
-                  · simp [stepCore, mapState, mapPhase, mapControl,
-                      mapReturnFrame, mapChoicePoint, mapStepResult,
-                      emptyCurrentStep, retainBottom, hDepth]
-                  · cases hCleanup : memory.restore checkpoint <;>
+              rcases frame with
+                ⟨continuation, callerCutDepth, commit, handlerOption,
+                  collectionOption⟩
+              cases collectionOption with
+              | some handler =>
+                  simpa [stepCore, mapState, mapPhase, mapControl,
+                    mapReturnFrame, emptyCurrentStep] using
+                    collectAnswerStep_conserves instruction sourceClause
+                      (StateCore.mk memory
+                        ⟨[], cutDepth,
+                          ⟨continuation, callerCutDepth, commit, handlerOption,
+                            some handler⟩ :: frames⟩
+                        choices checkpoint queryVarMap nextScope .dispatch)
+                      handler
+              | none =>
+                  cases commit with
+                  | ordinary =>
                       simp [stepCore, mapState, mapPhase, mapControl,
-                        mapReturnFrame, mapChoicePoint, mapStepResult,
-                        emptyCurrentStep, failWith, closeMemory, hDepth,
-                        hCleanup]
-              | soft mark =>
-                  by_cases hDepth : mark ≤ choices.length
-                  · simp [stepCore, mapState, mapPhase, mapControl,
-                      mapReturnFrame, mapChoicePoint, mapStepResult,
-                      emptyCurrentStep, hDepth]
-                  · cases hCleanup : memory.restore checkpoint <;>
-                      simp [stepCore, mapState, mapPhase, mapControl,
-                        mapReturnFrame, mapChoicePoint, mapStepResult,
-                        emptyCurrentStep, failWith, closeMemory, hDepth,
-                        hCleanup]
+                        mapReturnFrame, mapStepResult, emptyCurrentStep]
+                  | hard mark =>
+                      by_cases hDepth : mark ≤ choices.length
+                      · simp [stepCore, mapState, mapPhase, mapControl,
+                          mapReturnFrame, mapChoicePoint, mapStepResult,
+                          emptyCurrentStep, retainBottom, hDepth]
+                      · cases hCleanup : memory.restore checkpoint <;>
+                          simp [stepCore, mapState, mapPhase, mapControl,
+                            mapReturnFrame, mapChoicePoint, mapStepResult,
+                            emptyCurrentStep, failWith, closeMemory, hDepth,
+                            hCleanup]
+                  | soft mark =>
+                      by_cases hDepth : mark ≤ choices.length
+                      · simp [stepCore, mapState, mapPhase, mapControl,
+                          mapReturnFrame, mapChoicePoint, mapStepResult,
+                          emptyCurrentStep, hDepth]
+                      · cases hCleanup : memory.restore checkpoint <;>
+                          simp [stepCore, mapState, mapPhase, mapControl,
+                            mapReturnFrame, mapChoicePoint, mapStepResult,
+                            emptyCurrentStep, failWith, closeMemory, hDepth,
+                            hCleanup]
       | cons next rest =>
           simp only [stepCore, stepCoreWithMeta, mapState, mapPhase, mapControl,
             List.map_cons]
@@ -674,6 +803,11 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | once goals =>
               simp [mapDispatchAction, dispatchActionStep, onceStep,
                 mapState, mapControl, mapPhase, mapReturnFrame, mapStepResult]
+          | findall template generator bag encoding =>
+              simp [mapDispatchAction, dispatchActionStep, findallStep,
+                mapState, mapControl, mapPhase, mapReturnFrame,
+                mapCollectionChoice, mapChoicePoint, mapStepResult,
+                List.map_append]
           | metaCall callable extraArgs =>
               cases hCleanup : memory.restore checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, metaCallStep,

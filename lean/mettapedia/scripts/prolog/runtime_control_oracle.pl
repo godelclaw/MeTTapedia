@@ -19,6 +19,12 @@ emit_count(Label, Goal) :-
     length(Answers, Count),
     format('~w=~w~n', [Label, Count]).
 
+emit_bags(Label, Goal, Bag) :-
+    findall(Bag, Goal, Answers),
+    maplist(term_string, Answers, Rendered),
+    atomic_list_concat(Rendered, ';', Joined),
+    format('~w=~w~n', [Label, Joined]).
+
 main(_) :-
     emit(source_order, (X = a ; X = b), X),
     emit(restore_before_right, (Y = a, fail ; var(Y), Y = b), Y),
@@ -76,4 +82,20 @@ main(_) :-
         catch(throw(_),
             error(instantiation_error,
                 context(system:throw/1, _)),
-            true)).
+            true)),
+    emit_bags(findall_order_multiplicity,
+        findall(X, (X = a ; X = b ; X = a), Bag), Bag),
+    emit_bags(findall_binding_isolation,
+        (findall(X, X = a, Bag), var(X)), Bag),
+    emit_bags(findall_empty,
+        findall(_X, fail, Bag), Bag),
+    emit_bags(findall_cut_retains_caller,
+        (findall(X, (X = a, ! ; X = b), Bag) ; Bag = [c]), Bag),
+    emit_bags(findall_exception_discards_partial,
+        catch(findall(X, (X = a ; throw(ball)), Bag), ball,
+            Bag = [caught]), Bag),
+    emit_count(findall_copy_fresh_shared,
+        (findall(pair(Y, Y), (true ; true), CopyBag),
+          CopyBag = [pair(A, A), pair(B, B)], A \== B)),
+    emit_count(findall_copy_separation,
+        (findall(pair(Y, Z), true, [pair(C, D)]), C \== D)).
