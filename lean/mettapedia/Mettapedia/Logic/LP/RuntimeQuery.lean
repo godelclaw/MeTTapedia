@@ -50,6 +50,9 @@ inductive QueryError where
   | unsupportedInstruction
   | exceptionReadback (error : RuntimeReadback.ReadbackError)
   | collectionReadback (error : RuntimeReadback.ReadbackError)
+  | dynamicClauseReadback (error : RuntimeReadback.ReadbackError)
+  | invalidDynamicClause
+  | unhandledDatabaseRequest
   | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
@@ -271,6 +274,14 @@ structure Answer (σ : LPSignature) where
 inductive Observation (σ : LPSignature) where
   | answer (value : Answer σ)
 
+/-- Persistent clause-store operations recognized by a language realization.
+The shared engine owns instruction consumption and continuation order, while a
+session outside backtrackable state owns the actual database update. -/
+inductive DatabaseRequest where
+  | asserta (clauseRoot : Addr)
+  | assertz (clauseRoot : Addr)
+deriving DecidableEq, Repr
+
 inductive Terminal (σ : LPSignature) where
   | completed (memory : Memory σ.scoped)
   | raised (packet : RuntimeException.Packet σ) (memory : Memory σ.scoped)
@@ -279,6 +290,8 @@ inductive Terminal (σ : LPSignature) where
 inductive StepResultCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   | next (state : StateCore σ Instruction SourceClause)
       (observation : Option (Observation σ))
+  | databaseRequest (request : DatabaseRequest)
+      (state : StateCore σ Instruction SourceClause)
   | terminal (result : Terminal σ)
 
 abbrev StepResult (σ : LPSignature) :=
@@ -413,6 +426,17 @@ def complete {σ : LPSignature}
 def failWith {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause) (error : QueryError) :
     StepResultCore σ Instruction SourceClause :=
+  match closeMemory state with
+  | .ok memory => .terminal (.runtimeError error memory)
+  | .error cleanup =>
+      .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
+
+/-- Pull-level counterpart of `failWith`, used when an API without a
+persistent session encounters a database request.  It performs the same exact
+query cleanup and has no unreachable result arm. -/
+def failPullWith {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) (error : QueryError) :
+    PullResultCore σ Instruction SourceClause :=
   match closeMemory state with
   | .ok memory => .terminal (.runtimeError error memory)
   | .error cleanup =>
@@ -1282,7 +1306,33 @@ inductive DispatchAction (σ : LPSignature)
       (unboundError : Option (RuntimeException.Packet σ))
   | unify (left right : Addr)
   | isVar (address : Addr)
+  | database (request : DatabaseRequest)
   | error (reason : QueryError)
+
+/-- Yield one persistent-store request after consuming exactly the current
+instruction.  No database value is present in `StateCore`, so this transition
+cannot mutate or roll back the store itself. -/
+@[simp]
+def databaseRequestStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (request : DatabaseRequest) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  .databaseRequest request {
+    state with
+    control := { state.control with current := rest }
+  }
+
+/-- The database handshake cannot reorder or manufacture continuation work:
+it removes exactly the recognized instruction and otherwise preserves the
+canonical query state. -/
+theorem databaseRequestStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (request : DatabaseRequest) (rest : List Instruction) :
+    databaseRequestStep state request rest =
+      .databaseRequest request {
+        state with
+        control := { state.control with current := rest }
+      } := rfl
 
 /-- Apply one narrow classification to the canonical state.  The current
 instruction has already been removed; `rest` always comes from the live goal
@@ -1312,6 +1362,7 @@ def dispatchActionStep {σ : LPSignature}
   | .throw ball unboundError => throwStep state ball unboundError
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
+  | .database request => databaseRequestStep state request rest
   | .error reason => failWith state reason
 
 /-- The full phase loop shared by LP atoms and typed Prolog control.  Language
@@ -1902,6 +1953,8 @@ def pullCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
       | .next next none =>
           pullCoreWithMeta materializer decoder classify fuel next
       | .next next (some (.answer answer)) => .answer answer next
+      | .databaseRequest _ next =>
+          failPullWith next .unhandledDatabaseRequest
 
 /-- The established demand-driven API delegates to the one full pull loop
 with a rejecting callable decoder. -/
@@ -1953,13 +2006,16 @@ theorem pullCore_succ {σ : LPSignature} [DecidableEq σ.constants]
       match stepCore materializer classify state with
       | .terminal result => .terminal result
       | .next next none => pullCore materializer classify fuel next
-      | .next next (some (.answer answer)) => .answer answer next := by
+      | .next next (some (.answer answer)) => .answer answer next
+      | .databaseRequest _ next =>
+          failPullWith next .unhandledDatabaseRequest := by
   change
     pullCoreWithMeta materializer
         (rejectingMetaCallDecoder σ Instruction) classify (fuel + 1) state = _
   rw [pullCoreWithMeta, stepCoreWithMeta_rejecting]
   cases hStep : stepCore materializer classify state with
   | terminal result => rfl
+  | databaseRequest request next => rfl
   | next next observation =>
       cases observation with
       | none =>

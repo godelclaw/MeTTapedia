@@ -60,10 +60,10 @@ def collectAtoms : Nat → Session → Option (List String × Nat × Nat)
   | budget + 1, session =>
       match SourceRuntime.pullSession 128 session with
       | .open _ => none
-      | .terminal (.completed memory) =>
+      | .terminal (.completed memory) _ =>
           some ([], memory.heap.size, memory.trail.size)
-      | .terminal (.runtimeError _ _) => none
-      | .terminal (.raised _ _) => none
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
       | .answer answer resumed =>
           match answerAtom? answer, collectAtoms budget resumed with
           | some value, some (rest, heapSize, trailSize) =>
@@ -75,10 +75,10 @@ def collectCount : Nat → Nat → Session → Option (Nat × Nat × Nat)
   | answerBudget + 1, count, session =>
       match SourceRuntime.pullSession 128 session with
       | .open _ => none
-      | .terminal (.completed memory) =>
+      | .terminal (.completed memory) _ =>
           some (count, memory.heap.size, memory.trail.size)
-      | .terminal (.runtimeError _ _) => none
-      | .terminal (.raised _ _) => none
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
       | .answer _ resumed => collectCount answerBudget (count + 1) resumed
 
 private def answerTermFor? (identity : SourceSignature.Variable)
@@ -97,10 +97,10 @@ def collectTermsFor : Nat → SourceSignature.Variable → Session →
   | budget + 1, identity, session =>
       match SourceRuntime.pullSession 512 session with
       | .open _ => none
-      | .terminal (.completed memory) =>
+      | .terminal (.completed memory) _ =>
           some ([], memory.heap.size, memory.trail.size)
-      | .terminal (.runtimeError _ _) => none
-      | .terminal (.raised _ _) => none
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
       | .answer answer resumed =>
           match answerTermFor? identity answer,
               collectTermsFor budget identity resumed with
@@ -186,7 +186,7 @@ def runRaisedAtom (program : SourceSignature.Program)
   | .error _ => none
   | .ok session =>
       match SourceRuntime.pullSession 256 session with
-      | .terminal (.raised packet memory) =>
+      | .terminal (.raised packet memory) _ =>
           match packet.term with
           | .const (.atom name) =>
               some (name, memory.heap.size, memory.trail.size)
@@ -446,6 +446,79 @@ def packetCopyPreservesSeparation : SourceSignature.Goal :=
     (.conj (.unify leftVar (atom "a"))
       (.unify rightVar (atom "b")))
 
+/-! ## Persistent dynamic database through the shared session handler -/
+
+def assertedP (value : String) : SourceSignature.Term :=
+  compound "p" [atom value]
+
+def assertzGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "assertz" [clause]
+
+def assertaGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "asserta" [clause]
+
+def assertzThenCall : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (SourceSignature.call "p" [x])
+
+/-- The assertion occurs in a branch that fails and is backtracked over.  The
+right branch and later call can observe it only if the database is persistent
+rather than stored in a choice checkpoint. -/
+def failedBranchAssertionPersists : SourceSignature.Goal :=
+  .conj
+    (.disj (.conj (assertzGoal (assertedP "a")) .fail) .succeed)
+    (SourceSignature.call "p" [x])
+
+def assertaAndAssertzOrder : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "b"))
+    (.conj (assertaGoal (assertedP "a"))
+      (SourceSignature.call "p" [x]))
+
+def snapshotProgram : SourceSignature.Program := [
+  fact "p" [atom "old"],
+  {
+    head := predicate "driver" []
+    body := .conj (SourceSignature.call "p" [x])
+      (.conj (assertzGoal (assertedP "new")) .fail)
+  }
+]
+
+def collectCountDatabase : Nat → Nat → Session →
+    Option (Nat × LP.RuntimeDatabase.Database SourceSignature.Clause)
+  | 0, _, _ => none
+  | budget + 1, count, session =>
+      match SourceRuntime.pullSession 256 session with
+      | .open _ => none
+      | .answer _ next => collectCountDatabase budget (count + 1) next
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
+      | .terminal (.completed _) database => some (count, database)
+
+/-- An open `p/1` cursor was frozen before `p(new)` was asserted.  It reaches
+no new answer, but the completed session still carries the advanced database.
+-/
+def snapshotRun :
+    Option (Nat × LP.RuntimeDatabase.Database SourceSignature.Clause) :=
+  match SourceRuntime.openEmpty snapshotProgram
+      (SourceSignature.call "driver" []) with
+  | .error _ => none
+  | .ok session => collectCountDatabase 8 0 session
+
+def snapshotDoesNotDrift : Bool :=
+  match snapshotRun with
+  | some (0, database) =>
+      database.generation == 1 &&
+      database.visibleClauses.map (fun entry => entry.2.head.symbol.name) ==
+        ["p", "driver", "p"]
+  | _ => false
+
+def laterCallSeesAssertion :
+    Option (List String × Nat × Nat) := do
+  let (_, database) ← snapshotRun
+  let session ← (SourceRuntime.openDatabase database
+    (SourceSignature.call "p" [x])).toOption
+  collectAtoms 8 session
+
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
 #guard runAtoms [] metaCutRetainsCaller == some (["c"], 0, 0)
 #guard runCount binaryFactProgram callThree == some (1, 0, 0)
@@ -483,5 +556,10 @@ def packetCopyPreservesSeparation : SourceSignature.Goal :=
 #guard copiedSolutionsAreFreshAndShared
 #guard copiedSolutionPreservesSeparation
 #guard findallAnswerThenLoopHasOpenPrivatePrefix
+#guard runAtoms [] assertzThenCall == some (["a"], 0, 0)
+#guard runAtoms [] failedBranchAssertionPersists == some (["a"], 0, 0)
+#guard runAtoms [] assertaAndAssertzOrder == some (["a", "b"], 0, 0)
+#guard snapshotDoesNotDrift
+#guard laterCallSeesAssertion == some (["old", "new"], 0, 0)
 
 end Mettapedia.Logic.Prolog.SourceRuntimeRegression

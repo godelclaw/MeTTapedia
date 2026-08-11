@@ -253,6 +253,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .throw ball unboundError => .throw ball unboundError
   | .unify left right => .unify left right
   | .isVar address => .isVar address
+  | .database request => .database request
   | .error reason => .error reason
 
 /-- Representation change on one shared-machine result. -/
@@ -262,6 +263,8 @@ def mapStepResult (instruction : Instruction₁ → Instruction₂)
       StepResultCore sigma Instruction₂ SourceClause₂
   | .next state observation =>
       .next (mapState instruction sourceClause state) observation
+  | .databaseRequest request state =>
+      .databaseRequest request (mapState instruction sourceClause state)
   | .terminal result => .terminal result
 
 /-- Privately capturing one generator answer is representation-independent:
@@ -876,6 +879,10 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                               simp [mapDispatchAction, dispatchActionStep,
                                 isVarStep, mapState, mapControl, mapPhase,
                                 mapReturnFrame, mapStepResult, hDeref, hCell]
+          | database request =>
+              simp [mapDispatchAction, dispatchActionStep,
+                databaseRequestStep, mapState, mapControl, mapPhase,
+                mapReturnFrame, mapStepResult]
           | error reason =>
               cases hCleanup : memory.restore checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, mapState,
@@ -972,6 +979,10 @@ theorem pullCore_conserves [DecidableEq sigma.scoped.vars]
       rw [stepCore_conserves realizes state]
       cases hStep : stepCore sourceMaterializer sourceClassify state with
       | terminal result => rfl
+      | databaseRequest request next =>
+          cases hRestore : next.memory.restore next.queryCheckpoint <;>
+            simp [mapStepResult, mapPullResult, mapState, failPullWith,
+              closeMemory, hRestore]
       | next next observation =>
           cases observation with
           | none => exact inductionHypothesis next

@@ -94,6 +94,7 @@ def typedClauseUsesSharedSelectStep : Bool :=
           }
           match LP.RuntimeQuery.selectStep clauseMaterializer state cursor with
           | .terminal _ => false
+          | .databaseRequest _ _ => false
           | .next next _ =>
               match next.phase with
               | .unifying attempt machine =>
@@ -138,6 +139,7 @@ def typedBodyUsesSharedUnifyingStep : Bool :=
           }
           match LP.RuntimeQuery.selectStep clauseMaterializer state cursor with
           | .terminal _ => false
+          | .databaseRequest _ _ => false
           | .next selected _ =>
               match selected.phase with
               | .unifying attempt machine =>
@@ -287,9 +289,9 @@ def collectTyped (answerBudget : Nat) (session : Session qSig) :
   | answerBudget + 1 =>
       match pullSession 64 session with
       | .open _ => none
-      | .terminal (.runtimeError _ _) => none
-      | .terminal (.raised _ _) => none
-      | .terminal (.completed memory) =>
+      | .terminal (.runtimeError _ _) _ => none
+      | .terminal (.raised _ _) _ => none
+      | .terminal (.completed memory) _ =>
           some ([], memory.heap.size, memory.trail.size)
       | .answer answer next =>
           match answerConstant? answer, collectTyped answerBudget next with
@@ -324,7 +326,7 @@ def runTypedRaised (program : Program qSig) (goal : Goal qSig) :
   | .error _ => none
   | .ok session =>
       match pullSession 256 session with
-      | .terminal (.raised packet memory) =>
+      | .terminal (.raised packet memory) _ =>
           match packet.term with
           | .const symbol =>
               some (symbol, memory.heap.size, memory.trail.size)

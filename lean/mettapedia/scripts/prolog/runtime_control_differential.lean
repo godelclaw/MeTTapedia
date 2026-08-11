@@ -160,3 +160,16 @@ def main : IO Unit := do
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.copiedSolutionsAreFreshAndShared
   renderBool "findall_copy_separation"
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.copiedSolutionPreservesSeparation
+  renderStringAnswers "db_assertz_then_call"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertzThenCall)
+  renderStringAnswers "db_failed_branch_persists"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.failedBranchAssertionPersists)
+  renderStringAnswers "db_asserta_assertz_order"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertaAndAssertzOrder)
+  renderBool "db_snapshot_no_drift"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.snapshotDoesNotDrift
+  renderStringAnswers "db_snapshot_later_call"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.laterCallSeesAssertion

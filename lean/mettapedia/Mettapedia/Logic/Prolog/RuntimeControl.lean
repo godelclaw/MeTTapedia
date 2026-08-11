@@ -426,6 +426,16 @@ authority. -/
 structure Services (sigma : LP.LPSignature) where
   metaCall? : RuntimeAtom sigma.scoped → Option (Addr × List Addr)
   decoder : LP.RuntimeQuery.MetaCallDecoder sigma (RuntimeGoal sigma.scoped)
+  /-- Recognize persistent database operations without inspecting the heap.
+  The shared engine consumes the instruction and emits the request; only a
+  `Session` may apply it. -/
+  databaseRequest? : RuntimeAtom sigma.scoped →
+    Option LP.RuntimeQuery.DatabaseRequest := fun _ => none
+  /-- Read-only conversion of a heap root into the one canonical source-clause
+  representation.  It owns neither mutation nor continuation scheduling. -/
+  decodeClause : Heap sigma.scoped → Addr →
+    Except LP.RuntimeQuery.QueryError (Clause sigma) :=
+      fun _ _ => .error .invalidDynamicClause
   /-- Optional language-level payload for `throw(Variable)`.  The shared
   engine alone decides whether the heap root is unbound and raises it through
   the canonical exception phases. -/
@@ -439,6 +449,8 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   metaCall? _ := none
   decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
     (RuntimeGoal sigma.scoped)
+  databaseRequest? _ := none
+  decodeClause _ _ := .error .invalidDynamicClause
   unboundThrowError := none
   collectionEncoding := none
 
@@ -504,9 +516,12 @@ def dispatchActionWith {sigma : LP.LPSignature}
       (Clause sigma) :=
   match instruction with
   | .call goal =>
-      match services.metaCall? goal with
-      | some (callable, extraArgs) => .metaCall callable extraArgs
-      | none => .call goal (Program.clausesFor program goal.symbol)
+      match services.databaseRequest? goal with
+      | some request => .database request
+      | none =>
+          match services.metaCall? goal with
+          | some (callable, extraArgs) => .metaCall callable extraArgs
+          | none => .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -606,6 +621,19 @@ def openSessionWith {sigma : LP.LPSignature}
     services
   }
 
+/-- Open a query against an already-persistent database.  The query state is
+fresh, while clause generations and stable references are carried forward
+unchanged from the prior session. -/
+def openSessionDatabaseWith {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars]
+    (services : Services sigma)
+    (memory : Memory sigma.scoped) (queryScope nextScope : Nat)
+    (database : LP.RuntimeDatabase.Database (Clause sigma))
+    (goal : Goal sigma) :
+    Except LP.RuntimeQuery.QueryError (Session sigma) := do
+  let state ← openQuery memory queryScope nextScope goal
+  pure { database, state, services }
+
 /-- Opening a session installs exactly the supplied source program as the
 generation-zero visible database.  Adding stable references is representation
 preserving and does not reorder or deduplicate clauses. -/
@@ -639,12 +667,102 @@ def openEmpty {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     Except LP.RuntimeQuery.QueryError (Session sigma) :=
   openSession (Memory.empty sigma.scoped) 0 1 program goal
 
-/-- Demand-driven session results retain the source program only when a live
-state remains. -/
+/-- One session step either retains the complete live session or closes the
+query while still returning its persistent database. -/
+inductive SessionStepResult (sigma : LP.LPSignature) where
+  | next (session : Session sigma)
+      (observation : Option (LP.RuntimeQuery.Observation sigma))
+  | terminal (result : LP.RuntimeQuery.Terminal sigma)
+      (database : LP.RuntimeDatabase.Database (Clause sigma))
+
+/-- Close a session error through the same exact query-checkpoint restoration
+as the shared runtime, while preserving the persistent database separately. -/
+def failSession (session : Session sigma)
+    (state : State sigma) (error : LP.RuntimeQuery.QueryError) :
+    SessionStepResult sigma :=
+  match state.memory.restore state.queryCheckpoint with
+  | .ok memory => .terminal (.runtimeError error memory) session.database
+  | .error cleanup =>
+      .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
+        session.database
+
+/-- Apply one engine-issued persistent request.  Decoding is read-only;
+generation advance and database replacement happen exactly here, outside all
+backtrackable query resources. -/
+def applyDatabaseRequest (session : Session sigma)
+    (state : State sigma) (request : LP.RuntimeQuery.DatabaseRequest) :
+    SessionStepResult sigma :=
+  let root := match request with
+    | .asserta root => root
+    | .assertz root => root
+  match session.services.decodeClause state.memory.heap root with
+  | .error error => failSession session state error
+  | .ok clause =>
+      let database := match request with
+        | .asserta _ => (session.database.asserta clause).2
+        | .assertz _ => (session.database.assertz clause).2
+      .next { session with database, state } none
+
+/-- A successfully decoded `asserta/1` request performs exactly one front
+insertion and leaves the already-advanced canonical query state untouched. -/
+theorem applyDatabaseRequest_asserta_of_decode
+    (session : Session sigma) (state : State sigma) (root : Addr)
+    (clause : Clause sigma)
+    (hDecode : session.services.decodeClause state.memory.heap root =
+      .ok clause) :
+    applyDatabaseRequest session state (.asserta root) =
+      .next {
+        session with
+        database := (session.database.asserta clause).2
+        state := state
+      } none := by
+  simp [applyDatabaseRequest, hDecode]
+
+/-- A successfully decoded `assertz/1` request performs exactly one back
+insertion and leaves the already-advanced canonical query state untouched. -/
+theorem applyDatabaseRequest_assertz_of_decode
+    (session : Session sigma) (state : State sigma) (root : Addr)
+    (clause : Clause sigma)
+    (hDecode : session.services.decodeClause state.memory.heap root =
+      .ok clause) :
+    applyDatabaseRequest session state (.assertz root) =
+      .next {
+        session with
+        database := (session.database.assertz clause).2
+        state := state
+      } none := by
+  simp [applyDatabaseRequest, hDecode]
+
+/-- One session transition delegates search to `stepCoreWithMeta` and handles
+only the persistent request that the shared engine may return. -/
+def stepSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (session : Session sigma) : SessionStepResult sigma :=
+  match stepWith session.services session.program session.state with
+  | .next state observation => .next { session with state } observation
+  | .databaseRequest request state =>
+      applyDatabaseRequest session state request
+  | .terminal result => .terminal result session.database
+
+/-- An ordinary shared-machine step cannot change the persistent database;
+only the explicit database-request arm above has that authority. -/
+theorem stepSession_next_of_stepWith
+    {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (session : Session sigma) (state : State sigma)
+    (observation : Option (LP.RuntimeQuery.Observation sigma))
+    (hStep : stepWith session.services session.program session.state =
+      .next state observation) :
+    stepSession session = .next { session with state } observation := by
+  simp [stepSession, hStep]
+
 inductive SessionPullResult (sigma : LP.LPSignature) where
   | open (session : Session sigma)
   | answer (value : LP.RuntimeQuery.Answer sigma) (session : Session sigma)
   | terminal (result : LP.RuntimeQuery.Terminal sigma)
+      (database : LP.RuntimeDatabase.Database (Clause sigma))
 
 /-- Pull and repackage only the resumable session; execution remains in
 `RuntimeQuery.pullCore`. -/
@@ -652,9 +770,12 @@ def pullSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
     [DecidableEq sigma.relationSymbols]
     (fuel : Nat) (session : Session sigma) : SessionPullResult sigma :=
-  match pullWith session.services session.program fuel session.state with
-  | .open state => .open { session with state }
-  | .answer answer state => .answer answer { session with state }
-  | .terminal result => .terminal result
+  match fuel with
+  | 0 => .open session
+  | fuel + 1 =>
+      match stepSession session with
+      | .terminal result database => .terminal result database
+      | .next next none => pullSession fuel next
+      | .next next (some (.answer answer)) => .answer answer next
 
 end Mettapedia.Logic.Prolog.RuntimeControl

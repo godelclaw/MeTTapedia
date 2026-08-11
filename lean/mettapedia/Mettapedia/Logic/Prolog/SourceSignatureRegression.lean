@@ -59,7 +59,7 @@ def concreteSignatureRunsCanonicalQuery : Bool :=
               match LP.RuntimeReadback.Heap.readTerm answer.memory.heap address,
                   RuntimeControl.pullSession 64 resumed with
               | .ok (.const (.atom "a")),
-                  .terminal (.completed memory) =>
+                  .terminal (.completed memory) _ =>
                     memory.heap.isEmpty && memory.trail.isEmpty
               | _, _ => false
           | _ => false

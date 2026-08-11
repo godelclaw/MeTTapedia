@@ -1,5 +1,6 @@
 import Mettapedia.Logic.Prolog.SourceSignature
 import Mettapedia.Logic.Prolog.RuntimeControl
+import Mettapedia.Logic.Prolog.RuntimeClauseDecode
 
 /-!
 # Concrete callable decoding for Prolog source terms
@@ -209,9 +210,33 @@ def metaCall? (goal : RuntimeAtom Sigma.scoped) :
     | [] => none
   else none
 
+/-- Recognize the first persistent mutation fragment without heap authority.
+Clause decoding and database replacement remain separate engine/session
+operations. -/
+def databaseRequest? (goal : RuntimeAtom Sigma.scoped) :
+    Option LP.RuntimeQuery.DatabaseRequest :=
+  match goal.symbol.name, goal.args.toList with
+  | "asserta", [clauseRoot] =>
+      if goal.symbol.arity = 1 then some (.asserta clauseRoot) else none
+  | "assertz", [clauseRoot] =>
+      if goal.symbol.arity = 1 then some (.assertz clauseRoot) else none
+  | _, _ => none
+
+/-- Map the precise local decoder boundary into runtime errors.  ISO packet
+construction for these errors remains an explicit later conformance step. -/
+def decodeClause (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError SourceSignature.Clause :=
+  match RuntimeClauseDecode.decodeClause heap root with
+  | .ok clause => .ok clause
+  | .error (.readback error) => .error (.dynamicClauseReadback error)
+  | .error (.source _) => .error .invalidDynamicClause
+  | .error .notClause => .error .invalidDynamicClause
+
 def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
   decoder := { decode := decodeCallable }
+  databaseRequest? := databaseRequest?
+  decodeClause := decodeClause
   unboundThrowError := some throwInstantiationError
   collectionEncoding := some collectionEncoding
 
@@ -241,6 +266,15 @@ def openSession (memory : Memory Sigma.scoped) (queryScope nextScope : Nat)
 def openEmpty (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
     Except LP.RuntimeQuery.QueryError Session :=
   openSession (Memory.empty Sigma.scoped) 0 1 program goal
+
+/-- Open a later query against a database carried out of a completed source
+session. -/
+def openDatabase
+    (database : LP.RuntimeDatabase.Database SourceSignature.Clause)
+    (goal : SourceSignature.Goal) :
+    Except LP.RuntimeQuery.QueryError Session :=
+  RuntimeControl.openSessionDatabaseWith services
+    (Memory.empty Sigma.scoped) 0 1 database goal
 
 /-- Session resumption delegates to `RuntimeControl.pullSession`; the stored
 service selects `pullCoreWithMeta` inside the same canonical phase loop. -/
