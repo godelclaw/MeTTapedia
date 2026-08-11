@@ -188,6 +188,39 @@ theorem localLayerPairCell_periodicPumping_of_serial
   finiteSerialTransfer_periodicCorridorPumpingWithCongruence
     Relevant (interface.localLayerPairCellProfileTransfer hcubic) hserial
 
+/-- The source's stronger one-cell L2 audit implies the weak serial premise:
+the profile itself is a relevant successor.  Keeping this implication named
+lets a per-corridor-type stay audit and the periodic fallback share the same
+finite transfer engine. -/
+theorem localLayerPairCell_liveTransferIsSerial_of_profileIdentityOn
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (Relevant : LocalLayerPairCellProfile interface hcubic → Prop)
+    (hstay : interface.localLayerPairCellSupportsProfileIdentityOn
+      hcubic Relevant) :
+    LiveTransferIsSerial Relevant
+      (interface.localLayerPairCellProfileTransfer hcubic) := by
+  intro profile hrelevant
+  exact ⟨profile, hrelevant, hstay profile hrelevant⟩
+
+/-- A successful finite stay-transition audit therefore inherits the
+congruence-correct periodic pumping theorem without a second recurrence
+construction. -/
+theorem localLayerPairCell_periodicPumping_of_profileIdentityOn
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (Relevant : LocalLayerPairCellProfile interface hcubic → Prop)
+    (hstay : interface.localLayerPairCellSupportsProfileIdentityOn
+      hcubic Relevant) :
+    PeriodicCorridorPumpingWithCongruence Relevant
+      (ExactRelationalTransfer
+        (interface.localLayerPairCellProfileTransfer hcubic)) :=
+  interface.localLayerPairCell_periodicPumping_of_serial hcubic Relevant
+    (interface.localLayerPairCell_liveTransferIsSerial_of_profileIdentityOn
+      hcubic Relevant hstay)
+
 /-- A positive diagonal full-profile entry yields a positive two-boundary
 color-word entry for the same literal complementary Cell-3 region. -/
 theorem localLayerPairCell_boundaryCount_pos_of_profileIdentity
