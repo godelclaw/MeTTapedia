@@ -242,6 +242,90 @@ noncomputable def serialCompose
 
 end TwoSidedOpenTangleData
 
+namespace OpenTangleData
+
+variable {V I B L R : Type*}
+
+/-- Reindex an ordinary open-tangle boundary as separately displayed left and
+right interfaces. -/
+def boundarySplitDartEquiv (split : B ≃ L ⊕ R) :
+    I ⊕ B ≃ I ⊕ (L ⊕ R) :=
+  Equiv.sumCongr (Equiv.refl I) split
+
+/-- The displayed vertex map is unchanged when an ordinary boundary is
+reindexed by a left/right split. -/
+theorem twoSidedVertOf_boundarySplitDartEquiv
+    (data : OpenTangleData V I B) (split : B ≃ L ⊕ R)
+    (dart : I ⊕ B) :
+    twoSidedOpenTangleVertOf data.interiorVert
+        (fun left => data.boundaryVert (split.symm (Sum.inl left)))
+        (fun right => data.boundaryVert (split.symm (Sum.inr right)))
+        (boundarySplitDartEquiv split dart) = data.vertOf dart := by
+  rcases dart with interior | boundary
+  · rfl
+  · cases hsplit : split boundary with
+    | inl left =>
+      rw [show boundarySplitDartEquiv (I := I) split (Sum.inr boundary) =
+        Sum.inr (split boundary) by rfl, hsplit]
+      change data.boundaryVert (split.symm (Sum.inl left)) =
+        data.boundaryVert boundary
+      apply congrArg data.boundaryVert
+      apply split.injective
+      simp [hsplit]
+    | inr right =>
+      rw [show boundarySplitDartEquiv (I := I) split (Sum.inr boundary) =
+        Sum.inr (split boundary) by rfl, hsplit]
+      change data.boundaryVert (split.symm (Sum.inr right)) =
+        data.boundaryVert boundary
+      apply congrArg data.boundaryVert
+      apply split.injective
+      simp [hsplit]
+
+/-- Split the boundary of a literal open tangle into input and output
+interfaces.  This changes only the displayed boundary carrier; it preserves
+the old internal involution and transports the vertex rotation by the boundary
+equivalence. -/
+noncomputable def splitBoundary
+    (data : OpenTangleData V I B) (split : B ≃ L ⊕ R) :
+    TwoSidedOpenTangleData V I L R where
+  interiorVert := data.interiorVert
+  leftVert := fun left => data.boundaryVert (split.symm (Sum.inl left))
+  rightVert := fun right => data.boundaryVert (split.symm (Sum.inr right))
+  interiorAlpha := data.interiorAlpha
+  interiorAlpha_involutive := data.interiorAlpha_involutive
+  interiorAlpha_fixfree := data.interiorAlpha_fixfree
+  rho :=
+    (((boundarySplitDartEquiv split).symm.trans data.rho).trans
+      (boundarySplitDartEquiv split))
+  vert_rho := by
+    intro dart
+    let equiv := boundarySplitDartEquiv (I := I) split
+    change twoSidedOpenTangleVertOf data.interiorVert
+        (fun left => data.boundaryVert (split.symm (Sum.inl left)))
+        (fun right => data.boundaryVert (split.symm (Sum.inr right)))
+        (((equiv.symm.trans data.rho).trans equiv) dart) =
+      twoSidedOpenTangleVertOf data.interiorVert
+        (fun left => data.boundaryVert (split.symm (Sum.inl left)))
+        (fun right => data.boundaryVert (split.symm (Sum.inr right))) dart
+    simp only [Equiv.trans_apply]
+    calc
+      twoSidedOpenTangleVertOf data.interiorVert
+          (fun left => data.boundaryVert (split.symm (Sum.inl left)))
+          (fun right => data.boundaryVert (split.symm (Sum.inr right)))
+          (equiv (data.rho (equiv.symm dart))) =
+        data.vertOf (data.rho (equiv.symm dart)) :=
+          twoSidedVertOf_boundarySplitDartEquiv data split _
+      _ = data.vertOf (equiv.symm dart) := data.vert_rho _
+      _ = twoSidedOpenTangleVertOf data.interiorVert
+          (fun left => data.boundaryVert (split.symm (Sum.inl left)))
+          (fun right => data.boundaryVert (split.symm (Sum.inr right))) dart := by
+          simpa [equiv] using
+            (twoSidedVertOf_boundarySplitDartEquiv data split (equiv.symm dart)).symm
+  interior_no_self_loops := data.interior_no_self_loops
+  outer := boundarySplitDartEquiv split data.outer
+
+end OpenTangleData
+
 end
 
 end GoertzelV24OpenTangleComposition
