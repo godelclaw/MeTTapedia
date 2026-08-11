@@ -426,6 +426,11 @@ authority. -/
 structure Services (sigma : LP.LPSignature) where
   metaCall? : RuntimeAtom sigma.scoped → Option (Addr × List Addr)
   decoder : LP.RuntimeQuery.MetaCallDecoder sigma (RuntimeGoal sigma.scoped)
+  /-- Recognize read-only shallow term tests without inspecting the heap.
+  The shared engine owns dereference, corruption checks, success, and
+  backtracking; a realization may classify only its own constant payloads. -/
+  termTest? : RuntimeAtom sigma.scoped →
+    Option (Addr × LP.RuntimeQuery.TermTest sigma) := fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -456,6 +461,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   metaCall? _ := none
   decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
     (RuntimeGoal sigma.scoped)
+  termTest? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -530,7 +536,10 @@ def dispatchActionWith {sigma : LP.LPSignature}
       | none =>
           match services.metaCall? goal with
           | some (callable, extraArgs) => .metaCall callable extraArgs
-          | none => .call goal (Program.clausesFor program goal.symbol)
+          | none =>
+              match services.termTest? goal with
+              | some (address, test) => .termTest address test
+              | none => .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -548,13 +557,28 @@ def dispatchActionWith {sigma : LP.LPSignature}
   same protected hard-if checkpoint, so trial bindings cannot escape. -/
   | .notUnify left right =>
       .ifThenElse [.unify left right] [.fail] []
-  | .isVar address => .isVar address
+  | .isVar address => .termTest address .isVariable
   | .findall template generator bag =>
       match services.collectionEncoding with
       | some encoding => .findall template generator bag encoding
       | none => .error .unsupportedInstruction
   | .catch guarded catcher recovery => .catch guarded catcher recovery
   | .throw ball => .throw ball services.unboundThrowError
+
+/-- Once mutation and meta-call recognition decline an ordinary call, a
+language-supplied shallow test is handed to the engine unchanged.  The
+service neither sees the heap nor performs the success/failure transition. -/
+theorem dispatchActionWith_termTest {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (address : Addr)
+    (test : LP.RuntimeQuery.TermTest sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = some (address, test)) :
+    dispatchActionWith services program (.call goal) =
+      .termTest address test := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

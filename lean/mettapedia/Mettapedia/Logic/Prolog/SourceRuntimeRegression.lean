@@ -284,6 +284,56 @@ def metaForallRestoresBindings : SourceSignature.Goal :=
     (metaGoal (compound "forall" [equality x (atom "a"), atom "true"]))
     (.conj (.isVar x) (.unify x (atom "c")))
 
+/-! ## Shallow source-term tests through engine-owned dereference -/
+
+def atomAcceptsAtom : SourceSignature.Goal :=
+  SourceSignature.call "atom" [atom "a"]
+
+def atomRejectsInteger : SourceSignature.Goal :=
+  SourceSignature.call "atom" [integer 1]
+
+def atomicAcceptsString : SourceSignature.Goal :=
+  SourceSignature.call "atomic" [string "a"]
+
+def atomicRejectsCompound : SourceSignature.Goal :=
+  SourceSignature.call "atomic" [pair (atom "a") (atom "b")]
+
+def compoundAcceptsPair : SourceSignature.Goal :=
+  SourceSignature.call "compound" [pair (atom "a") (atom "b")]
+
+def compoundRejectsAtom : SourceSignature.Goal :=
+  SourceSignature.call "compound" [atom "a"]
+
+def numberAcceptsInteger : SourceSignature.Goal :=
+  SourceSignature.call "number" [integer 1]
+
+def numberAcceptsFloat : SourceSignature.Goal :=
+  SourceSignature.call "number" [floatBits 0]
+
+def numberRejectsAtom : SourceSignature.Goal :=
+  SourceSignature.call "number" [atom "a"]
+
+def stringAcceptsString : SourceSignature.Goal :=
+  SourceSignature.call "string" [string "a"]
+
+def stringRejectsAtom : SourceSignature.Goal :=
+  SourceSignature.call "string" [atom "a"]
+
+/-- A heap-built meta-call returns to the same source service rather than
+using a second dynamic classification path. -/
+def metaAtomAcceptsAtom : SourceSignature.Goal :=
+  metaGoal (compound "atom" [atom "a"])
+
+/-- Stable clause references are atomic runtime values but not source atoms,
+matching SWI's opaque reference classification without making them forgeable. -/
+def referenceIsAtomicButNotAtom : SourceSignature.Goal :=
+  .conj
+    (SourceSignature.call "assertz"
+      [compound "p" [atom "a"], referenceVar])
+    (.conj
+      (SourceSignature.call "atomic" [referenceVar])
+      (.neg (SourceSignature.call "atom" [referenceVar])))
+
 def binaryFactProgram : SourceSignature.Program :=
   [fact "p" [atom "a", atom "b"]]
 
@@ -828,6 +878,19 @@ def laterCallSeesAssertion :
 #guard runCount [] metaForallSucceeds == some (1, 0, 0)
 #guard runCount [] metaForallFails == some (0, 0, 0)
 #guard runAtoms [] metaForallRestoresBindings == some (["c"], 0, 0)
+#guard runCount [] atomAcceptsAtom == some (1, 0, 0)
+#guard runCount [] atomRejectsInteger == some (0, 0, 0)
+#guard runCount [] atomicAcceptsString == some (1, 0, 0)
+#guard runCount [] atomicRejectsCompound == some (0, 0, 0)
+#guard runCount [] compoundAcceptsPair == some (1, 0, 0)
+#guard runCount [] compoundRejectsAtom == some (0, 0, 0)
+#guard runCount [] numberAcceptsInteger == some (1, 0, 0)
+#guard runCount [] numberAcceptsFloat == some (1, 0, 0)
+#guard runCount [] numberRejectsAtom == some (0, 0, 0)
+#guard runCount [] stringAcceptsString == some (1, 0, 0)
+#guard runCount [] stringRejectsAtom == some (0, 0, 0)
+#guard runCount [] metaAtomAcceptsAtom == some (1, 0, 0)
+#guard runCount [] referenceIsAtomicButNotAtom == some (1, 0, 0)
 #guard runAtoms [] caughtGround == some (["ball"], 0, 0)
 #guard runRaisedAtom [] throwTimeBoundCatcherRejects == some ("ball", 0, 0)
 #guard runRaisedAtom [] recoveryRethrowEscapes == some ("b", 0, 0)

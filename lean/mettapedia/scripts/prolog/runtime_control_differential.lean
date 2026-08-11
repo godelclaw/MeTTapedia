@@ -139,6 +139,45 @@ def main : IO Unit := do
   renderStringAnswers "meta_forall_restores_bindings"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaForallRestoresBindings)
+  renderCount "term_atom_accepts_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomAcceptsAtom)
+  renderCount "term_atom_rejects_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomRejectsInteger)
+  renderCount "term_atomic_accepts_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomicAcceptsString)
+  renderCount "term_atomic_rejects_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomicRejectsCompound)
+  renderCount "term_compound_accepts_pair"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compoundAcceptsPair)
+  renderCount "term_compound_rejects_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compoundRejectsAtom)
+  renderCount "term_number_accepts_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberAcceptsInteger)
+  renderCount "term_number_accepts_float"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberAcceptsFloat)
+  renderCount "term_number_rejects_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberRejectsAtom)
+  renderCount "term_string_accepts_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringAcceptsString)
+  renderCount "term_string_rejects_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringRejectsAtom)
+  renderCount "term_meta_atom_accepts_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaAtomAcceptsAtom)
+  renderCount "term_reference_atomic_not_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.referenceIsAtomicButNotAtom)
   renderStringAnswers "catch_ground"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)

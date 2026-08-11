@@ -171,7 +171,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 71 exact answer, exception, and persistent-store traces against
+It compares 84 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -192,6 +192,10 @@ hard-if checkpoint rather than adding a search path.
 Five dynamic-call cases additionally pin `nonvar/1` and `forall/2` as
 elaborations into those same derived forms, including universal failure and
 binding isolation.
+Thirteen shallow term-test cases cover `atom/1`, `atomic/1`, `compound/1`,
+`number/1`, and `string/1` after canonical heap dereference, including a
+heap-built meta-call and SWI's opaque database-reference distinction: a
+clause reference is atomic but is not an atom.
 Eleven `catch/3` and `throw/1` cases cover throw-time catcher selection,
 entry-context recovery, rethrow, guarded and recovery cut opacity, retained
 guarded answers, nested-catcher throw-time preservation, variable-copy

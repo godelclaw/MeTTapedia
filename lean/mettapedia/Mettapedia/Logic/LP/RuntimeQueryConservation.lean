@@ -268,7 +268,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .catch (guarded.map instruction) catcher (recovery.map instruction)
   | .throw ball unboundError => .throw ball unboundError
   | .unify left right => .unify left right
-  | .isVar address => .isVar address
+  | .termTest address test => .termTest address test
   | .database request => .database request
   | .error reason => .error reason
 
@@ -863,18 +863,18 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               simp [mapDispatchAction, dispatchActionStep, beginUnifyStep,
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,
                 mapStepResult]
-          | isVar address =>
+          | termTest address test =>
               cases hDeref : memory.heap.deref address with
               | error error =>
                   cases hCleanup : memory.restore checkpoint <;>
-                    simp [mapDispatchAction, dispatchActionStep, isVarStep,
+                    simp [mapDispatchAction, dispatchActionStep, termTestStep,
                       mapState, mapControl, mapPhase, mapReturnFrame,
                       mapStepResult, failWith, closeMemory, hDeref, hCleanup]
               | ok result =>
                   cases result with
                   | variableCycle cycle =>
                       cases hCleanup : memory.restore checkpoint <;>
-                        simp [mapDispatchAction, dispatchActionStep, isVarStep,
+                        simp [mapDispatchAction, dispatchActionStep, termTestStep,
                           mapState, mapControl, mapPhase, mapReturnFrame,
                           mapStepResult, failWith, closeMemory, hDeref,
                           hCleanup]
@@ -883,24 +883,38 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                       | none =>
                           cases hCleanup : memory.restore checkpoint <;>
                             simp [mapDispatchAction, dispatchActionStep,
-                              isVarStep, mapState, mapControl, mapPhase,
+                              termTestStep, mapState, mapControl, mapPhase,
                               mapReturnFrame, mapStepResult, failWith,
                               closeMemory, hDeref, hCell, hCleanup]
                       | some cell =>
                           cases cell with
                           | var identity link =>
-                              cases link <;>
-                                simp [mapDispatchAction, dispatchActionStep,
-                                  isVarStep, mapState, mapControl, mapPhase,
-                                  mapReturnFrame, mapStepResult, hDeref, hCell]
+                              cases link with
+                              | none =>
+                                  cases hAccept : test.acceptsVariable <;>
+                                    simp [mapDispatchAction,
+                                      dispatchActionStep, termTestStep,
+                                      TermTest.accepts, mapState, mapControl,
+                                      mapPhase, mapReturnFrame, mapStepResult,
+                                      hDeref, hCell, hAccept]
+                              | some value =>
+                                  simp [mapDispatchAction,
+                                    dispatchActionStep, termTestStep,
+                                    TermTest.accepts, mapState, mapControl,
+                                    mapPhase, mapReturnFrame, mapStepResult,
+                                    hDeref, hCell]
                           | const symbol =>
-                              simp [mapDispatchAction, dispatchActionStep,
-                                isVarStep, mapState, mapControl, mapPhase,
-                                mapReturnFrame, mapStepResult, hDeref, hCell]
+                              cases hAccept : test.acceptsConstant symbol <;>
+                                simp [mapDispatchAction, dispatchActionStep,
+                                  termTestStep, TermTest.accepts, mapState,
+                                  mapControl, mapPhase, mapReturnFrame,
+                                  mapStepResult, hDeref, hCell, hAccept]
                           | app symbol args =>
-                              simp [mapDispatchAction, dispatchActionStep,
-                                isVarStep, mapState, mapControl, mapPhase,
-                                mapReturnFrame, mapStepResult, hDeref, hCell]
+                              cases hAccept : test.acceptsApplication <;>
+                                simp [mapDispatchAction, dispatchActionStep,
+                                  termTestStep, TermTest.accepts, mapState,
+                                  mapControl, mapPhase, mapReturnFrame,
+                                  mapStepResult, hDeref, hCell, hAccept]
           | database request =>
               cases request with
               | asserta clauseRoot =>

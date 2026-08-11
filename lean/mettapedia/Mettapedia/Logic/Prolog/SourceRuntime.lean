@@ -224,6 +224,42 @@ def metaCall? (goal : RuntimeAtom Sigma.scoped) :
     | [] => none
   else none
 
+private def isAtomConstant : SourceSignature.Constant → Bool
+  | .atom _ => true
+  | _ => false
+
+private def isNumberConstant : SourceSignature.Constant → Bool
+  | .integer _ | .floatBits _ => true
+  | _ => false
+
+private def isStringConstant : SourceSignature.Constant → Bool
+  | .string _ => true
+  | _ => false
+
+/-- Recognize SWI's shallow term-test family without heap authority.  The
+classifier supplies only a root and a pure predicate on source constants;
+the shared runtime performs dereference and owns the resulting transition. -/
+def termTest? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × LP.RuntimeQuery.TermTest Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "atom", [root] =>
+      if goal.symbol.arity = 1 then
+        some (root, .constantWhere isAtomConstant)
+      else none
+  | "atomic", [root] =>
+      if goal.symbol.arity = 1 then some (root, .isAtomic) else none
+  | "compound", [root] =>
+      if goal.symbol.arity = 1 then some (root, .isCompound) else none
+  | "number", [root] =>
+      if goal.symbol.arity = 1 then
+        some (root, .constantWhere isNumberConstant)
+      else none
+  | "string", [root] =>
+      if goal.symbol.arity = 1 then
+        some (root, .constantWhere isStringConstant)
+      else none
+  | _, _ => none
+
 /-- Recognize the first persistent mutation fragment without heap authority.
 Clause decoding and database replacement remain separate engine/session
 operations. -/
@@ -263,6 +299,7 @@ def decodeClause (heap : Heap Sigma.scoped) (root : Addr) :
 def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
   decoder := { decode := decodeCallable }
+  termTest? := termTest?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -281,6 +318,10 @@ theorem services_clauseEncoding :
 @[simp]
 theorem services_collectionEncoding :
     services.collectionEncoding = some collectionEncoding := rfl
+
+@[simp]
+theorem services_termTest :
+    services.termTest? = termTest? := rfl
 
 /-- Execute concrete source terms through the one shared runtime with
 callable decoding enabled. -/

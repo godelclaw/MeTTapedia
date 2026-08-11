@@ -110,6 +110,44 @@ structure ClauseEncoding (σ : LPSignature) where
   expose a constructor for values in this image. -/
   referenceConstant : Nat → σ.constants
 
+/-- A read-only predicate on the three canonical shallow heap shapes.  A
+language realization may classify its own constant payloads, but it receives
+no memory, continuation, or answer authority. -/
+structure TermTest (σ : LPSignature) where
+  acceptsVariable : Bool
+  acceptsConstant : σ.constants → Bool
+  acceptsApplication : Bool
+
+namespace TermTest
+
+def accepts (test : TermTest σ) : Cell σ.scoped → Bool
+  | .var _ none => test.acceptsVariable
+  | .var _ (some _) => false
+  | .const value => test.acceptsConstant value
+  | .app _ _ => test.acceptsApplication
+
+def isVariable : TermTest σ where
+  acceptsVariable := true
+  acceptsConstant _ := false
+  acceptsApplication := false
+
+def isAtomic : TermTest σ where
+  acceptsVariable := false
+  acceptsConstant _ := true
+  acceptsApplication := false
+
+def isCompound : TermTest σ where
+  acceptsVariable := false
+  acceptsConstant _ := false
+  acceptsApplication := true
+
+def constantWhere (predicate : σ.constants → Bool) : TermTest σ where
+  acceptsVariable := false
+  acceptsConstant := predicate
+  acceptsApplication := false
+
+end TermTest
+
 /-- One immutable candidate in a call-time database-clause snapshot. Stable
 identity is separate from the normalized clause term so matching cannot forge
 the database occurrence inspected or erased. -/
@@ -1671,15 +1709,15 @@ theorem bindDatabaseReferenceStep_of_allocate {σ : LPSignature}
       } none := by
   simp [bindDatabaseReferenceStep, hAllocate]
 
-/-- Test whether one dereferenced heap root is an unbound variable.  This is
-the canonical finite-graph counterpart of SWI-Prolog V10.1.9 `var/1`, whose
-implementation delegates to `PL_is_variable` (`src/pl-prims.c`).  A false
-test enters ordinary backtracking; corrupt addresses and variable-only cycles
-remain typed runtime errors. -/
+/-- Apply one shallow term test after engine-owned dereference.  This is the
+canonical finite-graph counterpart of SWI-Prolog V10.1.9's `PL_is_variable`,
+`PL_is_atom`, `PL_is_atomic`, `PL_is_number`, `PL_is_string`, and
+`PL_is_compound` predicates (`src/pl-prims.c`).  A false test enters ordinary
+backtracking; corrupt addresses and variable-only cycles remain typed errors. -/
 @[simp]
-def isVarStep {σ : LPSignature}
+def termTestStep {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
-    (address : Addr) (rest : List Instruction) :
+    (address : Addr) (test : TermTest σ) (rest : List Instruction) :
     StepResultCore σ Instruction SourceClause :=
   match state.memory.heap.deref address with
   | .error error => failWith state (.memory error)
@@ -1688,12 +1726,42 @@ def isVarStep {σ : LPSignature}
   | .ok (.root root) =>
       match state.memory.heap[root]? with
       | none => failWith state (.memory (.invalidAddress root))
-      | some (.var _ none) =>
-          .next {
-            state with
-            control := { state.control with current := rest }
-          } none
-      | some _ => .next { state with phase := .backtrack } none
+      | some cell =>
+          if test.accepts cell then
+            .next {
+              state with
+              control := { state.control with current := rest }
+            } none
+          else .next { state with phase := .backtrack } none
+
+/-- An accepted shallow root consumes exactly the current instruction and
+continues without changing memory, choices, or frames. -/
+theorem termTestStep_accepts {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (address root : Addr) (test : TermTest σ) (rest : List Instruction)
+    (cell : Cell σ.scoped)
+    (hDeref : state.memory.heap.deref address = .ok (.root root))
+    (hCell : state.memory.heap[root]? = some cell)
+    (hAccept : test.accepts cell = true) :
+    termTestStep state address test rest =
+      .next {
+        state with
+        control := { state.control with current := rest }
+      } none := by
+  simp [termTestStep, hDeref, hCell, hAccept]
+
+/-- A rejected shallow root enters the ordinary shared backtracking phase;
+there is no test-specific failure or restoration path. -/
+theorem termTestStep_rejects {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (address root : Addr) (test : TermTest σ) (rest : List Instruction)
+    (cell : Cell σ.scoped)
+    (hDeref : state.memory.heap.deref address = .ok (.root root))
+    (hCell : state.memory.heap[root]? = some cell)
+    (hReject : test.accepts cell = false) :
+    termTestStep state address test rest =
+      .next { state with phase := .backtrack } none := by
+  simp [termTestStep, hDeref, hCell, hReject]
 
 /-- The complete authority granted to an instruction classifier.  It may name
 an ordinary call's source clauses, identify base control, expose
@@ -1718,7 +1786,7 @@ inductive DispatchAction (σ : LPSignature)
   | throw (ball : Addr)
       (unboundError : Option (RuntimeException.Packet σ))
   | unify (left right : Addr)
-  | isVar (address : Addr)
+  | termTest (address : Addr) (test : TermTest σ)
   | database (request : DatabaseRequest)
   | error (reason : QueryError)
 
@@ -1838,7 +1906,7 @@ def dispatchActionStep {σ : LPSignature}
       catchStep state guarded catcher recovery rest
   | .throw ball unboundError => throwStep state ball unboundError
   | .unify left right => beginUnifyStep state left right rest
-  | .isVar address => isVarStep state address rest
+  | .termTest address test => termTestStep state address test rest
   | .database request => checkedDatabaseRequestStep state request rest
   | .error reason => failWith state reason
 
