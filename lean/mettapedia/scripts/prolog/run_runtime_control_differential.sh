@@ -14,11 +14,12 @@ trap 'rm -rf "$TMP"' EXIT
 
 pushd "$ROOT_DIR" >/dev/null
 lake build Mettapedia.Logic.Prolog.RuntimeControlRegression \
-  Mettapedia.Logic.Prolog.SourceRuntimeRegression >/dev/null
+  Mettapedia.Logic.Prolog.SourceRuntimeRegression \
+  Mettapedia.Logic.Prolog.ReaderDCGRegression >/dev/null
 lake env lean --run scripts/prolog/runtime_control_differential.lean \
   > "$TMP/lean.txt"
 swipl -q -f scripts/prolog/runtime_control_oracle.pl > "$TMP/swi.txt"
 popd >/dev/null
 
 diff -u "$TMP/swi.txt" "$TMP/lean.txt"
-echo "Runtime-control differential: PASS (119/119 exact answer/exception/store traces)"
+echo "Runtime-control differential: PASS (123/123 exact answer/exception/store traces)"

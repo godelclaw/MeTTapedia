@@ -1,5 +1,6 @@
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
+import Mettapedia.Logic.Prolog.ReaderDCGRegression
 
 /-!
 Executable side of the shared-runtime control differential.  The fixtures use
@@ -411,3 +412,11 @@ def main : IO Unit := do
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.snapshotDoesNotDrift
   renderStringAnswers "db_snapshot_later_call"
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.laterCallSeesAssertion
+  renderBool "dcg_terminal_sharing"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.terminalSharingExecutes
+  renderBool "dcg_braced_goal"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.bracedGoalExecutes
+  renderBool "dcg_disjunction"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.disjunctionExecutes
+  renderBool "dcg_string_terminal"
+    Mettapedia.Logic.Prolog.ReaderDCGRegression.stringTerminalExecutes

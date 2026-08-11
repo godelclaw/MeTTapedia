@@ -11,6 +11,9 @@ import Mettapedia.Logic.Prolog.ReaderTerm
 import Mettapedia.Logic.Prolog.ReaderTermRegression
 import Mettapedia.Logic.Prolog.ReaderSource
 import Mettapedia.Logic.Prolog.ReaderSourceRegression
+import Mettapedia.Logic.Prolog.ReaderDCG
+import Mettapedia.Logic.Prolog.ReaderDCGRegression
+import Mettapedia.Logic.Prolog.ReaderDCGAudit
 import Mettapedia.Logic.Prolog.ClauseReflection
 import Mettapedia.Logic.Prolog.ClauseReflectionRegression
 import Mettapedia.Logic.Prolog.ClauseReflectionAudit
@@ -74,11 +77,13 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderOperator` | checked ISO/SWI operator declarations and dynamic updates |
 | `ReaderTerm` | operator-aware parsing directly into canonical `Logic.LP.Term` |
 | `ReaderSource` | direct clause/directive/DCG classification and normalized clause provenance on canonical terms |
+| `ReaderDCG` | SWI-shaped DCG expansion into ordinary canonical clauses |
+| `ReaderDCGAudit` | trusted-base gate for expanded-clause provenance |
 | `ClauseReflection` | fail-closed source-clause reclassification and complete executable-code agreement |
 | `ReaderLoader` | sequential term loading with explicit between-term effects |
 | `ReaderDirective` | local and imported read-time operator effects |
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
-| `ReaderProgram` | strict clause-only admission into the canonical executable program |
+| `ReaderProgram` | strict clause/DCG admission into the canonical executable program |
 | `ReaderProgramAudit` | trusted-base gate for exact clause-only admission |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |

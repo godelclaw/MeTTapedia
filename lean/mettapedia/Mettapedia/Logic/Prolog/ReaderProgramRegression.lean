@@ -28,13 +28,18 @@ def directiveIsNotSilentlyDiscarded : Bool :=
   | .error (.nonClause 0 .directive) => true
   | _ => false
 
-/-- DCG syntax remains visibly outside the executable program until canonical
-DCG expansion is implemented. -/
-def dcgIsNotSilentlyDiscarded : Bool :=
+/-- A DCG rule is expanded in place to an ordinary predicate with two added
+difference-list arguments. -/
+def dcgEntersCanonicalProgram : Bool :=
   match ReaderProgram.loadSourceWith
       (ReaderDirective.effectWith emptyImports) defaults
       "sequence --> item, sequence." with
-  | .error (.nonClause 0 .dcg) => true
+  | .ok result =>
+      match result.program with
+      | [clause] =>
+          clause.head.symbol.name = "sequence" &&
+            clause.head.symbol.arity = 2
+      | _ => false
   | _ => false
 
 /-- Queries are requests to execute, not database clauses. -/
@@ -47,7 +52,7 @@ def queryIsNotSilentlyInserted : Bool :=
 
 #guard clausesEnterCanonicalProgram
 #guard directiveIsNotSilentlyDiscarded
-#guard dcgIsNotSilentlyDiscarded
+#guard dcgEntersCanonicalProgram
 #guard queryIsNotSilentlyInserted
 
 end Mettapedia.Logic.Prolog.ReaderProgramRegression

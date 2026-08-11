@@ -148,6 +148,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "boot/dcg.pl",
+      "sha256": "1ca6250ac9022058d7fe0e44be8875358728bb0d981ec47a2fbc8ba8c7cbb133"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-bag.c",
       "sha256": "94818d9d14312c5e3776436d33f46762653dd0c04ca578827aa5417004b14182"
     },
@@ -551,11 +556,39 @@
     {
       "id": "runtime.source-loader",
       "project": "swi-prolog",
-      "sources": ["src/pl-srcfile.c", "src/pl-comp.c"],
-      "anchors": ["startReconsultFile", "endReconsult", "compileClause"],
-      "implementation_status": "reference-only",
-      "proof_status": "not-started",
-      "swi_conformance_status": "not-measured"
+      "sources": ["src/pl-srcfile.c", "src/pl-comp.c", "boot/dcg.pl"],
+      "anchors": [
+        "startReconsultFile",
+        "endReconsult",
+        "compileClause",
+        "dcg_translate_rule",
+        "dcg_body",
+        "dcg_extend"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderProgram.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCG.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderProgramRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderProgramAudit.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderDCGAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/pinned_spaces_runtime.lean",
+        "scripts/prolog/pinned_spaces_oracle.pl",
+        "scripts/prolog/run_pinned_spaces_runtime.sh",
+        "scripts/prolog/pinned_dcg_expansion.lean",
+        "scripts/prolog/pinned_dcg_oracle.pl",
+        "scripts/prolog/run_pinned_dcg_expansion.sh",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
     },
     {
       "id": "library.janus",

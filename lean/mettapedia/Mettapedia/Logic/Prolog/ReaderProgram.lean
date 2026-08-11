@@ -1,16 +1,16 @@
 import Mettapedia.Logic.Prolog.ReaderDirective
+import Mettapedia.Logic.Prolog.ReaderDCG
 
 /-!
-# Strict Prolog program loading
+# Strict Prolog program loading and DCG expansion
 
 `ReaderLoader` returns classified source forms in source order. This module
 connects its clause-only fragment directly to the canonical
 `Logic.Prolog.Program` consumed by the shared runtime.
 
-The boundary is deliberately strict: directives, queries, and DCG rules are
-reported with their source-form position rather than silently discarded.
-Their execution or expansion must be implemented before a file containing
-them can be admitted as an executable program.
+DCG rules are expanded to ordinary canonical clauses before admission.
+Directives and queries remain deliberately strict: they are reported with
+their source-form position rather than silently discarded.
 -/
 
 namespace Mettapedia.Logic.Prolog.ReaderProgram
@@ -21,7 +21,6 @@ open ReaderOperator ReaderSource SourceSignature
 inductive NonClauseKind where
   | directive
   | query
-  | dcg
 deriving DecidableEq, Repr
 
 /-- Strict loading distinguishes reader failure from a successfully read form
@@ -29,6 +28,7 @@ that still needs a loader phase. -/
 inductive Error (epsilon : Type) where
   | reader (error : ReaderLoader.Error epsilon)
   | nonClause (position : Nat) (kind : NonClauseKind)
+  | dcg (position : Nat) (error : ReaderDCG.Error)
 
 /-- A clause-only source buffer and the final read-time operator table. -/
 structure Result where
@@ -45,18 +45,20 @@ private def clausesAux : Nat -> List ReaderSource.Form ->
       .error (.nonClause position .directive)
   | position, .query _ :: _ =>
       .error (.nonClause position .query)
-  | position, .dcg _ _ :: _ =>
-      .error (.nonClause position .dcg)
+  | position, .dcg head body :: rest => do
+      let clause <- (ReaderDCG.expand head body).mapError (.dcg position)
+      let tail <- clausesAux (position + 1) rest
+      pure (clause :: tail)
 
-/-- Admit a source-form list exactly when every form is already a canonical
-clause. Clause order and clause values are unchanged. -/
+/-- Admit ordinary clauses directly and DCG rules through canonical
+expansion. Clause order is unchanged. -/
 def ofForms (forms : List ReaderSource.Form) :
     Except (Error epsilon) SourceSignature.Program :=
   clausesAux 0 forms
 
-/-- Sequentially read one source buffer and admit its strict clause-only
-fragment. Read-time effects may update operators, but do not consume or
-execute ordinary directives. -/
+/-- Sequentially read one source buffer and admit its clause/DCG fragment.
+Read-time effects may update operators, but do not consume or execute ordinary
+directives. -/
 def loadSourceWith (effect : ReaderLoader.Effect epsilon)
     (operators : ReaderOperator.Table) (source : String) :
     Except (Error epsilon) Result := do

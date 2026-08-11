@@ -5,6 +5,11 @@ choose(b).
 
 p(a, b).
 
+dcg_pair(X) --> [X, X].
+dcg_guarded(X) --> { X = a }, [X].
+dcg_choice --> [a] ; [b].
+dcg_hello --> "ab".
+
 emit(Label, Goal, Template) :-
     findall(Template, Goal, Answers),
     atomic_list_concat(Answers, ',', Joined),
@@ -240,4 +245,8 @@ main(_) :-
     emit(db_snapshot_later_call,
         (retractall(p(_)), retractall(driver), assertz(p(old)),
          assertz((driver :- p(_), assertz(p(new)), fail)),
-         \+ driver, p(X)), X).
+         \+ driver, p(X)), X),
+    emit_count(dcg_terminal_sharing, phrase(dcg_pair(a), [a, a])),
+    emit_count(dcg_braced_goal, phrase(dcg_guarded(a), [a])),
+    emit_count(dcg_disjunction, phrase(dcg_choice, [b])),
+    emit_count(dcg_string_terminal, phrase(dcg_hello, [97, 98])).
