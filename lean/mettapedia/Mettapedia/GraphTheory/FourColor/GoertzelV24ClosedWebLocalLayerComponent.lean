@@ -98,6 +98,30 @@ noncomputable def cutEdges
     (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
     (layers.separatedLocalLayerPair hunique).dualLoop
 
+/-- The literal two-tile Cell-3 layer boundary crosses exactly four distinct
+primal edges.  This is the finite collar around the local rung pair: it is
+read from the constructed facial-dual loop, rather than supplied as an
+abstract four-edge cut. -/
+theorem cutEdges_card_eq_four
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    (layers.cutEdges hunique).card = 4 := by
+  change (dualWalkCrossingEdges (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+    layers.localLayerLoop).card = 4
+  rw [dualWalkCrossingEdges,
+    Finset.card_image_of_injective _
+      (layers.localLayerLoop_crossingEdge_injective hunique),
+    Finset.card_univ, Fintype.card_fin]
+  simp [localLayerLoop, firstWalk, secondWalk]
+
 omit [DecidableEq V] in
 /-- A nontrivial finite edge deletion in a connected graph has a nonempty
 original-graph boundary whenever another deletion component exists. -/
