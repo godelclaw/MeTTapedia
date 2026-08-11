@@ -1,4 +1,5 @@
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
+import Mettapedia.Logic.Prolog.SourceRuntimeRegression
 
 /-!
 Executable side of the shared-runtime control differential.  The fixtures use
@@ -19,6 +20,20 @@ def renderAnswers (label : String) :
     Option (List QConst × Nat × Nat) -> IO Unit
   | some (answers, 0, 0) =>
       IO.println s!"{label}={String.intercalate "," (answers.map renderConstant)}"
+  | some (_, heapSize, trailSize) =>
+      throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
+  | none => throw <| IO.userError s!"{label}: runtime did not close"
+
+def renderStringAnswers (label : String) :
+    Option (List String × Nat × Nat) -> IO Unit
+  | some (answers, 0, 0) =>
+      IO.println s!"{label}={String.intercalate "," answers}"
+  | some (_, heapSize, trailSize) =>
+      throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
+  | none => throw <| IO.userError s!"{label}: runtime did not close"
+
+def renderCount (label : String) : Option (Nat × Nat × Nat) -> IO Unit
+  | some (count, 0, 0) => IO.println s!"{label}={count}"
   | some (_, heapSize, trailSize) =>
       throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
   | none => throw <| IO.userError s!"{label}: runtime did not close"
@@ -53,3 +68,17 @@ def main : IO Unit := do
     (runTyped [] onceThenCutPrunesCallerDisj)
   renderAnswers "once_restore_caller"
     (runTyped [] onceFailureRestoresCallerAlternative)
+  renderStringAnswers "meta_dynamic_disj"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.dynamicDisjunction)
+  renderStringAnswers "meta_cut_retains_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaCutRetainsCaller)
+  renderCount "call_three"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.callThree)
+  renderCount "heap_built_callable"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.heapBuiltCallable)

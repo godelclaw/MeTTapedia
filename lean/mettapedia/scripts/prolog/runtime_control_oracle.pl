@@ -3,6 +3,8 @@
 choose(a) :- !.
 choose(b).
 
+p(a, b).
+
 emit(Label, Goal, Template) :-
     findall(Template, Goal, Answers),
     atomic_list_concat(Answers, ',', Joined),
@@ -36,4 +38,9 @@ main(_) :-
     emit(once_then_cut_outer,
         ((once(true), V = a, !) ; V = c), V),
     emit(once_restore_caller,
-        (once((W = a, fail)) ; (var(W), W = b)), W).
+        (once((W = a, fail)) ; (var(W), W = b)), W),
+    emit(meta_dynamic_disj, call((X = a ; X = b)), X),
+    emit(meta_cut_retains_caller,
+        (call((Y = a, !, fail ; Y = b)) ; Y = c), Y),
+    emit(call_three, call(p, a, b), 1),
+    emit(heap_built_callable, (G = p(a, b), call(G)), 1).

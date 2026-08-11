@@ -45,8 +45,9 @@ def pureCoreRealization {sigma : LP.LPSignature}
       simp [hMaterialize, Except.map, mapMaterializedBody,
         RuntimeClause.ofLP, RuntimeGoal.calls]
   · intro next
-    simp [dispatchAction, LP.RuntimeQuery.lpDispatchAction,
-      PureRuntime.noControl, clausesFor_ofLP, mapDispatchAction]
+    simp [dispatchAction, dispatchActionWith, noServices,
+      LP.RuntimeQuery.lpDispatchAction, PureRuntime.noControl,
+      clausesFor_ofLP, mapDispatchAction]
 
 /-- Pure source queries realize the LP query materializer through the same
 typed `call` embedding. -/
@@ -103,6 +104,53 @@ theorem pull_ofLP_conserves {sigma : LP.LPSignature}
         (LP.RuntimeQuery.pull (PureRuntime.noControl sigma) program fuel state) := by
   unfold pull LP.RuntimeQuery.pull
   exact pullCore_conserves (pureCoreRealization program) fuel state
+
+/-- **Pure-certificate firewall.**  Every typed answer to which the LP
+grounding theorem applies is the image of an actual answer from the canonical
+LP runtime, with the same memory and query roots.  Structured-control and
+meta-call executions cannot satisfy this conclusion merely because an
+impossible invariant case closes: the witness is the concrete source run. -/
+theorem pureCallAnswer_source_execution {sigma : LP.LPSignature}
+    [DecidableEq sigma.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols] [DecidableEq sigma.relationSymbols]
+    (program : LP.Program sigma) (goals : List (LP.Atom sigma))
+    (state : State sigma) (fuel : Nat) (answer : Answer sigma)
+    (resumed : State sigma)
+    (hOpen : openQuery (Memory.empty sigma.scoped) 0 1 (Goal.calls goals) =
+      .ok state)
+    (hPull : pull (Program.ofLP program) fuel state =
+      .answer answer resumed) :
+    ∃ sourceState sourceResumed,
+      LP.RuntimeQuery.openQuery (Memory.empty sigma.scoped) 0 1 goals =
+        .ok sourceState ∧
+      LP.RuntimeQuery.pull (PureRuntime.noControl sigma) program fuel
+          sourceState = .answer answer sourceResumed ∧
+      state = mapState RuntimeGoal.call Clause.ofLP sourceState ∧
+      resumed = mapState RuntimeGoal.call Clause.ofLP sourceResumed := by
+  rw [openQuery_calls_conserves] at hOpen
+  cases hOpened : LP.RuntimeQuery.openQuery
+      (Memory.empty sigma.scoped) 0 1 goals with
+  | error error =>
+      simp [Except.map, hOpened] at hOpen
+  | ok sourceState =>
+      rw [hOpened] at hOpen
+      change Except.ok (mapState RuntimeGoal.call Clause.ofLP sourceState) =
+        Except.ok state at hOpen
+      injection hOpen with hState
+      subst state
+      rw [pull_ofLP_conserves] at hPull
+      cases hPulled : LP.RuntimeQuery.pull (PureRuntime.noControl sigma)
+          program fuel sourceState with
+      | «open» openState =>
+          simp [mapPullResult, hPulled] at hPull
+      | terminal result =>
+          simp [mapPullResult, hPulled] at hPull
+      | answer sourceAnswer sourceResumed =>
+          simp [mapPullResult, hPulled] at hPull
+          obtain ⟨answerEq, resumedEq⟩ := hPull
+          subst sourceAnswer
+          refine ⟨sourceState, sourceResumed, rfl, hPulled, rfl, ?_⟩
+          exact resumedEq.symm
 
 /-- **Canonical typed-runtime grounding, finite compound fragment.**
 An answer returned through typed Prolog on embedded definite source is true in

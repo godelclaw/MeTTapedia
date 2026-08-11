@@ -19,4 +19,4 @@ swipl -q -f scripts/prolog/runtime_control_oracle.pl > "$TMP/swi.txt"
 popd >/dev/null
 
 diff -u "$TMP/swi.txt" "$TMP/lean.txt"
-echo "Runtime-control differential: PASS (19/19 exact ordered answer traces)"
+echo "Runtime-control differential: PASS (23/23 exact ordered answer traces)"

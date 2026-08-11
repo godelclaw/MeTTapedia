@@ -1119,10 +1119,10 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
   induction fuel with
   | zero =>
       intro state attempt machine answer resumed hPhase hPull
-      simp [pull, RuntimeQuery.pullCore] at hPull
+      simp [pull, RuntimeQuery.pullCore_zero] at hPull
   | succ fuel ih =>
       intro state attempt machine answer resumed hPhase hPull
-      simp only [pull, RuntimeQuery.pullCore,
+      simp only [pull, RuntimeQuery.pullCore_succ,
         RuntimeQuery.lp_stepCore_eq_step] at hPull
       cases machine with
       | running c =>
@@ -2941,9 +2941,9 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
   | _ fuel ih =>
       intro state ans resumed hPull hq hPL hLC
       cases fuel with
-      | zero => simp [pull, RuntimeQuery.pullCore] at hPull
+      | zero => simp [pull, RuntimeQuery.pullCore_zero] at hPull
       | succ fuel =>
-          simp only [pull, RuntimeQuery.pullCore,
+          simp only [pull, RuntimeQuery.pullCore_succ,
             RuntimeQuery.lp_stepCore_eq_step] at hPull
           cases hphase : state.phase with
           | afterAnswer =>

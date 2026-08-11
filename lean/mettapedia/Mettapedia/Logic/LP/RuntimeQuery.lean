@@ -50,6 +50,20 @@ inductive QueryError where
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
 
+/-- Read-only interpretation of a callable heap root.  The shared engine owns
+when the decoder is invoked and the cut boundary installed around its result;
+the decoder can return only an ordered instruction list or an explicit error.
+It receives the heap rather than `Memory`, so it cannot mutate the trail or
+restore checkpoints. -/
+structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
+  decode : Heap σ.scoped → Addr → List Addr →
+    Except QueryError (List Instruction)
+
+/-- Pure LP and typed runtimes without meta-call support fail closed. -/
+def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
+    MetaCallDecoder σ Instruction where
+  decode _ _ _ := .error .unsupportedInstruction
+
 /-- Success behavior attached to one return frame.  `hard` discards the
 conditional marker together with condition-local alternatives.  `soft`
 discards only its distinguished else marker, leaving condition alternatives
@@ -687,6 +701,32 @@ def onceStep {σ : LPSignature}
     }
   } none
 
+/-- Enter one dynamically decoded goal under its own predicate-like cut
+boundary.  This is the WAM `B0 := B` discipline for meta-call: choices older
+than the call survive, while a cut in the decoded goal can prune alternatives
+created by that goal.  Decoding is read-only and occurs exactly once. -/
+@[simp]
+def metaCallStep {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (callable : Addr) (extraArgs : List Addr) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap callable extraArgs with
+  | .error reason => failWith state reason
+  | .ok goals =>
+      .next {
+        state with
+        control := {
+          current := goals
+          cutDepth := state.choices.length
+          frames := {
+            continuation := rest
+            callerCutDepth := state.control.cutDepth
+            commit := .ordinary
+          } :: state.control.frames
+        }
+      } none
+
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
 (`src/pl-prims.c`) and body unification instructions (`src/pl-vmi.c`). -/
@@ -744,6 +784,7 @@ inductive DispatchAction (σ : LPSignature)
   | ifThenElse (condition thenBranch elseBranch : List Instruction)
   | softIfThenElse (condition thenBranch elseBranch : List Instruction)
   | once (goals : List Instruction)
+  | metaCall (callable : Addr) (extraArgs : List Addr)
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -753,6 +794,7 @@ instruction has already been removed; `rest` always comes from the live goal
 stack rather than from the classifier. -/
 @[simp]
 def dispatchActionStep {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
     (rest : List Instruction) :
     DispatchAction σ Instruction SourceClause →
@@ -766,16 +808,21 @@ def dispatchActionStep {σ : LPSignature}
   | .softIfThenElse condition thenBranch elseBranch =>
       softIfThenElseStep state condition thenBranch elseBranch rest
   | .once goals => onceStep state goals rest
+  | .metaCall callable extraArgs =>
+      metaCallStep decoder state callable extraArgs rest
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
 
-/-- The one phase loop shared by LP atoms and typed Prolog control.  Language
-code supplies only clause materialization and the narrow instruction
-classification above; all search transitions remain in this definition. -/
-def stepCore {σ : LPSignature} [DecidableEq σ.constants]
+/-- The full phase loop shared by LP atoms and typed Prolog control.  Language
+code supplies only clause materialization, read-only callable decoding, and
+the narrow instruction classification above; all search transitions remain
+in this definition. -/
+@[simp]
+def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (decoder : MetaCallDecoder σ Instruction)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
     (state : StateCore σ Instruction SourceClause) :
     StepResultCore σ Instruction SourceClause :=
@@ -786,9 +833,35 @@ def stepCore {σ : LPSignature} [DecidableEq σ.constants]
       match state.control.current with
       | [] => emptyCurrentStep state
       | instruction :: rest =>
-          dispatchActionStep state rest (classify instruction)
+          dispatchActionStep decoder state rest (classify instruction)
   | .select cursor => selectStep materializer state cursor
   | .unifying attempt machine => unifyingStep state attempt machine
+
+/-- The established phase loop specialization rejects meta-calls explicitly.
+This wrapper keeps the pure LP API stable while delegating every transition to
+`stepCoreWithMeta`; runtimes that implement callable decoding use that same
+definition with a non-rejecting decoder. -/
+def stepCore {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (state : StateCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
+  stepCoreWithMeta materializer
+    (rejectingMetaCallDecoder σ Instruction) classify state
+
+/-- The legacy specialization is definitionally the full shared loop with its
+callable capability disabled. -/
+@[simp]
+theorem stepCoreWithMeta_rejecting {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (state : StateCore σ Instruction SourceClause) :
+    stepCoreWithMeta materializer
+        (rejectingMetaCallDecoder σ Instruction) classify state =
+      stepCore materializer classify state := rfl
 
 /-- Classify an established LP runtime atom for the shared phase loop. -/
 def lpDispatchAction {σ : LPSignature} [DecidableEq σ.relationSymbols]
@@ -1035,6 +1108,58 @@ theorem onceStep_exact {σ : LPSignature}
         }
       } none := rfl
 
+/-- Successful callable decoding contributes exactly one ordinary return
+frame and captures the current choice depth as its local cut boundary. -/
+theorem metaCallStep_exact {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (callable : Addr) (extraArgs : List Addr) (rest goals : List Instruction)
+    (hDecode : decoder.decode state.memory.heap callable extraArgs = .ok goals) :
+    metaCallStep decoder state callable extraArgs rest =
+      .next {
+        state with
+        control := {
+          current := goals
+          cutDepth := state.choices.length
+          frames := {
+            continuation := rest
+            callerCutDepth := state.control.cutDepth
+            commit := .ordinary
+          } :: state.control.frames
+        }
+      } none := by
+  simp [metaCallStep, hDecode]
+
+/-- A decoder rejection is an explicit terminal runtime error after exact
+query cleanup; it is never reinterpreted as ordinary Prolog failure. -/
+theorem metaCallStep_error {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (callable : Addr) (extraArgs : List Addr) (rest : List Instruction)
+    (reason : QueryError)
+    (hDecode : decoder.decode state.memory.heap callable extraArgs =
+      .error reason) :
+    metaCallStep decoder state callable extraArgs rest = failWith state reason := by
+  simp [metaCallStep, hDecode]
+
+/-- Meta-call decoding is reached through the canonical dispatch phase, not a
+wrapper-side resolution path.  The theorem pins the exact executable seam. -/
+theorem stepCoreWithMeta_metaCall_of_dispatch {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (decoder : MetaCallDecoder σ Instruction)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (state : StateCore σ Instruction SourceClause)
+    (instruction : Instruction) (rest : List Instruction)
+    (callable : Addr) (extraArgs : List Addr)
+    (hPhase : state.phase = .dispatch)
+    (hCurrent : state.control.current = instruction :: rest)
+    (hClassify : classify instruction = .metaCall callable extraArgs) :
+    stepCoreWithMeta materializer decoder classify state =
+      metaCallStep decoder state callable extraArgs rest := by
+  simp [stepCoreWithMeta, hPhase, hCurrent, hClassify]
+
 /-- A well-formed cut transition retains exactly the choices older than the
 current predicate activation.  The theorem is stated directly about the one
 executable transition; there is no mirror control machine. -/
@@ -1054,7 +1179,7 @@ theorem step_cut_of_dispatch {σ : LPSignature} [DecidableEq σ.vars]
         control := { state.control with current := rest }
         choices := retainBottom state.control.cutDepth state.choices
       } none := by
-  simp [step, stepCore, lpDispatchAction, hPhase, hCurrent, hCut,
+  simp [step, stepCore, stepCoreWithMeta, lpDispatchAction, hPhase, hCurrent, hCut,
     hEmpty, hDepth]
 
 /-- Consequently, cut leaves exactly the choice depth captured on predicate
@@ -1093,24 +1218,86 @@ theorem step_empty_backtrack_completes {σ : LPSignature}
     (hChoices : state.choices = [])
     (hRestore : state.memory.restore state.queryCheckpoint = .ok memory) :
     step builtins program state = .terminal (.completed memory) := by
-  simp [step, stepCore, hPhase, hChoices, complete, closeMemory, hRestore]
+  simp [step, stepCore, stepCoreWithMeta, hPhase, hChoices, complete,
+    closeMemory, hRestore]
 
-/-- Demand-driven iteration of the shared phase loop.  The materializer and
-classifier have the same narrow authority as `stepCore`; observations are
-created only by the shared empty-stack transition.  Fuel exhaustion is open,
-and the returned state resumes the same DFS search. -/
-def pullCore {σ : LPSignature} [DecidableEq σ.constants]
+/-- Demand-driven iteration of the full shared loop with callable decoding.
+Each decoded meta-call remains one present transition; fuel exhaustion stays
+open and the returned state resumes the same DFS search. -/
+@[simp]
+def pullCoreWithMeta {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (decoder : MetaCallDecoder σ Instruction)
     (classify : Instruction → DispatchAction σ Instruction SourceClause) :
     Nat → StateCore σ Instruction SourceClause →
       PullResultCore σ Instruction SourceClause
   | 0, state => .open state
   | fuel + 1, state =>
+      match stepCoreWithMeta materializer decoder classify state with
+      | .terminal result => .terminal result
+      | .next next none =>
+          pullCoreWithMeta materializer decoder classify fuel next
+      | .next next (some (.answer answer)) => .answer answer next
+
+/-- The established demand-driven API delegates to the one full pull loop
+with a rejecting callable decoder. -/
+def pullCore {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause) :
+    Nat → StateCore σ Instruction SourceClause →
+      PullResultCore σ Instruction SourceClause :=
+  pullCoreWithMeta materializer
+    (rejectingMetaCallDecoder σ Instruction) classify
+
+/-- The established demand-driven specialization is definitionally the one
+full pull loop with callable decoding disabled. -/
+theorem pullCoreWithMeta_rejecting {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (fuel : Nat) (state : StateCore σ Instruction SourceClause) :
+    pullCoreWithMeta materializer
+        (rejectingMetaCallDecoder σ Instruction) classify fuel state =
+      pullCore materializer classify fuel state := rfl
+
+/-- The established pull interface is open at zero fuel.  These public
+equations let proofs reason about the specialization without unfolding the
+meta-capable recursive loop or duplicating it. -/
+@[simp]
+theorem pullCore_zero {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (state : StateCore σ Instruction SourceClause) :
+    pullCore materializer classify 0 state = .open state := rfl
+
+/-- One demand step of the established interface, exposed through its stable
+`stepCore` specialization while `pullCoreWithMeta` remains the sole recursive
+implementation. -/
+theorem pullCore_succ {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
+    (fuel : Nat) (state : StateCore σ Instruction SourceClause) :
+    pullCore materializer classify (fuel + 1) state =
       match stepCore materializer classify state with
       | .terminal result => .terminal result
       | .next next none => pullCore materializer classify fuel next
-      | .next next (some (.answer answer)) => .answer answer next
+      | .next next (some (.answer answer)) => .answer answer next := by
+  change
+    pullCoreWithMeta materializer
+        (rejectingMetaCallDecoder σ Instruction) classify (fuel + 1) state = _
+  rw [pullCoreWithMeta, stepCoreWithMeta_rejecting]
+  cases hStep : stepCore materializer classify state with
+  | terminal result => rfl
+  | next next observation =>
+      cases observation with
+      | none =>
+          exact pullCoreWithMeta_rejecting materializer classify fuel next
+      | some observation => cases observation; rfl
 
 /-- The established LP demand-driven specialization. -/
 def pull {σ : LPSignature} [DecidableEq σ.vars]

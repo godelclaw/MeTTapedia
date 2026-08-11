@@ -155,6 +155,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .softIfThenElse (condition.map instruction) (thenBranch.map instruction)
         (elseBranch.map instruction)
   | .once goals => .once (goals.map instruction)
+  | .metaCall callable extraArgs => .metaCall callable extraArgs
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .error reason => .error reason
@@ -325,7 +326,8 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
                         emptyCurrentStep, failWith, closeMemory, hDepth,
                         hCleanup]
       | cons next rest =>
-          simp only [stepCore, mapState, mapPhase, mapControl, List.map_cons]
+          simp only [stepCore, stepCoreWithMeta, mapState, mapPhase, mapControl,
+            List.map_cons]
           rw [realizes.classify next]
           cases hAction : sourceClassify next with
           | call goal clauses =>
@@ -360,6 +362,12 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
           | once goals =>
               simp [mapDispatchAction, dispatchActionStep, onceStep,
                 mapState, mapControl, mapPhase, mapReturnFrame, mapStepResult]
+          | metaCall callable extraArgs =>
+              cases hCleanup : memory.restore checkpoint <;>
+                simp [mapDispatchAction, dispatchActionStep, metaCallStep,
+                  rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
+                  mapReturnFrame, mapStepResult, failWith, closeMemory,
+                  hCleanup]
           | unify left right =>
               simp [mapDispatchAction, dispatchActionStep, beginUnifyStep,
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,
@@ -414,7 +422,8 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
           simp [stepCore, mapState, mapPhase, mapControl, mapCursor,
             mapStepResult, selectStep]
       | cons clause remaining =>
-          simp only [stepCore, mapState, mapPhase, mapCursor, selectStep,
+          simp only [stepCore, stepCoreWithMeta, mapState, mapPhase, mapCursor,
+            selectStep,
             List.map_cons]
           rw [realizes.materialize memory nextScope clause]
           cases hMaterialize :
@@ -492,7 +501,7 @@ theorem pullCore_conserves [DecidableEq sigma.constants]
   | zero => intro state; rfl
   | succ fuel inductionHypothesis =>
       intro state
-      simp only [pullCore]
+      rw [pullCore_succ, pullCore_succ]
       rw [stepCore_conserves realizes state]
       cases hStep : stepCore sourceMaterializer sourceClassify state with
       | terminal result => rfl

@@ -417,6 +417,20 @@ abbrev State (sigma : LP.LPSignature) :=
 abbrev StepResult (sigma : LP.LPSignature) :=
   LP.RuntimeQuery.StepResultCore sigma (RuntimeGoal sigma.scoped) (Clause sigma)
 
+/-- Read-only services available to the typed Prolog realization of the one
+shared runtime.  `metaCall?` only recognizes a call instruction and exposes
+its heap roots; decoding remains a separate capability invoked by the engine
+itself. -/
+structure Services (sigma : LP.LPSignature) where
+  metaCall? : RuntimeAtom sigma.scoped → Option (Addr × List Addr)
+  decoder : LP.RuntimeQuery.MetaCallDecoder sigma (RuntimeGoal sigma.scoped)
+
+/-- Base typed control has no implicit meta-call authority. -/
+def noServices (sigma : LP.LPSignature) : Services sigma where
+  metaCall? _ := none
+  decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
+    (RuntimeGoal sigma.scoped)
+
 /-- Typed source goals instantiate the shared query opener's narrow
 materializer interface.  The adapter supplies only heap materialization,
 ordered instructions, and query-variable roots. -/
@@ -466,19 +480,22 @@ def openQuery {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     queryMaterializer memory queryScope nextScope goal
 
 /-- Classify a typed runtime instruction into the narrow authority accepted by
-the shared phase loop.  Disjunction supplies only its already-materialized
-branch payloads; checkpointing, DFS scheduling, restoration, and cut ownership
-remain in `RuntimeQuery.branchStep`.  Other structured controls remain explicit
-errors until their dedicated transitions are certified. -/
-def dispatchAction {sigma : LP.LPSignature}
+the shared phase loop.  Structured controls supply only already-materialized
+payloads; checkpointing, DFS scheduling, restoration, cut ownership, and the
+invocation of the explicit read-only meta-call service remain in
+`RuntimeQuery`. -/
+def dispatchActionWith {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
+    (services : Services sigma)
     (program : Program sigma)
     (instruction : RuntimeGoal sigma.scoped) :
     LP.RuntimeQuery.DispatchAction sigma (RuntimeGoal sigma.scoped)
       (Clause sigma) :=
   match instruction with
   | .call goal =>
-      .call goal (Program.clausesFor program goal.symbol)
+      match services.metaCall? goal with
+      | some (callable, extraArgs) => .metaCall callable extraArgs
+      | none => .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -491,13 +508,34 @@ def dispatchAction {sigma : LP.LPSignature}
   | .isVar address => .isVar address
   | _ => .error .unsupportedInstruction
 
+/-- The established typed classifier has no meta-call service.  Concrete
+source execution opts in through `dispatchActionWith`; pure-fragment
+conservation therefore keeps its previous boundary exactly. -/
+def dispatchAction {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (program : Program sigma)
+    (instruction : RuntimeGoal sigma.scoped) :
+    LP.RuntimeQuery.DispatchAction sigma (RuntimeGoal sigma.scoped)
+      (Clause sigma) :=
+  dispatchActionWith (noServices sigma) program instruction
+
+/-- Execute one typed transition with explicit callable services through the
+same shared phase loop. -/
+def stepWith {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (state : State sigma) : StepResult sigma :=
+  LP.RuntimeQuery.stepCoreWithMeta clauseMaterializer services.decoder
+    (dispatchActionWith services program) state
+
 /-- Execute one typed Prolog transition through the same phase loop, clause
 entry, graph unifier, restoration, and answer mechanism as `Logic.LP`. -/
 def step {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
     [DecidableEq sigma.relationSymbols]
     (program : Program sigma) (state : State sigma) : StepResult sigma :=
-  LP.RuntimeQuery.stepCore clauseMaterializer (dispatchAction program) state
+  stepWith (noServices sigma) program state
 
 /-- One raw demand-driven result over the typed specialization. -/
 abbrev PullResult (sigma : LP.LPSignature) :=
@@ -511,19 +549,38 @@ def pull {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     (program : Program sigma) : Nat → State sigma → PullResult sigma :=
   LP.RuntimeQuery.pullCore clauseMaterializer (dispatchAction program)
 
+/-- Pull through the shared phase loop with explicit callable services. -/
+def pullWith {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma) : Nat → State sigma →
+      PullResult sigma :=
+  LP.RuntimeQuery.pullCoreWithMeta clauseMaterializer services.decoder
+    (dispatchActionWith services program)
+
 /-- A resumable typed session retains source clauses beside the one canonical
 query state; it owns no additional execution or substitution state. -/
 structure Session (sigma : LP.LPSignature) where
   program : Program sigma
   state : State sigma
+  services : Services sigma := noServices sigma
+
+/-- Open a resumable session with explicit read-only runtime services. -/
+def openSessionWith {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars]
+    (services : Services sigma)
+    (memory : Memory sigma.scoped) (queryScope nextScope : Nat)
+    (program : Program sigma) (goal : Goal sigma) :
+    Except LP.RuntimeQuery.QueryError (Session sigma) := do
+  let state ← openQuery memory queryScope nextScope goal
+  pure { program, state, services }
 
 /-- Open one resumable typed session. -/
 def openSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     (memory : Memory sigma.scoped) (queryScope nextScope : Nat)
     (program : Program sigma) (goal : Goal sigma) :
     Except LP.RuntimeQuery.QueryError (Session sigma) := do
-  let state ← openQuery memory queryScope nextScope goal
-  pure { program, state }
+  openSessionWith (noServices sigma) memory queryScope nextScope program goal
 
 /-- Open an isolated typed session at the conventional query/activation
 scopes used by the LP grounding theorem. -/
@@ -545,7 +602,7 @@ def pullSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
     [DecidableEq sigma.relationSymbols]
     (fuel : Nat) (session : Session sigma) : SessionPullResult sigma :=
-  match pull session.program fuel session.state with
+  match pullWith session.services session.program fuel session.state with
   | .open state => .open { session with state }
   | .answer answer state => .answer answer { session with state }
   | .terminal result => .terminal result
