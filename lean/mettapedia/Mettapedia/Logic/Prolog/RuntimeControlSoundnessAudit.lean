@@ -16,6 +16,8 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.cutStep_prunes_newest_branch
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.ifThenElseStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.emptyCurrentStep_commit_of_depth
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_neg
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_notUnify
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.softIfThenElseStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.backtrackStep_softElse_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.emptyCurrentStep_soft_of_marker

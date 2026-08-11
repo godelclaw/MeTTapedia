@@ -539,7 +539,15 @@ def dispatchActionWith {sigma : LP.LPSignature}
   | .softIfThenElse condition thenBranch elseBranch =>
       .softIfThenElse condition thenBranch elseBranch
   | .once goals => .once goals
+  /- Negation as failure is the established hard-if checkpoint pattern: the
+  first protected success commits to failure; exhaustion takes the empty
+  success branch. No second search mechanism is introduced. -/
+  | .neg goals => .ifThenElse goals [.fail] []
   | .unify left right => .unify left right
+  /- Non-unifiability runs one canonical graph-unifier attempt behind the
+  same protected hard-if checkpoint, so trial bindings cannot escape. -/
+  | .notUnify left right =>
+      .ifThenElse [.unify left right] [.fail] []
   | .isVar address => .isVar address
   | .findall template generator bag =>
       match services.collectionEncoding with
@@ -547,7 +555,22 @@ def dispatchActionWith {sigma : LP.LPSignature}
       | none => .error .unsupportedInstruction
   | .catch guarded catcher recovery => .catch guarded catcher recovery
   | .throw ball => .throw ball services.unboundThrowError
-  | _ => .error .unsupportedInstruction
+
+@[simp]
+theorem dispatchActionWith_neg {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goals : List (RuntimeGoal sigma.scoped)) :
+    dispatchActionWith services program (.neg goals) =
+      .ifThenElse goals [.fail] [] := rfl
+
+@[simp]
+theorem dispatchActionWith_notUnify {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (left right : Addr) :
+    dispatchActionWith services program (.notUnify left right) =
+      .ifThenElse [.unify left right] [.fail] [] := rfl
 
 /-- The established typed classifier has no meta-call service.  Concrete
 source execution opts in through `dispatchActionWith`; pure-fragment

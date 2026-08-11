@@ -243,28 +243,6 @@ def typedCutRetainsCallerChoice : Bool :=
           | _ => false
       | _ => false
 
-/-- Unimplemented structured control is a typed runtime error, never Prolog
-failure, success, or an erased instruction. -/
-def structuredControlIsExplicitlyUnsupported : Bool :=
-  let memory := Memory.empty qSig.scoped
-  let state : State qSig := {
-    memory
-    control := {
-      current := [.neg []]
-      cutDepth := 0
-      frames := []
-    }
-    choices := []
-    queryCheckpoint := memory.checkpoint
-    queryVarMap := []
-    nextScope := 1
-    phase := .dispatch
-  }
-  match step [] state with
-  | .terminal (.runtimeError .unsupportedInstruction restored) =>
-      restored.heap.isEmpty && restored.trail.isEmpty
-  | _ => false
-
 /-- A source conjunction containing real typed cut enters through the shared
 query opener with one checkpoint, no alternatives, and the exact flattened
 instruction order. -/
@@ -521,7 +499,6 @@ def catchGuardCutRetainsCaller : Goal qSig :=
 #guard typedBodyUsesSharedUnifyingStep
 #guard typedCallUsesSharedDispatch
 #guard typedCutRetainsCallerChoice
-#guard structuredControlIsExplicitlyUnsupported
 #guard typedGoalUsesSharedOpenQuery
 #guard typedCutSessionRun == some ([.a], 0, 0)
 #guard runTyped [] inlineUnifySuccess == some ([.a], 0, 0)

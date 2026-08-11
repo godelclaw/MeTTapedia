@@ -230,6 +230,35 @@ the decoder observes the current heap graph rather than source syntax. -/
 def heapBuiltCallable : SourceSignature.Goal :=
   .conj (.unify g (compound "p" [atom "a", atom "b"])) (metaGoal g)
 
+/-! ## Derived negation and non-unifiability on shared hard-if checkpoints -/
+
+def negationRejectsSuccess : SourceSignature.Goal := .neg .succeed
+
+def negationAcceptsFailure : SourceSignature.Goal := .neg .fail
+
+/-- Bindings made by a failing negated goal are restored before its success
+continuation runs. -/
+def negationRestoresTrialBindings : SourceSignature.Goal :=
+  .conj (.neg (.conj (.unify x (atom "a")) .fail))
+    (.conj (.isVar x) (.unify x (atom "b")))
+
+/-- A cut inside the protected negated goal cannot prune the caller's older
+disjunction alternative. -/
+def negationCutRetainsCaller : SourceSignature.Goal :=
+  .disj (.neg (.conj .cut .succeed)) (.unify x (atom "c"))
+
+def distinctAtomsAreNotUnifiable : SourceSignature.Goal :=
+  .notUnify (atom "a") (atom "b")
+
+def variableAndAtomAreUnifiable : SourceSignature.Goal :=
+  .notUnify x (atom "a")
+
+/-- A failed `\=/2` trial restores its temporary binding before the caller's
+right alternative is entered. -/
+def notUnifyRestoresTrialBindings : SourceSignature.Goal :=
+  .disj (.notUnify x (atom "a"))
+    (.conj (.isVar x) (.unify x (atom "b")))
+
 def binaryFactProgram : SourceSignature.Program :=
   [fact "p" [atom "a", atom "b"]]
 
@@ -762,6 +791,13 @@ def laterCallSeesAssertion :
 #guard runAtoms [] metaCutRetainsCaller == some (["c"], 0, 0)
 #guard runCount binaryFactProgram callThree == some (1, 0, 0)
 #guard runCount binaryFactProgram heapBuiltCallable == some (1, 0, 0)
+#guard runCount [] negationRejectsSuccess == some (0, 0, 0)
+#guard runCount [] negationAcceptsFailure == some (1, 0, 0)
+#guard runAtoms [] negationRestoresTrialBindings == some (["b"], 0, 0)
+#guard runAtoms [] negationCutRetainsCaller == some (["c"], 0, 0)
+#guard runCount [] distinctAtomsAreNotUnifiable == some (1, 0, 0)
+#guard runCount [] variableAndAtomAreUnifiable == some (0, 0, 0)
+#guard runAtoms [] notUnifyRestoresTrialBindings == some (["b"], 0, 0)
 #guard runAtoms [] caughtGround == some (["ball"], 0, 0)
 #guard runRaisedAtom [] throwTimeBoundCatcherRejects == some ("ball", 0, 0)
 #guard runRaisedAtom [] recoveryRethrowEscapes == some ("b", 0, 0)

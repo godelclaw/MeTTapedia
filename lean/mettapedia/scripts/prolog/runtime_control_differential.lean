@@ -103,6 +103,27 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.heapBuiltCallable)
+  renderCount "neg_rejects_success"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.negationRejectsSuccess)
+  renderCount "neg_accepts_failure"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.negationAcceptsFailure)
+  renderStringAnswers "neg_restores_trial_bindings"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.negationRestoresTrialBindings)
+  renderStringAnswers "neg_cut_retains_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.negationCutRetainsCaller)
+  renderCount "not_unify_distinct_atoms"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.distinctAtomsAreNotUnifiable)
+  renderCount "not_unify_variable_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variableAndAtomAreUnifiable)
+  renderStringAnswers "not_unify_restores_trial_bindings"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.notUnifyRestoresTrialBindings)
   renderStringAnswers "catch_ground"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)
