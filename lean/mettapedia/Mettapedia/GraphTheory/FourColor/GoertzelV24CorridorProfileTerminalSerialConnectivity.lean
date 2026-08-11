@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorProfileSerialConnectivity
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TerminalProfileRestriction
 
 /-!
 # Serial composition of terminal-aware profile connectivity
@@ -27,6 +28,8 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24CorridorProfileTerminalSerialConnectivity
 
 open GoertzelV24CorridorProfile
+open GoertzelV24CorridorProfileSerialConnectivity
+open GoertzelV24GraphDerivedTerminalProfile
 open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24WindingClassification
 
@@ -177,6 +180,57 @@ theorem serialTerminalProfileConnectivityStep_of_cell
     serialTerminalProfileConnectivityStep input cell leftIndex pair
       (.inl first) (.inl second) := by
   exact Or.inr ⟨first, second, rfl, rfl, hconnected⟩
+
+/-- A zero-terminal component step embeds into the richer fixed-terminal
+step.  The converse is intentionally absent: a genuine serial path may pass
+through a fixed terminal and disappear after terminal observations are
+forgotten. -/
+theorem serialTerminalProfileConnectivityStep_of_forgetTerminals
+    {inputWidth cellWidth terminalCount inputFragmentCount
+      cellFragmentCount : Nat}
+    (input : CorridorCutProfile inputWidth terminalCount inputFragmentCount)
+    (cell : CorridorCutProfile cellWidth 0 cellFragmentCount)
+    (leftIndex : Fin inputWidth → Fin cellWidth)
+    (pair : TrackedColorPair) (first second : Fin cellWidth)
+    (hstep : serialProfileConnectivityStep (forgetTerminals input) cell
+      leftIndex pair first second) :
+    serialTerminalProfileConnectivityStep input cell leftIndex pair
+      (.inl first) (.inl second) := by
+  rcases hstep with hinput | hcell
+  · rcases hinput with ⟨left, right, hleft, hright, hconnected⟩
+    refine Or.inl ⟨.inl left, .inl right, ?_, ?_, ?_⟩
+    · simpa using congrArg
+        (fun position =>
+          (.inl position : CorridorPort cellWidth terminalCount)) hleft
+    · simpa using congrArg
+        (fun position =>
+          (.inl position : CorridorPort cellWidth terminalCount)) hright
+    · exact hconnected
+  · exact Or.inr ⟨first, second, rfl, rfl, hcell⟩
+
+/-- Consequently every zero-terminal serial closure embeds in the
+terminal-aware closure on crossing ports.  Terminal-aware closure can be
+strictly richer, so this theorem is one-way. -/
+theorem serialTerminalProfileConnectivityClosure_of_forgetTerminals
+    {inputWidth cellWidth terminalCount inputFragmentCount
+      cellFragmentCount : Nat}
+    (input : CorridorCutProfile inputWidth terminalCount inputFragmentCount)
+    (cell : CorridorCutProfile cellWidth 0 cellFragmentCount)
+    (leftIndex : Fin inputWidth → Fin cellWidth)
+    (pair : TrackedColorPair) (first second : Fin cellWidth)
+    (hclosure : Relation.ReflTransGen
+      (serialProfileConnectivityStep (forgetTerminals input) cell
+        leftIndex pair) first second) :
+    Relation.ReflTransGen
+      (serialTerminalProfileConnectivityStep input cell leftIndex pair)
+      (.inl first) (.inl second) := by
+  exact Relation.ReflTransGen.lift
+    (fun position =>
+      (.inl position : CorridorPort cellWidth terminalCount))
+    (fun left right step =>
+      serialTerminalProfileConnectivityStep_of_forgetTerminals
+        input cell leftIndex pair left right step)
+    hclosure
 
 /-- An incoming component is available to the serial closure. -/
 theorem serialTerminalProfileConnectivityClosure_of_input
