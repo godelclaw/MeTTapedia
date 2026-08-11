@@ -2,17 +2,18 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorLocalSourceSpli
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutSerialOpenTangle
 
 /-!
-# Source corridor cells as serial open tangles
+# Retained-side tangles at source corridor layer cuts
 
 Each consecutive Cell-3 slab interface already constructs two literal layer
-boundaries and the deletion component between them.  This file exposes that
-source object as a two-sided open tangle and composes two such objects through
-their common two-position source order.
+boundaries and selects the outer deletion component.  This file exposes that
+*retained* side as a two-sided open tangle in its common two-position source
+order.
 
-The composite is the categorical serial join of two tagged open pieces.  A
-later formation theorem must still identify an appropriate chain of these
-pieces with the corresponding region of the ambient annulus; no such global
-geometric identification is asserted here.
+This is not the small Cell-3 generator used by the source's `Count` functor.
+That generator is the complementary removed region between the layers.
+Consequently this module provides no source-level serial composition of two
+retained sides: doing so would duplicate the ambient exterior rather than
+assemble adjacent cells.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -55,9 +56,10 @@ variable {source : SourceTrail G}
   {hleftNext : leftInterior.center.val + 2 < blockLength}
   {hrightNext : rightInterior.center.val + 2 < blockLength}
 
-/-- A literal source Cell-3 layer tile, retaining its two ordered boundary
-interfaces as unpaired input and output half-edges. -/
-noncomputable def localLayerPairTwoSidedOpenTangle
+/-- The outer retained side of a literal source Cell-3 layer cut, with its two
+ordered boundary interfaces left unpaired.  This is a splice-side object, not
+the local corridor generator. -/
+noncomputable def localLayerPairRetainedTwoSidedOpenTangle
     (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
       leftInterior hleftNext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic) :=
@@ -77,19 +79,6 @@ noncomputable def localLayerPairOrderedCutSidesDataTwo
         (interface.localLayerPairSourceCrosscutBoundaryData hcubic)) := by
   simpa only [interface.localLayer_walk_length_eq_two] using
     interface.localLayerPairOrderedCutSidesData hcubic
-
-/-- Serially join two actual source Cell-3 tiles by their common ordered pair
-of transversal positions.  The two retained vertex carriers remain tagged,
-so this operation records composition without identifying either piece with
-an ambient global region. -/
-noncomputable def serialComposeLocalLayerPairs
-    (leftInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique leftInterior hleftNext)
-    (rightInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique rightInterior hrightNext)
-    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic) :=
-  (leftInterface.localLayerPairOrderedCutSidesDataTwo hcubic).serialCompose
-    (rightInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
 
 end SourceConsecutiveSlabInterface
 

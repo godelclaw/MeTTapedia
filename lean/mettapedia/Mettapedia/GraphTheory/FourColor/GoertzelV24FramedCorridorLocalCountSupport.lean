@@ -1,30 +1,35 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorLocalSerialOpenTangle
-import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutSerialCountSupport
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutComplementProfileBoundaryWord
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorLocalSourceSplice
 
 /-!
-# `Count` support of source Cell-3 corridor tiles
+# `Count` support of the literal source Cell-3 region
 
-The framed source corridor constructs a literal two-boundary open tangle at
-each Cell-3 position.  This file reads its coloring support in the common
-two-position source coordinate and installs the generic support-composition
-and relevant-profile pumping laws at that concrete geometry.
+A source Cell-3 layer pair cuts the ambient map into an outer retained side
+and a complementary removed side.  The small corridor generator is the
+*complementary* region between the two layers.  The retained side belongs to
+the eventual shortened-map splice and must not be serially multiplied as if
+it were a corridor cell.
 
-The remaining L2 content is deliberately visible as
-`localLayerPairSupportsOrderedIdentityOn`: proving it requires the source's
-finite stay-transition calculation for the relevant full profiles.  It is
-not inferred from finiteness or from the existence of one ambient coloring.
+This file states L2 on the already-computed full-profile `Count` matrix of
+that literal complementary region.  A stay transition is positivity of a
+diagonal full-profile entry.  Thus boundary colors, tracked connectivity, and
+capped face progress all agree; equality of boundary color words alone is not
+silently promoted to equality of source profiles.
+
+The remaining source calculation is deliberately visible as
+`localLayerPairCellSupportsProfileIdentityOn`: the relevant profiles must be
+identified from the source formation and its finite stay-transition check.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24FramedTrail
 
+open GoertzelV24AnnularCrosscut
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
-open GoertzelV24OpenTangleComposition
 open GoertzelV24OrbitFaceTwoSided
-open GoertzelV24SpliceUnification
 open SimpleGraphDartRotation
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -51,113 +56,126 @@ variable {source : SourceTrail G}
     (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
     (Finset.univ : Finset
       (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
-  {leftInterior loopInterior rightInterior : CorridorInterior blockLength}
-  {hleftNext : leftInterior.center.val + 2 < blockLength}
-  {hloopNext : loopInterior.center.val + 2 < blockLength}
-  {hrightNext : rightInterior.center.val + 2 < blockLength}
+  {leftInterior : CorridorInterior blockLength}
+  {hnext : leftInterior.center.val + 2 < blockLength}
 
-/-- Boundary-word support of one literal source Cell-3 tile. -/
-def localLayerPairAcceptsOrderedBoundaryWords
+/-- The finite full-profile carrier on either boundary of the literal
+complementary Cell-3 region. -/
+abbrev LocalLayerPairCellProfile
     (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
-      leftInterior hleftNext)
-    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (leftWord rightWord : Fin 2 → Color) : Prop :=
-  (interface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    |>.AcceptsOrderedBoundaryWords leftWord rightWord
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic) :=
+  interface.separatedLocalLayerPair.SourceCrosscutComplementInterfaceProfile
+    embedded.cellulation.rotation
+    (interface.localLayerPairSourceCrosscutBoundaryData hcubic)
 
-/-- The exact source-local L2 obligation: every relevant two-position word
-has an identity-like realization through this concrete tile. -/
-def localLayerPairSupportsOrderedIdentityOn
+/-- L2 in its source-faithful form for one literal Cell-3 region: every
+relevant full profile has a positive diagonal entry in the removed-side
+`Count` matrix. -/
+def localLayerPairCellSupportsProfileIdentityOn
     (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
-      leftInterior hleftNext)
+      leftInterior hnext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (Relevant : (Fin 2 → Color) → Prop) : Prop :=
-  (interface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    |>.SupportsOrderedIdentityOn Relevant
+    (Relevant : LocalLayerPairCellProfile interface hcubic → Prop) : Prop :=
+  ∀ profile, Relevant profile →
+    0 < interface.separatedLocalLayerPair.sourceCrosscutComplementLiteralOpenProfileCount
+      embedded.cellulation.rotation
+      (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
+      profile profile
 
-/-- Exterior support of two source tiles joined through their common ordered
-two-position interface. -/
-def serialLocalLayerPairsAcceptOrderedBoundaryWords
-    (leftInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique leftInterior hleftNext)
-    (rightInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique rightInterior hrightNext)
+/-- A positive diagonal full-profile entry yields a positive two-boundary
+color-word entry for the same literal complementary Cell-3 region. -/
+theorem localLayerPairCell_boundaryCount_pos_of_profileIdentity
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (leftWord rightWord : Fin 2 → Color) : Prop :=
-  (leftInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    |>.SerialAcceptsOrderedBoundaryWords
-      (rightInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-      leftWord rightWord
+    (profile : LocalLayerPairCellProfile interface hcubic)
+    (hidentity :
+      0 < interface.separatedLocalLayerPair.sourceCrosscutComplementLiteralOpenProfileCount
+        embedded.cellulation.rotation
+        (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
+        profile profile) :
+    0 < interface.separatedLocalLayerPair.sourceCrosscutComplementBoundaryColorCount
+      embedded.cellulation.rotation
+      (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
+      (interface.separatedLocalLayerPair
+        |>.sourceCrosscutComplementInterfaceProfileLeftColorWord
+          embedded.cellulation.rotation
+          (interface.localLayerPairSourceCrosscutBoundaryData hcubic) profile)
+      (interface.separatedLocalLayerPair
+        |>.sourceCrosscutComplementInterfaceProfileRightColorWord
+          embedded.cellulation.rotation
+          (interface.localLayerPairSourceCrosscutBoundaryData hcubic) profile) := by
+  apply (interface.separatedLocalLayerPair
+    |>.sourceCrosscutComplementBoundaryColorCount_pos_iff_exists_profilePair
+      embedded.cellulation.rotation
+      (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic _ _).2
+  exact ⟨profile, profile, rfl, rfl, hidentity⟩
 
-/-- Source-tile support composes by existentially matching the middle
-source-coordinate word. -/
-theorem serialLocalLayerPairsAcceptOrderedBoundaryWords_iff
-    (leftInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique leftInterior hleftNext)
-    (rightInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique rightInterior hrightNext)
+/-- The right color coordinate of one full profile is the source-width
+transport of its left color coordinate. -/
+theorem localLayerPairCell_profileRightColorWord_eq_cast_left
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (leftWord rightWord : Fin 2 → Color) :
-    serialLocalLayerPairsAcceptOrderedBoundaryWords leftInterface rightInterface
-        hcubic leftWord rightWord ↔
-      ∃ middle : Fin 2 → Color,
-        localLayerPairAcceptsOrderedBoundaryWords leftInterface hcubic
-          leftWord middle ∧
-        localLayerPairAcceptsOrderedBoundaryWords rightInterface hcubic
-          middle rightWord := by
-  exact OrderedCutSidesData.serialAcceptsOrderedBoundaryWords_iff
-    (leftInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    (rightInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    leftWord rightWord
+    (profile : LocalLayerPairCellProfile interface hcubic) :
+    (interface.separatedLocalLayerPair
+        |>.sourceCrosscutComplementInterfaceProfileRightColorWord
+          embedded.cellulation.rotation
+          (interface.localLayerPairSourceCrosscutBoundaryData hcubic) profile) =
+      fun step =>
+        interface.separatedLocalLayerPair
+          |>.sourceCrosscutComplementInterfaceProfileLeftColorWord
+            embedded.cellulation.rotation
+            (interface.localLayerPairSourceCrosscutBoundaryData hcubic) profile
+            (Fin.cast interface.separatedLocalLayerPair.length_eq.symm step) := by
+  rfl
 
-/-- Exterior support after inserting a third source tile between two others. -/
-def pumpedLocalLayerPairsAcceptOrderedBoundaryWords
-    (leftInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique leftInterior hleftNext)
-    (loopInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique loopInterior hloopNext)
-    (rightInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique rightInterior hrightNext)
+/-- A positive diagonal full-profile entry is therefore a genuine stay
+transition in the one-word seam support used by the gluing theorem. -/
+theorem localLayerPairCell_seamCount_pos_of_profileIdentity
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (leftWord rightWord : Fin 2 → Color) : Prop :=
-  let leftData := leftInterface.localLayerPairOrderedCutSidesDataTwo hcubic
-  let loopData := loopInterface.localLayerPairOrderedCutSidesDataTwo hcubic
-  let rightData := rightInterface.localLayerPairOrderedCutSidesDataTwo hcubic
-  (TwoSidedOpenTangleData.serialCompose (leftData.serialCompose loopData)
-      rightData.toTwoSidedOpenTangle
-      (OrderedCutSidesData.rightToLeftBoundaryMatching loopData rightData))
-    |>.AcceptsBoundaryWords
-      (leftData.leftBoundaryWord leftWord) (rightData.rightBoundaryWord rightWord)
+    (profile : LocalLayerPairCellProfile interface hcubic)
+    (hidentity :
+      0 < interface.separatedLocalLayerPair.sourceCrosscutComplementLiteralOpenProfileCount
+        embedded.cellulation.rotation
+        (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
+        profile profile) :
+    0 < interface.separatedLocalLayerPair.sourceCrosscutComplementSeamColorCount
+      embedded.cellulation.rotation
+      (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
+      (interface.separatedLocalLayerPair
+        |>.sourceCrosscutComplementInterfaceProfileLeftColorWord
+          embedded.cellulation.rotation
+          (interface.localLayerPairSourceCrosscutBoundaryData hcubic) profile) := by
+  rw [interface.separatedLocalLayerPair
+    |>.sourceCrosscutComplementSeamColorCount_eq_boundaryColorCount_diagonal]
+  simpa [interface.localLayerPairCell_profileRightColorWord_eq_cast_left
+      hcubic profile] using
+    interface.localLayerPairCell_boundaryCount_pos_of_profileIdentity hcubic
+      profile hidentity
 
-/-- The concrete source-tile pumping consequence.  Its hypotheses separate
-the two real tasks: the middle tile realizes identity on relevant profiles,
-and any seam word occurring in the shortened composition is relevant. -/
-theorem pumpedLocalLayerPairsAcceptOrderedBoundaryWords_of_relevantIdentity
-    (leftInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique leftInterior hleftNext)
-    (loopInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique loopInterior hloopNext)
-    (rightInterface : SourceConsecutiveSlabInterface realization htwoSided
-      hunique rightInterior hrightNext)
+/-- The relevance-restricted L2 hypothesis discharges every relevant
+profile's literal seam stay transition. -/
+theorem localLayerPairCell_seamCount_pos_of_relevantProfile
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
-    (Relevant : (Fin 2 → Color) → Prop)
-    (hloop : localLayerPairSupportsOrderedIdentityOn loopInterface hcubic Relevant)
-    (leftWord rightWord : Fin 2 → Color)
-    (hrelevant : ∀ middle : Fin 2 → Color,
-      localLayerPairAcceptsOrderedBoundaryWords leftInterface hcubic
-          leftWord middle →
-      localLayerPairAcceptsOrderedBoundaryWords rightInterface hcubic
-          middle rightWord →
-      Relevant middle)
-    (hshort : serialLocalLayerPairsAcceptOrderedBoundaryWords
-      leftInterface rightInterface hcubic leftWord rightWord) :
-    pumpedLocalLayerPairsAcceptOrderedBoundaryWords leftInterface loopInterface
-      rightInterface hcubic leftWord rightWord := by
-  exact OrderedCutSidesData.serialSupport_pump_of_orderedIdentityOn
-    (leftInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    (loopInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    (rightInterface.localLayerPairOrderedCutSidesDataTwo hcubic)
-    Relevant hloop leftWord rightWord hrelevant hshort
+    (Relevant : LocalLayerPairCellProfile interface hcubic → Prop)
+    (hstay : interface.localLayerPairCellSupportsProfileIdentityOn hcubic Relevant)
+    (profile : LocalLayerPairCellProfile interface hcubic)
+    (hrelevant : Relevant profile) :
+    0 < interface.separatedLocalLayerPair.sourceCrosscutComplementSeamColorCount
+      embedded.cellulation.rotation
+      (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
+      (interface.separatedLocalLayerPair
+        |>.sourceCrosscutComplementInterfaceProfileLeftColorWord
+          embedded.cellulation.rotation
+          (interface.localLayerPairSourceCrosscutBoundaryData hcubic) profile) :=
+  interface.localLayerPairCell_seamCount_pos_of_profileIdentity hcubic profile
+    (hstay profile hrelevant)
 
 end SourceConsecutiveSlabInterface
 

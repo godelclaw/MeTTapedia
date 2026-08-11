@@ -2,13 +2,15 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSourceLocalLayerBoun
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutSerialOpenTangle
 
 /-!
-# Two-sided open tangle of a source Cell-3 layer
+# Retained-side open tangle at a source Cell-3 layer cut
 
-The source's local layer boundary has an exact retained deletion side and an
-exact partition of its exposed darts into the two rail cuts.  This file reads
-that literal open region as an input/output tangle.  It does not close the
-two interfaces or assert the false old-endpoint disjointness condition of the
-closed-splice specialization.
+The source's local layer boundary has an exact outer retained deletion side
+and an exact partition of its exposed darts into the two rail cuts.  This file
+reads that retained side as an input/output tangle.  It is useful for the
+eventual shortened-map splice, but it is deliberately *not* the local Cell-3
+generator of the source's `Count` functor: that generator is the complementary
+removed region bounded by the two layers.  Serially composing the retained
+sides would duplicate the ambient exterior.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -41,11 +43,11 @@ namespace Instance
 
 namespace LocalLayerFormation
 
-/-- The source-selected Cell-3 retained deletion side, viewed as a literal
+/-- The source-selected outer retained deletion side, viewed as a literal
 two-sided open tangle.  Its left and right boundary carriers are exactly the
-two disjoint source rail cuts; only a later serial composition may join them.
--/
-noncomputable def sourceLocalLayerPairTwoSidedOpenTangle
+two disjoint source rail cuts.  This is a splice-side object, not a corridor
+cell generator. -/
+noncomputable def sourceLocalLayerPairRetainedTwoSidedOpenTangle
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
