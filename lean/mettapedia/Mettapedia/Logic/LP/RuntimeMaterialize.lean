@@ -109,6 +109,50 @@ instance : Monad (BuilderM σ) where
   pure := BuilderM.pure
   bind := BuilderM.bind
 
+/-- The clause builder is an ordinary lawful state-and-error monad.  Recording
+the laws lets structural materializers reason with the standard `List.mapM`
+equations rather than depending on its tail-recursive implementation. -/
+instance : LawfulMonad (BuilderM σ) := LawfulMonad.mk' _
+  (by
+    intro α action
+    cases action with
+    | mk run =>
+        apply congrArg BuilderM.mk
+        funext state
+        change (BuilderM.bind { run := run }
+          (fun value => BuilderM.pure (id value))).run state = run state
+        cases hRun : run state <;>
+          simp [BuilderM.bind, BuilderM.pure, hRun])
+  (by
+    intro α β value next
+    rfl)
+  (by
+    intro α β γ action next later
+    cases action with
+    | mk run =>
+        apply congrArg BuilderM.mk
+        funext state
+        change (BuilderM.bind (BuilderM.bind { run := run } next) later).run state =
+          (BuilderM.bind { run := run }
+            (fun value => BuilderM.bind (next value) later)).run state
+        cases hAction : run state with
+        | error error => simp [BuilderM.bind, hAction]
+        | ok result =>
+            rcases result with ⟨value, nextState⟩
+            cases hNext : (next value).run nextState <;>
+              simp [BuilderM.bind, hAction, hNext])
+
+@[simp]
+theorem map_run (action : BuilderM σ α) (transform : α → β)
+    (state : BuilderState σ) :
+    (transform <$> action).run state =
+      match action.run state with
+      | .error error => .error error
+      | .ok (value, nextState) => .ok (transform value, nextState) := by
+  change (BuilderM.bind action
+    (fun value => BuilderM.pure (transform value))).run state = _
+  rfl
+
 @[inline] def get : BuilderM σ (BuilderState σ) where
   run state := .ok (state, state)
 
@@ -317,6 +361,33 @@ def runChecked {σ : LPSignature} (action : BuilderM σ α)
       .error .illFormedHeap
   else
     .error .illFormedHeap
+
+/-- Mapping the value built by a checked action changes no heap validation or
+builder state. -/
+theorem runChecked_map {σ : LPSignature} (action : BuilderM σ α)
+    (transform : α → β) (heap : Heap σ) :
+    runChecked (transform <$> action) heap =
+      (fun result => (transform result.1, result.2)) <$>
+        runChecked action heap := by
+  unfold runChecked
+  by_cases hWellFormed : heap.checkWellFormed = true
+  · simp only [hWellFormed, if_true]
+    by_cases hWellShaped : heap.checkWellShaped = true
+    · simp only [hWellShaped, if_true]
+      cases hRun : action.run (BuilderState.start heap) with
+      | error error =>
+          simp [BuilderM.map_run, hRun]
+      | ok result =>
+          rcases result with ⟨value, state⟩
+          by_cases hResultFormed : state.heap.checkWellFormed = true
+          · simp only [hResultFormed, if_true]
+            by_cases hResultShaped : state.heap.checkWellShaped = true
+            · simp [BuilderM.map_run, hRun, hResultShaped]
+              exact hResultFormed
+            · simp [BuilderM.map_run, hRun, hResultShaped]
+          · simp [BuilderM.map_run, hRun, hResultFormed]
+    · simp [hWellShaped]
+  · simp [hWellFormed]
 
 /-- Append one finite term to an existing valid runtime memory. -/
 def materializeTerm {σ : LPSignature} [DecidableEq σ.vars]
