@@ -88,6 +88,109 @@ theorem localLayerRightPrefixRegion_eq_left_union_cell
     localLayerCellBoundaryRegion] using
     interface.localLayerRightPrefixEdgeRegion_eq_left_union_nextCenterBoundary
 
+/-- The canonical corridor rung shared by the old prefix's last hexagon and
+the newly exposed hexagon. -/
+def localLayerSharedRungEdge
+    (_interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) : G.edgeSet :=
+  realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+    |>.rungEdge hunique leftInterior.outgoing
+
+theorem localLayerSharedRungEdge_mem_leftPrefix
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    interface.localLayerSharedRungEdge ∈
+      interface.localLayerLeftPrefixRegion := by
+  apply corridorFaceBoundary_subset_prefixEdgeRegion
+    realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+    (leftInterior.center.val + 1) leftInterior.center (by omega)
+  simpa [localLayerSharedRungEdge] using
+    (realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      |>.rungEdge_mem_left hunique leftInterior.outgoing)
+
+theorem localLayerSharedRungEdge_mem_cellBoundary
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    interface.localLayerSharedRungEdge ∈
+      interface.localLayerCellBoundaryRegion := by
+  simpa [localLayerSharedRungEdge, localLayerCellBoundaryRegion,
+    nextCenterLayerFace] using
+    (realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      |>.rungEdge_mem_right hunique leftInterior.outgoing)
+
+/-- The cumulative prefix and the newly exposed source hexagon share exactly
+their canonical corridor rung.  Earlier corridor faces cannot also meet the
+new hexagon along an edge because the corridor is induced in the facial dual.
+-/
+theorem localLayerLeftPrefixRegion_inter_cellBoundary_eq_singleton
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    interface.localLayerLeftPrefixRegion ∩
+        interface.localLayerCellBoundaryRegion =
+      {interface.localLayerSharedRungEdge} := by
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let corridor := realization.toCleanOrbitHexCorridorSkeleton
+    |>.toOrbitHexCorridorSkeleton
+  ext edge
+  simp only [Finset.mem_inter, Finset.mem_singleton]
+  constructor
+  · rintro ⟨hprefix, hcell⟩
+    have hprefix' : edge ∈ corridorPrefixEdgeRegion corridor
+        (leftInterior.center.val + 1) := by
+      simpa [localLayerLeftPrefixRegion, corridor] using hprefix
+    have hcell' : edge ∈ orbitFaceBoundary RS
+        (corridor.faceAt (nextCorridorInterior leftInterior hnext).center).1 := by
+      simpa [localLayerCellBoundaryRegion, nextCenterLayerFace, RS, corridor]
+        using hcell
+    rw [mem_corridorPrefixEdgeRegion_iff] at hprefix'
+    rcases hprefix' with ⟨position, hposition, hedgePosition⟩
+    by_cases hcenter : position = leftInterior.center
+    · subst position
+      have hinterior : edge ∈ interiorEdgeSupport (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS)) := by
+        apply (mem_interiorEdgeSupport_iff (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS))).2
+        exact ⟨Finset.mem_biUnion.2
+            ⟨(corridor.faceAt leftInterior.center).1, Finset.mem_univ _,
+              hedgePosition⟩,
+          orbitFace_totalIncidenceCount_eq_two_of_twoSided RS htwoSided edge⟩
+      have hshared : edge ∈ sharedInteriorEdges (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS))
+          (corridor.faceAt leftInterior.outgoing.left).1
+          (corridor.faceAt leftInterior.outgoing.right).1 := by
+        apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS))).2
+        refine ⟨hinterior, ?_, ?_⟩
+        · simpa using hedgePosition
+        · simpa [nextCorridorInterior] using hcell'
+      have hrung := corridor.rungEdge_eq_of_shared hunique
+        leftInterior.outgoing hshared
+      simpa [localLayerSharedRungEdge, corridor] using hrung.symm
+    · have hbefore : position.val < leftInterior.center.val := by omega
+      have hseparated : position.val + 1 <
+          (nextCorridorInterior leftInterior hnext).center.val := by
+        change position.val + 1 < leftInterior.center.val + 1
+        omega
+      have hfacesNe : (corridor.faceAt position).1 ≠
+          (corridor.faceAt
+            (nextCorridorInterior leftInterior hnext).center).1 := by
+        intro hfaces
+        have hindices := corridor.faceAt_injective (Subtype.ext hfaces)
+        have hvalues := congrArg Fin.val hindices
+        change position.val = leftInterior.center.val + 1 at hvalues
+        omega
+      have hadj :=
+        interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS))
+          (orbitFace_incidence_le_two RS) hfacesNe hedgePosition hcell'
+      exact (corridor.separated_not_adjacent position
+        (nextCorridorInterior leftInterior hnext).center hseparated hadj).elim
+  · intro hedge
+    subst edge
+    exact ⟨interface.localLayerSharedRungEdge_mem_leftPrefix,
+      interface.localLayerSharedRungEdge_mem_cellBoundary⟩
+
 /-- The tracked adjacency factor crossing between the old cumulative prefix
 and the newly exposed source hexagon. -/
 def localLayerTrackedSeamGraph
