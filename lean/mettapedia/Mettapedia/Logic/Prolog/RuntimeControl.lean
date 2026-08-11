@@ -408,6 +408,54 @@ abbrev State (sigma : LP.LPSignature) :=
 abbrev StepResult (sigma : LP.LPSignature) :=
   LP.RuntimeQuery.StepResultCore sigma (RuntimeGoal sigma.scoped) (Clause sigma)
 
+/-- Typed source goals instantiate the shared query opener's narrow
+materializer interface.  The adapter supplies only heap materialization,
+ordered instructions, and query-variable roots. -/
+def queryMaterializer {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars] :
+    LP.RuntimeQuery.QueryMaterializer sigma (RuntimeGoal sigma.scoped)
+      (Goal sigma) where
+  materialize memory scope goal :=
+    match materializeGoal memory (goal.atScope scope) with
+    | .error error => .error error
+    | .ok result => .ok {
+        memory := result.memory
+        current := result.goals
+        varMap := result.varMap
+      }
+
+/-- On pure ordered calls, the typed query materializer is exactly the LP
+materializer with `RuntimeGoal.call` tags added to its instruction list. -/
+theorem queryMaterializer_calls {sigma : LP.LPSignature}
+    [DecidableEq sigma.vars]
+    (memory : Memory sigma.scoped) (scope : Nat)
+    (atoms : List (LP.Atom sigma)) :
+    (queryMaterializer (sigma := sigma)).materialize memory scope
+        (Goal.calls atoms) =
+      match (LP.RuntimeQuery.lpQueryMaterializer (σ := sigma)).materialize
+          memory scope atoms with
+      | .error error => .error error
+      | .ok result => .ok {
+          memory := result.memory
+          current := RuntimeGoal.calls result.current
+          varMap := result.varMap
+        } := by
+  simp only [queryMaterializer, Goal.atScope_calls, materializeGoal_calls,
+    LP.RuntimeQuery.lpQueryMaterializer, LP.queryAtScope]
+  have hMap :
+      atoms.map (LP.Atom.atScope scope) =
+        atoms.map (fun atom => LP.Atom.atScope scope atom) := rfl
+  rw [← hMap]
+  cases materializeGoals memory (atoms.map (LP.Atom.atScope scope)) <;> rfl
+
+/-- Open a typed source goal through the canonical LP scope checks,
+checkpoint owner, empty choice/frame state, and initial dispatch phase. -/
+def openQuery {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    (memory : Memory sigma.scoped) (queryScope nextScope : Nat)
+    (goal : Goal sigma) : Except LP.RuntimeQuery.QueryError (State sigma) :=
+  LP.RuntimeQuery.openQueryCore (SourceClause := Clause sigma)
+    queryMaterializer memory queryScope nextScope goal
+
 /-- Classify a typed runtime instruction into the narrow authority accepted by
 the shared phase loop.  Structured controls remain explicit errors until their
 dedicated state transitions extend `RuntimeQuery`; they are never treated as
@@ -431,5 +479,56 @@ def step {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     [DecidableEq sigma.relationSymbols]
     (program : Program sigma) (state : State sigma) : StepResult sigma :=
   LP.RuntimeQuery.stepCore clauseMaterializer (dispatchAction program) state
+
+/-- One raw demand-driven result over the typed specialization. -/
+abbrev PullResult (sigma : LP.LPSignature) :=
+  LP.RuntimeQuery.PullResultCore sigma (RuntimeGoal sigma.scoped) (Clause sigma)
+
+/-- Pull through the one canonical phase loop until one answer, terminal, or
+open fuel boundary. -/
+def pull {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (program : Program sigma) : Nat → State sigma → PullResult sigma :=
+  LP.RuntimeQuery.pullCore clauseMaterializer (dispatchAction program)
+
+/-- A resumable typed session retains source clauses beside the one canonical
+query state; it owns no additional execution or substitution state. -/
+structure Session (sigma : LP.LPSignature) where
+  program : Program sigma
+  state : State sigma
+
+/-- Open one resumable typed session. -/
+def openSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    (memory : Memory sigma.scoped) (queryScope nextScope : Nat)
+    (program : Program sigma) (goal : Goal sigma) :
+    Except LP.RuntimeQuery.QueryError (Session sigma) := do
+  let state ← openQuery memory queryScope nextScope goal
+  pure { program, state }
+
+/-- Open an isolated typed session at the conventional query/activation
+scopes used by the LP grounding theorem. -/
+def openEmpty {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    (program : Program sigma) (goal : Goal sigma) :
+    Except LP.RuntimeQuery.QueryError (Session sigma) :=
+  openSession (Memory.empty sigma.scoped) 0 1 program goal
+
+/-- Demand-driven session results retain the source program only when a live
+state remains. -/
+inductive SessionPullResult (sigma : LP.LPSignature) where
+  | open (session : Session sigma)
+  | answer (value : LP.RuntimeQuery.Answer sigma) (session : Session sigma)
+  | terminal (result : LP.RuntimeQuery.Terminal sigma)
+
+/-- Pull and repackage only the resumable session; execution remains in
+`RuntimeQuery.pullCore`. -/
+def pullSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    [DecidableEq sigma.relationSymbols]
+    (fuel : Nat) (session : Session sigma) : SessionPullResult sigma :=
+  match pull session.program fuel session.state with
+  | .open state => .open { session with state }
+  | .answer answer state => .answer answer { session with state }
+  | .terminal result => .terminal result
 
 end Mettapedia.Logic.Prolog.RuntimeControl

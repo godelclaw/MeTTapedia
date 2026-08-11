@@ -201,19 +201,47 @@ theorem retainBottom_all (choices : List α) :
 
 /-! ## Opening and closing a query -/
 
-/-- Materialize a source query once.  `nextScope` must dominate both the query
-scope and every scoped variable already live in the supplied heap. -/
-def openQuery {σ : LPSignature} [DecidableEq σ.vars]
+/-- The only data a source-query materializer may supply to the shared query
+opener.  It cannot initialize alternatives, frames, phases, or scope state. -/
+structure MaterializedQuery (σ : LPSignature) (Instruction : Type*) where
+  memory : Memory σ.scoped
+  current : List Instruction
+  varMap : List (ScopedVar σ.vars × Addr)
+
+/-- Materialize one source query at an explicit scope into the canonical heap. -/
+structure QueryMaterializer (σ : LPSignature)
+    (Instruction SourceQuery : Type*) where
+  materialize : Memory σ.scoped → Nat → SourceQuery →
+    Except MemoryError (MaterializedQuery σ Instruction)
+
+/-- The established LP source-query materializer. -/
+def lpQueryMaterializer {σ : LPSignature} [DecidableEq σ.vars] :
+    QueryMaterializer σ (RuntimeAtom σ.scoped) (List (Atom σ)) where
+  materialize memory scope goals :=
+    match materializeGoals memory (queryAtScope scope goals) with
+    | .error error => .error error
+    | .ok result => .ok {
+        memory := result.memory
+        current := result.goals
+        varMap := result.varMap
+      }
+
+/-- Shared query opening.  Fresh-scope validation, checkpoint ownership, empty
+choice/frame initialization, and the initial dispatch phase are constructed
+once here for every instruction language. -/
+def openQueryCore {σ : LPSignature}
+    (materializer : QueryMaterializer σ Instruction SourceQuery)
     (memory : Memory σ.scoped) (queryScope nextScope : Nat)
-    (goals : List (Atom σ)) : Except QueryError (State σ) :=
+    (query : SourceQuery) :
+    Except QueryError (StateCore σ Instruction SourceClause) :=
   if queryScope < nextScope then
     if heapScopesBelow memory.heap nextScope then
-      match materializeGoals memory (queryAtScope queryScope goals) with
+      match materializer.materialize memory queryScope query with
       | .error error => .error (.memory error)
       | .ok result =>
           .ok {
             memory := result.memory
-            control := { current := result.goals, cutDepth := 0, frames := [] }
+            control := { current := result.current, cutDepth := 0, frames := [] }
             choices := []
             queryCheckpoint := memory.checkpoint
             queryVarMap := result.varMap
@@ -224,6 +252,14 @@ def openQuery {σ : LPSignature} [DecidableEq σ.vars]
       .error (.staleScopeSupply queryScope nextScope)
   else
     .error (.staleScopeSupply queryScope nextScope)
+
+/-- Materialize a source query once.  `nextScope` must dominate both the query
+scope and every scoped variable already live in the supplied heap. -/
+def openQuery {σ : LPSignature} [DecidableEq σ.vars]
+    (memory : Memory σ.scoped) (queryScope nextScope : Nat)
+    (goals : List (Atom σ)) : Except QueryError (State σ) :=
+  openQueryCore (SourceClause := Clause σ) lpQueryMaterializer memory
+    queryScope nextScope goals
 
 def closeMemory {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause) :
@@ -496,6 +532,16 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
     StepResult σ :=
   stepCore lpClauseMaterializer (lpDispatchAction builtins program) state
 
+/-- The public LP step is exactly the canonical phase loop specialization.
+This rewrite keeps downstream proofs phrased against the stable public name. -/
+@[simp]
+theorem lp_stepCore_eq_step {σ : LPSignature} [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
+    (builtins : Builtins σ) (program : Program σ) (state : State σ) :
+    stepCore lpClauseMaterializer (lpDispatchAction builtins program) state =
+      step builtins program state := rfl
+
 /-! ## Local control laws -/
 
 /-- A well-formed cut transition retains exactly the choices older than the
@@ -558,19 +604,30 @@ theorem step_empty_backtrack_completes {σ : LPSignature}
     step builtins program state = .terminal (.completed memory) := by
   simp [step, stepCore, hPhase, hChoices, complete, closeMemory, hRestore]
 
-/-- Run until one answer, terminal completion/error, or an open fuel boundary.
-Resuming the returned state continues the same DFS search. -/
+/-- Demand-driven iteration of the shared phase loop.  The materializer and
+classifier have the same narrow authority as `stepCore`; observations are
+created only by the shared empty-stack transition.  Fuel exhaustion is open,
+and the returned state resumes the same DFS search. -/
+def pullCore {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (classify : Instruction → DispatchAction σ SourceClause) :
+    Nat → StateCore σ Instruction SourceClause →
+      PullResultCore σ Instruction SourceClause
+  | 0, state => .open state
+  | fuel + 1, state =>
+      match stepCore materializer classify state with
+      | .terminal result => .terminal result
+      | .next next none => pullCore materializer classify fuel next
+      | .next next (some (.answer answer)) => .answer answer next
+
+/-- The established LP demand-driven specialization. -/
 def pull {σ : LPSignature} [DecidableEq σ.vars]
     [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     [DecidableEq σ.relationSymbols]
     (builtins : Builtins σ) (program : Program σ) :
-    Nat → State σ → PullResult σ
-  | 0, state => .open state
-  | fuel + 1, state =>
-      match step builtins program state with
-      | .terminal result => .terminal result
-      | .next next none => pull builtins program fuel next
-      | .next next (some (.answer answer)) => .answer answer next
+    Nat → State σ → PullResult σ :=
+  pullCore lpClauseMaterializer (lpDispatchAction builtins program)
 
 end RuntimeQuery
 end Mettapedia.Logic.LP

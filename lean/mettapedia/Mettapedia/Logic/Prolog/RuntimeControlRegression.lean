@@ -263,6 +263,52 @@ def structuredControlIsExplicitlyUnsupported : Bool :=
       restored.heap.isEmpty && restored.trail.isEmpty
   | _ => false
 
+/-- A source conjunction containing real typed cut enters through the shared
+query opener with one checkpoint, no alternatives, and the exact flattened
+instruction order. -/
+def typedGoalUsesSharedOpenQuery : Bool :=
+  let source : Goal qSig :=
+    .conj (.call (unary .choose (.const .a))) .cut
+  match openQuery (Memory.empty qSig.scoped) 0 1 source with
+  | .error _ => false
+  | .ok state =>
+      match state.phase, state.control.current, state.choices,
+          state.control.frames with
+      | .dispatch, [.call _, .cut], [], [] =>
+          state.control.cutDepth == 0 && state.nextScope == 1
+      | _, _, _, _ => false
+
+/-- Collect typed-session answers while treating an open fuel boundary or
+runtime error as a failed regression, never as completion. -/
+def collectTyped (answerBudget : Nat) (session : Session qSig) :
+    Option (List QConst × Nat × Nat) :=
+  match answerBudget with
+  | 0 => none
+  | answerBudget + 1 =>
+      match pullSession 64 session with
+      | .open _ => none
+      | .terminal (.runtimeError _ _) => none
+      | .terminal (.completed memory) =>
+          some ([], memory.heap.size, memory.trail.size)
+      | .answer answer next =>
+          match answerConstant? answer, collectTyped answerBudget next with
+          | some symbol, some (symbols, heapSize, trailSize) =>
+              some (symbol :: symbols, heapSize, trailSize)
+          | _, _ => none
+
+/-- End-to-end typed execution uses source clauses with typed cut, the shared
+opener, phase loop, cursor, graph unifier, pull loop, and cleanup.  The first
+clause commits and prunes the later `choose(b)` clause. -/
+def typedCutSessionRun : Option (List QConst × Nat × Nat) :=
+  let typedProgram : Program qSig := [
+    { head := unary .choose (.const .a), body := .cut },
+    { head := unary .choose (.const .b), body := .succeed }
+  ]
+  let query : Goal qSig := .call (unary .choose (.var .x))
+  match openEmpty typedProgram query with
+  | .error _ => none
+  | .ok session => collectTyped 3 session
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -270,5 +316,7 @@ def structuredControlIsExplicitlyUnsupported : Bool :=
 #guard typedCallUsesSharedDispatch
 #guard typedCutRetainsCallerChoice
 #guard structuredControlIsExplicitlyUnsupported
+#guard typedGoalUsesSharedOpenQuery
+#guard typedCutSessionRun == some ([.a], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

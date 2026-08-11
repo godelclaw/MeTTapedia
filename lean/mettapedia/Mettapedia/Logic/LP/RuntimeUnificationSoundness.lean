@@ -540,10 +540,11 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
   induction fuel with
   | zero =>
       intro state attempt machine answer resumed hPhase hPull
-      simp [pull] at hPull
+      simp [pull, RuntimeQuery.pullCore] at hPull
   | succ fuel ih =>
       intro state attempt machine answer resumed hPhase hPull
-      simp only [pull] at hPull
+      simp only [pull, RuntimeQuery.pullCore,
+        RuntimeQuery.lp_stepCore_eq_step] at hPull
       cases machine with
       | running c =>
           cases hms : RuntimeUnification.step (RuntimeUnification.Machine.running c) with
@@ -642,7 +643,7 @@ theorem openQuery_ok_inv {σ : LPSignature} [DecidableEq σ.vars]
       materializeGoals memory (queryAtScope queryScope goals) =
         .ok result ∧
       state = openedState memory nextScope result := by
-  unfold openQuery at h
+  unfold openQuery openQueryCore lpQueryMaterializer at h
   by_cases hScope : queryScope < nextScope
   case neg => rw [if_neg hScope] at h; cases h
   case pos =>
@@ -651,6 +652,7 @@ theorem openQuery_ok_inv {σ : LPSignature} [DecidableEq σ.vars]
   case neg => rw [if_neg hBelow] at h; cases h
   case pos =>
   rw [if_pos hBelow] at h
+  dsimp only at h
   cases hMat : materializeGoals memory (queryAtScope queryScope goals) with
   | error e => rw [hMat] at h; cases h
   | ok result =>
@@ -2357,9 +2359,10 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
   | _ fuel ih =>
       intro state ans resumed hPull hq hPL hLC
       cases fuel with
-      | zero => simp [pull] at hPull
+      | zero => simp [pull, RuntimeQuery.pullCore] at hPull
       | succ fuel =>
-          simp only [pull] at hPull
+          simp only [pull, RuntimeQuery.pullCore,
+            RuntimeQuery.lp_stepCore_eq_step] at hPull
           cases hphase : state.phase with
           | afterAnswer =>
               have hstep : RuntimeQuery.step builtins program state =
