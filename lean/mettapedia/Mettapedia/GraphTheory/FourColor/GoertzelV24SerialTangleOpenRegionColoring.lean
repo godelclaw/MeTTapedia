@@ -231,6 +231,28 @@ theorem openRegionColoringOfSplitVertexSideColoring_openOldDartColor
     (openRegionDartColorOfSplitVertexSideColoring_proper RS keep root split
       coloring hcoloring) (Sum.inl dart)
 
+/-- Reconstructing the literal open-region coloring and reading it back on
+the split serial carrier returns the original serial coloring.  This is the
+support-level inverse to `splitVertexSideColoring`; no counting argument is
+involved. -/
+theorem splitVertexSideColoring_openRegionColoringOfSplitVertexSideColoring
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : RetainedDart RS keep)
+    (split : BoundaryDart RS keep ≃ L ⊕ R)
+    (coloring :
+      ((OpenTangleData.ofVertexSide RS keep root).splitBoundary split).Coloring)
+    (hcoloring :
+      ((OpenTangleData.ofVertexSide RS keep root).splitBoundary split).IsTaitColoring
+        coloring) :
+    splitVertexSideColoring RS keep root split
+        (openRegionColoringOfSplitVertexSideColoring RS keep root split coloring
+          hcoloring) =
+      coloring := by
+  funext dart
+  unfold splitVertexSideColoring
+  rw [openRegionColoringOfSplitVertexSideColoring_openOldDartColor]
+  simp
+
 end
 
 end GoertzelV24OpenRegionSerialTangleColoring
