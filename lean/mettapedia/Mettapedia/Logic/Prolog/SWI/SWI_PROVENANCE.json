@@ -113,6 +113,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "src/os/pl-ctype.c",
+      "sha256": "e270610212643296ad64ad010729fe8b2057bd7ef77e1531abbce966d83a8ba5"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-string.c",
       "sha256": "dc145899926484a45ca3ea27599ec64ef5dcebbb3578ba6297f38303a7d009a0"
     },
@@ -471,6 +476,39 @@
         "scripts/prolog/runtime_control_differential.lean",
         "scripts/prolog/runtime_control_oracle.pl",
         "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.character-type-ascii",
+      "project": "swi-prolog",
+      "sources": ["src/os/pl-ctype.c"],
+      "anchors": [
+        "PRED_IMPL(\"code_type\", 2, code_type, PL_FA_NONDETERMINISTIC)",
+        "ATOM_space",
+        "ATOM_digit",
+        "fiswspace",
+        "fiswdigit"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
       ]
     },
     {

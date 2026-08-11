@@ -436,6 +436,53 @@ def textConversion? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | _, _ => none
 
+/-! `dcg/basics:blanks//0` reaches SWI's `code_type/2` while consuming the
+pinned PeTTa parser input.  This first source-needed fragment deliberately
+supports only ground ASCII `space` and `digit` tests.  Other valid SWI class
+modes, Unicode classification, and generative modes remain explicit
+unsupported cases rather than being approximated. -/
+
+private def asciiCharacterCode (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError Nat := do
+  let cell ← dereferencedCell heap root
+  match cell with
+  | .var _ none => .error .characterTypeUnbound
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const (.integer value) =>
+      if value < 0 then .error .invalidCharacterCode
+      else
+        let code := value.toNat
+        if code < 128 then pure code
+        else .error .unsupportedInstruction
+  | _ => .error .invalidCharacterCode
+
+private def decodeCodeType (heap : Heap Sigma.scoped) (code kindRoot : Addr) :
+    Except LP.RuntimeQuery.QueryError Bool := do
+  let code ← asciiCharacterCode heap code
+  let classCell ← dereferencedCell heap kindRoot
+  match classCell with
+  | .var _ none => .error .characterTypeUnbound
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const (.atom "space") =>
+      pure (code = 32 || (9 ≤ code && code ≤ 13))
+  | .const (.atom "digit") =>
+      pure (48 ≤ code && code ≤ 57)
+  | .const (.atom _) | .app _ _ => .error .unsupportedInstruction
+  | .const _ => .error .invalidCharacterType
+
+def codeTypeDecoder : LP.RuntimeQuery.BinaryTestDecoder Sigma where
+  decode := decodeCodeType
+
+/-- Recognize `code_type/2` without inspecting its arguments.  Heap reading
+and the success/failure transition occur later inside the shared engine. -/
+def binaryTest? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.BinaryTestDecoder Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "code_type", [code, kindRoot] =>
+      if goal.symbol.arity = 2 then some (code, kindRoot, codeTypeDecoder)
+      else none
+  | _, _ => none
+
 /-- Read one dynamic grammar body in the finite fragment needed by the pinned
 PeTTa parser.  Ordinary nonterminals reuse the callable decoder with the two
 state arguments appended.  Proper lists and strings become terminal plans;
@@ -638,6 +685,7 @@ def services : RuntimeControl.Services Sigma where
   format? := format?
   formatter := { decode := decodeFormat }
   textConversion? := textConversion?
+  binaryTest? := binaryTest?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -669,6 +717,9 @@ theorem services_formatter : services.formatter.decode = decodeFormat := rfl
 @[simp]
 theorem services_textConversion :
     services.textConversion? = textConversion? := rfl
+
+@[simp]
+theorem services_binaryTest : services.binaryTest? = binaryTest? := rfl
 
 @[simp]
 theorem services_decodeDcg : services.decoder.decodeDcg = decodeDcg := rfl

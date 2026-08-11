@@ -60,6 +60,8 @@ inductive QueryError where
   | invalidTextValue
   | invalidTextCodes
   | invalidCharacterCode
+  | characterTypeUnbound
+  | invalidCharacterType
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
   | termGroundBudgetExhausted
@@ -167,6 +169,13 @@ retains all allocation, unification, restoration, and scheduling. -/
 structure TextConversionDecoder (σ : LPSignature) where
   decode : Heap σ.scoped → Addr → Addr →
     Except QueryError (TextConversionPlan σ)
+
+/-- A read-only binary builtin may inspect two existing heap roots and decide
+ordinary success or failure.  It cannot allocate, bind, schedule, select a
+clause, or emit an answer.  This is the narrow capability used by ground
+character-class tests such as the pinned parser's `code_type/2` calls. -/
+structure BinaryTestDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Addr → Addr → Except QueryError Bool
 
 /-- Language-owned symbols for `=../2`.  The engine owns heap traversal,
 allocation, and unification.  A realization supplies only the existing list
@@ -2341,6 +2350,23 @@ def textConversionStep {σ : LPSignature}
       | .ok (valueRoot, memory) =>
           beginUnifyStep { state with memory } output valueRoot continuation
 
+/-- Execute one read-only binary test.  The shared engine alone turns the
+decoder's Boolean into continuation or backtracking, and converts decoder
+errors into the canonical cleanup path. -/
+@[simp]
+def binaryTestStep {σ : LPSignature}
+    (decoder : BinaryTestDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap left right with
+  | .error reason => failWith state reason
+  | .ok true =>
+      .next {
+        state with control := { state.control with current := continuation }
+      } none
+  | .ok false => .next { state with phase := .backtrack } none
+
 /-- Bind a successful database insertion's stable identity through the same
 canonical graph unifier as every other Prolog binding.  The session supplies
 only the opaque atomic value; it cannot write the heap or schedule the
@@ -2690,6 +2716,7 @@ inductive DispatchAction (σ : LPSignature)
   | dcgCall (body input rest : Addr)
   | format (destination format arguments : Addr) (decoder : FormatDecoder σ)
   | textConversion (text codes : Addr) (decoder : TextConversionDecoder σ)
+  | binaryTest (left right : Addr) (decoder : BinaryTestDecoder σ)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
   | throw (ball : Addr)
@@ -2825,6 +2852,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       formatStep formatDecoder state destination format arguments rest
   | .textConversion text codes textDecoder =>
       textConversionStep textDecoder state text codes rest
+  | .binaryTest left right testDecoder =>
+      binaryTestStep testDecoder state left right rest
   | .catch guarded catcher recovery =>
       catchStep state guarded catcher recovery rest
   | .throw ball unboundError => throwStep state ball unboundError
@@ -3340,6 +3369,35 @@ theorem textConversionStep_error_of_decode {σ : LPSignature}
     textConversionStep decoder state text codes continuation =
       failWith state reason := by
   simp [textConversionStep, hDecode]
+
+theorem binaryTestStep_accepts {σ : LPSignature}
+    (decoder : BinaryTestDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (continuation : List Instruction)
+    (hDecode : decoder.decode state.memory.heap left right = .ok true) :
+    binaryTestStep decoder state left right continuation =
+      .next {
+        state with control := { state.control with current := continuation }
+      } none := by
+  simp [binaryTestStep, hDecode]
+
+theorem binaryTestStep_rejects {σ : LPSignature}
+    (decoder : BinaryTestDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (continuation : List Instruction)
+    (hDecode : decoder.decode state.memory.heap left right = .ok false) :
+    binaryTestStep decoder state left right continuation =
+      .next { state with phase := .backtrack } none := by
+  simp [binaryTestStep, hDecode]
+
+theorem binaryTestStep_error_of_decode {σ : LPSignature}
+    (decoder : BinaryTestDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (continuation : List Instruction) (reason : QueryError)
+    (hDecode : decoder.decode state.memory.heap left right = .error reason) :
+    binaryTestStep decoder state left right continuation =
+      failWith state reason := by
+  simp [binaryTestStep, hDecode]
 
 /-- Meta-call decoding is reached through the canonical dispatch phase, not a
 wrapper-side resolution path.  The theorem pins the exact executable seam. -/

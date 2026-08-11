@@ -466,6 +466,12 @@ structure Services (sigma : LP.LPSignature) where
   textConversion? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.TextConversionDecoder sigma) :=
       fun _ => none
+  /-- Recognize a read-only binary predicate without inspecting either root.
+  The returned decoder may inspect the heap but cannot bind, allocate,
+  schedule, select a clause, or manufacture an answer. -/
+  binaryTest? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.BinaryTestDecoder sigma) :=
+      fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -505,6 +511,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   format? _ := none
   formatter := LP.RuntimeQuery.rejectingFormatDecoder sigma
   textConversion? _ := none
+  binaryTest? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -609,13 +616,17 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                       | some (text, codes, decoder) =>
                                           .textConversion text codes decoder
                                       | none =>
-                                          match services.dcgCall? goal with
-                                          | some (body, input, rest) =>
-                                              .dcgCall body input rest
+                                          match services.binaryTest? goal with
+                                          | some (left, right, decoder) =>
+                                              .binaryTest left right decoder
                                           | none =>
-                                              .call goal
-                                                (Program.clausesFor program
-                                                  goal.symbol)
+                                              match services.dcgCall? goal with
+                                              | some (body, input, rest) =>
+                                                  .dcgCall body input rest
+                                              | none =>
+                                                  .call goal
+                                                    (Program.clausesFor program
+                                                      goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -763,6 +774,29 @@ theorem dispatchActionWith_textConversion {sigma : LP.LPSignature}
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison, hFormat, hText]
 
+/-- A binary test reaches the engine only after every earlier disjoint
+service declines the call.  Its classifier supplies roots and a read-only
+decoder, never the result of the test. -/
+theorem dispatchActionWith_binaryTest {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (left right : Addr)
+    (decoder : LP.RuntimeQuery.BinaryTestDecoder sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = none)
+    (hBinary : services.binaryTest? goal = some (left, right, decoder)) :
+    dispatchActionWith services program (.call goal) =
+      .binaryTest left right decoder := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat, hText, hBinary]
+
 /-- `phrase/3` reaches its distinct dynamic-grammar action only after every
 earlier disjoint service declines the call.  The classifier supplies three
 roots and no decoded instructions or memory. -/
@@ -779,11 +813,12 @@ theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
     (hComparison : services.integerComparison? goal = none)
     (hFormat : services.format? goal = none)
     (hText : services.textConversion? goal = none)
+    (hBinary : services.binaryTest? goal = none)
     (hDcg : services.dcgCall? goal = some (body, input, rest)) :
     dispatchActionWith services program (.call goal) =
       .dcgCall body input rest := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
-    hComparison, hFormat, hText, hDcg]
+    hComparison, hFormat, hText, hBinary, hDcg]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

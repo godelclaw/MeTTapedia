@@ -1,6 +1,7 @@
 import Mettapedia.Logic.Prolog.ReaderSWIProfile
 import Mettapedia.Logic.Prolog.ReaderUnitClosure
 import Mettapedia.Logic.Prolog.SourceRuntime
+import Mettapedia.Logic.Prolog.SourceRuntimeRegression
 import Mettapedia.Logic.LP.RuntimeReadback
 
 /-!
@@ -74,20 +75,19 @@ def environmentIdentity : SourceSignature.Variable := {
 S-expression.  This reaches pinned `dcg/basics:string_without//2`, including
 its finite-list `memberchk/2` test, rather than merely exercising PeTTa's
 writer DCGs. -/
-def readAtomQuery : SourceSignature.Goal :=
+def readQuery (codes : List Int) : SourceSignature.Goal :=
   SourceSignature.call "phrase" [
     SourceSignature.compound "sexpr" [
       .var termIdentity,
       SourceSignature.nil,
       .var environmentIdentity
     ],
-    SourceSignature.list [
-      SourceSignature.integer 40,
-      SourceSignature.integer 97,
-      SourceSignature.integer 41
-    ],
+    SourceSignature.list (codes.map SourceSignature.integer),
     SourceSignature.nil
   ]
+
+def readAtomQuery : SourceSignature.Goal :=
+  readQuery [40, 97, 41]
 
 def integerListAux : Nat -> LP.Term SourceRuntime.Sigma.scoped ->
     Option (List Int)
@@ -192,6 +192,18 @@ def executeTerm (program : SourceSignature.Program)
   | .open _ => throw <| IO.userError "runtime remained open after term answer"
   | .terminal _ _ => throw <| IO.userError "runtime term query did not complete"
 
+def checkRead (program : SourceSignature.Program) (label : String)
+    (codes : List Int) (expected : SourceSignature.Term) : IO Unit := do
+  let (actual, heapSize, trailSize) ← executeTerm program (readQuery codes)
+  if SourceRuntimeRegression.runtimeTermShape actual ==
+      SourceRuntimeRegression.runtimeTermShape (LP.Term.atScope 0 expected) then
+    pure ()
+  else
+    throw <| IO.userError s!"{label}: expected {renderTerm (LP.Term.atScope 0 expected)}, got {renderTerm actual}"
+  if heapSize != 0 || trailSize != 0 then
+    throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
+  IO.println s!"{label}=exact"
+
 def main (arguments : List String) : IO Unit := do
   let [parserPath, dcgBasicsPath, listsPath, errorPath] := arguments
     | throw <| IO.userError
@@ -213,3 +225,9 @@ def main (arguments : List String) : IO Unit := do
   IO.println s!"atom_list_cleanup={atomListHeap}/{atomListTrail}"
   IO.println s!"read_atom={renderTerm readAtom}"
   IO.println s!"read_cleanup={readAtomHeap}/{readAtomTrail}"
+  checkRead program "read_list" [40, 97, 32, 98, 41]
+    (SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"])
+  checkRead program "read_string" [40, 34, 97, 34, 41]
+    (SourceSignature.list [SourceSignature.string "a"])
+  checkRead program "read_nested" [40, 40, 97, 41, 41]
+    (SourceSignature.list [SourceSignature.list [SourceSignature.atom "a"]])

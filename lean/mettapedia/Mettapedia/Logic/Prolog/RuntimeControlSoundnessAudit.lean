@@ -41,6 +41,11 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.textConversionStep_error_of_decode
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_textConversion
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_textConversion
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.binaryTestStep_accepts
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.binaryTestStep_rejects
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.binaryTestStep_error_of_decode
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_binaryTest
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_binaryTest
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentityStep_of_result
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentical_same_of_deref
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termIdentity

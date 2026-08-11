@@ -567,6 +567,41 @@ def runQueryError? (program : SourceSignature.Program)
       | .terminal (.runtimeError error _) _ => some error
       | _ => none
 
+/-! ## Ground ASCII character classification used by pinned `dcg/basics` -/
+
+def codeType (code kind : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "code_type" [code, kind]
+
+def codeTypeSpace : SourceSignature.Goal :=
+  codeType (integer 32) (atom "space")
+
+def codeTypeNewlineSpace : SourceSignature.Goal :=
+  codeType (integer 10) (atom "space")
+
+def codeTypeLetterNotSpace : SourceSignature.Goal :=
+  codeType (integer 65) (atom "space")
+
+def codeTypeDigit : SourceSignature.Goal :=
+  codeType (integer 57) (atom "digit")
+
+def codeTypeLetterNotDigit : SourceSignature.Goal :=
+  codeType (integer 65) (atom "digit")
+
+def metaCodeTypeSpace : SourceSignature.Goal :=
+  metaGoal (compound "code_type" [integer 32, atom "space"])
+
+def codeTypeUnbound : SourceSignature.Goal :=
+  codeType x (atom "space")
+
+def codeTypeUnicodeOutsideCurrentFragment : SourceSignature.Goal :=
+  codeType (integer 955) (atom "space")
+
+def codeTypeUnsupportedClass : SourceSignature.Goal :=
+  codeType (integer 65) (atom "graph")
+
+def codeTypeInvalidClass : SourceSignature.Goal :=
+  codeType (integer 65) (integer 1)
+
 def univRejectsUnboundList : Bool :=
   match runQueryError? [] univUnboundList with
   | some .univListUnbound => true
@@ -1263,6 +1298,24 @@ def laterCallSeesAssertion :
   | _ => false
 #guard match runQueryError? [] atomCodesCyclicList with
   | some .invalidTextCodes => true
+  | _ => false
+#guard runCount [] codeTypeSpace == some (1, 0, 0)
+#guard runCount [] codeTypeNewlineSpace == some (1, 0, 0)
+#guard runCount [] codeTypeLetterNotSpace == some (0, 0, 0)
+#guard runCount [] codeTypeDigit == some (1, 0, 0)
+#guard runCount [] codeTypeLetterNotDigit == some (0, 0, 0)
+#guard runCount [] metaCodeTypeSpace == some (1, 0, 0)
+#guard match runQueryError? [] codeTypeUnbound with
+  | some .characterTypeUnbound => true
+  | _ => false
+#guard match runQueryError? [] codeTypeUnicodeOutsideCurrentFragment with
+  | some .unsupportedInstruction => true
+  | _ => false
+#guard match runQueryError? [] codeTypeUnsupportedClass with
+  | some .unsupportedInstruction => true
+  | _ => false
+#guard match runQueryError? [] codeTypeInvalidClass with
+  | some .invalidCharacterType => true
   | _ => false
 #guard runCount [] metaAtomAcceptsAtom == some (1, 0, 0)
 #guard runCount [] referenceIsAtomicButNotAtom == some (1, 0, 0)

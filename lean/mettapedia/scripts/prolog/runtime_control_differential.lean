@@ -255,6 +255,24 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runStringsFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringCodesReverse
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "code_type_space"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.codeTypeSpace)
+  renderCount "code_type_newline_space"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.codeTypeNewlineSpace)
+  renderCount "code_type_letter_not_space"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.codeTypeLetterNotSpace)
+  renderCount "code_type_digit"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.codeTypeDigit)
+  renderCount "code_type_letter_not_digit"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.codeTypeLetterNotDigit)
+  renderCount "code_type_meta_space"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaCodeTypeSpace)
   renderCount "identity_same_variable"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.identitySameVariable)

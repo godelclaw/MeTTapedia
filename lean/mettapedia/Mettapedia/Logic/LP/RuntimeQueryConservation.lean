@@ -269,6 +269,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .format destination format arguments decoder
   | .textConversion text codes decoder =>
       .textConversion text codes decoder
+  | .binaryTest left right decoder =>
+      .binaryTest left right decoder
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
   | .throw ball unboundError => .throw ball unboundError
@@ -949,6 +951,19 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                             textConversionStep, beginUnifyStep, mapState,
                             mapControl, mapAttempt, mapPhase, mapReturnFrame,
                             mapStepResult, hDecode, hValue]
+          | binaryTest left right decoder =>
+              cases hDecode : decoder.decode memory.heap left right with
+              | error reason =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      binaryTestStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hDecode, hCleanup]
+              | ok accepted =>
+                  cases accepted <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      binaryTestStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, hDecode]
           | «catch» guarded catcher recovery =>
               simp [mapDispatchAction, dispatchActionStep, catchStep,
                 mapState, mapControl, mapPhase, mapReturnFrame,

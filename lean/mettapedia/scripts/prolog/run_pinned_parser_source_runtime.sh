@@ -30,8 +30,12 @@ ERROR="$(swipl -q -g \
   "absolute_file_name(library(error), P, [file_type(prolog), access(read)]), write(P), halt")"
 
 pushd "$ROOT_DIR" >/dev/null
-lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
-  "$TMP/src/parser.pl" "$DCG_BASICS" "$LISTS" "$ERROR" > "$TMP/lean.out"
+if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
+    "$TMP/src/parser.pl" "$DCG_BASICS" "$LISTS" "$ERROR" > "$TMP/lean.out"; then
+  cat "$TMP/lean.out" >&2
+  popd >/dev/null
+  exit 1
+fi
 popd >/dev/null
 
 cat > "$TMP/lean.expected" <<'EOF'
@@ -41,13 +45,16 @@ atom_list_codes=[40,97,41]
 atom_list_cleanup=0/0
 read_atom=[|](a,[])
 read_cleanup=0/0
+read_list=exact
+read_string=exact
+read_nested=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
 swipl -q -s "$TMP/src/parser.pl" \
-  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, phrase(sexpr(ReadAtom, [], _), [40,97,41]), write_canonical(ReadAtom), nl, halt" \
+  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, phrase(sexpr(ReadAtom, [], _), [40,97,41]), write_canonical(ReadAtom), nl, phrase(sexpr(ReadList, [], _), [40,97,32,98,41]), write_canonical(ReadList), nl, phrase(sexpr(ReadString, [], _), [40,34,97,34,41]), write_canonical(ReadString), nl, phrase(sexpr(ReadNested, [], _), [40,40,97,41,41]), write_canonical(ReadNested), nl, halt" \
   > "$TMP/swi.out"
-printf '%s\n' '[40,41]' '[40,97,41]' '[a]' > "$TMP/swi.expected"
+printf '%s\n' '[40,41]' '[40,97,41]' '[a]' '[a,b]' '["a"]' '[[a]]' > "$TMP/swi.expected"
 diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
-echo "Pinned parser source runtime: PASS (writes and one atomic read exact; clean closure)"
+echo "Pinned parser source runtime: PASS (writes and four reader shapes exact; clean closure)"
