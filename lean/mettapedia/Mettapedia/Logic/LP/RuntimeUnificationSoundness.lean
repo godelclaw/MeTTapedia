@@ -1475,11 +1475,11 @@ the memory of the cursor above them. -/
 inductive ChoiceChain {σ : LPSignature} [DecidableEq σ.relationSymbols]
     (program : Program σ)
     (varMap : List (ScopedVar σ.vars × Addr)) :
-    Nat → List (ClauseCursor σ) → Memory σ.scoped → Prop
+    Nat → List (ChoicePoint σ) → Memory σ.scoped → Prop
   | nil (bound : Nat) (memory : Memory σ.scoped) :
       ChoiceChain program varMap bound [] memory
   | cons {bound : Nat} {cursor : ClauseCursor σ}
-      {older : List (ClauseCursor σ)} {memory m₀ : Memory σ.scoped}
+      {older : List (ChoicePoint σ)} {memory m₀ : Memory σ.scoped}
       (hcp : cursor.checkpoint = m₀.checkpoint)
       (hext : Extends m₀ memory)
       (hwf : Heap.WellFormed m₀.heap)
@@ -1493,13 +1493,13 @@ inductive ChoiceChain {σ : LPSignature} [DecidableEq σ.relationSymbols]
       (hclauses : ∀ c ∈ cursor.clauses,
         c ∈ clausesFor program cursor.goal.symbol)
       (holder : ChoiceChain program varMap bound older m₀) :
-      ChoiceChain program varMap bound (cursor :: older) memory
+      ChoiceChain program varMap bound (.clause cursor :: older) memory
 
 /-- Re-anchor a chain along a further extension. -/
 theorem ChoiceChain.anchor {σ : LPSignature}
     [DecidableEq σ.relationSymbols] {program : Program σ}
     {varMap : List (ScopedVar σ.vars × Addr)} {bound : Nat}
-    {choices : List (ClauseCursor σ)} {memory memory' : Memory σ.scoped}
+    {choices : List (ChoicePoint σ)} {memory memory' : Memory σ.scoped}
     (h : ChoiceChain program varMap bound choices memory)
     (hext : Extends memory memory') :
     ChoiceChain program varMap bound choices memory' := by
@@ -1514,7 +1514,7 @@ theorem ChoiceChain.anchor {σ : LPSignature}
 theorem ChoiceChain.scope_mono {σ : LPSignature}
     [DecidableEq σ.relationSymbols] {program : Program σ}
     {varMap : List (ScopedVar σ.vars × Addr)} {bound bound' : Nat}
-    {choices : List (ClauseCursor σ)} {memory : Memory σ.scoped}
+    {choices : List (ChoicePoint σ)} {memory : Memory σ.scoped}
     (hle : bound ≤ bound')
     (h : ChoiceChain program varMap bound choices memory) :
     ChoiceChain program varMap bound' choices memory := by
@@ -1529,7 +1529,7 @@ theorem ChoiceChain.scope_mono {σ : LPSignature}
 theorem ChoiceChain.drop {σ : LPSignature}
     [DecidableEq σ.relationSymbols] {program : Program σ}
     {varMap : List (ScopedVar σ.vars × Addr)} {bound : Nat} :
-    ∀ (k : Nat) {choices : List (ClauseCursor σ)}
+    ∀ (k : Nat) {choices : List (ChoicePoint σ)}
       {memory : Memory σ.scoped},
       ChoiceChain program varMap bound choices memory →
       ChoiceChain program varMap bound (choices.drop k) memory := by
@@ -1548,7 +1548,7 @@ theorem ChoiceChain.drop {σ : LPSignature}
 theorem ChoiceChain.retainBottom {σ : LPSignature}
     [DecidableEq σ.relationSymbols] {program : Program σ}
     {varMap : List (ScopedVar σ.vars × Addr)} {bound : Nat}
-    {choices : List (ClauseCursor σ)} {memory : Memory σ.scoped}
+    {choices : List (ChoicePoint σ)} {memory : Memory σ.scoped}
     (mark : Nat)
     (h : ChoiceChain program varMap bound choices memory) :
     ChoiceChain program varMap bound
@@ -1856,7 +1856,7 @@ theorem selectSuccess_inv {σ : LPSignature} [DecidableEq σ.vars]
         exact (hq.chain.anchor hExt).scope_mono (Nat.le_succ _)
     | cons r rs =>
         show ChoiceChain program state.queryVarMap (state.nextScope + 1)
-          ({ cursor with clauses := r :: rs } :: state.choices)
+          (.clause { cursor with clauses := r :: rs } :: state.choices)
           copied.memory
         refine ChoiceChain.cons (m₀ := state.memory) hs.checkpoint hExt
           hq.wf hq.shaped hq.ffDesc hq.inj
@@ -1905,9 +1905,9 @@ theorem unifySuccess_queryInv {σ : LPSignature}
 checkpoint memory, with its stored invariants and the cursor's facts. -/
 theorem backtrackPop_inv {σ : LPSignature} [DecidableEq σ.relationSymbols]
     {program : Program σ} {state : State σ} {cursor : ClauseCursor σ}
-    {older : List (ClauseCursor σ)}
+    {older : List (ChoicePoint σ)}
     (hq : QueryInv program state)
-    (hchoices : state.choices = cursor :: older) :
+    (hchoices : state.choices = .clause cursor :: older) :
     ∃ m₀, state.memory.restore cursor.checkpoint = .ok m₀ ∧
       QueryInv program { state with memory := m₀, choices := older, phase := .select cursor } ∧
       SelectInv program { state with memory := m₀, choices := older, phase := .select cursor } cursor := by
@@ -2318,11 +2318,11 @@ exact restoration. -/
 inductive LaneChain {σ : LPSignature} [DecidableEq σ.vars]
     (program : Program σ) (root : List (Atom σ.scoped))
     (keys : List (ScopedVar σ.vars)) :
-    Nat → List (ClauseCursor σ) → Memory σ.scoped → Prop
+    Nat → List (ChoicePoint σ) → Memory σ.scoped → Prop
   | nil (bound : Nat) (memory : Memory σ.scoped) :
       LaneChain program root keys bound [] memory
   | cons {bound : Nat} {cursor : ClauseCursor σ}
-      {older : List (ClauseCursor σ)} {memory m₀ : Memory σ.scoped}
+      {older : List (ChoicePoint σ)} {memory m₀ : Memory σ.scoped}
       {barrier : Nat}
       (hext : Extends m₀ memory)
       (hcp : cursor.checkpoint = m₀.checkpoint)
@@ -2332,13 +2332,13 @@ inductive LaneChain {σ : LPSignature} [DecidableEq σ.vars]
       (hlane : LaneOk program root keys m₀.heap barrier
         (cursorResolvent cursor))
       (holder : LaneChain program root keys bound older m₀) :
-      LaneChain program root keys bound (cursor :: older) memory
+      LaneChain program root keys bound (.clause cursor :: older) memory
 
 /-- Re-anchor the lane chain along a further extension. -/
 theorem LaneChain.anchor {σ : LPSignature} [DecidableEq σ.vars]
     {program : Program σ} {root : List (Atom σ.scoped)}
     {keys : List (ScopedVar σ.vars)} {bound : Nat}
-    {choices : List (ClauseCursor σ)} {memory memory' : Memory σ.scoped}
+    {choices : List (ChoicePoint σ)} {memory memory' : Memory σ.scoped}
     (h : LaneChain program root keys bound choices memory)
     (hextM : Extends memory memory') :
     LaneChain program root keys bound choices memory' := by
@@ -2351,7 +2351,7 @@ theorem LaneChain.anchor {σ : LPSignature} [DecidableEq σ.vars]
 theorem LaneChain.scope_mono {σ : LPSignature} [DecidableEq σ.vars]
     {program : Program σ} {root : List (Atom σ.scoped)}
     {keys : List (ScopedVar σ.vars)} {bound bound' : Nat}
-    {choices : List (ClauseCursor σ)} {memory : Memory σ.scoped}
+    {choices : List (ChoicePoint σ)} {memory : Memory σ.scoped}
     (hle : bound ≤ bound')
     (h : LaneChain program root keys bound choices memory) :
     LaneChain program root keys bound' choices memory := by
@@ -2365,9 +2365,9 @@ the stored anchor with the restored memory. -/
 theorem LaneChain.pop {σ : LPSignature} [DecidableEq σ.vars]
     {program : Program σ} {root : List (Atom σ.scoped)}
     {keys : List (ScopedVar σ.vars)} {bound : Nat}
-    {cursor : ClauseCursor σ} {older : List (ClauseCursor σ)}
+    {cursor : ClauseCursor σ} {older : List (ChoicePoint σ)}
     {memory m₀ : Memory σ.scoped}
-    (h : LaneChain program root keys bound (cursor :: older) memory)
+    (h : LaneChain program root keys bound (.clause cursor :: older) memory)
     (hrestore : memory.restore cursor.checkpoint = .ok m₀) :
     (∃ barrier, barrier ≤ bound ∧
       LaneOk program root keys m₀.heap barrier (cursorResolvent cursor)) ∧
@@ -2967,21 +2967,28 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                   dsimp only at hPull
                   cases hPull
               | cons cursor older =>
-                  obtain ⟨m₀, hres, hqPop, hsPop⟩ :=
-                    backtrackPop_inv hq hchoices
-                  have hstep : RuntimeQuery.step builtins program state =
-                      .next { state with memory := m₀, choices := older, phase := .select cursor } none := by
-                    simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
-                      hchoices, hres]
-                  rw [hstep] at hPull
-                  dsimp only at hPull
-                  rw [hchoices] at hLC
-                  obtain ⟨⟨barrier, hb, hlanePop⟩, hLCPop⟩ :=
-                    hLC.pop hres
-                  refine ih fuel (Nat.lt_succ_self _) { state with memory := m₀, choices := older, phase := .select cursor } ans resumed hPull
-                    hqPop ?_ hLCPop
-                  simp only [PhaseLane]
-                  exact ⟨hsPop, barrier, hb, hlanePop⟩
+                  cases cursor with
+                  | clause cursor =>
+                      obtain ⟨m₀, hres, hqPop, hsPop⟩ :=
+                        backtrackPop_inv hq hchoices
+                      have hstep : RuntimeQuery.step builtins program state =
+                          .next { state with memory := m₀, choices := older, phase := .select cursor } none := by
+                        simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
+                          hchoices, hres]
+                      rw [hstep] at hPull
+                      dsimp only at hPull
+                      rw [hchoices] at hLC
+                      obtain ⟨⟨barrier, hb, hlanePop⟩, hLCPop⟩ :=
+                        hLC.pop hres
+                      refine ih fuel (Nat.lt_succ_self _)
+                        { state with memory := m₀, choices := older, phase := .select cursor } ans resumed hPull
+                        hqPop ?_ hLCPop
+                      simp only [PhaseLane]
+                      exact ⟨hsPop, barrier, hb, hlanePop⟩
+                  | branch alternative =>
+                      have hchain := hq.chain
+                      rw [hchoices] at hchain
+                      cases hchain
           | dispatch =>
               obtain ⟨hCW, barrier, hb, hlane⟩ := by
                 simpa only [PhaseLane, hphase] using hPL
@@ -3164,7 +3171,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                         | cons r rs =>
                             show LaneChain program root keys
                               (state.nextScope + 1)
-                              ({ cursor with clauses := r :: rs } ::
+                              (.clause { cursor with clauses := r :: rs } ::
                                 state.choices) copied.memory
                             exact LaneChain.cons (m₀ := state.memory)
                               hExtMat hs.checkpoint hq.wf hq.shaped

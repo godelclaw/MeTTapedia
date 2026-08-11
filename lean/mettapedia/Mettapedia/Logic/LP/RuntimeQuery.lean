@@ -11,17 +11,17 @@ the shared heap, and delegates head unification to `RuntimeUnification`.
 
 The control layout follows the semantic spine of SWI-Prolog V10.1.9:
 
-* `src/pl-incl.h`: `localFrame`, `choice`, and `CHP_CLAUSE`;
+* `src/pl-incl.h`: `localFrame`, `choice`, `CHP_CLAUSE`, and `CHP_JUMP`;
 * `src/pl-vmi.c`: `shallow_backtrack`, `deep_backtrack`, and `I_CUT`;
 * `src/pl-wam.c`: `discardChoicesAfter`; and
 * `src/pl-wam.c`: `PL_next_solution` resumption.
 
 The Lean representation is intentionally smaller than SWI's VM.  A return
-frame stores a caller continuation and its cut depth.  A clause choice stores
-the call-entry heap/trail checkpoint and the remaining source clauses.  Failure
-restores that checkpoint before retrying; cut retains only choices older than
-the current predicate frame.  The fresh activation scope is persistent query
-state and is therefore never rewound by backtracking.
+frame stores a caller continuation and its cut depth.  One tagged choice stack
+stores either a clause retry or a control continuation.  Both own the exact
+heap/trail checkpoint restored before resumption; cut retains only choices
+older than the current predicate frame.  The fresh activation scope is
+persistent query state and is therefore never rewound by backtracking.
 -/
 
 namespace Mettapedia.Logic.LP
@@ -86,6 +86,26 @@ structure ClauseCursorCore (σ : LPSignature) (Instruction SourceClause : Type*)
 abbrev ClauseCursor (σ : LPSignature) :=
   ClauseCursorCore σ (RuntimeAtom σ.scoped) (Clause σ)
 
+/-- A saved control continuation, corresponding to SWI-Prolog's `CHP_JUMP`.
+It owns the checkpoint at which the alternative was created and the complete
+backtrackable control to resume after restoring that checkpoint. -/
+structure BranchChoiceCore (σ : LPSignature) (Instruction : Type*) where
+  checkpoint : Memory.Checkpoint
+  control : ControlCore σ Instruction
+
+/-- The single newest-first alternative stack.  Clause retries and structured
+control branches are different resource kinds, but share restoration, DFS
+ordering, and cut ownership. -/
+inductive ChoicePointCore (σ : LPSignature)
+    (Instruction SourceClause : Type*) where
+  | clause (cursor : ClauseCursorCore σ Instruction SourceClause)
+  | branch (alternative : BranchChoiceCore σ Instruction)
+
+/-- The established pure-LP choice-point type.  Pure LP execution constructs
+only `clause` alternatives. -/
+abbrev ChoicePoint (σ : LPSignature) :=
+  ChoicePointCore σ (RuntimeAtom σ.scoped) (Clause σ)
+
 /-- Information retained while the graph unifier executes one selected head. -/
 structure AttemptCore (σ : LPSignature) (Instruction : Type*) where
   body : List Instruction
@@ -115,7 +135,7 @@ heap, control, and choice stack are the backtrackable lane. -/
 structure StateCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   memory : Memory σ.scoped
   control : ControlCore σ Instruction
-  choices : List (ClauseCursorCore σ Instruction SourceClause)
+  choices : List (ChoicePointCore σ Instruction SourceClause)
   queryCheckpoint : Memory.Checkpoint
   queryVarMap : List (ScopedVar σ.vars × Addr)
   nextScope : Nat
@@ -286,11 +306,11 @@ def failWith {σ : LPSignature}
 def replacementChoices {σ : LPSignature}
     (cursor : ClauseCursorCore σ Instruction SourceClause)
     (remaining : List SourceClause)
-    (older : List (ClauseCursorCore σ Instruction SourceClause)) :
-    List (ClauseCursorCore σ Instruction SourceClause) :=
+    (older : List (ChoicePointCore σ Instruction SourceClause)) :
+    List (ChoicePointCore σ Instruction SourceClause) :=
   match remaining with
   | [] => older
-  | _ => { cursor with clauses := remaining } :: older
+  | _ => .clause { cursor with clauses := remaining } :: older
 
 /-- The only data a language-specific clause materializer may supply to the
 shared selected-clause transition.  The type has no constructors for answers,
@@ -366,7 +386,7 @@ def backtrackStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   match state.choices with
   | [] => complete state
-  | cursor :: older =>
+  | .clause cursor :: older =>
       match state.memory.restore cursor.checkpoint with
       | .error error => failWith state (.memory error)
       | .ok memory =>
@@ -375,6 +395,17 @@ def backtrackStep {σ : LPSignature}
             memory
             choices := older
             phase := .select cursor
+          } none
+  | .branch alternative :: older =>
+      match state.memory.restore alternative.checkpoint with
+      | .error error => failWith state (.memory error)
+      | .ok memory =>
+          .next {
+            state with
+            memory
+            control := alternative.control
+            choices := older
+            phase := .dispatch
           } none
 
 /-- An empty current goal stack either returns to its caller frame or yields
@@ -471,6 +502,32 @@ def callStep {σ : LPSignature}
   }
   .next { state with phase := .select cursor } none
 
+/-- Enter a left-first structured branch.  The right branch and the caller's
+remaining goals become one checkpointed choice; the left branch executes now.
+This is the direct typed analogue of SWI-Prolog's `C_OR`/`CHP_JUMP` path. -/
+@[simp]
+def branchStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (left right rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let alternative : BranchChoiceCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    control := {
+      current := right ++ rest
+      cutDepth := state.control.cutDepth
+      frames := state.control.frames
+    }
+  }
+  .next {
+    state with
+    control := {
+      current := left ++ rest
+      cutDepth := state.control.cutDepth
+      frames := state.control.frames
+    }
+    choices := .branch alternative :: state.choices
+  } none
+
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
 (`src/pl-prims.c`) and body unification instructions (`src/pl-vmi.c`). -/
@@ -515,12 +572,16 @@ def isVarStep {σ : LPSignature}
       | some _ => .next { state with phase := .backtrack } none
 
 /-- The complete authority granted to an instruction classifier.  It may name
-an ordinary call's source clauses or identify base control, but it cannot emit
-answers/effects, mutate memory, select a clause, or schedule a body. -/
-inductive DispatchAction (σ : LPSignature) (SourceClause : Type*) where
+an ordinary call's source clauses, identify base control, or expose the two
+already-materialized payloads of a branch.  It cannot emit answers/effects,
+mutate memory, select a clause, choose branch order, create checkpoints, or
+resume an alternative. -/
+inductive DispatchAction (σ : LPSignature)
+    (Instruction SourceClause : Type*) where
   | call (goal : RuntimeAtom σ.scoped) (clauses : List SourceClause)
   | fail
   | cut
+  | branch (left right : List Instruction)
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -532,11 +593,12 @@ stack rather than from the classifier. -/
 def dispatchActionStep {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (rest : List Instruction) :
-    DispatchAction σ SourceClause →
+    DispatchAction σ Instruction SourceClause →
       StepResultCore σ Instruction SourceClause
   | .call goal clauses => callStep state goal clauses rest
   | .fail => .next { state with phase := .backtrack } none
   | .cut => cutStep state rest
+  | .branch left right => branchStep state left right rest
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
@@ -547,7 +609,7 @@ classification above; all search transitions remain in this definition. -/
 def stepCore {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
-    (classify : Instruction → DispatchAction σ SourceClause)
+    (classify : Instruction → DispatchAction σ Instruction SourceClause)
     (state : StateCore σ Instruction SourceClause) :
     StepResultCore σ Instruction SourceClause :=
   match state.phase with
@@ -564,7 +626,8 @@ def stepCore {σ : LPSignature} [DecidableEq σ.constants]
 /-- Classify an established LP runtime atom for the shared phase loop. -/
 def lpDispatchAction {σ : LPSignature} [DecidableEq σ.relationSymbols]
     (builtins : Builtins σ) (program : Program σ)
-    (goal : RuntimeAtom σ.scoped) : DispatchAction σ (Clause σ) :=
+    (goal : RuntimeAtom σ.scoped) :
+    DispatchAction σ (RuntimeAtom σ.scoped) (Clause σ) :=
   if builtins.isCut goal.symbol = true then
     if goal.args.isEmpty then .cut else .error .malformedCut
   else
@@ -590,6 +653,66 @@ theorem lp_stepCore_eq_step {σ : LPSignature} [DecidableEq σ.vars]
       step builtins program state := rfl
 
 /-! ## Local control laws -/
+
+/-- A structured branch contributes exactly one newest choice, executes the
+left branch first, and stores the right branch followed by the live
+continuation at the current checkpoint. -/
+theorem branchStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (left right rest : List Instruction) :
+    branchStep state left right rest =
+      .next {
+        state with
+        control := {
+          current := left ++ rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        }
+        choices := .branch {
+          checkpoint := state.memory.checkpoint
+          control := {
+            current := right ++ rest
+            cutDepth := state.control.cutDepth
+            frames := state.control.frames
+          }
+        } :: state.choices
+      } none := rfl
+
+/-- Backtracking through a structured branch restores its owned checkpoint
+before installing the saved right-branch control. -/
+theorem backtrackStep_branch_of_restore {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (alternative : BranchChoiceCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause))
+    (memory : Memory σ.scoped)
+    (hChoices : state.choices = .branch alternative :: older)
+    (hRestore : state.memory.restore alternative.checkpoint = .ok memory) :
+    backtrackStep state =
+      .next {
+        state with
+        memory
+        control := alternative.control
+        choices := older
+        phase := .dispatch
+      } none := by
+  simp [backtrackStep, hChoices, hRestore]
+
+/-- A cut whose captured depth is exactly the older suffix removes a newest
+structured branch while retaining every older caller alternative. -/
+theorem cutStep_prunes_newest_branch {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (alternative : BranchChoiceCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause))
+    (rest : List Instruction)
+    (hChoices : state.choices = .branch alternative :: older)
+    (hDepth : state.control.cutDepth = older.length) :
+    cutStep state rest =
+      .next {
+        state with
+        control := { state.control with current := rest }
+        choices := older
+      } none := by
+  simp [cutStep, hChoices, hDepth, retainBottom]
 
 /-- A well-formed cut transition retains exactly the choices older than the
 current predicate activation.  The theorem is stated directly about the one
@@ -658,7 +781,7 @@ and the returned state resumes the same DFS search. -/
 def pullCore {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
-    (classify : Instruction → DispatchAction σ SourceClause) :
+    (classify : Instruction → DispatchAction σ Instruction SourceClause) :
     Nat → StateCore σ Instruction SourceClause →
       PullResultCore σ Instruction SourceClause
   | 0, state => .open state

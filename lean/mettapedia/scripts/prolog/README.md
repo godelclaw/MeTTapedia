@@ -163,6 +163,20 @@ arity, ordered children, variable spelling and sharing, and atomic payloads.
 The comparison fails on a version mismatch, a changed term count, malformed
 JSON, or any structural difference.
 
+### Shared-runtime control differential
+
+The canonical runtime's structured-choice path has a separate observable gate:
+
+```bash
+scripts/prolog/run_runtime_control_differential.sh
+```
+
+It compares four exact ordered answer traces against SWI-Prolog 10.1.9:
+left-first disjunction, restoration before entering the right branch, cut
+pruning the right branch, and a callee-local cut retaining its caller's older
+disjunction choice.  Lean-side cleanup is additionally required to restore an
+empty heap and trail.
+
 ## What a pass means
 
 Passing all three tiers means the Lean `PrologEval` semantics agrees with

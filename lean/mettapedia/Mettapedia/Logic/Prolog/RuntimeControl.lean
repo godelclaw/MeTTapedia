@@ -466,19 +466,22 @@ def openQuery {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
     queryMaterializer memory queryScope nextScope goal
 
 /-- Classify a typed runtime instruction into the narrow authority accepted by
-the shared phase loop.  Structured controls remain explicit errors until their
-dedicated state transitions extend `RuntimeQuery`; they are never treated as
-failure or erased. -/
+the shared phase loop.  Disjunction supplies only its already-materialized
+branch payloads; checkpointing, DFS scheduling, restoration, and cut ownership
+remain in `RuntimeQuery.branchStep`.  Other structured controls remain explicit
+errors until their dedicated transitions are certified. -/
 def dispatchAction {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
     (program : Program sigma)
     (instruction : RuntimeGoal sigma.scoped) :
-    LP.RuntimeQuery.DispatchAction sigma (Clause sigma) :=
+    LP.RuntimeQuery.DispatchAction sigma (RuntimeGoal sigma.scoped)
+      (Clause sigma) :=
   match instruction with
   | .call goal =>
       .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
+  | .disj left right => .branch left right
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | _ => .error .unsupportedInstruction

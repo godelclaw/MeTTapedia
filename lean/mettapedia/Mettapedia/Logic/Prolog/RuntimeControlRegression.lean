@@ -227,7 +227,7 @@ def typedCutRetainsCallerChoice : Bool :=
               cutDepth := 1
               frames := []
             }
-            choices := [older]
+            choices := [.clause older]
             queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
             queryVarMap := queryResult.varMap
             nextScope := 1
@@ -248,7 +248,7 @@ def structuredControlIsExplicitlyUnsupported : Bool :=
   let state : State qSig := {
     memory
     control := {
-      current := [.disj [] []]
+      current := [.ifThenElse [] [] []]
       cutDepth := 0
       frames := []
     }
@@ -331,6 +331,43 @@ def isVarAfterBinding : Goal qSig :=
   .conj (.unify (.var .x) (.const .a))
     (.isVar (.var .x))
 
+/-- Left-first DFS exposes disjunct answers in source order. -/
+def disjSourceOrder : Goal qSig :=
+  .disj (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .b))
+
+/-- The failed left disjunct binds `X`; the right disjunct can observe that
+checkpoint restoration made `X` variable again before binding it to `b`. -/
+def disjRestoresBeforeRight : Goal qSig :=
+  .disj
+    (.conj (.unify (.var .x) (.const .a)) .fail)
+    (.conj (.isVar (.var .x))
+      (.unify (.var .x) (.const .b)))
+
+/-- A cut in the left disjunct removes the retained right branch. -/
+def disjCutPrunesRight : Goal qSig :=
+  .disj
+    (.conj (.unify (.var .x) (.const .a)) .cut)
+    (.unify (.var .x) (.const .b))
+
+/-- A callee-local cut removes the callee's later clause but retains the
+caller's older disjunction branch. -/
+def calleeCutRetainsCallerDisjProgram : Program qSig := [
+  {
+    head := unary .choose (.var .x)
+    body := .conj (.unify (.var .x) (.const .a)) .cut
+  },
+  {
+    head := unary .choose (.var .x)
+    body := .unify (.var .x) (.const .b)
+  }
+]
+
+def calleeCutRetainsCallerDisj : Goal qSig :=
+  .disj
+    (.call (unary .choose (.var .x)))
+    (.unify (.var .x) (.const .c))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -344,5 +381,10 @@ def isVarAfterBinding : Goal qSig :=
 #guard runTyped [] inlineUnifyFailureAfterBinding == some ([], 0, 0)
 #guard runTyped [] isVarBeforeBinding == some ([.a], 0, 0)
 #guard runTyped [] isVarAfterBinding == some ([], 0, 0)
+#guard runTyped [] disjSourceOrder == some ([.a, .b], 0, 0)
+#guard runTyped [] disjRestoresBeforeRight == some ([.b], 0, 0)
+#guard runTyped [] disjCutPrunesRight == some ([.a], 0, 0)
+#guard runTyped calleeCutRetainsCallerDisjProgram calleeCutRetainsCallerDisj ==
+  some ([.a, .c], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

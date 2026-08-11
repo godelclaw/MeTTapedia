@@ -47,6 +47,22 @@ def mapCursor (instruction : Instruction₁ → Instruction₂)
   cutDepth := cursor.cutDepth
   frames := cursor.frames.map (mapReturnFrame instruction)
 
+/-- Map a saved structured-control alternative without changing its owned
+checkpoint. -/
+def mapBranchChoice (instruction : Instruction₁ → Instruction₂)
+    (alternative : BranchChoiceCore sigma Instruction₁) :
+    BranchChoiceCore sigma Instruction₂ where
+  checkpoint := alternative.checkpoint
+  control := mapControl instruction alternative.control
+
+/-- Map either resource kind in the one canonical choice stack. -/
+def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂) :
+    ChoicePointCore sigma Instruction₁ SourceClause₁ →
+      ChoicePointCore sigma Instruction₂ SourceClause₂
+  | .clause cursor => .clause (mapCursor instruction sourceClause cursor)
+  | .branch alternative => .branch (mapBranchChoice instruction alternative)
+
 /-- Map a selected clause body while retaining the canonical unifier state. -/
 def mapAttempt (instruction : Instruction₁ → Instruction₂)
     (attempt : AttemptCore sigma Instruction₁) :
@@ -74,7 +90,7 @@ def mapState (instruction : Instruction₁ → Instruction₂)
     StateCore sigma Instruction₂ SourceClause₂ where
   memory := state.memory
   control := mapControl instruction state.control
-  choices := state.choices.map (mapCursor instruction sourceClause)
+  choices := state.choices.map (mapChoicePoint instruction sourceClause)
   queryCheckpoint := state.queryCheckpoint
   queryVarMap := state.queryVarMap
   nextScope := state.nextScope
@@ -96,13 +112,18 @@ def mapMaterializedQuery (instruction : Instruction₁ → Instruction₂)
   current := query.current.map instruction
   varMap := query.varMap
 
-/-- Representation change on a classifier result.  The classifier still has
-no authority to create answers, effects, choices, or schedules. -/
-def mapDispatchAction (sourceClause : SourceClause₁ → SourceClause₂) :
-    DispatchAction sigma SourceClause₁ → DispatchAction sigma SourceClause₂
+/-- Representation change on a classifier result.  Branch payloads are mapped,
+while choice creation, ordering, checkpointing, and resumption remain owned by
+the shared engine. -/
+def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂) :
+    DispatchAction sigma Instruction₁ SourceClause₁ →
+      DispatchAction sigma Instruction₂ SourceClause₂
   | .call goal clauses => .call goal (clauses.map sourceClause)
   | .fail => .fail
   | .cut => .cut
+  | .branch left right =>
+      .branch (left.map instruction) (right.map instruction)
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .error reason => .error reason
@@ -132,8 +153,10 @@ authority supplied to `stepCore`. -/
 structure Realization
     (sourceMaterializer : ClauseMaterializer sigma Instruction₁ SourceClause₁)
     (targetMaterializer : ClauseMaterializer sigma Instruction₂ SourceClause₂)
-    (sourceClassify : Instruction₁ → DispatchAction sigma SourceClause₁)
-    (targetClassify : Instruction₂ → DispatchAction sigma SourceClause₂)
+    (sourceClassify : Instruction₁ →
+      DispatchAction sigma Instruction₁ SourceClause₁)
+    (targetClassify : Instruction₂ →
+      DispatchAction sigma Instruction₂ SourceClause₂)
     (instruction : Instruction₁ → Instruction₂)
     (sourceClause : SourceClause₁ → SourceClause₂) : Prop where
   materialize : ∀ memory scope clause,
@@ -142,7 +165,7 @@ structure Realization
         (mapMaterializedBody instruction)
   classify : ∀ next,
     targetClassify (instruction next) =
-      mapDispatchAction sourceClause (sourceClassify next)
+      mapDispatchAction instruction sourceClause (sourceClassify next)
 
 /-- The corresponding boundary equation for query opening. -/
 structure QueryRealization {SourceQuery₁ SourceQuery₂ : Type*}
@@ -189,8 +212,10 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols] [DecidableEq sigma.relationSymbols]
     {sourceMaterializer : ClauseMaterializer sigma Instruction₁ SourceClause₁}
     {targetMaterializer : ClauseMaterializer sigma Instruction₂ SourceClause₂}
-    {sourceClassify : Instruction₁ → DispatchAction sigma SourceClause₁}
-    {targetClassify : Instruction₂ → DispatchAction sigma SourceClause₂}
+    {sourceClassify : Instruction₁ →
+      DispatchAction sigma Instruction₁ SourceClause₁}
+    {targetClassify : Instruction₂ →
+      DispatchAction sigma Instruction₂ SourceClause₂}
     {instruction : Instruction₁ → Instruction₂}
     {sourceClause : SourceClause₁ → SourceClause₂}
     (realizes : Realization sourceMaterializer targetMaterializer
@@ -213,11 +238,19 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
             simp [stepCore, mapState, mapPhase, mapControl, mapStepResult,
               backtrackStep, complete, closeMemory, hRestore]
       | cons cursor older =>
-          cases hRestore : memory.restore cursor.checkpoint <;>
-            cases hCleanup : memory.restore checkpoint <;>
-            simp [stepCore, mapState, mapPhase, mapControl, mapCursor,
-              mapStepResult, backtrackStep, failWith, closeMemory, hRestore,
-              hCleanup]
+          cases cursor with
+          | clause cursor =>
+              cases hRestore : memory.restore cursor.checkpoint <;>
+                cases hCleanup : memory.restore checkpoint <;>
+                simp [stepCore, mapState, mapPhase, mapControl, mapCursor,
+                  mapChoicePoint, mapStepResult, backtrackStep, failWith,
+                  closeMemory, hRestore, hCleanup]
+          | branch alternative =>
+              cases hRestore : memory.restore alternative.checkpoint <;>
+                cases hCleanup : memory.restore checkpoint <;>
+                simp [stepCore, mapState, mapPhase, mapControl,
+                  mapBranchChoice, mapChoicePoint, mapStepResult,
+                  backtrackStep, failWith, closeMemory, hRestore, hCleanup]
   | dispatch =>
       rcases control with ⟨current, cutDepth, frames⟩
       cases current with
@@ -246,6 +279,10 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
                     mapState, mapControl, mapCursor, mapPhase, mapReturnFrame,
                     mapStepResult, failWith, closeMemory, retainBottom,
                     hDepth, hCleanup]
+          | branch left right =>
+              simp [mapDispatchAction, dispatchActionStep, branchStep,
+                mapState, mapControl, mapBranchChoice, mapChoicePoint,
+                mapPhase, mapReturnFrame, mapStepResult, List.map_append]
           | unify left right =>
               simp [mapDispatchAction, dispatchActionStep, beginUnifyStep,
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,
@@ -315,7 +352,8 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
               · by_cases hArity : goal.args.size = copied.head.args.size
                 · cases remaining <;>
                     simp [Except.map, mapMaterializedBody, mapStepResult,
-                      mapState, mapControl, mapCursor, mapAttempt, mapPhase,
+                      mapState, mapControl, mapCursor, mapChoicePoint,
+                      mapAttempt, mapPhase,
                       mapReturnFrame, replacementChoices, hMaterialize,
                       RuntimeClauseEntry.enter, hPredicate, hArity]
                 · cases hCleanup : memory.restore checkpoint <;>
@@ -359,8 +397,10 @@ theorem pullCore_conserves [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols] [DecidableEq sigma.relationSymbols]
     {sourceMaterializer : ClauseMaterializer sigma Instruction₁ SourceClause₁}
     {targetMaterializer : ClauseMaterializer sigma Instruction₂ SourceClause₂}
-    {sourceClassify : Instruction₁ → DispatchAction sigma SourceClause₁}
-    {targetClassify : Instruction₂ → DispatchAction sigma SourceClause₂}
+    {sourceClassify : Instruction₁ →
+      DispatchAction sigma Instruction₁ SourceClause₁}
+    {targetClassify : Instruction₂ →
+      DispatchAction sigma Instruction₂ SourceClause₂}
     {instruction : Instruction₁ → Instruction₂}
     {sourceClause : SourceClause₁ → SourceClause₂}
     (realizes : Realization sourceMaterializer targetMaterializer
