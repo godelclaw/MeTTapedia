@@ -206,6 +206,29 @@ theorem nextLocalLayerPrefixCrossing_injective
       embedded.cellulation.rotation.toRotationSystem) hunique
   simpa [nextLocalLayerPrefixCrossing] using heq
 
+/-- Passing from the left cross-section of a source Cell to its right
+cross-section adds exactly the boundary of the next central hexagonal face.
+This is the literal regional decomposition to which the one-Cell transfer
+law must be applied. -/
+theorem localLayerRightPrefixEdgeRegion_eq_left_union_nextCenterBoundary
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    corridorPrefixEdgeRegion
+        realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        (leftInterior.center.val + 2) =
+      corridorPrefixEdgeRegion
+          realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          (leftInterior.center.val + 1) ∪
+        orbitFaceBoundary
+          embedded.cellulation.rotation.toRotationSystem
+          interface.nextCenterLayerFace.1 := by
+  have hcut : leftInterior.center.val + 1 < blockLength := by omega
+  simpa [nextCenterLayerFace, nextCorridorInterior, CorridorInterior.outgoing,
+    CorridorStep.right] using
+    (corridorPrefixEdgeRegion_succ
+      realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      (leftInterior.center.val + 1) hcut)
+
 /-- Full cut data for the cumulative prefix immediately before the Cell. -/
 noncomputable def localLayerLeftPrefixGraphCutData
     (interface : SourceConsecutiveSlabInterface realization htwoSided hunique

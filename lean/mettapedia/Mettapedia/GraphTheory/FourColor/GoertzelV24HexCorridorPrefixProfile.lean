@@ -66,6 +66,33 @@ theorem corridorPrefixEdgeRegion_mono
   rcases hedge with ⟨position, hposition, hedge⟩
   exact ⟨position, hposition.trans_le hcut, hedge⟩
 
+/-- Advancing a corridor prefix by one position adds exactly the boundary of
+the newly exposed corridor face. -/
+theorem corridorPrefixEdgeRegion_succ
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    (corridor : OrbitHexCorridorSkeleton RS corridorLength)
+    (cut : Nat) (hcut : cut < corridorLength) :
+    corridorPrefixEdgeRegion corridor (cut + 1) =
+      corridorPrefixEdgeRegion corridor cut ∪
+        orbitFaceBoundary RS (corridor.faceAt ⟨cut, hcut⟩).1 := by
+  ext edge
+  rw [Finset.mem_union, mem_corridorPrefixEdgeRegion_iff,
+    mem_corridorPrefixEdgeRegion_iff]
+  constructor
+  · rintro ⟨position, hposition, hedge⟩
+    by_cases hbefore : position.val < cut
+    · exact Or.inl ⟨position, hbefore, hedge⟩
+    · right
+      have hpositionValue : position.val = cut := by omega
+      have hpositionEq : position = ⟨cut, hcut⟩ := by
+        apply Fin.ext
+        exact hpositionValue
+      simpa [hpositionEq] using hedge
+  · rintro (⟨position, hposition, hedge⟩ | hedge)
+    · exact ⟨position, by omega, hedge⟩
+    · refine ⟨⟨cut, hcut⟩, ?_, hedge⟩
+      exact Nat.lt_succ_self cut
+
 /-- Every edge of a corridor face before the cut belongs to the prefix edge
 region. -/
 theorem corridorFaceBoundary_subset_prefixEdgeRegion
