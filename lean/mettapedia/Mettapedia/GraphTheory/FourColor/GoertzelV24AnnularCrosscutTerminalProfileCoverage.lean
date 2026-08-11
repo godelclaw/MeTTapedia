@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutSpliceBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TerminalProfileFaceCapUpdate
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TerminalProfileFaceSliceFragments
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TerminalProfileVertexSideCoverage
 
 /-!
@@ -32,6 +33,7 @@ open GoertzelV24RotationFaceFragments
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24TerminalProfileConnectivityUpdate
 open GoertzelV24TerminalProfileFaceCapUpdate
+open GoertzelV24TerminalProfileFaceSliceFragments
 open GoertzelV24TerminalProfileFaceUpdate
 open GoertzelV24TerminalProfileRegionalCoverage
 open GoertzelV24TerminalProfileVertexSideCoverage
@@ -343,6 +345,69 @@ theorem sourceCrosscutRetainedRemoved_faceFragmentEdgeCap_eq
     fragment
     (pair.sourceCrosscutRetainedRemovedRegion_inter_card_lt_five
       data boundary hwidth)
+
+/-- Expanding the two factor slices into their literal connected fragments
+makes the source face update computable from factor-fragment caps.  Several
+factor fragments may contribute on either side; the theorem sums all of them
+and subtracts only their genuine shared occurrences. -/
+theorem sourceCrosscutRetainedRemoved_faceFragmentEdgeCap_eq_factorFragmentCaps
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (root : data.toRotationSystem.D)
+    (fragment :
+      let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)
+      let removedRegion := vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)ᶜ
+      FaceRegionalFragment data.toRotationSystem root
+        (retainedRegion ∪ removedRegion))
+    (hwidth : pair.left.walk.length = 2) :
+    let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)
+    let removedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ
+    min (faceRegionalFragmentEdges data.toRotationSystem root
+          (retainedRegion ∪ removedRegion) fragment).card 5 =
+      min
+        (min
+            (∑ factorFragment ∈
+                faceRegionalFactorFragments data.toRotationSystem root
+                  (retainedRegion ∪ removedRegion) retainedRegion fragment,
+              min (faceRegionalFragmentPositions data.toRotationSystem root
+                retainedRegion factorFragment).card 5)
+            5 +
+          min
+            (∑ factorFragment ∈
+                faceRegionalFactorFragments data.toRotationSystem root
+                  (retainedRegion ∪ removedRegion) removedRegion fragment,
+              min (faceRegionalFragmentPositions data.toRotationSystem root
+                removedRegion factorFragment).card 5)
+            5 -
+          (faceRegionalFragmentPositionSlice data.toRotationSystem root
+                (retainedRegion ∪ removedRegion) retainedRegion fragment ∩
+            faceRegionalFragmentPositionSlice data.toRotationSystem root
+                (retainedRegion ∪ removedRegion) removedRegion fragment).card)
+        5 := by
+  dsimp only
+  rw [pair.sourceCrosscutRetainedRemoved_faceFragmentEdgeCap_eq
+    data boundary htwoSided root fragment hwidth]
+  rw [min_card_faceRegionalFragmentPositionSlice_eq_min_sum_fragmentCaps
+    data.toRotationSystem root
+    (vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component) ∪
+      vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)ᶜ)
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component))
+    Finset.subset_union_left fragment]
+  rw [min_card_faceRegionalFragmentPositionSlice_eq_min_sum_fragmentCaps
+    data.toRotationSystem root
+    (vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component) ∪
+      vertexSetRegionEdges data.toRotationSystem
+        (pair.componentSide boundary.component)ᶜ)
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ)
+    Finset.subset_union_right fragment]
 
 end SourceCrosscut
 
