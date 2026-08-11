@@ -11,6 +11,10 @@ import Mettapedia.Logic.Prolog.ReaderTerm
 import Mettapedia.Logic.Prolog.ReaderTermRegression
 import Mettapedia.Logic.Prolog.ReaderSource
 import Mettapedia.Logic.Prolog.ReaderSourceRegression
+import Mettapedia.Logic.Prolog.ReaderLoader
+import Mettapedia.Logic.Prolog.ReaderDirective
+import Mettapedia.Logic.Prolog.ReaderSWIProfile
+import Mettapedia.Logic.Prolog.ReaderLoaderRegression
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.PureRuntimeSoundness
@@ -57,6 +61,9 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderOperator` | checked ISO/SWI operator declarations and dynamic updates |
 | `ReaderTerm` | operator-aware parsing directly into canonical `Logic.LP.Term` |
 | `ReaderSource` | direct clause/directive/DCG classification on canonical terms |
+| `ReaderLoader` | sequential term loading with explicit between-term effects |
+| `ReaderDirective` | local and imported read-time operator effects |
+| `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |
 | `PureRuntime` | demand-driven pure-Prolog entrypoint delegating to the canonical LP runtime |

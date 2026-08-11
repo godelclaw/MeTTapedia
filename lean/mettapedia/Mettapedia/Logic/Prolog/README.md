@@ -49,6 +49,15 @@ lake build Mettapedia.Logic.Prolog.Prolog
 | Module | What it does |
 |--------|-------------|
 | [Syntax.lean](Syntax.lean) | canonical LP-based `Goal`, control-aware `Clause`, and exact pure-Horn embedding |
+| [SourceSignature.lean](SourceSignature.lean) | concrete name/arity-indexed source signature over the canonical LP terms |
+| [ReaderLexer.lean](ReaderLexer.lean) | located SWI-shaped lexical tokens |
+| [ReaderTerm.lean](ReaderTerm.lean) | dynamic-operator parsing directly into canonical `LP.Term` |
+| [ReaderSource.lean](ReaderSource.lean) | direct classification into canonical Prolog goals and clauses |
+| [ReaderLoader.lean](ReaderLoader.lean) | sequential parsing with directive effects between terms |
+| [ReaderDirective.lean](ReaderDirective.lean) | checked read-time operator effects for directives and imports |
+| [ReaderSWIProfile.lean](ReaderSWIProfile.lean) | fail-closed import-operator profile for the pinned PeTTa closure |
+| [RuntimeControl.lean](RuntimeControl.lean) | typed control materialization and canonical LP runtime specialization |
+| [PureRuntimeSoundness.lean](PureRuntimeSoundness.lean) | pure runtime answers grounded in scoped SLD and the least Herbrand model |
 | [Core.lean](Core.lean) | pattern-level `PrologGoal`, `PEnv`, and fixture helpers |
 | [Eval.lean](Eval.lean) | `PrologEval` operational semantics with cut-aware control flow |
 | [RuntimeErrorSpec.lean](RuntimeErrorSpec.lean) | ISO runtime-error boundary: maps 4 out-of-model ISO IDs to error classes |

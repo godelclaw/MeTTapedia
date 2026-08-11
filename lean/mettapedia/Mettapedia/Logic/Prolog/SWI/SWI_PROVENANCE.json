@@ -52,6 +52,13 @@
       "commit": "6be143dbd030cc9ea621cde719a37f8385575453",
       "license": "BSD-2-Clause"
     },
+    "swi-swipy": {
+      "repository": "https://github.com/SWI-Prolog/packages-swipy.git",
+      "tag": "V10.1.9",
+      "version": "10.1.9",
+      "commit": "4ef253996f1f7ad8f9c811727473a2ed06436038",
+      "license": "BSD-2-Clause"
+    },
     "petta": {
       "repository": "https://github.com/trueagi-io/PeTTa.git",
       "commit": "6b7f52f064bdbc82fabd0a0998404121fb01d52e",
@@ -63,6 +70,16 @@
       "project": "swi-prolog",
       "path": "LICENSE",
       "sha256": "770594d0f4463b71f1485f00e4bc5cf4b6f667d62ef6bc9bde2fee236541992a"
+    },
+    {
+      "project": "swi-swipy",
+      "path": "LICENSE",
+      "sha256": "b778b9c3467adf72d4873bf9eb18e444da223af118b032412defbf760caa58a7"
+    },
+    {
+      "project": "swi-swipy",
+      "path": "janus/janus.pl",
+      "sha256": "9a49881887bdf62fabb8e003b2d1b435b7262282dd8e35bc139a35935584d825"
     },
     {
       "project": "swi-prolog",
@@ -287,9 +304,32 @@
       "project": "swi-prolog",
       "sources": ["src/pl-read.c"],
       "anchors": ["read_term", "read_term_from_stream"],
-      "implementation_status": "reference-only",
-      "proof_status": "not-started",
-      "swi_conformance_status": "not-measured"
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderLexer.lean",
+        "Mettapedia/Logic/Prolog/ReaderNumber.lean",
+        "Mettapedia/Logic/Prolog/ReaderOperator.lean",
+        "Mettapedia/Logic/Prolog/ReaderTerm.lean",
+        "Mettapedia/Logic/Prolog/ReaderSource.lean",
+        "Mettapedia/Logic/Prolog/ReaderLoader.lean",
+        "Mettapedia/Logic/Prolog/ReaderDirective.lean",
+        "Mettapedia/Logic/Prolog/ReaderSWIProfile.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/ReaderLexerRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderNumberRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderOperatorRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderTermRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderLoaderRegression.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/reader_pinned_differential.lean",
+        "scripts/prolog/reader_pinned_oracle.pl",
+        "scripts/prolog/run_pinned_reader_differential.sh"
+      ]
     },
     {
       "id": "runtime.source-loader",
@@ -297,6 +337,15 @@
       "sources": ["src/pl-srcfile.c", "src/pl-comp.c"],
       "anchors": ["startReconsultFile", "endReconsult", "compileClause"],
       "implementation_status": "reference-only",
+      "proof_status": "not-started",
+      "swi_conformance_status": "not-measured"
+    },
+    {
+      "id": "library.janus",
+      "project": "swi-swipy",
+      "sources": ["janus/janus.pl"],
+      "anchors": ["op(200, fy, @)", "op(50,  fx, #)"],
+      "implementation_status": "pinned-source",
       "proof_status": "not-started",
       "swi_conformance_status": "not-measured"
     },

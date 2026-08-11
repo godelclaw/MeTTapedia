@@ -148,6 +148,21 @@ python3 scripts/prolog/check_iso_probe_error_cases.py --results-file artifacts/p
 python3 scripts/prolog/report_logtalk_iso_coverage.py --logtalk-root ../_ext/prolog-tests/logtalk3/tests/prolog --require-lean-theorem-exact 63 --require-lean-case-exact 63 --require-lean-theorem-normalized 63 --require-lean-case-normalized 63
 ```
 
+### Canonical reader differential
+
+The canonical `Logic.LP.Term` reader has a separate exact-shape differential:
+
+```bash
+scripts/prolog/run_pinned_reader_differential.sh /path/to/PeTTa
+```
+
+The gate extracts the seven source files from PeTTa commit
+`6b7f52f064bdbc82fabd0a0998404121fb01d52e`, ignoring worktree changes. It
+then compares all 317 terms recursively against SWI-Prolog 10.1.9: functor and
+arity, ordered children, variable spelling and sharing, and atomic payloads.
+The comparison fails on a version mismatch, a changed term count, malformed
+JSON, or any structural difference.
+
 ## What a pass means
 
 Passing all three tiers means the Lean `PrologEval` semantics agrees with
