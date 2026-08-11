@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationSpliceConstructor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationCutDartDecomposition
 
 /-!
 # Composition of literal open tangles
@@ -20,6 +20,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24OpenTangleComposition
 
 open GoertzelV24RotationSpliceConstructor
+open GoertzelV24RotationCutDartDecomposition
 
 noncomputable section
 
@@ -66,6 +67,89 @@ theorem vertOf_interior (data : OpenTangleData V I B) (dart : I) :
 theorem vertOf_boundary (data : OpenTangleData V I B) (dart : B) :
     data.vertOf (Sum.inr dart) = data.boundaryVert dart :=
   rfl
+
+/-- The retained vertex named by a dart on one side of a vertex cut. -/
+def vertexSideVertex {E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (dart : RetainedDart RS keep) : { vertex : V // keep vertex } :=
+  ⟨RS.vertOf dart.1, dart.2⟩
+
+/-- The retained-dart partition preserves the displayed vertex when an
+interior or boundary dart is viewed as an open-tangle dart. -/
+@[simp]
+theorem openTangleVertOf_vertexSide_partition_symm {E : Type*}
+    [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (dart : InternalDart RS keep ⊕ BoundaryDart RS keep) :
+    openTangleVertOf
+        (fun internal : InternalDart RS keep => vertexSideVertex RS keep internal.1)
+        (fun boundary : BoundaryDart RS keep => vertexSideVertex RS keep boundary.1)
+        dart =
+      vertexSideVertex RS keep
+        ((retainedDartEquivInternalSumBoundary RS keep).symm dart) := by
+  rcases dart with internal | boundary <;> rfl
+
+/-- A literal vertex-side open tangle: all retained internal darts keep their
+old involution, while every retained boundary dart is a genuine unpaired
+half-edge.  This is the concrete bridge from a planar deletion component to
+the source's category of open instances. -/
+noncomputable def ofVertexSide {E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : RetainedDart RS keep) :
+    OpenTangleData { vertex : V // keep vertex }
+      (InternalDart RS keep) (BoundaryDart RS keep) where
+  interiorVert := fun dart => vertexSideVertex RS keep dart.1
+  boundaryVert := fun dart => vertexSideVertex RS keep dart.1
+  interiorAlpha := internalAlpha RS keep
+  interiorAlpha_involutive := internalAlpha_involutive RS keep
+  interiorAlpha_fixfree := internalAlpha_fixfree RS keep
+  rho :=
+    (((retainedDartEquivInternalSumBoundary RS keep).symm.trans
+      (retainedRho RS keep)).trans
+        (retainedDartEquivInternalSumBoundary RS keep))
+  vert_rho := by
+    intro dart
+    change openTangleVertOf
+        (fun internal : InternalDart RS keep => vertexSideVertex RS keep internal.1)
+        (fun boundary : BoundaryDart RS keep => vertexSideVertex RS keep boundary.1)
+        ((retainedDartEquivInternalSumBoundary RS keep)
+          (retainedRho RS keep
+            ((retainedDartEquivInternalSumBoundary RS keep).symm dart))) =
+      openTangleVertOf
+        (fun internal : InternalDart RS keep => vertexSideVertex RS keep internal.1)
+        (fun boundary : BoundaryDart RS keep => vertexSideVertex RS keep boundary.1)
+        dart
+    simp only [openTangleVertOf_vertexSide_partition_symm,
+      Equiv.symm_apply_apply]
+    apply Subtype.ext
+    exact RS.vert_rho
+      ((retainedDartEquivInternalSumBoundary RS keep).symm dart).1
+  interior_no_self_loops := by
+    intro dart hloop
+    apply RS.no_self_loops dart.1.1
+    exact congrArg Subtype.val hloop
+  outer := retainedDartEquivInternalSumBoundary RS keep outer
+
+/-- The old vertex rotation acts literally on the underlying retained dart of
+the corresponding open tangle. -/
+theorem ofVertexSide_rho_underlying {E : Type*} [Fintype V] [DecidableEq V]
+    [Fintype E] [DecidableEq E]
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : RetainedDart RS keep)
+    (dart : InternalDart RS keep ⊕ BoundaryDart RS keep) :
+    (retainedDartEquivInternalSumBoundary RS keep).symm
+      ((ofVertexSide RS keep outer).rho dart) =
+      retainedRho RS keep
+        ((retainedDartEquivInternalSumBoundary RS keep).symm dart) := by
+  change (retainedDartEquivInternalSumBoundary RS keep).symm
+      ((retainedDartEquivInternalSumBoundary RS keep)
+        (retainedRho RS keep
+          ((retainedDartEquivInternalSumBoundary RS keep).symm dart))) =
+    retainedRho RS keep
+      ((retainedDartEquivInternalSumBoundary RS keep).symm dart)
+  simp
 
 end OpenTangleData
 
