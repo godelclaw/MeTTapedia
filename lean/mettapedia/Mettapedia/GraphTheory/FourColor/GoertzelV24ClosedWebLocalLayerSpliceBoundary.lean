@@ -172,6 +172,68 @@ noncomputable def sourceCrosscutBoundaryData
       (layers.separatedLocalLayerPair hunique) :=
   Classical.choice (layers.sourceCrosscutBoundaryData_nonempty hunique)
 
+/-- Read the actual Cell-3 local layer boundary in the ordered port carrier
+consumed by the finite-profile and splice libraries.  This is only the
+geometric interface: equality of two such profiles and the construction of a
+larger repeated region remain separate source obligations. -/
+noncomputable def orderedCutSidesData
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    OrderedCutSidesData web.annular.RS layers.firstLayer.walk.length 0
+      ((layers.separatedLocalLayerPair hunique).sourceCrosscutFaceFragmentCount
+        web.annular.cellulation.rotation
+        (layers.sourceCrosscutBoundaryData hunique)) :=
+  (layers.separatedLocalLayerPair hunique).sourceCrosscutOrderedCutSidesData
+    web.annular.cellulation.rotation (layers.sourceCrosscutBoundaryData hunique)
+
+/-- The left ordered ports are literally the first source-layer crossings in
+facial-dual path order. -/
+@[simp]
+theorem orderedCutSidesData_left
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (step : Fin layers.firstLayer.walk.length) :
+    (layers.orderedCutSidesData hunique).left.crossingEdge step =
+      layers.firstLayer.crossingEdge hunique step :=
+  GoertzelV24AnnularCrosscut.SeparatedAlignedSimpleDualCrosscuts.sourceCrosscutOrderedCutSidesData_left
+    web.annular.cellulation.rotation (layers.separatedLocalLayerPair hunique)
+    (layers.sourceCrosscutBoundaryData hunique) step
+
+/-- The right ordered ports are literally the second source-layer crossings,
+transported only through the proved equality of the two local widths. -/
+@[simp]
+theorem orderedCutSidesData_right
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (step : Fin layers.firstLayer.walk.length) :
+    (layers.orderedCutSidesData hunique).right.crossingEdge step =
+      layers.secondLayer.crossingEdge hunique
+        (Fin.cast (layers.separatedLocalLayerPair hunique).length_eq step) :=
+  GoertzelV24AnnularCrosscut.SeparatedAlignedSimpleDualCrosscuts.sourceCrosscutOrderedCutSidesData_right
+    web.annular.cellulation.rotation (layers.separatedLocalLayerPair hunique)
+    (layers.sourceCrosscutBoundaryData hunique) step
+
 end LocalLayerPair
 
 end Instance
