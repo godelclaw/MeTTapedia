@@ -19,15 +19,21 @@ are derived from the models, deployed, and re-observed live.
   separation cycle, and why the deployed fixes end it), and the
   developmental bound (substrate continuity as a precondition for
   higher intentionality).
+- `IterArchitecture.lean` — the `patham9/iter` seed loop: ordered
+  failure-transactional transformations, the separation between advertised
+  and executable tools, one-cycle hot reload, burst pacing, restart behavior,
+  and a proved necessary-feature gap for hosting PettaClaw unchanged.
 
-Each file is self-contained (no Mathlib) and ends with a
-`#print axioms` audit: zero `sorry`, axioms at most `propext` and
-`Quot.sound`, several theorems axiom-free. Check with:
+The models use no Mathlib and end with a `#print axioms` audit:
+zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
+axiom-free. `IterArchitecture.lean` imports the two comparison models.
+Check with:
 
 ```
 lean HeartModel.lean
-lean ClawArchitectures.lean
-lean PresentMoment.lean
+lean -o ClawArchitectures.olean ClawArchitectures.lean
+lean -o PresentMoment.olean PresentMoment.lean
+LEAN_PATH=. lean IterArchitecture.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
