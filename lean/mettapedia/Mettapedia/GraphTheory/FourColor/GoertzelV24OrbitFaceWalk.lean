@@ -50,6 +50,25 @@ theorem dartOrbitFace_eq_of_mem_faceOrbitDarts
   rw [orbitFaceDarts_dartOrbitFace_eq_faceOrbit]
   exact faceCycleDart_mem graphData.toRotationSystem root position
 
+/-- The bounded facial enumeration contains exactly the darts in the root
+face orbit. -/
+theorem mem_faceOrbitDarts_iff
+    (graphData : Data G) (root dart : G.Dart) :
+    dart ∈ faceOrbitDarts graphData root ↔
+      dartOrbitFace graphData.toRotationSystem dart =
+        dartOrbitFace graphData.toRotationSystem root := by
+  constructor
+  · exact dartOrbitFace_eq_of_mem_faceOrbitDarts graphData root dart
+  · intro hdart
+    have hfaceOrbit : dart ∈ graphData.toRotationSystem.faceOrbit root := by
+      rw [← orbitFaceDarts_dartOrbitFace_eq_faceOrbit]
+      exact (mem_orbitFaceDarts_iff graphData.toRotationSystem
+        (dartOrbitFace graphData.toRotationSystem root) dart).2 hdart
+    rcases existsUnique_faceCycleDart_eq graphData.toRotationSystem root dart
+        hfaceOrbit with ⟨position, hposition, _hunique⟩
+    simp only [faceOrbitDarts, List.mem_ofFn]
+    exact ⟨position, hposition⟩
+
 /-- A face-permutation step is a valid consecutive-dart step in the
 underlying simple graph. -/
 theorem dartAdj_phi (graphData : Data G) (dart : G.Dart) :
