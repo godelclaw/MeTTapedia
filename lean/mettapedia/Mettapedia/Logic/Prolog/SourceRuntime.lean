@@ -342,6 +342,7 @@ def decodeDcg (heap : Heap Sigma.scoped) (body input rest : Addr) :
   decodeDcgAux (heap.size + 1) heap body input rest
 
 private def isAtomConstant : SourceSignature.Constant → Bool
+  | .atom "[]" => false
   | .atom _ => true
   | _ => false
 

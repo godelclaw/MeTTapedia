@@ -91,6 +91,7 @@ main(_) :-
         (call(forall(FZ = a, true)), var(FZ), FZ = c), FZ),
     emit_count(term_atom_accepts_atom, atom(a)),
     emit_count(term_atom_rejects_integer, atom(1)),
+    emit_count(term_atom_rejects_list_nil, atom([])),
     emit_count(term_atomic_accepts_string, atomic("a")),
     emit_count(term_atomic_rejects_compound, atomic(pair(a, b))),
     emit_count(term_compound_accepts_pair, compound(pair(a, b))),

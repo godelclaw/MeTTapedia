@@ -173,6 +173,21 @@ as explicit obligations rather than silently dropping them:
 scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
+The corresponding source-execution gate then runs the real pinned
+`parser.pl` DCG clause `phrase(swrite_exp([]), Codes)` through the same
+canonical `Logic.Prolog.SourceRuntime`, with those 297 linked clauses and no
+translated replacement.  It requires the exact SWI answer `[40,41]` and a
+clean final heap and trail:
+
+```bash
+scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
+```
+
+This is a deliberately narrow executable slice.  The retained external
+imports, declarations, and load-time goals remain explicit closure
+obligations; passing this gate does not claim that the entire parser source is
+yet executable.
+
 ### Shared-runtime control differential
 
 The canonical runtime's structured-choice path has a separate observable gate:
@@ -181,7 +196,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 130 exact answer, exception, and persistent-store traces against
+It compares 136 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -202,10 +217,11 @@ hard-if checkpoint rather than adding a search path.
 Five dynamic-call cases additionally pin `nonvar/1` and `forall/2` as
 elaborations into those same derived forms, including universal failure and
 binding isolation.
-Thirteen shallow term-test cases cover `atom/1`, `atomic/1`, `compound/1`,
+Fourteen shallow term-test cases cover `atom/1`, `atomic/1`, `compound/1`,
 `number/1`, and `string/1` after canonical heap dereference, including a
 heap-built meta-call and SWI's opaque database-reference distinction: a
-clause reference is atomic but is not an atom.
+clause reference is atomic but is not an atom.  The special empty-list
+constant is likewise atomic but not an atom, matching SWI's term classes.
 Five recursive `ground/1` cases additionally cover a nested finite term,
 an unbound root, a nested free leaf, a closed rational cycle, and a rational
 cycle with a free leaf.  The cycle cases ensure graph traversal terminates

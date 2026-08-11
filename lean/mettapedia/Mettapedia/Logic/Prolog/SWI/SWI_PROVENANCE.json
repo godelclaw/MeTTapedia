@@ -269,6 +269,38 @@
       ]
     },
     {
+      "id": "runtime.term-classification",
+      "project": "swi-prolog",
+      "sources": ["src/pl-prims.c"],
+      "anchors": [
+        "PRED_IMPL(\"string\", 1, string, 0)",
+        "PRED_IMPL(\"number\", 1, number, 0)",
+        "PRED_IMPL(\"atom\", 1, atom, 0)",
+        "PRED_IMPL(\"atomic\", 1, atomic, 0)",
+        "PRED_IMPL(\"compound\", 1, compound, 0)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
       "id": "runtime.term-groundness",
       "project": "swi-prolog",
       "sources": ["src/pl-prims.c"],
@@ -642,6 +674,8 @@
         "scripts/prolog/run_pinned_dcg_expansion.sh",
         "scripts/prolog/pinned_parser_unit_closure.lean",
         "scripts/prolog/run_pinned_parser_unit_closure.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh",
         "scripts/prolog/runtime_control_differential.lean",
         "scripts/prolog/runtime_control_oracle.pl",
         "scripts/prolog/run_runtime_control_differential.sh"

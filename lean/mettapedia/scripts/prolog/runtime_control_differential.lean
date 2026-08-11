@@ -156,6 +156,9 @@ def main : IO Unit := do
   renderCount "term_atom_rejects_integer"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomRejectsInteger)
+  renderCount "term_atom_rejects_list_nil"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomRejectsListNil)
   renderCount "term_atomic_accepts_string"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomicAcceptsString)

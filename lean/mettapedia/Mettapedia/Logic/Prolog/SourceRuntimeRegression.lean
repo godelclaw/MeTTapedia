@@ -302,6 +302,9 @@ def atomAcceptsAtom : SourceSignature.Goal :=
 def atomRejectsInteger : SourceSignature.Goal :=
   SourceSignature.call "atom" [integer 1]
 
+def atomRejectsListNil : SourceSignature.Goal :=
+  SourceSignature.call "atom" [SourceSignature.nil]
+
 def atomicAcceptsString : SourceSignature.Goal :=
   SourceSignature.call "atomic" [string "a"]
 
@@ -1137,6 +1140,7 @@ def laterCallSeesAssertion :
 #guard runAtoms [] metaForallRestoresBindings == some (["c"], 0, 0)
 #guard runCount [] atomAcceptsAtom == some (1, 0, 0)
 #guard runCount [] atomRejectsInteger == some (0, 0, 0)
+#guard runCount [] atomRejectsListNil == some (0, 0, 0)
 #guard runCount [] atomicAcceptsString == some (1, 0, 0)
 #guard runCount [] atomicRejectsCompound == some (0, 0, 0)
 #guard runCount [] compoundAcceptsPair == some (1, 0, 0)
