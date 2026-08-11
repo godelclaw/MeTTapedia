@@ -26,6 +26,7 @@ inductive RuntimeGoal (sigma : LP.LPSignature) where
   | cut
   | disj (left right : List (RuntimeGoal sigma))
   | ifThenElse (condition thenBranch elseBranch : List (RuntimeGoal sigma))
+  | softIfThenElse (condition thenBranch elseBranch : List (RuntimeGoal sigma))
   | once (goals : List (RuntimeGoal sigma))
   | neg (goals : List (RuntimeGoal sigma))
   | unify (left right : Addr)
@@ -57,6 +58,9 @@ mutual
     | .cut => true
     | .disj left right => checkAll heap left && checkAll heap right
     | .ifThenElse condition thenBranch elseBranch =>
+        checkAll heap condition && checkAll heap thenBranch &&
+          checkAll heap elseBranch
+    | .softIfThenElse condition thenBranch elseBranch =>
         checkAll heap condition && checkAll heap thenBranch &&
           checkAll heap elseBranch
     | .once goals => checkAll heap goals
@@ -118,6 +122,11 @@ def materializeGoalAux {sigma : LP.LPSignature} [DecidableEq sigma.vars] :
       let copiedThen ← materializeGoalAux thenBranch
       let copiedElse ← materializeGoalAux elseBranch
       pure [.ifThenElse copiedCondition copiedThen copiedElse]
+  | .softIfThenElse condition thenBranch elseBranch => do
+      let copiedCondition ← materializeGoalAux condition
+      let copiedThen ← materializeGoalAux thenBranch
+      let copiedElse ← materializeGoalAux elseBranch
+      pure [.softIfThenElse copiedCondition copiedThen copiedElse]
   | .once goal => do
       let copied ← materializeGoalAux goal
       pure [.once copied]

@@ -30,6 +30,7 @@ inductive Goal (sigma : LP.LPSignature) where
   | conj (left right : Goal sigma)
   | disj (left right : Goal sigma)
   | ifThenElse (condition thenBranch elseBranch : Goal sigma)
+  | softIfThenElse (condition thenBranch elseBranch : Goal sigma)
   | once (goal : Goal sigma)
   | neg (goal : Goal sigma)
   | unify (left right : LP.Term sigma)
@@ -96,6 +97,9 @@ def atScope {sigma : LP.LPSignature} (scope : Nat) :
   | .disj left right => .disj (left.atScope scope) (right.atScope scope)
   | .ifThenElse condition thenBranch elseBranch =>
       .ifThenElse (condition.atScope scope) (thenBranch.atScope scope)
+        (elseBranch.atScope scope)
+  | .softIfThenElse condition thenBranch elseBranch =>
+      .softIfThenElse (condition.atScope scope) (thenBranch.atScope scope)
         (elseBranch.atScope scope)
   | .once goal => .once (goal.atScope scope)
   | .neg goal => .neg (goal.atScope scope)
