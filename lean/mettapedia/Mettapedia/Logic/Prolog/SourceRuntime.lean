@@ -353,9 +353,10 @@ private def isStringConstant : SourceSignature.Constant → Bool
   | .string _ => true
   | _ => false
 
-/-- Recognize SWI's shallow term-test family without heap authority.  The
-classifier supplies only a root and a pure predicate on source constants;
-the shared runtime performs dereference and owns the resulting transition. -/
+/-- Recognize SWI's read-only term-test family without heap authority.  The
+classifier supplies only a root and a test descriptor; the shared runtime
+performs shallow dereference or recursive graph traversal and owns the
+resulting transition. -/
 def termTest? (goal : RuntimeAtom Sigma.scoped) :
     Option (Addr × LP.RuntimeQuery.TermTest Sigma) :=
   match goal.symbol.name, goal.args.toList with
@@ -375,6 +376,8 @@ def termTest? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 1 then
         some (root, .constantWhere isStringConstant)
       else none
+  | "ground", [root] =>
+      if goal.symbol.arity = 1 then some (root, .isGround) else none
   | _, _ => none
 
 /-- Recognize strict identity and its negation.  The source layer exposes only

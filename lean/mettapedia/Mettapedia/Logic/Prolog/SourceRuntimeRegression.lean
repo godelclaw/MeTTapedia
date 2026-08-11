@@ -329,6 +329,25 @@ def stringAcceptsString : SourceSignature.Goal :=
 def stringRejectsAtom : SourceSignature.Goal :=
   SourceSignature.call "string" [atom "a"]
 
+/-! ## Cycle-safe graph groundness -/
+
+def groundTest (term : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "ground" [term]
+
+def groundAcceptsCompound : SourceSignature.Goal :=
+  groundTest (pair (atom "a") (SourceSignature.list [integer 1, atom "b"]))
+
+def groundRejectsVariable : SourceSignature.Goal := groundTest x
+
+def groundRejectsNestedVariable : SourceSignature.Goal :=
+  groundTest (pair (atom "a") x)
+
+def groundAcceptsRationalCompound : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x])) (groundTest x)
+
+def groundRejectsRationalCompoundWithFreeLeaf : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x, y])) (groundTest x)
+
 /-- A heap-built meta-call returns to the same source service rather than
 using a second dynamic classification path. -/
 def metaAtomAcceptsAtom : SourceSignature.Goal :=
@@ -1127,6 +1146,11 @@ def laterCallSeesAssertion :
 #guard runCount [] numberRejectsAtom == some (0, 0, 0)
 #guard runCount [] stringAcceptsString == some (1, 0, 0)
 #guard runCount [] stringRejectsAtom == some (0, 0, 0)
+#guard runCount [] groundAcceptsCompound == some (1, 0, 0)
+#guard runCount [] groundRejectsVariable == some (0, 0, 0)
+#guard runCount [] groundRejectsNestedVariable == some (0, 0, 0)
+#guard runCount [] groundAcceptsRationalCompound == some (1, 0, 0)
+#guard runCount [] groundRejectsRationalCompoundWithFreeLeaf == some (0, 0, 0)
 #guard runCount [] metaAtomAcceptsAtom == some (1, 0, 0)
 #guard runCount [] referenceIsAtomicButNotAtom == some (1, 0, 0)
 #guard runCount [] identitySameVariable == some (1, 0, 0)

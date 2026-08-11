@@ -189,6 +189,21 @@ def main : IO Unit := do
   renderCount "term_reference_atomic_not_atom"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.referenceIsAtomicButNotAtom)
+  renderCount "ground_nested_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.groundAcceptsCompound)
+  renderCount "ground_unbound_variable"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.groundRejectsVariable)
+  renderCount "ground_nested_free_leaf"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.groundRejectsNestedVariable)
+  renderCount "ground_rational_cycle"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.groundAcceptsRationalCompound)
+  renderCount "ground_rational_free_leaf"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.groundRejectsRationalCompoundWithFreeLeaf)
   renderCount "identity_same_variable"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.identitySameVariable)

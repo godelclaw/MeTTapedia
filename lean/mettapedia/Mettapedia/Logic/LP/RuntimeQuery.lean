@@ -54,6 +54,7 @@ inductive QueryError where
   | invalidDynamicClause
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
+  | termGroundBudgetExhausted
   | univListUnbound
   | invalidUnivList
   | univFunctorUnbound
@@ -461,10 +462,18 @@ structure ClauseEncoding (σ : LPSignature) where
   expose a constructor for values in this image. -/
   referenceConstant : Nat → σ.constants
 
-/-- A read-only predicate on the three canonical shallow heap shapes.  A
-language realization may classify its own constant payloads, but it receives
-no memory, continuation, or answer authority. -/
+/-- Whether a term test inspects only the dereferenced root or traverses the
+reachable graph looking for an unbound variable. -/
+inductive TermTestMode where
+  | shallow
+  | ground
+deriving DecidableEq
+
+/-- A read-only predicate on canonical heap terms.  A language realization may
+classify its own constant payloads or select the engine-owned ground traversal,
+but it receives no memory, continuation, or answer authority. -/
 structure TermTest (σ : LPSignature) where
+  mode : TermTestMode := .shallow
   acceptsVariable : Bool
   acceptsConstant : σ.constants → Bool
   acceptsApplication : Bool
@@ -497,7 +506,53 @@ def constantWhere (predicate : σ.constants → Bool) : TermTest σ where
   acceptsConstant := predicate
   acceptsApplication := false
 
+def isGround : TermTest σ where
+  mode := .ground
+  acceptsVariable := false
+  acceptsConstant _ := false
+  acceptsApplication := false
+
 end TermTest
+
+/-! ## Read-only groundness -/
+
+/-- A finite work-list bound for visiting each reachable root and every
+outgoing edge once.  Exhaustion remains a typed error until its sufficiency is
+proved from heap well-formedness. -/
+def termGroundFuel (heap : Heap σ) : Nat :=
+  let edges := heap.foldl (fun total cell =>
+    total + cell.references.length) 0
+  heap.size + edges + 2
+
+/-- Cycle-safe graph groundness.  Rational compounds terminate through the
+visited-root set; an unbound variable rejects the test; corrupt references
+remain typed memory errors. -/
+def termGroundAux {σ : LPSignature} (heap : Heap σ.scoped) :
+    Nat -> List Addr -> List Addr -> Except QueryError Bool
+  | 0, _, _ => .error .termGroundBudgetExhausted
+  | _ + 1, [], _ => .ok true
+  | fuel + 1, address :: rest, visited =>
+      match heap.deref address with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root root) =>
+          if root ∈ visited then
+            termGroundAux heap fuel rest visited
+          else
+            match heap[root]? with
+            | none => .error (.memory (.invalidAddress root))
+            | some (.var _ none) => .ok false
+            | some (.var _ (some _)) => .error (.memory .illFormedHeap)
+            | some (.const _) =>
+                termGroundAux heap fuel rest (root :: visited)
+            | some (.app _ arguments) =>
+                termGroundAux heap fuel (arguments.toList ++ rest)
+                  (root :: visited)
+
+def termGround {σ : LPSignature} (heap : Heap σ.scoped) (address : Addr) :
+    Except QueryError Bool :=
+  termGroundAux heap (termGroundFuel heap) [address] []
 
 /-! ## Read-only strict term identity -/
 
@@ -2211,30 +2266,40 @@ theorem bindDatabaseReferenceStep_of_allocate {σ : LPSignature}
       } none := by
   simp [bindDatabaseReferenceStep, hAllocate]
 
-/-- Apply one shallow term test after engine-owned dereference.  This is the
-canonical finite-graph counterpart of SWI-Prolog V10.1.9's `PL_is_variable`,
-`PL_is_atom`, `PL_is_atomic`, `PL_is_number`, `PL_is_string`, and
-`PL_is_compound` predicates (`src/pl-prims.c`).  A false test enters ordinary
-backtracking; corrupt addresses and variable-only cycles remain typed errors. -/
+/-- Apply one read-only term test.  Shallow tests inspect the engine-dereferenced
+root; groundness uses the cycle-safe reachable-graph traversal above.  A false
+test enters ordinary backtracking; corrupt graphs remain typed errors. -/
 @[simp]
 def termTestStep {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (address : Addr) (test : TermTest σ) (rest : List Instruction) :
     StepResultCore σ Instruction SourceClause :=
-  match state.memory.heap.deref address with
-  | .error error => failWith state (.memory error)
-  | .ok (.variableCycle cycle) =>
-      failWith state (.memory (.variableReferenceCycle cycle))
-  | .ok (.root root) =>
-      match state.memory.heap[root]? with
-      | none => failWith state (.memory (.invalidAddress root))
-      | some cell =>
-          if test.accepts cell then
+  match test.mode with
+  | .ground =>
+      match termGround state.memory.heap address with
+      | .error error => failWith state error
+      | .ok accepted =>
+          if accepted then
             .next {
               state with
               control := { state.control with current := rest }
             } none
           else .next { state with phase := .backtrack } none
+  | .shallow =>
+      match state.memory.heap.deref address with
+      | .error error => failWith state (.memory error)
+      | .ok (.variableCycle cycle) =>
+          failWith state (.memory (.variableReferenceCycle cycle))
+      | .ok (.root root) =>
+          match state.memory.heap[root]? with
+          | none => failWith state (.memory (.invalidAddress root))
+          | some cell =>
+              if test.accepts cell then
+                .next {
+                  state with
+                  control := { state.control with current := rest }
+                } none
+              else .next { state with phase := .backtrack } none
 
 /-- An accepted shallow root consumes exactly the current instruction and
 continues without changing memory, choices, or frames. -/
@@ -2242,6 +2307,7 @@ theorem termTestStep_accepts {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (address root : Addr) (test : TermTest σ) (rest : List Instruction)
     (cell : Cell σ.scoped)
+    (hMode : test.mode = .shallow)
     (hDeref : state.memory.heap.deref address = .ok (.root root))
     (hCell : state.memory.heap[root]? = some cell)
     (hAccept : test.accepts cell = true) :
@@ -2250,7 +2316,7 @@ theorem termTestStep_accepts {σ : LPSignature}
         state with
         control := { state.control with current := rest }
       } none := by
-  simp [termTestStep, hDeref, hCell, hAccept]
+  simp [termTestStep, hMode, hDeref, hCell, hAccept]
 
 /-- A rejected shallow root enters the ordinary shared backtracking phase;
 there is no test-specific failure or restoration path. -/
@@ -2258,12 +2324,32 @@ theorem termTestStep_rejects {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (address root : Addr) (test : TermTest σ) (rest : List Instruction)
     (cell : Cell σ.scoped)
+    (hMode : test.mode = .shallow)
     (hDeref : state.memory.heap.deref address = .ok (.root root))
     (hCell : state.memory.heap[root]? = some cell)
     (hReject : test.accepts cell = false) :
     termTestStep state address test rest =
       .next { state with phase := .backtrack } none := by
-  simp [termTestStep, hDeref, hCell, hReject]
+  simp [termTestStep, hMode, hDeref, hCell, hReject]
+
+theorem termTestStep_ground_accepts {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (address : Addr) (rest : List Instruction)
+    (hGround : termGround state.memory.heap address = .ok true) :
+    termTestStep state address (TermTest.isGround : TermTest σ) rest =
+      .next {
+        state with
+        control := { state.control with current := rest }
+      } none := by
+  simp [termTestStep, TermTest.isGround, hGround]
+
+theorem termTestStep_ground_rejects {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (address : Addr) (rest : List Instruction)
+    (hGround : termGround state.memory.heap address = .ok false) :
+    termTestStep state address (TermTest.isGround : TermTest σ) rest =
+      .next { state with phase := .backtrack } none := by
+  simp [termTestStep, TermTest.isGround, hGround]
 
 /-- Test strict graph identity without binding.  `expected = true` realizes
 `==/2`; `expected = false` realizes `\==/2` through the same comparison and

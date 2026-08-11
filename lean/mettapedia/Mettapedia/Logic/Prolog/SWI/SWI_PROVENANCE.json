@@ -269,6 +269,34 @@
       ]
     },
     {
+      "id": "runtime.term-groundness",
+      "project": "swi-prolog",
+      "sources": ["src/pl-prims.c"],
+      "anchors": [
+        "ph_ground",
+        "ground",
+        "PRED_IMPL(\"ground\", 1, ground, PL_FA_ISO)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
       "id": "runtime.univ",
       "project": "swi-prolog",
       "sources": ["src/pl-prims.c"],

@@ -879,57 +879,76 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,
                 mapStepResult]
           | termTest address test =>
-              cases hDeref : memory.heap.deref address with
-              | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
-                    simp [mapDispatchAction, dispatchActionStep, termTestStep,
-                      mapState, mapControl, mapPhase, mapReturnFrame,
-                      mapStepResult, failWith, closeMemory, hDeref, hCleanup]
-              | ok result =>
-                  cases result with
-                  | variableCycle cycle =>
+              cases hMode : test.mode with
+              | ground =>
+                  cases hGround : termGround memory.heap address with
+                  | error error =>
                       cases hCleanup : memory.restore checkpoint <;>
-                        simp [mapDispatchAction, dispatchActionStep, termTestStep,
-                          mapState, mapControl, mapPhase, mapReturnFrame,
-                          mapStepResult, failWith, closeMemory, hDeref,
-                          hCleanup]
-                  | root root =>
-                      cases hCell : memory.heap[root]? with
-                      | none =>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termTestStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, failWith, closeMemory,
+                          hMode, hGround, hCleanup]
+                  | ok accepted =>
+                      cases accepted <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termTestStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, hMode, hGround]
+              | shallow =>
+                  cases hDeref : memory.heap.deref address with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termTestStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, failWith, closeMemory,
+                          hMode, hDeref, hCleanup]
+                  | ok result =>
+                      cases result with
+                      | variableCycle cycle =>
                           cases hCleanup : memory.restore checkpoint <;>
                             simp [mapDispatchAction, dispatchActionStep,
                               termTestStep, mapState, mapControl, mapPhase,
                               mapReturnFrame, mapStepResult, failWith,
-                              closeMemory, hDeref, hCell, hCleanup]
-                      | some cell =>
-                          cases cell with
-                          | var identity link =>
-                              cases link with
-                              | none =>
-                                  cases hAccept : test.acceptsVariable <;>
+                              closeMemory, hMode, hDeref, hCleanup]
+                      | root root =>
+                          cases hCell : memory.heap[root]? with
+                          | none =>
+                              cases hCleanup : memory.restore checkpoint <;>
+                                simp [mapDispatchAction, dispatchActionStep,
+                                  termTestStep, mapState, mapControl, mapPhase,
+                                  mapReturnFrame, mapStepResult, failWith,
+                                  closeMemory, hMode, hDeref, hCell, hCleanup]
+                          | some cell =>
+                              cases cell with
+                              | var identity link =>
+                                  cases link with
+                                  | none =>
+                                      cases hAccept : test.acceptsVariable <;>
+                                        simp [mapDispatchAction,
+                                          dispatchActionStep, termTestStep,
+                                          TermTest.accepts, mapState,
+                                          mapControl, mapPhase, mapReturnFrame,
+                                          mapStepResult, hMode, hDeref, hCell,
+                                          hAccept]
+                                  | some value =>
+                                      simp [mapDispatchAction,
+                                        dispatchActionStep, termTestStep,
+                                        TermTest.accepts, mapState, mapControl,
+                                        mapPhase, mapReturnFrame, mapStepResult,
+                                        hMode, hDeref, hCell]
+                              | const symbol =>
+                                  cases hAccept : test.acceptsConstant symbol <;>
                                     simp [mapDispatchAction,
                                       dispatchActionStep, termTestStep,
                                       TermTest.accepts, mapState, mapControl,
                                       mapPhase, mapReturnFrame, mapStepResult,
-                                      hDeref, hCell, hAccept]
-                              | some value =>
-                                  simp [mapDispatchAction,
-                                    dispatchActionStep, termTestStep,
-                                    TermTest.accepts, mapState, mapControl,
-                                    mapPhase, mapReturnFrame, mapStepResult,
-                                    hDeref, hCell]
-                          | const symbol =>
-                              cases hAccept : test.acceptsConstant symbol <;>
-                                simp [mapDispatchAction, dispatchActionStep,
-                                  termTestStep, TermTest.accepts, mapState,
-                                  mapControl, mapPhase, mapReturnFrame,
-                                  mapStepResult, hDeref, hCell, hAccept]
-                          | app symbol args =>
-                              cases hAccept : test.acceptsApplication <;>
-                                simp [mapDispatchAction, dispatchActionStep,
-                                  termTestStep, TermTest.accepts, mapState,
-                                  mapControl, mapPhase, mapReturnFrame,
-                                  mapStepResult, hDeref, hCell, hAccept]
+                                      hMode, hDeref, hCell, hAccept]
+                              | app symbol args =>
+                                  cases hAccept : test.acceptsApplication <;>
+                                    simp [mapDispatchAction,
+                                      dispatchActionStep, termTestStep,
+                                      TermTest.accepts, mapState, mapControl,
+                                      mapPhase, mapReturnFrame, mapStepResult,
+                                      hMode, hDeref, hCell, hAccept]
           | termIdentity left right expected =>
               cases hResult : termIdentical memory.heap left right with
               | error error =>

@@ -431,9 +431,9 @@ structure Services (sigma : LP.LPSignature) where
   `call/N` can never acquire DCG terminal semantics accidentally. -/
   dcgCall? : RuntimeAtom sigma.scoped → Option (Addr × Addr × Addr) :=
     fun _ => none
-  /-- Recognize read-only shallow term tests without inspecting the heap.
-  The shared engine owns dereference, corruption checks, success, and
-  backtracking; a realization may classify only its own constant payloads. -/
+  /-- Recognize read-only term tests without inspecting the heap. The shared
+  engine owns dereference, graph traversal, corruption checks, success, and
+  backtracking; a realization supplies only a test descriptor. -/
   termTest? : RuntimeAtom sigma.scoped →
     Option (Addr × LP.RuntimeQuery.TermTest sigma) := fun _ => none
   /-- Recognize strict identity and non-identity without inspecting the heap.
@@ -616,7 +616,7 @@ def dispatchActionWith {sigma : LP.LPSignature}
   | .throw ball => .throw ball services.unboundThrowError
 
 /-- Once mutation and meta-call recognition decline an ordinary call, a
-language-supplied shallow test is handed to the engine unchanged.  The
+language-supplied read-only test is handed to the engine unchanged.  The
 service neither sees the heap nor performs the success/failure transition. -/
 theorem dispatchActionWith_termTest {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
