@@ -1,5 +1,5 @@
 import Mettapedia.Logic.Prolog.Syntax
-import Mettapedia.Logic.LP.RuntimeMaterialize
+import Mettapedia.Logic.LP.RuntimeQuery
 
 /-!
 # Runtime form of canonical Prolog control
@@ -355,5 +355,21 @@ theorem materializeClause_trail_exact {sigma : LP.LPSignature}
     · cases h
       rfl
     · contradiction
+
+/-- Typed Prolog clauses instantiate the shared query machine's deliberately
+narrow materializer interface.  The adapter can supply only the copied memory,
+head, and body; the shared transition retains all search authority. -/
+def clauseMaterializer {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars] :
+    LP.RuntimeQuery.ClauseMaterializer sigma (RuntimeGoal sigma.scoped)
+      (Clause sigma) where
+  materialize memory scope clause :=
+    match materializeClause memory (clause.atScope scope) with
+    | .error error => .error error
+    | .ok result => .ok {
+        memory := result.memory
+        head := result.clause.head
+        body := result.clause.body
+      }
 
 end Mettapedia.Logic.Prolog.RuntimeControl

@@ -59,7 +59,52 @@ def typedClauseUsesCanonicalEntry : Bool :=
                   | _, _ => false
       | _ => false
 
+/-- The actual shared selected-clause transition accepts a typed Prolog
+clause.  It advances the persistent scope, enters the canonical unifier, and
+retains the typed body without acquiring any Prolog-specific search state. -/
+def typedClauseUsesSharedSelectStep : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let cursor : LP.RuntimeQuery.ClauseCursorCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            checkpoint := queryResult.memory.checkpoint
+            goal
+            clauses := [sourceClause]
+            cutDepth := 0
+            frames := []
+          }
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := { current := [], cutDepth := 0, frames := [] }
+            choices := []
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .select cursor
+          }
+          match LP.RuntimeQuery.selectStep clauseMaterializer state cursor with
+          | .terminal _ => false
+          | .next next _ =>
+              match next.phase with
+              | .unifying attempt machine =>
+                  match attempt.body, LP.RuntimeUnification.runSteps 16 machine with
+                  | [.cut], .terminal (.success _) => next.nextScope == 2
+                  | _, _ => false
+              | _ => false
+      | _ => false
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
+#guard typedClauseUsesSharedSelectStep
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

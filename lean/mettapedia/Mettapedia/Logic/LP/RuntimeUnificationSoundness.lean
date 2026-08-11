@@ -2482,7 +2482,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
               | nil =>
                   have hstep : RuntimeQuery.step builtins program state =
                       .next { state with phase := .backtrack } none := by
-                    simp [RuntimeQuery.step, hphase, hclauses]
+                    simp [RuntimeQuery.step, RuntimeQuery.selectStep, hphase,
+                      hclauses]
                   rw [hstep] at hPull
                   dsimp only at hPull
                   exact ih fuel (Nat.lt_succ_self _) { state with phase := .backtrack } ans resumed hPull
@@ -2493,7 +2494,9 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                   | error e =>
                       have hstep : RuntimeQuery.step builtins program state =
                           failWith state (.memory e) := by
-                        simp [RuntimeQuery.step, hphase, hclauses, hMat]
+                        simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                          RuntimeQuery.lpClauseMaterializer, hphase, hclauses,
+                          hMat]
                       rw [hstep] at hPull
                       obtain ⟨result, hres⟩ := failWith_terminal state _
                       rw [hres] at hPull
@@ -2504,9 +2507,11 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                           cursor.goal.symbol = copied.clause.head.symbol
                       case neg =>
                           have hstep : RuntimeQuery.step builtins program
-                              state = failWith state .predicateMismatch := by
-                            simp [RuntimeQuery.step, hphase, hclauses, hMat,
-                              RuntimeClauseEntry.enter, hPredicate]
+                            state = failWith state .predicateMismatch := by
+                            simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                              RuntimeQuery.lpClauseMaterializer, hphase,
+                              hclauses, hMat, RuntimeClauseEntry.enter,
+                              hPredicate]
                           rw [hstep] at hPull
                           obtain ⟨result, hres⟩ := failWith_terminal state _
                           rw [hres] at hPull
@@ -2517,9 +2522,11 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                           copied.clause.head.args.size
                       case neg =>
                           have hstep : RuntimeQuery.step builtins program
-                              state = failWith state .predicateMismatch := by
-                            simp [RuntimeQuery.step, hphase, hclauses, hMat,
-                              RuntimeClauseEntry.enter, hPredicate, hArity]
+                            state = failWith state .predicateMismatch := by
+                            simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                              RuntimeQuery.lpClauseMaterializer, hphase,
+                              hclauses, hMat, RuntimeClauseEntry.enter,
+                              hPredicate, hArity]
                           rw [hstep] at hPull
                           obtain ⟨result, hres⟩ := failWith_terminal state _
                           rw [hres] at hPull
@@ -2529,8 +2536,9 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (unifyEntryState state cursor remaining
                             copied) none := by
-                        simp [RuntimeQuery.step, hphase, hclauses, hMat,
-                          RuntimeClauseEntry.enter, hPredicate, hArity,
+                        simp [RuntimeQuery.step, RuntimeQuery.selectStep,
+                          RuntimeQuery.lpClauseMaterializer, hphase, hclauses,
+                          hMat, RuntimeClauseEntry.enter, hPredicate, hArity,
                           unifyEntryState]
                       rw [hstep] at hPull
                       dsimp only at hPull

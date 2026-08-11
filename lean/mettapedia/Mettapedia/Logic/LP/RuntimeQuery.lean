@@ -255,6 +255,65 @@ def replacementChoices {σ : LPSignature}
   | [] => older
   | _ => { cursor with clauses := remaining } :: older
 
+/-- The only data a language-specific clause materializer may supply to the
+shared selected-clause transition.  The type has no constructors for answers,
+effects, alternatives, pruning, or scheduling. -/
+structure MaterializedBody (σ : LPSignature) (Instruction : Type*) where
+  memory : Memory σ.scoped
+  head : RuntimeAtom σ.scoped
+  body : List Instruction
+
+/-- Materialize one source clause at an explicit activation scope.  Search
+order, cursor retention, fresh-scope advancement, and head entry remain owned
+by the shared query transition below. -/
+structure ClauseMaterializer (σ : LPSignature)
+    (Instruction SourceClause : Type*) where
+  materialize : Memory σ.scoped → Nat → SourceClause →
+    Except MemoryError (MaterializedBody σ Instruction)
+
+/-- The pure LP clause materializer used by the established runtime. -/
+def lpClauseMaterializer {σ : LPSignature} [DecidableEq σ.scoped.vars] :
+    ClauseMaterializer σ (RuntimeAtom σ.scoped) (Clause σ) where
+  materialize memory scope clause :=
+    match RuntimeMaterialize.materializeClause memory (clause.atScope scope) with
+    | .error error => .error error
+    | .ok result => .ok {
+        memory := result.memory
+        head := result.clause.head
+        body := result.clause.body
+      }
+
+/-- Shared selected-clause transition.  It owns source-order cursor advance,
+choice retention, persistent scope advance, and entry into the canonical graph
+unifier. -/
+def selectStep {σ : LPSignature} [DecidableEq σ.relationSymbols]
+    (materializer : ClauseMaterializer σ Instruction SourceClause)
+    (state : StateCore σ Instruction SourceClause)
+    (cursor : ClauseCursorCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
+  match cursor.clauses with
+  | [] => .next { state with phase := .backtrack } none
+  | clause :: remaining =>
+      match materializer.materialize state.memory state.nextScope clause with
+      | .error error => failWith state (.memory error)
+      | .ok copied =>
+          match RuntimeClauseEntry.enter cursor.goal copied.head
+              copied.memory copied.body with
+          | .error _ => failWith state .predicateMismatch
+          | .ok entered =>
+              let attempt : AttemptCore σ Instruction := {
+                body := entered.body
+                cutDepth := cursor.cutDepth
+                frames := cursor.frames
+              }
+              .next {
+                state with
+                memory := entered.memory
+                choices := replacementChoices cursor remaining state.choices
+                nextScope := state.nextScope + 1
+                phase := .unifying attempt entered.unifier
+              } none
+
 /-- Execute one query transition.  A running graph unifier contributes exactly
 one of its own microsteps. -/
 def step {σ : LPSignature} [DecidableEq σ.vars]
@@ -325,29 +384,7 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
             }
             .next { state with phase := .select cursor } none
   | .select cursor =>
-      match cursor.clauses with
-      | [] => .next { state with phase := .backtrack } none
-      | clause :: remaining =>
-          let activation := clause.atScope state.nextScope
-          match materializeClause state.memory activation with
-          | .error error => failWith state (.memory error)
-          | .ok copied =>
-              match RuntimeClauseEntry.enter cursor.goal copied.clause.head
-                  copied.memory copied.clause.body with
-              | .error _ => failWith state .predicateMismatch
-              | .ok entered =>
-                  let attempt : Attempt σ := {
-                    body := entered.body
-                    cutDepth := cursor.cutDepth
-                    frames := cursor.frames
-                  }
-                  .next {
-                    state with
-                    memory := entered.memory
-                    choices := replacementChoices cursor remaining state.choices
-                    nextScope := state.nextScope + 1
-                    phase := .unifying attempt entered.unifier
-                  } none
+      selectStep lpClauseMaterializer state cursor
   | .unifying attempt machine =>
       match machine with
       | .running _ =>
