@@ -325,16 +325,22 @@ def ambientRetainedFaceOrbitToSplice
       hleftInjective hrightInjective hcover hdisjoint houter orbit power).1
     exact hnonseam (hpower.symm ▸ hseam)⟩
 
-theorem nonHitSpliceOrbitToAmbient_surjective :
-    Function.Surjective
-      (nonHitSpliceOrbitToAmbient RS keep leftCrossing rightCrossing
+/-- Transporting an untouched ambient face to the splice and then forgetting
+the splice tags returns exactly the original ambient face. -/
+theorem nonHitSpliceOrbitToAmbient_ambientRetainedFaceOrbitToSplice
+    (orbit : AmbientRetainedFaceOrbit RS keep) :
+    nonHitSpliceOrbitToAmbient RS keep leftCrossing rightCrossing
+      hleftCrosses hrightCrosses hleftInjective hrightInjective
+      hcover hdisjoint houter
+      (ambientRetainedFaceOrbitToSplice RS keep leftCrossing rightCrossing
         hleftCrosses hrightCrosses hleftInjective hrightInjective
-        hcover hdisjoint houter) := by
-  intro orbit
+        hcover hdisjoint houter orbit) = orbit := by
   let source := ambientRetainedFaceOrbitToSplice RS keep
     leftCrossing rightCrossing hleftCrosses hrightCrosses
     hleftInjective hrightInjective hcover hdisjoint houter orbit
-  refine ⟨source, ?_⟩
+  change nonHitSpliceOrbitToAmbient RS keep leftCrossing rightCrossing
+      hleftCrosses hrightCrosses hleftInjective hrightInjective
+      hcover hdisjoint houter source = orbit
   apply Subtype.ext
   let root : MatchedSeam.Dart (InternalDart RS keep)
       (BoundaryDartOn RS keep (orderedCut leftCrossing))
@@ -352,15 +358,12 @@ theorem nonHitSpliceOrbitToAmbient_surjective :
   let sourcePoint : {point //
       (splicePhi).SameCycle source.1.out point} :=
     ⟨root, hsourceCycle⟩
-  have hambientCycle :=
+  have hambientRoot :=
     (nonHitSpliceCycleForget RS keep leftCrossing rightCrossing
       hleftCrosses hrightCrosses hleftInjective hrightInjective
       hcover hdisjoint houter source sourcePoint).2
   change RS.phi.SameCycle (forgetDart source.1.out)
-    (forgetDart sourcePoint.1) at hambientCycle
-  have hambientRoot : RS.phi.SameCycle (forgetDart source.1.out)
-      (forgetDart root) := by
-    simpa only [sourcePoint] using hambientCycle
+    (forgetDart sourcePoint.1) at hambientRoot
   have hrootUnderlying : forgetDart root = orbit.1.out := by
     rfl
   have hambientOut : RS.phi.SameCycle (forgetDart source.1.out)
@@ -370,6 +373,40 @@ theorem nonHitSpliceOrbitToAmbient_surjective :
   change Quotient.mk (Equiv.Perm.SameCycle.setoid RS.phi)
       (forgetDart source.1.out) = orbit.1
   exact (Quotient.sound hambientOut).trans (Quotient.out_eq orbit.1)
+
+/-- The canonical transport of an untouched ambient face into the splice is
+injective: distinct protected ambient faces cannot collapse to one output
+face. -/
+theorem ambientRetainedFaceOrbitToSplice_injective :
+    Function.Injective
+      (ambientRetainedFaceOrbitToSplice RS keep leftCrossing rightCrossing
+        hleftCrosses hrightCrosses hleftInjective hrightInjective
+        hcover hdisjoint houter) := by
+  intro left right heq
+  have hforget := congrArg
+    (nonHitSpliceOrbitToAmbient RS keep leftCrossing rightCrossing
+      hleftCrosses hrightCrosses hleftInjective hrightInjective
+      hcover hdisjoint houter) heq
+  rw [nonHitSpliceOrbitToAmbient_ambientRetainedFaceOrbitToSplice RS keep
+      leftCrossing rightCrossing hleftCrosses hrightCrosses
+      hleftInjective hrightInjective hcover hdisjoint houter left,
+    nonHitSpliceOrbitToAmbient_ambientRetainedFaceOrbitToSplice RS keep
+      leftCrossing rightCrossing hleftCrosses hrightCrosses
+      hleftInjective hrightInjective hcover hdisjoint houter right] at hforget
+  exact hforget
+
+theorem nonHitSpliceOrbitToAmbient_surjective :
+    Function.Surjective
+      (nonHitSpliceOrbitToAmbient RS keep leftCrossing rightCrossing
+        hleftCrosses hrightCrosses hleftInjective hrightInjective
+        hcover hdisjoint houter) := by
+  intro orbit
+  refine ⟨ambientRetainedFaceOrbitToSplice RS keep leftCrossing rightCrossing
+    hleftCrosses hrightCrosses hleftInjective hrightInjective
+    hcover hdisjoint houter orbit, ?_⟩
+  exact nonHitSpliceOrbitToAmbient_ambientRetainedFaceOrbitToSplice RS keep
+    leftCrossing rightCrossing hleftCrosses hrightCrosses
+    hleftInjective hrightInjective hcover hdisjoint houter orbit
 
 /-- Untouched ambient faces are canonically the seam-avoiding output faces. -/
 def nonHitSpliceOrbitEquivAmbientRetainedFaceOrbit :

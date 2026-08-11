@@ -3,6 +3,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebHoleBoundaryOrder
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexFaceRungType
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSpliceAmbientFaceCount
 
 /-!
 # The Cell-3 carrier is an open tangle
@@ -30,6 +31,8 @@ open GoertzelV24FramedAnnularExcess
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24ClosedWebHoleBoundaryOrder
 open GoertzelV24HexFaceRungType
+open GoertzelV24OrderedCutRotationSplice
+open GoertzelV24RetainedSpliceAmbientFaceCount
 open GoertzelV24RetainedVertexRotationSplice
 open GoertzelV24SimpleGraphFaceDualConnectedness
 open GoertzelV24SpliceUnification
@@ -237,6 +240,114 @@ theorem existsUnique_faceCycleEdge_eq_of_dartOrbitFace_mem_interiorFaces
   existsUnique_faceCycleEdge_eq_of_boundarySimple web.annular.RS root
     (web.orbitFaceBoundary_card_eq_orbitFaceDarts_card_of_mem_interiorFaces
       root hface) edge hedge
+
+/-- Addendum XXVII(iii)'s statement that a named hole lies outside the pumped
+region: every occurrence on that facial boundary remains on the retained
+side.  It is deliberately stronger than merely retaining the five named stub
+edges, because it lets the whole hole face survive the splice unchanged. -/
+def HoleFaceKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (face : OrbitFace web.annular.RS) : Prop :=
+  ∀ dart : web.annular.RS.D,
+    dartOrbitFace web.annular.RS dart = face →
+      splice.keep (web.annular.RS.vertOf dart)
+
+/-- A source face wholly outside the pumped region is an ambient retained
+face in the generic splice calculus. -/
+noncomputable def ambientRetainedFaceOrbit_of_holeFaceKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (face : OrbitFace web.annular.RS)
+    (hkept : HoleFaceKept splice face) :
+    AmbientRetainedFaceOrbit web.annular.RS splice.keep :=
+  ⟨face, by
+    rintro ⟨dart, hdeleted, hdartFace⟩
+    exact hdeleted (hkept dart hdartFace)⟩
+
+/-- The protected source face has a canonical seam-free face in the shortened
+rotation system.  This transports the actual facial cycle, not merely the
+named degree-one stubs on it. -/
+noncomputable def outputFaceOrbit_of_holeFaceKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (face : OrbitFace web.annular.RS)
+    (hkept : HoleFaceKept splice face) :
+    SpliceNonSeamOrbit web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge splice.leftCrosses
+      splice.rightCrosses splice.leftInjective splice.rightInjective
+      splice.cover splice.disjoint splice.outer_kept :=
+  ambientRetainedFaceOrbitToSplice web.annular.RS splice.keep
+    splice.left.crossingEdge splice.right.crossingEdge splice.leftCrosses
+    splice.rightCrosses splice.leftInjective splice.rightInjective
+    splice.cover splice.disjoint splice.outer_kept
+    (ambientRetainedFaceOrbit_of_holeFaceKept splice face hkept)
+
+/-- The two protected source holes remain distinct output faces.  The splice
+therefore preserves the annular two-hole interface at the face-orbit level,
+rather than merely retaining its boundary stubs. -/
+theorem outputInnerHole_ne_outputOuterHole
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole) :
+    (outputFaceOrbit_of_holeFaceKept splice web.annular.cellulation.innerHole
+      hinner).1 ≠
+      (outputFaceOrbit_of_holeFaceKept splice web.annular.cellulation.outerHole
+        houter).1 := by
+  intro hfaces
+  have htransport :
+      ambientRetainedFaceOrbit_of_holeFaceKept splice
+        web.annular.cellulation.innerHole hinner =
+      ambientRetainedFaceOrbit_of_holeFaceKept splice
+        web.annular.cellulation.outerHole houter := by
+    apply ambientRetainedFaceOrbitToSplice_injective web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge splice.leftCrosses
+      splice.rightCrosses splice.leftInjective splice.rightInjective
+      splice.cover splice.disjoint splice.outer_kept
+    exact Subtype.ext hfaces
+  apply web.annular.cellulation.holes_ne
+  exact congrArg Subtype.val htransport
+
+/-- Full preservation of the inner hole entails the earlier five-stub
+interface condition used to preserve the good word. -/
+theorem innerBoundaryKept_of_innerHoleFaceKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hkept : HoleFaceKept splice web.annular.cellulation.innerHole) :
+    ProtectedInnerInterface.InnerBoundaryKept splice := by
+  intro port dart hdart
+  exact hkept dart
+    (web.annular.innerBoundaryEdgeDarts_on_innerHole port dart hdart)
+
+/-- Full preservation of the outer hole entails the corresponding outer-stub
+condition. -/
+theorem outerBoundaryKept_of_outerHoleFaceKept
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {n terminalCount faceFragmentCount : Nat}
+    {web : Instance data coloring}
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hkept : HoleFaceKept splice web.annular.cellulation.outerHole) :
+    ProtectedInnerInterface.OuterBoundaryKept splice := by
+  intro port dart hdart
+  exact hkept dart
+    (web.annular.outerBoundaryEdgeDarts_on_outerHole port dart hdart)
 
 namespace ProtectedInnerInterface
 
