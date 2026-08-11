@@ -173,13 +173,18 @@ as explicit obligations rather than silently dropping them:
 scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
-The corresponding source-execution gate then runs the real pinned
-`parser.pl` DCG clauses `phrase(swrite_exp([]), Codes)`,
+The corresponding source-execution gate combines the real pinned `metta.pl`
+and `parser.pl` units with those three SWI libraries using the static
+module-aware linker.  The linker separates user `exp/2` from
+`dcg_basics:exp/2`, resolves explicit imports and the unique loaded export
+used by SWI autoload, and fails on ambiguous exports or a literal predicate
+that would collide with generated qualification.  The resulting 456
+canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
 `(1.5)`, `(1e2)`, `("a")`, `((a))`, `(a-b)`, `(1_2_3)`, `(#foo)`, an
 escaped string, `$x`, `$x $x`, and `$_ $_` through the same
-canonical `Logic.Prolog.SourceRuntime`, with those 297 linked clauses and no
+canonical `Logic.Prolog.SourceRuntime`, with those 456 linked clauses and no
 translated replacement.  It requires the exact SWI answers `[40,41]` and
 `[40,97,41]`, and `[45,52,50]` for the writers and `[a]`, `[a,b]`, `[1]`,
 `[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the original readers.
@@ -187,7 +192,10 @@ The additional checks pin atom token boundaries, escape decoding, named
 variable reuse, and distinct anonymous occurrences.  Every run must leave a
 clean final heap and trail.  Five further paths call the actual exported
 `sread/2` and `swrite/2` wrappers on string and atom input, named-variable
-reuse, lists, and compounds rather than invoking their internal DCGs directly:
+reuse, lists, and compounds rather than invoking their internal DCGs directly.
+Two final paths execute the actual pinned `metta.pl` wrappers `parse/2` and
+`repr/2`; the SWI oracle reads those exact source clauses from the pinned file
+without executing unrelated load-time effects:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
@@ -195,8 +203,12 @@ scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
 
 This is a deliberately narrow executable slice.  The retained external
 imports, declarations, and load-time goals remain explicit closure
-obligations; passing this gate does not claim that the entire parser source is
-yet executable.  Numeric reading covers the decimal and scientific forms
+obligations; linked clauses retain their original units as provenance while
+the qualified executable projection clears context-dependent source-term
+reflection.  Meta-predicate argument qualification, reexports, and runtime
+module creation remain unsupported.  Passing this gate does not claim that
+the entire PeTTa source closure is yet executable.  Numeric reading covers the
+decimal and scientific forms
 produced by pinned `dcg/basics:number//1`; integer writing is exact, while
 float-to-code rendering remains explicitly unsupported.
 
