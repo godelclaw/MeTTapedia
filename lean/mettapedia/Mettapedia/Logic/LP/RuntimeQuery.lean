@@ -314,6 +314,86 @@ def selectStep {σ : LPSignature} [DecidableEq σ.relationSymbols]
                 phase := .unifying attempt entered.unifier
               } none
 
+/-- Resume after a yielded answer by entering the shared backtracking phase. -/
+@[simp]
+def afterAnswerStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
+  .next { state with phase := .backtrack } none
+
+/-- Restore and re-enter the newest retained cursor, or close the query when
+no alternatives remain. -/
+@[simp]
+def backtrackStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.choices with
+  | [] => complete state
+  | cursor :: older =>
+      match state.memory.restore cursor.checkpoint with
+      | .error error => failWith state (.memory error)
+      | .ok memory =>
+          .next {
+            state with
+            memory
+            choices := older
+            phase := .select cursor
+          } none
+
+/-- An empty current goal stack either returns to its caller frame or yields
+one answer at the outermost query. -/
+@[simp]
+def emptyCurrentStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.control.frames with
+  | frame :: frames =>
+      .next {
+        state with
+        control := {
+          current := frame.continuation
+          cutDepth := frame.callerCutDepth
+          frames
+        }
+      } none
+  | [] =>
+      .next { state with phase := .afterAnswer }
+        (some (.answer {
+          memory := state.memory
+          queryVarMap := state.queryVarMap
+        }))
+
+/-- Advance the canonical graph unifier by one microstep or install its
+selected body/failure in the shared search state. -/
+@[simp]
+def unifyingStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (attempt : AttemptCore σ Instruction)
+    (machine : RuntimeUnification.Machine σ.scoped) :
+    StepResultCore σ Instruction SourceClause :=
+  match machine with
+  | .running _ =>
+      match RuntimeUnification.step machine with
+      | some next =>
+          .next { state with phase := .unifying attempt next } none
+      | none => failWith state .stalledUnifier
+  | .terminal (.success memory) =>
+      .next {
+        state with
+        memory
+        control := {
+          current := attempt.body
+          cutDepth := attempt.cutDepth
+          frames := attempt.frames
+        }
+        phase := .dispatch
+      } none
+  | .terminal (.failure memory) =>
+      .next { state with memory, phase := .backtrack } none
+  | .terminal (.runtimeError error memory) =>
+      failWith { state with memory } (.memory error)
+
 /-- Execute one query transition.  A running graph unifier contributes exactly
 one of its own microsteps. -/
 def step {σ : LPSignature} [DecidableEq σ.vars]
@@ -323,39 +403,13 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
     StepResult σ :=
   match state.phase with
   | .afterAnswer =>
-      .next { state with phase := .backtrack } none
+      afterAnswerStep state
   | .backtrack =>
-      match state.choices with
-      | [] => complete state
-      | cursor :: older =>
-          match state.memory.restore cursor.checkpoint with
-          | .error error => failWith state (.memory error)
-          | .ok memory =>
-              .next {
-                state with
-                memory
-                choices := older
-                phase := .select cursor
-              } none
+      backtrackStep state
   | .dispatch =>
       match state.control.current with
       | [] =>
-          match state.control.frames with
-          | frame :: frames =>
-              .next {
-                state with
-                control := {
-                  current := frame.continuation
-                  cutDepth := frame.callerCutDepth
-                  frames
-                }
-              } none
-          | [] =>
-              .next { state with phase := .afterAnswer }
-                (some (.answer {
-                  memory := state.memory
-                  queryVarMap := state.queryVarMap
-                }))
+          emptyCurrentStep state
       | goal :: rest =>
           if _hCut : builtins.isCut goal.symbol = true then
             if goal.args.isEmpty then
@@ -386,27 +440,7 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
   | .select cursor =>
       selectStep lpClauseMaterializer state cursor
   | .unifying attempt machine =>
-      match machine with
-      | .running _ =>
-          match RuntimeUnification.step machine with
-          | some next =>
-              .next { state with phase := .unifying attempt next } none
-          | none => failWith state .stalledUnifier
-      | .terminal (.success memory) =>
-          .next {
-            state with
-            memory
-            control := {
-              current := attempt.body
-              cutDepth := attempt.cutDepth
-              frames := attempt.frames
-            }
-            phase := .dispatch
-          } none
-      | .terminal (.failure memory) =>
-          .next { state with memory, phase := .backtrack } none
-      | .terminal (.runtimeError error memory) =>
-          failWith { state with memory } (.memory error)
+      unifyingStep state attempt machine
 
 /-! ## Local control laws -/
 

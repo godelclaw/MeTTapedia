@@ -103,8 +103,60 @@ def typedClauseUsesSharedSelectStep : Bool :=
               | _ => false
       | _ => false
 
+/-- The shared unifier-success transition installs the typed Prolog body in
+the canonical query control state.  In particular, the transition cannot
+reinterpret `cut` as an LP atom or discard it at the control seam. -/
+def typedBodyUsesSharedUnifyingStep : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let cursor : LP.RuntimeQuery.ClauseCursorCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            checkpoint := queryResult.memory.checkpoint
+            goal
+            clauses := [sourceClause]
+            cutDepth := 0
+            frames := []
+          }
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := { current := [], cutDepth := 0, frames := [] }
+            choices := []
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .select cursor
+          }
+          match LP.RuntimeQuery.selectStep clauseMaterializer state cursor with
+          | .terminal _ => false
+          | .next selected _ =>
+              match selected.phase with
+              | .unifying attempt machine =>
+                  match LP.RuntimeUnification.runSteps 16 machine with
+                  | .terminal (.success memory) =>
+                      match LP.RuntimeQuery.unifyingStep selected attempt
+                          (.terminal (.success memory)) with
+                      | .next installed none =>
+                          match installed.phase, installed.control.current with
+                          | .dispatch, [.cut] => installed.nextScope == 2
+                          | _, _ => false
+                      | _ => false
+                  | _ => false
+              | _ => false
+      | _ => false
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
+#guard typedBodyUsesSharedUnifyingStep
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression
