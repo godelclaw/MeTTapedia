@@ -34,6 +34,12 @@ frozen outward leaf interface.  The edge-boundary equations prevent the two
 distinguished faces from being arbitrary holes with convenient sizes. -/
 structure AnnularEmbedding (source : SourceTrail G) where
   cellulation : FramedAnnularCellulation G
+  /-- The distinguished rotation root is chosen on the source's named outer
+  hole.  Source crosscuts select their retained component from this dart, so
+  the root cannot be an arbitrary interior face representative. -/
+  outer_dart_on_outerHole :
+    dartOrbitFace cellulation.rotation.toRotationSystem
+      cellulation.rotation.toRotationSystem.outer = cellulation.outerHole
   innerHole_boundary :
     orbitFaceBoundary cellulation.rotation.toRotationSystem
         cellulation.innerHole =
