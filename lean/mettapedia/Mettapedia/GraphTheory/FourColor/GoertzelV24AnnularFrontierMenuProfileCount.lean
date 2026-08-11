@@ -206,6 +206,38 @@ theorem annularFrontierMenuBSeedCount_pos_iff_exists_profileMenuB
       exact hword
     simpa only [annularFrontierMenuUniformProfile_word] using hprofileWord
 
+/-- The zero-count counterexample predicate from Addendum XXV is exactly
+rejection by the generated finite Menu-B profile language.  Thus no graph
+coloring is hidden behind `seeds = 0`: every profile at the fixed boundary
+word that satisfies the profile-only Menu-B test has zero literal count. -/
+theorem annularFrontierMenuBSeedCount_eq_zero_iff_forall_profileMenuB_count_eq_zero
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (word : CAP5BoundaryWord) :
+    annularFrontierMenuBSeedCount data word = 0 ↔
+      ∀ profile : AnnularFrontierMenuUniformProfile,
+        profile.word = word →
+          AnnularFrontierMenuBStateOfProfile profile →
+            annularFrontierMenuUniformProfileCount data hdata profile = 0 := by
+  constructor
+  · intro hseed profile hword hmenu
+    by_contra hcount
+    have hcountPositive :
+        0 < annularFrontierMenuUniformProfileCount data hdata profile :=
+      Nat.pos_of_ne_zero hcount
+    have hseedPositive : 0 < annularFrontierMenuBSeedCount data word :=
+      (annularFrontierMenuBSeedCount_pos_iff_exists_profileMenuB
+        data hdata word).2 ⟨profile, hword, hcountPositive, hmenu⟩
+    omega
+  · intro hprofiles
+    by_contra hseed
+    have hseedPositive : 0 < annularFrontierMenuBSeedCount data word :=
+      Nat.pos_of_ne_zero hseed
+    rcases (annularFrontierMenuBSeedCount_pos_iff_exists_profileMenuB
+      data hdata word).1 hseedPositive with
+      ⟨profile, hword, hcountPositive, hmenu⟩
+    have hcountZero := hprofiles profile hword hmenu
+    omega
+
 end
 
 end GoertzelV24AnnularFrontierMenu
