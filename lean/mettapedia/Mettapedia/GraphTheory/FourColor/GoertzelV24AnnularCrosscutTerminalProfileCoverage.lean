@@ -25,6 +25,8 @@ open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FiniteEdgeDeletion
+open GoertzelV24HexFaceRungType
+open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24RotationVertexCutProfile
 open GoertzelV24TerminalProfileConnectivityUpdate
 open GoertzelV24TerminalProfileFaceCapUpdate
@@ -163,6 +165,77 @@ theorem sourceCrosscutRetainedRemoved_regionalFaceAdjacencyCovered
   regionalFaceAdjacencyCovered_vertexSetRegionEdges_compl
     data.toRotationSystem hcubic hrotation
       (pair.componentSide boundary.component) root
+
+/-- On the literal retained/removed source split, every tracked-connectivity
+query in the union is exactly the closure of moves made inside one factor at
+a time.  The two queried endpoints may be cap terminals or moving-cut edges;
+only genuine switches between factors are confined to the common seam. -/
+theorem sourceCrosscutRetainedRemoved_trackedReachable_iff_componentClosure
+    (C : G.edgeSet → Color) (a b : Color)
+    (first second : G.edgeSet) :
+    let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)
+    let removedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ
+    (regionalTrackedEdgeGraph data.toRotationSystem
+        (retainedRegion ∪ removedRegion) C a b).Reachable first second ↔
+      Relation.ReflTransGen
+        (fun x y : Subtype (fun edge =>
+            edge ∈ retainedRegion ∩ removedRegion ∨
+              edge = first ∨ edge = second) =>
+          (regionalTrackedEdgeGraph data.toRotationSystem retainedRegion
+              C a b).Reachable x y ∨
+            (regionalTrackedEdgeGraph data.toRotationSystem removedRegion
+              C a b).Reachable x y)
+        ⟨first, Or.inr (Or.inl rfl)⟩
+        ⟨second, Or.inr (Or.inr rfl)⟩ := by
+  dsimp only
+  exact regionalTrackedEdgeGraph_union_reachable_iff_componentClosureWithEndpoints
+    data.toRotationSystem
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component))
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ)
+    C a b
+    (pair.sourceCrosscutRetainedRemoved_regionalTrackedAdjacencyCovered
+      data boundary C a b)
+    first second
+
+/-- The occurrence-sensitive face coordinate obeys the same concrete update
+law.  Whole-fragment moves occur in the retained or removed region, and every
+nontrivial change of factor occurs at an actual occurrence of a seam edge. -/
+theorem sourceCrosscutRetainedRemoved_faceReachable_iff_componentClosure
+    (hcubic : data.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    (root : data.toRotationSystem.D)
+    (first second : Fin (data.toRotationSystem.faceOrbit root).card) :
+    let retainedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)
+    let removedRegion := vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ
+    (faceRegionalAmbientPositionGraph data.toRotationSystem root
+        (retainedRegion ∪ removedRegion)).Reachable first second ↔
+      Relation.ReflTransGen
+        (fun x y : Subtype (fun position =>
+            faceCycleEdge data.toRotationSystem root position ∈
+                retainedRegion ∩ removedRegion ∨
+              position = first ∨ position = second) =>
+          (faceRegionalAmbientPositionGraph data.toRotationSystem root
+              retainedRegion).Reachable x.1 y.1 ∨
+            (faceRegionalAmbientPositionGraph data.toRotationSystem root
+              removedRegion).Reachable x.1 y.1)
+        ⟨first, Or.inr (Or.inl rfl)⟩
+        ⟨second, Or.inr (Or.inr rfl)⟩ := by
+  dsimp only
+  exact faceRegionalAmbientPositionGraph_union_reachable_iff_componentClosureWithEndpoints
+    data.toRotationSystem root
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component))
+    (vertexSetRegionEdges data.toRotationSystem
+      (pair.componentSide boundary.component)ᶜ)
+    (pair.sourceCrosscutRetainedRemoved_regionalFaceAdjacencyCovered
+      data boundary hcubic hrotation root)
+    first second
 
 /-- Any two face-support pieces whose overlap is confined to the width-two
 source seam satisfy the exact overlap-corrected cap-at-five update. -/
