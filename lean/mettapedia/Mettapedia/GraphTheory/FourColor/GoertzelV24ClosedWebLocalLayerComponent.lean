@@ -189,6 +189,149 @@ theorem exists_component_exactBoundary
   rw [hcomponentBoundary]
   exact hboundary
 
+/-- The source-local Cell-3 layer is a genuine separator: deleting precisely
+its crossed primal edges disconnects the ambient graph.  This exposes the
+separation fact separately from the choice of a retained component, so later
+splice formation can choose the side containing a named source boundary. -/
+theorem not_connected_delete_cutEdges
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    ¬ (G.deleteEdges
+      (localEdgeFinsetValueSet (layers.cutEdges hunique))).Connected := by
+  have hcut :
+      localDualWalkPrimalCut web.annular.cellulation.rotation hunique
+        (layers.separatedLocalLayerPair hunique).dualLoop =
+        localEdgeFinsetValueSet (layers.cutEdges hunique) := by
+    exact localDualWalkPrimalCut_eq_localEdgeFinsetValueSet_dualWalkCrossingEdges
+      web.annular.cellulation.rotation hunique
+      (layers.separatedLocalLayerPair hunique).dualLoop
+  rw [← hcut]
+  exact not_connected_deleteEdges_localDualWalkPrimalCut_of_isCycle
+    web.annular.cellulation.rotation
+    (GoertzelV24AnnularCrosscut.holeDual_connected web.annular)
+    web.annular.cellulation.connected web.annular.cellulation.euler hunique
+    (layers.separatedLocalLayerPair hunique).dualLoop
+    (layers.separatedLocalLayerPair_dualLoop_isCycle hunique)
+
+/-- Any one of two distinct deletion components sees the entire local Cell-3
+wall as its computed boundary.  The proof uses only the two-sidedness of
+faces on the literal layer loop, not a global two-sidedness assertion about
+the open tangle's hole faces. -/
+theorem componentCrossingEdges_eq_cutEdges_of_distinct
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (inside outside :
+      (G.deleteEdges (localEdgeFinsetValueSet
+        (layers.cutEdges hunique))).ConnectedComponent)
+    (hdistinct : inside ≠ outside) :
+    localComponentCrossingEdges (layers.cutEdges hunique) inside =
+      layers.cutEdges hunique := by
+  have hcomponentBoundary : localComponentCrossingEdges
+      (layers.cutEdges hunique) inside =
+      localCrossingEdgeFinset G (fun vertex => vertex ∈ inside.supp) := by
+    ext edge
+    simp [localComponentCrossingEdges, localCrossingEdgeFinset]
+  have hsubset : localCrossingEdgeFinset G (fun vertex => vertex ∈ inside.supp) ⊆
+      layers.cutEdges hunique := by
+    rw [← hcomponentBoundary]
+    exact localComponentCrossingEdges_subset_removed (layers.cutEdges hunique)
+      inside
+  have hnonempty :
+      (localCrossingEdgeFinset G (fun vertex => vertex ∈ inside.supp)).Nonempty := by
+    rw [← hcomponentBoundary]
+    exact componentCrossingEdges_nonempty_of_distinct
+      web.annular.cellulation.connected (layers.cutEdges hunique)
+      inside outside hdistinct
+  have hboundary : localCrossingEdgeFinset G (fun vertex => vertex ∈ inside.supp) =
+      layers.cutEdges hunique := by
+    apply crossingEdgeFinset_eq_dualWalkCrossingEdges_of_isCycle_of_subset_of_supportTwoSided
+      web.annular.cellulation.rotation hunique
+      (layers.separatedLocalLayerPair hunique).dualLoop
+      (layers.separatedLocalLayerPair_dualLoop_isCycle hunique)
+      (fun vertex => vertex ∈ inside.supp) hsubset hnonempty
+    intro face hface dart hdart
+    apply dartOrbitFace_ne_alpha_of_mem_interiorFaces web dart
+    rw [hdart]
+    exact layers.separatedLocalLayerPair_dualLoop_support_internal
+      hunique face hface
+  rw [hcomponentBoundary]
+  exact hboundary
+
+/-- Select the literal deletion component containing the source's designated
+outer dart.  The other component supplies a real removed vertex.  This is
+the outer-retained half of the Cell-3 splice checklist; preservation of the
+inner hole is a later global-layer obligation, not silently assumed here. -/
+theorem exists_outer_component_exactBoundary_and_removed
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    ∃ component : (G.deleteEdges
+        (localEdgeFinsetValueSet (layers.cutEdges hunique))).ConnectedComponent,
+      ∃ removed : V,
+        web.annular.RS.vertOf web.annular.RS.outer ∈ component.supp ∧
+        removed ∉ component.supp ∧
+        localComponentCrossingEdges (layers.cutEdges hunique) component =
+          layers.cutEdges hunique := by
+  let outerVertex := web.annular.RS.vertOf web.annular.RS.outer
+  let outerComponent : (G.deleteEdges
+      (localEdgeFinsetValueSet (layers.cutEdges hunique))).ConnectedComponent :=
+    (G.deleteEdges (localEdgeFinsetValueSet
+      (layers.cutEdges hunique))).connectedComponentMk outerVertex
+  have houterMem : outerVertex ∈ outerComponent.supp := by
+    dsimp [outerComponent]
+    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+  rcases exists_distinct_localComponents_of_not_connected
+      web.annular.cellulation.connected (layers.cutEdges hunique)
+      (layers.not_connected_delete_cutEdges hunique) with
+    ⟨inside, outside, hdistinct⟩
+  by_cases hinside : inside = outerComponent
+  · have houterNeOutside : outerComponent ≠ outside := by
+      intro heq
+      exact hdistinct (hinside.trans heq)
+    rcases outside.nonempty_supp with ⟨removed, hremoved⟩
+    have hremovedNotOuter : removed ∉ outerComponent.supp := by
+      intro houter
+      have heq : outside = outerComponent :=
+        SimpleGraph.ConnectedComponent.eq_of_common_vertex hremoved houter
+      exact hdistinct (hinside.trans heq.symm)
+    refine ⟨outerComponent, removed, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact layers.componentCrossingEdges_eq_cutEdges_of_distinct hunique
+        outerComponent outside houterNeOutside
+  · have houterNeInside : outerComponent ≠ inside := by
+      intro heq
+      exact hinside (heq.symm)
+    rcases inside.nonempty_supp with ⟨removed, hremoved⟩
+    have hremovedNotOuter : removed ∉ outerComponent.supp := by
+      intro houter
+      have heq : inside = outerComponent :=
+        SimpleGraph.ConnectedComponent.eq_of_common_vertex hremoved houter
+      exact hinside heq
+    refine ⟨outerComponent, removed, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact layers.componentCrossingEdges_eq_cutEdges_of_distinct hunique
+        outerComponent inside houterNeInside
+
 end LocalLayerPair
 
 end Instance
