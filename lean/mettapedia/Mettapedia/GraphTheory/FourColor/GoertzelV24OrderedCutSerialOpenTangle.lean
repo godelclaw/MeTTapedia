@@ -87,6 +87,23 @@ theorem rightToLeftBoundaryMatching_orderedBoundaryDart
   change rightEquiv (leftEquiv.symm (leftEquiv step)) = rightEquiv step
   rw [leftEquiv.symm_apply_apply]
 
+/-- The inverse serial matching also preserves the common source position. -/
+@[simp]
+theorem rightToLeftBoundaryMatching_symm_orderedBoundaryDart
+    (left : OrderedCutSidesData RS n leftTerminalCount
+      leftFaceFragmentCount)
+    (right : OrderedCutSidesData RS n rightTerminalCount
+      rightFaceFragmentCount)
+    (step : Fin n) :
+    (rightToLeftBoundaryMatching left right).symm
+        (orderedBoundaryDart RS right.keep right.left.crossingEdge
+          right.leftCrosses step) =
+      orderedBoundaryDart RS left.keep left.right.crossingEdge
+        left.rightCrosses step := by
+  apply (rightToLeftBoundaryMatching left right).injective
+  rw [Equiv.apply_symm_apply,
+    rightToLeftBoundaryMatching_orderedBoundaryDart]
+
 /-- Serially compose two certified ordered-cut pieces using the source port
 order.  The result remains an open tangle: the first input and last output
 interfaces are still exposed. -/
