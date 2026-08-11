@@ -36,3 +36,12 @@ def main : IO Unit := do
     (runTyped [] hardIfConditionCutPreservesElse)
   renderAnswers "if_then_cut_outer"
     (runTyped [] hardIfThenCutPrunesOuterDisj)
+  renderAnswers "soft_if_condition_answers"
+    (runTyped [] softIfKeepsConditionAnswers)
+  renderAnswers "soft_if_then_retry"
+    (runTyped [] softIfThenFailureRetriesCondition)
+  renderAnswers "soft_if_false_else" (runTyped [] softIfFalseUsesElse)
+  renderAnswers "soft_if_condition_cut_else"
+    (runTyped [] softIfConditionCutPreservesElse)
+  renderAnswers "soft_if_then_cut_outer"
+    (runTyped [] softIfThenCutPrunesOuterDisj)

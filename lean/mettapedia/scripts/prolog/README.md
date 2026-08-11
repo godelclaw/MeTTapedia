@@ -171,13 +171,17 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares nine exact ordered answer traces against SWI-Prolog 10.1.9:
+It compares fourteen exact ordered answer traces against SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
 disjunction choice; plus hard-if first-answer commitment, then-failure without
 condition retry, false-condition else entry, condition-local cut scope, and
 restoration of ordinary caller cut scope inside the then branch.  Lean-side
-cleanup is additionally required to restore an empty heap and trail.
+cleanup is additionally required to restore an empty heap and trail.  Five
+soft-if cases distinguish it from hard-if: all condition answers remain live,
+then failure retries the condition, false condition enters else, a cut in the
+condition preserves the else delimiter, and a cut in then retains ordinary
+caller scope.
 
 ## What a pass means
 

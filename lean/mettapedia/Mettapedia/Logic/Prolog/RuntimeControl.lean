@@ -484,6 +484,8 @@ def dispatchAction {sigma : LP.LPSignature}
   | .disj left right => .branch left right
   | .ifThenElse condition thenBranch elseBranch =>
       .ifThenElse condition thenBranch elseBranch
+  | .softIfThenElse condition thenBranch elseBranch =>
+      .softIfThenElse condition thenBranch elseBranch
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | _ => .error .unsupportedInstruction

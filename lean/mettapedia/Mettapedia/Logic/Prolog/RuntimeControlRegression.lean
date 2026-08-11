@@ -248,7 +248,7 @@ def structuredControlIsExplicitlyUnsupported : Bool :=
   let state : State qSig := {
     memory
     control := {
-      current := [.softIfThenElse [] [] []]
+      current := [.once []]
       cutDepth := 0
       frames := []
     }
@@ -409,6 +409,45 @@ def hardIfThenCutPrunesOuterDisj : Goal qSig :=
       (.unify (.var .x) (.const .b)))
     (.unify (.var .x) (.const .c))
 
+/-- Soft if keeps all condition answers and runs `Then` for each. -/
+def softIfKeepsConditionAnswers : Goal qSig :=
+  .softIfThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+/-- Failure in `Then` retries the soft condition rather than entering `Else`. -/
+def softIfThenFailureRetriesCondition : Goal qSig :=
+  .softIfThenElse
+    (.disj (.unify (.var .x) (.const .a))
+      (.unify (.var .x) (.const .b)))
+    (.unify (.var .x) (.const .b))
+    (.unify (.var .x) (.const .c))
+
+def softIfFalseUsesElse : Goal qSig :=
+  .softIfThenElse .fail
+    (.unify (.var .x) (.const .a))
+    (.unify (.var .x) (.const .c))
+
+/-- A cut inside the soft condition prunes its right disjunct but preserves the
+soft else delimiter, allowing `Else` after the committed condition fails. -/
+def softIfConditionCutPreservesElse : Goal qSig :=
+  .softIfThenElse
+    (.disj
+      (.conj (.unify (.var .x) (.const .a))
+        (.conj .cut .fail))
+      (.unify (.var .x) (.const .b)))
+    .succeed
+    (.unify (.var .x) (.const .c))
+
+def softIfThenCutPrunesOuterDisj : Goal qSig :=
+  .disj
+    (.softIfThenElse .succeed
+      (.conj (.unify (.var .x) (.const .a)) .cut)
+      (.unify (.var .x) (.const .b)))
+    (.unify (.var .x) (.const .c))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -432,5 +471,10 @@ def hardIfThenCutPrunesOuterDisj : Goal qSig :=
 #guard runTyped [] hardIfFalseUsesElse == some ([.c], 0, 0)
 #guard runTyped [] hardIfConditionCutPreservesElse == some ([.c], 0, 0)
 #guard runTyped [] hardIfThenCutPrunesOuterDisj == some ([.a], 0, 0)
+#guard runTyped [] softIfKeepsConditionAnswers == some ([.a, .b], 0, 0)
+#guard runTyped [] softIfThenFailureRetriesCondition == some ([.b], 0, 0)
+#guard runTyped [] softIfFalseUsesElse == some ([.c], 0, 0)
+#guard runTyped [] softIfConditionCutPreservesElse == some ([.c], 0, 0)
+#guard runTyped [] softIfThenCutPrunesOuterDisj == some ([.a], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

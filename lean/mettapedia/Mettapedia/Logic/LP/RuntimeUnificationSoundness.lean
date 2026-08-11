@@ -1396,7 +1396,7 @@ def AtomsWF {σ : LPSignature} (heap : Heap σ.scoped)
 def FramesWF {σ : LPSignature} (heap : Heap σ.scoped)
     (frames : List (ReturnFrame σ)) : Prop :=
   ∀ frame ∈ frames,
-    frame.commitDepth = none ∧ AtomsWF heap frame.continuation
+    frame.commit = .ordinary ∧ AtomsWF heap frame.continuation
 
 /-- Every query variable's cell is present, carrying its identity. -/
 def VarMapCellsWF {σ : LPSignature} (heap : Heap σ.scoped)
@@ -2991,6 +2991,10 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hchain := hq.chain
                       rw [hchoices] at hchain
                       cases hchain
+                  | softElse alternative =>
+                      have hchain := hq.chain
+                      rw [hchoices] at hchain
+                      cases hchain
           | dispatch =>
               obtain ⟨hCW, barrier, hb, hlane⟩ := by
                 simpa only [PhaseLane, hphase] using hPL
@@ -3037,7 +3041,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       show heapSubst state.memory.heap pair.1 = term
                       simp [heapSubst, hcellOf, hterm]
                   | cons frame frames' =>
-                      have hcommit : frame.commitDepth = none :=
+                      have hcommit : frame.commit = .ordinary :=
                         (hCW.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).1
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (framePopState state frame frames') none := by

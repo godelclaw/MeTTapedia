@@ -19,4 +19,13 @@ main(_) :-
     emit(if_condition_cut_else,
         (((L = a, !, fail ; L = b)) -> true ; L = c), L),
     emit(if_then_cut_outer,
-        ((true -> (M = a, !) ; M = b) ; M = c), M).
+        ((true -> (M = a, !) ; M = b) ; M = c), M),
+    emit(soft_if_condition_answers,
+        ((N = a ; N = b) *-> true ; N = c), N),
+    emit(soft_if_then_retry,
+        ((O = a ; O = b) *-> O = b ; O = c), O),
+    emit(soft_if_false_else, (fail *-> P = a ; P = c), P),
+    emit(soft_if_condition_cut_else,
+        (((Q = a, !, fail ; Q = b)) *-> true ; Q = c), Q),
+    emit(soft_if_then_cut_outer,
+        ((true *-> (R = a, !) ; R = b) ; R = c), R).

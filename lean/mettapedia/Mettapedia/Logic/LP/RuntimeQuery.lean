@@ -50,15 +50,23 @@ inductive QueryError where
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
 
+/-- Success behavior attached to one return frame.  `hard` discards the
+conditional marker together with condition-local alternatives.  `soft`
+discards only its distinguished else marker, leaving condition alternatives
+available for later answers. -/
+inductive ReturnCommit where
+  | ordinary
+  | hard (mark : Nat)
+  | soft (mark : Nat)
+deriving DecidableEq, Repr
+
 /-- Caller state saved while one predicate body is active.  The instruction
 type is abstract so pure LP atoms and typed Prolog control share this exact
 frame representation. -/
 structure ReturnFrameCore (σ : LPSignature) (Instruction : Type*) where
   continuation : List Instruction
   callerCutDepth : Nat
-  /-- `some mark` turns this success continuation into a hard-conditional
-  commit delimiter.  Ordinary predicate returns carry `none`. -/
-  commitDepth : Option Nat := none
+  commit : ReturnCommit := .ordinary
 
 /-- The established pure-LP return frame. -/
 abbrev ReturnFrame (σ : LPSignature) :=
@@ -104,6 +112,10 @@ inductive ChoicePointCore (σ : LPSignature)
     (Instruction SourceClause : Type*) where
   | clause (cursor : ClauseCursorCore σ Instruction SourceClause)
   | branch (alternative : BranchChoiceCore σ Instruction)
+  /-- The else alternative of soft if-then-else.  Its distinct constructor
+  lets the success frame remove exactly this delimiter while preserving all
+  condition alternatives above it. -/
+  | softElse (alternative : BranchChoiceCore σ Instruction)
 
 /-- The established pure-LP choice-point type.  Pure LP execution constructs
 only `clause` alternatives. -/
@@ -382,6 +394,24 @@ def afterAnswerStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   .next { state with phase := .backtrack } none
 
+/-- Resume one checkpointed control alternative. -/
+@[simp]
+def resumeBranchStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (alternative : BranchChoiceCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause)) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.memory.restore alternative.checkpoint with
+  | .error error => failWith state (.memory error)
+  | .ok memory =>
+      .next {
+        state with
+        memory
+        control := alternative.control
+        choices := older
+        phase := .dispatch
+      } none
+
 /-- Restore and re-enter the newest retained cursor, or close the query when
 no alternatives remain. -/
 @[simp]
@@ -400,17 +430,25 @@ def backtrackStep {σ : LPSignature}
             choices := older
             phase := .select cursor
           } none
-  | .branch alternative :: older =>
-      match state.memory.restore alternative.checkpoint with
-      | .error error => failWith state (.memory error)
-      | .ok memory =>
-          .next {
-            state with
-            memory
-            control := alternative.control
-            choices := older
-            phase := .dispatch
-          } none
+  | .branch alternative :: older => resumeBranchStep state alternative older
+  | .softElse alternative :: older => resumeBranchStep state alternative older
+
+/-- Remove the soft-conditional delimiter immediately above the `mark` oldest
+choices.  The stack is newest first.  If that delimiter was already removed,
+the function is the identity; this is what permits each later condition answer
+to pass through the same saved success frame without committing the condition.
+-/
+def eraseSoftElseAboveBottom (mark : Nat) :
+    List (ChoicePointCore σ Instruction SourceClause) →
+      List (ChoicePointCore σ Instruction SourceClause)
+  | [] => []
+  | choice :: older =>
+      if older.length = mark then
+        match choice with
+        | .softElse _ => older
+        | _ => choice :: older
+      else
+        choice :: eraseSoftElseAboveBottom mark older
 
 /-- An empty current goal stack either returns to its caller frame or yields
 one answer at the outermost query. -/
@@ -420,8 +458,8 @@ def emptyCurrentStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   match state.control.frames with
   | frame :: frames =>
-      match frame.commitDepth with
-      | none =>
+      match frame.commit with
+      | .ordinary =>
           .next {
             state with
             control := {
@@ -430,7 +468,7 @@ def emptyCurrentStep {σ : LPSignature}
               frames
             }
           } none
-      | some mark =>
+      | .hard mark =>
           if _hDepth : mark ≤ state.choices.length then
             .next {
               state with
@@ -440,6 +478,19 @@ def emptyCurrentStep {σ : LPSignature}
                 frames
               }
               choices := retainBottom mark state.choices
+            } none
+          else
+            failWith state (.invalidCommitDepth mark state.choices.length)
+      | .soft mark =>
+          if _hDepth : mark ≤ state.choices.length then
+            .next {
+              state with
+              control := {
+                current := frame.continuation
+                cutDepth := frame.callerCutDepth
+                frames
+              }
+              choices := eraseSoftElseAboveBottom mark state.choices
             } none
           else
             failWith state (.invalidCommitDepth mark state.choices.length)
@@ -568,7 +619,7 @@ def ifThenElseStep {σ : LPSignature}
   let success : ReturnFrameCore σ Instruction := {
     continuation := thenBranch ++ rest
     callerCutDepth := state.control.cutDepth
-    commitDepth := some mark
+    commit := .hard mark
   }
   .next {
     state with
@@ -578,6 +629,39 @@ def ifThenElseStep {σ : LPSignature}
       frames := success :: state.control.frames
     }
     choices := .branch alternative :: state.choices
+  } none
+
+/-- Enter soft if-then-else on the same choice stack.  Its else continuation is
+tagged as a delimiter.  Each condition success removes only that delimiter,
+so other condition alternatives remain available and run the then branch in
+source order. -/
+@[simp]
+def softIfThenElseStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (condition thenBranch elseBranch rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let mark := state.choices.length
+  let alternative : BranchChoiceCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    control := {
+      current := elseBranch ++ rest
+      cutDepth := state.control.cutDepth
+      frames := state.control.frames
+    }
+  }
+  let success : ReturnFrameCore σ Instruction := {
+    continuation := thenBranch ++ rest
+    callerCutDepth := state.control.cutDepth
+    commit := .soft mark
+  }
+  .next {
+    state with
+    control := {
+      current := condition
+      cutDepth := mark + 1
+      frames := success :: state.control.frames
+    }
+    choices := .softElse alternative :: state.choices
   } none
 
 /-- Enter body unification through the same canonical graph unifier used for
@@ -635,6 +719,7 @@ inductive DispatchAction (σ : LPSignature)
   | cut
   | branch (left right : List Instruction)
   | ifThenElse (condition thenBranch elseBranch : List Instruction)
+  | softIfThenElse (condition thenBranch elseBranch : List Instruction)
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -654,6 +739,8 @@ def dispatchActionStep {σ : LPSignature}
   | .branch left right => branchStep state left right rest
   | .ifThenElse condition thenBranch elseBranch =>
       ifThenElseStep state condition thenBranch elseBranch rest
+  | .softIfThenElse condition thenBranch elseBranch =>
+      softIfThenElseStep state condition thenBranch elseBranch rest
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
@@ -784,7 +871,7 @@ theorem ifThenElseStep_exact {σ : LPSignature}
           frames := {
             continuation := thenBranch ++ rest
             callerCutDepth := state.control.cutDepth
-            commitDepth := some state.choices.length
+            commit := .hard state.choices.length
           } :: state.control.frames
         }
         choices := .branch {
@@ -805,7 +892,7 @@ theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
     (frames : List (ReturnFrameCore σ Instruction))
     (mark : Nat)
     (hFrames : state.control.frames = frame :: frames)
-    (hCommit : frame.commitDepth = some mark)
+    (hCommit : frame.commit = .hard mark)
     (hDepth : mark ≤ state.choices.length) :
     emptyCurrentStep state =
       .next {
@@ -818,6 +905,91 @@ theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
         choices := retainBottom mark state.choices
       } none := by
   simp [emptyCurrentStep, hFrames, hCommit, hDepth]
+
+/-- Soft success removes its else marker at the marked boundary but preserves
+all choices created by the condition. -/
+theorem eraseSoftElseAboveBottom_marker
+    (newer older : List (ChoicePointCore σ Instruction SourceClause))
+    (alternative : BranchChoiceCore σ Instruction) :
+    eraseSoftElseAboveBottom older.length
+        (newer ++ .softElse alternative :: older) =
+      newer ++ older := by
+  induction newer with
+  | nil => simp [eraseSoftElseAboveBottom]
+  | cons choice newer ih =>
+      simp [eraseSoftElseAboveBottom, ih]
+      omega
+
+/-- A soft conditional installs the distinguished else marker and a soft
+success frame while using the same local-cut boundary as hard conditionals. -/
+theorem softIfThenElseStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (condition thenBranch elseBranch rest : List Instruction) :
+    softIfThenElseStep state condition thenBranch elseBranch rest =
+      .next {
+        state with
+        control := {
+          current := condition
+          cutDepth := state.choices.length + 1
+          frames := {
+            continuation := thenBranch ++ rest
+            callerCutDepth := state.control.cutDepth
+            commit := .soft state.choices.length
+          } :: state.control.frames
+        }
+        choices := .softElse {
+          checkpoint := state.memory.checkpoint
+          control := {
+            current := elseBranch ++ rest
+            cutDepth := state.control.cutDepth
+            frames := state.control.frames
+          }
+        } :: state.choices
+      } none := rfl
+
+/-- A failed soft condition resumes the tagged else continuation after exact
+checkpoint restoration. -/
+theorem backtrackStep_softElse_of_restore {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (alternative : BranchChoiceCore σ Instruction)
+    (older : List (ChoicePointCore σ Instruction SourceClause))
+    (memory : Memory σ.scoped)
+    (hChoices : state.choices = .softElse alternative :: older)
+    (hRestore : state.memory.restore alternative.checkpoint = .ok memory) :
+    backtrackStep state =
+      .next {
+        state with
+        memory
+        control := alternative.control
+        choices := older
+        phase := .dispatch
+      } none := by
+  simp [backtrackStep, resumeBranchStep, hChoices, hRestore]
+
+/-- Each soft-condition success erases exactly the else delimiter.  Newer
+condition alternatives and older caller alternatives both survive. -/
+theorem emptyCurrentStep_soft_of_marker {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (frame : ReturnFrameCore σ Instruction)
+    (frames : List (ReturnFrameCore σ Instruction))
+    (newer older : List (ChoicePointCore σ Instruction SourceClause))
+    (alternative : BranchChoiceCore σ Instruction)
+    (hFrames : state.control.frames = frame :: frames)
+    (hCommit : frame.commit = .soft older.length)
+    (hChoices : state.choices = newer ++ .softElse alternative :: older) :
+    emptyCurrentStep state =
+      .next {
+        state with
+        control := {
+          current := frame.continuation
+          cutDepth := frame.callerCutDepth
+          frames
+        }
+        choices := newer ++ older
+      } none := by
+  simp [emptyCurrentStep, hFrames, hCommit, hChoices,
+    eraseSoftElseAboveBottom_marker]
+  omega
 
 /-- A well-formed cut transition retains exactly the choices older than the
 current predicate activation.  The theorem is stated directly about the one

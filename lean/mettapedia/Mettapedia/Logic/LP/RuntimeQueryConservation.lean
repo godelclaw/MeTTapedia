@@ -27,7 +27,7 @@ def mapReturnFrame (instruction : Instruction₁ → Instruction₂)
     ReturnFrameCore sigma Instruction₂ where
   continuation := frame.continuation.map instruction
   callerCutDepth := frame.callerCutDepth
-  commitDepth := frame.commitDepth
+  commit := frame.commit
 
 /-- Map only the instruction payload of backtrackable control. -/
 def mapControl (instruction : Instruction₁ → Instruction₂)
@@ -63,6 +63,29 @@ def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
       ChoicePointCore sigma Instruction₂ SourceClause₂
   | .clause cursor => .clause (mapCursor instruction sourceClause cursor)
   | .branch alternative => .branch (mapBranchChoice instruction alternative)
+  | .softElse alternative =>
+      .softElse (mapBranchChoice instruction alternative)
+
+/-- Removing a soft-conditional delimiter is independent of the instruction
+and source-clause representation. -/
+@[simp]
+theorem eraseSoftElseAboveBottom_map
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (mark : Nat)
+    (choices : List (ChoicePointCore sigma Instruction₁ SourceClause₁)) :
+    eraseSoftElseAboveBottom mark
+        (choices.map (mapChoicePoint instruction sourceClause)) =
+      (eraseSoftElseAboveBottom mark choices).map
+        (mapChoicePoint instruction sourceClause) := by
+  induction choices with
+  | nil => rfl
+  | cons choice older ih =>
+      simp only [List.map_cons, eraseSoftElseAboveBottom, List.length_map]
+      by_cases h : older.length = mark
+      · simp [h]
+        cases choice <;> rfl
+      · simp [h, ih]
 
 /-- Map a selected clause body while retaining the canonical unifier state. -/
 def mapAttempt (instruction : Instruction₁ → Instruction₂)
@@ -127,6 +150,9 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .branch (left.map instruction) (right.map instruction)
   | .ifThenElse condition thenBranch elseBranch =>
       .ifThenElse (condition.map instruction) (thenBranch.map instruction)
+        (elseBranch.map instruction)
+  | .softIfThenElse condition thenBranch elseBranch =>
+      .softIfThenElse (condition.map instruction) (thenBranch.map instruction)
         (elseBranch.map instruction)
   | .unify left right => .unify left right
   | .isVar address => .isVar address
@@ -254,7 +280,15 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
                 cases hCleanup : memory.restore checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl,
                   mapBranchChoice, mapChoicePoint, mapStepResult,
-                  backtrackStep, failWith, closeMemory, hRestore, hCleanup]
+                  backtrackStep, resumeBranchStep, failWith, closeMemory,
+                  hRestore, hCleanup]
+          | softElse alternative =>
+              cases hRestore : memory.restore alternative.checkpoint <;>
+                cases hCleanup : memory.restore checkpoint <;>
+                simp [stepCore, mapState, mapPhase, mapControl,
+                  mapBranchChoice, mapChoicePoint, mapStepResult,
+                  backtrackStep, resumeBranchStep, failWith, closeMemory,
+                  hRestore, hCleanup]
   | dispatch =>
       rcases control with ⟨current, cutDepth, frames⟩
       cases current with
@@ -264,16 +298,26 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
               simp [stepCore, mapState, mapPhase, mapControl,
                 mapStepResult, emptyCurrentStep]
           | cons frame frames =>
-              rcases frame with ⟨continuation, callerCutDepth, commitDepth⟩
-              cases commitDepth with
-              | none =>
+              rcases frame with ⟨continuation, callerCutDepth, commit⟩
+              cases commit with
+              | ordinary =>
                   simp [stepCore, mapState, mapPhase, mapControl,
                     mapReturnFrame, mapStepResult, emptyCurrentStep]
-              | some mark =>
+              | hard mark =>
                   by_cases hDepth : mark ≤ choices.length
                   · simp [stepCore, mapState, mapPhase, mapControl,
                       mapReturnFrame, mapChoicePoint, mapStepResult,
                       emptyCurrentStep, retainBottom, hDepth]
+                  · cases hCleanup : memory.restore checkpoint <;>
+                      simp [stepCore, mapState, mapPhase, mapControl,
+                        mapReturnFrame, mapChoicePoint, mapStepResult,
+                        emptyCurrentStep, failWith, closeMemory, hDepth,
+                        hCleanup]
+              | soft mark =>
+                  by_cases hDepth : mark ≤ choices.length
+                  · simp [stepCore, mapState, mapPhase, mapControl,
+                      mapReturnFrame, mapChoicePoint, mapStepResult,
+                      emptyCurrentStep, hDepth]
                   · cases hCleanup : memory.restore checkpoint <;>
                       simp [stepCore, mapState, mapPhase, mapControl,
                         mapReturnFrame, mapChoicePoint, mapStepResult,
@@ -306,6 +350,10 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
                 mapPhase, mapReturnFrame, mapStepResult, List.map_append]
           | ifThenElse condition thenBranch elseBranch =>
               simp [mapDispatchAction, dispatchActionStep, ifThenElseStep,
+                mapState, mapControl, mapBranchChoice, mapChoicePoint,
+                mapPhase, mapReturnFrame, mapStepResult, List.map_append]
+          | softIfThenElse condition thenBranch elseBranch =>
+              simp [mapDispatchAction, dispatchActionStep, softIfThenElseStep,
                 mapState, mapControl, mapBranchChoice, mapChoicePoint,
                 mapPhase, mapReturnFrame, mapStepResult, List.map_append]
           | unify left right =>
