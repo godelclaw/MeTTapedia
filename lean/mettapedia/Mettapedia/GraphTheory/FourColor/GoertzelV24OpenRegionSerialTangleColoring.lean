@@ -29,6 +29,20 @@ variable {V E L R : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+/-- Reading an old dart does not depend on which proof certifies that its
+base vertex is retained. -/
+theorem openOldDartColor_eq_of_dart_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : Dart RS keep)
+    (coloring : (rotationSystem RS keep root).EdgeColoring Color)
+    {left right : RS.D}
+    (hleft : keep (RS.vertOf left)) (hright : keep (RS.vertOf right))
+    (hdart : left = right) :
+    openOldDartColor RS keep root coloring left hleft =
+      openOldDartColor RS keep root coloring right hright := by
+  subst right
+  rfl
+
 /-- Reassociate a split vertex-side open-tangle dart with its unique old
 retained ambient dart. -/
 noncomputable def splitVertexSideDartEquiv
