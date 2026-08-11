@@ -171,7 +171,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 110 exact answer, exception, and persistent-store traces against
+It compares 119 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -207,6 +207,11 @@ heap-built meta-call through the same service.  Malformed lists, unbound or
 non-atom functors, and explicit zero-arity compounds additionally fail through
 typed engine errors in Lean canaries; exact ISO exception packets for those
 cases remain outside this differential claim.
+Nine integer-arithmetic cases cover exact `is/2` results for addition,
+subtraction, multiplication, nested expressions, and both signs of `mod/2`;
+result-unification failure; all six numeric comparisons; restoration into a
+caller alternative; and heap-built meta-call.  Float, division, and
+transcendental arithmetic remain explicitly unsupported.
 Eleven `catch/3` and `throw/1` cases cover throw-time catcher selection,
 entry-context recovery, rethrow, guarded and recovery cut opacity, retained
 guarded answers, nested-catcher throw-time preservation, variable-copy

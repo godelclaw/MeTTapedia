@@ -440,6 +440,14 @@ structure Services (sigma : LP.LPSignature) where
   unification remain owned by the shared engine. -/
   univ? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.UnivEncoding sigma) := fun _ => none
+  /-- Recognize the integer `is/2` fragment without inspecting the heap. -/
+  integerIs? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.IntegerArithmeticEncoding sigma) :=
+      fun _ => none
+  /-- Recognize integer numeric comparisons without evaluating operands. -/
+  integerComparison? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.IntegerComparison ×
+      LP.RuntimeQuery.IntegerArithmeticEncoding sigma) := fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -473,6 +481,8 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   termTest? _ := none
   termIdentity? _ := none
   univ? _ := none
+  integerIs? _ := none
+  integerComparison? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -559,7 +569,17 @@ def dispatchActionWith {sigma : LP.LPSignature}
                       | some (termRoot, listRoot, encoding) =>
                           .univ termRoot listRoot encoding
                       | none =>
-                          .call goal (Program.clausesFor program goal.symbol)
+                          match services.integerIs? goal with
+                          | some (resultRoot, expressionRoot, encoding) =>
+                              .integerIs resultRoot expressionRoot encoding
+                          | none =>
+                              match services.integerComparison? goal with
+                              | some (leftRoot, rightRoot, comparison, encoding) =>
+                                  .integerCompare leftRoot rightRoot comparison
+                                    encoding
+                              | none =>
+                                  .call goal
+                                    (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -630,6 +650,41 @@ theorem dispatchActionWith_univ {sigma : LP.LPSignature}
     dispatchActionWith services program (.call goal) =
       .univ termRoot listRoot encoding := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv]
+
+theorem dispatchActionWith_integerIs {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (resultRoot expressionRoot : Addr)
+    (encoding : LP.RuntimeQuery.IntegerArithmeticEncoding sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal =
+      some (resultRoot, expressionRoot, encoding)) :
+    dispatchActionWith services program (.call goal) =
+      .integerIs resultRoot expressionRoot encoding := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs]
+
+theorem dispatchActionWith_integerComparison {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (leftRoot rightRoot : Addr)
+    (comparison : LP.RuntimeQuery.IntegerComparison)
+    (encoding : LP.RuntimeQuery.IntegerArithmeticEncoding sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal =
+      some (leftRoot, rightRoot, comparison, encoding)) :
+    dispatchActionWith services program (.call goal) =
+      .integerCompare leftRoot rightRoot comparison encoding := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

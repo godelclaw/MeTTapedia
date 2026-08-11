@@ -69,6 +69,28 @@ def univEncoding : LP.RuntimeQuery.UnivEncoding Sigma where
     | .atom name => some ⟨{ name, arity }, rfl⟩
     | _ => none
 
+private def integerOperation (symbol : CompoundIndicator) :
+    Option LP.RuntimeQuery.IntegerOperation :=
+  if symbol.arity = 2 then
+    match symbol.name with
+    | "+" => some .add
+    | "-" => some .subtract
+    | "*" => some .multiply
+    | "mod" => some .modulo
+    | _ => none
+  else none
+
+/-- The exact unbounded-integer fragment currently realized from source
+constants.  Float and transcendental arithmetic are separate obligations. -/
+def integerArithmeticEncoding :
+    LP.RuntimeQuery.IntegerArithmeticEncoding Sigma where
+  decodeInteger
+    | .integer value => some value
+    | _ => none
+  encodeInteger := .integer
+  decode_encode _ := rfl
+  operation := integerOperation
+
 /-- Canonical source symbols used by the shared engine to normalize and
 inspect dynamic facts/rules and to expose opaque stable references. -/
 def clauseEncoding : LP.RuntimeQuery.ClauseEncoding Sigma where
@@ -294,6 +316,38 @@ def univ? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | _, _ => none
 
+def integerIs? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.IntegerArithmeticEncoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "is", [resultRoot, expressionRoot] =>
+      if goal.symbol.arity = 2 then
+        some (resultRoot, expressionRoot, integerArithmeticEncoding)
+      else none
+  | _, _ => none
+
+private def integerComparisonOfName : String →
+    Option LP.RuntimeQuery.IntegerComparison
+  | "<" => some .less
+  | "=<" => some .lessEqual
+  | ">" => some .greater
+  | ">=" => some .greaterEqual
+  | "=:=" => some .equal
+  | "=\\=" => some .notEqual
+  | _ => none
+
+def integerComparison? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.IntegerComparison ×
+      LP.RuntimeQuery.IntegerArithmeticEncoding Sigma) :=
+  match goal.args.toList with
+  | [leftRoot, rightRoot] =>
+      if goal.symbol.arity = 2 then
+        match integerComparisonOfName goal.symbol.name with
+        | some comparison =>
+            some (leftRoot, rightRoot, comparison, integerArithmeticEncoding)
+        | none => none
+      else none
+  | _ => none
+
 /-- Recognize the first persistent mutation fragment without heap authority.
 Clause decoding and database replacement remain separate engine/session
 operations. -/
@@ -336,6 +390,8 @@ def services : RuntimeControl.Services Sigma where
   termTest? := termTest?
   termIdentity? := termIdentity?
   univ? := univ?
+  integerIs? := integerIs?
+  integerComparison? := integerComparison?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -366,6 +422,14 @@ theorem services_termIdentity :
 @[simp]
 theorem services_univ :
     services.univ? = univ? := rfl
+
+@[simp]
+theorem services_integerIs :
+    services.integerIs? = integerIs? := rfl
+
+@[simp]
+theorem services_integerComparison :
+    services.integerComparison? = integerComparison? := rfl
 
 /-- Execute concrete source terms through the one shared runtime with
 callable decoding enabled. -/

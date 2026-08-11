@@ -180,6 +180,16 @@ def runAtomsFor (program : SourceSignature.Program)
     | _ => none
   pure (atoms, heapSize, trailSize)
 
+def runIntegersFor (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) (identity : SourceSignature.Variable) :
+    Option (List Int × Nat × Nat) := do
+  let (terms, heapSize, trailSize) ← runTermsFor program goal identity
+  let integers ← terms.mapM fun term =>
+    match term with
+    | .const (.integer value) => some value
+    | _ => none
+  pure (integers, heapSize, trailSize)
+
 def runAtoms (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
     Option (List String × Nat × Nat) :=
   match SourceRuntime.openEmpty program goal with
@@ -482,6 +492,84 @@ def univRejectsNonAtomFunctor : Bool :=
 def univRejectsExplicitZeroArityCompound : Bool :=
   match runQueryError? [] univExplicitZeroArityCompound with
   | some .invalidUnivFunctor => true
+  | _ => false
+
+/-! ## Unbounded integer arithmetic on the shared heap -/
+
+def arithmetic (name : String) (arguments : List SourceSignature.Term) :
+    SourceSignature.Term := compound name arguments
+
+def integerIs (result expression : SourceSignature.Term) :
+    SourceSignature.Goal := SourceSignature.call "is" [result, expression]
+
+def integerComparison (name : String) (left right : SourceSignature.Term) :
+    SourceSignature.Goal := SourceSignature.call name [left, right]
+
+def integerAddition : SourceSignature.Goal :=
+  integerIs x (arithmetic "+" [integer 2, integer 3])
+
+def integerNestedArithmetic : SourceSignature.Goal :=
+  integerIs x (arithmetic "*"
+    [arithmetic "+" [integer 2, integer 3], integer 4])
+
+def integerSubtraction : SourceSignature.Goal :=
+  integerIs x (arithmetic "-" [integer 3, integer 5])
+
+def integerModuloNegativeDividend : SourceSignature.Goal :=
+  integerIs x (arithmetic "mod" [integer (-5), integer 3])
+
+def integerModuloNegativeDivisor : SourceSignature.Goal :=
+  integerIs x (arithmetic "mod" [integer 5, integer (-3)])
+
+def integerIsMismatchFails : SourceSignature.Goal :=
+  integerIs (integer 4) (arithmetic "+" [integer 2, integer 3])
+
+def integerComparisonsSucceed : SourceSignature.Goal :=
+  .conj (integerComparison "<" (integer 1) (integer 2))
+    (.conj (integerComparison "=<" (integer 2) (integer 2))
+      (.conj (integerComparison ">" (integer 3) (integer 2))
+        (.conj (integerComparison ">=" (integer 3) (integer 3))
+          (.conj (integerComparison "=:="
+            (arithmetic "+" [integer 2, integer 3]) (integer 5))
+            (integerComparison "=\\=" (integer 5) (integer 6))))))
+
+def integerComparisonFailureRetainsCaller : SourceSignature.Goal :=
+  .disj (integerComparison "<" (integer 2) (integer 1))
+    (.unify x (atom "b"))
+
+def metaIntegerAddition : SourceSignature.Goal :=
+  metaGoal (compound "is"
+    [x, arithmetic "+" [integer 2, integer 3]])
+
+def integerArithmeticUnbound : SourceSignature.Goal := integerIs x y
+
+def integerArithmeticFloatOperand : SourceSignature.Goal :=
+  integerIs x (floatBits 0)
+
+def integerArithmeticUnsupportedExpression : SourceSignature.Goal :=
+  integerIs x (arithmetic "/" [integer 4, integer 2])
+
+def integerArithmeticZeroDivisorExpression : SourceSignature.Goal :=
+  integerIs x (arithmetic "mod" [integer 4, integer 0])
+
+def integerArithmeticRejectsUnbound : Bool :=
+  match runQueryError? [] integerArithmeticUnbound with
+  | some .arithmeticOperandUnbound => true
+  | _ => false
+
+def integerArithmeticRejectsFloat : Bool :=
+  match runQueryError? [] integerArithmeticFloatOperand with
+  | some .invalidArithmeticOperand => true
+  | _ => false
+
+def integerArithmeticRejectsUnsupported : Bool :=
+  match runQueryError? [] integerArithmeticUnsupportedExpression with
+  | some .unsupportedArithmeticFunction => true
+  | _ => false
+
+def integerArithmeticRejectsZeroDivisor : Bool :=
+  match runQueryError? [] integerArithmeticZeroDivisorExpression with
+  | some .arithmeticZeroDivisor => true
   | _ => false
 
 def binaryFactProgram : SourceSignature.Program :=
@@ -1079,6 +1167,26 @@ def laterCallSeesAssertion :
 #guard univRejectsUnboundFunctor
 #guard univRejectsNonAtomFunctor
 #guard univRejectsExplicitZeroArityCompound
+#guard runShapesFor [] integerAddition xIdentity ==
+  some ([.integer 5], 0, 0)
+#guard runShapesFor [] integerNestedArithmetic xIdentity ==
+  some ([.integer 20], 0, 0)
+#guard runShapesFor [] integerSubtraction xIdentity ==
+  some ([.integer (-2)], 0, 0)
+#guard runShapesFor [] integerModuloNegativeDividend xIdentity ==
+  some ([.integer 1], 0, 0)
+#guard runShapesFor [] integerModuloNegativeDivisor xIdentity ==
+  some ([.integer (-1)], 0, 0)
+#guard runCount [] integerIsMismatchFails == some (0, 0, 0)
+#guard runCount [] integerComparisonsSucceed == some (1, 0, 0)
+#guard runAtoms [] integerComparisonFailureRetainsCaller ==
+  some (["b"], 0, 0)
+#guard runShapesFor [] metaIntegerAddition xIdentity ==
+  some ([.integer 5], 0, 0)
+#guard integerArithmeticRejectsUnbound
+#guard integerArithmeticRejectsFloat
+#guard integerArithmeticRejectsUnsupported
+#guard integerArithmeticRejectsZeroDivisor
 #guard runAtoms [] caughtGround == some (["ball"], 0, 0)
 #guard runRaisedAtom [] throwTimeBoundCatcherRejects == some ("ball", 0, 0)
 #guard runRaisedAtom [] recoveryRethrowEscapes == some ("b", 0, 0)

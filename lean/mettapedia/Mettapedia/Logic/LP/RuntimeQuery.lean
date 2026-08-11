@@ -58,6 +58,11 @@ inductive QueryError where
   | invalidUnivList
   | univFunctorUnbound
   | invalidUnivFunctor
+  | arithmeticEvaluationBudgetExhausted
+  | arithmeticOperandUnbound
+  | invalidArithmeticOperand
+  | unsupportedArithmeticFunction
+  | arithmeticZeroDivisor
   | unhandledDatabaseRequest
   | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
@@ -241,6 +246,96 @@ def prepareUniv {σ : LPSignature} [DecidableEq σ.constants]
             | .ok (list, memory) =>
                 .ok { memory, left := listRoot, right := list }
       else .error (.memory .illFormedHeap)
+
+/-! ## Integer arithmetic on the shared graph -/
+
+/-- The integer operations needed by the pinned PeTTa parser and translator.
+This is intentionally not a claim to implement SWI's full numeric tower. -/
+inductive IntegerOperation where
+  | add
+  | subtract
+  | multiply
+  | modulo
+deriving DecidableEq, Repr
+
+inductive IntegerComparison where
+  | less
+  | lessEqual
+  | greater
+  | greaterEqual
+  | equal
+  | notEqual
+deriving DecidableEq, Repr
+
+/-- Language-owned recognition of integer constants and arithmetic functors.
+The engine owns dereference, recursive evaluation, result allocation,
+unification, and comparison control. -/
+structure IntegerArithmeticEncoding (σ : LPSignature) where
+  decodeInteger : σ.constants → Option Int
+  encodeInteger : Int → σ.constants
+  decode_encode : ∀ value, decodeInteger (encodeInteger value) = some value
+  operation : σ.functionSymbols → Option IntegerOperation
+
+def IntegerOperation.apply : IntegerOperation → Int → Int →
+    Except QueryError Int
+  | .add, left, right => .ok (left + right)
+  | .subtract, left, right => .ok (left - right)
+  | .multiply, left, right => .ok (left * right)
+  | .modulo, _, 0 => .error .arithmeticZeroDivisor
+  | .modulo, left, right =>
+      let remainder := left % right
+      /- Lean's integer remainder is nonnegative.  SWI's `mod/2` gives a
+      nonzero remainder the divisor's sign. -/
+      .ok (if remainder = 0 ∨ 0 < right then remainder else remainder + right)
+
+def IntegerComparison.holds : IntegerComparison → Int → Int → Bool
+  | .less, left, right => decide (left < right)
+  | .lessEqual, left, right => decide (left ≤ right)
+  | .greater, left, right => decide (left > right)
+  | .greaterEqual, left, right => decide (left ≥ right)
+  | .equal, left, right => decide (left = right)
+  | .notEqual, left, right => decide (left ≠ right)
+
+/-- Evaluate an integer expression directly over the canonical heap.  Fuel is
+structural cycle protection; ordinary acyclic expressions visit fewer
+application nodes than the heap contains. -/
+def evalIntegerAux {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : IntegerArithmeticEncoding σ)
+    (heap : Heap σ.scoped) : Nat → Addr → Except QueryError Int
+  | 0, _ => .error .arithmeticEvaluationBudgetExhausted
+  | fuel + 1, address => do
+      let root ←
+        match heap.deref address with
+        | .error error => .error (.memory error)
+        | .ok (.variableCycle cycle) =>
+            .error (.memory (.variableReferenceCycle cycle))
+        | .ok (.root root) => .ok root
+      let cell ←
+        match heap[root]? with
+        | none => .error (.memory (.invalidAddress root))
+        | some cell => .ok cell
+      match cell with
+      | .var _ none => .error .arithmeticOperandUnbound
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | .const value =>
+          match encoding.decodeInteger value with
+          | some integer => .ok integer
+          | none => .error .invalidArithmeticOperand
+      | .app symbol arguments =>
+          if arguments.size = 2 ∧ σ.functionArity symbol = 2 then
+            match encoding.operation symbol, arguments[0]?, arguments[1]? with
+            | some operation, some leftRoot, some rightRoot => do
+                let left ← evalIntegerAux encoding heap fuel leftRoot
+                let right ← evalIntegerAux encoding heap fuel rightRoot
+                operation.apply left right
+            | none, _, _ => .error .unsupportedArithmeticFunction
+            | _, _, _ => .error (.memory .illFormedHeap)
+          else .error .unsupportedArithmeticFunction
+
+def evalInteger {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : IntegerArithmeticEncoding σ)
+    (heap : Heap σ.scoped) (address : Addr) : Except QueryError Int :=
+  evalIntegerAux encoding heap (heap.size + 1) address
 
 /-- Language-owned symbols for the ordinary `Head :- Body` representation and
 opaque database references shared by `retract/1`, `clause/3`, and assertion.
@@ -2077,6 +2172,88 @@ theorem univStep_of_prepare {σ : LPSignature}
       } none := by
   simp [univStep, hPrepare]
 
+/-- Evaluate one integer expression, allocate its canonical constant, and
+enter the existing graph unifier against the result root. -/
+def integerIsStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (resultRoot expressionRoot : Addr)
+    (encoding : IntegerArithmeticEncoding σ) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match evalInteger encoding state.memory.heap expressionRoot with
+  | .error error => failWith state error
+  | .ok value =>
+      match state.memory.allocate (.const (encoding.encodeInteger value)) with
+      | .error error => failWith state (.memory error)
+      | .ok (valueRoot, memory) =>
+          .next {
+            state with
+            memory
+            phase := .unifying {
+              body := rest
+              cutDepth := state.control.cutDepth
+              frames := state.control.frames
+            } (RuntimeUnification.startMany memory [(resultRoot, valueRoot)])
+          } none
+
+/-- A successful integer evaluation/allocation enters exactly one canonical
+unification attempt and preserves the caller's control delimiters. -/
+theorem integerIsStep_of_eval_allocate {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (resultRoot expressionRoot valueRoot : Addr) (value : Int)
+    (memory : Memory σ.scoped) (encoding : IntegerArithmeticEncoding σ)
+    (rest : List Instruction)
+    (hEval : evalInteger encoding state.memory.heap expressionRoot = .ok value)
+    (hAllocate : state.memory.allocate (.const (encoding.encodeInteger value)) =
+      .ok (valueRoot, memory)) :
+    integerIsStep state resultRoot expressionRoot encoding rest =
+      .next {
+        state with
+        memory
+        phase := .unifying {
+          body := rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany memory [(resultRoot, valueRoot)])
+      } none := by
+  simp [integerIsStep, hEval, hAllocate]
+
+/-- Numeric comparison evaluates both operands without allocating or binding.
+Success consumes the instruction; false comparison enters ordinary
+backtracking. -/
+def integerCompareStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause) (leftRoot rightRoot : Addr)
+    (comparison : IntegerComparison) (encoding : IntegerArithmeticEncoding σ)
+    (rest : List Instruction) : StepResultCore σ Instruction SourceClause :=
+  match evalInteger encoding state.memory.heap leftRoot with
+  | .error error => failWith state error
+  | .ok left =>
+      match evalInteger encoding state.memory.heap rightRoot with
+      | .error error => failWith state error
+      | .ok right =>
+          if comparison.holds left right then
+            .next {
+              state with control := { state.control with current := rest }
+            } none
+          else .next { state with phase := .backtrack } none
+
+theorem integerCompareStep_of_eval {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause) (leftRoot rightRoot : Addr)
+    (left right : Int) (comparison : IntegerComparison)
+    (encoding : IntegerArithmeticEncoding σ) (rest : List Instruction)
+    (hLeft : evalInteger encoding state.memory.heap leftRoot = .ok left)
+    (hRight : evalInteger encoding state.memory.heap rightRoot = .ok right) :
+    integerCompareStep state leftRoot rightRoot comparison encoding rest =
+      if comparison.holds left right then
+        .next {
+          state with control := { state.control with current := rest }
+        } none
+      else .next { state with phase := .backtrack } none := by
+  simp [integerCompareStep, hLeft, hRight]
+
 /-- The complete authority granted to an instruction classifier.  It may name
 an ordinary call's source clauses, identify base control, expose
 already-materialized control payloads, or carry language-owned finite error
@@ -2103,6 +2280,11 @@ inductive DispatchAction (σ : LPSignature)
   | termTest (address : Addr) (test : TermTest σ)
   | termIdentity (left right : Addr) (expected : Bool)
   | univ (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
+  | integerIs (resultRoot expressionRoot : Addr)
+      (encoding : IntegerArithmeticEncoding σ)
+  | integerCompare (leftRoot rightRoot : Addr)
+      (comparison : IntegerComparison)
+      (encoding : IntegerArithmeticEncoding σ)
   | database (request : DatabaseRequest)
   | error (reason : QueryError)
 
@@ -2228,6 +2410,10 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       termIdentityStep state left right expected rest
   | .univ termRoot listRoot encoding =>
       univStep state termRoot listRoot encoding rest
+  | .integerIs resultRoot expressionRoot encoding =>
+      integerIsStep state resultRoot expressionRoot encoding rest
+  | .integerCompare leftRoot rightRoot comparison encoding =>
+      integerCompareStep state leftRoot rightRoot comparison encoding rest
   | .database request => checkedDatabaseRequestStep state request rest
   | .error reason => failWith state reason
 

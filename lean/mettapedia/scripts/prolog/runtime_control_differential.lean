@@ -38,6 +38,14 @@ def renderCount (label : String) : Option (Nat × Nat × Nat) -> IO Unit
       throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
   | none => throw <| IO.userError s!"{label}: runtime did not close"
 
+def renderIntegerAnswers (label : String) :
+    Option (List Int × Nat × Nat) -> IO Unit
+  | some (answers, 0, 0) =>
+      IO.println s!"{label}={String.intercalate "," (answers.map toString)}"
+  | some (_, heapSize, trailSize) =>
+      throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
+  | none => throw <| IO.userError s!"{label}: runtime did not close"
+
 def renderRaisedAtom (label : String) :
     Option (String × Nat × Nat) -> IO Unit
   | some (name, 0, 0) => IO.println s!"{label}=raised({name})"
@@ -244,6 +252,39 @@ def main : IO Unit := do
   renderCount "univ_meta_construct"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaUnivConstructsCompound)
+  renderIntegerAnswers "integer_addition"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerAddition
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "integer_nested"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerNestedArithmetic
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "integer_subtraction"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerSubtraction
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "integer_mod_negative_dividend"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerModuloNegativeDividend
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "integer_mod_negative_divisor"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerModuloNegativeDivisor
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "integer_is_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerIsMismatchFails)
+  renderCount "integer_comparisons"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerComparisonsSucceed)
+  renderStringAnswers "integer_comparison_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerComparisonFailureRetainsCaller)
+  renderIntegerAnswers "integer_meta_addition"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaIntegerAddition
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
   renderStringAnswers "catch_ground"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)

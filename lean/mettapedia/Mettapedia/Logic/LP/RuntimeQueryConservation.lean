@@ -273,6 +273,10 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .termIdentity left right expected
   | .univ termRoot listRoot encoding =>
       .univ termRoot listRoot encoding
+  | .integerIs resultRoot expressionRoot encoding =>
+      .integerIs resultRoot expressionRoot encoding
+  | .integerCompare leftRoot rightRoot comparison encoding =>
+      .integerCompare leftRoot rightRoot comparison encoding
   | .database request => .database request
   | .error reason => .error reason
 
@@ -944,6 +948,50 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   simp [mapDispatchAction, dispatchActionStep, univStep,
                     mapState, mapControl, mapAttempt, mapPhase,
                     mapReturnFrame, mapStepResult, hPrepare]
+          | integerIs resultRoot expressionRoot encoding =>
+              cases hEval : evalInteger encoding memory.heap expressionRoot with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep, integerIsStep,
+                      mapState, mapControl, mapAttempt, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hEval, hCleanup]
+              | ok value =>
+                  cases hAllocate : memory.allocate
+                      (.const (encoding.encodeInteger value)) with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          integerIsStep, mapState, mapControl, mapAttempt,
+                          mapPhase, mapReturnFrame, mapStepResult, failWith,
+                          closeMemory, hEval, hAllocate, hCleanup]
+                  | ok allocated =>
+                      rcases allocated with ⟨valueRoot, nextMemory⟩
+                      simp [mapDispatchAction, dispatchActionStep,
+                        integerIsStep, mapState, mapControl, mapAttempt,
+                        mapPhase, mapReturnFrame, mapStepResult, hEval,
+                        hAllocate]
+          | integerCompare leftRoot rightRoot comparison encoding =>
+              cases hLeft : evalInteger encoding memory.heap leftRoot with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      integerCompareStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hLeft, hCleanup]
+              | ok left =>
+                  cases hRight : evalInteger encoding memory.heap rightRoot with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          integerCompareStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, failWith, closeMemory,
+                          hLeft, hRight, hCleanup]
+                  | ok right =>
+                      cases hHolds : comparison.holds left right <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          integerCompareStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, hLeft, hRight, hHolds]
           | database request =>
               cases request with
               | asserta clauseRoot =>
