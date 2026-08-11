@@ -1,4 +1,4 @@
-import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 
 /-!
 # The exact residual of two graph factors
@@ -83,6 +83,51 @@ theorem supResidual_eq_bot_iff {N : Type*}
       · exact (hright hrightAdj).elim
     · intro hbot
       exact hbot.elim
+
+/-- One component-level move through either of two displayed factors, or one
+literal edge of their explicit seam factor.  This is the relational update
+visible to a finite connectivity profile: the factors contribute connected
+components, while the seam contributes the newly exposed turns. -/
+def ThreeFactorComponentStep {N : Type*}
+    (left right seam : SimpleGraph N) (x y : N) : Prop :=
+  left.Reachable x y ∨ right.Reachable x y ∨ seam.Adj x y
+
+/-- Reachability in a three-factor graph is exactly the reflexive-transitive
+closure of whole-component moves in the first two factors and literal seam
+moves in the third.  No determinism or interface-coverage premise is needed. -/
+theorem reachable_sup_sup_iff_threeFactorComponentClosure {N : Type*}
+    (left right seam : SimpleGraph N) (x y : N) :
+    ((left ⊔ right) ⊔ seam).Reachable x y ↔
+      Relation.ReflTransGen (ThreeFactorComponentStep left right seam) x y := by
+  have hleft : left ≤ (left ⊔ right) ⊔ seam :=
+    le_trans le_sup_left le_sup_left
+  have hright : right ≤ (left ⊔ right) ⊔ seam :=
+    le_trans le_sup_right le_sup_left
+  have hseam : seam ≤ (left ⊔ right) ⊔ seam := le_sup_right
+  constructor
+  · intro hreachable
+    have hpath :=
+      (SimpleGraph.reachable_iff_reflTransGen x y).mp hreachable
+    exact hpath.mono (by
+      intro u v huv
+      rcases (SimpleGraph.sup_adj (left ⊔ right) seam u v).mp huv with
+        hfactor | hseamAdj
+      · rcases (SimpleGraph.sup_adj left right u v).mp hfactor with
+          hleftAdj | hrightAdj
+        · exact Or.inl hleftAdj.reachable
+        · exact Or.inr (Or.inl hrightAdj.reachable)
+      · exact Or.inr (Or.inr hseamAdj))
+  · intro hclosure
+    exact Relation.ReflTransGen.trans_induction_on
+      (motive := fun {u v} _ => ((left ⊔ right) ⊔ seam).Reachable u v)
+      hclosure
+      (fun _ => SimpleGraph.Reachable.rfl)
+      (fun hstep => by
+        rcases hstep with hleftReach | hrightReach | hseamAdj
+        · exact hleftReach.mono hleft
+        · exact hrightReach.mono hright
+        · exact hseamAdj.reachable.mono hseam)
+      (fun _ _ hfirst hsecond => hfirst.trans hsecond)
 
 end GoertzelV24SimpleGraphSupResidual
 
