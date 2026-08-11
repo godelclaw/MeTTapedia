@@ -57,6 +57,20 @@ theorem boundaryRegionalFragmentEdges_equivCast
   subst rightRegion
   rfl
 
+/-- Transporting a boundary fragment along an equality of regional edge sets
+preserves the named ambient face. -/
+theorem boundaryRegionalFragmentFace_equivCast
+    (RS : RotationSystem V G.edgeSet) (cut : Finset G.edgeSet)
+    {leftRegion rightRegion : Finset G.edgeSet}
+    (hregion : leftRegion = rightRegion)
+    (fragment : BoundaryRegionalFragment RS cut leftRegion) :
+    (Equiv.cast
+        (congrArg (fun region => BoundaryRegionalFragment RS cut region)
+          hregion)
+        fragment).1 = fragment.1 := by
+  subst rightRegion
+  rfl
+
 /-- The edge supports of all factor fragments meeting one enlarged fragment
 are exactly that enlarged fragment's edges belonging to the factor region.
 This is the edge-level companion of
@@ -187,6 +201,21 @@ theorem localLayerRightPrefixBoundaryFragmentEquiv_edges
     (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
     interface.localLayerRightPrefixRegion_eq_left_union_cell fragment
 
+/-- Reindexing the outgoing carrier preserves the named ambient face. -/
+theorem localLayerRightPrefixBoundaryFragmentEquiv_face
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (fragment : BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
+      interface.localLayerRightPrefixRegion) :
+    (interface.localLayerRightPrefixBoundaryFragmentEquiv fragment).1 =
+      fragment.1 := by
+  exact boundaryRegionalFragmentFace_equivCast
+    embedded.cellulation.rotation.toRotationSystem
+    (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
+    interface.localLayerRightPrefixRegion_eq_left_union_cell fragment
+
 /-- The outgoing graph-cut coordinate, transported to the literal
 prefix-plus-Cell carrier. -/
 noncomputable def localLayerRightPrefixBoundaryFragmentAt
@@ -202,6 +231,41 @@ noncomputable def localLayerRightPrefixBoundaryFragmentAt
       embedded.cellulation.rotation.toRotationSystem
       (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
       interface.localLayerRightPrefixRegion index)
+
+/-- The outgoing `faceContinues` coordinate compares the ambient faces named
+by the two reindexed prefix-plus-Cell fragments.  Thus reindexing does not
+silently weaken the face-identity component of the complete profile. -/
+theorem localLayerRightPrefixBoundedProfile_faceContinues_eq_true_iff
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color (interface.nextLocalLayerPrefixCrossing step) ≠ 0)
+    (left right : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
+      interface.localLayerRightPrefixRegion))) :
+    (((interface.localLayerRightPrefixBoundedProfile color hcolor).profile
+        |>.faceContinues left right) = true) ↔
+      (interface.localLayerRightPrefixBoundaryFragmentAt left).1.1 =
+        (interface.localLayerRightPrefixBoundaryFragmentAt right).1.1 := by
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let cut := indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing
+  let leftFragment := boundaryRegionalFragmentAt RS cut
+    interface.localLayerRightPrefixRegion left
+  let rightFragment := boundaryRegionalFragmentAt RS cut
+    interface.localLayerRightPrefixRegion right
+  change
+    ((interface.localLayerRightPrefixGraphCutData.regionalProfile color hcolor
+        |>.faceContinues left right) = true) ↔ _
+  rw [GraphCorridorCutData.regionalProfile_faceContinues_eq_true_iff]
+  change (leftFragment.1.1 = rightFragment.1.1) ↔
+    (interface.localLayerRightPrefixBoundaryFragmentEquiv leftFragment).1.1 =
+      (interface.localLayerRightPrefixBoundaryFragmentEquiv rightFragment).1.1
+  rw [congrArg (fun face => face.1)
+      (interface.localLayerRightPrefixBoundaryFragmentEquiv_face leftFragment),
+    congrArg (fun face => face.1)
+      (interface.localLayerRightPrefixBoundaryFragmentEquiv_face rightFragment)]
 
 /-- The capped contribution of all fragments of one factor region meeting a
 fixed outgoing fragment. -/
