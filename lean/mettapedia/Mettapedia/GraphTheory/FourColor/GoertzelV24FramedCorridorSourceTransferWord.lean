@@ -12,9 +12,11 @@ No homogeneity of successive Cells is asserted here.
 
 This is an input to the generic heterogeneous word semantics in
 `GoertzelV24CorridorTransferWord`.  It is not yet the manuscript's completed
-cross-section word: a terminal-aware update theorem must connect cumulative
-connectivity to the five cap feet before endpoint acceptance or Menu-B can
-factor through it.
+cross-section word: a joint update theorem must identify its intermediate
+states with full cumulative cut-local profiles, including connectivity and
+capped face progress.  The source keeps the five cap feet in the exterior
+acceptance context; carrying them through every intermediate state is an
+optional refinement, not a premise of this local transfer word.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
