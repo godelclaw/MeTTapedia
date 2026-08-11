@@ -151,6 +151,60 @@ theorem withTerminalEdges_portsInRegion_iff
     · exact hcrossing (Sum.inl crossing)
     · exact hterminal terminal
 
+/-- Terminal augmentation has distinct ports exactly when the crossing list
+and terminal list are separately injective and no crossing edge is also a
+terminal edge. -/
+theorem withTerminalEdges_portsInjective_iff
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (cut : GraphCorridorCutData RS crossingEdgeCount 0 faceFragmentCount)
+    (terminalEdge : Fin terminalCount -> E) :
+    (withTerminalEdges cut terminalEdge).PortsInjective <->
+      Function.Injective cut.crossingEdge /\
+        Function.Injective terminalEdge /\
+          forall crossing terminal,
+            cut.crossingEdge crossing ≠ terminalEdge terminal := by
+  constructor
+  · intro hinjective
+    refine ⟨?_, ?_, ?_⟩
+    · intro first second heq
+      have hports :
+          (Sum.inl first : CorridorPort crossingEdgeCount terminalCount) =
+            Sum.inl second := by
+        apply hinjective
+        simpa using heq
+      exact Sum.inl_injective hports
+    · intro first second heq
+      have hports :
+          (Sum.inr first : CorridorPort crossingEdgeCount terminalCount) =
+            Sum.inr second := by
+        apply hinjective
+        simpa using heq
+      exact Sum.inr_injective hports
+    · intro crossing terminal heq
+      have hports :
+          (Sum.inl crossing : CorridorPort crossingEdgeCount terminalCount) =
+            Sum.inr terminal := by
+        apply hinjective
+        simpa using heq
+      cases hports
+  · rintro ⟨hcrossing, hterminal, hdisjoint⟩ first second heq
+    rcases first with first | first <;> rcases second with second | second
+    · exact congrArg Sum.inl (hcrossing heq)
+    · exact (hdisjoint first second heq).elim
+    · exact (hdisjoint second first heq.symm).elim
+    · exact congrArg Sum.inr (hterminal heq)
+
+/-- Adding terminals does not alter the computed regional face fragments. -/
+@[simp] theorem withTerminalEdges_fragmentsOnFaceInRegion_iff
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (cut : GraphCorridorCutData RS crossingEdgeCount 0 faceFragmentCount)
+    (terminalEdge : Fin terminalCount -> E) :
+    (withTerminalEdges cut terminalEdge).FragmentsOnFaceInRegion <->
+      cut.FragmentsOnFaceInRegion := by
+  rfl
+
 /-- The terminal-aware finite carrier required when a width-two Cell-3 cut
 remembers the five named inner-boundary edges and at most eight partial face
 fragments.  Its finiteness, decidable equality, and exact count are inherited
@@ -172,21 +226,21 @@ theorem card_cell3TerminalAwareProfile :
 section ClosedWeb
 
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
-  {outerCount faceFragmentCount : Nat}
+  {outerCount crossingEdgeCount faceFragmentCount : Nat}
 
 /-- Use the actual five inner-boundary edges of a closed-web instance as the
 fixed terminal family of a graph-derived cut. -/
 def withInnerBoundaryTerminals
     {RS : RotationSystem V G.edgeSet}
     (boundary : AnnularBoundaryData G outerCount)
-    (cut : GraphCorridorCutData RS 2 0 faceFragmentCount) :
-    GraphCorridorCutData RS 2 5 faceFragmentCount :=
+    (cut : GraphCorridorCutData RS crossingEdgeCount 0 faceFragmentCount) :
+    GraphCorridorCutData RS crossingEdgeCount 5 faceFragmentCount :=
   withTerminalEdges cut boundary.innerBoundaryEdge
 
 @[simp] theorem withInnerBoundaryTerminals_terminalEdge
     {RS : RotationSystem V G.edgeSet}
     (boundary : AnnularBoundaryData G outerCount)
-    (cut : GraphCorridorCutData RS 2 0 faceFragmentCount)
+    (cut : GraphCorridorCutData RS crossingEdgeCount 0 faceFragmentCount)
     (terminal : Fin 5) :
     (withInnerBoundaryTerminals boundary cut).terminalEdge terminal =
       boundary.innerBoundaryEdge terminal :=
@@ -198,7 +252,7 @@ the chosen cumulative side of the cut. -/
 theorem withInnerBoundaryTerminals_portsInRegion_iff
     {RS : RotationSystem V G.edgeSet}
     (boundary : AnnularBoundaryData G outerCount)
-    (cut : GraphCorridorCutData RS 2 0 faceFragmentCount) :
+    (cut : GraphCorridorCutData RS crossingEdgeCount 0 faceFragmentCount) :
     (withInnerBoundaryTerminals boundary cut).PortsInRegion <->
       cut.PortsInRegion /\
         forall terminal, boundary.innerBoundaryEdge terminal ∈ cut.regionEdges := by
