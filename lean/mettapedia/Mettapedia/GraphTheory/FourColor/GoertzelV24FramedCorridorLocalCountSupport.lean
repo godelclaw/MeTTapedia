@@ -27,6 +27,7 @@ namespace GoertzelV24FramedTrail
 
 open GoertzelV24AnnularCrosscut
 open GoertzelV24CorridorPumping
+open GoertzelV24CorridorProfile
 open GoertzelV24CorridorTransferMatrix
 open GoertzelV24EarlyFalsifiers
 open GoertzelV24FaceOrbitIncidence
@@ -101,6 +102,17 @@ def localLayerPairCellProfileTransfer
       (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic
       leftProfile rightProfile)
 
+/-- The literal Cell transfer is decidable by evaluating its generated
+finite `Count` entry. -/
+instance instDecidableRelLocalLayerPairCellProfileTransfer
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic) :
+    DecidableRel (interface.localLayerPairCellProfileTransfer hcubic) := by
+  intro leftProfile rightProfile
+  unfold localLayerPairCellProfileTransfer
+  infer_instance
+
 /-- A one-cell transfer is exactly a literal Tait coloring of the removed
 Cell-3 region realizing the named full profiles.  This gives the abstract
 transfer relation its concrete open-tangle semantics. -/
@@ -170,6 +182,95 @@ theorem localLayerPairCell_transferCount_pos_iff_exactRelationalTransfer
         embedded.cellulation.rotation
         (interface.localLayerPairSourceCrosscutBoundaryData hcubic) hcubic)
     length startProfile finishProfile
+
+/-- Exact-length acceptance for the literal Cell-3 generator is precisely
+positive support of its weighted full-profile `Count` matrix between an
+initial and an accepting profile.  This is the language-level form used by
+the corrected L2 fallback; multiplicities are retained in `transferCount`,
+while reachability uses only their positive support. -/
+theorem localLayerPairCell_transferAcceptsInExactly_iff_exists_count_pos
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (initial : Finset (LocalLayerPairCellProfile interface hcubic))
+    (isAccepting : LocalLayerPairCellProfile interface hcubic → Prop)
+    (length : Nat) :
+    TransferAcceptsInExactly
+        (interface.localLayerPairCellProfileTransfer hcubic)
+        initial isAccepting length ↔
+      ∃ start ∈ initial,
+        ∃ finish, isAccepting finish ∧
+          0 < transferCount
+            (interface.separatedLocalLayerPair
+              |>.sourceCrosscutComplementLiteralOpenProfileCount
+                embedded.cellulation.rotation
+                (interface.localLayerPairSourceCrosscutBoundaryData hcubic)
+                hcubic)
+            length start finish := by
+  classical
+  constructor
+  · rintro ⟨finish, hreachable, haccepting⟩
+    rcases (mem_reachableProfilesAfter_iff
+        (interface.localLayerPairCellProfileTransfer hcubic)
+        initial length finish).1 hreachable with
+      ⟨start, hstart, hpath⟩
+    exact ⟨start, hstart, finish, haccepting,
+      (interface.localLayerPairCell_transferCount_pos_iff_exactRelationalTransfer
+        hcubic length start finish).2 hpath⟩
+  · rintro ⟨start, hstart, finish, haccepting, hcount⟩
+    refine ⟨finish, (mem_reachableProfilesAfter_iff
+      (interface.localLayerPairCellProfileTransfer hcubic)
+      initial length finish).2 ⟨start, hstart, ?_⟩, haccepting⟩
+    exact
+      (interface.localLayerPairCell_transferCount_pos_iff_exactRelationalTransfer
+        hcubic length start finish).1 hcount
+
+/-- Corrected L2 for the literal source Cell-3 language, in the rejection
+polarity used by reductive descent.  Beyond an explicit finite-state
+threshold, a zero accepted-path count has a strictly smaller zero-count
+representative in the same eventual congruence class.  No one-step
+self-loop and no circularly defined relevance predicate are assumed. -/
+theorem localLayerPairCell_rejectionDescentWithBounds
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (initial : Finset (LocalLayerPairCellProfile interface hcubic))
+    (isAccepting : LocalLayerPairCellProfile interface hcubic → Prop) :
+    ∃ preperiod period : Nat,
+      preperiod <
+        2 ^ corridorCutProfileCount
+          interface.separatedLocalLayerPair.left.walk.length 0
+          (interface.separatedLocalLayerPair
+            |>.sourceCrosscutComplementFaceFragmentCount
+              embedded.cellulation.rotation
+              (interface.localLayerPairSourceCrosscutBoundaryData hcubic)) + 1 ∧
+      0 < period ∧
+      period ≤
+        2 ^ corridorCutProfileCount
+          interface.separatedLocalLayerPair.left.walk.length 0
+          (interface.separatedLocalLayerPair
+            |>.sourceCrosscutComplementFaceFragmentCount
+              embedded.cellulation.rotation
+              (interface.localLayerPairSourceCrosscutBoundaryData hcubic)) ∧
+      ∀ length : Nat,
+        preperiod + period ≤ length →
+        ¬ TransferAcceptsInExactly
+          (interface.localLayerPairCellProfileTransfer hcubic)
+          initial isAccepting length →
+        ∃ shorter : Nat,
+          preperiod ≤ shorter ∧ shorter < length ∧
+            ¬ TransferAcceptsInExactly
+              (interface.localLayerPairCellProfileTransfer hcubic)
+              initial isAccepting shorter := by
+  classical
+  exact finiteCorridorProfileTransfer_rejectionDescent
+    interface.separatedLocalLayerPair.left.walk.length 0
+    (interface.separatedLocalLayerPair
+      |>.sourceCrosscutComplementFaceFragmentCount
+        embedded.cellulation.rotation
+        (interface.localLayerPairSourceCrosscutBoundaryData hcubic))
+    (interface.localLayerPairCellProfileTransfer hcubic)
+    initial isAccepting
 
 /-- The playbook's weak L2 conclusion for the literal full-profile transfer,
 conditional only on the source audit that every relevant profile has a
