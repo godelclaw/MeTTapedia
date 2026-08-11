@@ -54,6 +54,7 @@ deriving DecidableEq, Repr
 /-- Lexical tokens before operator parsing. Graphic operators are atoms. -/
 inductive Kind where
   | atom (value : String)
+  | quotedAtom (value : String)
   | variable (spelling : String)
   | number (lexeme : String)
   | string (value : String)
@@ -237,7 +238,7 @@ private def scanAux : Nat -> List Char -> Position ->
             | .error error => .error error
             | .ok (value, suffix, nextPosition) => do
                 let following <- scanAux fuel suffix nextPosition
-                pure (token (.atom value) position nextPosition :: following)
+                pure (token (.quotedAtom value) position nextPosition :: following)
         | '"', tail =>
             match scanQuoted tail.length '"' position tail
                 (position.advance '"') [] with

@@ -46,7 +46,7 @@ def tokenKinds (source : String) : Option (List Kind) :=
 -- Quotes decode doubled delimiters and the SWI escape used by PeTTa's
 -- colored diagnostic strings.
 #guard tokenKinds "q('a''b', \"\\e\")." = some [
-  .atom "q", .punctuation .leftParen, .atom "a'b",
+  .atom "q", .punctuation .leftParen, .quotedAtom "a'b",
   .punctuation .comma, .string (String.singleton '\u001b'),
   .punctuation .rightParen, .punctuation .fullStop
 ]
