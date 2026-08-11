@@ -214,6 +214,60 @@ theorem finite_compound_readback_is_natural :
     compoundBinding_identityInjective compoundBindingBefore_readback
       compoundBindingAfter_readback
 
+def finiteVisitedHeap : Heap uSig := #[
+  .const .a,
+  .const .a,
+  .app .loop #[0],
+  .app .loop #[1]
+]
+
+def finiteVisited : List (Addr × Addr) := [(2, 3)]
+
+theorem finiteVisited_closed :
+    VisitedClosed finiteVisitedHeap finiteVisited := by
+  intro pair hPair
+  simp [finiteVisited] at hPair
+  subst pair
+  refine ⟨.loop, #[0], #[1], rfl, rfl, rfl, ?_⟩
+  intro k hkLeft hkRight
+  change k < 1 at hkLeft
+  interval_cases k
+  exact .inl (GoodPair.of_const (fuel := 1) rfl rfl rfl rfl)
+
+theorem finiteVisited_related :
+    VisitedRelated finiteVisitedHeap finiteVisited 2 3 :=
+  .inr ⟨1, 1, 2, 3, rfl, rfl, by simp [finiteVisited, orderedPair]⟩
+
+/-- The graph certificate is inhabited by two distinct application roots, and
+its semantic theorem equates their finite unfoldings. -/
+theorem finite_visited_applications_agree :
+    FiniteEqual finiteVisitedHeap 2 3 :=
+  finiteVisited_related.finiteEqual finiteVisited_closed
+
+def finiteVisitedMemory : Memory uSig := {
+  heap := finiteVisitedHeap
+  trail := #[]
+}
+
+/-- End-to-end discriminator: the executable machine really traverses two
+distinct compound roots, and its new run certificate proves their finite
+answers equal.  This cannot be discharged by the shared-root case alone. -/
+theorem finite_compound_machine_success_is_certified :
+    runSteps 3 (start finiteVisitedMemory 2 3) =
+        .terminal (.success finiteVisitedMemory) ∧
+      FiniteEqual finiteVisitedMemory.heap 2 3 := by
+  constructor
+  · rfl
+  · exact startMany_success_finiteEqual 3 finiteVisitedMemory [(2, 3)]
+      finiteVisitedMemory rfl (2, 3) (by simp)
+
+/-- Rational success also produces the graph certificate, while the theorem
+does not falsely claim a finite tree readback for the cyclic roots. -/
+theorem rational_machine_success_has_graph_certificate :
+    GraphCertificate twoRationalCycles.heap [(0, 2)] :=
+  startMany_success_graph_certificate 3 twoRationalCycles [(0, 2)]
+    twoRationalCycles equal_rational_cycles_terminate
+
 def variableOnlyCycle : Memory uSig := {
   heap := #[.var .x (some 1), .var .y (some 0)]
   trail := #[]

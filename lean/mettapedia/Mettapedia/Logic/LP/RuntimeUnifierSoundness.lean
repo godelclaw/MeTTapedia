@@ -28,6 +28,96 @@ theorem beginRollback_no_success {σ : LPSignature} [DecidableEq σ.constants]
   rollback_no_success fuel { c with agenda := [], phase := .rollback reason }
     reason m rfl
 
+/-- A successful graph-unification run closes a finite certificate over the
+actual heap.  Each original equation is represented by that same certificate;
+cycles remain graph cycles rather than being mistaken for finite terms. -/
+def GraphCertificate {σ : LPSignature} (heap : Heap σ)
+    (equations : List (Addr × Addr)) : Prop :=
+  ∃ visited, VisitedClosed heap visited ∧
+    ∀ pair ∈ equations, VisitedRelated heap visited pair.1 pair.2
+
+/-- One successful binding step preserves the graph certificate obligations
+for both the visited application graph and the fixed original equations. -/
+theorem afterBinding_graph_certificate {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (fuel : Nat)
+    (ih : ∀ (c' : Configuration σ) (equations : List (Addr × Addr))
+      (m : Memory σ), c'.phase = .compare →
+      VisitedCovered c'.memory.heap c'.agenda c'.visited →
+      EquationsCovered c'.memory.heap c'.agenda c'.visited equations →
+      runSteps fuel (.running c') = .terminal (.success m) →
+      GraphCertificate m.heap equations)
+    (c : Configuration σ) (equations : List (Addr × Addr))
+    (m : Memory σ) (rest : List (Addr × Addr))
+    (hphase : c.phase = .compare)
+    {lAddr rAddr : Addr}
+    (coveredVisited :
+      VisitedCovered c.memory.heap ((lAddr, rAddr) :: rest) c.visited)
+    (coveredEquations :
+      EquationsCovered c.memory.heap ((lAddr, rAddr) :: rest) c.visited
+        equations)
+    {varAddr target : Addr} {identity : σ.vars}
+    (hBound : c.memory.heap[varAddr]? = some (Cell.var identity none))
+    (hTargetCell : ∃ cell, c.memory.heap[target]? = some cell ∧
+      ∀ targetIdentity targetAddress,
+        cell ≠ Cell.var targetIdentity (some targetAddress))
+    (hTargetNe : target ≠ varAddr)
+    {boundSide targetSide : Addr}
+    (hBoundSide :
+      Heap.derefLoop c.memory.heap (c.memory.heap.size + 1) boundSide =
+      .ok (.root varAddr))
+    (hTargetSide :
+      Heap.derefLoop c.memory.heap (c.memory.heap.size + 1) targetSide =
+      .ok (.root target))
+    (hHeadOrientation :
+      (lAddr = boundSide ∧ rAddr = targetSide) ∨
+      (lAddr = targetSide ∧ rAddr = boundSide))
+    (hrun : runSteps fuel (afterBinding c rest varAddr identity target) =
+      .terminal (.success m)) :
+    GraphCertificate m.heap equations := by
+  cases hw : c.memory.write varAddr (Cell.var identity (some target)) with
+  | error e =>
+      simp only [afterBinding, hw] at hrun
+      exact absurd hrun (beginRollback_no_success fuel c _ m)
+  | ok memory' =>
+      simp only [afterBinding, hw] at hrun
+      obtain ⟨hlt, hheq⟩ := write_ok_heap hw
+      have hFrame : ∀ other, other ≠ varAddr →
+          memory'.heap[other]? = c.memory.heap[other]? := by
+        intro other ho
+        rw [hheq]
+        exact heap_set_get_ne _ _ hlt ho
+      have hBound' :
+          memory'.heap[varAddr]? =
+            some (Cell.var identity (some target)) := by
+        rw [hheq]
+        exact heap_set_get_self _ _ hlt
+      obtain ⟨targetCell, hTargetCell, hTargetNotLink⟩ := hTargetCell
+      have hTargetCell' : memory'.heap[target]? = some targetCell :=
+        (hFrame target hTargetNe).trans hTargetCell
+      have hTargetLeaf : ∀ f,
+          Heap.derefLoop memory'.heap (f + 1) target = .ok (.root target) :=
+        derefLoop_leaf hTargetCell' hTargetNotLink
+      have boundRelated : GoodPair memory'.heap boundSide targetSide :=
+        GoodPair.of_bind hBound hFrame hBound' hTargetLeaf hTargetNe
+          hBoundSide hTargetSide
+      have headRelated : VisitedRelated memory'.heap c.visited lAddr rAddr := by
+        rcases hHeadOrientation with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+        · exact .inl boundRelated
+        · exact .inl boundRelated.symm
+      have persistedVisited :=
+        coveredVisited.persist_binding hBound hFrame hBound' hTargetLeaf
+      have nextVisited : VisitedCovered memory'.heap rest c.visited :=
+        persistedVisited.consume headRelated
+      have persistedEquations :=
+        coveredEquations.persist_binding coveredVisited hBound hFrame hBound'
+          hTargetLeaf
+      have nextEquations :
+          EquationsCovered memory'.heap rest c.visited equations :=
+        persistedEquations.consume headRelated
+      exact ih { c with memory := memory', agenda := rest } equations m
+        hphase nextVisited nextEquations hrun
+
 /-- The three-part conclusion of the run invariant, abbreviated. -/
 def InvariantConclusion {σ : LPSignature} (c : Configuration σ)
     (m : Memory σ) : Prop :=
@@ -344,6 +434,363 @@ theorem runSteps_success_invariant {σ : LPSignature}
                                                   exact absurd hrun
                                                     (beginRollback_no_success
                                                       fuel c _ m)
+
+/-! ## Compound graph certificate -/
+
+/-- A successful run closes the graph certificate for every equation present
+at entry.  This follows the executable agenda and visited set exactly; it does
+not define a second unification relation. -/
+theorem runSteps_success_graph_certificate {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols] :
+    ∀ (fuel : Nat) (c : Configuration σ)
+      (equations : List (Addr × Addr)) (m : Memory σ),
+      c.phase = .compare →
+      VisitedCovered c.memory.heap c.agenda c.visited →
+      EquationsCovered c.memory.heap c.agenda c.visited equations →
+      runSteps fuel (.running c) = .terminal (.success m) →
+      GraphCertificate m.heap equations := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro c equations m _ _ _ hrun
+      rw [runSteps_zero] at hrun
+      simp at hrun
+  | succ fuel ih =>
+      intro c equations m hphase coveredVisited coveredEquations hrun
+      cases hstep : step (Machine.running c) with
+      | none =>
+          rw [runSteps_succ_none hstep] at hrun
+          simp at hrun
+      | some next =>
+          rw [runSteps_succ_some hstep] at hrun
+          cases hagenda : c.agenda with
+          | nil =>
+              simp only [step, hphase, hagenda] at hstep
+              cases hstep
+              rw [runSteps_terminal] at hrun
+              have closedVisited :
+                  VisitedCovered c.memory.heap [] c.visited := by
+                simpa [hagenda] using coveredVisited
+              have closedEquations :
+                  EquationsCovered c.memory.heap [] c.visited equations := by
+                simpa [hagenda] using coveredEquations
+              have hm : c.memory = m := by
+                injection hrun with h1
+                injection h1
+              subst hm
+              exact ⟨c.visited, closedVisited.toClosed,
+                closedEquations.toRelated⟩
+          | cons pair rest =>
+              obtain ⟨l, r⟩ := pair
+              have liveVisited :
+                  VisitedCovered c.memory.heap ((l, r) :: rest) c.visited := by
+                simpa [hagenda] using coveredVisited
+              have liveEquations :
+                  EquationsCovered c.memory.heap ((l, r) :: rest) c.visited
+                    equations := by
+                simpa [hagenda] using coveredEquations
+              simp only [step, hphase, hagenda] at hstep
+              cases hdl : c.memory.heap.deref l with
+              | error e =>
+                  simp only [hdl] at hstep
+                  cases hstep
+                  exact absurd hrun (beginRollback_no_success fuel c _ m)
+              | ok dresL =>
+                  cases dresL with
+                  | variableCycle a =>
+                      simp only [hdl] at hstep
+                      cases hstep
+                      exact absurd hrun (beginRollback_no_success fuel c _ m)
+                  | root leftRoot =>
+                      simp only [hdl] at hstep
+                      cases hdr : c.memory.heap.deref r with
+                      | error e =>
+                          simp only [hdr] at hstep
+                          cases hstep
+                          exact absurd hrun
+                            (beginRollback_no_success fuel c _ m)
+                      | ok dresR =>
+                          cases dresR with
+                          | variableCycle a =>
+                              simp only [hdr] at hstep
+                              cases hstep
+                              exact absurd hrun
+                                (beginRollback_no_success fuel c _ m)
+                          | root rightRoot =>
+                              simp only [hdr] at hstep
+                              split at hstep
+                              · rename_i heq
+                                cases hstep
+                                have headRelated :
+                                    VisitedRelated c.memory.heap c.visited l r :=
+                                  .inl (GoodPair.of_same_root (deref_root hdl)
+                                    (heq ▸ deref_root hdr))
+                                exact ih
+                                  { c with agenda := rest, phase := .compare }
+                                  equations m rfl
+                                  (liveVisited.consume headRelated)
+                                  (liveEquations.consume headRelated) hrun
+                              · rename_i hne
+                                cases hcl : c.memory.heap[leftRoot]? with
+                                | none =>
+                                    simp only [hcl] at hstep
+                                    cases hstep
+                                    exact absurd hrun
+                                      (beginRollback_no_success fuel c _ m)
+                                | some cellL =>
+                                    cases cellL with
+                                    | var lid linkL =>
+                                        cases linkL with
+                                        | some t =>
+                                            exact absurd hcl
+                                              (deref_root_cell c.memory.heap _ l
+                                                leftRoot (deref_root hdl) lid t)
+                                        | none =>
+                                            cases hcr : c.memory.heap[rightRoot]?
+                                            with
+                                            | none =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                            | some cellR =>
+                                                cases cellR with
+                                                | var rid linkR =>
+                                                    cases linkR with
+                                                    | some t =>
+                                                        exact absurd hcr
+                                                          (deref_root_cell
+                                                            c.memory.heap _ r
+                                                            rightRoot
+                                                            (deref_root hdr) rid t)
+                                                    | none =>
+                                                        simp only [hcl, hcr] at hstep
+                                                        split at hstep
+                                                        · cases hstep
+                                                          exact
+                                                            afterBinding_graph_certificate
+                                                              fuel ih c equations m
+                                                              rest hphase
+                                                              liveVisited
+                                                              liveEquations hcr
+                                                              ⟨_, hcl, by
+                                                                intro _ _ h
+                                                                cases h⟩ hne
+                                                              (deref_root hdr)
+                                                              (deref_root hdl)
+                                                              (.inr ⟨rfl, rfl⟩)
+                                                              hrun
+                                                        · cases hstep
+                                                          exact
+                                                            afterBinding_graph_certificate
+                                                              fuel ih c equations m
+                                                              rest hphase
+                                                              liveVisited
+                                                              liveEquations hcl
+                                                              ⟨_, hcr, by
+                                                                intro _ _ h
+                                                                cases h⟩
+                                                              (fun e => hne e.symm)
+                                                              (deref_root hdl)
+                                                              (deref_root hdr)
+                                                              (.inl ⟨rfl, rfl⟩)
+                                                              hrun
+                                                | const symbolR =>
+                                                    simp only [hcl, hcr] at hstep
+                                                    cases hstep
+                                                    exact
+                                                      afterBinding_graph_certificate
+                                                        fuel ih c equations m rest
+                                                        hphase liveVisited
+                                                        liveEquations hcl
+                                                        ⟨_, hcr, by
+                                                          intro _ _ h
+                                                          cases h⟩
+                                                        (fun e => hne e.symm)
+                                                        (deref_root hdl)
+                                                        (deref_root hdr)
+                                                        (.inl ⟨rfl, rfl⟩) hrun
+                                                | app symbolR argsR =>
+                                                    simp only [hcl, hcr] at hstep
+                                                    cases hstep
+                                                    exact
+                                                      afterBinding_graph_certificate
+                                                        fuel ih c equations m rest
+                                                        hphase liveVisited
+                                                        liveEquations hcl
+                                                        ⟨_, hcr, by
+                                                          intro _ _ h
+                                                          cases h⟩
+                                                        (fun e => hne e.symm)
+                                                        (deref_root hdl)
+                                                        (deref_root hdr)
+                                                        (.inl ⟨rfl, rfl⟩) hrun
+                                    | const symbolL =>
+                                        cases hcr : c.memory.heap[rightRoot]? with
+                                        | none =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact absurd hrun
+                                              (beginRollback_no_success fuel c _ m)
+                                        | some cellR =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | some t =>
+                                                    exact absurd hcr
+                                                      (deref_root_cell c.memory.heap
+                                                        _ r rightRoot
+                                                        (deref_root hdr) rid t)
+                                                | none =>
+                                                    simp only [hcl, hcr] at hstep
+                                                    cases hstep
+                                                    exact
+                                                      afterBinding_graph_certificate
+                                                        fuel ih c equations m rest
+                                                        hphase liveVisited
+                                                        liveEquations hcr
+                                                        ⟨_, hcl, by
+                                                          intro _ _ h
+                                                          cases h⟩ hne
+                                                        (deref_root hdr)
+                                                        (deref_root hdl)
+                                                        (.inr ⟨rfl, rfl⟩) hrun
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                split at hstep
+                                                · rename_i hsym
+                                                  cases hstep
+                                                  have headRelated :
+                                                      VisitedRelated c.memory.heap
+                                                        c.visited l r :=
+                                                    .inl (GoodPair.of_const
+                                                      (deref_root hdl)
+                                                      (deref_root hdr) hcl
+                                                      (hsym ▸ hcr))
+                                                  exact ih
+                                                    { c with agenda := rest, phase := .compare }
+                                                    equations m rfl
+                                                    (liveVisited.consume
+                                                      headRelated)
+                                                    (liveEquations.consume
+                                                      headRelated) hrun
+                                                · cases hstep
+                                                  exact absurd hrun
+                                                    (beginRollback_no_success
+                                                      fuel c _ m)
+                                            | app symbolR argsR =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                    | app symbolL argsL =>
+                                        cases hcr : c.memory.heap[rightRoot]? with
+                                        | none =>
+                                            simp only [hcl, hcr] at hstep
+                                            cases hstep
+                                            exact absurd hrun
+                                              (beginRollback_no_success fuel c _ m)
+                                        | some cellR =>
+                                            cases cellR with
+                                            | var rid linkR =>
+                                                cases linkR with
+                                                | some t =>
+                                                    exact absurd hcr
+                                                      (deref_root_cell c.memory.heap
+                                                        _ r rightRoot
+                                                        (deref_root hdr) rid t)
+                                                | none =>
+                                                    simp only [hcl, hcr] at hstep
+                                                    cases hstep
+                                                    exact
+                                                      afterBinding_graph_certificate
+                                                        fuel ih c equations m rest
+                                                        hphase liveVisited
+                                                        liveEquations hcr
+                                                        ⟨_, hcl, by
+                                                          intro _ _ h
+                                                          cases h⟩ hne
+                                                        (deref_root hdr)
+                                                        (deref_root hdl)
+                                                        (.inr ⟨rfl, rfl⟩) hrun
+                                            | const symbolR =>
+                                                simp only [hcl, hcr] at hstep
+                                                cases hstep
+                                                exact absurd hrun
+                                                  (beginRollback_no_success
+                                                    fuel c _ m)
+                                            | app symbolR argsR =>
+                                                simp only [hcl, hcr] at hstep
+                                                split at hstep
+                                                · rename_i hmatching
+                                                  split at hstep
+                                                  · rename_i hseen
+                                                    cases hstep
+                                                    have hMem :
+                                                        orderedPair leftRoot
+                                                          rightRoot ∈ c.visited := by
+                                                      simpa [seen] using hseen
+                                                    have headRelated :
+                                                        VisitedRelated
+                                                          c.memory.heap c.visited
+                                                          l r :=
+                                                      .inr ⟨_, _, leftRoot,
+                                                        rightRoot,
+                                                        deref_root hdl,
+                                                        deref_root hdr, hMem⟩
+                                                    exact ih
+                                                      { c with agenda := rest, phase := .compare }
+                                                      equations m rfl
+                                                      (liveVisited.consume
+                                                        headRelated)
+                                                      (liveEquations.consume
+                                                        headRelated) hrun
+                                                  · rename_i hnotSeen
+                                                    cases hstep
+                                                    have nextVisited :=
+                                                      liveVisited.expand
+                                                        (deref_root hdl)
+                                                        (deref_root hdr) hcl
+                                                        (hmatching.1 ▸ hcr)
+                                                        hmatching.2
+                                                    have nextEquations :=
+                                                      liveEquations.expand
+                                                        (leftArgs := argsL)
+                                                        (rightArgs := argsR)
+                                                        (deref_root hdl)
+                                                        (deref_root hdr)
+                                                    let c' : Configuration σ :=
+                                                      { c with
+                                                        agenda := argsL.toList.zip argsR.toList ++ rest
+                                                        visited := orderedPair leftRoot rightRoot :: c.visited
+                                                        phase := .compare }
+                                                    exact ih c' equations m rfl nextVisited
+                                                      nextEquations hrun
+                                                · cases hstep
+                                                  exact absurd hrun
+                                                    (beginRollback_no_success
+                                                      fuel c _ m)
+
+/-- Entry-point form of the graph certificate: the original `startMany`
+agenda is exactly the fixed equation set certified at success. -/
+theorem startMany_success_graph_certificate {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (fuel : Nat) (memory₀ : Memory σ) (agenda : List (Addr × Addr))
+    (m : Memory σ)
+    (hrun : runSteps fuel (startMany memory₀ agenda) =
+      .terminal (.success m)) :
+    GraphCertificate m.heap agenda := by
+  apply runSteps_success_graph_certificate fuel
+    { memory := memory₀, agenda := agenda, visited := []
+      entryMark := memory₀.trailMark, phase := .compare }
+    agenda m rfl
+  · intro pair hPair
+    simp at hPair
+  · intro pair hPair
+    exact .inr (.inl hPair)
+  · exact hrun
 
 /-! ## Success soundness -/
 

@@ -6,16 +6,18 @@ import Mettapedia.Logic.LP.SLD
 /-!
 # Toward success soundness of the runtime graph unifier
 
-The unification machine has executable behavior but no semantic theorem:
-nothing yet says that reaching `.success` makes a unified pair denote the same
-term.  This module builds the semantic layer for that theorem on the
-function-free fragment (no `app` cells).  Scope, stated honestly: this covers
-the current regression *fixtures*, not the runtime — `RuntimeQuery`
-materializes and unifies compound cells, whose treatment needs structural
-graph correspondence (a later milestone), and rational (cyclic) structures are
-excluded by the `.ok`-conditional statements rather than handled.  These are
-implementation-refinement lemmas about the canonical representation; they are
-not, by themselves, semantic grounding against an SLD judgment.
+This module proves semantic properties of the executable graph unifier itself.
+A successful run closes a certificate over its real agenda and visited graph;
+therefore every original equation with two finite final readbacks denotes the
+same term, including compound terms on arbitrary heaps.  Rational structures
+remain successful graph equations but are excluded honestly by the `.ok`
+readback premises rather than being misreported as finite trees.
+
+The later query-to-SLD endpoint in this file is still restricted to the
+function-free fragment.  Lifting that consumer through compound
+materialization and substitution is the next obligation; the unifier theorem
+it consumes is no longer the restriction.  These are local properties of the
+canonical executable representation, not a second operational semantics.
 
 Design, chosen to avoid fighting the fixed readback budget:
 
@@ -24,6 +26,8 @@ Design, chosen to avoid fighting the fixed readback budget:
 * machine writes only overwrite an *unbound* variable cell — a dereference
   terminal — and never change heap size, so every other cell (including every
   `const` root) is immutable along a unification run;
+* matching applications are certified by the runtime's existing visited graph,
+  and its finite soundness proof descends structurally through readback terms;
 * readback is connected to convergence by `readTermFuel_of_root`, and final
   `Heap.readTerm` statements follow by fuel monotonicity alone.
 -/
@@ -372,6 +376,192 @@ private theorem readListFuel_ok_pointwise_naturality {σ : LPSignature}
               | succ k =>
                   have := hPoint k (by simpa using hk) (by simpa using hk')
                   simpa using this
+
+/-- Invert a finite readback at a known application root. -/
+private theorem readTerm_app_inv {σ : LPSignature} {heap : Heap σ}
+    {root : Addr} {symbol : σ.functionSymbols} {args : Array Addr}
+    {term : Term σ} (hCell : heap[root]? = some (Cell.app symbol args))
+    (hRead : Heap.readTerm heap root = .ok term) :
+    ∃ (children : List (Term σ))
+      (hLength : children.length = σ.functionArity symbol),
+      readListFuel heap heap.size args.toList = .ok children ∧
+      term = .app symbol (fun index =>
+        children.get (Fin.cast hLength.symm index)) := by
+  unfold Heap.readTerm at hRead
+  rw [readTermFuel_app heap heap.size root symbol args hCell] at hRead
+  simp only [Bind.bind, Except.bind] at hRead
+  cases hChildren : readListFuel heap heap.size args.toList with
+  | error error => rw [hChildren] at hRead; simp at hRead
+  | ok children =>
+      simp only [hChildren] at hRead
+      by_cases hLength : children.length = σ.functionArity symbol
+      · rw [dif_pos hLength] at hRead
+        exact ⟨children, hLength, rfl, by simpa using hRead.symm⟩
+      · rw [dif_neg hLength] at hRead
+        simp at hRead
+
+/-- A closed visited-application graph is sound for every finite readback.
+The certificate itself may be cyclic (as required by rational-tree
+unification), but recursive uses strictly descend through subterms of the two
+finite readbacks. -/
+theorem VisitedRelated.finiteEqual {σ : LPSignature}
+    {heap : Heap σ} {visited : List (Addr × Addr)}
+    (closed : VisitedClosed heap visited) {left right : Addr}
+    (related : VisitedRelated heap visited left right) :
+    FiniteEqual heap left right := by
+  intro leftTerm rightTerm hLeft hRight
+  have go : ∀ measure : Nat,
+      ∀ (left right : Addr) (leftTerm rightTerm : Term σ),
+        leftTerm.size + rightTerm.size = measure →
+        VisitedRelated heap visited left right →
+        Heap.readTerm heap left = .ok leftTerm →
+        Heap.readTerm heap right = .ok rightTerm →
+        leftTerm = rightTerm := by
+    intro measure
+    induction measure using Nat.strong_induction_on with
+    | h measure ih =>
+        intro left right leftTerm rightTerm hMeasure hRelated hLeft hRight
+        rcases hRelated with hGood |
+            ⟨leftFuel, rightFuel, leftRoot, rightRoot,
+              hLeftRoot, hRightRoot, hVisited⟩
+        · exact hGood.finiteEqual hLeft hRight
+        · obtain ⟨symbol₀, args₀, args₁, hCell₀, hCell₁,
+              hArgSizes, hChildrenRelated⟩ :=
+            closed (orderedPair leftRoot rightRoot) hVisited
+          have hActual : ∃ symbol leftArgs rightArgs,
+              heap[leftRoot]? = some (Cell.app symbol leftArgs) ∧
+              heap[rightRoot]? = some (Cell.app symbol rightArgs) ∧
+              leftArgs.size = rightArgs.size ∧
+              ∀ k (hkLeft : k < leftArgs.size)
+                (hkRight : k < rightArgs.size),
+                VisitedRelated heap visited leftArgs[k] rightArgs[k] := by
+            by_cases hOrder : leftRoot ≤ rightRoot
+            · have hPair : orderedPair leftRoot rightRoot =
+                  (leftRoot, rightRoot) := by
+                simp [orderedPair, hOrder]
+              rw [hPair] at hCell₀ hCell₁
+              exact ⟨symbol₀, args₀, args₁, hCell₀, hCell₁,
+                hArgSizes, hChildrenRelated⟩
+            · have hPair : orderedPair leftRoot rightRoot =
+                  (rightRoot, leftRoot) := by
+                simp [orderedPair, hOrder]
+              rw [hPair] at hCell₀ hCell₁
+              refine ⟨symbol₀, args₁, args₀, hCell₁, hCell₀,
+                hArgSizes.symm, ?_⟩
+              intro k hkRight hkLeft
+              exact (hChildrenRelated k hkLeft hkRight).symm
+          obtain ⟨symbol, leftArgs, rightArgs, hLeftCell, hRightCell,
+            hArgsSize, hChildRelated⟩ := hActual
+          obtain ⟨leftRootFuel, hLeftRootFuelLe, hLeftRootRead⟩ :=
+            readTermFuel_descend leftFuel left leftRoot hLeftRoot
+              (heap.size + 1) leftTerm hLeft
+          obtain ⟨rightRootFuel, hRightRootFuelLe, hRightRootRead⟩ :=
+            readTermFuel_descend rightFuel right rightRoot hRightRoot
+              (heap.size + 1) rightTerm hRight
+          have hLeftRootReadFull : Heap.readTerm heap leftRoot =
+              .ok leftTerm :=
+            readTermFuel_mono_le heap hLeftRootFuelLe leftRoot leftTerm
+              hLeftRootRead
+          have hRightRootReadFull : Heap.readTerm heap rightRoot =
+              .ok rightTerm :=
+            readTermFuel_mono_le heap hRightRootFuelLe rightRoot rightTerm
+              hRightRootRead
+          obtain ⟨leftChildren, hLeftLength, hLeftChildrenRead,
+            hLeftTerm⟩ := readTerm_app_inv hLeftCell hLeftRootReadFull
+          obtain ⟨rightChildren, hRightLength, hRightChildrenRead,
+            hRightTerm⟩ := readTerm_app_inv hRightCell hRightRootReadFull
+          subst leftTerm
+          subst rightTerm
+          obtain ⟨hLeftArgsLength, hLeftPoint⟩ :=
+            readListFuel_ok_pointwise_naturality hLeftChildrenRead
+          obtain ⟨hRightArgsLength, hRightPoint⟩ :=
+            readListFuel_ok_pointwise_naturality hRightChildrenRead
+          congr 1
+          funext index
+          let k := index.val
+          have hkLeftArgs : k < leftArgs.size := by
+            have hSize : leftArgs.size = σ.functionArity symbol := by
+              calc
+                leftArgs.size = leftArgs.toList.length := by simp
+                _ = leftChildren.length := hLeftArgsLength
+                _ = σ.functionArity symbol := hLeftLength
+            rw [hSize]
+            exact index.isLt
+          have hkRightArgs : k < rightArgs.size := by
+            have hSize : rightArgs.size = σ.functionArity symbol := by
+              calc
+                rightArgs.size = rightArgs.toList.length := by simp
+                _ = rightChildren.length := hRightArgsLength
+                _ = σ.functionArity symbol := hRightLength
+            rw [hSize]
+            exact index.isLt
+          have hkLeftChildren : k < leftChildren.length := by
+            rw [hLeftLength]
+            exact index.isLt
+          have hkRightChildren : k < rightChildren.length := by
+            rw [hRightLength]
+            exact index.isLt
+          have hLeftChildSmall :=
+            hLeftPoint k (by simpa using hkLeftArgs) hkLeftChildren
+          have hRightChildSmall :=
+            hRightPoint k (by simpa using hkRightArgs) hkRightChildren
+          have hLeftChild : Heap.readTerm heap leftArgs[k] =
+              .ok leftChildren[k] := by
+            exact readTermFuel_mono heap heap.size _ _ (by
+              simpa using hLeftChildSmall)
+          have hRightChild : Heap.readTerm heap rightArgs[k] =
+              .ok rightChildren[k] := by
+            exact readTermFuel_mono heap heap.size _ _ (by
+              simpa using hRightChildSmall)
+          have hChildMeasure : leftChildren[k].size +
+              rightChildren[k].size <
+              (Term.app symbol (fun index =>
+                leftChildren.get (Fin.cast hLeftLength.symm index))).size +
+              (Term.app symbol (fun index =>
+                rightChildren.get (Fin.cast hRightLength.symm index))).size := by
+            have hLeftSmaller := Term.size_subterm
+              (f := symbol)
+              (ts := fun index =>
+                leftChildren.get (Fin.cast hLeftLength.symm index)) index
+            have hRightSmaller := Term.size_subterm
+              (f := symbol)
+              (ts := fun index =>
+                rightChildren.get (Fin.cast hRightLength.symm index)) index
+            have hLeftIndex :
+                (leftChildren.get (Fin.cast hLeftLength.symm index)).size =
+                  leftChildren[k].size := by
+              simp [k, List.get_eq_getElem]
+            have hRightIndex :
+                (rightChildren.get (Fin.cast hRightLength.symm index)).size =
+                  rightChildren[k].size := by
+              simp [k, List.get_eq_getElem]
+            rw [hLeftIndex] at hLeftSmaller
+            rw [hRightIndex] at hRightSmaller
+            omega
+          have hRecursive := ih _ (hMeasure ▸ hChildMeasure)
+            (leftArgs[k]) (rightArgs[k]) (leftChildren[k])
+              (rightChildren[k]) rfl
+              (hChildRelated k hkLeftArgs hkRightArgs)
+              hLeftChild hRightChild
+          simpa [k, List.get_eq_getElem] using hRecursive
+  exact go (leftTerm.size + rightTerm.size) left right leftTerm rightTerm
+    rfl related hLeft hRight
+
+/-- **Finite success soundness of the executable graph unifier**: on an
+arbitrary heap, every original equation whose two final readbacks are finite
+has equal readbacks.  Rational trees remain successful graph equations but do
+not masquerade as finite `Term`s. -/
+theorem startMany_success_finiteEqual {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (fuel : Nat) (memory₀ : Memory σ) (agenda : List (Addr × Addr))
+    (m : Memory σ)
+    (hrun : runSteps fuel (startMany memory₀ agenda) =
+      .terminal (.success m)) :
+    ∀ pair ∈ agenda, FiniteEqual m.heap pair.1 pair.2 := by
+  obtain ⟨visited, closed, related⟩ :=
+    startMany_success_graph_certificate fuel memory₀ agenda m hrun
+  intro pair hPair
+  exact (related pair hPair).finiteEqual closed
 
 /-- Finite readback is natural along a binding extension on arbitrary heaps:
 the later finite heap projection, applied to an earlier finite readback, is

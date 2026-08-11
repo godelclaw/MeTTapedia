@@ -468,8 +468,346 @@ theorem GoodPair.of_const {σ : LPSignature} {heap : Heap σ}
     (hR : Heap.derefLoop heap fuel right = .ok (.root rightRoot))
     (hCl : heap[leftRoot]? = some (Cell.const symbol))
     (hCr : heap[rightRoot]? = some (Cell.const symbol)) :
-    GoodPair heap left right :=
+  GoodPair heap left right :=
   .inr ⟨fuel, leftRoot, rightRoot, symbol, hL, hR, hCl, hCr⟩
+
+/-- Two addresses are semantically equal whenever both admit finite LP-term
+readbacks.  The condition deliberately says nothing about a rational cycle,
+whose readback is an explicit error. -/
+def FiniteEqual {σ : LPSignature} (heap : Heap σ)
+    (left right : Addr) : Prop :=
+  ∀ {leftTerm rightTerm : Term σ},
+    Heap.readTerm heap left = .ok leftTerm →
+    Heap.readTerm heap right = .ok rightTerm →
+    leftTerm = rightTerm
+
+theorem FiniteEqual.symm {σ : LPSignature} {heap : Heap σ}
+    {left right : Addr} (h : FiniteEqual heap left right) :
+    FiniteEqual heap right left := by
+  intro rightTerm leftTerm hRight hLeft
+  exact (h hLeft hRight).symm
+
+/-- Reading through a dereference chain ending at a constant can only produce
+that constant. -/
+theorem readTerm_eq_const_of_root {σ : LPSignature} {heap : Heap σ}
+    {address root : Addr} {fuel : Nat} {symbol : σ.constants}
+    {term : Term σ}
+    (hRoot : Heap.derefLoop heap fuel address = .ok (.root root))
+    (hCell : heap[root]? = some (Cell.const symbol))
+    (hRead : Heap.readTerm heap address = .ok term) :
+    term = .const symbol := by
+  obtain ⟨rootFuel, _hle, hRootRead⟩ :=
+    readTermFuel_descend fuel address root hRoot (heap.size + 1) term hRead
+  cases rootFuel with
+  | zero => simp [readTermFuel] at hRootRead
+  | succ rootFuel =>
+      rw [readTermFuel_const heap rootFuel root symbol hCell] at hRootRead
+      simpa using hRootRead.symm
+
+/-- Every discharged leaf/convergence pair is finitely equal on an arbitrary
+heap.  This is the semantic leaf used by the compound visited-graph
+certificate; no function-free premise remains. -/
+theorem GoodPair.finiteEqual {σ : LPSignature} {heap : Heap σ}
+    {left right : Addr} (h : GoodPair heap left right) :
+    FiniteEqual heap left right := by
+  intro leftTerm rightTerm hLeft hRight
+  rcases h with hConverged |
+      ⟨fuel, leftRoot, rightRoot, symbol, hL, hR, hCl, hCr⟩
+  · exact hConverged.readTerm_eq_finite hLeft hRight
+  · have hLeftTerm : leftTerm = .const symbol :=
+      readTerm_eq_const_of_root hL hCl hLeft
+    have hRightTerm : rightTerm = .const symbol :=
+      readTerm_eq_const_of_root hR hCr hRight
+    exact hLeftTerm.trans hRightTerm.symm
+
+/-- An equation is covered either by an already discharged leaf pair or by a
+pair of application roots recorded in the graph unifier's visited set. -/
+def VisitedRelated {σ : LPSignature} (heap : Heap σ)
+    (visited : List (Addr × Addr)) (left right : Addr) : Prop :=
+  GoodPair heap left right ∨
+  ∃ leftFuel rightFuel leftRoot rightRoot,
+    Heap.derefLoop heap leftFuel left = .ok (.root leftRoot) ∧
+    Heap.derefLoop heap rightFuel right = .ok (.root rightRoot) ∧
+    orderedPair leftRoot rightRoot ∈ visited
+
+theorem VisitedRelated.symm {σ : LPSignature} {heap : Heap σ}
+    {visited : List (Addr × Addr)} {left right : Addr}
+    (h : VisitedRelated heap visited left right) :
+    VisitedRelated heap visited right left := by
+  rcases h with hGood |
+      ⟨leftFuel, rightFuel, leftRoot, rightRoot, hLeft, hRight, hMem⟩
+  · exact .inl hGood.symm
+  · refine .inr ⟨rightFuel, leftFuel, rightRoot, leftRoot, hRight, hLeft, ?_⟩
+    have hPair : orderedPair rightRoot leftRoot =
+        orderedPair leftRoot rightRoot := by
+      unfold orderedPair
+      by_cases hlr : leftRoot ≤ rightRoot
+      · by_cases hrl : rightRoot ≤ leftRoot
+        · have heq := Nat.le_antisymm hlr hrl
+          subst rightRoot
+          simp
+        · simp [hlr, hrl]
+      · have hrl : rightRoot ≤ leftRoot :=
+          Nat.le_of_lt (Nat.lt_of_not_ge hlr)
+        simp [hlr, hrl]
+    rw [hPair]
+    exact hMem
+
+/-- Every recorded application pair has matching heads and every pair of
+corresponding children is itself covered.  This is a finite graph certificate,
+not a second operational semantics. -/
+def VisitedClosed {σ : LPSignature} (heap : Heap σ)
+    (visited : List (Addr × Addr)) : Prop :=
+  ∀ pair ∈ visited,
+    ∃ symbol leftArgs rightArgs,
+      heap[pair.1]? = some (Cell.app symbol leftArgs) ∧
+      heap[pair.2]? = some (Cell.app symbol rightArgs) ∧
+      leftArgs.size = rightArgs.size ∧
+      ∀ k (hkLeft : k < leftArgs.size) (hkRight : k < rightArgs.size),
+        VisitedRelated heap visited leftArgs[k] rightArgs[k]
+
+/-- During a run, an equation is covered when it is already related or still
+owned by the real comparison agenda. -/
+def PendingRelated {σ : LPSignature} (heap : Heap σ)
+    (agenda visited : List (Addr × Addr)) (left right : Addr) : Prop :=
+  VisitedRelated heap visited left right ∨
+    (left, right) ∈ agenda ∨ (right, left) ∈ agenda
+
+/-- A fixed set of equations remains represented by the discharged graph or
+the current agenda. -/
+def EquationsCovered {σ : LPSignature} (heap : Heap σ)
+    (agenda visited equations : List (Addr × Addr)) : Prop :=
+  ∀ pair ∈ equations,
+    PendingRelated heap agenda visited pair.1 pair.2
+
+/-- Run-time form of `VisitedClosed`: children of a recorded application pair
+may still be pending on the actual unifier agenda. -/
+def VisitedCovered {σ : LPSignature} (heap : Heap σ)
+    (agenda visited : List (Addr × Addr)) : Prop :=
+  ∀ pair ∈ visited,
+    ∃ symbol leftArgs rightArgs,
+      heap[pair.1]? = some (Cell.app symbol leftArgs) ∧
+      heap[pair.2]? = some (Cell.app symbol rightArgs) ∧
+      leftArgs.size = rightArgs.size ∧
+      ∀ k (hkLeft : k < leftArgs.size) (hkRight : k < rightArgs.size),
+        PendingRelated heap agenda visited leftArgs[k] rightArgs[k]
+
+theorem VisitedCovered.toClosed {σ : LPSignature} {heap : Heap σ}
+    {visited : List (Addr × Addr)}
+    (h : VisitedCovered heap [] visited) : VisitedClosed heap visited := by
+  intro pair hPair
+  obtain ⟨symbol, leftArgs, rightArgs, hLeft, hRight, hSizes,
+    hChildren⟩ := h pair hPair
+  refine ⟨symbol, leftArgs, rightArgs, hLeft, hRight, hSizes, ?_⟩
+  intro k hkLeft hkRight
+  rcases hChildren k hkLeft hkRight with hRelated | hPending
+  · exact hRelated
+  · rcases hPending with hForward | hReverse <;> simp at *
+
+theorem VisitedRelated.mono_visited {σ : LPSignature} {heap : Heap σ}
+    {visited visited' : List (Addr × Addr)} {left right : Addr}
+    (hSub : ∀ pair ∈ visited, pair ∈ visited')
+    (h : VisitedRelated heap visited left right) :
+    VisitedRelated heap visited' left right := by
+  rcases h with hGood |
+      ⟨leftFuel, rightFuel, leftRoot, rightRoot, hLeft, hRight, hMem⟩
+  · exact .inl hGood
+  · exact .inr ⟨leftFuel, rightFuel, leftRoot, rightRoot,
+      hLeft, hRight, hSub _ hMem⟩
+
+theorem EquationsCovered.toRelated {σ : LPSignature} {heap : Heap σ}
+    {visited equations : List (Addr × Addr)}
+    (h : EquationsCovered heap [] visited equations) :
+    ∀ pair ∈ equations, VisitedRelated heap visited pair.1 pair.2 := by
+  intro pair hPair
+  rcases h pair hPair with hRelated | hPending
+  · exact hRelated
+  · rcases hPending with hForward | hReverse <;> simp at *
+
+theorem PendingRelated.consume {σ : LPSignature} {heap : Heap σ}
+    {head : Addr × Addr} {rest visited : List (Addr × Addr)}
+    {left right : Addr}
+    (headRelated : VisitedRelated heap visited head.1 head.2)
+    (h : PendingRelated heap (head :: rest) visited left right) :
+    PendingRelated heap rest visited left right := by
+  rcases h with hRelated | hPending
+  · exact .inl hRelated
+  · rcases hPending with hForward | hReverse
+    · rcases List.mem_cons.mp hForward with hHead | hRest
+      · have hEq : (left, right) = head := hHead
+        cases hEq
+        exact .inl headRelated
+      · exact .inr (.inl hRest)
+    · rcases List.mem_cons.mp hReverse with hHead | hRest
+      · have hEq : (right, left) = head := hHead
+        cases hEq
+        exact .inl headRelated.symm
+      · exact .inr (.inr hRest)
+
+theorem EquationsCovered.consume {σ : LPSignature} {heap : Heap σ}
+    {head : Addr × Addr} {rest visited equations : List (Addr × Addr)}
+    (covered : EquationsCovered heap (head :: rest) visited equations)
+    (headRelated : VisitedRelated heap visited head.1 head.2) :
+    EquationsCovered heap rest visited equations := by
+  intro pair hPair
+  exact (covered pair hPair).consume headRelated
+
+/-- Once the agenda head has become related, every pending reference to that
+head can be discharged and the head removed from the agenda. -/
+theorem VisitedCovered.consume {σ : LPSignature} {heap : Heap σ}
+    {head : Addr × Addr} {rest visited : List (Addr × Addr)}
+    (covered : VisitedCovered heap (head :: rest) visited)
+    (headRelated : VisitedRelated heap visited head.1 head.2) :
+    VisitedCovered heap rest visited := by
+  intro pair hPair
+  obtain ⟨symbol, leftArgs, rightArgs, hLeft, hRight, hSizes,
+    hChildren⟩ := covered pair hPair
+  refine ⟨symbol, leftArgs, rightArgs, hLeft, hRight, hSizes, ?_⟩
+  intro k hkLeft hkRight
+  rcases hChildren k hkLeft hkRight with hRelated | hPending
+  · exact .inl hRelated
+  · rcases hPending with hForward | hReverse
+    · rcases List.mem_cons.mp hForward with hHead | hRest
+      · have hEq : (leftArgs[k], rightArgs[k]) = head := hHead
+        cases hEq
+        exact .inl headRelated
+      · exact .inr (.inl hRest)
+    · rcases List.mem_cons.mp hReverse with hHead | hRest
+      · have hEq : (rightArgs[k], leftArgs[k]) = head := hHead
+        cases hEq
+        exact .inl headRelated.symm
+      · exact .inr (.inr hRest)
+
+/-- Expanding one matching application pair transfers its child equations to
+the front of the agenda and records the canonical root pair. -/
+theorem VisitedCovered.expand {σ : LPSignature} {heap : Heap σ}
+    {left right leftRoot rightRoot : Addr}
+    {leftFuel rightFuel : Nat} {rest visited : List (Addr × Addr)}
+    {symbol : σ.functionSymbols} {leftArgs rightArgs : Array Addr}
+    (covered : VisitedCovered heap ((left, right) :: rest) visited)
+    (hLeftRoot : Heap.derefLoop heap leftFuel left = .ok (.root leftRoot))
+    (hRightRoot : Heap.derefLoop heap rightFuel right = .ok (.root rightRoot))
+    (hLeftCell : heap[leftRoot]? = some (Cell.app symbol leftArgs))
+    (hRightCell : heap[rightRoot]? = some (Cell.app symbol rightArgs))
+    (hSizes : leftArgs.size = rightArgs.size) :
+    VisitedCovered heap
+      (leftArgs.toList.zip rightArgs.toList ++ rest)
+      (orderedPair leftRoot rightRoot :: visited) := by
+  have hParent : VisitedRelated heap
+      (orderedPair leftRoot rightRoot :: visited) left right :=
+    .inr ⟨leftFuel, rightFuel, leftRoot, rightRoot,
+      hLeftRoot, hRightRoot, List.mem_cons_self⟩
+  have liftRelated : ∀ {a b}, VisitedRelated heap visited a b →
+      VisitedRelated heap (orderedPair leftRoot rightRoot :: visited) a b :=
+    fun h => h.mono_visited (fun pair hp =>
+      List.mem_cons_of_mem (orderedPair leftRoot rightRoot) hp)
+  intro pair hPair
+  rcases List.mem_cons.mp hPair with hNew | hOld
+  · subst pair
+    by_cases hOrder : leftRoot ≤ rightRoot
+    · refine ⟨symbol, leftArgs, rightArgs, ?_, ?_, hSizes, ?_⟩
+      · simpa [orderedPair, hOrder] using hLeftCell
+      · simpa [orderedPair, hOrder] using hRightCell
+      · intro k hkLeft hkRight
+        have hkZip : k < (leftArgs.toList.zip rightArgs.toList).length := by
+          simp only [List.length_zip, Array.length_toList]
+          omega
+        have hMem := List.getElem_mem hkZip
+        rw [List.getElem_zip] at hMem
+        exact .inr (.inl (List.mem_append.mpr (.inl (by simpa using hMem))))
+    · refine ⟨symbol, rightArgs, leftArgs, ?_, ?_, hSizes.symm, ?_⟩
+      · simpa [orderedPair, hOrder] using hRightCell
+      · simpa [orderedPair, hOrder] using hLeftCell
+      · intro k hkRight hkLeft
+        have hkZip : k < (leftArgs.toList.zip rightArgs.toList).length := by
+          simp only [List.length_zip, Array.length_toList]
+          omega
+        have hMem := List.getElem_mem hkZip
+        rw [List.getElem_zip] at hMem
+        exact .inr (.inr (List.mem_append.mpr (.inl (by simpa using hMem))))
+  · obtain ⟨oldSymbol, oldLeftArgs, oldRightArgs,
+      hOldLeft, hOldRight, hOldSizes, hOldChildren⟩ :=
+      covered pair hOld
+    refine ⟨oldSymbol, oldLeftArgs, oldRightArgs,
+      hOldLeft, hOldRight, hOldSizes, ?_⟩
+    intro k hkLeft hkRight
+    rcases hOldChildren k hkLeft hkRight with hRelated | hPending
+    · exact .inl (liftRelated hRelated)
+    · rcases hPending with hForward | hReverse
+      · rcases List.mem_cons.mp hForward with hHead | hRest
+        · have hEq : (oldLeftArgs[k], oldRightArgs[k]) = (left, right) :=
+            hHead
+          cases hEq
+          exact .inl hParent
+        · exact .inr (.inl (List.mem_append.mpr (.inr hRest)))
+      · rcases List.mem_cons.mp hReverse with hHead | hRest
+        · have hEq : (oldRightArgs[k], oldLeftArgs[k]) = (left, right) :=
+            hHead
+          cases hEq
+          exact .inl hParent.symm
+        · exact .inr (.inr (List.mem_append.mpr (.inr hRest)))
+
+theorem PendingRelated.expand {σ : LPSignature} {heap : Heap σ}
+    {left right leftRoot rightRoot : Addr}
+    {leftFuel rightFuel : Nat} {rest visited : List (Addr × Addr)}
+    {leftArgs rightArgs : Array Addr} {a b : Addr}
+    (hLeftRoot : Heap.derefLoop heap leftFuel left = .ok (.root leftRoot))
+    (hRightRoot : Heap.derefLoop heap rightFuel right = .ok (.root rightRoot))
+    (h : PendingRelated heap ((left, right) :: rest) visited a b) :
+    PendingRelated heap (leftArgs.toList.zip rightArgs.toList ++ rest)
+      (orderedPair leftRoot rightRoot :: visited) a b := by
+  have hParent : VisitedRelated heap
+      (orderedPair leftRoot rightRoot :: visited) left right :=
+    .inr ⟨leftFuel, rightFuel, leftRoot, rightRoot,
+      hLeftRoot, hRightRoot, List.mem_cons_self⟩
+  rcases h with hRelated | hPending
+  · exact .inl (hRelated.mono_visited (fun pair hp =>
+      List.mem_cons_of_mem (orderedPair leftRoot rightRoot) hp))
+  · rcases hPending with hForward | hReverse
+    · rcases List.mem_cons.mp hForward with hHead | hRest
+      · have hEq : (a, b) = (left, right) := hHead
+        cases hEq
+        exact .inl hParent
+      · exact .inr (.inl (List.mem_append.mpr (.inr hRest)))
+    · rcases List.mem_cons.mp hReverse with hHead | hRest
+      · have hEq : (b, a) = (left, right) := hHead
+        cases hEq
+        exact .inl hParent.symm
+      · exact .inr (.inr (List.mem_append.mpr (.inr hRest)))
+
+theorem EquationsCovered.expand {σ : LPSignature} {heap : Heap σ}
+    {left right leftRoot rightRoot : Addr}
+    {leftFuel rightFuel : Nat} {rest visited equations : List (Addr × Addr)}
+    {leftArgs rightArgs : Array Addr}
+    (covered : EquationsCovered heap ((left, right) :: rest) visited equations)
+    (hLeftRoot : Heap.derefLoop heap leftFuel left = .ok (.root leftRoot))
+    (hRightRoot : Heap.derefLoop heap rightFuel right = .ok (.root rightRoot)) :
+    EquationsCovered heap (leftArgs.toList.zip rightArgs.toList ++ rest)
+      (orderedPair leftRoot rightRoot :: visited) equations := by
+  intro pair hPair
+  exact (covered pair hPair).expand hLeftRoot hRightRoot
+
+/-- Membership in a covered visited set pins both actual (pre-ordering) roots
+to matching application cells. -/
+theorem VisitedCovered.root_apps {σ : LPSignature} {heap : Heap σ}
+    {agenda visited : List (Addr × Addr)}
+    (covered : VisitedCovered heap agenda visited)
+    {leftRoot rightRoot : Addr}
+    (hMem : orderedPair leftRoot rightRoot ∈ visited) :
+    ∃ symbol leftArgs rightArgs,
+      heap[leftRoot]? = some (Cell.app symbol leftArgs) ∧
+      heap[rightRoot]? = some (Cell.app symbol rightArgs) := by
+  obtain ⟨symbol, args₀, args₁, hCell₀, hCell₁, _hSizes, _hChildren⟩ :=
+    covered (orderedPair leftRoot rightRoot) hMem
+  by_cases hOrder : leftRoot ≤ rightRoot
+  · have hPair : orderedPair leftRoot rightRoot = (leftRoot, rightRoot) := by
+      simp [orderedPair, hOrder]
+    rw [hPair] at hCell₀ hCell₁
+    exact ⟨symbol, args₀, args₁, hCell₀, hCell₁⟩
+  · have hPair : orderedPair leftRoot rightRoot = (rightRoot, leftRoot) := by
+      simp [orderedPair, hOrder]
+    rw [hPair] at hCell₀ hCell₁
+    exact ⟨symbol, args₁, args₀, hCell₁, hCell₀⟩
 
 /-- Discharged pairs survive one fresh binding: chains ending away from the
 bound cell are framed, chains ending at it are redirected to the binding's
@@ -502,6 +840,101 @@ theorem GoodPair.persist {σ : LPSignature} {heap heap' : Heap σ}
     · rw [hFrame ρl hρl]; exact hCl
     · rw [hFrame ρr hρr]; exact hCr
 
+theorem VisitedRelated.persist_binding {σ : LPSignature}
+    {heap heap' : Heap σ} {agenda visited : List (Addr × Addr)}
+    (covered : VisitedCovered heap agenda visited)
+    {bound target : Addr} {identity : σ.vars}
+    (hBound : heap[bound]? = some (Cell.var identity none))
+    (hFrame : ∀ other, other ≠ bound → heap'[other]? = heap[other]?)
+    (hBound' : heap'[bound]? = some (Cell.var identity (some target)))
+    (hTargetLeaf : ∀ fuel,
+      Heap.derefLoop heap' (fuel + 1) target = .ok (.root target))
+    {left right : Addr} (h : VisitedRelated heap visited left right) :
+    VisitedRelated heap' visited left right := by
+  rcases h with hGood |
+      ⟨leftFuel, rightFuel, leftRoot, rightRoot, hLeft, hRight, hMem⟩
+  · exact .inl (hGood.persist hBound hFrame hBound' hTargetLeaf)
+  · obtain ⟨symbol, leftArgs, rightArgs, hLeftApp, hRightApp⟩ :=
+      covered.root_apps hMem
+    have hLeftNe : leftRoot ≠ bound := by
+      intro hEq
+      subst leftRoot
+      rw [hBound] at hLeftApp
+      cases hLeftApp
+    have hRightNe : rightRoot ≠ bound := by
+      intro hEq
+      subst rightRoot
+      rw [hBound] at hRightApp
+      cases hRightApp
+    exact .inr ⟨leftFuel, rightFuel, leftRoot, rightRoot,
+      derefLoop_frame hBound hFrame leftFuel left leftRoot hLeft hLeftNe,
+      derefLoop_frame hBound hFrame rightFuel right rightRoot hRight hRightNe,
+      hMem⟩
+
+theorem PendingRelated.persist_binding {σ : LPSignature}
+    {heap heap' : Heap σ} {agenda visited : List (Addr × Addr)}
+    (covered : VisitedCovered heap agenda visited)
+    {bound target : Addr} {identity : σ.vars}
+    (hBound : heap[bound]? = some (Cell.var identity none))
+    (hFrame : ∀ other, other ≠ bound → heap'[other]? = heap[other]?)
+    (hBound' : heap'[bound]? = some (Cell.var identity (some target)))
+    (hTargetLeaf : ∀ fuel,
+      Heap.derefLoop heap' (fuel + 1) target = .ok (.root target))
+    {left right : Addr}
+    (h : PendingRelated heap agenda visited left right) :
+    PendingRelated heap' agenda visited left right := by
+  rcases h with hRelated | hPending
+  · exact .inl (hRelated.persist_binding covered hBound hFrame hBound'
+      hTargetLeaf)
+  · exact .inr hPending
+
+theorem EquationsCovered.persist_binding {σ : LPSignature}
+    {heap heap' : Heap σ} {agenda visited equations : List (Addr × Addr)}
+    (coveredVisited : VisitedCovered heap agenda visited)
+    (coveredEquations : EquationsCovered heap agenda visited equations)
+    {bound target : Addr} {identity : σ.vars}
+    (hBound : heap[bound]? = some (Cell.var identity none))
+    (hFrame : ∀ other, other ≠ bound → heap'[other]? = heap[other]?)
+    (hBound' : heap'[bound]? = some (Cell.var identity (some target)))
+    (hTargetLeaf : ∀ fuel,
+      Heap.derefLoop heap' (fuel + 1) target = .ok (.root target)) :
+    EquationsCovered heap' agenda visited equations := by
+  intro pair hPair
+  exact (coveredEquations pair hPair).persist_binding coveredVisited hBound
+    hFrame hBound' hTargetLeaf
+
+theorem VisitedCovered.persist_binding {σ : LPSignature}
+    {heap heap' : Heap σ} {agenda visited : List (Addr × Addr)}
+    (covered : VisitedCovered heap agenda visited)
+    {bound target : Addr} {identity : σ.vars}
+    (hBound : heap[bound]? = some (Cell.var identity none))
+    (hFrame : ∀ other, other ≠ bound → heap'[other]? = heap[other]?)
+    (hBound' : heap'[bound]? = some (Cell.var identity (some target)))
+    (hTargetLeaf : ∀ fuel,
+      Heap.derefLoop heap' (fuel + 1) target = .ok (.root target)) :
+    VisitedCovered heap' agenda visited := by
+  intro pair hPair
+  obtain ⟨symbol, leftArgs, rightArgs, hLeft, hRight, hSizes,
+    hChildren⟩ := covered pair hPair
+  have hLeftNe : pair.1 ≠ bound := by
+    intro hEq
+    subst hEq
+    rw [hBound] at hLeft
+    cases hLeft
+  have hRightNe : pair.2 ≠ bound := by
+    intro hEq
+    subst hEq
+    rw [hBound] at hRight
+    cases hRight
+  refine ⟨symbol, leftArgs, rightArgs,
+    (hFrame pair.1 hLeftNe).trans hLeft,
+    (hFrame pair.2 hRightNe).trans hRight, hSizes, ?_⟩
+  intro k hkLeft hkRight
+  rcases hChildren k hkLeft hkRight with hRelated | hPending
+  · exact .inl (hRelated.persist_binding covered hBound hFrame hBound'
+      hTargetLeaf)
+  · exact .inr hPending
+
 /-- Establishment at a fresh binding: the side whose chain ended at the bound
 cell redirects to the target; the other side's chain already ended at the
 target. -/
@@ -521,6 +954,51 @@ theorem GoodPair.of_bind {σ : LPSignature} {heap heap' : Heap σ}
     derefLoop_redirect hBound hFrame hBound' hTargetLeaf fuel left hL,
     derefLoop_mono heap' fuel right target
       (derefLoop_frame hBound hFrame fuel right target hR hTargetNe)⟩
+
+theorem VisitedCovered.bind_consume {σ : LPSignature}
+    {heap heap' : Heap σ} {left right : Addr}
+    {rest visited : List (Addr × Addr)}
+    (covered : VisitedCovered heap ((left, right) :: rest) visited)
+    {bound target : Addr} {identity : σ.vars}
+    (hBound : heap[bound]? = some (Cell.var identity none))
+    (hFrame : ∀ other, other ≠ bound → heap'[other]? = heap[other]?)
+    (hBound' : heap'[bound]? = some (Cell.var identity (some target)))
+    (hTargetLeaf : ∀ fuel,
+      Heap.derefLoop heap' (fuel + 1) target = .ok (.root target))
+    (hTargetNe : target ≠ bound)
+    {fuel : Nat}
+    (hLeft : Heap.derefLoop heap fuel left = .ok (.root bound))
+    (hRight : Heap.derefLoop heap fuel right = .ok (.root target)) :
+    VisitedCovered heap' rest visited := by
+  have persisted := covered.persist_binding hBound hFrame hBound' hTargetLeaf
+  have headRelated : VisitedRelated heap' visited left right :=
+    .inl (GoodPair.of_bind hBound hFrame hBound' hTargetLeaf hTargetNe
+      hLeft hRight)
+  exact persisted.consume headRelated
+
+theorem EquationsCovered.bind_consume {σ : LPSignature}
+    {heap heap' : Heap σ} {left right : Addr}
+    {rest visited equations : List (Addr × Addr)}
+    (coveredVisited : VisitedCovered heap ((left, right) :: rest) visited)
+    (coveredEquations :
+      EquationsCovered heap ((left, right) :: rest) visited equations)
+    {bound target : Addr} {identity : σ.vars}
+    (hBound : heap[bound]? = some (Cell.var identity none))
+    (hFrame : ∀ other, other ≠ bound → heap'[other]? = heap[other]?)
+    (hBound' : heap'[bound]? = some (Cell.var identity (some target)))
+    (hTargetLeaf : ∀ fuel,
+      Heap.derefLoop heap' (fuel + 1) target = .ok (.root target))
+    (hTargetNe : target ≠ bound)
+    {fuel : Nat}
+    (hLeft : Heap.derefLoop heap fuel left = .ok (.root bound))
+    (hRight : Heap.derefLoop heap fuel right = .ok (.root target)) :
+    EquationsCovered heap' rest visited equations := by
+  have persisted := coveredEquations.persist_binding coveredVisited hBound
+    hFrame hBound' hTargetLeaf
+  have headRelated : VisitedRelated heap' visited left right :=
+    .inl (GoodPair.of_bind hBound hFrame hBound' hTargetLeaf hTargetNe
+      hLeft hRight)
+  exact persisted.consume headRelated
 
 /-! ## Run-level helpers -/
 
