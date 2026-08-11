@@ -277,6 +277,26 @@ def RefinementEndpoint (σ : LPSignature) [DecidableEq σ.vars]
         Heap.readTerm answer.memory.heap pair.2 = .ok term →
         θ pair.1 = term
 
+/-- Compound static execution has the same SLD endpoint whenever the
+yielded runtime graph has a finite readback.  Rational answers are excluded
+by this semantic premise, not rejected by the executable unifier. -/
+def FiniteRefinementEndpoint (σ : LPSignature) [DecidableEq σ.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols] : Prop :=
+  ∀ (builtins : RuntimeQuery.Builtins σ)
+    (program : Program σ) (goals : List (Atom σ))
+    (state : RuntimeQuery.State σ) (fuel : Nat)
+    (answer : RuntimeQuery.Answer σ) (resumed : RuntimeQuery.State σ),
+    (∀ symbol, builtins.isCut symbol = false) →
+    RuntimeQuery.openQuery (Memory.empty σ.scoped) 0 1 goals = .ok state →
+    RuntimeQuery.pull builtins program fuel state = .answer answer resumed →
+    FiniteReadback answer.memory.heap →
+    ∃ θ : Subst σ.scoped,
+      SLDScopedTree program 1 (queryAtScope 0 goals) θ ∧
+      ∀ pair ∈ answer.queryVarMap, ∀ term,
+        Heap.readTerm answer.memory.heap pair.2 = .ok term →
+        θ pair.1 = term
+
 /-! ## Stage 4: readback naturality
 
 Between two snapshots of one run segment, cells change in exactly one way:
@@ -789,6 +809,212 @@ theorem readTermFuel_descend_ext {σ : LPSignature} {heap₀ heap₁ : Heap σ}
               obtain rfl : address = root := by simpa using h
               exact ⟨bigFuel, Nat.le_refl _, hread⟩
 
+/-- A discharged leaf/convergence equation remains finitely equal after any
+later binding extension. -/
+theorem GoodPair.finiteEqual_extension {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} (ext : BindingExtension heap₀ heap₁)
+    {left right : Addr} (related : GoodPair heap₀ left right) :
+    FiniteEqual heap₁ left right := by
+  intro leftTerm rightTerm hLeft hRight
+  rcases related with ⟨chainFuel, root, hL, hR⟩ |
+      ⟨chainFuel, leftRoot, rightRoot, symbol, hL, hR, hCl, hCr⟩
+  · obtain ⟨leftFuel, hLeftLe, hLeftRoot⟩ :=
+      readTermFuel_descend_ext ext chainFuel left root hL
+        (heap₁.size + 1) leftTerm hLeft
+    obtain ⟨rightFuel, hRightLe, hRightRoot⟩ :=
+      readTermFuel_descend_ext ext chainFuel right root hR
+        (heap₁.size + 1) rightTerm hRight
+    have hLeftCommon : readTermFuel heap₁ (heap₁.size + 1) root =
+        .ok leftTerm :=
+      readTermFuel_mono_le heap₁ hLeftLe root leftTerm hLeftRoot
+    have hRightCommon : readTermFuel heap₁ (heap₁.size + 1) root =
+        .ok rightTerm :=
+      readTermFuel_mono_le heap₁ hRightLe root rightTerm hRightRoot
+    have : (Except.ok leftTerm : Except ReadbackError (Term σ)) =
+        .ok rightTerm := hLeftCommon.symm.trans hRightCommon
+    simpa using this
+  · have hCl₁ := ext.const_preserved hCl
+    have hCr₁ := ext.const_preserved hCr
+    obtain ⟨leftFuel, _hLeftLe, hLeftRoot⟩ :=
+      readTermFuel_descend_ext ext chainFuel left leftRoot hL
+        (heap₁.size + 1) leftTerm hLeft
+    obtain ⟨rightFuel, _hRightLe, hRightRoot⟩ :=
+      readTermFuel_descend_ext ext chainFuel right rightRoot hR
+        (heap₁.size + 1) rightTerm hRight
+    have hLeftTerm : leftTerm = .const symbol := by
+      cases leftFuel with
+      | zero => simp [readTermFuel] at hLeftRoot
+      | succ fuel =>
+          rw [readTermFuel_const heap₁ fuel leftRoot symbol hCl₁]
+            at hLeftRoot
+          simpa using hLeftRoot.symm
+    have hRightTerm : rightTerm = .const symbol := by
+      cases rightFuel with
+      | zero => simp [readTermFuel] at hRightRoot
+      | succ fuel =>
+          rw [readTermFuel_const heap₁ fuel rightRoot symbol hCr₁]
+            at hRightRoot
+          simpa using hRightRoot.symm
+    exact hLeftTerm.trans hRightTerm.symm
+
+/-- A closed visited graph remains sound in any later binding extension.
+The source certificate continues to own the immutable application nodes;
+recursive calls descend through the two finite target readbacks. -/
+theorem VisitedRelated.finiteEqual_extension {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} {visited : List (Addr × Addr)}
+    (closed : VisitedClosed heap₀ visited)
+    (ext : BindingExtension heap₀ heap₁)
+    {left right : Addr} (related : VisitedRelated heap₀ visited left right) :
+    FiniteEqual heap₁ left right := by
+  intro leftTerm rightTerm hLeft hRight
+  have go : ∀ measure : Nat,
+      ∀ (left right : Addr) (leftTerm rightTerm : Term σ),
+        leftTerm.size + rightTerm.size = measure →
+        VisitedRelated heap₀ visited left right →
+        Heap.readTerm heap₁ left = .ok leftTerm →
+        Heap.readTerm heap₁ right = .ok rightTerm →
+        leftTerm = rightTerm := by
+    intro measure
+    induction measure using Nat.strong_induction_on with
+    | h measure ih =>
+        intro left right leftTerm rightTerm hMeasure hRelated hLeft hRight
+        rcases hRelated with hGood |
+            ⟨leftFuel, rightFuel, leftRoot, rightRoot,
+              hLeftRoot, hRightRoot, hVisited⟩
+        · exact hGood.finiteEqual_extension ext hLeft hRight
+        · obtain ⟨symbol₀, args₀, args₁, hCell₀, hCell₁,
+              hArgSizes, hChildrenRelated⟩ :=
+            closed (orderedPair leftRoot rightRoot) hVisited
+          have hActual : ∃ symbol leftArgs rightArgs,
+              heap₀[leftRoot]? = some (Cell.app symbol leftArgs) ∧
+              heap₀[rightRoot]? = some (Cell.app symbol rightArgs) ∧
+              leftArgs.size = rightArgs.size ∧
+              ∀ k (hkLeft : k < leftArgs.size)
+                (hkRight : k < rightArgs.size),
+                VisitedRelated heap₀ visited leftArgs[k] rightArgs[k] := by
+            by_cases hOrder : leftRoot ≤ rightRoot
+            · have hPair : orderedPair leftRoot rightRoot =
+                  (leftRoot, rightRoot) := by
+                simp [orderedPair, hOrder]
+              rw [hPair] at hCell₀ hCell₁
+              exact ⟨symbol₀, args₀, args₁, hCell₀, hCell₁,
+                hArgSizes, hChildrenRelated⟩
+            · have hPair : orderedPair leftRoot rightRoot =
+                  (rightRoot, leftRoot) := by
+                simp [orderedPair, hOrder]
+              rw [hPair] at hCell₀ hCell₁
+              refine ⟨symbol₀, args₁, args₀, hCell₁, hCell₀,
+                hArgSizes.symm, ?_⟩
+              intro k hkRight hkLeft
+              exact (hChildrenRelated k hkLeft hkRight).symm
+          obtain ⟨symbol, leftArgs, rightArgs, hLeftCell₀, hRightCell₀,
+            hArgsSize, hChildRelated⟩ := hActual
+          have hLeftCell₁ := ext.app_preserved hLeftCell₀
+          have hRightCell₁ := ext.app_preserved hRightCell₀
+          obtain ⟨leftRootFuel, hLeftRootFuelLe, hLeftRootRead⟩ :=
+            readTermFuel_descend_ext ext leftFuel left leftRoot hLeftRoot
+              (heap₁.size + 1) leftTerm hLeft
+          obtain ⟨rightRootFuel, hRightRootFuelLe, hRightRootRead⟩ :=
+            readTermFuel_descend_ext ext rightFuel right rightRoot hRightRoot
+              (heap₁.size + 1) rightTerm hRight
+          have hLeftRootReadFull : Heap.readTerm heap₁ leftRoot =
+              .ok leftTerm :=
+            readTermFuel_mono_le heap₁ hLeftRootFuelLe leftRoot leftTerm
+              hLeftRootRead
+          have hRightRootReadFull : Heap.readTerm heap₁ rightRoot =
+              .ok rightTerm :=
+            readTermFuel_mono_le heap₁ hRightRootFuelLe rightRoot rightTerm
+              hRightRootRead
+          obtain ⟨leftChildren, hLeftLength, hLeftChildrenRead,
+            hLeftTerm⟩ := readTerm_app_inv hLeftCell₁ hLeftRootReadFull
+          obtain ⟨rightChildren, hRightLength, hRightChildrenRead,
+            hRightTerm⟩ := readTerm_app_inv hRightCell₁ hRightRootReadFull
+          subst leftTerm
+          subst rightTerm
+          obtain ⟨hLeftArgsLength, hLeftPoint⟩ :=
+            readListFuel_ok_pointwise_naturality hLeftChildrenRead
+          obtain ⟨hRightArgsLength, hRightPoint⟩ :=
+            readListFuel_ok_pointwise_naturality hRightChildrenRead
+          congr 1
+          funext index
+          let k := index.val
+          have hkLeftArgs : k < leftArgs.size := by
+            have hSize : leftArgs.size = σ.functionArity symbol := by
+              calc
+                leftArgs.size = leftArgs.toList.length := by simp
+                _ = leftChildren.length := hLeftArgsLength
+                _ = σ.functionArity symbol := hLeftLength
+            rw [hSize]
+            exact index.isLt
+          have hkRightArgs : k < rightArgs.size := by
+            have hSize : rightArgs.size = σ.functionArity symbol := by
+              calc
+                rightArgs.size = rightArgs.toList.length := by simp
+                _ = rightChildren.length := hRightArgsLength
+                _ = σ.functionArity symbol := hRightLength
+            rw [hSize]
+            exact index.isLt
+          have hkLeftChildren : k < leftChildren.length := by
+            rw [hLeftLength]
+            exact index.isLt
+          have hkRightChildren : k < rightChildren.length := by
+            rw [hRightLength]
+            exact index.isLt
+          have hLeftChildSmall :=
+            hLeftPoint k (by simpa using hkLeftArgs) hkLeftChildren
+          have hRightChildSmall :=
+            hRightPoint k (by simpa using hkRightArgs) hkRightChildren
+          have hLeftChild : Heap.readTerm heap₁ leftArgs[k] =
+              .ok leftChildren[k] :=
+            readTermFuel_mono heap₁ heap₁.size _ _ (by
+              simpa using hLeftChildSmall)
+          have hRightChild : Heap.readTerm heap₁ rightArgs[k] =
+              .ok rightChildren[k] :=
+            readTermFuel_mono heap₁ heap₁.size _ _ (by
+              simpa using hRightChildSmall)
+          have hChildMeasure : leftChildren[k].size +
+              rightChildren[k].size <
+              (Term.app symbol (fun index =>
+                leftChildren.get (Fin.cast hLeftLength.symm index))).size +
+              (Term.app symbol (fun index =>
+                rightChildren.get (Fin.cast hRightLength.symm index))).size := by
+            have hLeftSmaller := Term.size_subterm
+              (f := symbol)
+              (ts := fun index =>
+                leftChildren.get (Fin.cast hLeftLength.symm index)) index
+            have hRightSmaller := Term.size_subterm
+              (f := symbol)
+              (ts := fun index =>
+                rightChildren.get (Fin.cast hRightLength.symm index)) index
+            have hLeftIndex :
+                (leftChildren.get (Fin.cast hLeftLength.symm index)).size =
+                  leftChildren[k].size := by
+              simp [k, List.get_eq_getElem]
+            have hRightIndex :
+                (rightChildren.get (Fin.cast hRightLength.symm index)).size =
+                  rightChildren[k].size := by
+              simp [k, List.get_eq_getElem]
+            rw [hLeftIndex] at hLeftSmaller
+            rw [hRightIndex] at hRightSmaller
+            omega
+          have hRecursive := ih _ (hMeasure ▸ hChildMeasure)
+            (leftArgs[k]) (rightArgs[k]) (leftChildren[k])
+              (rightChildren[k]) rfl
+              (hChildRelated k hkLeftArgs hkRightArgs)
+              hLeftChild hRightChild
+          simpa [k, List.get_eq_getElem] using hRecursive
+  exact go (leftTerm.size + rightTerm.size) left right leftTerm rightTerm
+    rfl related hLeft hRight
+
+theorem GraphCertificate.finiteEqual_extension {σ : LPSignature}
+    {heap₀ heap₁ : Heap σ} {equations : List (Addr × Addr)}
+    (certificate : GraphCertificate heap₀ equations)
+    (ext : BindingExtension heap₀ heap₁) :
+    ∀ pair ∈ equations, FiniteEqual heap₁ pair.1 pair.2 := by
+  obtain ⟨visited, closed, related⟩ := certificate
+  intro pair hPair
+  exact (related pair hPair).finiteEqual_extension closed ext
+
 /-- **Readback naturality**: along a binding extension, the later readback
 of any address is the finite heap projection of the later heap applied to
 its earlier readback. -/
@@ -819,6 +1045,11 @@ theorem readableOn_of_orderedFF {σ : LPSignature} {heap : Heap σ}
   obtain ⟨term, hterm⟩ :=
     readTerm_total_of_orderedFF hwf (lt_of_getElem?_some hchoose)
   exact ⟨hex.choose, term, hcellOf, hterm⟩
+
+theorem finiteReadback_of_orderedFF {σ : LPSignature} {heap : Heap σ}
+    (h : OrderedFF heap) : FiniteReadback heap := by
+  intro address hAddress
+  exact readTerm_total_of_orderedFF h hAddress
 
 /-! ## Stage 6: big-step extraction of the unifier phase
 
@@ -1253,7 +1484,7 @@ inductive ChoiceChain {σ : LPSignature} [DecidableEq σ.relationSymbols]
       (hext : Extends m₀ memory)
       (hwf : Heap.WellFormed m₀.heap)
       (hshaped : Heap.WellShaped m₀.heap)
-      (hdesc : DescendingOrConst m₀.heap)
+      (hffDesc : FunctionFree m₀.heap → DescendingOrConst m₀.heap)
       (hinj : IdentityInjective m₀.heap)
       (hscopes : HeapScopesBelow bound m₀.heap)
       (hvarMap : VarMapCellsWF m₀.heap varMap)
@@ -1274,9 +1505,9 @@ theorem ChoiceChain.anchor {σ : LPSignature}
     ChoiceChain program varMap bound choices memory' := by
   cases h with
   | nil => exact .nil bound memory'
-  | cons hcp hext₀ hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+  | cons hcp hext₀ hwf hshaped hffDesc hinj hscopes hvarMap hgoal hframes
       hclauses holder =>
-      exact .cons hcp (hext₀.trans hext) hwf hshaped hdesc hinj hscopes
+      exact .cons hcp (hext₀.trans hext) hwf hshaped hffDesc hinj hscopes
         hvarMap hgoal hframes hclauses holder
 
 /-- Lift a chain to a larger scope bound. -/
@@ -1289,9 +1520,9 @@ theorem ChoiceChain.scope_mono {σ : LPSignature}
     ChoiceChain program varMap bound' choices memory := by
   induction h with
   | nil => exact .nil bound' _
-  | cons hcp hext hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+  | cons hcp hext hwf hshaped hffDesc hinj hscopes hvarMap hgoal hframes
       hclauses holder ih =>
-      exact .cons hcp hext hwf hshaped hdesc hinj (hscopes.mono hle)
+      exact .cons hcp hext hwf hshaped hffDesc hinj (hscopes.mono hle)
         hvarMap hgoal hframes hclauses ih
 
 /-- Drop the newest cursors; the rest stay chained to the same anchor. -/
@@ -1309,7 +1540,7 @@ theorem ChoiceChain.drop {σ : LPSignature}
       intro choices memory h
       cases h with
       | nil => exact .nil bound _
-      | cons hcp hext hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+      | cons hcp hext hwf hshaped hffDesc hinj hscopes hvarMap hgoal hframes
           hclauses holder =>
           exact ih (holder.anchor hext)
 
@@ -1334,7 +1565,8 @@ structure QueryInv {σ : LPSignature} [DecidableEq σ.relationSymbols]
     (program : Program σ) (state : State σ) : Prop where
   wf : Heap.WellFormed state.memory.heap
   shaped : Heap.WellShaped state.memory.heap
-  desc : DescendingOrConst state.memory.heap
+  ffDesc : FunctionFree state.memory.heap →
+    DescendingOrConst state.memory.heap
   inj : IdentityInjective state.memory.heap
   scopes : HeapScopesBelow state.nextScope state.memory.heap
   varMap : VarMapCellsWF state.memory.heap state.queryVarMap
@@ -1489,7 +1721,8 @@ theorem openQuery_empty_queryInv {σ : LPSignature} [DecidableEq σ.vars]
     cases hcell
   refine ⟨⟨hWF, Heap.wellShaped_of_check hCWS, ?_, ?_, ?_, ?_, .nil 1 _⟩,
     hAtoms, ?_⟩
-  · exact materializeGoals_descendingOrConst hMat
+  · intro _hFF
+    exact materializeGoals_descendingOrConst hMat
       (fun a id t hcell => (hEmptyCell a _ hcell).elim)
   · exact (materializeGoals_scoped_freshInv hMat
       (fun a id link hcell => (hEmptyCell a _ hcell).elim)
@@ -1506,7 +1739,7 @@ theorem QueryInv.set_phase {σ : LPSignature}
     [DecidableEq σ.relationSymbols] {program : Program σ}
     {state : State σ} (h : QueryInv program state) (p : Phase σ) :
     QueryInv program { state with phase := p } :=
-  ⟨h.wf, h.shaped, h.desc, h.inj, h.scopes, h.varMap, h.chain⟩
+  ⟨h.wf, h.shaped, h.ffDesc, h.inj, h.scopes, h.varMap, h.chain⟩
 
 /-- Changing only the phase also keeps the control bounds. -/
 theorem ControlWF.set_phase {σ : LPSignature} {state : State σ}
@@ -1530,7 +1763,7 @@ theorem QueryInv.framePop {σ : LPSignature}
     {frames' : List (ReturnFrame σ)}
     (h : QueryInv program state) :
     QueryInv program (framePopState state frame frames') :=
-  ⟨h.wf, h.shaped, h.desc, h.inj, h.scopes, h.varMap, h.chain⟩
+  ⟨h.wf, h.shaped, h.ffDesc, h.inj, h.scopes, h.varMap, h.chain⟩
 
 theorem ControlWF.framePop {σ : LPSignature} {state : State σ}
     {frame : ReturnFrame σ} {frames' : List (ReturnFrame σ)}
@@ -1601,9 +1834,17 @@ theorem selectSuccess_inv {σ : LPSignature} [DecidableEq σ.vars]
   obtain ⟨hPrefix, hSize, hClauseWF, _, hWS', _⟩ :=
     materializeClause_facts hMat
   have hFresh := materializeClause_scoped_freshInv hMat hq.scopes hq.inj
+  have hFunctionFreeBack :
+      FunctionFree copied.memory.heap → FunctionFree state.memory.heap := by
+    intro hFF address symbol args hcell
+    apply hFF address symbol args
+    rw [hPrefix address (lt_of_getElem?_some hcell)]
+    exact hcell
   refine ⟨⟨hWFc, Heap.wellShaped_of_check hWS', ?_, hFresh.injective, ?_,
     hq.varMap.of_prefix hPrefix, ?_⟩, hExt, hClauseWF, hFresh⟩
-  · exact materializeClause_descendingOrConst hMat hq.desc
+  · intro hFF
+    exact materializeClause_descendingOrConst hMat
+      (hq.ffDesc (hFunctionFreeBack hFF))
   · exact materializeClause_scopesBelow hMat (Nat.lt_succ_self _)
       (hq.scopes.mono (Nat.le_succ _))
   · show ChoiceChain program state.queryVarMap (state.nextScope + 1)
@@ -1618,7 +1859,7 @@ theorem selectSuccess_inv {σ : LPSignature} [DecidableEq σ.vars]
           ({ cursor with clauses := r :: rs } :: state.choices)
           copied.memory
         refine ChoiceChain.cons (m₀ := state.memory) hs.checkpoint hExt
-          hq.wf hq.shaped hq.desc hq.inj
+          hq.wf hq.shaped hq.ffDesc hq.inj
           (hq.scopes.mono (Nat.le_succ _)) hq.varMap hs.goal hs.frames
           ?_ (hq.chain.scope_mono (Nat.le_succ _))
         intro c hc
@@ -1634,7 +1875,7 @@ open RuntimeQuery
 /-- **Unify-success boundary**: a successful head unification from any
 invariant-satisfying entry memory re-establishes the full boundary
 invariant, and the replacing control is bounded at the success memory. -/
-theorem unifySuccess_queryInv {σ : LPSignature} [IsEmpty σ.functionSymbols]
+theorem unifySuccess_queryInv {σ : LPSignature}
     [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     [DecidableEq σ.relationSymbols]
     {program : Program σ} {stateE : State σ} {attempt : Attempt σ}
@@ -1649,9 +1890,11 @@ theorem unifySuccess_queryInv {σ : LPSignature} [IsEmpty σ.functionSymbols]
     ControlWF (unifySuccessState stateE attempt m) := by
   obtain ⟨ext, hExt, hsize⟩ :=
     startMany_success_extension k stateE.memory agenda m hrun
-  have hOFF := startMany_success_orderedFF k stateE.memory agenda m hrun
-    ⟨hq.desc, functionFree_of_isEmpty _⟩
-  exact ⟨⟨hExt.wellFormed hq.wf, hExt.wellShaped hq.shaped, hOFF.1,
+  have hffDesc : FunctionFree m.heap → DescendingOrConst m.heap := by
+    intro hFF
+    exact (startMany_success_orderedFF k stateE.memory agenda m hrun
+      ⟨hq.ffDesc (ext.ff_back hFF), ext.ff_back hFF⟩).1
+  exact ⟨⟨hExt.wellFormed hq.wf, hExt.wellShaped hq.shaped, hffDesc,
     IdentityInjective.of_bindingExtension ext hsize hq.inj,
     hq.scopes.of_bindingExtension ext hsize,
     hq.varMap.of_bindingExtension ext,
@@ -1671,11 +1914,11 @@ theorem backtrackPop_inv {σ : LPSignature} [DecidableEq σ.relationSymbols]
   have hchain := hq.chain
   rw [hchoices] at hchain
   cases hchain with
-  | cons hcp hext hwf hshaped hdesc hinj hscopes hvarMap hgoal hframes
+  | cons hcp hext hwf hshaped hffDesc hinj hscopes hvarMap hgoal hframes
       hclauses holder =>
       rename_i m₀
       refine ⟨m₀, ?_,
-        ⟨hwf, hshaped, hdesc, hinj, hscopes, hvarMap, holder⟩,
+        ⟨hwf, hshaped, hffDesc, hinj, hscopes, hvarMap, holder⟩,
         ⟨hcp, hgoal, hframes, hclauses⟩⟩
       rw [hcp]
       exact hext.restore_exact (Heap.check_of_wellFormed hwf)
@@ -1830,11 +2073,10 @@ theorem readAtom_ok_inv {σ : LPSignature} {heap : Heap σ}
       · rw [dif_neg hlen] at h
         cases h
 
-/-- Atom readback is total for well-formed atoms over an ordered
-function-free heap. -/
+/-- Atom readback is total when each allocated address has a finite readback. -/
 theorem readAtom_total {σ : LPSignature} {heap : Heap σ}
     {ratom : RuntimeMaterialize.RuntimeAtom σ}
-    (hwf : ratom.WellFormed heap) (hOFF : OrderedFF heap) :
+    (hwf : ratom.WellFormed heap) (hfinite : FiniteReadback heap) :
     ∃ atom, readAtom heap ratom = .ok atom := by
   have hTerms : ∀ (addresses : List Addr),
       (∀ a ∈ addresses, a < heap.size) →
@@ -1846,7 +2088,7 @@ theorem readAtom_total {σ : LPSignature} {heap : Heap σ}
     | cons head tailA ih =>
         intro hbound
         obtain ⟨headTerm, hHead⟩ :=
-          readTerm_total_of_orderedFF hOFF (hbound head (by simp))
+          hfinite head (hbound head (by simp))
         obtain ⟨tailTerms, hTail, hLen⟩ :=
           ih (fun a ha => hbound a (by simp [ha]))
         refine ⟨headTerm :: tailTerms, ?_, by simpa using hLen⟩
@@ -1866,16 +2108,16 @@ theorem readAtom_total {σ : LPSignature} {heap : Heap σ}
   dsimp only
   rw [dif_pos hlen]
 
-/-- Goal-list readback is total for well-formed atoms over an ordered
-function-free heap. -/
+/-- Goal-list readback is total under the same finite-readback boundary. -/
 theorem readGoals_total {σ : LPSignature} {heap : Heap σ}
     {atoms : List (RuntimeMaterialize.RuntimeAtom σ)}
-    (hwf : ∀ atom ∈ atoms, atom.WellFormed heap) (hOFF : OrderedFF heap) :
+    (hwf : ∀ atom ∈ atoms, atom.WellFormed heap)
+    (hfinite : FiniteReadback heap) :
     ∃ src, readGoals heap atoms = .ok src := by
   induction atoms with
   | nil => exact ⟨[], rfl⟩
   | cons atom rest ih =>
-      obtain ⟨a, hHead⟩ := readAtom_total (hwf atom (by simp)) hOFF
+      obtain ⟨a, hHead⟩ := readAtom_total (hwf atom (by simp)) hfinite
       obtain ⟨srcRest, hTail⟩ := ih (fun x hx => hwf x (by simp [hx]))
       exact ⟨a :: srcRest, readGoals_cons_of hHead hTail⟩
 
@@ -1946,7 +2188,7 @@ the later projection applied to its earlier readback. -/
 theorem readAtom_naturality {σ : LPSignature} [DecidableEq σ.vars]
     {heap₀ heap₁ : Heap σ}
     (ext : BindingExtension heap₀ heap₁)
-    (inj : IdentityInjective heap₁) (ff : FunctionFree heap₁)
+    (inj : IdentityInjective heap₁)
     {ratom : RuntimeMaterialize.RuntimeAtom σ} {a₀ a₁ : Atom σ}
     (h₀ : readAtom heap₀ ratom = .ok a₀)
     (h₁ : readAtom heap₁ ratom = .ok a₁) :
@@ -1982,7 +2224,7 @@ theorem readAtom_naturality {σ : LPSignature} [DecidableEq σ.vars]
             rw [hLen₁]; exact hk₁
           have hr₀ := hPoint₀ _ hb₀ hk₀
           have hr₁ := hPoint₁ _ hb₁ hk₁
-          exact (readback_naturality ext inj ff hr₀ hr₁).symm
+          exact (readback_naturality_finite ext inj hr₀ hr₁).symm
 
 /-! ### Small bridges -/
 
@@ -2030,7 +2272,7 @@ def cursorResolvent {σ : LPSignature} (cursor : ClauseCursor σ) :
   cursor.goal :: cursor.frames.flatMap (·.continuation)
 
 /-- **The lane property.**  For every binding-extension `H` of the anchor
-that is injective and ordered function-free, every scoped derivation of the
+that is injective and has finite readbacks, every scoped derivation of the
 lane's readback at `H` (at any scope past the barrier) yields a derivation
 of the root at scope 1 whose answer agrees with the derivation's
 substitution composed with `H`'s projection, on the query variables. -/
@@ -2039,7 +2281,7 @@ def LaneOk {σ : LPSignature} [DecidableEq σ.vars] (program : Program σ)
     (anchor : Heap σ.scoped) (barrier : Nat)
     (res : List (RuntimeMaterialize.RuntimeAtom σ.scoped)) : Prop :=
   ∀ (H : Heap σ.scoped), BindingExtension anchor H →
-    IdentityInjective H → DescendingOrConst H → FunctionFree H →
+    IdentityInjective H → FiniteReadback H →
     ∀ (s : Nat), barrier ≤ s →
     ∀ (θ' : Subst σ.scoped) (src : List (Atom σ.scoped)),
       readGoals H res = .ok src →
@@ -2066,8 +2308,8 @@ theorem LaneOk.barrier_mono {σ : LPSignature} [DecidableEq σ.vars]
     (hle : barrier ≤ barrier')
     (h : LaneOk program root keys anchor barrier res) :
     LaneOk program root keys anchor barrier' res :=
-  fun H hB hinj hdesc hff s hs =>
-    h H hB hinj hdesc hff s (Nat.le_trans hle hs)
+  fun H hB hinj hfinite s hs =>
+    h H hB hinj hfinite s (Nat.le_trans hle hs)
 
 /-- The choice stack's lanes, anchored like `ChoiceChain`: each cursor
 stores the memory its checkpoint denotes together with its lane property
@@ -2345,7 +2587,7 @@ theorem rootLane_initial {σ : LPSignature} [DecidableEq σ.vars]
       (queryAtScope 0 goals) = .ok result) :
     LaneOk program (queryAtScope 0 goals) keys result.memory.heap 1
       result.goals := by
-  intro H hB hinj hdesc hff s hs θ' src hread D
+  intro H hB hinj hfinite s hs θ' src hread D
   obtain ⟨_, hLen, hPoint, _, _⟩ := materializeGoals_roundtrip hMat
   obtain ⟨hLenH, hPointH⟩ := readGoals_ok_pointwise hread
   have hsrc : src = (heapSubst H).applyAtoms (queryAtScope 0 goals) := by
@@ -2364,7 +2606,7 @@ theorem rootLane_initial {σ : LPSignature} [DecidableEq σ.vars]
         exact hk'
       have h₀ := hPoint k hkG hkQ
       have h₁ := hPointH k hkG hk
-      exact readAtom_naturality hB hinj hff h₀ h₁
+      exact readAtom_naturality hB hinj h₀ h₁
   cases hroot : queryAtScope 0 goals with
   | nil =>
       have hGoalsNil : goals = [] := by
@@ -2482,7 +2724,7 @@ lane into the continuation lane: body goals before the stored
 continuations, successor barrier, anchored at the unified memory. -/
 theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
     [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
-    [DecidableEq σ.relationSymbols] [IsEmpty σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
     {program : Program σ} {root : List (Atom σ.scoped)}
     {keys : List (ScopedVar σ.vars)}
     {m₀ m₁ : Memory σ.scoped} {cursor : ClauseCursor σ}
@@ -2498,12 +2740,11 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
     (hArity : cursor.goal.args.size = copied.clause.head.args.size)
     (hclause : clause ∈ program)
     (hGoalWF : cursor.goal.WellFormed m₀.heap)
-    (hDesc₁ : DescendingOrConst m₁.heap)
     (hlane : LaneOk program root keys m₀.heap barrier
       (cursorResolvent cursor)) :
     LaneOk program root keys m₁.heap (activation + 1)
       (copied.clause.body ++ cursor.frames.flatMap (·.continuation)) := by
-  intro H hB hinjH hdescH hffH s' hs' θ'' src'' hread'' D''
+  intro H hB hinjH hfiniteH s' hs' θ'' src'' hread'' D''
   obtain ⟨hPrefix, hSizeLe, hClauseWF, _, _, _⟩ := materializeClause_facts hMat
   have hBmat : BindingExtension m₀.heap copied.memory.heap :=
     bindingExtension_of_prefix hPrefix hSizeLe
@@ -2512,24 +2753,23 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
   have hB1H : BindingExtension m₁.heap H := hB
   have hBcH : BindingExtension copied.memory.heap H := hBuni.trans hB1H
   have hB0H : BindingExtension m₀.heap H := hBmat.trans hBcH
-  have hOFF_H : OrderedFF H := ⟨hdescH, hffH⟩
-  have hOFF₁ : OrderedFF m₁.heap := ⟨hDesc₁, functionFree_of_isEmpty _⟩
   obtain ⟨srcBody, srcRest, rfl, hreadBody, hreadRest⟩ :=
     readGoals_append_ok hread''
   -- goal atom at H
   have hGoalWF_H : cursor.goal.WellFormed H :=
     RuntimeAtom.wellFormed_mono hB0H.1 hGoalWF
-  obtain ⟨ga, hga⟩ := readAtom_total hGoalWF_H hOFF_H
+  obtain ⟨ga, hga⟩ := readAtom_total hGoalWF_H hfiniteH
   -- head atom at H
   have hHeadWF_c : copied.clause.head.WellFormed copied.memory.heap :=
     hClauseWF.1
   have hHeadWF_H : copied.clause.head.WellFormed H :=
     RuntimeAtom.wellFormed_mono hBcH.1 hHeadWF_c
-  obtain ⟨haH, hhaH⟩ := readAtom_total hHeadWF_H hOFF_H
+  obtain ⟨haH, hhaH⟩ := readAtom_total hHeadWF_H hfiniteH
   obtain ⟨_, hHeadRead, hBodyLen, hBodyPoint, _, _⟩ :=
     materializeClause_roundtrip hMat
-  have hK2 := startMany_success_readTerm_eq k copied.memory _ m₁
-    (functionFree_of_isEmpty _) hrun
+  have hK2 :=
+    (startMany_success_graph_certificate k copied.memory _ m₁ hrun).finiteEqual_extension
+      hB1H
   -- the unified head equals the goal in every admissible future heap
   have hAtomEq : ga = haH := by
     refine readAtom_eq_of_args hPredicate ?_ hga hhaH
@@ -2538,17 +2778,6 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
       simpa using hjG
     have hjH' : j < copied.clause.head.args.size := by
       simpa using hjH
-    have haddrG : cursor.goal.args.toList[j] < m₀.heap.size :=
-      hGoalWF.2 _ (List.getElem_mem hjG)
-    have haddrH : copied.clause.head.args.toList[j] <
-        copied.memory.heap.size :=
-      hHeadWF_c.2 _ (List.getElem_mem hjH)
-    have haddrG₁ : cursor.goal.args.toList[j] < m₁.heap.size :=
-      Nat.lt_of_lt_of_le haddrG (hBmat.trans hBuni).1
-    have haddrH₁ : copied.clause.head.args.toList[j] < m₁.heap.size :=
-      Nat.lt_of_lt_of_le haddrH hBuni.1
-    obtain ⟨tl, htl⟩ := readTerm_total_of_orderedFF hOFF₁ haddrG₁
-    obtain ⟨tr, htr⟩ := readTerm_total_of_orderedFF hOFF₁ haddrH₁
     have hjZ : j < (cursor.goal.args.toList.zip
         copied.clause.head.args.toList).length := by
       simp only [List.length_zip, Array.length_toList]
@@ -2558,12 +2787,9 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
         cursor.goal.args.toList.zip copied.clause.head.args.toList := by
       have := List.getElem_mem hjZ
       rwa [List.getElem_zip] at this
-    have heqm₁ : tl = tr := hK2 _ hpair tl tr htl htr
     rw [getElem!_pos cursor.goal.args.toList j hjG] at hta
     rw [getElem!_pos copied.clause.head.args.toList j hjH] at htb
-    have hnatL := readback_naturality hB1H hinjH hffH htl hta
-    have hnatR := readback_naturality hB1H hinjH hffH htr htb
-    rw [← hnatL, ← hnatR, heqm₁]
+    exact hK2 _ hpair hta htb
   -- the body readback is the projected scoped body
   have hbodyDef : (clause.atScope activation).body =
       clause.body.map (Atom.atScope activation) := rfl
@@ -2582,7 +2808,7 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
         exact hjB
       have h₀ := hBodyPoint j hjB hjS
       have h₁ := hPointB j hjB hj
-      have hnat := readAtom_naturality hBcH hinjH hffH h₀ h₁
+      have hnat := readAtom_naturality hBcH hinjH h₀ h₁
       rw [hnat]
       simp only [Subst.applyAtoms, List.getElem_map]
       congr 1
@@ -2600,7 +2826,7 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
   have hunifNode : (heapSubst H).applyAtom ga =
       (heapSubst H).applyAtom (clause.head.atScope activation) := by
     rw [heapSubst_fix_readAtom hinjH hga, hAtomEq]
-    exact readAtom_naturality hBcH hinjH hffH hHeadRead hhaH
+    exact readAtom_naturality hBcH hinjH hHeadRead hhaH
   have happend : (heapSubst H).applyAtoms
       ((clause.body.map (Atom.atScope activation)) ++ srcRest) =
       (heapSubst H).applyAtoms (clause.body.map (Atom.atScope activation))
@@ -2616,7 +2842,7 @@ theorem laneCons_transfer {σ : LPSignature} [DecidableEq σ.vars]
   have hreadParent : readGoals H (cursorResolvent cursor) =
       .ok (ga :: srcRest) :=
     readGoals_cons_of hga hreadRest
-  obtain ⟨Θ, hΘ, hAg⟩ := hlane H hB0H hinjH hdescH hffH activation hbarrier
+  obtain ⟨Θ, hΘ, hAg⟩ := hlane H hB0H hinjH hfiniteH activation hbarrier
     (θ'' ∘ₛ heapSubst H) (ga :: srcRest) hreadParent hNode
   refine ⟨Θ, hΘ, ?_⟩
   intro v hv
@@ -2682,12 +2908,15 @@ theorem flatten_callCursor {σ : LPSignature}
     } : ClauseCursor σ) = flattenControl state.control := by
   simp [cursorResolvent, flattenControl, hcurrent, List.flatMap_cons]
 
-/-- **The run induction**: from any invariant state, a pulled answer is a
-scope-1 derivation of the root whose substitution answers the query
-variables exactly as the yielded memory reads them. -/
+/-- **The run induction**: from any invariant state, a pulled answer
+preserves the conditional function-free descent invariant, and every answer
+heap with finite readback yields a scope-1 derivation of the root whose
+substitution agrees exactly with the yielded memory.  Keeping finite
+readback explicit is essential: the same executable unifier also admits
+rational graphs, which do not denote finite SLD terms. -/
 theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
     [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
-    [DecidableEq σ.relationSymbols] [IsEmpty σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
     (builtins : Builtins σ) (program : Program σ)
     (hCutFree : ∀ symbol, builtins.isCut symbol = false)
     (root : List (Atom σ.scoped)) (keys : List (ScopedVar σ.vars)) :
@@ -2698,10 +2927,13 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
       LaneChain program root keys state.nextScope state.choices
         state.memory →
       ans.queryVarMap = state.queryVarMap ∧
-      ∃ Θ, SLDScopedTree program 1 root Θ ∧
-        ∀ pair ∈ ans.queryVarMap, pair.1 ∈ keys → ∀ term,
-          Heap.readTerm ans.memory.heap pair.2 = .ok term →
-          Θ pair.1 = term := by
+      (FunctionFree ans.memory.heap →
+        DescendingOrConst ans.memory.heap) ∧
+      (FiniteReadback ans.memory.heap →
+        ∃ Θ, SLDScopedTree program 1 root Θ ∧
+          ∀ pair ∈ ans.queryVarMap, pair.1 ∈ keys → ∀ term,
+            Heap.readTerm ans.memory.heap pair.2 = .ok term →
+            Θ pair.1 = term) := by
   intro fuel
   induction fuel using Nat.strong_induction_on with
   | _ fuel ih =>
@@ -2765,7 +2997,8 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       rw [hstep] at hPull
                       dsimp only at hPull
                       cases hPull
-                      refine ⟨rfl, ?_⟩
+                      refine ⟨rfl, hq.ffDesc, ?_⟩
+                      intro hfinite
                       have hflat : flattenControl state.control = [] := by
                         simp [flattenControl, hcurrent, hframes]
                       have hread : readGoals state.memory.heap
@@ -2773,8 +3006,9 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                         rw [hflat]
                         rfl
                       obtain ⟨Θ, hΘ, hAg⟩ := hlane state.memory.heap
-                        (BindingExtension.rfl _) hq.inj hq.desc
-                        (functionFree_of_isEmpty _) state.nextScope hb
+                        (BindingExtension.rfl _) hq.inj
+                        hfinite
+                        state.nextScope hb
                         (Subst.id σ.scoped) [] hread (.nil state.nextScope)
                       refine ⟨Θ, hΘ, ?_⟩
                       intro pair hpair hkey term hterm
@@ -2958,8 +3192,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                           startMany_success_extension k' copied.memory _
                             m₁ hrunU
                         have hlane' := laneCons_transfer hb hMat hrunU
-                          hPredicate hArity hclauseMem hs.goal hq'.desc
-                          hlane
+                          hPredicate hArity hclauseMem hs.goal hlane
                         refine ih rest' hrest'
                           (unifySuccessState (unifyEntryState state cursor remaining copied) { body := copied.clause.body, cutDepth := cursor.cutDepth, frames := cursor.frames } m₁)
                           ans resumed hPull'
@@ -3001,19 +3234,29 @@ theorem materializeGoals_nil_varMap {σ : LPSignature} [DecidableEq σ.vars]
       cases h
       rfl
 
-/-- **The keystone, proved for function-free signatures**: static, cut-free
-runtime answers are derivable in the standardized-apart SLD judgment, with
-the yielded bindings agreeing with the derivation's substitution.  (With
-function symbols the runtime's rational-tree unification outruns finite
-SLD — the executable canaries pin that separation — so the function-free
-fragment is exactly where the endpoint holds.) -/
-theorem refinementEndpoint_functionFree (σ : LPSignature)
+/-- The shared endpoint certificate.  It records both the conditional
+descent invariant used by the function-free corollary and the finite-readback
+route used by compound terms.  The run induction is performed once. -/
+theorem refinementEndpoint_certificate (σ : LPSignature)
     [DecidableEq σ.vars] [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
-    [IsEmpty σ.functionSymbols] :
-    RefinementEndpoint σ := by
-  intro builtins program goals state fuel answer resumed hCutFree hOpen
-    hPull
+    (builtins : RuntimeQuery.Builtins σ)
+    (program : Program σ) (goals : List (Atom σ))
+    (state : RuntimeQuery.State σ) (fuel : Nat)
+    (answer : RuntimeQuery.Answer σ) (resumed : RuntimeQuery.State σ)
+    (hCutFree : ∀ symbol, builtins.isCut symbol = false)
+    (hOpen : RuntimeQuery.openQuery (Memory.empty σ.scoped) 0 1 goals =
+      .ok state)
+    (hPull : RuntimeQuery.pull builtins program fuel state =
+      .answer answer resumed) :
+    (FunctionFree answer.memory.heap →
+      DescendingOrConst answer.memory.heap) ∧
+    (FiniteReadback answer.memory.heap →
+      ∃ θ : Subst σ.scoped,
+        SLDScopedTree program 1 (queryAtScope 0 goals) θ ∧
+        ∀ pair ∈ answer.queryVarMap, ∀ term,
+          Heap.readTerm answer.memory.heap pair.2 = .ok term →
+          θ pair.1 = term) := by
   obtain ⟨hq, hCW⟩ := openQuery_empty_queryInv (program := program) hOpen
   obtain ⟨hScope01, _, result, hMat, hstateEq⟩ := openQuery_ok_inv hOpen
   subst hstateEq
@@ -3033,7 +3276,7 @@ theorem refinementEndpoint_functionFree (σ : LPSignature)
       (openedState (Memory.empty σ.scoped) 1 result).control =
       result.goals := by
     simp [flattenControl, openedState]
-  obtain ⟨hqv, Θ, hΘ, hAg⟩ := pull_root_sound builtins program hCutFree
+  obtain ⟨hqv, hffDesc, hsemantic⟩ := pull_root_sound builtins program hCutFree
     (queryAtScope 0 goals) (result.varMap.map Prod.fst) fuel
     (openedState (Memory.empty σ.scoped) 1 result) answer resumed hPull hq
     (by
@@ -3042,6 +3285,9 @@ theorem refinementEndpoint_functionFree (σ : LPSignature)
       rw [hflat]
       exact hlaneRoot)
     (.nil _ _)
+  refine ⟨hffDesc, ?_⟩
+  intro hfinite
+  obtain ⟨Θ, hΘ, hAg⟩ := hsemantic hfinite
   refine ⟨Θ, hΘ, ?_⟩
   intro pair hpair term hterm
   have hpairS : pair ∈
@@ -3049,6 +3295,57 @@ theorem refinementEndpoint_functionFree (σ : LPSignature)
     rw [← hqv]
     exact hpair
   exact hAg pair hpair (List.mem_map.mpr ⟨pair, hpairS, rfl⟩) term hterm
+
+/-- **The compound finite-readback endpoint**: static, cut-free runtime
+answers with finite graph readback are derivable in the standardized-apart
+SLD judgment, with exact agreement on yielded bindings. -/
+theorem refinementEndpoint_finiteReadback (σ : LPSignature)
+    [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols] :
+    FiniteRefinementEndpoint σ := by
+  intro builtins program goals state fuel answer resumed hCutFree hOpen
+    hPull hfinite
+  exact (refinementEndpoint_certificate σ builtins program goals state fuel
+    answer resumed hCutFree hOpen hPull).2 hfinite
+
+/-- **The function-free keystone**: function-free signatures cannot create
+application cells, so the shared certificate discharges finite readback and
+recovers the original unconditional refinement endpoint. -/
+theorem refinementEndpoint_functionFree (σ : LPSignature)
+    [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    [IsEmpty σ.functionSymbols] :
+    RefinementEndpoint σ := by
+  intro builtins program goals state fuel answer resumed hCutFree hOpen
+    hPull
+  obtain ⟨hffDesc, hsemantic⟩ := refinementEndpoint_certificate σ builtins
+    program goals state fuel answer resumed hCutFree hOpen hPull
+  have hFF : FunctionFree answer.memory.heap := functionFree_of_isEmpty _
+  exact hsemantic (finiteReadback_of_orderedFF ⟨hffDesc hFF, hFF⟩)
+
+/-- **Finite compound answers are true in the least Herbrand model**.  This
+is the compound-term counterpart of `runtimeAnswer_leastModel`; its only
+extra premise says that the yielded graph denotes finite terms. -/
+theorem runtimeAnswer_finiteReadback_leastModel {σ : LPSignature}
+    [DecidableEq σ.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (builtins : Builtins σ) (kb : KnowledgeBase σ)
+    (goals : List (Atom σ)) (state : State σ) (fuel : Nat)
+    (answer : Answer σ) (resumed : State σ)
+    (hCutFree : ∀ symbol, builtins.isCut symbol = false)
+    (hOpen : openQuery (Memory.empty σ.scoped) 0 1 goals = .ok state)
+    (hPull : pull builtins kb.prog fuel state = .answer answer resumed)
+    (hfinite : FiniteReadback answer.memory.heap) :
+    ∃ θ : Subst σ.scoped,
+      SLDScopedTree kb.prog 1 (queryAtScope 0 goals) θ ∧
+      (∀ pair ∈ answer.queryVarMap, ∀ term,
+        Heap.readTerm answer.memory.heap pair.2 = .ok term →
+        θ pair.1 = term) ∧
+      ∀ g : Grounding σ.scoped, ∀ a ∈ queryAtScope 0 goals,
+        ((g.compSubst θ).groundAtom a).unscope ∈ leastHerbrandModel kb := by
+  obtain ⟨θ, hSLD, hAg⟩ := refinementEndpoint_finiteReadback σ builtins
+    kb.prog goals state fuel answer resumed hCutFree hOpen hPull hfinite
+  exact ⟨θ, hSLD, hAg, SLDScopedTree_sound kb 1 _ θ hSLD⟩
 
 /-- **Runtime answers are true in the least Herbrand model**: the composed
 theorem.  A static, cut-free pulled answer over a function-free signature

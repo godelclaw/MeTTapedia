@@ -481,6 +481,16 @@ def FiniteEqual {σ : LPSignature} (heap : Heap σ)
     Heap.readTerm heap right = .ok rightTerm →
     leftTerm = rightTerm
 
+/-- Every allocated address has a finite canonical readback.  This is the
+precise boundary between finite-term LP semantics and successful rational
+graph states; it does not constrain the executable unifier.  Whole-heap
+finiteness is intentional: an occurs-check-free cyclic unification in an
+apparently irrelevant local variable can make a runtime branch succeed even
+when no finite SLD resolution step exists. -/
+def FiniteReadback {σ : LPSignature} (heap : Heap σ) : Prop :=
+  ∀ address, address < heap.size →
+    ∃ term, Heap.readTerm heap address = .ok term
+
 theorem FiniteEqual.symm {σ : LPSignature} {heap : Heap σ}
     {left right : Addr} (h : FiniteEqual heap left right) :
     FiniteEqual heap right left := by
