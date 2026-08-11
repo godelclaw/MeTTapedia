@@ -449,6 +449,43 @@ theorem orderedCutSplicePhi_interior_underlying
   rw [matchedPartUnderlyingDart_rho]
   rfl
 
+/-- If an intact dart's old facial successor is also intact, the splice leaves
+that face step unchanged, including its three-part carrier tag.  This is the
+local transport used to preserve a protected boundary whose entire face lies
+outside the pumped region. -/
+theorem orderedCutSplicePhi_interior_eq_inl_phi
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (leftCrossing rightCrossing : Fin n → E)
+    (hleftCrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = leftCrossing step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (hrightCrosses : ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = rightCrossing step ∧
+      keep (RS.vertOf dart) ∧
+      ¬ keep (RS.vertOf (RS.alpha dart)))
+    (hleftInjective : Function.Injective leftCrossing)
+    (hrightInjective : Function.Injective rightCrossing)
+    (hcover : ∀ dart : BoundaryDart RS keep,
+      RS.edgeOf dart.1.1 ∈ orderedCut leftCrossing ∨
+        RS.edgeOf dart.1.1 ∈ orderedCut rightCrossing)
+    (hdisjoint : Disjoint (orderedCut leftCrossing)
+      (orderedCut rightCrossing))
+    (houter : keep (RS.vertOf RS.outer))
+    (dart : InternalDart RS keep)
+    (hphiKeep : keep (RS.vertOf (RS.phi dart.1.1)))
+    (halphaPhiKeep : keep (RS.vertOf (RS.alpha (RS.phi dart.1.1)))) :
+    orderedCutSplicePhi RS keep leftCrossing rightCrossing
+        hleftCrosses hrightCrosses hleftInjective hrightInjective
+        hcover hdisjoint houter (Sum.inl dart) =
+      Sum.inl ⟨⟨RS.phi dart.1.1, hphiKeep⟩, halphaPhiKeep⟩ := by
+  apply matchedPartUnderlyingDart_injective RS keep
+    (orderedCut leftCrossing) (orderedCut rightCrossing) hcover hdisjoint
+  rw [orderedCutSplicePhi_interior_underlying RS keep
+    leftCrossing rightCrossing hleftCrosses hrightCrosses
+    hleftInjective hrightInjective hcover hdisjoint houter dart]
+  rfl
+
 /-- At a left cut position, the spliced face successor crosses to the matching
 right cut position and then follows the old right-end vertex rotation. -/
 theorem orderedCutSplicePhi_left_underlying
