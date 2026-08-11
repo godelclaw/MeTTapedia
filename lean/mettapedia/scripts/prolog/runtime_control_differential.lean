@@ -178,6 +178,48 @@ def main : IO Unit := do
   renderCount "term_reference_atomic_not_atom"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.referenceIsAtomicButNotAtom)
+  renderCount "identity_same_variable"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identitySameVariable)
+  renderCount "identity_distinct_variables"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityDistinctVariables)
+  renderCount "nonidentity_distinct_variables"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.nonIdentityDistinctVariables)
+  renderCount "identity_separate_compounds"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identitySeparateCompounds)
+  renderCount "identity_different_compounds"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityDifferentCompounds)
+  renderCount "identity_variable_sharing"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityDistinguishesVariableSharing)
+  renderCount "identity_equal_rational_cycles"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityEqualRationalCycles)
+  renderCount "identity_different_rational_cycles"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityDifferentRationalCycles)
+  renderStringAnswers "identity_failure_no_bind"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityFailureDoesNotBind)
+  renderCount "identity_meta_same_variable"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaIdentitySameVariable)
+  renderCount "identity_numeric_types"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityDistinguishesNumericTypes)
+  renderCount "identity_equal_strings"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityEqualStrings)
+  renderCount "identity_atom_zero_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.identityAtomNotZeroArityCompound)
+  renderCount "nonidentity_different_compounds"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.nonIdentityDifferentCompounds)
   renderStringAnswers "catch_ground"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)

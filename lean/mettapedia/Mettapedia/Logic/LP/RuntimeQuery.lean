@@ -53,6 +53,7 @@ inductive QueryError where
   | dynamicClauseReadback (error : RuntimeReadback.ReadbackError)
   | invalidDynamicClause
   | databaseReferenceOutputNotVariable
+  | termIdentityBudgetExhausted
   | unhandledDatabaseRequest
   | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
@@ -147,6 +148,98 @@ def constantWhere (predicate : σ.constants → Bool) : TermTest σ where
   acceptsApplication := false
 
 end TermTest
+
+/-! ## Read-only strict term identity -/
+
+/-- Count graph edges once to size the read-only pair traversal below.  The
+bound follows the counting argument that an application root can be paired
+with at most `heap.size` other roots.  Until the general no-exhaustion theorem
+is established, exhaustion remains an explicit error rather than inequality. -/
+def termIdentityFuel (heap : Heap σ) : Nat :=
+  let edges := heap.foldl (fun total cell =>
+    total + cell.references.length) 0
+  (heap.size + 1) * (edges + 1) + 1
+
+/-- Equality-only counterpart of SWI-Prolog V10.1.9's
+`compareStandard(..., eq=true)` (`src/pl-prims.c`).  It dereferences both
+roots, distinguishes unbound variables by address, compares constants
+exactly, and traverses matching compounds through a visited pair set so
+rational graphs terminate.  It never binds or trails. -/
+def termIdenticalAux {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (heap : Heap σ.scoped) :
+    Nat → List (Addr × Addr) → List (Addr × Addr) → Except QueryError Bool
+  | 0, _, _ => .error .termIdentityBudgetExhausted
+  | _ + 1, [], _ => .ok true
+  | fuel + 1, (left, right) :: rest, visited =>
+      match heap.deref left with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root leftRoot) =>
+          match heap.deref right with
+          | .error error => .error (.memory error)
+          | .ok (.variableCycle cycle) =>
+              .error (.memory (.variableReferenceCycle cycle))
+          | .ok (.root rightRoot) =>
+              if leftRoot = rightRoot then
+                termIdenticalAux heap fuel rest visited
+              else
+                match heap[leftRoot]?, heap[rightRoot]? with
+                | some (.var _ none), some (.var _ none) => .ok false
+                | some (.var _ none), some _ => .ok false
+                | some _, some (.var _ none) => .ok false
+                | some (.const leftValue), some (.const rightValue) =>
+                    if leftValue = rightValue then
+                      termIdenticalAux heap fuel rest visited
+                    else .ok false
+                | some (.app leftSymbol leftArgs),
+                    some (.app rightSymbol rightArgs) =>
+                    if leftSymbol = rightSymbol ∧
+                        leftArgs.size = rightArgs.size then
+                      if RuntimeUnification.seen visited leftRoot rightRoot then
+                        termIdenticalAux heap fuel rest visited
+                      else
+                        termIdenticalAux heap fuel
+                          (leftArgs.toList.zip rightArgs.toList ++ rest)
+                          (RuntimeUnification.orderedPair leftRoot rightRoot ::
+                            visited)
+                    else .ok false
+                | some (.var _ (some _)), _ =>
+                    .error (.memory .illFormedHeap)
+                | _, some (.var _ (some _)) =>
+                    .error (.memory .illFormedHeap)
+                | some _, some _ => .ok false
+                | none, _ => .error (.memory (.invalidAddress leftRoot))
+                | _, none => .error (.memory (.invalidAddress rightRoot))
+
+/-- Decide strict identity of two roots in one finite heap.  Budget exhaustion
+is a typed runtime error, never ordinary inequality or fabricated completion. -/
+def termIdentical {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (heap : Heap σ.scoped)
+    (left right : Addr) : Except QueryError Bool :=
+  termIdenticalAux heap (termIdentityFuel heap) [(left, right)] []
+
+/-- Reflexivity is reached through real dereference and the nonempty computed
+budget; invalid or variable-cycle roots are deliberately outside the premise. -/
+theorem termIdentical_same_of_deref {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (heap : Heap σ.scoped) (address root : Addr)
+    (hDeref : heap.deref address = .ok (.root root)) :
+    termIdentical heap address address = .ok true := by
+  simp [termIdentical, termIdentityFuel, termIdenticalAux, hDeref]
+  generalize hFuel :
+    (heap.size + 1) *
+      (heap.foldl (fun total cell =>
+        total + cell.references.length) 0 + 1) = fuel
+  cases fuel with
+  | zero =>
+      have hPositive :
+          0 < (heap.size + 1) *
+            (heap.foldl (fun total cell =>
+              total + cell.references.length) 0 + 1) :=
+        Nat.mul_pos (Nat.zero_lt_succ _) (Nat.zero_lt_succ _)
+      omega
+  | succ fuel => rfl
 
 /-- One immutable candidate in a call-time database-clause snapshot. Stable
 identity is separate from the normalized clause term so matching cannot forge
@@ -1763,6 +1856,40 @@ theorem termTestStep_rejects {σ : LPSignature}
       .next { state with phase := .backtrack } none := by
   simp [termTestStep, hDeref, hCell, hReject]
 
+/-- Test strict graph identity without binding.  `expected = true` realizes
+`==/2`; `expected = false` realizes `\==/2` through the same comparison and
+ordinary backtracking path. -/
+def termIdentityStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (expected : Bool) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match termIdentical state.memory.heap left right with
+  | .error error => failWith state error
+  | .ok actual =>
+      if actual = expected then
+        .next {
+          state with
+          control := { state.control with current := rest }
+        } none
+      else .next { state with phase := .backtrack } none
+
+/-- A completed identity comparison has exactly the polarity-controlled
+shared transition; it cannot bind, trail, emit an answer, or choose work. -/
+theorem termIdentityStep_of_result {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (expected actual : Bool) (rest : List Instruction)
+    (hResult : termIdentical state.memory.heap left right = .ok actual) :
+    termIdentityStep state left right expected rest =
+      if actual = expected then
+        .next {
+          state with
+          control := { state.control with current := rest }
+        } none
+      else .next { state with phase := .backtrack } none := by
+  simp [termIdentityStep, hResult]
+
 /-- The complete authority granted to an instruction classifier.  It may name
 an ordinary call's source clauses, identify base control, expose
 already-materialized control payloads, or carry language-owned finite error
@@ -1787,6 +1914,7 @@ inductive DispatchAction (σ : LPSignature)
       (unboundError : Option (RuntimeException.Packet σ))
   | unify (left right : Addr)
   | termTest (address : Addr) (test : TermTest σ)
+  | termIdentity (left right : Addr) (expected : Bool)
   | database (request : DatabaseRequest)
   | error (reason : QueryError)
 
@@ -1883,7 +2011,8 @@ theorem checkedDatabaseRequestStep_assertzWithReference_bound
 instruction has already been removed; `rest` always comes from the live goal
 stack rather than from the classifier. -/
 @[simp]
-def dispatchActionStep {σ : LPSignature}
+def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
     (rest : List Instruction) :
@@ -1907,6 +2036,8 @@ def dispatchActionStep {σ : LPSignature}
   | .throw ball unboundError => throwStep state ball unboundError
   | .unify left right => beginUnifyStep state left right rest
   | .termTest address test => termTestStep state address test rest
+  | .termIdentity left right expected =>
+      termIdentityStep state left right expected rest
   | .database request => checkedDatabaseRequestStep state request rest
   | .error reason => failWith state reason
 

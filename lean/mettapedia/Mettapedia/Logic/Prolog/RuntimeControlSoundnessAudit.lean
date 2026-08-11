@@ -19,6 +19,7 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_neg
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_notUnify
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_termTest
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_termIdentity
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.softIfThenElseStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.backtrackStep_softElse_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.emptyCurrentStep_soft_of_marker
@@ -26,6 +27,9 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termTestStep_accepts
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termTestStep_rejects
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termTest
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentityStep_of_result
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentical_same_of_deref
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termIdentity
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_error
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.stepCoreWithMeta_metaCall_of_dispatch

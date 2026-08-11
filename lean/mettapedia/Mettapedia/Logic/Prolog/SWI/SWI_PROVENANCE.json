@@ -215,6 +215,35 @@
       "swi_conformance_status": "not-measured"
     },
     {
+      "id": "runtime.term-identity",
+      "project": "swi-prolog",
+      "sources": ["src/pl-prims.c"],
+      "anchors": [
+        "compareStandard",
+        "compare_primitives",
+        "PRED_IMPL(\"==\", 2, equal, 0)",
+        "PRED_IMPL(\"\\\\==\", 2, nonequal, 0)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
       "id": "runtime.unification",
       "project": "swi-prolog",
       "sources": ["src/pl-prims.c"],

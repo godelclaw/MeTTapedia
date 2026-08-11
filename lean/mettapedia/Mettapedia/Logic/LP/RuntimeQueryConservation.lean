@@ -269,6 +269,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .throw ball unboundError => .throw ball unboundError
   | .unify left right => .unify left right
   | .termTest address test => .termTest address test
+  | .termIdentity left right expected =>
+      .termIdentity left right expected
   | .database request => .database request
   | .error reason => .error reason
 
@@ -915,6 +917,19 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                                   termTestStep, TermTest.accepts, mapState,
                                   mapControl, mapPhase, mapReturnFrame,
                                   mapStepResult, hDeref, hCell, hAccept]
+          | termIdentity left right expected =>
+              cases hResult : termIdentical memory.heap left right with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      termIdentityStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hResult, hCleanup]
+              | ok actual =>
+                  cases actual <;> cases expected <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      termIdentityStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, hResult]
           | database request =>
               cases request with
               | asserta clauseRoot =>

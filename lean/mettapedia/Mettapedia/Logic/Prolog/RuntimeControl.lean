@@ -431,6 +431,10 @@ structure Services (sigma : LP.LPSignature) where
   backtracking; a realization may classify only its own constant payloads. -/
   termTest? : RuntimeAtom sigma.scoped →
     Option (Addr × LP.RuntimeQuery.TermTest sigma) := fun _ => none
+  /-- Recognize strict identity and non-identity without inspecting the heap.
+  The Bool is the expected result; graph comparison stays engine-owned. -/
+  termIdentity? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × Bool) := fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -462,6 +466,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   decoder := LP.RuntimeQuery.rejectingMetaCallDecoder sigma
     (RuntimeGoal sigma.scoped)
   termTest? _ := none
+  termIdentity? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -539,7 +544,11 @@ def dispatchActionWith {sigma : LP.LPSignature}
           | none =>
               match services.termTest? goal with
               | some (address, test) => .termTest address test
-              | none => .call goal (Program.clausesFor program goal.symbol)
+              | none =>
+                  match services.termIdentity? goal with
+                  | some (left, right, expected) =>
+                      .termIdentity left right expected
+                  | none => .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -579,6 +588,21 @@ theorem dispatchActionWith_termTest {sigma : LP.LPSignature}
     dispatchActionWith services program (.call goal) =
       .termTest address test := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest]
+
+/-- Strict identity is selected only after the earlier disjoint services
+decline the call; the classifier supplies roots and polarity, not equality. -/
+theorem dispatchActionWith_termIdentity {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (left right : Addr) (expected : Bool)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal =
+      some (left, right, expected)) :
+    dispatchActionWith services program (.call goal) =
+      .termIdentity left right expected := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

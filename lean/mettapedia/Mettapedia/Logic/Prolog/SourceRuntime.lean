@@ -260,6 +260,18 @@ def termTest? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | _, _ => none
 
+/-- Recognize strict identity and its negation.  The source layer exposes only
+two roots and the expected Bool; rational-graph comparison remains in the
+shared LP runtime. -/
+def termIdentity? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × Bool) :=
+  match goal.symbol.name, goal.args.toList with
+  | "==", [left, right] =>
+      if goal.symbol.arity = 2 then some (left, right, true) else none
+  | "\\==", [left, right] =>
+      if goal.symbol.arity = 2 then some (left, right, false) else none
+  | _, _ => none
+
 /-- Recognize the first persistent mutation fragment without heap authority.
 Clause decoding and database replacement remain separate engine/session
 operations. -/
@@ -300,6 +312,7 @@ def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
   decoder := { decode := decodeCallable }
   termTest? := termTest?
+  termIdentity? := termIdentity?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -322,6 +335,10 @@ theorem services_collectionEncoding :
 @[simp]
 theorem services_termTest :
     services.termTest? = termTest? := rfl
+
+@[simp]
+theorem services_termIdentity :
+    services.termIdentity? = termIdentity? := rfl
 
 /-- Execute concrete source terms through the one shared runtime with
 callable decoding enabled. -/

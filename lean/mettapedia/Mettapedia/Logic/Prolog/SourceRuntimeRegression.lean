@@ -334,6 +334,64 @@ def referenceIsAtomicButNotAtom : SourceSignature.Goal :=
       (SourceSignature.call "atomic" [referenceVar])
       (.neg (SourceSignature.call "atom" [referenceVar])))
 
+/-! ## Read-only strict graph identity -/
+
+def strictIdentity (left right : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "==" [left, right]
+
+def strictNonIdentity (left right : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "\\==" [left, right]
+
+def identitySameVariable : SourceSignature.Goal := strictIdentity x x
+
+def identityDistinctVariables : SourceSignature.Goal := strictIdentity x y
+
+def nonIdentityDistinctVariables : SourceSignature.Goal :=
+  strictNonIdentity x y
+
+def identitySeparateCompounds : SourceSignature.Goal :=
+  strictIdentity (pair (atom "a") (atom "b"))
+    (pair (atom "a") (atom "b"))
+
+def identityDifferentCompounds : SourceSignature.Goal :=
+  strictIdentity (pair (atom "a") (atom "b"))
+    (pair (atom "a") (atom "c"))
+
+def identityDistinguishesVariableSharing : SourceSignature.Goal :=
+  strictIdentity (pair x x) (pair y z)
+
+def identityEqualRationalCycles : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x]))
+    (.conj (.unify y (compound "f" [y])) (strictIdentity x y))
+
+def identityDifferentRationalCycles : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x]))
+    (.conj (.unify y (compound "g" [y])) (strictIdentity x y))
+
+/-- A failed identity test performs no trial binding before the caller's right
+alternative; the old variable remains visibly unbound. -/
+def identityFailureDoesNotBind : SourceSignature.Goal :=
+  .disj (strictIdentity x (atom "a"))
+    (.conj (.isVar x) (.unify x (atom "b")))
+
+def metaIdentitySameVariable : SourceSignature.Goal :=
+  metaGoal (compound "==" [x, x])
+
+def identityDistinguishesNumericTypes : SourceSignature.Goal :=
+  strictIdentity (integer 1) (floatBits 0)
+
+def identityEqualStrings : SourceSignature.Goal :=
+  strictIdentity (string "a") (string "a")
+
+def identityAtomNotZeroArityCompound : SourceSignature.Goal :=
+  strictIdentity (atom "f") (compound "f" [])
+
+def nonIdentityDifferentCompounds : SourceSignature.Goal :=
+  strictNonIdentity (pair (atom "a") (atom "b"))
+    (pair (atom "a") (atom "c"))
+
 def binaryFactProgram : SourceSignature.Program :=
   [fact "p" [atom "a", atom "b"]]
 
@@ -891,6 +949,20 @@ def laterCallSeesAssertion :
 #guard runCount [] stringRejectsAtom == some (0, 0, 0)
 #guard runCount [] metaAtomAcceptsAtom == some (1, 0, 0)
 #guard runCount [] referenceIsAtomicButNotAtom == some (1, 0, 0)
+#guard runCount [] identitySameVariable == some (1, 0, 0)
+#guard runCount [] identityDistinctVariables == some (0, 0, 0)
+#guard runCount [] nonIdentityDistinctVariables == some (1, 0, 0)
+#guard runCount [] identitySeparateCompounds == some (1, 0, 0)
+#guard runCount [] identityDifferentCompounds == some (0, 0, 0)
+#guard runCount [] identityDistinguishesVariableSharing == some (0, 0, 0)
+#guard runCount [] identityEqualRationalCycles == some (1, 0, 0)
+#guard runCount [] identityDifferentRationalCycles == some (0, 0, 0)
+#guard runAtoms [] identityFailureDoesNotBind == some (["b"], 0, 0)
+#guard runCount [] metaIdentitySameVariable == some (1, 0, 0)
+#guard runCount [] identityDistinguishesNumericTypes == some (0, 0, 0)
+#guard runCount [] identityEqualStrings == some (1, 0, 0)
+#guard runCount [] identityAtomNotZeroArityCompound == some (0, 0, 0)
+#guard runCount [] nonIdentityDifferentCompounds == some (1, 0, 0)
 #guard runAtoms [] caughtGround == some (["ball"], 0, 0)
 #guard runRaisedAtom [] throwTimeBoundCatcherRejects == some ("ball", 0, 0)
 #guard runRaisedAtom [] recoveryRethrowEscapes == some ("b", 0, 0)
