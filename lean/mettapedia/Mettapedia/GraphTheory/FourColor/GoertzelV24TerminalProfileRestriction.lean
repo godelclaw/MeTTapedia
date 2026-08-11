@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedTerminalProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedCorridorOpenProfile
 
 /-!
 # Restricting terminal-aware corridor profiles
@@ -141,6 +142,37 @@ profile carrier, not a replacement for its `Count` semantics. -/
         ((withTerminalEdges cut terminalEdge).profile coloring hcoloring) =
       cut.profile coloring hcoloring := by
   simp [forgetTerminals, GraphCorridorCutData.profile,
+    withTerminalEdges, crossingPortOfNoTerminals]
+  constructor
+  · funext pair left right
+    rcases left with crossing | terminal
+    · rcases right with crossing' | terminal'
+      · rfl
+      · exact Fin.elim0 terminal'
+    · exact Fin.elim0 terminal
+  · constructor
+    · rfl
+    · constructor
+      · funext fragment port
+        rcases port with crossing | terminal
+        · rfl
+        · exact Fin.elim0 terminal
+      · rfl
+
+/-- Terminal augmentation is equally conservative for profiles computed from
+a cut-open regional color function.  This is the projection used by the
+source `Count` relation; it requires no coloring of the closed ambient map. -/
+@[simp] theorem regionalProfile_forgetTerminals_withTerminalEdges
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (cut : GraphCorridorCutData RS crossingEdgeCount 0 faceFragmentCount)
+    (terminalEdge : Fin terminalCount → E)
+    (color : E → Color)
+    (hcrossing : ∀ crossing, color (cut.crossingEdge crossing) ≠ 0) :
+    forgetTerminals
+        ((withTerminalEdges cut terminalEdge).regionalProfile color hcrossing) =
+      cut.regionalProfile color hcrossing := by
+  simp [forgetTerminals, GraphCorridorCutData.regionalProfile,
     withTerminalEdges, crossingPortOfNoTerminals]
   constructor
   · funext pair left right

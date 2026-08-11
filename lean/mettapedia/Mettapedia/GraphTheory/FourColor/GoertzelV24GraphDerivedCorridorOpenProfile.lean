@@ -91,6 +91,75 @@ theorem GraphCorridorCutData.regionalProfile_strandConnected_eq_true_iff
   exact regionalTrackedConnectivity_eq_true_iff RS data.regionEdges color
     pair (data.portEdge left) (data.portEdge right)
 
+/-- When all ports belong to the selected open region, diagonal connectivity
+records exactly whether the port color belongs to the tracked pair.  Unlike
+the corresponding closed-profile theorem, this needs no ambient Tait
+coloring: it is an observation of the cut-open piece itself. -/
+theorem GraphCorridorCutData.regionalProfile_strandConnected_self_eq_true_iff
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (data : GraphCorridorCutData RS crossingEdgeCount terminalCount
+      faceFragmentCount)
+    (hports : data.PortsInRegion)
+    (color : E → Color)
+    (hcrossing : ∀ crossing, color (data.crossingEdge crossing) ≠ 0)
+    (pair : TrackedColorPair)
+    (port : CorridorPort crossingEdgeCount terminalCount) :
+    (data.regionalProfile color hcrossing).strandConnected pair port port = true ↔
+      IsTrackedColor (trackedColorPairColors pair).1
+        (trackedColorPairColors pair).2 (color (data.portEdge port)) := by
+  change regionalTrackedConnectivity RS data.regionEdges color pair
+      (data.portEdge port) (data.portEdge port) = true ↔ _
+  simpa [hports port] using regionalTrackedConnectivity_self_eq_true_iff
+    RS data.regionEdges color pair (data.portEdge port)
+
+/-- Equality of open regional profiles preserves the actual colors on
+corresponding crossing edges. -/
+theorem crossingEdge_color_eq_of_regionalProfiles_eq
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (left right : GraphCorridorCutData RS crossingEdgeCount terminalCount
+      faceFragmentCount)
+    (color₁ color₂ : E → Color)
+    (hcrossing₁ : ∀ crossing, color₁ (left.crossingEdge crossing) ≠ 0)
+    (hcrossing₂ : ∀ crossing, color₂ (right.crossingEdge crossing) ≠ 0)
+    (hprofiles : left.regionalProfile color₁ hcrossing₁ =
+      right.regionalProfile color₂ hcrossing₂)
+    (crossing : Fin crossingEdgeCount) :
+    color₁ (left.crossingEdge crossing) =
+      color₂ (right.crossingEdge crossing) := by
+  have hcolors := congrFun
+    (congrArg CorridorCutProfile.edgeColor hprofiles) crossing
+  exact (left.regionalProfile_edgeColor_toColor color₁ hcrossing₁ crossing).symm.trans
+    ((congrArg StrandColor.toColor hcolors).trans
+      (right.regionalProfile_edgeColor_toColor color₂ hcrossing₂ crossing))
+
+/-- Equality of valid open regional profiles preserves every corresponding
+port color, including the five fixed terminal colors.  Terminal colors are
+recovered from the three diagonal tracked-connectivity observations. -/
+theorem portEdge_color_eq_of_regionalProfiles_eq
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (left right : GraphCorridorCutData RS crossingEdgeCount terminalCount
+      faceFragmentCount)
+    (hleftPorts : left.PortsInRegion) (hrightPorts : right.PortsInRegion)
+    (color₁ color₂ : E → Color)
+    (hcrossing₁ : ∀ crossing, color₁ (left.crossingEdge crossing) ≠ 0)
+    (hcrossing₂ : ∀ crossing, color₂ (right.crossingEdge crossing) ≠ 0)
+    (hprofiles : left.regionalProfile color₁ hcrossing₁ =
+      right.regionalProfile color₂ hcrossing₂)
+    (port : CorridorPort crossingEdgeCount terminalCount) :
+    color₁ (left.portEdge port) = color₂ (right.portEdge port) := by
+  apply color_eq_of_trackedColorPair_membership_iff
+  intro pair
+  rw [← left.regionalProfile_strandConnected_self_eq_true_iff
+      hleftPorts color₁ hcrossing₁ pair port,
+    ← right.regionalProfile_strandConnected_self_eq_true_iff
+      hrightPorts color₂ hcrossing₂ pair port]
+  have hconnected := congrFun (congrFun (congrFun
+    (congrArg CorridorCutProfile.strandConnected hprofiles) pair) port) port
+  exact hconnected ▸ Iff.rfl
+
 @[simp]
 theorem GraphCorridorCutData.regionalProfile_faceContinues_eq_true_iff
     {RS : RotationSystem V E}
