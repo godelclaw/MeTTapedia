@@ -224,6 +224,21 @@ theorem GraphCorridorCutData.profile_strandConnected_self_eq_true_iff
   simpa [hports port] using regionalTrackedConnectivity_self_eq_true_iff
     RS data.regionEdges C pair (data.portEdge port)
 
+/-- Membership in the three tracked color pairs determines an ambient color.
+This is the finite observation that lets diagonal connectivity recover the
+colors of fixed terminal ports, which do not have a separate `edgeColor`
+coordinate in `CorridorCutProfile`. -/
+theorem color_eq_of_trackedColorPair_membership_iff
+    (left right : Color)
+    (hpair : ∀ pair : TrackedColorPair,
+      IsTrackedColor (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2 left ↔
+        IsTrackedColor (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2 right) :
+    left = right := by
+  revert left right
+  decide
+
 /-- Equality of two graph-derived profiles preserves the actual ambient
 colors on corresponding crossing edges. -/
 theorem crossingEdge_color_eq_of_profiles_eq
@@ -257,6 +272,31 @@ theorem strandConnected_eq_of_profiles_eq
       (right.profile C₂ hC₂).strandConnected pair first second := by
   exact congrFun (congrFun (congrFun
     (congrArg CorridorCutProfile.strandConnected hprofiles) pair) first) second
+
+/-- Equality of valid graph-derived profiles preserves the ambient color of
+every corresponding port, including fixed terminals.  Crossing colors are
+stored directly; terminal colors are recovered from the three diagonal
+tracked-connectivity observations. -/
+theorem portEdge_color_eq_of_profiles_eq
+    {RS : RotationSystem V E}
+    {crossingEdgeCount terminalCount faceFragmentCount : Nat}
+    (left right : GraphCorridorCutData RS crossingEdgeCount terminalCount
+      faceFragmentCount)
+    (hleftPorts : left.PortsInRegion) (hrightPorts : right.PortsInRegion)
+    (C₁ C₂ : RS.EdgeColoring Color)
+    (hC₁ : RS.IsTaitEdgeColoring C₁) (hC₂ : RS.IsTaitEdgeColoring C₂)
+    (hprofiles : left.profile C₁ hC₁ = right.profile C₂ hC₂)
+    (port : CorridorPort crossingEdgeCount terminalCount) :
+    C₁ (left.portEdge port) = C₂ (right.portEdge port) := by
+  apply color_eq_of_trackedColorPair_membership_iff
+  intro pair
+  rw [← left.profile_strandConnected_self_eq_true_iff
+      hleftPorts C₁ hC₁ pair port,
+    ← right.profile_strandConnected_self_eq_true_iff
+      hrightPorts C₂ hC₂ pair port]
+  have hconnected := strandConnected_eq_of_profiles_eq
+    left right C₁ C₂ hC₁ hC₂ hprofiles pair port port
+  exact hconnected ▸ Iff.rfl
 
 /-- Equality of graph-derived profiles preserves which named fragments belong
 to the same ambient face. -/
