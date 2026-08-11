@@ -171,7 +171,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 52 exact answer, exception, and persistent-store traces against
+It compares 59 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -199,6 +199,10 @@ call-snapshot isolation, and nondeterministic
 `retract/1`: source-order retry, cut pruning, fact/rule distinction,
 non-backtrackable erasure, snapshot isolation from later assertions, and
 retry of a snapshotted occurrence erased by a nested operation.
+The same frozen reflected-clause cursor also covers `clause/3`: source-order
+enumeration, stable-reference filtering and round-trip, fact/rule body
+reflection, cut pruning, isolation from later assertion, and retention of an
+occurrence erased after the snapshot was opened.
 
 ## What a pass means
 

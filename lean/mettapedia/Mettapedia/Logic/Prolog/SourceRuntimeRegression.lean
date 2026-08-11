@@ -170,6 +170,16 @@ def runShapesFor (program : SourceSignature.Program)
   let (terms, heapSize, trailSize) ← runTermsFor program goal identity
   pure (terms.map runtimeTermShape, heapSize, trailSize)
 
+def runAtomsFor (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) (identity : SourceSignature.Variable) :
+    Option (List String × Nat × Nat) := do
+  let (terms, heapSize, trailSize) ← runTermsFor program goal identity
+  let atoms ← terms.mapM fun term =>
+    match term with
+    | .const (.atom name) => some name
+    | _ => none
+  pure (atoms, heapSize, trailSize)
+
 def runAtoms (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
     Option (List String × Nat × Nat) :=
   match SourceRuntime.openEmpty program goal with
@@ -227,6 +237,8 @@ def binaryFactProgram : SourceSignature.Program :=
 
 def bagIdentity : SourceSignature.Variable := { spelling := "Bag", occurrence := 0 }
 def outerIdentity : SourceSignature.Variable := { spelling := "Outer", occurrence := 0 }
+def xIdentity : SourceSignature.Variable := { spelling := "X", occurrence := 0 }
+def yIdentity : SourceSignature.Variable := { spelling := "Y", occurrence := 0 }
 
 def expectedScoped (term : SourceSignature.Term) : LP.Term Sigma.scoped :=
   LP.Term.atScope 0 term
@@ -475,6 +487,10 @@ def assertaWithReferenceGoal (clause reference : SourceSignature.Term) :
 def retractGoal (clause : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "retract" [clause]
 
+def clauseGoal (head body reference : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "clause" [head, body, reference]
+
 def assertzThenCall : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "a"))
     (SourceSignature.call "p" [x])
@@ -582,6 +598,79 @@ def retractSnapshotRetainsErasedCandidate : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "a"))
     (.conj (assertzGoal (assertedP "b"))
       (.conj (retractGoal (compound "p" [x]))
+        (.ifThenElse (.unify x (atom "a"))
+          (.conj (retractGoal (assertedP "b")) .fail)
+          .succeed)))
+
+/-- `clause/3` enumerates one immutable visible-clause snapshot in source
+order. Facts expose `true` as their body and their opaque reference does not
+alter the observed head binding. -/
+def clauseFactsInOrder : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (clauseGoal (compound "p" [x]) (atom "true") referenceVar))
+
+/-- A reference obtained from `assertz/2` can filter `clause/3`; source text
+still has no constructor capable of forging that identity. -/
+def clauseBoundReferenceSelectsOccurrence : SourceSignature.Goal :=
+  .conj (assertzWithReferenceGoal (assertedP "a") referenceVar)
+    (.conj (assertzWithReferenceGoal (assertedP "b") otherReferenceVar)
+      (clauseGoal (compound "p" [x]) (atom "true") otherReferenceVar))
+
+/-- Rule bodies are reflected separately from their heads, with the selected
+clause standardized apart before the canonical graph unifier sees it. -/
+def clauseRuleBody : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedRuleP "a"))
+    (clauseGoal (assertedP "a") (compound "q" [y]) referenceVar)
+
+/-- The retained read-only cursor is the same ordinary choice resource as a
+retract cursor, so a following cut prunes later visible clauses. -/
+def clauseCutPrunesLater : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (.conj
+        (clauseGoal (compound "p" [x]) (atom "true") referenceVar)
+        .cut))
+
+/-- Clause inspection reports the exact stable identity allocated by
+`assertz/2`, rather than an independently generated or position-derived one. -/
+def clauseReferenceRoundTrip : SourceSignature.Goal :=
+  .conj (assertzWithReferenceGoal (assertedP "a") referenceVar)
+    (.conj
+      (clauseGoal (assertedP "a") (atom "true") otherReferenceVar)
+      (.unify referenceVar otherReferenceVar))
+
+/-- A wholly variable head cannot be used as an unrestricted database
+enumerator. It fails closed before a candidate cursor or binding is created. -/
+def clauseVariableHeadRejected : Bool :=
+  match SourceRuntime.openEmpty [] (clauseGoal x y referenceVar) with
+  | .error _ => false
+  | .ok session =>
+      match SourceRuntime.pullSession 128 session with
+      | .terminal (.runtimeError (.invalidDynamicClause) memory) database =>
+          memory.heap.size == 0 && memory.trail.size == 0 &&
+            database.generation == 0 && database.visibleClauses.isEmpty
+      | _ => false
+
+/-- The visible-clause list is frozen when `clause/3` opens. A clause asserted
+after its first solution persists in the database but is not appended to this
+already-live cursor. -/
+def clauseSnapshotDoesNotDrift : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (.conj
+        (clauseGoal (compound "p" [x]) (atom "true") referenceVar)
+        (.ifThenElse (.unify x (atom "a"))
+          (.conj (assertzGoal (assertedP "c")) .fail)
+          .succeed)))
+
+/-- A snapshotted occurrence remains inspectable once even if a nested
+operation erases it before the outer cursor reaches it. -/
+def clauseSnapshotRetainsErasedCandidate : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a"))
+    (.conj (assertzGoal (assertedP "b"))
+      (.conj
+        (clauseGoal (compound "p" [x]) (atom "true") referenceVar)
         (.ifThenElse (.unify x (atom "a"))
           (.conj (retractGoal (assertedP "b")) .fail)
           .succeed)))
@@ -721,6 +810,18 @@ def laterCallSeesAssertion :
 #guard runAtoms [] retractSnapshotRetainsErasedCandidate ==
   some (["b"], 0, 0)
 #guard retractSnapshotDoesNotDrift
+#guard runAtomsFor [] clauseFactsInOrder xIdentity ==
+  some (["a", "b"], 0, 0)
+#guard runAtomsFor [] clauseBoundReferenceSelectsOccurrence xIdentity ==
+  some (["b"], 0, 0)
+#guard runAtomsFor [] clauseRuleBody yIdentity == some (["a"], 0, 0)
+#guard runAtomsFor [] clauseCutPrunesLater xIdentity == some (["a"], 0, 0)
+#guard runCount [] clauseReferenceRoundTrip == some (1, 0, 0)
+#guard clauseVariableHeadRejected
+#guard runAtomsFor [] clauseSnapshotDoesNotDrift xIdentity ==
+  some (["b"], 0, 0)
+#guard runAtomsFor [] clauseSnapshotRetainsErasedCandidate xIdentity ==
+  some (["b"], 0, 0)
 #guard snapshotDoesNotDrift
 #guard laterCallSeesAssertion == some (["old", "new"], 0, 0)
 

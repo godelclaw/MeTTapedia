@@ -2913,7 +2913,7 @@ def PhaseLane {σ : LPSignature} [DecidableEq σ.vars]
   | .raising _ => False
   | .catchSelecting _ _ => False
   | .catchRecovering _ _ => False
-  | .retractSelect _ => False
+  | .databaseClauseSelect _ => False
 
 /-- Popping a return frame preserves the flattened resolvent. -/
 theorem flatten_framePop {σ : LPSignature} {control : Control σ}
@@ -2992,7 +2992,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
               simp only [PhaseLane, hphase] at hPL
           | catchRecovering selection machine =>
               simp only [PhaseLane, hphase] at hPL
-          | retractSelect cursor =>
+          | databaseClauseSelect cursor =>
               simp only [PhaseLane, hphase] at hPL
           | backtrack =>
               cases hchoices : state.choices with
@@ -3037,7 +3037,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hchain := hq.chain
                       rw [hchoices] at hchain
                       cases hchain
-                  | retract cursor =>
+                  | databaseClause cursor =>
                       have hchain := hq.chain
                       rw [hchoices] at hchain
                       cases hchain

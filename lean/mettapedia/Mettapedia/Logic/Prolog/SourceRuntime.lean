@@ -58,12 +58,13 @@ def collectionEncoding : LP.RuntimeQuery.CollectionEncoding Sigma where
   cons := { name := "[|]", arity := 2 }
   cons_arity_two := rfl
 
-/-- Canonical source symbols used by the shared engine to normalize
-`retract/1` facts and rules to one clause-term representation. -/
+/-- Canonical source symbols used by the shared engine to normalize and
+inspect dynamic facts/rules and to expose opaque stable references. -/
 def clauseEncoding : LP.RuntimeQuery.ClauseEncoding Sigma where
   trueConstant := .atom "true"
   rule := { name := ":-", arity := 2 }
   rule_arity_two := rfl
+  referenceConstant := SourceSignature.Constant.clauseReference
 
 /-- The exact function-symbol to relation-symbol bridge used by ordinary
 callable compounds.  Extra `call/N` arguments extend, rather than replace,
@@ -238,6 +239,10 @@ def databaseRequest? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | "retract", [patternRoot] =>
       if goal.symbol.arity = 1 then some (.retract patternRoot) else none
+  | "clause", [headRoot, bodyRoot, referenceRoot] =>
+      if goal.symbol.arity = 3 then
+        some (.clause headRoot bodyRoot referenceRoot)
+      else none
   | _, _ => none
 
 /-- Map the precise local decoder boundary into runtime errors.  ISO packet
@@ -259,16 +264,14 @@ def services : RuntimeControl.Services Sigma where
   unboundThrowError := some throwInstantiationError
   collectionEncoding := some collectionEncoding
   clauseEncoding := some clauseEncoding
-  clauseReference := some SourceSignature.Constant.clauseReference
 
 @[simp]
 theorem services_unboundThrowError :
     services.unboundThrowError = some throwInstantiationError := rfl
 
 @[simp]
-theorem services_clauseReference :
-    services.clauseReference =
-      some SourceSignature.Constant.clauseReference := rfl
+theorem services_clauseEncoding :
+    services.clauseEncoding = some clauseEncoding := rfl
 
 @[simp]
 theorem services_collectionEncoding :

@@ -115,15 +115,16 @@ def mapCollectionChoice (instruction : Instruction₁ → Instruction₂)
   outerFrames := boundary.outerFrames.map (mapReturnFrame instruction)
   reversed := boundary.reversed
 
-/-- Map the saved continuation of a retract cursor while leaving its stable
-references and canonical clause terms unchanged. -/
-def mapRetractCursor (instruction : Instruction₁ → Instruction₂)
-    (cursor : RetractCursorCore sigma Instruction₁) :
-    RetractCursorCore sigma Instruction₂ where
+/-- Map the saved continuation of a database-clause cursor while leaving its
+stable references, canonical clause terms, and success action unchanged. -/
+def mapDatabaseClauseCursor (instruction : Instruction₁ → Instruction₂)
+    (cursor : DatabaseClauseCursorCore sigma Instruction₁) :
+    DatabaseClauseCursorCore sigma Instruction₂ where
   checkpoint := cursor.checkpoint
   pattern := cursor.pattern
   candidates := cursor.candidates
   control := mapControl instruction cursor.control
+  action := cursor.action
 
 /-- Map either resource kind in the one canonical choice stack. -/
 def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
@@ -136,7 +137,8 @@ def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
       .softElse (mapBranchChoice instruction alternative)
   | .collection boundary =>
       .collection (mapCollectionChoice instruction boundary)
-  | .retract cursor => .retract (mapRetractCursor instruction cursor)
+  | .databaseClause cursor =>
+      .databaseClause (mapDatabaseClauseCursor instruction cursor)
 
 /-- Recording a private collection answer changes only the sentinel's detached
 answer list and therefore commutes with instruction and clause representation
@@ -205,8 +207,8 @@ def mapPhase (instruction : Instruction₁ → Instruction₂)
       .catchSelecting (mapCatchSelection instruction selection) machine
   | .catchRecovering selection machine =>
       .catchRecovering (mapCatchSelection instruction selection) machine
-  | .retractSelect cursor =>
-      .retractSelect (mapRetractCursor instruction cursor)
+  | .databaseClauseSelect cursor =>
+      .databaseClauseSelect (mapDatabaseClauseCursor instruction cursor)
   | .backtrack => .backtrack
   | .afterAnswer => .afterAnswer
 
@@ -735,11 +737,11 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   (StateCore.mk memory control
                     (.collection boundary :: older) checkpoint queryVarMap
                     nextScope .backtrack) boundary older
-          | retract cursor =>
+          | databaseClause cursor =>
               cases hRestore : memory.restore cursor.checkpoint <;>
                 cases hCleanup : memory.restore checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl,
-                  mapRetractCursor, mapChoicePoint, mapStepResult,
+                  mapDatabaseClauseCursor, mapChoicePoint, mapStepResult,
                   backtrackStep, failWith, closeMemory, hRestore, hCleanup]
   | dispatch =>
       rcases control with ⟨current, cutDepth, frames⟩
@@ -916,6 +918,11 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     checkedDatabaseRequestStep, databaseRequestStep,
                     mapState, mapControl, mapPhase, mapReturnFrame,
                     mapStepResult]
+              | clause headRoot bodyRoot referenceRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
               | eraseRef reference =>
                   simp [mapDispatchAction, dispatchActionStep,
                     checkedDatabaseRequestStep, databaseRequestStep,
@@ -1017,26 +1024,49 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                 simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
                   mapCursor, mapStepResult, unifyingStep, failWith,
                   closeMemory, hCleanup]
-  | retractSelect cursor =>
+  | databaseClauseSelect cursor =>
       cases hCandidates : cursor.candidates with
       | nil =>
           simp [stepCore, stepCoreWithMeta, mapState, mapPhase, mapControl,
-            mapRetractCursor, retractSelectStep, hCandidates, mapStepResult]
+            mapDatabaseClauseCursor, databaseClauseSelectStep, hCandidates, mapStepResult]
       | cons candidate remaining =>
           cases hMaterialize : RuntimeMaterialize.materializeTerm memory
               (candidate.clause.atScope nextScope) with
           | error error =>
               cases hCleanup : memory.restore checkpoint <;>
                 simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
-                  mapControl, mapRetractCursor, mapChoicePoint, mapAttempt,
-                  mapStepResult, retractSelectStep, hCandidates,
+                  mapControl, mapDatabaseClauseCursor, mapChoicePoint, mapAttempt,
+                  mapStepResult, databaseClauseSelectStep, hCandidates,
                   hMaterialize, failWith, closeMemory, hCleanup]
           | ok copied =>
-              cases remaining <;>
-                simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
-                  mapControl, mapRetractCursor, mapChoicePoint, mapAttempt,
-                  mapReturnFrame, mapStepResult, retractSelectStep,
-                  replacementRetractChoices, hCandidates, hMaterialize]
+              cases hAction : cursor.action with
+              | retract =>
+                  cases remaining <;>
+                    simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
+                      mapControl, mapDatabaseClauseCursor, mapChoicePoint,
+                      mapAttempt, mapReturnFrame, mapStepResult,
+                      databaseClauseSelectStep,
+                      replacementDatabaseClauseChoices, hCandidates,
+                      hMaterialize, hAction]
+              | inspect referenceRoot referenceConstant =>
+                  cases hAllocate : copied.memory.allocate
+                      (.const (referenceConstant candidate.reference)) with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
+                          mapControl, mapDatabaseClauseCursor, mapChoicePoint,
+                          mapAttempt, mapReturnFrame, mapStepResult,
+                          databaseClauseSelectStep, hCandidates, hMaterialize,
+                          hAction, hAllocate, failWith, closeMemory, hCleanup]
+                  | ok allocated =>
+                      rcases allocated with ⟨copiedReference, allocatedMemory⟩
+                      cases remaining <;>
+                        simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
+                          mapControl, mapDatabaseClauseCursor, mapChoicePoint,
+                          mapAttempt, mapReturnFrame, mapStepResult,
+                          databaseClauseSelectStep,
+                          replacementDatabaseClauseChoices, hCandidates,
+                          hMaterialize, hAction, hAllocate]
 
 /-- Demand-driven execution conserves the realization for every exact fuel
 prefix.  In particular, open prefixes remain open and answers keep the same

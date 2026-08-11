@@ -98,21 +98,32 @@ def listTerm (encoding : CollectionEncoding σ)
 
 end CollectionEncoding
 
-/-- Language-owned symbols needed to normalize `retract/1`'s argument to
-the ordinary `Head :- Body` representation. The shared engine owns heap
-inspection and allocation; a realization supplies only the canonical `true`
-constant and `(:-)/2` functor. -/
+/-- Language-owned symbols for the ordinary `Head :- Body` representation and
+opaque database references shared by `retract/1`, `clause/3`, and assertion.
+The engine owns heap inspection and allocation; a realization supplies only
+canonical symbols. -/
 structure ClauseEncoding (σ : LPSignature) where
   trueConstant : σ.constants
   rule : σ.functionSymbols
   rule_arity_two : σ.functionArity rule = 2
+  /-- Runtime-only stable occurrence identity; the source reader must not
+  expose a constructor for values in this image. -/
+  referenceConstant : Nat → σ.constants
 
-/-- One immutable candidate in a call-time retract snapshot. Stable identity
-is separate from the normalized clause term so matching cannot forge the
-database occurrence that will be erased. -/
-structure RetractCandidate (σ : LPSignature) where
+/-- One immutable candidate in a call-time database-clause snapshot. Stable
+identity is separate from the normalized clause term so matching cannot forge
+the database occurrence inspected or erased. -/
+structure DatabaseClauseCandidate (σ : LPSignature) where
   reference : Nat
   clause : Term σ
+
+/-- What success on one reflected database clause is allowed to do.  Both
+operations share the same snapshot cursor and canonical unifier: `retract`
+requests erasure of the selected occurrence, while `inspect` only unifies the
+caller's opaque reference argument. -/
+inductive DatabaseClauseAction (σ : LPSignature) where
+  | retract
+  | inspect (referenceRoot : Addr) (referenceConstant : Nat → σ.constants)
 
 /-- Saved exception delimiter.  It records only backtrackable entry data;
 the persistent fresh-scope supply remains in `StateCore` and is never restored
@@ -218,14 +229,15 @@ structure CollectionChoiceCore (σ : LPSignature) (Instruction : Type*) where
   outerFrames : List (ReturnFrameCore σ Instruction)
   reversed : List (Term σ.scoped) := []
 
-/-- Frozen candidate cursor for one active `retract/1`. `checkpoint` denotes
-the normalized pattern state shared by every candidate; `control` is the
-already-consumed caller continuation. -/
-structure RetractCursorCore (σ : LPSignature) (Instruction : Type*) where
+/-- Frozen cursor shared by `retract/1` and `clause/3`. `checkpoint` denotes
+the normalized clause-pattern state shared by every candidate; `control` is
+the already-consumed caller continuation. -/
+structure DatabaseClauseCursorCore (σ : LPSignature) (Instruction : Type*) where
   checkpoint : Memory.Checkpoint
   pattern : Addr
-  candidates : List (RetractCandidate σ)
+  candidates : List (DatabaseClauseCandidate σ)
   control : ControlCore σ Instruction
+  action : DatabaseClauseAction σ
 
 /-- The single newest-first alternative stack.  Clause retries and structured
 control branches are different resource kinds, but share restoration, DFS
@@ -240,8 +252,8 @@ inductive ChoicePointCore (σ : LPSignature)
   | softElse (alternative : BranchChoiceCore σ Instruction)
   /-- Backtracking to this sentinel means the generator is exhausted. -/
   | collection (boundary : CollectionChoiceCore σ Instruction)
-  /-- Later clauses retained by nondeterministic `retract/1`. -/
-  | retract (cursor : RetractCursorCore σ Instruction)
+  /-- Later reflected clauses retained by `retract/1` or `clause/3`. -/
+  | databaseClause (cursor : DatabaseClauseCursorCore σ Instruction)
 
 /-- The established pure-LP choice-point type.  Pure LP execution constructs
 only `clause` alternatives. -/
@@ -280,7 +292,7 @@ inductive PhaseCore (σ : LPSignature) (Instruction SourceClause : Type*) where
       (machine : RuntimeUnification.Machine σ.scoped)
   | catchRecovering (selection : CatchSelectionCore σ Instruction)
       (machine : RuntimeUnification.Machine σ.scoped)
-  | retractSelect (cursor : RetractCursorCore σ Instruction)
+  | databaseClauseSelect (cursor : DatabaseClauseCursorCore σ Instruction)
   | backtrack
   | afterAnswer
 
@@ -326,6 +338,9 @@ inductive DatabaseRequest where
   /-- Ask the persistent session for the call-time visible clause snapshot.
   Candidate matching remains an engine phase. -/
   | retract (patternRoot : Addr)
+  /-- Enumerate the call-time visible clause snapshot without mutating it.
+  The engine unifies `Head :- Body` and the opaque stable reference together. -/
+  | clause (headRoot bodyRoot referenceRoot : Addr)
   /-- Apply the stable occurrence selected by a successful engine unifier. -/
   | eraseRef (reference : Nat)
 deriving DecidableEq, Repr
@@ -524,34 +539,34 @@ def replacementChoices {σ : LPSignature}
   | [] => older
   | _ => .clause { cursor with clauses := remaining } :: older
 
-/-- Retain exactly one retract cursor when later call-snapshot candidates
-remain. The cursor is a normal newest-first choice resource, so ordinary cut
-and exception pruning reach it without a second scheduler. -/
-def replacementRetractChoices {σ : LPSignature}
-    (cursor : RetractCursorCore σ Instruction)
-    (remaining : List (RetractCandidate σ))
+/-- Retain exactly one database-clause cursor when later call-snapshot
+candidates remain. The cursor is a normal newest-first choice resource, so
+ordinary cut and exception pruning reach it without a second scheduler. -/
+def replacementDatabaseClauseChoices {σ : LPSignature}
+    (cursor : DatabaseClauseCursorCore σ Instruction)
+    (remaining : List (DatabaseClauseCandidate σ))
     (older : List (ChoicePointCore σ Instruction SourceClause)) :
     List (ChoicePointCore σ Instruction SourceClause) :=
   match remaining with
   | [] => older
-  | _ => .retract { cursor with candidates := remaining } :: older
+  | _ => .databaseClause { cursor with candidates := remaining } :: older
 
 @[simp]
-theorem replacementRetractChoices_nil {σ : LPSignature}
-    (cursor : RetractCursorCore σ Instruction)
+theorem replacementDatabaseClauseChoices_nil {σ : LPSignature}
+    (cursor : DatabaseClauseCursorCore σ Instruction)
     (older : List (ChoicePointCore σ Instruction SourceClause)) :
-    replacementRetractChoices cursor [] older = older := rfl
+    replacementDatabaseClauseChoices cursor [] older = older := rfl
 
 /-- A nonempty remainder is retained as exactly one ordinary choice resource;
 the selected occurrence itself is never copied into that resource. -/
 @[simp]
-theorem replacementRetractChoices_cons {σ : LPSignature}
-    (cursor : RetractCursorCore σ Instruction)
-    (candidate : RetractCandidate σ)
-    (remaining : List (RetractCandidate σ))
+theorem replacementDatabaseClauseChoices_cons {σ : LPSignature}
+    (cursor : DatabaseClauseCursorCore σ Instruction)
+    (candidate : DatabaseClauseCandidate σ)
+    (remaining : List (DatabaseClauseCandidate σ))
     (older : List (ChoicePointCore σ Instruction SourceClause)) :
-    replacementRetractChoices cursor (candidate :: remaining) older =
-      .retract { cursor with candidates := candidate :: remaining } :: older :=
+    replacementDatabaseClauseChoices cursor (candidate :: remaining) older =
+      .databaseClause { cursor with candidates := candidate :: remaining } :: older :=
   rfl
 
 /-- Normalize one live retract pattern to `Head :- Body`. Existing `(:-)/2`
@@ -597,22 +612,92 @@ def openRetractStep {σ : LPSignature}
     [DecidableEq σ.functionSymbols]
     (encoding : ClauseEncoding σ)
     (state : StateCore σ Instruction SourceClause)
-    (pattern : Addr) (candidates : List (RetractCandidate σ)) :
+    (pattern : Addr) (candidates : List (DatabaseClauseCandidate σ)) :
     StepResultCore σ Instruction SourceClause :=
   match normalizeRetractPattern encoding state.memory pattern with
   | .error error => failWith state error
   | .ok (memory, normalized) =>
-      let cursor : RetractCursorCore σ Instruction := {
+      let cursor : DatabaseClauseCursorCore σ Instruction := {
         checkpoint := memory.checkpoint
         pattern := normalized
         candidates
         control := state.control
+        action := .retract
       }
       .next {
         state with
         memory
-        phase := .retractSelect cursor
+        phase := .databaseClauseSelect cursor
       } none
+
+/-- Reject a wholly unbound `clause/3` head before opening a database cursor.
+The shared signature cannot distinguish callable atoms from other constants,
+so realization-specific callable/type errors remain a later boundary; this
+check nevertheless makes unrestricted database enumeration unrepresentable. -/
+def checkDatabaseClauseHead {σ : LPSignature}
+    (memory : Memory σ.scoped) (head : Addr) : Except QueryError Unit :=
+  match memory.heap.deref head with
+  | .error error => .error (.memory error)
+  | .ok (.variableCycle cycle) =>
+      .error (.memory (.variableReferenceCycle cycle))
+  | .ok (.root root) =>
+      match memory.heap[root]? with
+      | none => .error (.memory (.invalidAddress root))
+      | some (.var _ none) => .error .invalidDynamicClause
+      | some _ => .ok ()
+
+/-- Open `clause/3` over the same immutable reflected-clause snapshot used by
+`retract/1`.  The caller's head and body become one `(:-)/2` pattern in engine
+memory; the session never sees bindings and never selects an occurrence. -/
+def openClauseStep {σ : LPSignature}
+    (encoding : ClauseEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (head body reference : Addr)
+    (candidates : List (DatabaseClauseCandidate σ)) :
+    StepResultCore σ Instruction SourceClause :=
+  match checkDatabaseClauseHead state.memory head with
+  | .error error => failWith state error
+  | .ok _ =>
+      match state.memory.allocate (.app encoding.rule #[head, body]) with
+      | .error error => failWith state (.memory error)
+      | .ok (pattern, memory) =>
+          let cursor : DatabaseClauseCursorCore σ Instruction := {
+            checkpoint := memory.checkpoint
+            pattern
+            candidates
+            control := state.control
+            action := .inspect reference encoding.referenceConstant
+          }
+          .next {
+            state with
+            memory
+            phase := .databaseClauseSelect cursor
+          } none
+
+/-- Opening inspection performs exactly one engine-owned pattern allocation
+and installs the supplied snapshot as a read-only cursor. -/
+theorem openClauseStep_of_allocate {σ : LPSignature}
+    (encoding : ClauseEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (head body reference pattern : Addr)
+    (candidates : List (DatabaseClauseCandidate σ))
+    (memory : Memory σ.scoped)
+    (hHead : checkDatabaseClauseHead state.memory head = .ok ())
+    (hAllocate : state.memory.allocate (.app encoding.rule #[head, body]) =
+      .ok (pattern, memory)) :
+    openClauseStep encoding state head body reference candidates =
+      .next {
+        state with
+        memory
+        phase := .databaseClauseSelect {
+          checkpoint := memory.checkpoint
+          pattern
+          candidates
+          control := state.control
+          action := .inspect reference encoding.referenceConstant
+        }
+      } none := by
+  simp [openClauseStep, hHead, hAllocate]
 
 /-- The only data a language-specific clause materializer may supply to the
 shared selected-clause transition.  The type has no constructors for answers,
@@ -673,13 +758,14 @@ def selectStep {σ : LPSignature} [DecidableEq σ.relationSymbols]
                 phase := .unifying attempt entered.unifier
               } none
 
-/-- Try one frozen retract candidate. The candidate is standardized apart at
-the persistent scope high-water and compared with the normalized live pattern
-by the canonical graph unifier. Success requests erasure of this candidate's
-stable reference before executing the already-consumed continuation. -/
-def retractSelectStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+/-- Try one frozen database-clause candidate. The candidate is standardized
+apart at the persistent scope high-water and compared with the normalized
+live pattern by the canonical graph unifier. Inspection additionally unifies
+the opaque reference; retraction instead requests erasure of that exact stable
+identity after unification succeeds. -/
+def databaseClauseSelectStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
-    (cursor : RetractCursorCore σ Instruction) :
+    (cursor : DatabaseClauseCursorCore σ Instruction) :
     StepResultCore σ Instruction SourceClause :=
   match cursor.candidates with
   | [] => .next { state with phase := .backtrack } none
@@ -688,50 +774,73 @@ def retractSelectStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
           (candidate.clause.atScope state.nextScope) with
       | .error error => failWith state (.memory error)
       | .ok copied =>
-          let attempt : AttemptCore σ Instruction := {
-            body := cursor.control.current
-            cutDepth := cursor.control.cutDepth
-            frames := cursor.control.frames
-            onSuccess := .eraseRef candidate.reference
-          }
-          .next {
-            state with
-            memory := copied.memory
-            choices := replacementRetractChoices cursor remaining state.choices
-            nextScope := state.nextScope + 1
-            phase := .unifying attempt
-              (RuntimeUnification.startMany copied.memory
-                [(cursor.pattern, copied.root)])
-          } none
+          match cursor.action with
+          | .retract =>
+              let attempt : AttemptCore σ Instruction := {
+                body := cursor.control.current
+                cutDepth := cursor.control.cutDepth
+                frames := cursor.control.frames
+                onSuccess := .eraseRef candidate.reference
+              }
+              .next {
+                state with
+                memory := copied.memory
+                choices := replacementDatabaseClauseChoices cursor remaining state.choices
+                nextScope := state.nextScope + 1
+                phase := .unifying attempt
+                  (RuntimeUnification.startMany copied.memory
+                    [(cursor.pattern, copied.root)])
+              } none
+          | .inspect referenceRoot referenceConstant =>
+              match copied.memory.allocate
+                  (.const (referenceConstant candidate.reference)) with
+              | .error error => failWith state (.memory error)
+              | .ok (copiedReference, memory) =>
+                  let attempt : AttemptCore σ Instruction := {
+                    body := cursor.control.current
+                    cutDepth := cursor.control.cutDepth
+                    frames := cursor.control.frames
+                  }
+                  .next {
+                    state with
+                    memory
+                    choices := replacementDatabaseClauseChoices cursor remaining state.choices
+                    nextScope := state.nextScope + 1
+                    phase := .unifying attempt
+                      (RuntimeUnification.startMany memory
+                        [(cursor.pattern, copied.root),
+                          (referenceRoot, copiedReference)])
+                  } none
 
 /-- Exhausting the frozen retract snapshot enters the same backtracking phase
 as an exhausted clause cursor; it cannot manufacture completion or failure. -/
 @[simp]
-theorem retractSelectStep_empty {σ : LPSignature}
+theorem databaseClauseSelectStep_empty {σ : LPSignature}
     [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
-    (cursor : RetractCursorCore σ Instruction) :
-    retractSelectStep state { cursor with candidates := [] } =
+    (cursor : DatabaseClauseCursorCore σ Instruction) :
+    databaseClauseSelectStep state { cursor with candidates := [] } =
       .next { state with phase := .backtrack } none := rfl
 
 /-- Candidate content and stable identity travel through one constructor
 case: after canonical materialization, the unifier compares exactly that
 candidate and its success authority names exactly that candidate's reference. -/
-theorem retractSelectStep_cons_of_materialize {σ : LPSignature}
+theorem databaseClauseSelectStep_retract_cons_of_materialize {σ : LPSignature}
     [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
-    (cursor : RetractCursorCore σ Instruction)
-    (candidate : RetractCandidate σ)
-    (remaining : List (RetractCandidate σ))
+    (cursor : DatabaseClauseCursorCore σ Instruction)
+    (candidate : DatabaseClauseCandidate σ)
+    (remaining : List (DatabaseClauseCandidate σ))
     (copied : RuntimeMaterialize.MaterializedTerm σ.scoped)
     (hCandidates : cursor.candidates = candidate :: remaining)
+    (hAction : cursor.action = .retract)
     (hMaterialize : RuntimeMaterialize.materializeTerm state.memory
       (candidate.clause.atScope state.nextScope) = .ok copied) :
-    retractSelectStep state cursor =
+    databaseClauseSelectStep state cursor =
       .next {
         state with
         memory := copied.memory
-        choices := replacementRetractChoices cursor remaining state.choices
+        choices := replacementDatabaseClauseChoices cursor remaining state.choices
         nextScope := state.nextScope + 1
         phase := .unifying {
           body := cursor.control.current
@@ -741,7 +850,44 @@ theorem retractSelectStep_cons_of_materialize {σ : LPSignature}
         } (RuntimeUnification.startMany copied.memory
           [(cursor.pattern, copied.root)])
       } none := by
-  simp [retractSelectStep, hCandidates, hMaterialize]
+  simp [databaseClauseSelectStep, hCandidates, hAction, hMaterialize]
+
+/-- The read-only arm couples all three observable pieces from the same
+snapshot occurrence: its copied clause term, its stable reference, and the
+retained tail.  Hence a realization cannot pair a clause from one scan with a
+reference or retry cursor from another. -/
+theorem databaseClauseSelectStep_inspect_cons_of_materialize_allocate
+    {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (cursor : DatabaseClauseCursorCore σ Instruction)
+    (candidate : DatabaseClauseCandidate σ)
+    (remaining : List (DatabaseClauseCandidate σ))
+    (referenceRoot copiedReference : Addr)
+    (referenceConstant : Nat → σ.constants)
+    (copied : RuntimeMaterialize.MaterializedTerm σ.scoped)
+    (memory : Memory σ.scoped)
+    (hCandidates : cursor.candidates = candidate :: remaining)
+    (hAction : cursor.action = .inspect referenceRoot referenceConstant)
+    (hMaterialize : RuntimeMaterialize.materializeTerm state.memory
+      (candidate.clause.atScope state.nextScope) = .ok copied)
+    (hAllocate : copied.memory.allocate
+      (.const (referenceConstant candidate.reference)) =
+        .ok (copiedReference, memory)) :
+    databaseClauseSelectStep state cursor =
+      .next {
+        state with
+        memory
+        choices := replacementDatabaseClauseChoices cursor remaining state.choices
+        nextScope := state.nextScope + 1
+        phase := .unifying {
+          body := cursor.control.current
+          cutDepth := cursor.control.cutDepth
+          frames := cursor.control.frames
+        } (RuntimeUnification.startMany memory
+          [(cursor.pattern, copied.root), (referenceRoot, copiedReference)])
+      } none := by
+  simp [databaseClauseSelectStep, hCandidates, hAction, hMaterialize,
+    hAllocate]
 
 /-- Resume after a yielded answer by entering the shared backtracking phase. -/
 @[simp]
@@ -902,7 +1048,7 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   | .softElse alternative :: older => resumeBranchStep state alternative older
   | .collection boundary :: older =>
       finalizeCollectionStep state boundary older
-  | .retract cursor :: older =>
+  | .databaseClause cursor :: older =>
       match state.memory.restore cursor.checkpoint with
       | .error error => failWith state (.memory error)
       | .ok memory =>
@@ -910,7 +1056,7 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
             state with
             memory
             choices := older
-            phase := .retractSelect cursor
+            phase := .databaseClauseSelect cursor
           } none
 
 /-- Remove the soft-conditional delimiter immediately above the `mark` oldest
@@ -1725,7 +1871,7 @@ def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
       catchSelectingStep state selection machine
   | .catchRecovering selection machine =>
       catchRecoveringStep state selection machine
-  | .retractSelect cursor => retractSelectStep state cursor
+  | .databaseClauseSelect cursor => databaseClauseSelectStep state cursor
 
 /-- The established phase loop specialization rejects meta-calls explicitly.
 This wrapper keeps the pure LP API stable while delegating every transition to
@@ -1832,20 +1978,20 @@ theorem backtrackStep_branch_of_restore {σ : LPSignature}
 
 /-- Retrying `retract/1` restores the cursor-owned checkpoint, removes that
 choice occurrence exactly once, and resumes only its frozen candidate list. -/
-theorem backtrackStep_retract_of_restore {σ : LPSignature}
+theorem backtrackStep_databaseClause_of_restore {σ : LPSignature}
     [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
-    (cursor : RetractCursorCore σ Instruction)
+    (cursor : DatabaseClauseCursorCore σ Instruction)
     (older : List (ChoicePointCore σ Instruction SourceClause))
     (memory : Memory σ.scoped)
-    (hChoices : state.choices = .retract cursor :: older)
+    (hChoices : state.choices = .databaseClause cursor :: older)
     (hRestore : state.memory.restore cursor.checkpoint = .ok memory) :
     backtrackStep state =
       .next {
         state with
         memory
         choices := older
-        phase := .retractSelect cursor
+        phase := .databaseClauseSelect cursor
       } none := by
   simp [backtrackStep, hChoices, hRestore]
 

@@ -34,10 +34,12 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.bindDatabaseReferenceStep_of_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.checkedDatabaseRequestStep_assertzWithReference_unbound
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.checkedDatabaseRequestStep_assertzWithReference_bound
-#print axioms Mettapedia.Logic.LP.RuntimeQuery.replacementRetractChoices_cons
-#print axioms Mettapedia.Logic.LP.RuntimeQuery.retractSelectStep_empty
-#print axioms Mettapedia.Logic.LP.RuntimeQuery.retractSelectStep_cons_of_materialize
-#print axioms Mettapedia.Logic.LP.RuntimeQuery.backtrackStep_retract_of_restore
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.replacementDatabaseClauseChoices_cons
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.openClauseStep_of_allocate
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.databaseClauseSelectStep_empty
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.databaseClauseSelectStep_retract_cons_of_materialize
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.databaseClauseSelectStep_inspect_cons_of_materialize_allocate
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.backtrackStep_databaseClause_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.unifyingStep_eraseRef_success
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_asserta_of_decode
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_assertz_of_decode
@@ -55,7 +57,7 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_preserves_previous
 #print axioms Mettapedia.Logic.LP.RuntimeDatabase.Database.eraseRef_nextRef
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.openSessionWith_program
-#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_clauseReference
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_clauseEncoding
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshIdentity_injective
 #print axioms Mettapedia.Logic.LP.RuntimeException.scope_lt_scopeCeiling
 #print axioms Mettapedia.Logic.LP.RuntimeException.freshenTerm_scope_range

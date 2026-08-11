@@ -450,9 +450,6 @@ structure Services (sigma : LP.LPSignature) where
   /-- Optional canonical symbols used by the engine to normalize retract
   patterns before matching them against reflected clause data. -/
   clauseEncoding : Option (LP.RuntimeQuery.ClauseEncoding sigma) := none
-  /-- Opaque, source-unforgeable representation of one stable database
-  occurrence.  The shared engine alone materializes and unifies this value. -/
-  clauseReference : Option (Nat → sigma.constants) := none
 
 /-- Base typed control has no implicit meta-call authority. -/
 def noServices (sigma : LP.LPSignature) : Services sigma where
@@ -465,7 +462,6 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   unboundThrowError := none
   collectionEncoding := none
   clauseEncoding := none
-  clauseReference := none
 
 /-- Typed source goals instantiate the shared query opener's narrow
 materializer interface.  The adapter supplies only heap materialization,
@@ -699,11 +695,11 @@ def failSession (session : Session sigma)
       .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
         session.database
 
-/-- Call-time visible and successfully revalidated retract candidates, in
-source order with stable database identities. Invalid or absent provenance is
-skipped rather than allowed to influence matching. -/
-def retractCandidates (session : Session sigma) :
-    List (LP.RuntimeQuery.RetractCandidate sigma) :=
+/-- Call-time visible and successfully revalidated database-clause candidates,
+in source order with stable identities. Invalid or absent provenance is
+skipped rather than allowed to influence inspection or retraction. -/
+def databaseClauseCandidates (session : Session sigma) :
+    List (LP.RuntimeQuery.DatabaseClauseCandidate sigma) :=
   session.database.visibleClauses.filterMap fun entry =>
     session.services.reflectClause entry.2 |>.map fun clause => {
       reference := entry.1
@@ -737,15 +733,15 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
             state
           } none
   | .assertaWithReference root referenceRoot =>
-      match session.services.clauseReference with
+      match session.services.clauseEncoding with
       | none => failSession session state .unsupportedInstruction
-      | some encode =>
+      | some encoding =>
           match session.services.decodeClause state.memory.heap root with
           | .error error => failSession session state error
           | .ok clause =>
               let inserted := session.database.asserta clause
               match LP.RuntimeQuery.bindDatabaseReferenceStep state
-                  referenceRoot (encode inserted.1) with
+                  referenceRoot (encoding.referenceConstant inserted.1) with
               | .next next observation =>
                   .next {
                     session with
@@ -757,15 +753,15 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
               | .databaseRequest _ next =>
                   failSession session next .unhandledDatabaseRequest
   | .assertzWithReference root referenceRoot =>
-      match session.services.clauseReference with
+      match session.services.clauseEncoding with
       | none => failSession session state .unsupportedInstruction
-      | some encode =>
+      | some encoding =>
           match session.services.decodeClause state.memory.heap root with
           | .error error => failSession session state error
           | .ok clause =>
               let inserted := session.database.assertz clause
               match LP.RuntimeQuery.bindDatabaseReferenceStep state
-                  referenceRoot (encode inserted.1) with
+                  referenceRoot (encoding.referenceConstant inserted.1) with
               | .next next observation =>
                   .next {
                     session with
@@ -781,7 +777,18 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
       | none => failSession session state .unsupportedInstruction
       | some encoding =>
           match LP.RuntimeQuery.openRetractStep encoding state pattern
-              (retractCandidates session) with
+              (databaseClauseCandidates session) with
+          | .next next observation =>
+              .next { session with state := next } observation
+          | .terminal terminal => .terminal terminal session.database
+          | .databaseRequest _ next =>
+              failSession session next .unhandledDatabaseRequest
+  | .clause head body reference =>
+      match session.services.clauseEncoding with
+      | none => failSession session state .unsupportedInstruction
+      | some encoding =>
+          match LP.RuntimeQuery.openClauseStep encoding state head body reference
+              (databaseClauseCandidates session) with
           | .next next observation =>
               .next { session with state := next } observation
           | .terminal terminal => .terminal terminal session.database
@@ -830,13 +837,13 @@ theorem applyDatabaseRequest_assertaWithReference_of_decode_bind
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state next : State sigma)
     (root referenceRoot : Addr) (clause : Clause sigma)
-    (encode : Nat → sigma.constants)
+    (encoding : LP.RuntimeQuery.ClauseEncoding sigma)
     (observation : Option (LP.RuntimeQuery.Observation sigma))
-    (hEncoding : session.services.clauseReference = some encode)
+    (hEncoding : session.services.clauseEncoding = some encoding)
     (hDecode : session.services.decodeClause state.memory.heap root =
       .ok clause)
     (hBind : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
-      (encode (session.database.asserta clause).1) =
+      (encoding.referenceConstant (session.database.asserta clause).1) =
         .next next observation) :
     applyDatabaseRequest session state
         (.assertaWithReference root referenceRoot) =
@@ -846,7 +853,8 @@ theorem applyDatabaseRequest_assertaWithReference_of_decode_bind
         state := next
       } observation := by
   have hBind' : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
-      (encode session.database.nextRef) = .next next observation := by
+      (encoding.referenceConstant session.database.nextRef) =
+        .next next observation := by
     simpa using hBind
   simp [applyDatabaseRequest, hEncoding, hDecode, hBind']
 
@@ -856,13 +864,13 @@ theorem applyDatabaseRequest_assertzWithReference_of_decode_bind
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state next : State sigma)
     (root referenceRoot : Addr) (clause : Clause sigma)
-    (encode : Nat → sigma.constants)
+    (encoding : LP.RuntimeQuery.ClauseEncoding sigma)
     (observation : Option (LP.RuntimeQuery.Observation sigma))
-    (hEncoding : session.services.clauseReference = some encode)
+    (hEncoding : session.services.clauseEncoding = some encoding)
     (hDecode : session.services.decodeClause state.memory.heap root =
       .ok clause)
     (hBind : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
-      (encode (session.database.assertz clause).1) =
+      (encoding.referenceConstant (session.database.assertz clause).1) =
         .next next observation) :
     applyDatabaseRequest session state
         (.assertzWithReference root referenceRoot) =
@@ -872,7 +880,8 @@ theorem applyDatabaseRequest_assertzWithReference_of_decode_bind
         state := next
       } observation := by
   have hBind' : LP.RuntimeQuery.bindDatabaseReferenceStep state referenceRoot
-      (encode session.database.nextRef) = .next next observation := by
+      (encoding.referenceConstant session.database.nextRef) =
+        .next next observation := by
     simpa using hBind
   simp [applyDatabaseRequest, hEncoding, hDecode, hBind']
 

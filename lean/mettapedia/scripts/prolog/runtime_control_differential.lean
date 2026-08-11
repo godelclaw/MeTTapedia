@@ -198,6 +198,33 @@ def main : IO Unit := do
   renderStringAnswers "db_retract_snapshot_retains_erased"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.retractSnapshotRetainsErasedCandidate)
+  renderStringAnswers "db_clause_source_order"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseFactsInOrder
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "db_clause_bound_reference"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseBoundReferenceSelectsOccurrence
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "db_clause_rule_body"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseRuleBody
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.yIdentity)
+  renderStringAnswers "db_clause_cut_prunes_later"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseCutPrunesLater
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "db_clause_reference_roundtrip"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseReferenceRoundTrip)
+  renderStringAnswers "db_clause_snapshot_no_drift"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseSnapshotDoesNotDrift
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "db_clause_snapshot_retains_erased"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.clauseSnapshotRetainsErasedCandidate
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
   renderBool "db_snapshot_no_drift"
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.snapshotDoesNotDrift
   renderStringAnswers "db_snapshot_later_call"
