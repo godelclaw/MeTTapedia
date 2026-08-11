@@ -424,6 +424,75 @@ def atomCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
 def stringCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
   decode := decodeTextConversion .string
 
+private def characterAtom (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError Char := do
+  let cell ← dereferencedCell heap root
+  match cell with
+  | .var _ none => .error .textConversionUnbound
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const (.atom value) =>
+      match value.toList with
+      | [character] => pure character
+      | _ => .error .invalidTextCodes
+  | .const (.integer _) => codeCharacter heap root
+  | _ => .error .invalidTextCodes
+
+private def characterAtoms (heap : Heap Sigma.scoped) (roots : List Addr) :
+    Except LP.RuntimeQuery.QueryError (List Char) :=
+  roots.mapM (characterAtom heap)
+
+private def characterAtomConstants (value : String) :
+    List SourceSignature.Constant :=
+  value.toList.map fun character => .atom (String.singleton character)
+
+private def decodeCharacterText (heap : Heap Sigma.scoped)
+    (characters : Addr) : Except LP.RuntimeQuery.QueryError String := do
+  let charactersCell ← dereferencedCell heap characters
+  match charactersCell with
+  | .const (.string value) => pure value
+  | _ =>
+      let roots ← decodedCodeRoots heap characters
+      let values ← characterAtoms heap roots
+      pure (String.ofList values)
+
+/-- Decode pinned SWI's `atom_chars/2` through the same bounded conversion
+plan as `atom_codes/2`.  List input accepts one-scalar character atoms and
+integer character codes; SWI string input is accepted as a whole text value.
+The decoder remains read-only and the shared engine owns list allocation and
+unification. -/
+private def decodeAtomChars (heap : Heap Sigma.scoped)
+    (atom characters : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.TextConversionPlan Sigma) := do
+  let atomCell ← dereferencedCell heap atom
+  match atomCell with
+  | .var _ none =>
+      let value ← decodeCharacterText heap characters
+      pure (.text atom (.atom value))
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const (.atom value) =>
+      let charactersCell ← dereferencedCell heap characters
+      match charactersCell with
+      | .var _ none =>
+          pure (.codes collectionEncoding characters
+            (characterAtomConstants value))
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | _ =>
+          match decodeCharacterText heap characters with
+          | .ok decoded => pure (.text atom (.atom decoded))
+          | .error .textConversionUnbound =>
+              let proper ←
+                LP.RuntimeQuery.termProperList collectionEncoding heap characters
+              if proper then
+                pure (.codes collectionEncoding characters
+                  (characterAtomConstants value))
+              else .error .invalidTextCodes
+          | .error error => .error error
+  | .const _ | .app _ _ => .error .invalidTextValue
+
+def atomCharsDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
+  decode := decodeAtomChars
+
 private def negateNumberConstant : SourceSignature.Constant →
     Except LP.RuntimeQuery.QueryError SourceSignature.Constant
   | .integer value => pure (.integer (-value))
@@ -496,6 +565,9 @@ def textConversion? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | "string_codes", [text, codes] =>
       if goal.symbol.arity = 2 then some (text, codes, stringCodesDecoder)
+      else none
+  | "atom_chars", [atom, characters] =>
+      if goal.symbol.arity = 2 then some (atom, characters, atomCharsDecoder)
       else none
   | "number_codes", [number, codes] =>
       if goal.symbol.arity = 2 then some (number, codes, numberCodesDecoder)

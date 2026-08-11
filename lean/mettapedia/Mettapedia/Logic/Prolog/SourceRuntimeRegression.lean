@@ -399,6 +399,9 @@ def atomCodes (text codes : SourceSignature.Term) : SourceSignature.Goal :=
 def stringCodes (text codes : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "string_codes" [text, codes]
 
+def atomChars (text characters : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "atom_chars" [text, characters]
+
 def atomCodesForward : SourceSignature.Goal := atomCodes (atom "aλ") x
 
 def atomCodesReverse : SourceSignature.Goal :=
@@ -415,6 +418,41 @@ def stringCodesForward : SourceSignature.Goal :=
 
 def stringCodesReverse : SourceSignature.Goal :=
   stringCodes x (SourceSignature.list [integer 97, integer 955])
+
+def atomCharsForward : SourceSignature.Goal := atomChars (atom "aλ") x
+
+def atomCharsReverse : SourceSignature.Goal :=
+  atomChars x (SourceSignature.list [atom "a", atom "λ"])
+
+def atomCharsReverseCodes : SourceSignature.Goal :=
+  atomChars x (SourceSignature.list [integer 97, integer 955])
+
+def atomCharsReverseString : SourceSignature.Goal := atomChars x (string "aλ")
+
+def atomCharsBoundCodes : SourceSignature.Goal :=
+  atomChars (atom "aλ") (SourceSignature.list [integer 97, integer 955])
+
+def atomCharsBoundString : SourceSignature.Goal := atomChars (atom "aλ") (string "aλ")
+
+def atomCharsBindsElement : SourceSignature.Goal :=
+  atomChars (atom "a") (SourceSignature.list [x])
+
+def atomCharsMismatch : SourceSignature.Goal :=
+  atomChars (atom "a") (SourceSignature.list [atom "b"])
+
+def atomCharsBothUnbound : SourceSignature.Goal := atomChars x y
+
+def atomCharsImproper : SourceSignature.Goal :=
+  atomChars (atom "a") (compound "[|]" [atom "a", atom "tail"])
+
+def atomCharsInvalidElement : SourceSignature.Goal :=
+  atomChars x (SourceSignature.list [atom "ab"])
+
+def atomCharsRejectsStringElement : SourceSignature.Goal :=
+  atomChars x (SourceSignature.list [string "x"])
+
+def atomCharsCyclicList : SourceSignature.Goal :=
+  .conj (.unify y (compound "[|]" [atom "a", y])) (atomChars x y)
 
 def numberCodes (number codes : SourceSignature.Term) : SourceSignature.Goal :=
   SourceSignature.call "number_codes" [number, codes]
@@ -1352,6 +1390,16 @@ def laterCallSeesAssertion :
   some ([runtimeTermShape (expectedScoped
     (SourceSignature.list [integer 97, integer 955]))], 0, 0)
 #guard runStringsFor [] stringCodesReverse xIdentity == some (["aλ"], 0, 0)
+#guard runShapesFor [] atomCharsForward xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (SourceSignature.list [atom "a", atom "λ"]))], 0, 0)
+#guard runAtomsFor [] atomCharsReverse xIdentity == some (["aλ"], 0, 0)
+#guard runAtomsFor [] atomCharsReverseCodes xIdentity == some (["aλ"], 0, 0)
+#guard runAtomsFor [] atomCharsReverseString xIdentity == some (["aλ"], 0, 0)
+#guard runCount [] atomCharsBoundCodes == some (1, 0, 0)
+#guard runCount [] atomCharsBoundString == some (1, 0, 0)
+#guard runAtomsFor [] atomCharsBindsElement xIdentity == some (["a"], 0, 0)
+#guard runCount [] atomCharsMismatch == some (0, 0, 0)
 #guard runShapesFor [] numberCodesForwardInteger xIdentity ==
   some ([runtimeTermShape (expectedScoped
     (SourceSignature.list [integer 45, integer 52, integer 50]))], 0, 0)
@@ -1394,6 +1442,21 @@ def laterCallSeesAssertion :
   | some .invalidCharacterCode => true
   | _ => false
 #guard match runQueryError? [] atomCodesCyclicList with
+  | some .invalidTextCodes => true
+  | _ => false
+#guard match runQueryError? [] atomCharsBothUnbound with
+  | some .textConversionUnbound => true
+  | _ => false
+#guard match runQueryError? [] atomCharsImproper with
+  | some .invalidTextCodes => true
+  | _ => false
+#guard match runQueryError? [] atomCharsInvalidElement with
+  | some .invalidTextCodes => true
+  | _ => false
+#guard match runQueryError? [] atomCharsRejectsStringElement with
+  | some .invalidTextCodes => true
+  | _ => false
+#guard match runQueryError? [] atomCharsCyclicList with
   | some .invalidTextCodes => true
   | _ => false
 #guard runCount [] codeTypeSpace == some (1, 0, 0)

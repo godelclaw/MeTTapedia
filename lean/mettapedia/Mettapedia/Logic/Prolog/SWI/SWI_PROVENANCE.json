@@ -452,6 +452,7 @@
       "sources": ["src/pl-prims.c", "src/pl-string.c", "src/os/pl-text.c"],
       "anchors": [
         "x_chars",
+        "PRED_IMPL(\"atom_chars\", 2, atom_chars, PL_FA_ISO)",
         "PRED_IMPL(\"atom_codes\", 2, atom_codes, PL_FA_ISO)",
         "string_x",
         "PRED_IMPL(\"string_codes\", 2, string_codes, 0)",

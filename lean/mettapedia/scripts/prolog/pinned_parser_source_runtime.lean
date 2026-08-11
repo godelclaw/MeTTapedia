@@ -211,6 +211,40 @@ def checkRead (program : SourceSignature.Program) (label : String)
     throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
   IO.println s!"{label}=exact"
 
+def checkVariableRead (program : SourceSignature.Program) (label : String)
+    (codes : List Int) (relation :
+      SourceRuntimeRegression.RuntimeTermShape → Bool) : IO Unit := do
+  let (actual, heapSize, trailSize) ← executeTerm program (readQuery codes)
+  if relation (SourceRuntimeRegression.runtimeTermShape actual) then
+    pure ()
+  else
+    throw <| IO.userError s!"{label}: variable identity mismatch in {renderTerm actual}"
+  if heapSize != 0 || trailSize != 0 then
+    throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
+  IO.println s!"{label}=exact"
+
+def isSingleVariableList : SourceRuntimeRegression.RuntimeTermShape → Bool
+  | .compound "[|]" [.variable _ _ _, .atom "[]"] => true
+  | _ => false
+
+def reusesVariableInTwoElementList :
+    SourceRuntimeRegression.RuntimeTermShape → Bool
+  | .compound "[|]" [.variable leftScope leftSpelling leftOccurrence,
+      .compound "[|]" [.variable rightScope rightSpelling rightOccurrence,
+        .atom "[]"]] =>
+      leftScope == rightScope && leftSpelling == rightSpelling &&
+        leftOccurrence == rightOccurrence
+  | _ => false
+
+def separatesVariablesInTwoElementList :
+    SourceRuntimeRegression.RuntimeTermShape → Bool
+  | .compound "[|]" [.variable leftScope leftSpelling leftOccurrence,
+      .compound "[|]" [.variable rightScope rightSpelling rightOccurrence,
+        .atom "[]"]] =>
+      !(leftScope == rightScope && leftSpelling == rightSpelling &&
+        leftOccurrence == rightOccurrence)
+  | _ => false
+
 def main (arguments : List String) : IO Unit := do
   let [parserPath, dcgBasicsPath, listsPath, errorPath] := arguments
     | throw <| IO.userError
@@ -252,3 +286,19 @@ def main (arguments : List String) : IO Unit := do
     (SourceSignature.list [SourceSignature.string "a"])
   checkRead program "read_nested" [40, 40, 97, 41, 41]
     (SourceSignature.list [SourceSignature.list [SourceSignature.atom "a"]])
+  checkRead program "read_hyphen_atom" [40, 97, 45, 98, 41]
+    (SourceSignature.list [SourceSignature.atom "a-b"])
+  checkRead program "read_numeric_looking_atom" [40, 49, 95, 50, 95, 51, 41]
+    (SourceSignature.list [SourceSignature.atom "1_2_3"])
+  checkRead program "read_hash_atom" [40, 35, 102, 111, 111, 41]
+    (SourceSignature.list [SourceSignature.atom "#foo"])
+  checkRead program "read_escaped_string" [40, 34, 97, 92, 110, 98, 34, 41]
+    (SourceSignature.list [SourceSignature.string "a\nb"])
+  checkVariableRead program "read_variable" [40, 36, 120, 41]
+    isSingleVariableList
+  checkVariableRead program "read_variable_reuse"
+    [40, 36, 120, 32, 36, 120, 41]
+    reusesVariableInTwoElementList
+  checkVariableRead program "read_anonymous_separation"
+    [40, 36, 95, 32, 36, 95, 41]
+    separatesVariablesInTwoElementList

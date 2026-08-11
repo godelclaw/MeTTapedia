@@ -255,6 +255,34 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runStringsFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringCodesReverse
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "atom_chars_forward"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsForward)
+  renderStringAnswers "atom_chars_reverse"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsReverse
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "atom_chars_reverse_codes"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsReverseCodes
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "atom_chars_reverse_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsReverseString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "atom_chars_bound_codes"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsBoundCodes)
+  renderCount "atom_chars_bound_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsBoundString)
+  renderStringAnswers "atom_chars_binds_element"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsBindsElement
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "atom_chars_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.atomCharsMismatch)
   renderCount "number_codes_forward_integer"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesForwardIntegerExact)

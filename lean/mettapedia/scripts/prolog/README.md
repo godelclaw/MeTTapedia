@@ -177,12 +177,15 @@ The corresponding source-execution gate then runs the real pinned
 `parser.pl` DCG clauses `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
-`(1.5)`, `(1e2)`, `("a")`, and `((a))` through the same
+`(1.5)`, `(1e2)`, `("a")`, `((a))`, `(a-b)`, `(1_2_3)`, `(#foo)`, an
+escaped string, `$x`, `$x $x`, and `$_ $_` through the same
 canonical `Logic.Prolog.SourceRuntime`, with those 297 linked clauses and no
 translated replacement.  It requires the exact SWI answers `[40,41]` and
 `[40,97,41]`, and `[45,52,50]` for the writers and `[a]`, `[a,b]`, `[1]`,
-`[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the readers, together
-with a clean final heap and trail after every run:
+`[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the original readers.
+The additional checks pin atom token boundaries, escape decoding, named
+variable reuse, and distinct anonymous occurrences.  Every run must leave a
+clean final heap and trail:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
@@ -242,6 +245,12 @@ Six bidirectional text-code cases cover Unicode `atom_codes/2` and
 ground mismatch that fails without binding.  Lean canaries additionally pin
 typed rejection of both-unbound arguments, improper and cyclic code lists,
 and invalid Unicode scalar values.
+Eight `atom_chars/2` cases cover Unicode character-list production, reverse
+conversion from character atoms, integer character codes, and a SWI string,
+the bound-atom code-list and string modes, element binding, and ground
+mismatch.  The real parser gate additionally
+uses the integer-code input mode to preserve `$name` sharing and keep `$_`
+occurrences distinct.
 Eight `number_codes/2` cases cover exact integer rendering; positive and
 negative integer reading; positive and negative decimal floats; exponent
 syntax; ground mismatch; and heap-built meta-call.  Lean canaries additionally
