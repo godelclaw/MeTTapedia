@@ -416,6 +416,71 @@ def stringCodesForward : SourceSignature.Goal :=
 def stringCodesReverse : SourceSignature.Goal :=
   stringCodes x (SourceSignature.list [integer 97, integer 955])
 
+def numberCodes (number codes : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "number_codes" [number, codes]
+
+def numberCodesForwardInteger : SourceSignature.Goal :=
+  numberCodes (integer (-42)) x
+
+def numberCodesForwardIntegerExact : SourceSignature.Goal :=
+  numberCodes (integer (-42))
+    (SourceSignature.list [integer 45, integer 52, integer 50])
+
+def numberCodesReverseInteger : SourceSignature.Goal :=
+  numberCodes x (SourceSignature.list [integer 52, integer 50])
+
+def numberCodesReverseNegative : SourceSignature.Goal :=
+  numberCodes x (SourceSignature.list [integer 45, integer 49])
+
+def numberCodesReverseFloat : SourceSignature.Goal :=
+  numberCodes x
+    (SourceSignature.list [integer 49, integer 46, integer 53])
+
+def numberCodesReverseNegativeFloat : SourceSignature.Goal :=
+  numberCodes x
+    (SourceSignature.list [integer 45, integer 49, integer 46, integer 53])
+
+def numberCodesReverseExponent : SourceSignature.Goal :=
+  numberCodes x
+    (SourceSignature.list [integer 49, integer 101, integer 50])
+
+def numberCodesReverseFloatExact : SourceSignature.Goal :=
+  .conj numberCodesReverseFloat
+    (SourceSignature.call "=="
+      [x, floatBits (Float.ofScientific 15 true 1).toBits])
+
+def numberCodesReverseNegativeFloatExact : SourceSignature.Goal :=
+  .conj numberCodesReverseNegativeFloat
+    (SourceSignature.call "=="
+      [x, floatBits ((Float.ofScientific 15 true 1).toBits ^^^
+        0x8000000000000000)])
+
+def numberCodesReverseExponentExact : SourceSignature.Goal :=
+  .conj numberCodesReverseExponent
+    (SourceSignature.call "=="
+      [x, floatBits (Float.ofScientific 1 false 2).toBits])
+
+def numberCodesMismatch : SourceSignature.Goal :=
+  numberCodes (integer 12) (SourceSignature.list [integer 49, integer 51])
+
+def metaNumberCodesReverse : SourceSignature.Goal :=
+  metaGoal (compound "number_codes"
+    [x, SourceSignature.list [integer 52, integer 50]])
+
+def numberCodesBothUnbound : SourceSignature.Goal := numberCodes x y
+
+def numberCodesInvalidSyntax : SourceSignature.Goal :=
+  numberCodes x (SourceSignature.list [integer 97])
+
+def numberCodesImproper : SourceSignature.Goal :=
+  numberCodes (integer 1) (compound "[|]" [integer 49, atom "tail"])
+
+def numberCodesInvalidValue : SourceSignature.Goal :=
+  numberCodes (atom "one") x
+
+def numberCodesFloatForwardUnsupported : SourceSignature.Goal :=
+  numberCodes (floatBits (Float.ofScientific 15 true 1).toBits) x
+
 def atomCodesBothUnbound : SourceSignature.Goal := atomCodes x y
 
 def atomCodesImproper : SourceSignature.Goal :=
@@ -1287,6 +1352,38 @@ def laterCallSeesAssertion :
   some ([runtimeTermShape (expectedScoped
     (SourceSignature.list [integer 97, integer 955]))], 0, 0)
 #guard runStringsFor [] stringCodesReverse xIdentity == some (["aλ"], 0, 0)
+#guard runShapesFor [] numberCodesForwardInteger xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (SourceSignature.list [integer 45, integer 52, integer 50]))], 0, 0)
+#guard runShapesFor [] numberCodesReverseInteger xIdentity ==
+  some ([.integer 42], 0, 0)
+#guard runShapesFor [] numberCodesReverseNegative xIdentity ==
+  some ([.integer (-1)], 0, 0)
+#guard runShapesFor [] numberCodesReverseFloat xIdentity ==
+  some ([.floatBits (Float.ofScientific 15 true 1).toBits], 0, 0)
+#guard runShapesFor [] numberCodesReverseNegativeFloat xIdentity ==
+  some ([.floatBits ((Float.ofScientific 15 true 1).toBits ^^^
+    0x8000000000000000)], 0, 0)
+#guard runShapesFor [] numberCodesReverseExponent xIdentity ==
+  some ([.floatBits (Float.ofScientific 1 false 2).toBits], 0, 0)
+#guard runCount [] numberCodesMismatch == some (0, 0, 0)
+#guard runShapesFor [] metaNumberCodesReverse xIdentity ==
+  some ([.integer 42], 0, 0)
+#guard match runQueryError? [] numberCodesBothUnbound with
+  | some .numberConversionUnbound => true
+  | _ => false
+#guard match runQueryError? [] numberCodesInvalidSyntax with
+  | some .invalidNumberCodes => true
+  | _ => false
+#guard match runQueryError? [] numberCodesImproper with
+  | some .invalidNumberCodes => true
+  | _ => false
+#guard match runQueryError? [] numberCodesInvalidValue with
+  | some .invalidNumberValue => true
+  | _ => false
+#guard match runQueryError? [] numberCodesFloatForwardUnsupported with
+  | some .unsupportedInstruction => true
+  | _ => false
 #guard match runQueryError? [] atomCodesBothUnbound with
   | some .textConversionUnbound => true
   | _ => false

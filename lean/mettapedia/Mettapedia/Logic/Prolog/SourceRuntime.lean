@@ -1,4 +1,5 @@
 import Mettapedia.Logic.Prolog.SourceSignature
+import Mettapedia.Logic.Prolog.ReaderNumber
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeClauseDecode
 import Mettapedia.Logic.Prolog.ClauseReflection
@@ -423,8 +424,70 @@ def atomCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
 def stringCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
   decode := decodeTextConversion .string
 
-/-- Recognize the code-list fragment needed by pinned PeTTa source.  Character
-lists and numeric conversions remain separate obligations. -/
+private def negateNumberConstant : SourceSignature.Constant →
+    Except LP.RuntimeQuery.QueryError SourceSignature.Constant
+  | .integer value => pure (.integer (-value))
+  | .floatBits bits => pure (.floatBits (bits ^^^ 0x8000000000000000))
+  | _ => .error .invalidNumberCodes
+
+/-- Parse the numeric text accepted by the canonical source reader, adding
+the unary sign that `ReaderNumber.parse` deliberately leaves to its caller. -/
+private def parseNumberText (text : String) :
+    Except LP.RuntimeQuery.QueryError SourceSignature.Constant := do
+  let (negative, unsigned) :=
+    match text.toList with
+    | '-' :: rest => (true, String.ofList rest)
+    | '+' :: rest => (false, String.ofList rest)
+    | _ => (false, text)
+  let value ←
+    match ReaderNumber.parse unsigned with
+    | .ok value => pure value
+    | .error (.unsupportedRational _) | .error (.unsupportedNaN _) =>
+        .error .unsupportedInstruction
+    | .error _ => .error .invalidNumberCodes
+  if negative then negateNumberConstant value else pure value
+
+/-- Decode the source-needed `number_codes/2` fragment.  Reverse conversion
+accepts the numeric forms already normalized by `ReaderNumber`; forward
+conversion is exact for arbitrary-precision integers.  Float rendering stays
+typed unsupported until its SWI decimal-roundtrip rule is represented. -/
+private def decodeNumberCodes (heap : Heap Sigma.scoped)
+    (number codes : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.TextConversionPlan Sigma) := do
+  let numberCell ← dereferencedCell heap number
+  match numberCell with
+  | .var _ none =>
+      let roots ←
+        match decodedCodeRoots heap codes with
+        | .ok roots => pure roots
+        | .error .textConversionUnbound => .error .numberConversionUnbound
+        | .error .invalidTextCodes => .error .invalidNumberCodes
+        | .error error => .error error
+      let characters ← codeCharacters heap roots
+      let value ← parseNumberText (String.ofList characters)
+      pure (.text number value)
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const (.integer value) =>
+      let codesCell ← dereferencedCell heap codes
+      match codesCell with
+      | .var _ none =>
+          pure (.codes collectionEncoding codes
+            (stringCodeConstants (toString value)))
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | _ =>
+          let proper ← LP.RuntimeQuery.termProperList collectionEncoding heap codes
+          if proper then
+            pure (.codes collectionEncoding codes
+              (stringCodeConstants (toString value)))
+          else .error .invalidNumberCodes
+  | .const (.floatBits _) => .error .unsupportedInstruction
+  | .const _ | .app _ _ => .error .invalidNumberValue
+
+def numberCodesDecoder : LP.RuntimeQuery.TextConversionDecoder Sigma where
+  decode := decodeNumberCodes
+
+/-- Recognize the code-list conversions needed by pinned PeTTa source. -/
 def textConversion? (goal : RuntimeAtom Sigma.scoped) :
     Option (Addr × Addr × LP.RuntimeQuery.TextConversionDecoder Sigma) :=
   match goal.symbol.name, goal.args.toList with
@@ -433,6 +496,9 @@ def textConversion? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | "string_codes", [text, codes] =>
       if goal.symbol.arity = 2 then some (text, codes, stringCodesDecoder)
+      else none
+  | "number_codes", [number, codes] =>
+      if goal.symbol.arity = 2 then some (number, codes, numberCodesDecoder)
       else none
   | _, _ => none
 

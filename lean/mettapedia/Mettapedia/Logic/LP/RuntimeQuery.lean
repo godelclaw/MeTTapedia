@@ -62,6 +62,9 @@ inductive QueryError where
   | invalidCharacterCode
   | characterTypeUnbound
   | invalidCharacterType
+  | numberConversionUnbound
+  | invalidNumberValue
+  | invalidNumberCodes
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
   | termGroundBudgetExhausted

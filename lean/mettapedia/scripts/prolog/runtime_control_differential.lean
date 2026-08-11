@@ -255,6 +255,33 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runStringsFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.stringCodesReverse
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "number_codes_forward_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesForwardIntegerExact)
+  renderIntegerAnswers "number_codes_reverse_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesReverseInteger
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "number_codes_reverse_negative"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesReverseNegative
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "number_codes_reverse_float"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesReverseFloatExact)
+  renderCount "number_codes_reverse_negative_float"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesReverseNegativeFloatExact)
+  renderCount "number_codes_reverse_exponent"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesReverseExponentExact)
+  renderCount "number_codes_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberCodesMismatch)
+  renderIntegerAnswers "number_codes_meta_reverse"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaNumberCodesReverse
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
   renderCount "code_type_space"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.codeTypeSpace)

@@ -7,7 +7,7 @@ import Mettapedia.Logic.LP.RuntimeReadback
 /-!
 Execute real pinned `parser.pl` DCG clauses through the canonical shared
 runtime.  The loaded source slice retains unresolved loader obligations; this
-canary claims only the exercised `swrite_exp([])` and `swrite_exp([a])` paths.
+canary claims only the explicitly exercised writer and reader paths.
 -/
 
 open Mettapedia.Logic
@@ -57,6 +57,13 @@ def atomListQuery : SourceSignature.Goal :=
     SourceSignature.compound "swrite_exp" [
       SourceSignature.list [SourceSignature.atom "a"]
     ],
+    .var codesIdentity,
+    SourceSignature.nil
+  ]
+
+def integerQuery : SourceSignature.Goal :=
+  SourceSignature.call "phrase" [
+    SourceSignature.compound "swrite_exp" [SourceSignature.integer (-42)],
     .var codesIdentity,
     SourceSignature.nil
   ]
@@ -217,16 +224,30 @@ def main (arguments : List String) : IO Unit := do
   let (emptyCodes, emptyHeap, emptyTrail) <- execute program query
   let (atomListCodes, atomListHeap, atomListTrail) <-
     execute program atomListQuery
+  let (integerCodes, integerHeap, integerTrail) <-
+    execute program integerQuery
   let (readAtom, readAtomHeap, readAtomTrail) <-
     executeTerm program readAtomQuery
   IO.println s!"empty_codes={renderCodes emptyCodes}"
   IO.println s!"empty_cleanup={emptyHeap}/{emptyTrail}"
   IO.println s!"atom_list_codes={renderCodes atomListCodes}"
   IO.println s!"atom_list_cleanup={atomListHeap}/{atomListTrail}"
+  IO.println s!"integer_codes={renderCodes integerCodes}"
+  IO.println s!"integer_cleanup={integerHeap}/{integerTrail}"
   IO.println s!"read_atom={renderTerm readAtom}"
   IO.println s!"read_cleanup={readAtomHeap}/{readAtomTrail}"
   checkRead program "read_list" [40, 97, 32, 98, 41]
     (SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"])
+  checkRead program "read_integer" [40, 49, 41]
+    (SourceSignature.list [SourceSignature.integer 1])
+  checkRead program "read_negative" [40, 45, 50, 41]
+    (SourceSignature.list [SourceSignature.integer (-2)])
+  checkRead program "read_float" [40, 49, 46, 53, 41]
+    (SourceSignature.list [SourceSignature.floatBits
+      (Float.ofScientific 15 true 1).toBits])
+  checkRead program "read_exponent" [40, 49, 101, 50, 41]
+    (SourceSignature.list [SourceSignature.floatBits
+      (Float.ofScientific 1 false 2).toBits])
   checkRead program "read_string" [40, 34, 97, 34, 41]
     (SourceSignature.list [SourceSignature.string "a"])
   checkRead program "read_nested" [40, 40, 97, 41, 41]

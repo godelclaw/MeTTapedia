@@ -175,13 +175,14 @@ scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 
 The corresponding source-execution gate then runs the real pinned
 `parser.pl` DCG clauses `phrase(swrite_exp([]), Codes)`,
-`phrase(swrite_exp([a]), Codes)`, and
-`phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `("a")`, and
-`((a))` through the same
+`phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
+`phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
+`(1.5)`, `(1e2)`, `("a")`, and `((a))` through the same
 canonical `Logic.Prolog.SourceRuntime`, with those 297 linked clauses and no
 translated replacement.  It requires the exact SWI answers `[40,41]` and
-`[40,97,41]` for the writers and `[a]`, `[a,b]`, `["a"]`, and `[[a]]` for
-the readers, together with a clean final heap and trail after every run:
+`[40,97,41]`, and `[45,52,50]` for the writers and `[a]`, `[a,b]`, `[1]`,
+`[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the readers, together
+with a clean final heap and trail after every run:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
@@ -190,9 +191,9 @@ scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
 This is a deliberately narrow executable slice.  The retained external
 imports, declarations, and load-time goals remain explicit closure
 obligations; passing this gate does not claim that the entire parser source is
-yet executable.  In particular numeric reader syntax still requires the
-source path through `number_codes/2`; it is not inferred from the passing atom
-and list cases.
+yet executable.  Numeric reading covers the decimal and scientific forms
+produced by pinned `dcg/basics:number//1`; integer writing is exact, while
+float-to-code rendering remains explicitly unsupported.
 
 ### Shared-runtime control differential
 
@@ -202,7 +203,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 156 exact answer, exception, and persistent-store traces against
+It compares 164 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -241,6 +242,11 @@ Six bidirectional text-code cases cover Unicode `atom_codes/2` and
 ground mismatch that fails without binding.  Lean canaries additionally pin
 typed rejection of both-unbound arguments, improper and cyclic code lists,
 and invalid Unicode scalar values.
+Eight `number_codes/2` cases cover exact integer rendering; positive and
+negative integer reading; positive and negative decimal floats; exponent
+syntax; ground mismatch; and heap-built meta-call.  Lean canaries additionally
+pin typed errors for both-unbound arguments, invalid and improper code lists,
+non-number values, and the intentionally unsupported float-rendering direction.
 Six ground ASCII `code_type/2` cases cover spaces, decimal digits, rejection,
 and a heap-built meta-call through the same read-only binary-test action.  The
 source runtime intentionally fails closed on Unicode and the remaining SWI

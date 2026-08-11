@@ -455,6 +455,7 @@
         "PRED_IMPL(\"atom_codes\", 2, atom_codes, PL_FA_ISO)",
         "string_x",
         "PRED_IMPL(\"string_codes\", 2, string_codes, 0)",
+        "PRED_IMPL(\"number_codes\", 2, number_codes, PL_FA_ISO)",
         "PL_get_text",
         "PL_unify_text"
       ],
@@ -462,6 +463,7 @@
       "implementation_evidence": [
         "Mettapedia/Logic/LP/RuntimeQuery.lean",
         "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/ReaderNumber.lean",
         "Mettapedia/Logic/Prolog/SourceRuntime.lean"
       ],
       "proof_status": "partial",
@@ -475,7 +477,9 @@
         "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
         "scripts/prolog/runtime_control_differential.lean",
         "scripts/prolog/runtime_control_oracle.pl",
-        "scripts/prolog/run_runtime_control_differential.sh"
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
       ]
     },
     {

@@ -43,18 +43,24 @@ empty_codes=[40,41]
 empty_cleanup=0/0
 atom_list_codes=[40,97,41]
 atom_list_cleanup=0/0
+integer_codes=[45,52,50]
+integer_cleanup=0/0
 read_atom=[|](a,[])
 read_cleanup=0/0
 read_list=exact
+read_integer=exact
+read_negative=exact
+read_float=exact
+read_exponent=exact
 read_string=exact
 read_nested=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
 swipl -q -s "$TMP/src/parser.pl" \
-  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, phrase(sexpr(ReadAtom, [], _), [40,97,41]), write_canonical(ReadAtom), nl, phrase(sexpr(ReadList, [], _), [40,97,32,98,41]), write_canonical(ReadList), nl, phrase(sexpr(ReadString, [], _), [40,34,97,34,41]), write_canonical(ReadString), nl, phrase(sexpr(ReadNested, [], _), [40,40,97,41,41]), write_canonical(ReadNested), nl, halt" \
+  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, phrase(swrite_exp(-42), IntegerCodes), write_canonical(IntegerCodes), nl, phrase(sexpr(ReadAtom, [], _), [40,97,41]), write_canonical(ReadAtom), nl, phrase(sexpr(ReadList, [], _), [40,97,32,98,41]), write_canonical(ReadList), nl, phrase(sexpr(ReadInteger, [], _), [40,49,41]), write_canonical(ReadInteger), nl, phrase(sexpr(ReadNegative, [], _), [40,45,50,41]), write_canonical(ReadNegative), nl, phrase(sexpr(ReadFloat, [], _), [40,49,46,53,41]), write_canonical(ReadFloat), nl, phrase(sexpr(ReadExponent, [], _), [40,49,101,50,41]), write_canonical(ReadExponent), nl, phrase(sexpr(ReadString, [], _), [40,34,97,34,41]), write_canonical(ReadString), nl, phrase(sexpr(ReadNested, [], _), [40,40,97,41,41]), write_canonical(ReadNested), nl, halt" \
   > "$TMP/swi.out"
-printf '%s\n' '[40,41]' '[40,97,41]' '[a]' '[a,b]' '["a"]' '[[a]]' > "$TMP/swi.expected"
+printf '%s\n' '[40,41]' '[40,97,41]' '[45,52,50]' '[a]' '[a,b]' '[1]' '[-2]' '[1.5]' '[100.0]' '["a"]' '[[a]]' > "$TMP/swi.expected"
 diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
-echo "Pinned parser source runtime: PASS (writes and four reader shapes exact; clean closure)"
+echo "Pinned parser source runtime: PASS (three writes and eight reader shapes exact; clean closure)"
