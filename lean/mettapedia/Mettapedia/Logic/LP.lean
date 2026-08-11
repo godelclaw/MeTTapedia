@@ -4,6 +4,7 @@ import Mettapedia.Logic.LP.RuntimeTerm
 import Mettapedia.Logic.LP.RuntimeUnification
 import Mettapedia.Logic.LP.RuntimeMaterialize
 import Mettapedia.Logic.LP.RuntimeQuery
+import Mettapedia.Logic.LP.RuntimeQueryConservation
 import Mettapedia.Logic.LP.Substitution
 import Mettapedia.Logic.LP.Matching
 import Mettapedia.Logic.LP.Unification
@@ -42,6 +43,7 @@ Barrel import for the LP module stack:
 | `RuntimeUnification` | Small-step graph unification with cycle-pair memoization and transactional failure |
 | `RuntimeMaterialize` | Checked source-term and standardized-clause allocation with structural trail preservation |
 | `RuntimeQuery` | Demand-driven clause selection, source-order DFS, resumable answers, backtracking, and predicate-scoped cut |
+| `RuntimeQueryConservation` | Representation conservation for query opening, shared-machine steps, and finite pull prefixes |
 | `Substitution` | Subst, apply, compose, identity/composition laws, Grounding |
 | `Matching` | collectBindings, matchTerm, matchAtom (one-sided unification) |
 | `Unification` | Martelli-Montanari unification, occurs check, soundness proof |

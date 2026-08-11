@@ -17,6 +17,8 @@ import Mettapedia.Logic.Prolog.ReaderSWIProfile
 import Mettapedia.Logic.Prolog.ReaderLoaderRegression
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
+import Mettapedia.Logic.Prolog.RuntimeControlSoundness
+import Mettapedia.Logic.Prolog.RuntimeControlSoundnessRegression
 import Mettapedia.Logic.Prolog.PureRuntimeSoundness
 import Mettapedia.Logic.Prolog.PureRuntimeRegression
 import Mettapedia.Logic.Prolog.Core
@@ -66,6 +68,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |
+| `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
 | `PureRuntime` | demand-driven pure-Prolog entrypoint delegating to the canonical LP runtime |
 | `PureRuntimeSoundness` | transport of runtime answers to standardized-apart SLD and the least Herbrand model |
 | `PureRuntimeRegression` | ordered-answer and control-rejection executable gates |

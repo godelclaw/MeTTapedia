@@ -57,6 +57,8 @@ lake build Mettapedia.Logic.Prolog.Prolog
 | [ReaderDirective.lean](ReaderDirective.lean) | checked read-time operator effects for directives and imports |
 | [ReaderSWIProfile.lean](ReaderSWIProfile.lean) | fail-closed import-operator profile for the pinned PeTTa closure |
 | [RuntimeControl.lean](RuntimeControl.lean) | typed control materialization and canonical LP runtime specialization |
+| [RuntimeControlSoundness.lean](RuntimeControlSoundness.lean) | proves the typed runtime conserves the shared LP execution and grounds pure answers in scoped SLD and the least Herbrand model |
+| [RuntimeControlSoundnessRegression.lean](RuntimeControlSoundnessRegression.lean) | executable ordered-answer canary on the typed entrypoint plus its concrete least-model theorem specialization |
 | [PureRuntimeSoundness.lean](PureRuntimeSoundness.lean) | pure runtime answers grounded in scoped SLD and the least Herbrand model |
 | [Core.lean](Core.lean) | pattern-level `PrologGoal`, `PEnv`, and fixture helpers |
 | [Eval.lean](Eval.lean) | `PrologEval` operational semantics with cut-aware control flow |
@@ -110,4 +112,4 @@ engine); it is evidence of conformance, not part of the Lean kernel guarantee.
 - Paulo Moura, [Logtalk Prolog conformance test suite](https://github.com/LogtalkDotOrg/logtalk3/tree/master/tests/prolog) — the upstream source of the 63 ISO test IDs.
 
 ---
-*Status (drafted 2026-06-22 by Claude Code, Opus 4.8): 5 .lean files, 0 with sorries.*
+*Status updated 2026-08-11; the module table above is the maintained scope record.*

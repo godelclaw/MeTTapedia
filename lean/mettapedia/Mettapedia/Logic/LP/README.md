@@ -71,6 +71,7 @@ lake build Mettapedia.Logic.LP
 | [RuntimeUnification.lean](RuntimeUnification.lean) | Resumable transactional graph unification with cycle-pair memoization |
 | [RuntimeMaterialize.lean](RuntimeMaterialize.lean) | Checked allocation of source queries and standardized clauses into the graph heap |
 | [RuntimeQuery.lean](RuntimeQuery.lean) | Demand-driven source-order DFS, clause retry, resumable answers, cleanup, and predicate-scoped cut |
+| [RuntimeQueryConservation.lean](RuntimeQueryConservation.lean) | Generic conservation certificate for query opening, shared-machine steps, and finite pull prefixes across language representations |
 
 The runtime modules operate on the same `Core.lean` terms, atoms, clauses, and
 programs as the LP kernel. They are one implementation, not a PeTTa-specific
