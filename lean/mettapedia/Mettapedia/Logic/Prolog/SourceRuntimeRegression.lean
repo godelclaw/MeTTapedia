@@ -392,6 +392,98 @@ def nonIdentityDifferentCompounds : SourceSignature.Goal :=
   strictNonIdentity (pair (atom "a") (atom "b"))
     (pair (atom "a") (atom "c"))
 
+/-! ## `=../2` on the shared heap -/
+
+def univ (term list : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "=.." [term, list]
+
+def univDecomposesCompound : SourceSignature.Goal :=
+  univ (pair (atom "a") (atom "b")) x
+
+def univConstructsCompound : SourceSignature.Goal :=
+  univ x (SourceSignature.list [atom "pair", atom "a", atom "b"])
+
+def univDecomposesAtom : SourceSignature.Goal :=
+  univ (atom "a") x
+
+def univConstructsAtom : SourceSignature.Goal :=
+  univ x (SourceSignature.list [atom "a"])
+
+def univDecomposesInteger : SourceSignature.Goal :=
+  univ (integer 1) x
+
+/-- Construction reuses list-element roots: repeated variables remain the
+same variable inside the newly allocated application. -/
+def univConstructionPreservesSharing : SourceSignature.Goal :=
+  .conj
+    (univ x (SourceSignature.list [atom "pair", y, y]))
+    (.conj (.unify x (pair leftVar rightVar))
+      (strictIdentity leftVar rightVar))
+
+/-- Decomposition reuses application-argument roots: one repeated argument
+is not copied into two fresh variables in the result list. -/
+def univDecompositionPreservesSharing : SourceSignature.Goal :=
+  .conj
+    (univ (pair y y)
+      (SourceSignature.list [atom "pair", leftVar, rightVar]))
+    (strictIdentity leftVar rightVar)
+
+/-- A heap-built meta-call reaches the same source service and shared engine
+operation as a statically present `=../2` call. -/
+def metaUnivConstructsCompound : SourceSignature.Goal :=
+  metaGoal (compound "=.."
+    [x, SourceSignature.list [atom "pair", atom "a", atom "b"]])
+
+def univUnboundList : SourceSignature.Goal := univ x y
+
+def univEmptyList : SourceSignature.Goal :=
+  univ x SourceSignature.nil
+
+def univUnboundFunctor : SourceSignature.Goal :=
+  univ x (SourceSignature.list [y, atom "a"])
+
+def univNonAtomFunctor : SourceSignature.Goal :=
+  univ x (SourceSignature.list [integer 1, atom "a"])
+
+def univExplicitZeroArityCompound : SourceSignature.Goal :=
+  univ (compound "f" []) x
+
+/-- Observe a typed runtime error without identifying ordinary Prolog
+failure with an engine-side malformed-operation result. -/
+def runQueryError? (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) : Option LP.RuntimeQuery.QueryError :=
+  match SourceRuntime.openEmpty program goal with
+  | .error error => some error
+  | .ok session =>
+      match SourceRuntime.pullSession 512 session with
+      | .terminal (.runtimeError error _) _ => some error
+      | _ => none
+
+def univRejectsUnboundList : Bool :=
+  match runQueryError? [] univUnboundList with
+  | some .univListUnbound => true
+  | _ => false
+
+def univRejectsEmptyList : Bool :=
+  match runQueryError? [] univEmptyList with
+  | some .invalidUnivList => true
+  | _ => false
+
+def univRejectsUnboundFunctor : Bool :=
+  match runQueryError? [] univUnboundFunctor with
+  | some .univFunctorUnbound => true
+  | _ => false
+
+def univRejectsNonAtomFunctor : Bool :=
+  match runQueryError? [] univNonAtomFunctor with
+  | some .invalidUnivFunctor => true
+  | _ => false
+
+def univRejectsExplicitZeroArityCompound : Bool :=
+  match runQueryError? [] univExplicitZeroArityCompound with
+  | some .invalidUnivFunctor => true
+  | _ => false
+
 def binaryFactProgram : SourceSignature.Program :=
   [fact "p" [atom "a", atom "b"]]
 
@@ -963,6 +1055,30 @@ def laterCallSeesAssertion :
 #guard runCount [] identityEqualStrings == some (1, 0, 0)
 #guard runCount [] identityAtomNotZeroArityCompound == some (0, 0, 0)
 #guard runCount [] nonIdentityDifferentCompounds == some (1, 0, 0)
+#guard runShapesFor [] univDecomposesCompound xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (SourceSignature.list [atom "pair", atom "a", atom "b"]))], 0, 0)
+#guard runShapesFor [] univConstructsCompound xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (pair (atom "a") (atom "b")))], 0, 0)
+#guard runShapesFor [] univDecomposesAtom xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (SourceSignature.list [atom "a"]))], 0, 0)
+#guard runShapesFor [] univConstructsAtom xIdentity ==
+  some ([runtimeTermShape (expectedScoped (atom "a"))], 0, 0)
+#guard runShapesFor [] univDecomposesInteger xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (SourceSignature.list [integer 1]))], 0, 0)
+#guard runCount [] univConstructionPreservesSharing == some (1, 0, 0)
+#guard runCount [] univDecompositionPreservesSharing == some (1, 0, 0)
+#guard runShapesFor [] metaUnivConstructsCompound xIdentity ==
+  some ([runtimeTermShape (expectedScoped
+    (pair (atom "a") (atom "b")))], 0, 0)
+#guard univRejectsUnboundList
+#guard univRejectsEmptyList
+#guard univRejectsUnboundFunctor
+#guard univRejectsNonAtomFunctor
+#guard univRejectsExplicitZeroArityCompound
 #guard runAtoms [] caughtGround == some (["ball"], 0, 0)
 #guard runRaisedAtom [] throwTimeBoundCatcherRejects == some ("ball", 0, 0)
 #guard runRaisedAtom [] recoveryRethrowEscapes == some ("b", 0, 0)

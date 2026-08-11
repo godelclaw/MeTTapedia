@@ -271,6 +271,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .termTest address test => .termTest address test
   | .termIdentity left right expected =>
       .termIdentity left right expected
+  | .univ termRoot listRoot encoding =>
+      .univ termRoot listRoot encoding
   | .database request => .database request
   | .error reason => .error reason
 
@@ -930,6 +932,18 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     simp [mapDispatchAction, dispatchActionStep,
                       termIdentityStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, hResult]
+          | univ termRoot listRoot encoding =>
+              cases hPrepare : prepareUniv encoding memory termRoot listRoot with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep, univStep,
+                      mapState, mapControl, mapAttempt, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hPrepare, hCleanup]
+              | ok prepared =>
+                  simp [mapDispatchAction, dispatchActionStep, univStep,
+                    mapState, mapControl, mapAttempt, mapPhase,
+                    mapReturnFrame, mapStepResult, hPrepare]
           | database request =>
               cases request with
               | asserta clauseRoot =>

@@ -30,6 +30,9 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentityStep_of_result
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentical_same_of_deref
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termIdentity
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.univStep_of_prepare
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_univ
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_univ
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_error
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.stepCoreWithMeta_metaCall_of_dispatch

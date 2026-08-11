@@ -435,6 +435,11 @@ structure Services (sigma : LP.LPSignature) where
   The Bool is the expected result; graph comparison stays engine-owned. -/
   termIdentity? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × Bool) := fun _ => none
+  /-- Recognize `Term =.. List` without inspecting the heap.  The realization
+  supplies only roots and its signature encoding; traversal, allocation, and
+  unification remain owned by the shared engine. -/
+  univ? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.UnivEncoding sigma) := fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -467,6 +472,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
     (RuntimeGoal sigma.scoped)
   termTest? _ := none
   termIdentity? _ := none
+  univ? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -548,7 +554,12 @@ def dispatchActionWith {sigma : LP.LPSignature}
                   match services.termIdentity? goal with
                   | some (left, right, expected) =>
                       .termIdentity left right expected
-                  | none => .call goal (Program.clausesFor program goal.symbol)
+                  | none =>
+                      match services.univ? goal with
+                      | some (termRoot, listRoot, encoding) =>
+                          .univ termRoot listRoot encoding
+                      | none =>
+                          .call goal (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -603,6 +614,22 @@ theorem dispatchActionWith_termIdentity {sigma : LP.LPSignature}
     dispatchActionWith services program (.call goal) =
       .termIdentity left right expected := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity]
+
+/-- `=../2` is selected only after the earlier disjoint services decline the
+call.  The source realization supplies no heap-dependent result. -/
+theorem dispatchActionWith_univ {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (termRoot listRoot : Addr)
+    (encoding : LP.RuntimeQuery.UnivEncoding sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = some (termRoot, listRoot, encoding)) :
+    dispatchActionWith services program (.call goal) =
+      .univ termRoot listRoot encoding := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

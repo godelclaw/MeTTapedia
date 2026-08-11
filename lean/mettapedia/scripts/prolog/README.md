@@ -171,7 +171,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 98 exact answer, exception, and persistent-store traces against
+It compares 110 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -201,6 +201,12 @@ read-only heap traversal: same and distinct variables, structural compounds,
 variable sharing, separately allocated rational cycles, non-binding failure,
 heap-built meta-call, numeric type distinction, strings, and the atom versus
 explicit zero-arity-compound distinction.
+Eight `=../2` cases cover decomposition and construction of compounds, atoms,
+and integers, preserve variable sharing in both directions, and execute a
+heap-built meta-call through the same service.  Malformed lists, unbound or
+non-atom functors, and explicit zero-arity compounds additionally fail through
+typed engine errors in Lean canaries; exact ISO exception packets for those
+cases remain outside this differential claim.
 Eleven `catch/3` and `throw/1` cases cover throw-time catcher selection,
 entry-context recovery, rethrow, guarded and recovery cut opacity, retained
 guarded answers, nested-catcher throw-time preservation, variable-copy

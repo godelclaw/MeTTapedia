@@ -54,6 +54,10 @@ inductive QueryError where
   | invalidDynamicClause
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
+  | univListUnbound
+  | invalidUnivList
+  | univFunctorUnbound
+  | invalidUnivFunctor
   | unhandledDatabaseRequest
   | missingCollectionBoundary
   | exceptionCleanupFailed (cleanup : MemoryError)
@@ -98,6 +102,145 @@ def listTerm (encoding : CollectionEncoding σ)
   answers.foldr encoding.consTerm (.const encoding.nil)
 
 end CollectionEncoding
+
+/-- Language-owned symbols for `=../2`.  The engine owns heap traversal,
+allocation, and unification.  A realization supplies only the existing list
+encoding and the lossless atom/functor name bridge for its signature. -/
+structure UnivEncoding (σ : LPSignature) where
+  list : CollectionEncoding σ
+  functorConstant : σ.functionSymbols → σ.constants
+  functionOf : (constant : σ.constants) → (arity : Nat) →
+    Option { symbol : σ.functionSymbols // σ.functionArity symbol = arity }
+
+/-- A prepared `=../2` result contains only a new memory and one canonical
+unification pair.  It carries no continuation, choice point, or answer. -/
+structure UnivPrepared (σ : LPSignature) where
+  memory : Memory σ.scoped
+  left : Addr
+  right : Addr
+
+/-- Allocate a proper list whose heads are existing graph roots.  The roots
+are reused, not read back and rematerialized, preserving variable identity
+and sharing exactly. -/
+def allocateAddressList {σ : LPSignature} (encoding : CollectionEncoding σ) :
+    Memory σ.scoped → List Addr → Except MemoryError (Addr × Memory σ.scoped)
+  | memory, [] => memory.allocate (.const encoding.nil)
+  | memory, head :: tail => do
+      let (tailRoot, memory) ← allocateAddressList encoding memory tail
+      memory.allocate (.app encoding.cons #[head, tailRoot])
+
+/-- Decode only the proper-list spine, retaining each element's existing heap
+root.  Rational or malformed spines fail visibly; element graphs themselves
+are not copied or traversed. -/
+def decodeAddressListAux {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : CollectionEncoding σ)
+    (heap : Heap σ.scoped) : Nat → Addr → Except QueryError (List Addr)
+  | 0, _ => .error .invalidUnivList
+  | fuel + 1, address =>
+      match heap.deref address with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root root) =>
+          match heap[root]? with
+          | none => .error (.memory (.invalidAddress root))
+          | some (.var _ none) => .error .univListUnbound
+          | some (.var _ (some _)) => .error (.memory .illFormedHeap)
+          | some (.const value) =>
+              if value = encoding.nil then .ok [] else .error .invalidUnivList
+          | some (.app symbol arguments) =>
+              if symbol = encoding.cons ∧ arguments.size = 2 then
+                match arguments[0]?, arguments[1]? with
+                | some head, some tail => do
+                    let rest ← decodeAddressListAux encoding heap fuel tail
+                    pure (head :: rest)
+                | _, _ => .error (.memory .illFormedHeap)
+              else .error .invalidUnivList
+
+def decodeAddressList {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : CollectionEncoding σ)
+    (heap : Heap σ.scoped) (address : Addr) :
+    Except QueryError (List Addr) :=
+  decodeAddressListAux encoding heap (heap.size + 1) address
+
+/-- Prepare `Term =.. List` in the direction selected by the dereferenced term
+root.  A nonvariable term is decomposed into a newly allocated list that
+reuses its argument roots.  An unbound term consumes a proper list, allocates
+at most one application root, and returns a canonical unification pair. -/
+def prepareUniv {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : UnivEncoding σ)
+    (memory : Memory σ.scoped) (termRoot listRoot : Addr) :
+    Except QueryError (UnivPrepared σ) := do
+  let dereferenced ←
+    match memory.heap.deref termRoot with
+    | .error error => .error (.memory error)
+    | .ok (.variableCycle cycle) =>
+        .error (.memory (.variableReferenceCycle cycle))
+    | .ok (.root root) => .ok root
+  let cell ←
+    match memory.heap[dereferenced]? with
+    | none => .error (.memory (.invalidAddress dereferenced))
+    | some cell => .ok cell
+  match cell with
+  | .var _ none =>
+      let elements ← decodeAddressList encoding.list memory.heap listRoot
+      match elements with
+      | [] => .error .invalidUnivList
+      | [functorRoot] =>
+          let functorCell ←
+            match memory.heap.deref functorRoot with
+            | .error error => .error (.memory error)
+            | .ok (.variableCycle cycle) =>
+                .error (.memory (.variableReferenceCycle cycle))
+            | .ok (.root root) =>
+                match memory.heap[root]? with
+                | none => .error (.memory (.invalidAddress root))
+                | some cell => .ok cell
+          match functorCell with
+          | .var _ none => .error .univFunctorUnbound
+          | .var _ (some _) => .error (.memory .illFormedHeap)
+          | .const _ => .ok { memory, left := termRoot, right := functorRoot }
+          | .app _ _ => .error .invalidUnivFunctor
+      | functorRoot :: arguments =>
+          let functorCell ←
+            match memory.heap.deref functorRoot with
+            | .error error => .error (.memory error)
+            | .ok (.variableCycle cycle) =>
+                .error (.memory (.variableReferenceCycle cycle))
+            | .ok (.root root) =>
+                match memory.heap[root]? with
+                | none => .error (.memory (.invalidAddress root))
+                | some cell => .ok cell
+          match functorCell with
+          | .var _ none => .error .univFunctorUnbound
+          | .var _ (some _) => .error (.memory .illFormedHeap)
+          | .const value =>
+              match encoding.functionOf value arguments.length with
+              | none => .error .invalidUnivFunctor
+              | some symbol =>
+                  match memory.allocate (.app symbol.1 arguments.toArray) with
+                  | .error error => .error (.memory error)
+                  | .ok (constructed, memory) =>
+                      .ok { memory, left := termRoot, right := constructed }
+          | .app _ _ => .error .invalidUnivFunctor
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const _ =>
+      match allocateAddressList encoding.list memory [dereferenced] with
+      | .error error => .error (.memory error)
+      | .ok (list, memory) => .ok { memory, left := listRoot, right := list }
+  | .app symbol arguments =>
+      if arguments.size = 0 then
+        .error .invalidUnivFunctor
+      else if arguments.size = σ.functionArity symbol then
+        match memory.allocate (.const (encoding.functorConstant symbol)) with
+        | .error error => .error (.memory error)
+        | .ok (functorRoot, memory) =>
+            match allocateAddressList encoding.list memory
+                (functorRoot :: arguments.toList) with
+            | .error error => .error (.memory error)
+            | .ok (list, memory) =>
+                .ok { memory, left := listRoot, right := list }
+      else .error (.memory .illFormedHeap)
 
 /-- Language-owned symbols for the ordinary `Head :- Body` representation and
 opaque database references shared by `retract/1`, `clause/3`, and assertion.
@@ -1890,6 +2033,50 @@ theorem termIdentityStep_of_result {σ : LPSignature}
       else .next { state with phase := .backtrack } none := by
   simp [termIdentityStep, hResult]
 
+/-- Execute one prepared `=../2` operation through the canonical graph
+unifier.  Preparation owns only finite heap inspection/allocation; all binding,
+rollback, continuation, and answer behavior remains the shared phase loop. -/
+def univStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
+    (rest : List Instruction) : StepResultCore σ Instruction SourceClause :=
+  match prepareUniv encoding state.memory termRoot listRoot with
+  | .error error => failWith state error
+  | .ok prepared =>
+      .next {
+        state with
+        memory := prepared.memory
+        phase := .unifying {
+          body := rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany prepared.memory
+          [(prepared.left, prepared.right)])
+      } none
+
+/-- Successful preparation has one exact effect: start the existing unifier
+on its returned pair under the caller's unchanged control delimiters. -/
+theorem univStep_of_prepare {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
+    (rest : List Instruction) (prepared : UnivPrepared σ)
+    (hPrepare : prepareUniv encoding state.memory termRoot listRoot =
+      .ok prepared) :
+    univStep state termRoot listRoot encoding rest =
+      .next {
+        state with
+        memory := prepared.memory
+        phase := .unifying {
+          body := rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany prepared.memory
+          [(prepared.left, prepared.right)])
+      } none := by
+  simp [univStep, hPrepare]
+
 /-- The complete authority granted to an instruction classifier.  It may name
 an ordinary call's source clauses, identify base control, expose
 already-materialized control payloads, or carry language-owned finite error
@@ -1915,6 +2102,7 @@ inductive DispatchAction (σ : LPSignature)
   | unify (left right : Addr)
   | termTest (address : Addr) (test : TermTest σ)
   | termIdentity (left right : Addr) (expected : Bool)
+  | univ (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
   | database (request : DatabaseRequest)
   | error (reason : QueryError)
 
@@ -2038,6 +2226,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
   | .termTest address test => termTestStep state address test rest
   | .termIdentity left right expected =>
       termIdentityStep state left right expected rest
+  | .univ termRoot listRoot encoding =>
+      univStep state termRoot listRoot encoding rest
   | .database request => checkedDatabaseRequestStep state request rest
   | .error reason => failWith state reason
 

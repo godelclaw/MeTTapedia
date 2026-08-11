@@ -58,6 +58,17 @@ def collectionEncoding : LP.RuntimeQuery.CollectionEncoding Sigma where
   cons := { name := "[|]", arity := 2 }
   cons_arity_two := rfl
 
+/-- Source atoms name compound functors for `=../2`.  The arity is supplied
+by the list length on construction and remains explicit in the canonical
+`CompoundIndicator`; non-atom constants cannot name applications. -/
+def univEncoding : LP.RuntimeQuery.UnivEncoding Sigma where
+  list := collectionEncoding
+  functorConstant symbol := .atom symbol.name
+  functionOf constant arity :=
+    match constant with
+    | .atom name => some ⟨{ name, arity }, rfl⟩
+    | _ => none
+
 /-- Canonical source symbols used by the shared engine to normalize and
 inspect dynamic facts/rules and to expose opaque stable references. -/
 def clauseEncoding : LP.RuntimeQuery.ClauseEncoding Sigma where
@@ -272,6 +283,17 @@ def termIdentity? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 2 then some (left, right, false) else none
   | _, _ => none
 
+/-- Recognize `=../2` without inspecting the heap.  Direction selection and
+all graph work occur later inside the shared runtime. -/
+def univ? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.UnivEncoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "=..", [termRoot, listRoot] =>
+      if goal.symbol.arity = 2 then
+        some (termRoot, listRoot, univEncoding)
+      else none
+  | _, _ => none
+
 /-- Recognize the first persistent mutation fragment without heap authority.
 Clause decoding and database replacement remain separate engine/session
 operations. -/
@@ -313,6 +335,7 @@ def services : RuntimeControl.Services Sigma where
   decoder := { decode := decodeCallable }
   termTest? := termTest?
   termIdentity? := termIdentity?
+  univ? := univ?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -339,6 +362,10 @@ theorem services_termTest :
 @[simp]
 theorem services_termIdentity :
     services.termIdentity? = termIdentity? := rfl
+
+@[simp]
+theorem services_univ :
+    services.univ? = univ? := rfl
 
 /-- Execute concrete source terms through the one shared runtime with
 callable decoding enabled. -/
