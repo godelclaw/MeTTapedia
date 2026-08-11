@@ -34,7 +34,7 @@ local instance sourceCrosscutHoleRetentionGraphEdgeSetDecidableEq : DecidableEq 
 namespace SeparatedAlignedSimpleDualCrosscuts
 
 /-- Every vertex of an ambient walk that avoids a source crosscut's primal
-support lies on the same retained side as its root.  This is the component
+support lies on the same retained side as its initial vertex.  This is the component
 form of the source requirement that a container boundary remains outside the
 pumped region. -/
 theorem SourceCrosscutBoundaryData.walk_support_subset_componentSide_of_avoids_primalCut
@@ -49,8 +49,8 @@ theorem SourceCrosscutBoundaryData.walk_support_subset_componentSide_of_avoids_p
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
     (boundary : SourceCrosscutBoundaryData data pair)
-    {root : V} (walk : G.Walk root root)
-    (hroot : root ∈ boundary.component.supp)
+    {start finish : V} (walk : G.Walk start finish)
+    (hstart : start ∈ boundary.component.supp)
     (havoid : ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ walk.edges →
       edge.1 ∉ edgeFinsetValueSet (pair.primalCutEdges data))
     {vertex : V} (hvertex : vertex ∈ walk.support) :
@@ -63,7 +63,7 @@ theorem SourceCrosscutBoundaryData.walk_support_subset_componentSide_of_avoids_p
       (walk.edges_takeUntil_subset_edges hvertex hedge)
   have hside := component_side_iff_of_walk_avoiding_removed
     (pair.primalCutEdges data) boundary.component walkPrefix hprefixAvoid
-  exact (pair.mem_componentSide_iff boundary.component vertex).2 (hside.mp hroot)
+  exact (pair.mem_componentSide_iff boundary.component vertex).2 (hside.mp hstart)
 
 end SeparatedAlignedSimpleDualCrosscuts
 

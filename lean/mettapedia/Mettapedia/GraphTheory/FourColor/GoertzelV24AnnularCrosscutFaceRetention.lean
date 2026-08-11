@@ -64,6 +64,46 @@ theorem SourceCrosscutBoundaryData.face_vertex_mem_componentSide_of_root_and_bou
     rw [hwalkDarts]
     exact (mem_faceOrbitDarts_iff data root dart).2 hdart
 
+/-- A comparison walk from the retained side to one dart of a facial boundary
+puts that whole boundary on the retained side when neither the comparison
+walk nor the face boundary crosses the source cut.  This is the graph-level
+form of the source's ``both holes lie outside the pumped region by
+construction'' check: the source formation must construct the comparison
+walk, while this lemma transports it through the finite deletion and facial
+walk calculi. -/
+theorem SourceCrosscutBoundaryData.face_vertex_mem_componentSide_of_bridge_and_boundary_avoids_primalCut
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (source root dart : G.Dart)
+    (bridge : G.Walk source.fst root.fst)
+    (hsource : source.fst ∈ boundary.component.supp)
+    (hbridgeAvoid : ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ bridge.edges →
+      edge.1 ∉ edgeFinsetValueSet (pair.primalCutEdges data))
+    (hboundaryAvoid : ∀ edge : G.edgeSet,
+      edge ∈ orbitFaceBoundary data.toRotationSystem
+        (dartOrbitFace data.toRotationSystem root) →
+        edge.1 ∉ edgeFinsetValueSet (pair.primalCutEdges data))
+    (hdart : dartOrbitFace data.toRotationSystem dart =
+      dartOrbitFace data.toRotationSystem root) :
+    dart.fst ∈ pair.componentSide boundary.component := by
+  have hrootSide : root.fst ∈ pair.componentSide boundary.component := by
+    apply boundary.walk_support_subset_componentSide_of_avoids_primalCut
+      data pair bridge hsource hbridgeAvoid
+    exact bridge.end_mem_support
+  have hroot : root.fst ∈ boundary.component.supp :=
+    (pair.mem_componentSide_iff boundary.component root.fst).1 hrootSide
+  exact boundary.face_vertex_mem_componentSide_of_root_and_boundary_avoids_primalCut
+    data pair root dart hroot hboundaryAvoid hdart
+
 end SeparatedAlignedSimpleDualCrosscuts
 
 end
