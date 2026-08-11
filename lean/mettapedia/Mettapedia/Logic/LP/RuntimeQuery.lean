@@ -1,5 +1,6 @@
 import Mettapedia.Logic.LP.RuntimeMaterialize
 import Mettapedia.Logic.LP.RuntimeClauseEntry
+import Mettapedia.Logic.LP.RuntimeException
 
 /-!
 # Demand-driven execution of typed LP clauses
@@ -47,6 +48,8 @@ inductive QueryError where
   | predicateMismatch
   | stalledUnifier
   | unsupportedInstruction
+  | exceptionReadback (error : RuntimeReadback.ReadbackError)
+  | exceptionCleanupFailed (cleanup : MemoryError)
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
 
@@ -63,6 +66,15 @@ structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
 def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
     MetaCallDecoder σ Instruction where
   decode _ _ _ := .error .unsupportedInstruction
+
+/-- Saved exception delimiter.  It records only backtrackable entry data;
+the persistent fresh-scope supply remains in `StateCore` and is never restored
+from this frame. -/
+structure CatchHandlerCore (σ : LPSignature) (Instruction : Type*) where
+  checkpoint : Memory.Checkpoint
+  choiceDepth : Nat
+  catcher : Addr
+  recovery : List Instruction
 
 /-- Success behavior attached to one return frame.  `hard` discards the
 conditional marker together with condition-local alternatives.  `soft`
@@ -81,6 +93,26 @@ structure ReturnFrameCore (σ : LPSignature) (Instruction : Type*) where
   continuation : List Instruction
   callerCutDepth : Nat
   commit : ReturnCommit := .ordinary
+  handler : Option (CatchHandlerCore σ Instruction) := none
+
+/-- The nearest exception delimiter together with the outer frames that
+survive if it handles the packet.  Frames above it are exactly the unwound
+protected computation. -/
+structure CatchTargetCore (σ : LPSignature) (Instruction : Type*) where
+  frame : ReturnFrameCore σ Instruction
+  handler : CatchHandlerCore σ Instruction
+  outerFrames : List (ReturnFrameCore σ Instruction)
+
+/-- State retained while the canonical graph unifier tests a catcher against
+the throw-time packet. -/
+structure CatchSelectionCore (σ : LPSignature) (Instruction : Type*) where
+  packet : RuntimeException.Packet σ
+  target : CatchTargetCore σ Instruction
+  /-- The original throw-time heap plus the one installed packet copy.  Every
+  candidate catcher is tested against this same immutable value; no rejected
+  inner delimiter may erase bindings before an outer catcher is considered. -/
+  throwMemory : Memory σ.scoped
+  packetRoot : Addr
 
 /-- The established pure-LP return frame. -/
 abbrev ReturnFrame (σ : LPSignature) :=
@@ -153,6 +185,11 @@ inductive PhaseCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   | select (cursor : ClauseCursorCore σ Instruction SourceClause)
   | unifying (attempt : AttemptCore σ Instruction)
       (machine : RuntimeUnification.Machine σ.scoped)
+  | raising (packet : RuntimeException.Packet σ)
+  | catchSelecting (selection : CatchSelectionCore σ Instruction)
+      (machine : RuntimeUnification.Machine σ.scoped)
+  | catchRecovering (selection : CatchSelectionCore σ Instruction)
+      (machine : RuntimeUnification.Machine σ.scoped)
   | backtrack
   | afterAnswer
 
@@ -187,6 +224,7 @@ inductive Observation (σ : LPSignature) where
 
 inductive Terminal (σ : LPSignature) where
   | completed (memory : Memory σ.scoped)
+  | raised (packet : RuntimeException.Packet σ) (memory : Memory σ.scoped)
   | runtimeError (error : QueryError) (memory : Memory σ.scoped)
 
 inductive StepResultCore (σ : LPSignature) (Instruction SourceClause : Type*) where
@@ -330,6 +368,29 @@ def failWith {σ : LPSignature}
   | .ok memory => .terminal (.runtimeError error memory)
   | .error cleanup =>
       .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
+
+/-- Find the nearest still-active catch delimiter.  This is a structural
+walk over the one return-frame stack, analogous to SWI's `findCatcher`; it
+does not inspect or schedule any language instruction. -/
+def findCatchTarget {σ : LPSignature} :
+    List (ReturnFrameCore σ Instruction) →
+      Option (CatchTargetCore σ Instruction)
+  | [] => none
+  | frame :: outerFrames =>
+      match frame.handler with
+      | some handler => some { frame, handler, outerFrames }
+      | none => findCatchTarget outerFrames
+
+/-- Close an uncaught exception distinctly from ordinary completion and
+runtime corruption.  The detached packet survives exact query cleanup. -/
+def raiseUnhandled {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (packet : RuntimeException.Packet σ) :
+    StepResultCore σ Instruction SourceClause :=
+  match closeMemory state with
+  | .ok memory => .terminal (.raised packet memory)
+  | .error cleanup =>
+      .terminal (.runtimeError (.exceptionCleanupFailed cleanup) state.memory)
 
 /-! ## One query transition -/
 
@@ -543,6 +604,178 @@ def unifyingStep {σ : LPSignature} [DecidableEq σ.constants]
       } none
   | .terminal (.failure memory) =>
       .next { state with memory, phase := .backtrack } none
+  | .terminal (.runtimeError error memory) =>
+      failWith { state with memory } (.memory error)
+
+/-- Enter the protected goal of `catch/3`.  The guarded goal receives a fresh
+local cut boundary at the current choice depth.  The frame stores the exact
+heap/trail checkpoint and recovery data needed by exception unwind. -/
+@[simp]
+def catchStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (guarded : List Instruction) (catcher : Addr)
+    (recovery rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let mark := state.choices.length
+  let handler : CatchHandlerCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    choiceDepth := mark
+    catcher
+    recovery
+  }
+  let frame : ReturnFrameCore σ Instruction := {
+    continuation := rest
+    callerCutDepth := state.control.cutDepth
+    handler := some handler
+  }
+  .next {
+    state with
+    control := {
+      current := guarded
+      cutDepth := mark
+      frames := frame :: state.control.frames
+    }
+  } none
+
+/-- Capture the throw-time finite term before any frame or choice is unwound.
+The detached packet, rather than the original heap address, crosses rollback. -/
+@[simp]
+def throwStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) (ball : Addr) :
+    StepResultCore σ Instruction SourceClause :=
+  match RuntimeException.capture state.memory.heap ball with
+  | .error error => failWith state (.exceptionReadback error)
+  | .ok packet => .next { state with phase := .raising packet } none
+
+/-- Continue catcher search at the next outer delimiter without unwinding.
+All candidate catchers must observe the same throw-time bindings, matching
+SWI's `findCatcher` walk.  Actual restoration and pruning happen only after a
+candidate has matched. -/
+def passException {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match findCatchTarget selection.target.outerFrames with
+  | none =>
+      raiseUnhandled { state with memory := selection.throwMemory }
+        selection.packet
+  | some target =>
+      let nextSelection := { selection with target }
+      .next {
+        state with
+        memory := selection.throwMemory
+        phase := .catchSelecting nextSelection
+          (RuntimeUnification.start selection.throwMemory
+            target.handler.catcher selection.packetRoot)
+      } none
+
+/-- After throw-time catcher selection succeeds, restore the catch-entry
+checkpoint, install a fresh copy of the packet, and ask the same graph unifier
+to reconstruct the recovery binding in the entry context. -/
+def beginCatchRecovery {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (memory : Memory σ.scoped) :
+    StepResultCore σ Instruction SourceClause :=
+  let target := selection.target
+  if _hDepth : target.handler.choiceDepth ≤ state.choices.length then
+    match memory.restore target.handler.checkpoint with
+    | .error error => failWith { state with memory } (.memory error)
+    | .ok restored =>
+        match selection.packet.install restored state.nextScope with
+        | .error error => failWith { state with memory := restored } (.memory error)
+        | .ok installed =>
+            .next {
+              state with
+              memory := installed.memory
+              choices := retainBottom target.handler.choiceDepth state.choices
+              nextScope := installed.nextScope
+              phase := .catchRecovering selection
+                (RuntimeUnification.start installed.memory
+                  target.handler.catcher installed.root)
+            } none
+  else
+    failWith { state with memory }
+      (.invalidCommitDepth target.handler.choiceDepth state.choices.length)
+
+/-- Locate the nearest catcher and start its throw-time match.  Installing a
+fresh packet copy before selection prevents the match from binding the durable
+packet itself. -/
+def raisingStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (packet : RuntimeException.Packet σ) :
+    StepResultCore σ Instruction SourceClause :=
+  match findCatchTarget state.control.frames with
+  | none => raiseUnhandled state packet
+  | some target =>
+      match packet.install state.memory state.nextScope with
+      | .error error => failWith state (.memory error)
+      | .ok installed =>
+          let selection : CatchSelectionCore σ Instruction := {
+            packet
+            target
+            throwMemory := installed.memory
+            packetRoot := installed.root
+          }
+          .next {
+            state with
+            memory := installed.memory
+            nextScope := installed.nextScope
+            phase := .catchSelecting selection
+              (RuntimeUnification.start installed.memory
+                target.handler.catcher installed.root)
+          } none
+
+/-- Advance throw-time catcher selection through the canonical graph unifier.
+Failure passes the packet outward; success begins entry-context recovery. -/
+def catchSelectingStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (machine : RuntimeUnification.Machine σ.scoped) :
+    StepResultCore σ Instruction SourceClause :=
+  match machine with
+  | .running _ =>
+      match RuntimeUnification.step machine with
+      | some next =>
+          .next { state with phase := .catchSelecting selection next } none
+      | none => failWith state .stalledUnifier
+  | .terminal (.success memory) => beginCatchRecovery state selection memory
+  | .terminal (.failure _) => passException state selection
+  | .terminal (.runtimeError error memory) =>
+      failWith { state with memory } (.memory error)
+
+/-- Advance the second, entry-context unification.  A defensive failure
+continues unwinding rather than swallowing the exception; success consumes the
+catch delimiter and executes recovery outside it. -/
+def catchRecoveringStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (machine : RuntimeUnification.Machine σ.scoped) :
+    StepResultCore σ Instruction SourceClause :=
+  match machine with
+  | .running _ =>
+      match RuntimeUnification.step machine with
+      | some next =>
+          .next { state with phase := .catchRecovering selection next } none
+      | none => failWith state .stalledUnifier
+  | .terminal (.success memory) =>
+      let target := selection.target
+      let recoveryFrame : ReturnFrameCore σ Instruction := {
+        target.frame with handler := none
+      }
+      .next {
+        state with
+        memory
+        control := {
+          current := target.handler.recovery
+          cutDepth := target.handler.choiceDepth
+          frames := recoveryFrame :: target.outerFrames
+        }
+        phase := .dispatch
+      } none
+  | .terminal (.failure _) => passException state selection
   | .terminal (.runtimeError error memory) =>
       failWith { state with memory } (.memory error)
 
@@ -785,6 +1018,9 @@ inductive DispatchAction (σ : LPSignature)
   | softIfThenElse (condition thenBranch elseBranch : List Instruction)
   | once (goals : List Instruction)
   | metaCall (callable : Addr) (extraArgs : List Addr)
+  | catch (guarded : List Instruction) (catcher : Addr)
+      (recovery : List Instruction)
+  | throw (ball : Addr)
   | unify (left right : Addr)
   | isVar (address : Addr)
   | error (reason : QueryError)
@@ -810,6 +1046,9 @@ def dispatchActionStep {σ : LPSignature}
   | .once goals => onceStep state goals rest
   | .metaCall callable extraArgs =>
       metaCallStep decoder state callable extraArgs rest
+  | .catch guarded catcher recovery =>
+      catchStep state guarded catcher recovery rest
+  | .throw ball => throwStep state ball
   | .unify left right => beginUnifyStep state left right rest
   | .isVar address => isVarStep state address rest
   | .error reason => failWith state reason
@@ -819,7 +1058,8 @@ code supplies only clause materialization, read-only callable decoding, and
 the narrow instruction classification above; all search transitions remain
 in this definition. -/
 @[simp]
-def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.constants]
+def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (decoder : MetaCallDecoder σ Instruction)
@@ -836,12 +1076,18 @@ def stepCoreWithMeta {σ : LPSignature} [DecidableEq σ.constants]
           dispatchActionStep decoder state rest (classify instruction)
   | .select cursor => selectStep materializer state cursor
   | .unifying attempt machine => unifyingStep state attempt machine
+  | .raising packet => raisingStep state packet
+  | .catchSelecting selection machine =>
+      catchSelectingStep state selection machine
+  | .catchRecovering selection machine =>
+      catchRecoveringStep state selection machine
 
 /-- The established phase loop specialization rejects meta-calls explicitly.
 This wrapper keeps the pure LP API stable while delegating every transition to
 `stepCoreWithMeta`; runtimes that implement callable decoding use that same
 definition with a non-rejecting decoder. -/
-def stepCore {σ : LPSignature} [DecidableEq σ.constants]
+def stepCore {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
@@ -854,7 +1100,8 @@ def stepCore {σ : LPSignature} [DecidableEq σ.constants]
 callable capability disabled. -/
 @[simp]
 theorem stepCoreWithMeta_rejecting {σ : LPSignature}
-    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.scoped.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
     [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
@@ -1145,7 +1392,8 @@ theorem metaCallStep_error {σ : LPSignature}
 /-- Meta-call decoding is reached through the canonical dispatch phase, not a
 wrapper-side resolution path.  The theorem pins the exact executable seam. -/
 theorem stepCoreWithMeta_metaCall_of_dispatch {σ : LPSignature}
-    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.scoped.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
     [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (decoder : MetaCallDecoder σ Instruction)
@@ -1159,6 +1407,142 @@ theorem stepCoreWithMeta_metaCall_of_dispatch {σ : LPSignature}
     stepCoreWithMeta materializer decoder classify state =
       metaCallStep decoder state callable extraArgs rest := by
   simp [stepCoreWithMeta, hPhase, hCurrent, hClassify]
+
+/-! ## Exception-delimiter laws -/
+
+/-- Catch installs exactly one handler-bearing return frame.  The protected
+goal receives a local cut boundary at the current choice depth; the caller's
+cut scope and continuation remain in the frame. -/
+theorem catchStep_exact {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (guarded : List Instruction) (catcher : Addr)
+    (recovery rest : List Instruction) :
+    catchStep state guarded catcher recovery rest =
+      .next {
+        state with
+        control := {
+          current := guarded
+          cutDepth := state.choices.length
+          frames := {
+            continuation := rest
+            callerCutDepth := state.control.cutDepth
+            commit := .ordinary
+            handler := some {
+              checkpoint := state.memory.checkpoint
+              choiceDepth := state.choices.length
+              catcher
+              recovery
+            }
+          } :: state.control.frames
+        }
+      } none := rfl
+
+/-- A successfully captured exception leaves every backtrackable component in
+place until the explicit raising phase starts. -/
+theorem throwStep_of_capture {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause) (ball : Addr)
+    (packet : RuntimeException.Packet σ)
+    (hCapture : RuntimeException.capture state.memory.heap ball = .ok packet) :
+    throwStep state ball =
+      .next { state with phase := .raising packet } none := by
+  simp [throwStep, hCapture]
+
+/-- The nearest handler is selected positionally from the head of the one
+return-frame stack; equal-valued outer frames cannot be chosen instead. -/
+@[simp]
+theorem findCatchTarget_head {σ : LPSignature}
+    (frame : ReturnFrameCore σ Instruction)
+    (handler : CatchHandlerCore σ Instruction)
+    (outer : List (ReturnFrameCore σ Instruction)) :
+    findCatchTarget ({ frame with handler := some handler } :: outer) =
+      some {
+        frame := { frame with handler := some handler }
+        handler
+        outerFrames := outer
+      } := rfl
+
+/-- An uncaught packet preserves its terminal tag through exact query cleanup;
+it is never collapsed into ordinary completion. -/
+theorem raiseUnhandled_of_restore {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (packet : RuntimeException.Packet σ) (memory : Memory σ.scoped)
+    (hRestore : state.memory.restore state.queryCheckpoint = .ok memory) :
+    raiseUnhandled state packet = .terminal (.raised packet memory) := by
+  simp [raiseUnhandled, closeMemory, hRestore]
+
+/-- If no outer delimiter remains, failed catcher selection raises the same
+packet from the original throw-time heap and performs ordinary query cleanup. -/
+theorem passException_no_outer {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (hOuter : findCatchTarget selection.target.outerFrames = none) :
+    passException state selection =
+      raiseUnhandled { state with memory := selection.throwMemory }
+        selection.packet := by
+  simp [passException, hOuter]
+
+/-- A rejected inner delimiter advances positionally to the next outer
+catcher while retaining the exact throw-time heap and packet root. -/
+theorem passException_next_outer {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (target : CatchTargetCore σ Instruction)
+    (hOuter : findCatchTarget selection.target.outerFrames = some target) :
+    passException state selection =
+      .next {
+        state with
+        memory := selection.throwMemory
+        phase := .catchSelecting { selection with target }
+          (RuntimeUnification.start selection.throwMemory
+            target.handler.catcher selection.packetRoot)
+      } none := by
+  simp [passException, hOuter]
+
+/-- Successful throw-time selection reconstructs the catcher binding only
+after restoring the handler entry and installing a fresh packet copy. -/
+theorem beginCatchRecovery_of_restore_install {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (memory restored : Memory σ.scoped)
+    (installed : RuntimeException.Installed σ)
+    (hDepth : selection.target.handler.choiceDepth ≤ state.choices.length)
+    (hRestore : memory.restore selection.target.handler.checkpoint =
+      .ok restored)
+    (hInstall : selection.packet.install restored state.nextScope =
+      .ok installed) :
+    beginCatchRecovery state selection memory =
+      .next {
+        state with
+        memory := installed.memory
+        choices := retainBottom selection.target.handler.choiceDepth
+          state.choices
+        nextScope := installed.nextScope
+        phase := .catchRecovering selection
+          (RuntimeUnification.start installed.memory
+            selection.target.handler.catcher installed.root)
+      } none := by
+  simp [beginCatchRecovery, hDepth, hRestore, hInstall]
+
+/-- Recovery success consumes the handler before executing recovery.  A throw
+from recovery therefore cannot be caught again by the same delimiter. -/
+theorem catchRecoveringStep_success_exact {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (selection : CatchSelectionCore σ Instruction)
+    (memory : Memory σ.scoped) :
+    catchRecoveringStep state selection (.terminal (.success memory)) =
+      .next {
+        state with
+        memory
+        control := {
+          current := selection.target.handler.recovery
+          cutDepth := selection.target.handler.choiceDepth
+          frames := { selection.target.frame with handler := none } ::
+            selection.target.outerFrames
+        }
+        phase := .dispatch
+      } none := rfl
 
 /-- A well-formed cut transition retains exactly the choices older than the
 current predicate activation.  The theorem is stated directly about the one
@@ -1225,7 +1609,8 @@ theorem step_empty_backtrack_completes {σ : LPSignature}
 Each decoded meta-call remains one present transition; fuel exhaustion stays
 open and the returned state resumes the same DFS search. -/
 @[simp]
-def pullCoreWithMeta {σ : LPSignature} [DecidableEq σ.constants]
+def pullCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (decoder : MetaCallDecoder σ Instruction)
@@ -1242,7 +1627,8 @@ def pullCoreWithMeta {σ : LPSignature} [DecidableEq σ.constants]
 
 /-- The established demand-driven API delegates to the one full pull loop
 with a rejecting callable decoder. -/
-def pullCore {σ : LPSignature} [DecidableEq σ.constants]
+def pullCore {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (classify : Instruction → DispatchAction σ Instruction SourceClause) :
@@ -1254,7 +1640,8 @@ def pullCore {σ : LPSignature} [DecidableEq σ.constants]
 /-- The established demand-driven specialization is definitionally the one
 full pull loop with callable decoding disabled. -/
 theorem pullCoreWithMeta_rejecting {σ : LPSignature}
-    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.scoped.vars] [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
     [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
@@ -1268,7 +1655,8 @@ equations let proofs reason about the specialization without unfolding the
 meta-capable recursive loop or duplicating it. -/
 @[simp]
 theorem pullCore_zero {σ : LPSignature} [DecidableEq σ.constants]
-    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    [DecidableEq σ.scoped.vars] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
     (state : StateCore σ Instruction SourceClause) :
@@ -1278,7 +1666,8 @@ theorem pullCore_zero {σ : LPSignature} [DecidableEq σ.constants]
 `stepCore` specialization while `pullCoreWithMeta` remains the sole recursive
 implementation. -/
 theorem pullCore_succ {σ : LPSignature} [DecidableEq σ.constants]
-    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    [DecidableEq σ.scoped.vars] [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.relationSymbols]
     (materializer : ClauseMaterializer σ Instruction SourceClause)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
     (fuel : Nat) (state : StateCore σ Instruction SourceClause) :

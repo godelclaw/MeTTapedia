@@ -21,6 +21,15 @@ namespace Conservation
 variable {sigma : LPSignature}
 variable {Instruction₁ Instruction₂ SourceClause₁ SourceClause₂ : Type*}
 
+/-- Map the recovery payload of one catch delimiter. -/
+def mapCatchHandler (instruction : Instruction₁ → Instruction₂)
+    (handler : CatchHandlerCore sigma Instruction₁) :
+    CatchHandlerCore sigma Instruction₂ where
+  checkpoint := handler.checkpoint
+  choiceDepth := handler.choiceDepth
+  catcher := handler.catcher
+  recovery := handler.recovery.map instruction
+
 /-- Map a saved continuation without changing its cut depth. -/
 def mapReturnFrame (instruction : Instruction₁ → Instruction₂)
     (frame : ReturnFrameCore sigma Instruction₁) :
@@ -28,6 +37,41 @@ def mapReturnFrame (instruction : Instruction₁ → Instruction₂)
   continuation := frame.continuation.map instruction
   callerCutDepth := frame.callerCutDepth
   commit := frame.commit
+  handler := frame.handler.map (mapCatchHandler instruction)
+
+/-- Map the instruction payloads retained by catcher selection. -/
+def mapCatchTarget (instruction : Instruction₁ → Instruction₂)
+    (target : CatchTargetCore sigma Instruction₁) :
+    CatchTargetCore sigma Instruction₂ where
+  frame := mapReturnFrame instruction target.frame
+  handler := mapCatchHandler instruction target.handler
+  outerFrames := target.outerFrames.map (mapReturnFrame instruction)
+
+def mapCatchSelection (instruction : Instruction₁ → Instruction₂)
+    (selection : CatchSelectionCore sigma Instruction₁) :
+    CatchSelectionCore sigma Instruction₂ where
+  packet := selection.packet
+  target := mapCatchTarget instruction selection.target
+  throwMemory := selection.throwMemory
+  packetRoot := selection.packetRoot
+
+/-- Catcher search depends only on frame position and therefore commutes with
+instruction representation changes. -/
+@[simp]
+theorem findCatchTarget_map (instruction : Instruction₁ → Instruction₂)
+    (frames : List (ReturnFrameCore sigma Instruction₁)) :
+    findCatchTarget (frames.map (mapReturnFrame instruction)) =
+      (findCatchTarget frames).map (mapCatchTarget instruction) := by
+  induction frames with
+  | nil => rfl
+  | cons frame outer inductionHypothesis =>
+      cases hHandler : frame.handler with
+      | none =>
+          simp [findCatchTarget, mapReturnFrame, hHandler,
+            inductionHypothesis]
+      | some handler =>
+          simp [findCatchTarget, mapReturnFrame, mapCatchTarget,
+            mapCatchHandler, hHandler]
 
 /-- Map only the instruction payload of backtrackable control. -/
 def mapControl (instruction : Instruction₁ → Instruction₂)
@@ -103,6 +147,11 @@ def mapPhase (instruction : Instruction₁ → Instruction₂)
   | .dispatch => .dispatch
   | .select cursor => .select (mapCursor instruction sourceClause cursor)
   | .unifying attempt machine => .unifying (mapAttempt instruction attempt) machine
+  | .raising packet => .raising packet
+  | .catchSelecting selection machine =>
+      .catchSelecting (mapCatchSelection instruction selection) machine
+  | .catchRecovering selection machine =>
+      .catchRecovering (mapCatchSelection instruction selection) machine
   | .backtrack => .backtrack
   | .afterAnswer => .afterAnswer
 
@@ -156,6 +205,9 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
         (elseBranch.map instruction)
   | .once goals => .once (goals.map instruction)
   | .metaCall callable extraArgs => .metaCall callable extraArgs
+  | .catch guarded catcher recovery =>
+      .catch (guarded.map instruction) catcher (recovery.map instruction)
+  | .throw ball => .throw ball
   | .unify left right => .unify left right
   | .isVar address => .isVar address
   | .error reason => .error reason
@@ -168,6 +220,181 @@ def mapStepResult (instruction : Instruction₁ → Instruction₂)
   | .next state observation =>
       .next (mapState instruction sourceClause state) observation
   | .terminal result => .terminal result
+
+set_option linter.unusedSimpArgs false in
+theorem passException_conserves
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (selection : CatchSelectionCore sigma Instruction₁) :
+    passException (mapState instruction sourceClause state)
+        (mapCatchSelection instruction selection) =
+      mapStepResult instruction sourceClause
+        (passException state selection) := by
+  rcases state with ⟨stateMemory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  rcases selection with ⟨packet, target, throwMemory, packetRoot⟩
+  rcases target with ⟨frame, handler, outerFrames⟩
+  cases hOuter : findCatchTarget outerFrames with
+  | none =>
+      cases hCleanup : throwMemory.restore checkpoint <;>
+        simp [passException, raiseUnhandled, mapState, mapPhase, mapControl,
+          mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
+          mapChoicePoint, mapStepResult, findCatchTarget_map, closeMemory,
+          hOuter, hCleanup]
+  | some nextTarget =>
+      simp [passException, mapState, mapPhase, mapControl,
+        mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
+        mapChoicePoint, mapStepResult, findCatchTarget_map, hOuter]
+
+set_option linter.unusedSimpArgs false in
+theorem beginCatchRecovery_conserves [DecidableEq sigma.scoped.vars]
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (selection : CatchSelectionCore sigma Instruction₁)
+    (memory : Memory sigma.scoped) :
+    beginCatchRecovery (mapState instruction sourceClause state)
+        (mapCatchSelection instruction selection) memory =
+      mapStepResult instruction sourceClause
+        (beginCatchRecovery state selection memory) := by
+  rcases state with ⟨stateMemory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  rcases selection with ⟨packet, target, throwMemory, packetRoot⟩
+  rcases target with ⟨frame, handler, outerFrames⟩
+  by_cases hDepth : handler.choiceDepth ≤ choices.length
+  · cases hRestore : memory.restore handler.checkpoint with
+    | error error =>
+        cases hCleanup : memory.restore checkpoint <;>
+          simp [beginCatchRecovery, mapState, mapPhase, mapControl,
+            mapCatchSelection, mapCatchTarget, mapCatchHandler,
+            mapReturnFrame, mapChoicePoint, mapStepResult, failWith,
+            closeMemory, hDepth, hRestore, hCleanup]
+    | ok restored =>
+        cases hInstall : packet.install restored nextScope with
+        | error error =>
+            cases hCleanup : restored.restore checkpoint <;>
+              simp [beginCatchRecovery, mapState, mapPhase, mapControl,
+                mapCatchSelection, mapCatchTarget, mapCatchHandler,
+                mapReturnFrame, mapChoicePoint, mapStepResult, failWith,
+                closeMemory, hDepth, hRestore, hInstall, hCleanup]
+        | ok installed =>
+            simp [beginCatchRecovery, mapState, mapPhase, mapControl,
+              mapCatchSelection, mapCatchTarget, mapCatchHandler,
+              mapReturnFrame, mapChoicePoint, mapStepResult, retainBottom,
+              hDepth, hRestore, hInstall]
+  · cases hCleanup : memory.restore checkpoint <;>
+      simp [beginCatchRecovery, mapState, mapPhase, mapControl,
+        mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
+        mapChoicePoint, mapStepResult, failWith, closeMemory, hDepth, hCleanup]
+
+set_option linter.unusedSimpArgs false in
+theorem raisingStep_conserves [DecidableEq sigma.scoped.vars]
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (packet : RuntimeException.Packet sigma) :
+    raisingStep (mapState instruction sourceClause state) packet =
+      mapStepResult instruction sourceClause (raisingStep state packet) := by
+  rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  cases hTarget : findCatchTarget control.frames with
+  | none =>
+      cases hCleanup : memory.restore checkpoint <;>
+        simp [raisingStep, raiseUnhandled, mapState, mapPhase, mapControl,
+          mapStepResult, findCatchTarget_map, hTarget, closeMemory, hCleanup]
+  | some target =>
+      cases hInstall : packet.install memory nextScope with
+      | error error =>
+          cases hCleanup : memory.restore checkpoint <;>
+            simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
+              findCatchTarget_map, hTarget, failWith, closeMemory, hInstall,
+              hCleanup]
+      | ok installed =>
+          simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
+            mapCatchSelection, mapCatchTarget, mapCatchHandler,
+            findCatchTarget_map, hTarget, hInstall]
+
+set_option linter.unusedSimpArgs false in
+theorem catchSelectingStep_conserves [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (selection : CatchSelectionCore sigma Instruction₁)
+    (machine : RuntimeUnification.Machine sigma.scoped) :
+    catchSelectingStep (mapState instruction sourceClause state)
+        (mapCatchSelection instruction selection) machine =
+      mapStepResult instruction sourceClause
+        (catchSelectingStep state selection machine) := by
+  cases machine with
+  | running running =>
+      cases hStep : RuntimeUnification.step (.running running) with
+      | none =>
+          rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+            nextScope, phase⟩
+          cases hCleanup : memory.restore checkpoint <;>
+            simp [catchSelectingStep, mapState, mapPhase, mapControl,
+              mapStepResult, failWith, closeMemory, hStep, hCleanup]
+      | some next =>
+          simp [catchSelectingStep, mapState, mapPhase, mapControl,
+            mapStepResult, hStep]
+  | terminal result =>
+      cases result with
+      | success memory =>
+          exact beginCatchRecovery_conserves instruction sourceClause state
+            selection memory
+      | failure memory =>
+          exact passException_conserves instruction sourceClause state
+            selection
+      | runtimeError error memory =>
+          rcases state with ⟨stateMemory, control, choices, checkpoint,
+            queryVarMap, nextScope, phase⟩
+          cases hCleanup : memory.restore checkpoint <;>
+            simp [catchSelectingStep, mapState, mapPhase, mapControl,
+              mapStepResult, failWith, closeMemory, hCleanup]
+
+set_option linter.unusedSimpArgs false in
+theorem catchRecoveringStep_conserves [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (selection : CatchSelectionCore sigma Instruction₁)
+    (machine : RuntimeUnification.Machine sigma.scoped) :
+    catchRecoveringStep (mapState instruction sourceClause state)
+        (mapCatchSelection instruction selection) machine =
+      mapStepResult instruction sourceClause
+        (catchRecoveringStep state selection machine) := by
+  cases machine with
+  | running running =>
+      cases hStep : RuntimeUnification.step (.running running) with
+      | none =>
+          rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+            nextScope, phase⟩
+          cases hCleanup : memory.restore checkpoint <;>
+            simp [catchRecoveringStep, mapState, mapPhase, mapControl,
+              mapStepResult, failWith, closeMemory, hStep, hCleanup]
+      | some next =>
+          simp [catchRecoveringStep, mapState, mapPhase, mapControl,
+            mapStepResult, hStep]
+  | terminal result =>
+      cases result with
+      | success memory =>
+          rcases selection with ⟨packet, target, throwMemory, packetRoot⟩
+          rcases target with ⟨frame, handler, outerFrames⟩
+          simp [catchRecoveringStep, mapState, mapPhase, mapControl,
+            mapCatchSelection, mapCatchTarget, mapCatchHandler,
+            mapReturnFrame, mapStepResult]
+      | failure memory =>
+          exact passException_conserves instruction sourceClause state
+            selection
+      | runtimeError error memory =>
+          rcases state with ⟨stateMemory, control, choices, checkpoint,
+            queryVarMap, nextScope, phase⟩
+          cases hCleanup : memory.restore checkpoint <;>
+            simp [catchRecoveringStep, mapState, mapPhase, mapControl,
+              mapStepResult, failWith, closeMemory, hCleanup]
 
 /-- Representation change on a demand-driven pull result. -/
 def mapPullResult (instruction : Instruction₁ → Instruction₂)
@@ -240,7 +467,8 @@ set_option linter.unusedSimpArgs false in
 /-- The shared executable step conserves every realization satisfying the two
 boundary equations.  This is the central anti-duplication theorem: languages
 do not receive a separate transition system whose agreement must be trusted. -/
-theorem stepCore_conserves [DecidableEq sigma.constants]
+theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols] [DecidableEq sigma.relationSymbols]
     {sourceMaterializer : ClauseMaterializer sigma Instruction₁ SourceClause₁}
     {targetMaterializer : ClauseMaterializer sigma Instruction₂ SourceClause₂}
@@ -260,6 +488,21 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
     nextScope, phase⟩
   cases phase with
+  | raising packet =>
+      simpa [stepCore, stepCoreWithMeta, mapState, mapPhase] using
+        raisingStep_conserves instruction sourceClause
+          (StateCore.mk memory control choices checkpoint queryVarMap nextScope
+            (.raising packet)) packet
+  | catchSelecting selection machine =>
+      simpa [stepCore, stepCoreWithMeta, mapState, mapPhase] using
+        catchSelectingStep_conserves instruction sourceClause
+          (StateCore.mk memory control choices checkpoint queryVarMap nextScope
+            (.catchSelecting selection machine)) selection machine
+  | catchRecovering selection machine =>
+      simpa [stepCore, stepCoreWithMeta, mapState, mapPhase] using
+        catchRecoveringStep_conserves instruction sourceClause
+          (StateCore.mk memory control choices checkpoint queryVarMap nextScope
+            (.catchRecovering selection machine)) selection machine
   | afterAnswer =>
       simp [stepCore, mapState, mapPhase, mapControl, mapStepResult,
         afterAnswerStep]
@@ -368,6 +611,21 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
                   mapReturnFrame, mapStepResult, failWith, closeMemory,
                   hCleanup]
+          | «catch» guarded catcher recovery =>
+              simp [mapDispatchAction, dispatchActionStep, catchStep,
+                mapState, mapControl, mapPhase, mapReturnFrame,
+                mapCatchHandler, mapStepResult]
+          | throw ball =>
+              cases hCapture : RuntimeException.capture memory.heap ball with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep, throwStep,
+                      mapState, mapControl, mapPhase, mapReturnFrame,
+                      mapStepResult, failWith, closeMemory, hCapture, hCleanup]
+              | ok packet =>
+                  simp [mapDispatchAction, dispatchActionStep, throwStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult, hCapture]
           | unify left right =>
               simp [mapDispatchAction, dispatchActionStep, beginUnifyStep,
                 mapState, mapControl, mapAttempt, mapPhase, mapReturnFrame,
@@ -479,7 +737,8 @@ theorem stepCore_conserves [DecidableEq sigma.constants]
 /-- Demand-driven execution conserves the realization for every exact fuel
 prefix.  In particular, open prefixes remain open and answers keep the same
 memory and query-variable roots. -/
-theorem pullCore_conserves [DecidableEq sigma.constants]
+theorem pullCore_conserves [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols] [DecidableEq sigma.relationSymbols]
     {sourceMaterializer : ClauseMaterializer sigma Instruction₁ SourceClause₁}
     {targetMaterializer : ClauseMaterializer sigma Instruction₂ SourceClause₂}

@@ -103,6 +103,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "src/pl-fli.c",
+      "sha256": "975a0784bbc8bea9ae6f0d7a213fea581c186f000afbfd9dc845d0af5c02fd05"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-comp.c",
       "sha256": "d24045b1347a45d49f9b2ae265522d9dda504d8091a155e3742231171d85d0d7"
     },
@@ -234,7 +239,42 @@
         "Mettapedia/Logic/LP/RuntimeQuery.lean",
         "Mettapedia/Logic/LP/RuntimeQueryRegression.lean"
       ],
-      "swi_conformance_status": "not-measured"
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.exceptions",
+      "project": "swi-prolog",
+      "sources": ["src/pl-vmi.c", "src/pl-wam.c", "src/pl-fli.c"],
+      "anchors": ["I_CATCH", "B_THROW", "findCatcher", "PL_raise_exception"],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeException.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeException.lean",
+        "Mettapedia/Logic/LP/RuntimeExceptionSoundness.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "divergent",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/runtime_control_expected_divergence.lean",
+        "scripts/prolog/runtime_control_expected_divergence.pl",
+        "scripts/prolog/run_runtime_control_expected_divergence.sh"
+      ]
     },
     {
       "id": "runtime.vm",

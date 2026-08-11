@@ -10,6 +10,15 @@ emit(Label, Goal, Template) :-
     atomic_list_concat(Answers, ',', Joined),
     format('~w=~w~n', [Label, Joined]).
 
+emit_raised(Label, Goal) :-
+    catch((Goal, Result = completed), Error, Result = raised(Error)),
+    format('~w=~w~n', [Label, Result]).
+
+emit_count(Label, Goal) :-
+    findall(1, Goal, Answers),
+    length(Answers, Count),
+    format('~w=~w~n', [Label, Count]).
+
 main(_) :-
     emit(source_order, (X = a ; X = b), X),
     emit(restore_before_right, (Y = a, fail ; var(Y), Y = b), Y),
@@ -43,4 +52,23 @@ main(_) :-
     emit(meta_cut_retains_caller,
         (call((Y = a, !, fail ; Y = b)) ; Y = c), Y),
     emit(call_three, call(p, a, b), 1),
-    emit(heap_built_callable, (G = p(a, b), call(G)), 1).
+    emit(heap_built_callable, (G = p(a, b), call(G)), 1),
+    emit(catch_ground, catch(throw(ball), X, X = ball), X),
+    emit_raised(catch_throw_time_reject,
+        catch((Y = body, throw(ball)), Y, true)),
+    emit_raised(catch_recovery_rethrow,
+        catch(throw(a), Z, throw(b))),
+    emit(catch_guard_cut_caller,
+        (catch((A = a, !, fail), never, true) ; A = c), A),
+    emit(catch_recovery_cut_caller,
+        (catch(throw(a), a, (!, fail)) ; B = c), B),
+    emit(catch_guard_answers,
+        catch((C = a ; C = b), never, fail), C),
+    emit_raised(catch_nested_throw_time_reject,
+        catch(catch((X0 = body, throw(ball)), nope, fail), X0, true)),
+    emit_count(catch_copy_separates_caller,
+        catch(throw(box(D)), box(E), (E = a, var(D)))),
+    emit_count(catch_copy_preserves_sharing,
+        catch(throw(pair(F, F)), pair(H, I), (H = a, I = b))),
+    emit_count(catch_copy_preserves_separation,
+        catch(throw(pair(J, K)), pair(L, N), (L = a, N = b))).

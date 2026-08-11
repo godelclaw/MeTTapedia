@@ -32,6 +32,7 @@ def collectRead (answerBudget : Nat) (state : State qSig) :
       match pull builtins program 64 state with
       | .open _ => none
       | .terminal (.runtimeError _ _) => none
+      | .terminal (.raised _ _) => none
       | .terminal (.completed _) => some []
       | .answer answer next =>
           match readbackConstant? answer, collectRead answerBudget next with

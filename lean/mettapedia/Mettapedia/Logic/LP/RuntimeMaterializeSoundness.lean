@@ -1011,6 +1011,40 @@ theorem runChecked_ok {σ : LPSignature} {α : Type _}
       cases h
       exact ⟨hWF, hWS, by first | exact hrun | rfl, hWF', hWS'⟩
 
+/-- **Public term round-trip**: materializing one finite term extends the
+canonical memory by real allocations only, and reading the returned root from
+that same heap yields exactly the source term. -/
+theorem materializeTerm_roundtrip {σ : LPSignature} [DecidableEq σ.vars]
+    {memory : Memory σ} {term : Term σ}
+    {result : MaterializedTerm σ}
+    (h : materializeTerm memory term = .ok result) :
+    Extends memory result.memory ∧
+      Heap.readTerm result.memory.heap result.root = .ok term ∧
+      Heap.WellFormed result.memory.heap ∧
+      VarMapCells { heap := result.memory.heap, varMap := result.varMap } := by
+  unfold materializeTerm at h
+  cases hrc : RuntimeMaterialize.runChecked
+      (materializeTermAux term) memory.heap with
+  | error error => rw [hrc] at h; cases h
+  | ok pair =>
+      obtain ⟨root, state⟩ := pair
+      rw [hrc] at h
+      dsimp only at h
+      by_cases hRoot : root < state.heap.size
+      · rw [if_pos hRoot] at h
+        cases h
+        obtain ⟨hWF, _, hrun, _, _⟩ := runChecked_ok hrc
+        obtain ⟨build, _, hRead⟩ :=
+          materializeTermAux_spec term hrun
+            (Heap.wellFormed_of_check hWF)
+            (fun pair hPair => by simp [BuilderState.start] at hPair)
+        have hExtends := materializeTermAux_extends term memory.trail hrun
+        refine ⟨?_, ?_, build.wf, build.cells⟩
+        · simpa [BuilderState.start] using hExtends
+        · simpa [RuntimeReadback.Heap.readTerm] using hRead
+      · rw [if_neg hRoot] at h
+        cases h
+
 /-- **Public goals round-trip**: a materialized query's runtime atoms read
 back verbatim in the result memory; the memory extends the caller's by real
 allocations only; and the variable map is cell-coherent. -/

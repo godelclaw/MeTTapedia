@@ -288,6 +288,7 @@ def collectTyped (answerBudget : Nat) (session : Session qSig) :
       match pullSession 64 session with
       | .open _ => none
       | .terminal (.runtimeError _ _) => none
+      | .terminal (.raised _ _) => none
       | .terminal (.completed memory) =>
           some ([], memory.heap.size, memory.trail.size)
       | .answer answer next =>
@@ -315,6 +316,20 @@ def runTyped (program : Program qSig) (goal : Goal qSig) :
   match openEmpty program goal with
   | .error _ => none
   | .ok session => collectTyped 3 session
+
+/-- Inspect one uncaught typed exception after exact query cleanup. -/
+def runTypedRaised (program : Program qSig) (goal : Goal qSig) :
+    Option (QConst × Nat × Nat) :=
+  match openEmpty program goal with
+  | .error _ => none
+  | .ok session =>
+      match pullSession 256 session with
+      | .terminal (.raised packet memory) =>
+          match packet.term with
+          | .const symbol =>
+              some (symbol, memory.heap.size, memory.trail.size)
+          | _ => none
+      | _ => none
 
 def inlineUnifySuccess : Goal qSig :=
   .unify (.var .x) (.const .a)
@@ -477,6 +492,27 @@ def onceFailureRestoresCallerAlternative : Goal qSig :=
     (.once (.conj (.unify (.var .x) (.const .a)) .fail))
     (.conj (.isVar (.var .x)) (.unify (.var .x) (.const .b)))
 
+def catchFreshCatcher : Goal qSig :=
+  .catch (.throw (.const .a)) (.var .x)
+    (.unify (.var .x) (.const .a))
+
+/-- The protected binding participates in throw-time catcher selection, even
+though recovery reconstruction starts again from the catch-entry heap. -/
+def catchThrowTimeBindingRejects : Goal qSig :=
+  .catch
+    (.conj (.unify (.var .x) (.const .b)) (.throw (.const .a)))
+    (.var .x) .succeed
+
+def catchRecoveryRethrow : Goal qSig :=
+  .catch (.throw (.const .a)) (.var .x) (.throw (.const .b))
+
+def catchGuardCutRetainsCaller : Goal qSig :=
+  .disj
+    (.catch
+      (.conj (.unify (.var .x) (.const .a)) (.conj .cut .fail))
+      (.const .b) .succeed)
+    (.unify (.var .x) (.const .c))
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
@@ -510,5 +546,9 @@ def onceFailureRestoresCallerAlternative : Goal qSig :=
 #guard runTyped [] onceCutPreservesCallerDisj == some ([.c], 0, 0)
 #guard runTyped [] onceThenCutPrunesCallerDisj == some ([.a], 0, 0)
 #guard runTyped [] onceFailureRestoresCallerAlternative == some ([.b], 0, 0)
+#guard runTyped [] catchFreshCatcher == some ([.a], 0, 0)
+#guard runTypedRaised [] catchThrowTimeBindingRejects == some (.a, 0, 0)
+#guard runTypedRaised [] catchRecoveryRethrow == some (.b, 0, 0)
+#guard runTyped [] catchGuardCutRetainsCaller == some ([.c], 0, 0)
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

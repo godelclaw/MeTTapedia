@@ -2884,6 +2884,9 @@ def PhaseLane {σ : LPSignature} [DecidableEq σ.vars]
   | .backtrack => True
   | .afterAnswer => True
   | .unifying _ _ => False
+  | .raising _ => False
+  | .catchSelecting _ _ => False
+  | .catchRecovering _ _ => False
 
 /-- Popping a return frame preserves the flattened resolvent. -/
 theorem flatten_framePop {σ : LPSignature} {control : Control σ}
@@ -2955,6 +2958,12 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
               exact ih fuel (Nat.lt_succ_self _) { state with phase := .backtrack } ans resumed hPull
                 (hq.set_phase _) (by simp [PhaseLane]) hLC
           | unifying attempt machine =>
+              simp only [PhaseLane, hphase] at hPL
+          | raising packet =>
+              simp only [PhaseLane, hphase] at hPL
+          | catchSelecting selection machine =>
+              simp only [PhaseLane, hphase] at hPL
+          | catchRecovering selection machine =>
               simp only [PhaseLane, hphase] at hPL
           | backtrack =>
               cases hchoices : state.choices with

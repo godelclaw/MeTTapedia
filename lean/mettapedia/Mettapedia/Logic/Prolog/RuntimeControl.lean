@@ -506,6 +506,8 @@ def dispatchActionWith {sigma : LP.LPSignature}
   | .once goals => .once goals
   | .unify left right => .unify left right
   | .isVar address => .isVar address
+  | .catch guarded catcher recovery => .catch guarded catcher recovery
+  | .throw ball => .throw ball
   | _ => .error .unsupportedInstruction
 
 /-- The established typed classifier has no meta-call service.  Concrete

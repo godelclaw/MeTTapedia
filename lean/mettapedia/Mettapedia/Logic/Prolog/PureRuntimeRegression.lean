@@ -35,6 +35,7 @@ def collect (answerBudget : Nat) (session : Session qSig) :
       match pull 64 session with
       | .open _ => none
       | .terminal (.runtimeError _ _) => none
+      | .terminal (.raised _ _) => none
       | .terminal (.completed memory) =>
           some ([], memory.heap.size, memory.trail.size)
       | .answer answer next =>

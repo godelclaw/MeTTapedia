@@ -38,6 +38,13 @@ def renderCount (label : String) : Option (Nat × Nat × Nat) -> IO Unit
       throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
   | none => throw <| IO.userError s!"{label}: runtime did not close"
 
+def renderRaisedAtom (label : String) :
+    Option (String × Nat × Nat) -> IO Unit
+  | some (name, 0, 0) => IO.println s!"{label}=raised({name})"
+  | some (_, heapSize, trailSize) =>
+      throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
+  | none => throw <| IO.userError s!"{label}: runtime did not raise"
+
 def main : IO Unit := do
   renderAnswers "source_order" (runTyped [] disjSourceOrder)
   renderAnswers "restore_before_right" (runTyped [] disjRestoresBeforeRight)
@@ -82,3 +89,33 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.heapBuiltCallable)
+  renderStringAnswers "catch_ground"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)
+  renderRaisedAtom "catch_throw_time_reject"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runRaisedAtom []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.throwTimeBoundCatcherRejects)
+  renderRaisedAtom "catch_recovery_rethrow"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runRaisedAtom []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.recoveryRethrowEscapes)
+  renderStringAnswers "catch_guard_cut_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.guardedCutRetainsCaller)
+  renderStringAnswers "catch_recovery_cut_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.recoveryCutRetainsCaller)
+  renderStringAnswers "catch_guard_answers"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.catchRetainsGuardedAnswers)
+  renderRaisedAtom "catch_nested_throw_time_reject"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runRaisedAtom []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.nestedMismatchRetainsThrowTimeBinding)
+  renderCount "catch_copy_separates_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.packetCopySeparatesCaller)
+  renderCount "catch_copy_preserves_sharing"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.packetCopyPreservesSharing)
+  renderCount "catch_copy_preserves_separation"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.packetCopyPreservesSeparation)

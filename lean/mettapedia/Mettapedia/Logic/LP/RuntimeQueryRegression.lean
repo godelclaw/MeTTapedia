@@ -104,6 +104,7 @@ def collect (answerBudget : Nat) (state : State qSig) :
       match pull builtins program 64 state with
       | .open _ => none
       | .terminal (.runtimeError _ _) => none
+      | .terminal (.raised _ _) => none
       | .terminal (.completed memory) =>
           some ([], memory.heap.size, memory.trail.size)
       | .answer answer next =>
