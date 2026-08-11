@@ -18,6 +18,9 @@ import Mettapedia.Logic.Prolog.ReaderLoader
 import Mettapedia.Logic.Prolog.ReaderDirective
 import Mettapedia.Logic.Prolog.ReaderSWIProfile
 import Mettapedia.Logic.Prolog.ReaderLoaderRegression
+import Mettapedia.Logic.Prolog.ReaderProgram
+import Mettapedia.Logic.Prolog.ReaderProgramRegression
+import Mettapedia.Logic.Prolog.ReaderProgramAudit
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.RuntimeControlSoundness
@@ -75,6 +78,8 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderLoader` | sequential term loading with explicit between-term effects |
 | `ReaderDirective` | local and imported read-time operator effects |
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
+| `ReaderProgram` | strict clause-only admission into the canonical executable program |
+| `ReaderProgramAudit` | trusted-base gate for exact clause-only admission |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |
 | `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
