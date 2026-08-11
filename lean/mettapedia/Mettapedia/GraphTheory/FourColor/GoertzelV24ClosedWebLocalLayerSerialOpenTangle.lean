@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSourceLocalLayerBoundary
-import Mettapedia.GraphTheory.FourColor.GoertzelV24SerialOpenTangleComposition
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutSerialOpenTangle
 
 /-!
 # Two-sided open tangle of a source Cell-3 layer
@@ -54,14 +54,8 @@ noncomputable def sourceLocalLayerPairTwoSidedOpenTangle
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
     (leftInterior : CorridorInterior blockLength)
     (hnext : leftInterior.center.val + 2 < blockLength) :=
-  let sides := sourceLocalLayerPairOrderedCutSidesData
-    corridor hunique leftInterior hnext
-  let outer : RetainedDart web.annular.RS sides.keep :=
-    ⟨web.annular.RS.outer, sides.outer_kept⟩
-  (OpenTangleData.ofVertexSide web.annular.RS sides.keep outer).splitBoundary
-    (boundaryDartEquivCutSum web.annular.RS sides.keep
-      (orderedCut sides.left.crossingEdge)
-      (orderedCut sides.right.crossingEdge) sides.cover sides.disjoint)
+  (sourceLocalLayerPairOrderedCutSidesData
+    corridor hunique leftInterior hnext).toTwoSidedOpenTangle
 
 end LocalLayerFormation
 
