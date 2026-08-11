@@ -10,11 +10,12 @@ and a complementary removed side.  The small corridor generator is the
 the eventual shortened-map splice and must not be serially multiplied as if
 it were a corridor cell.
 
-This file states L2 on the already-computed full-profile `Count` matrix of
-that literal complementary region.  A stay transition is positivity of a
-diagonal full-profile entry.  Thus boundary colors, tracked connectivity, and
-capped face progress all agree; equality of boundary color words alone is not
-silently promoted to equality of source profiles.
+This file states the local Cell support relation on the already-computed
+zero-terminal profile `Count` matrix of that literal complementary region.  A
+stay transition is positivity of a diagonal local-profile entry.  Thus
+boundary colors, connectivity internal to this Cell, and capped face progress
+all agree; this is not yet the cumulative source cross-section profile that
+remembers connectivity back to the cap feet.
 
 The remaining source calculation is deliberately visible as
 `localLayerPairCellSupportsProfileIdentityOn`: the relevant profiles must be
@@ -73,9 +74,9 @@ abbrev LocalLayerPairCellProfile
     embedded.cellulation.rotation
     (interface.localLayerPairSourceCrosscutBoundaryData hcubic)
 
-/-- L2 in its source-faithful form for one literal Cell-3 region: every
-relevant full profile has a positive diagonal entry in the removed-side
-`Count` matrix. -/
+/-- The local identity-support statement for one literal Cell-3 region: every
+relevant zero-terminal profile has a positive diagonal entry in the
+removed-side `Count` matrix. -/
 def localLayerPairCellSupportsProfileIdentityOn
     (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
       leftInterior hnext)

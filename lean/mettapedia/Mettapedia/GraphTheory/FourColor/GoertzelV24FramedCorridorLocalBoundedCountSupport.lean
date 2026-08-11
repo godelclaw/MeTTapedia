@@ -2,17 +2,17 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryProfileFiniteState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorLocalCountSupport
 
 /-!
-# A common finite carrier for literal source Cell profiles
+# A common finite carrier for literal local Cell profiles
 
-The two interfaces of every realized Cell-3 region have width two, while the
-face fragments are computed from the whole four-edge boundary of that region.
+The two interfaces of every realized local Cell-3 region have width two, while
+the face fragments are computed from the whole four-edge boundary of that region.
 Consequently the raw profile type depends on the particular Cell through its
 fragment count even though every such count is bounded by eight.
 
-This module embeds those raw profiles into one existing bounded carrier.  It
-does not identify the transfer matrices of different Cells.  It only removes
-the dependent-carrier obstacle so a later source corridor can be represented
-as an honest word of possibly different transfers over one finite state type.
+This module embeds those zero-terminal raw profiles into one existing bounded
+carrier.  It does not identify the transfer matrices of different Cells, nor
+does it encode connectivity from a corridor cut back to the five cap feet.  It
+only removes the dependent-carrier obstacle for literal local Cell support.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -56,9 +56,10 @@ variable {source : SourceTrail G}
   {leftInterior : CorridorInterior blockLength}
   {hnext : leftInterior.center.val + 2 < blockLength}
 
-/-- The common finite carrier for every literal Cell-3 interface profile.
-Width two is exact; eight is the occurrence-sensitive face-fragment bound for
-the Cell's four-edge boundary. -/
+/-- The common finite carrier for every literal local Cell-3 interface
+profile.  Width two is exact; terminal count zero records that this is local
+Cell support; eight is the occurrence-sensitive face-fragment bound for the
+Cell's four-edge boundary. -/
 abbrev LocalLayerPairCellBoundedProfile :=
   BoundedCorridorCutProfile 2 0 8
 

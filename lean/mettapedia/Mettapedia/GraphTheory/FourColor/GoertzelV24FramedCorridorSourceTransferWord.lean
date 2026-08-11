@@ -3,17 +3,18 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorLocalBoundedCou
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSourceProfileWord
 
 /-!
-# The heterogeneous transfer word of a realized source corridor
+# The heterogeneous local-Cell support word of a realized corridor
 
 Each literal Cell-3 region of a clean source corridor has its own transfer
-relation on the common bounded full-profile carrier.  Reading those relations
-in source order gives the actual support-level composite `M₁ ⋯ Mₙ` from the
-manuscript.  No homogeneity of successive Cells is asserted here.
+relation on the common bounded zero-terminal local-profile carrier.  Reading
+those relations in source order gives a concrete word of local Cell supports.
+No homogeneity of successive Cells is asserted here.
 
-This is the source-facing producer for the generic heterogeneous word
-semantics in `GoertzelV24CorridorTransferWord`.  Endpoint acceptance and the
-cap/Menu-B conditions remain separate; a later factorization theorem must
-connect them to this word rather than build them into its definition.
+This is an input to the generic heterogeneous word semantics in
+`GoertzelV24CorridorTransferWord`.  It is not yet the manuscript's completed
+cross-section word: a terminal-aware update theorem must connect cumulative
+connectivity to the five cap feet before endpoint acceptance or Menu-B can
+factor through it.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -61,8 +62,8 @@ noncomputable def sourceSlabCellBoundedProfileTransferAt
   (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique offset)
     |>.localLayerPairCellBoundedProfileTransfer hcubic
 
-/-- The actual heterogeneous transfer word of all indexed Cell-3 regions in
-one realized source corridor.  Its order is the source order on
+/-- The heterogeneous word of all indexed local Cell-3 support relations in
+one realized corridor.  Its order is the source order on
 `Fin (blockLength - 3)`, not an arbitrary enumeration of Cells. -/
 noncomputable def sourceCorridorCellTransferWord
     {source : SourceTrail G}

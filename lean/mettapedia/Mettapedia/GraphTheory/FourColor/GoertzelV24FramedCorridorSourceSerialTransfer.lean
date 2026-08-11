@@ -2,13 +2,13 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutComplementSeri
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSourceTransferWord
 
 /-!
-# Serial semantics of the heterogeneous source corridor word
+# Serial semantics of the heterogeneous local-Cell support word
 
-The source corridor transfer word was constructed from the positive support
-of each Cell's literal full-profile `Count` matrix.  Here every one of those
+The corridor support word was constructed from the positive support of each
+Cell's literal zero-terminal profile `Count` matrix.  Here every one of those
 relations is identified with an actual two-sided serial open Cell realizing
-the same two full profiles.  Pointwise equality then identifies the whole
-heterogeneous word `M₁ ⋯ Mₙ` with its serial-open-tangle semantics.
+the same two local profiles.  Pointwise equality then identifies the whole
+heterogeneous local word with its serial-open-tangle semantics.
 
 Successive Cells remain distinct relations.  No power of one homogeneous
 matrix, color-only profile, catalogue, or covering reduction is introduced.
@@ -148,8 +148,8 @@ noncomputable def sourceCorridorCellSerialTransferWord
     sourceSlabCellBoundedSerialProfileTransferAt realization hcubic hrotation
       htwoSided hunique offset
 
-/-- The actual heterogeneous transfer word is the word of concrete serial
-source Cells, entry for entry and in source order. -/
+/-- The heterogeneous local-support word is the word of concrete serial
+Cells, entry for entry and in source order. -/
 theorem sourceCorridorCellTransferWord_eq_serialTransferWord
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
