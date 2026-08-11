@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCorridorLayer
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerFormation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedLocalDualCycleBond
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedLocalDualCycleSeparator
 
@@ -121,6 +121,46 @@ theorem cutEdges_card_eq_four
       (layers.localLayerLoop_crossingEdge_injective hunique),
     Finset.card_univ, Fintype.card_fin]
   simp [localLayerLoop, firstWalk, secondWalk]
+
+end LocalLayerPair
+
+namespace LocalLayerFormation
+
+/-- The deletion-facing cut of a source-local Cell-3 layer is the literal
+four-edge collar read from its two flanking source slots.  This connects the
+generic component API to the concrete source witness without treating the
+local collar as a completed global transversal. -/
+theorem SourceLocalLayerPairWitness.cutEdges_eq_sourceCorners
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (witness : SourceLocalLayerPairWitness web corridor hunique leftInterior hnext) :
+    witness.toLocalLayerPair.cutEdges hunique =
+      {web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS witness.placement.root witness.before.1),
+        web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS witness.placement.root witness.after.1)} ∪
+      {web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.before.1))),
+        web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.placement.outgoingPosition)))} := by
+  change dualWalkCrossingEdges (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+    witness.toLocalLayerPair.localLayerLoop = _
+  exact witness.localLayerLoop_crossingEdges_eq_sourceCorners
+
+end LocalLayerFormation
+
+namespace LocalLayerPair
 
 omit [DecidableEq V] in
 /-- A nontrivial finite edge deletion in a connected graph has a nonempty
