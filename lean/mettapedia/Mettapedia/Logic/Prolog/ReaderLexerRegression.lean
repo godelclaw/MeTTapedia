@@ -31,6 +31,12 @@ def tokenKinds (source : String) : Option (List Kind) :=
   .punctuation .fullStop
 ]
 
+-- A clause terminator after an integer is not part of a float token.
+#guard tokenKinds "p(1)." = some [
+  .atom "p", .punctuation .leftParen, .number "1",
+  .punctuation .rightParen, .punctuation .fullStop
+]
+
 -- Block comments are layout, including immediately after a full stop.
 #guard tokenKinds "p./* nested /* block */ comment */q." = some [
   .atom "p", .punctuation .fullStop,

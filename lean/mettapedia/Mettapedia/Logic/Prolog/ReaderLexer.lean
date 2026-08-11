@@ -97,7 +97,6 @@ private def isGraphic (character : Char) : Bool :=
 
 private def isNumberContinue (previous character : Char) : Bool :=
   character.isAlphanum || character = '_' || character = '\'' ||
-    (character = '.' && previous.isDigit) ||
     ((character = '+' || character = '-') &&
       (previous = 'e' || previous = 'E'))
 
@@ -111,6 +110,15 @@ private def takeNumberTail : Char -> List Char -> List Char × List Char
           | escaped :: tail => ([character, escaped], tail)
         else
           ([character], rest)
+      else if character = '.' then
+        match rest with
+        | next :: _ =>
+            if next.isDigit then
+              let (taken, suffix) := takeNumberTail character rest
+              (character :: taken, suffix)
+            else
+              ([], character :: rest)
+        | [] => ([], [character])
       else if isNumberContinue previous character then
         let (taken, suffix) := takeNumberTail character rest
         (character :: taken, suffix)
