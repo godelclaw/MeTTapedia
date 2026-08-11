@@ -193,6 +193,21 @@ end Clause
 
 namespace Program
 
+/-- Source-ordered clauses for one predicate.  Arity remains checked by the
+canonical clause-entry boundary, so this index performs no semantic work. -/
+def clausesFor {sigma : LP.LPSignature} [DecidableEq sigma.relationSymbols]
+    (program : Program sigma) (symbol : sigma.relationSymbols) :
+    List (Clause sigma) :=
+  program.filter fun clause => decide (clause.head.symbol = symbol)
+
+@[simp]
+theorem clausesFor_append {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (left right : Program sigma) (symbol : sigma.relationSymbols) :
+    clausesFor (left ++ right) symbol =
+      clausesFor left symbol ++ clausesFor right symbol := by
+  simp [clausesFor]
+
 /-- Embed an LP program clause-for-clause, preserving source order. -/
 def ofLP {sigma : LP.LPSignature} (program : LP.Program sigma) : Program sigma :=
   program.map Clause.ofLP

@@ -394,6 +394,46 @@ def unifyingStep {σ : LPSignature} [DecidableEq σ.constants]
   | .terminal (.runtimeError error memory) =>
       failWith { state with memory } (.memory error)
 
+/-- Execute a validated cut against the choice depth captured by the current
+predicate activation.  Instruction classification remains language-specific;
+choice ownership and pruning are shared here. -/
+@[simp]
+def cutStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  if _hDepth : state.control.cutDepth ≤ state.choices.length then
+    .next {
+      state with
+      control := { state.control with current := rest }
+      choices := retainBottom state.control.cutDepth state.choices
+    } none
+  else
+    failWith state
+      (.invalidCutDepth state.control.cutDepth state.choices.length)
+
+/-- Enter an ordinary predicate call by transferring its source-ordered
+clause alternatives into the shared cursor representation.  This transition
+does not select or execute a clause. -/
+@[simp]
+def callStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (goal : RuntimeAtom σ.scoped) (clauses : List SourceClause)
+    (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let frame : ReturnFrameCore σ Instruction := {
+    continuation := rest
+    callerCutDepth := state.control.cutDepth
+  }
+  let cursor : ClauseCursorCore σ Instruction SourceClause := {
+    checkpoint := state.memory.checkpoint
+    goal
+    clauses
+    cutDepth := state.choices.length
+    frames := frame :: state.control.frames
+  }
+  .next { state with phase := .select cursor } none
+
 /-- Execute one query transition.  A running graph unifier contributes exactly
 one of its own microsteps. -/
 def step {σ : LPSignature} [DecidableEq σ.vars]
@@ -413,30 +453,11 @@ def step {σ : LPSignature} [DecidableEq σ.vars]
       | goal :: rest =>
           if _hCut : builtins.isCut goal.symbol = true then
             if goal.args.isEmpty then
-              if _hDepth : state.control.cutDepth ≤ state.choices.length then
-                .next {
-                  state with
-                  control := { state.control with current := rest }
-                  choices := retainBottom state.control.cutDepth state.choices
-                } none
-              else
-                failWith state
-                  (.invalidCutDepth state.control.cutDepth state.choices.length)
+              cutStep state rest
             else
               failWith state .malformedCut
           else
-            let frame : ReturnFrame σ := {
-              continuation := rest
-              callerCutDepth := state.control.cutDepth
-            }
-            let cursor : ClauseCursor σ := {
-              checkpoint := state.memory.checkpoint
-              goal
-              clauses := clausesFor program goal.symbol
-              cutDepth := state.choices.length
-              frames := frame :: state.control.frames
-            }
-            .next { state with phase := .select cursor } none
+            callStep state goal (clausesFor program goal.symbol) rest
   | .select cursor =>
       selectStep lpClauseMaterializer state cursor
   | .unifying attempt machine =>

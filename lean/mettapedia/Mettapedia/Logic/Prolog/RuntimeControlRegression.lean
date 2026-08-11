@@ -154,9 +154,98 @@ def typedBodyUsesSharedUnifyingStep : Bool :=
               | _ => false
       | _ => false
 
+/-- Typed call classification transfers the real source clause list into a
+shared cursor and records the caller continuation in the canonical frame. -/
+def typedCallUsesSharedDispatch : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := {
+              current := [.call goal, .fail]
+              cutDepth := 0
+              frames := []
+            }
+            choices := []
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .dispatch
+          }
+          match dispatchBaseStep [sourceClause] state with
+          | some (.next next none) =>
+              match next.phase with
+              | .select cursor =>
+                  match cursor.clauses, cursor.frames with
+                  | [_], [frame] =>
+                      cursor.cutDepth == 0 &&
+                        match frame.continuation with
+                        | [.fail] => true
+                        | _ => false
+                  | _, _ => false
+              | _ => false
+          | _ => false
+      | _ => false
+
+/-- A typed cut at nonzero depth keeps the caller's older cursor.  This is the
+non-degenerate pruning arm: replacing `retainBottom` with `[]` fails. -/
+def typedCutRetainsCallerChoice : Bool :=
+  let sourceQuery : Goal qSig := .call (unary .choose (.const .a))
+  let sourceClause : Clause qSig := {
+    head := unary .choose (.var .x)
+    body := .cut
+  }
+  match materializeGoal (Memory.empty qSig.scoped)
+      (sourceQuery.atScope 0) with
+  | .error _ => false
+  | .ok queryResult =>
+      match queryResult.goals with
+      | [.call goal] =>
+          let older : LP.RuntimeQuery.ClauseCursorCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            checkpoint := queryResult.memory.checkpoint
+            goal
+            clauses := [sourceClause]
+            cutDepth := 0
+            frames := []
+          }
+          let state : LP.RuntimeQuery.StateCore qSig
+              (RuntimeGoal qSig.scoped) (Clause qSig) := {
+            memory := queryResult.memory
+            control := {
+              current := [.cut, .fail]
+              cutDepth := 1
+              frames := []
+            }
+            choices := [older]
+            queryCheckpoint := (Memory.empty qSig.scoped).checkpoint
+            queryVarMap := queryResult.varMap
+            nextScope := 1
+            phase := .dispatch
+          }
+          match dispatchBaseStep [] state with
+          | some (.next next none) =>
+              match next.control.current, next.choices with
+              | [.fail], [_] => true
+              | _, _ => false
+          | _ => false
+      | _ => false
+
 #guard sharedUnifyThenCutMaterializes
 #guard typedClauseUsesCanonicalEntry
 #guard typedClauseUsesSharedSelectStep
 #guard typedBodyUsesSharedUnifyingStep
+#guard typedCallUsesSharedDispatch
+#guard typedCutRetainsCallerChoice
 
 end Mettapedia.Logic.Prolog.RuntimeControlRegression

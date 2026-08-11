@@ -372,4 +372,57 @@ def clauseMaterializer {sigma : LP.LPSignature}
         body := result.clause.body
       }
 
+/-! ## Shared base-control dispatch -/
+
+/-- The typed program index agrees exactly with the established LP index on
+embedded pure programs, including source order and duplicate clauses. -/
+@[simp]
+theorem clausesFor_ofLP {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (program : LP.Program sigma) (symbol : sigma.relationSymbols) :
+    Program.clausesFor (Program.ofLP program) symbol =
+      (LP.RuntimeQuery.clausesFor program symbol).map Clause.ofLP := by
+  induction program with
+  | nil => rfl
+  | cons clause rest inductionHypothesis =>
+      have hRest :
+          List.filter (fun next : Clause sigma =>
+              decide (next.head.symbol = symbol))
+              (rest.map Clause.ofLP) =
+            (List.filter (fun next : LP.Clause sigma =>
+              decide (next.head.symbol = symbol)) rest).map Clause.ofLP := by
+        simpa [Program.clausesFor, Program.ofLP,
+          LP.RuntimeQuery.clausesFor] using inductionHypothesis
+      by_cases hMatches : clause.head.symbol = symbol
+      · simp [Program.clausesFor, Program.ofLP,
+          LP.RuntimeQuery.clausesFor, Clause.ofLP, hMatches, hRest]
+      · simp [Program.clausesFor, Program.ofLP,
+          LP.RuntimeQuery.clausesFor, Clause.ofLP, hMatches, hRest]
+
+/-- Execute the base instructions whose control effects are already owned by
+the canonical LP query runtime.  `none` means that a structured instruction
+such as disjunction, collection, or exception handling requires its dedicated
+extension; it must not be interpreted as logical failure.
+
+This function classifies typed instructions only.  Calls, cut pruning, empty
+stack return, and alternative restoration are the shared `RuntimeQuery`
+transitions above, over the same `StateCore`. -/
+def dispatchBaseStep {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (program : Program sigma)
+    (state : LP.RuntimeQuery.StateCore sigma (RuntimeGoal sigma.scoped)
+      (Clause sigma)) :
+    Option (LP.RuntimeQuery.StepResultCore sigma (RuntimeGoal sigma.scoped)
+      (Clause sigma)) :=
+  match state.control.current with
+  | [] => some (LP.RuntimeQuery.emptyCurrentStep state)
+  | .call goal :: rest =>
+      some (LP.RuntimeQuery.callStep state goal
+        (Program.clausesFor program goal.symbol) rest)
+  | .fail :: _ =>
+      some (.next { state with phase := .backtrack } none)
+  | .cut :: rest =>
+      some (LP.RuntimeQuery.cutStep state rest)
+  | _ => none
+
 end Mettapedia.Logic.Prolog.RuntimeControl
