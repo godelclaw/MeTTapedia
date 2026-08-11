@@ -249,6 +249,101 @@ theorem faceRegionalAmbientPositionGraph_union_reachable_iff_componentClosureWit
   exact Or.inl (faceRegionalAmbientPositionGraph_switch_mem_inter
     RS root leftRegion rightRegion hleftMiddle hmiddleRight hleft hright)
 
+/-- The abstract closure equation identifies the literal connected fragment
+of the enlarged region, not merely reachability in an auxiliary ambient
+graph.  Thus a named union fragment can be recovered from the two factor
+fragment relations even when either queried occurrence lies away from the
+shared seam. -/
+theorem mem_faceRegionalFragmentPositions_connectedComponentMk_union_iff_componentClosure
+    (RS : RotationSystem V E) (root : RS.D)
+    (leftRegion rightRegion : Finset E)
+    (hcovered : RegionalFaceAdjacencyCovered RS root
+      leftRegion rightRegion)
+    (anchor position : Fin (RS.faceOrbit root).card)
+    (hanchor : faceCycleEdge RS root anchor ∈ leftRegion ∪ rightRegion)
+    (hposition : faceCycleEdge RS root position ∈ leftRegion ∪ rightRegion) :
+    let anchorRegional : FaceRegionalPosition RS root
+        (leftRegion ∪ rightRegion) :=
+      ⟨anchor, (mem_faceRegionalPositions_iff RS root
+        (leftRegion ∪ rightRegion) anchor).2 hanchor⟩
+    position ∈ faceRegionalFragmentPositions RS root
+        (leftRegion ∪ rightRegion)
+        ((faceRegionalPositionGraph RS root (leftRegion ∪ rightRegion)).connectedComponentMk
+          anchorRegional) ↔
+      Relation.ReflTransGen
+        (fun left right : Subtype (fun occurrence =>
+            faceCycleEdge RS root occurrence ∈ leftRegion ∩ rightRegion ∨
+              occurrence = anchor ∨ occurrence = position) =>
+          (faceRegionalAmbientPositionGraph RS root leftRegion).Reachable
+              left.1 right.1 ∨
+            (faceRegionalAmbientPositionGraph RS root rightRegion).Reachable
+              left.1 right.1)
+        ⟨anchor, Or.inr (Or.inl rfl)⟩
+        ⟨position, Or.inr (Or.inr rfl)⟩ := by
+  dsimp only
+  let anchorRegional : FaceRegionalPosition RS root
+      (leftRegion ∪ rightRegion) :=
+    ⟨anchor, (mem_faceRegionalPositions_iff RS root
+      (leftRegion ∪ rightRegion) anchor).2 hanchor⟩
+  let positionRegional : FaceRegionalPosition RS root
+      (leftRegion ∪ rightRegion) :=
+    ⟨position, (mem_faceRegionalPositions_iff RS root
+      (leftRegion ∪ rightRegion) position).2 hposition⟩
+  constructor
+  · intro hmember
+    rcases (mem_faceRegionalFragmentPositions_iff RS root
+      (leftRegion ∪ rightRegion)
+      ((faceRegionalPositionGraph RS root (leftRegion ∪ rightRegion)).connectedComponentMk
+        anchorRegional) position).1 hmember with
+      ⟨candidate, hcandidate, hvalue⟩
+    have hcandidateEq : candidate = positionRegional :=
+      Subtype.ext hvalue
+    subst candidate
+    have hcomponent :
+        (faceRegionalPositionGraph RS root
+            (leftRegion ∪ rightRegion)).connectedComponentMk positionRegional =
+          (faceRegionalPositionGraph RS root
+            (leftRegion ∪ rightRegion)).connectedComponentMk anchorRegional :=
+      (SimpleGraph.ConnectedComponent.mem_supp_iff _ _).1 hcandidate
+    have hregional :
+        (faceRegionalPositionGraph RS root
+          (leftRegion ∪ rightRegion)).Reachable
+          anchorRegional positionRegional :=
+      (SimpleGraph.ConnectedComponent.exact hcomponent).symm
+    have hambient :
+        (faceRegionalAmbientPositionGraph RS root
+          (leftRegion ∪ rightRegion)).Reachable anchor position :=
+      (faceRegionalPositionGraph_reachable_iff_ambient RS root
+        (leftRegion ∪ rightRegion) anchorRegional positionRegional).1
+          hregional
+    exact (faceRegionalAmbientPositionGraph_union_reachable_iff_componentClosureWithEndpoints
+      RS root leftRegion rightRegion hcovered anchor position).1 hambient
+  · intro hclosure
+    have hambient :
+        (faceRegionalAmbientPositionGraph RS root
+          (leftRegion ∪ rightRegion)).Reachable anchor position :=
+      (faceRegionalAmbientPositionGraph_union_reachable_iff_componentClosureWithEndpoints
+        RS root leftRegion rightRegion hcovered anchor position).2 hclosure
+    have hregional :
+        (faceRegionalPositionGraph RS root
+          (leftRegion ∪ rightRegion)).Reachable
+          anchorRegional positionRegional :=
+      (faceRegionalPositionGraph_reachable_iff_ambient RS root
+        (leftRegion ∪ rightRegion) anchorRegional positionRegional).2
+          hambient
+    have hcomponent :
+        (faceRegionalPositionGraph RS root
+            (leftRegion ∪ rightRegion)).connectedComponentMk positionRegional =
+          (faceRegionalPositionGraph RS root
+            (leftRegion ∪ rightRegion)).connectedComponentMk anchorRegional :=
+      SimpleGraph.ConnectedComponent.sound hregional.symm
+    apply (mem_faceRegionalFragmentPositions_iff RS root
+      (leftRegion ∪ rightRegion)
+      ((faceRegionalPositionGraph RS root (leftRegion ∪ rightRegion)).connectedComponentMk
+        anchorRegional) position).2
+    exact ⟨positionRegional,
+      (SimpleGraph.ConnectedComponent.mem_supp_iff _ _).2 hcomponent, rfl⟩
+
 end
 
 end GoertzelV24TerminalProfileFaceUpdate
