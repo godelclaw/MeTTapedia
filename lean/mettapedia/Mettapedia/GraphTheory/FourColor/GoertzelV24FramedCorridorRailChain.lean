@@ -20,6 +20,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24FramedTrail
 
 open GoertzelV24CleanHexCorridor
+open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorInterfaceMatching
@@ -483,6 +484,103 @@ theorem sourceCornerAlignedRailChain_of_pairs_secondRail_support_internal
       (nextCorridorInterior
         (nextCorridorInterior leftInterior hnext) hnextNext).center face (by
         simpa [SourceConsecutiveSlabInterface.centerLayerFace] using hlastFace)
+
+/-- Composing two first rails preserves the graph-level fact that their crossed
+edges avoid every non-interior container boundary.  This is a safety invariant
+for the later global layer assembly; it does not by itself choose a deletion
+side or assert a completed separator. -/
+theorem sourceCornerAlignedRailChain_of_pairs_firstRail_crossingEdges_disjoint_holeBoundary
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {hnextThird :
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center.val + 2 < blockLength}
+    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (middle : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext)
+    (last : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird)
+    (leftPair : SourceCornerAlignedRailPair first middle)
+    (rightPair : SourceCornerAlignedRailPair middle last)
+    (hfirst : leftPair.firstRail.support.Disjoint rightPair.firstRail.support.tail)
+    (hsecond : leftPair.secondRail.support.Disjoint rightPair.secondRail.support.tail)
+    (hole : OrbitFace embedded.cellulation.rotation.toRotationSystem)
+    (hhole : hole ∉ embedded.cellulation.interiorFaces) :
+    Disjoint
+      (dualWalkCrossingEdges
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+        (sourceCornerAlignedRailChain_of_pairs first middle last
+          leftPair rightPair hfirst hsecond).firstRail)
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem hole) := by
+  exact dualWalkCrossingEdges_disjoint_holeBoundary_of_support_internal
+    (hunique := hunique) embedded
+    (sourceCornerAlignedRailChain_of_pairs first middle last
+      leftPair rightPair hfirst hsecond).firstRail
+    (fun face hface =>
+      sourceCornerAlignedRailChain_of_pairs_firstRail_support_internal
+        first middle last leftPair rightPair hfirst hsecond face hface)
+    hole hhole
+
+/-- The same boundary-safety invariant for the composed second rail. -/
+theorem sourceCornerAlignedRailChain_of_pairs_secondRail_crossingEdges_disjoint_holeBoundary
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {hnextThird :
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center.val + 2 < blockLength}
+    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (middle : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext)
+    (last : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird)
+    (leftPair : SourceCornerAlignedRailPair first middle)
+    (rightPair : SourceCornerAlignedRailPair middle last)
+    (hfirst : leftPair.firstRail.support.Disjoint rightPair.firstRail.support.tail)
+    (hsecond : leftPair.secondRail.support.Disjoint rightPair.secondRail.support.tail)
+    (hole : OrbitFace embedded.cellulation.rotation.toRotationSystem)
+    (hhole : hole ∉ embedded.cellulation.interiorFaces) :
+    Disjoint
+      (dualWalkCrossingEdges
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+        (sourceCornerAlignedRailChain_of_pairs first middle last
+          leftPair rightPair hfirst hsecond).secondRail)
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem hole) := by
+  exact dualWalkCrossingEdges_disjoint_holeBoundary_of_support_internal
+    (hunique := hunique) embedded
+    (sourceCornerAlignedRailChain_of_pairs first middle last
+      leftPair rightPair hfirst hsecond).secondRail
+    (fun face hface =>
+      sourceCornerAlignedRailChain_of_pairs_secondRail_support_internal
+        first middle last leftPair rightPair hfirst hsecond face hface)
+    hole hhole
 
 end AnnularEmbedding
 
