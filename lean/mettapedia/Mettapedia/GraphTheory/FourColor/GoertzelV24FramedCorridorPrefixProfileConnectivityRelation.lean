@@ -56,6 +56,43 @@ variable {source : SourceTrail G}
   {leftInterior : CorridorInterior blockLength}
   {hnext : leftInterior.center.val + 2 < blockLength}
 
+/-- The incoming profile records exactly the old-prefix connectivity between
+its two actual crossing ports, together with the two tracked-color tests. -/
+theorem localLayerLeftPrefixBoundedProfile_strandConnected_eq_true_iff
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color (aligned.toInterface.localLayerPrefixCrossing step) ≠ 0)
+    (pair : TrackedColorPair) (left right : Fin 2) :
+    (((aligned.toInterface.localLayerLeftPrefixBoundedProfile color hcolor)
+        |>.profile.strandConnected pair (.inl left) (.inl right)) = true) ↔
+      IsTrackedColor (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+          (color (aligned.toInterface.localLayerPrefixCrossing left)) ∧
+        IsTrackedColor (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+          (color (aligned.toInterface.localLayerPrefixCrossing right)) ∧
+        (regionalTrackedEdgeGraph
+          embedded.cellulation.rotation.toRotationSystem
+          aligned.toInterface.localLayerLeftPrefixRegion color
+          (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2).Reachable
+            (aligned.toInterface.localLayerPrefixCrossing left)
+            (aligned.toInterface.localLayerPrefixCrossing right) := by
+  let interface := aligned.toInterface
+  let data := interface.localLayerLeftPrefixGraphCutData
+  change
+    ((data.regionalProfile color hcolor).strandConnected pair
+        (.inl left) (.inl right) = true) ↔ _
+  rw [data.regionalProfile_strandConnected_eq_true_iff]
+  have hleft : data.portEdge (.inl left) ∈ data.regionEdges :=
+    interface.localLayerLeftPrefixGraphCutData_portsInRegion (.inl left)
+  have hright : data.portEdge (.inl right) ∈ data.regionEdges :=
+    interface.localLayerLeftPrefixGraphCutData_portsInRegion (.inl right)
+  simp only [hleft, hright, true_and]
+  rfl
+
 /-- The actual outgoing connectivity bit is true exactly when both queried
 crossings carry the tracked color pair and the source's three-factor
 one-Cell relation connects them. -/
