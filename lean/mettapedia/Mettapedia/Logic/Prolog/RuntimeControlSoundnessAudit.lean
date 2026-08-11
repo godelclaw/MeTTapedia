@@ -15,4 +15,5 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeUnificationSoundness.startMany_success_finiteEqual
 #print axioms Mettapedia.Logic.LP.RuntimeUnificationSoundness.refinementEndpoint_finiteReadback
 #print axioms Mettapedia.Logic.LP.RuntimeUnificationSoundness.runtimeAnswer_finiteReadback_leastModel
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.pureCallAnswer_finiteReadback_leastModel
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.pureCallAnswer_leastModel

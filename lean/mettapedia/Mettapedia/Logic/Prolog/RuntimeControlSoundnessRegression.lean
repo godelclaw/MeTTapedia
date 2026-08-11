@@ -58,4 +58,66 @@ theorem groundedTypedAnswer_leastModel
   exact pureCallAnswer_leastModel groundedKnowledgeBase queryP state fuel
     answer resumed hOpen hPull
 
+abbrev compoundSig := LP.RuntimeCompoundQueryRegression.cSig
+def compoundProgram : LP.Program compoundSig :=
+  LP.RuntimeCompoundQueryRegression.program
+def compoundQuery : List (LP.Atom compoundSig) :=
+  LP.RuntimeCompoundQueryRegression.query
+
+def compoundKnowledgeBase : LP.KnowledgeBase compoundSig where
+  prog := compoundProgram
+  db := ∅
+
+/-- Execute the compound fixture through the typed Prolog representation of
+the same shared runtime. -/
+def groundedTypedCompoundRun : Bool :=
+  match openQuery (LP.RuntimeTerm.Memory.empty compoundSig.scoped) 0 1
+      (Goal.calls compoundQuery) with
+  | .error _ => false
+  | .ok state =>
+      match pull (Program.ofLP compoundProgram) 32 state with
+      | .answer answer _ =>
+          match answer.queryVarMap with
+          | [(_, address)] =>
+              match LP.RuntimeReadback.Heap.readTerm answer.memory.heap
+                  address with
+              | .ok (.app .pair args) =>
+                  match args ⟨0, by
+                      simp [compoundSig,
+                        LP.RuntimeCompoundQueryRegression.cSig]⟩,
+                      args ⟨1, by
+                        simp [compoundSig,
+                          LP.RuntimeCompoundQueryRegression.cSig]⟩ with
+                  | .const .a, .const .b => true
+                  | _, _ => false
+              | _ => false
+          | _ => false
+      | _ => false
+
+#guard groundedTypedCompoundRun
+
+/-- Concrete typed-Prolog specialization of finite compound grounding. -/
+theorem groundedTypedCompoundAnswer_leastModel
+    (state : State compoundSig)
+    (answer : LP.RuntimeQuery.Answer compoundSig)
+    (resumed : State compoundSig)
+    (hOpen : openQuery (LP.RuntimeTerm.Memory.empty compoundSig.scoped) 0 1
+      (Goal.calls compoundQuery) = .ok state)
+    (hPull : pull (Program.ofLP compoundProgram) 32 state =
+      .answer answer resumed)
+    (hfinite : LP.RuntimeUnificationSoundness.FiniteReadback
+      answer.memory.heap) :
+    ∃ theta : LP.Subst compoundSig.scoped,
+      LP.SLDScopedTree compoundProgram 1
+        (LP.queryAtScope 0 compoundQuery) theta ∧
+      (∀ pair ∈ answer.queryVarMap, ∀ term,
+        LP.RuntimeReadback.Heap.readTerm answer.memory.heap pair.2 = .ok term →
+        theta pair.1 = term) ∧
+      ∀ grounding : LP.Grounding compoundSig.scoped,
+        ∀ atom ∈ LP.queryAtScope 0 compoundQuery,
+          ((grounding.compSubst theta).groundAtom atom).unscope ∈
+            LP.leastHerbrandModel compoundKnowledgeBase := by
+  exact pureCallAnswer_finiteReadback_leastModel compoundKnowledgeBase
+    compoundQuery state 32 answer resumed hOpen hPull hfinite
+
 end Mettapedia.Logic.Prolog.RuntimeControlSoundnessRegression

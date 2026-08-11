@@ -104,6 +104,59 @@ theorem pull_ofLP_conserves {sigma : LP.LPSignature}
   unfold pull LP.RuntimeQuery.pull
   exact pullCore_conserves (pureCoreRealization program) fuel state
 
+/-- **Canonical typed-runtime grounding, finite compound fragment.**
+An answer returned through typed Prolog on embedded definite source is true in
+the canonical LP least model whenever its live runtime graph has finite
+readback.  Rational graphs remain executable but require their separate
+semantic target. -/
+theorem pureCallAnswer_finiteReadback_leastModel {sigma : LP.LPSignature}
+    [DecidableEq sigma.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols] [DecidableEq sigma.relationSymbols]
+    (kb : LP.KnowledgeBase sigma) (goals : List (LP.Atom sigma))
+    (state : State sigma) (fuel : Nat) (answer : Answer sigma)
+    (resumed : State sigma)
+    (hOpen : openQuery (Memory.empty sigma.scoped) 0 1 (Goal.calls goals) =
+      .ok state)
+    (hPull : pull (Program.ofLP kb.prog) fuel state =
+      .answer answer resumed)
+    (hfinite : LP.RuntimeUnificationSoundness.FiniteReadback
+      answer.memory.heap) :
+    ∃ theta : LP.Subst sigma.scoped,
+      LP.SLDScopedTree kb.prog 1 (LP.queryAtScope 0 goals) theta ∧
+      (∀ pair ∈ answer.queryVarMap, ∀ term,
+        LP.RuntimeReadback.Heap.readTerm answer.memory.heap pair.2 = .ok term →
+        theta pair.1 = term) ∧
+      ∀ grounding : LP.Grounding sigma.scoped,
+        ∀ atom ∈ LP.queryAtScope 0 goals,
+          ((grounding.compSubst theta).groundAtom atom).unscope ∈
+            LP.leastHerbrandModel kb := by
+  rw [openQuery_calls_conserves] at hOpen
+  cases hOpened : LP.RuntimeQuery.openQuery
+      (Memory.empty sigma.scoped) 0 1 goals with
+  | error error =>
+      simp [Except.map, hOpened] at hOpen
+  | ok sourceState =>
+      rw [hOpened] at hOpen
+      change Except.ok (mapState RuntimeGoal.call Clause.ofLP sourceState) =
+        Except.ok state at hOpen
+      injection hOpen with hState
+      subst state
+      rw [pull_ofLP_conserves] at hPull
+      cases hPulled : LP.RuntimeQuery.pull (PureRuntime.noControl sigma)
+          kb.prog fuel sourceState with
+      | «open» openState =>
+          simp [mapPullResult, hPulled] at hPull
+      | terminal result =>
+          simp [mapPullResult, hPulled] at hPull
+      | answer sourceAnswer sourceResumed =>
+          simp [mapPullResult, hPulled] at hPull
+          obtain ⟨answerEq, _resumedEq⟩ := hPull
+          subst sourceAnswer
+          exact
+            LP.RuntimeUnificationSoundness.runtimeAnswer_finiteReadback_leastModel
+              (PureRuntime.noControl sigma) kb goals sourceState fuel answer
+              sourceResumed (fun _ => rfl) hOpened hPulled hfinite
+
 /-- **Canonical typed-runtime grounding, pure function-free fragment.**
 An answer actually returned by `RuntimeControl.pull` on embedded definite
 source carries a standardized-apart SLD derivation and is true in the same
