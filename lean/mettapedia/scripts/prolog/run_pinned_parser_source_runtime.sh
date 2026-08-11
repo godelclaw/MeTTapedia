@@ -35,15 +35,17 @@ lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
 popd >/dev/null
 
 cat > "$TMP/lean.expected" <<'EOF'
-codes=[40,41]
-cleanup=0/0
+empty_codes=[40,41]
+empty_cleanup=0/0
+atom_list_codes=[40,97,41]
+atom_list_cleanup=0/0
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
 swipl -q -s "$TMP/src/parser.pl" \
-  -g "phrase(swrite_exp([]), Codes), write_canonical(Codes), nl, halt" \
+  -g "phrase(swrite_exp([]), Empty), write_canonical(Empty), nl, phrase(swrite_exp([a]), AtomList), write_canonical(AtomList), nl, halt" \
   > "$TMP/swi.out"
-printf '%s\n' '[40,41]' > "$TMP/swi.expected"
+printf '%s\n' '[40,41]' '[40,97,41]' > "$TMP/swi.expected"
 diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
-echo "Pinned parser source runtime: PASS (swrite_exp([]) exact; clean closure)"
+echo "Pinned parser source runtime: PASS (empty and atomic-list writes exact; clean closure)"

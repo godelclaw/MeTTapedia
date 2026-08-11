@@ -52,9 +52,14 @@ inductive QueryError where
   | collectionReadback (error : RuntimeReadback.ReadbackError)
   | dynamicClauseReadback (error : RuntimeReadback.ReadbackError)
   | invalidDynamicClause
+  | invalidFormatDestination
+  | invalidFormatString
+  | invalidFormatArguments
+  | unsupportedFormatDirective
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
   | termGroundBudgetExhausted
+  | termListBudgetExhausted
   | univListUnbound
   | invalidUnivList
   | univFunctorUnbound
@@ -124,6 +129,25 @@ def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
     MetaCallDecoder σ Instruction where
   decode _ _ _ := .error .unsupportedInstruction
   decodeDcg _ _ _ _ := .error .unsupportedInstruction
+
+/-- A pure formatted-output plan.  The decoder may name language-owned list
+symbols, constants, and existing heap roots, but it carries no continuation,
+checkpoint, choice, or answer authority.  The shared engine performs every
+allocation and the final unification. -/
+inductive FormatPlan (σ : LPSignature) where
+  | codes (encoding : CollectionEncoding σ) (head tail : Addr)
+      (values : List σ.constants)
+
+/-- Read-only interpretation of `format/3` roots.  This follows the same
+capability boundary as meta-call and DCG decoding: the language may interpret
+its own atomic payloads, while the engine retains all mutation and control. -/
+structure FormatDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Addr → Addr → Addr →
+    Except QueryError (FormatPlan σ)
+
+/-- Runtimes without formatted output fail closed. -/
+def rejectingFormatDecoder (σ : LPSignature) : FormatDecoder σ where
+  decode _ _ _ _ := .error .unsupportedInstruction
 
 /-- Language-owned symbols for `=../2`.  The engine owns heap traversal,
 allocation, and unification.  A realization supplies only the existing list
@@ -464,16 +488,16 @@ structure ClauseEncoding (σ : LPSignature) where
 
 /-- Whether a term test inspects only the dereferenced root or traverses the
 reachable graph looking for an unbound variable. -/
-inductive TermTestMode where
+inductive TermTestMode (σ : LPSignature) where
   | shallow
   | ground
-deriving DecidableEq
+  | properList (encoding : CollectionEncoding σ)
 
 /-- A read-only predicate on canonical heap terms.  A language realization may
 classify its own constant payloads or select the engine-owned ground traversal,
 but it receives no memory, continuation, or answer authority. -/
 structure TermTest (σ : LPSignature) where
-  mode : TermTestMode := .shallow
+  mode : TermTestMode σ := .shallow
   acceptsVariable : Bool
   acceptsConstant : σ.constants → Bool
   acceptsApplication : Bool
@@ -508,6 +532,12 @@ def constantWhere (predicate : σ.constants → Bool) : TermTest σ where
 
 def isGround : TermTest σ where
   mode := .ground
+  acceptsVariable := false
+  acceptsConstant _ := false
+  acceptsApplication := false
+
+def isProperList (encoding : CollectionEncoding σ) : TermTest σ where
+  mode := .properList encoding
   acceptsVariable := false
   acceptsConstant _ := false
   acceptsApplication := false
@@ -553,6 +583,39 @@ def termGroundAux {σ : LPSignature} (heap : Heap σ.scoped) :
 def termGround {σ : LPSignature} (heap : Heap σ.scoped) (address : Addr) :
     Except QueryError Bool :=
   termGroundAux heap (termGroundFuel heap) [address] []
+
+/-! ## Read-only proper-list recognition -/
+
+/-- Traverse only the list spine.  Revisiting a spine root witnesses a cyclic
+list and therefore returns false; heads are deliberately not inspected. -/
+def termProperListAux {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : CollectionEncoding σ)
+    (heap : Heap σ.scoped) : Nat → Addr → List Addr → Except QueryError Bool
+  | 0, _, _ => .error .termListBudgetExhausted
+  | fuel + 1, address, visited =>
+      match heap.deref address with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root root) =>
+          if root ∈ visited then .ok false else
+          match heap[root]? with
+          | none => .error (.memory (.invalidAddress root))
+          | some (.var _ none) => .ok false
+          | some (.var _ (some _)) => .error (.memory .illFormedHeap)
+          | some (.const value) => .ok (value = encoding.nil)
+          | some (.app symbol arguments) =>
+              if symbol = encoding.cons ∧ arguments.size = 2 then
+                match arguments[1]? with
+                | some tail => termProperListAux encoding heap fuel tail
+                    (root :: visited)
+                | none => .error (.memory .illFormedHeap)
+              else .ok false
+
+def termProperList {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : CollectionEncoding σ)
+    (heap : Heap σ.scoped) (address : Addr) : Except QueryError Bool :=
+  termProperListAux encoding heap (heap.size + 2) address []
 
 /-! ## Read-only strict term identity -/
 
@@ -2202,6 +2265,20 @@ def dcgCallStep {σ : LPSignature}
   | .ok (.constantTerminals encoding heads) =>
       dcgConstantTerminalsStep state encoding heads input restRoot continuation
 
+/-- Execute one read-only formatted-output plan.  A codes plan reuses the DCG
+constant-segment allocator: values and list cells are fresh, the supplied tail
+root is shared, and only the canonical graph unifier may bind the output. -/
+def formatStep {σ : LPSignature}
+    (decoder : FormatDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (destination format arguments : Addr)
+    (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap destination format arguments with
+  | .error reason => failWith state reason
+  | .ok (.codes encoding head tail values) =>
+      dcgConstantTerminalsStep state encoding values head tail continuation
+
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
 (`src/pl-prims.c`) and body unification instructions (`src/pl-vmi.c`). -/
@@ -2271,10 +2348,21 @@ root; groundness uses the cycle-safe reachable-graph traversal above.  A false
 test enters ordinary backtracking; corrupt graphs remain typed errors. -/
 @[simp]
 def termTestStep {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
     (address : Addr) (test : TermTest σ) (rest : List Instruction) :
     StepResultCore σ Instruction SourceClause :=
   match test.mode with
+  | .properList encoding =>
+      match termProperList encoding state.memory.heap address with
+      | .error error => failWith state error
+      | .ok accepted =>
+          if accepted then
+            .next {
+              state with
+              control := { state.control with current := rest }
+            } none
+          else .next { state with phase := .backtrack } none
   | .ground =>
       match termGround state.memory.heap address with
       | .error error => failWith state error
@@ -2304,6 +2392,7 @@ def termTestStep {σ : LPSignature}
 /-- An accepted shallow root consumes exactly the current instruction and
 continues without changing memory, choices, or frames. -/
 theorem termTestStep_accepts {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
     (address root : Addr) (test : TermTest σ) (rest : List Instruction)
     (cell : Cell σ.scoped)
@@ -2321,6 +2410,7 @@ theorem termTestStep_accepts {σ : LPSignature}
 /-- A rejected shallow root enters the ordinary shared backtracking phase;
 there is no test-specific failure or restoration path. -/
 theorem termTestStep_rejects {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
     (address root : Addr) (test : TermTest σ) (rest : List Instruction)
     (cell : Cell σ.scoped)
@@ -2333,6 +2423,7 @@ theorem termTestStep_rejects {σ : LPSignature}
   simp [termTestStep, hMode, hDeref, hCell, hReject]
 
 theorem termTestStep_ground_accepts {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
     (address : Addr) (rest : List Instruction)
     (hGround : termGround state.memory.heap address = .ok true) :
@@ -2344,12 +2435,36 @@ theorem termTestStep_ground_accepts {σ : LPSignature}
   simp [termTestStep, TermTest.isGround, hGround]
 
 theorem termTestStep_ground_rejects {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
     (address : Addr) (rest : List Instruction)
     (hGround : termGround state.memory.heap address = .ok false) :
     termTestStep state address (TermTest.isGround : TermTest σ) rest =
       .next { state with phase := .backtrack } none := by
   simp [termTestStep, TermTest.isGround, hGround]
+
+theorem termTestStep_properList_accepts {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (encoding : CollectionEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (address : Addr) (rest : List Instruction)
+    (hList : termProperList encoding state.memory.heap address = .ok true) :
+    termTestStep state address (TermTest.isProperList encoding) rest =
+      .next {
+        state with
+        control := { state.control with current := rest }
+      } none := by
+  simp [termTestStep, TermTest.isProperList, hList]
+
+theorem termTestStep_properList_rejects {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (encoding : CollectionEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (address : Addr) (rest : List Instruction)
+    (hList : termProperList encoding state.memory.heap address = .ok false) :
+    termTestStep state address (TermTest.isProperList encoding) rest =
+      .next { state with phase := .backtrack } none := by
+  simp [termTestStep, TermTest.isProperList, hList]
 
 /-- Test strict graph identity without binding.  `expected = true` realizes
 `==/2`; `expected = false` realizes `\==/2` through the same comparison and
@@ -2530,6 +2645,7 @@ inductive DispatchAction (σ : LPSignature)
       (encoding : CollectionEncoding σ)
   | metaCall (callable : Addr) (extraArgs : List Addr)
   | dcgCall (body input rest : Addr)
+  | format (destination format arguments : Addr) (decoder : FormatDecoder σ)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
   | throw (ball : Addr)
@@ -2661,6 +2777,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       metaCallStep decoder state callable extraArgs rest
   | .dcgCall body input restRoot =>
       dcgCallStep decoder state body input restRoot rest
+  | .format destination format arguments formatDecoder =>
+      formatStep formatDecoder state destination format arguments rest
   | .catch guarded catcher recovery =>
       catchStep state guarded catcher recovery rest
   | .throw ball unboundError => throwStep state ball unboundError
@@ -3111,6 +3229,34 @@ theorem dcgCallStep_error_of_decode {σ : LPSignature}
     dcgCallStep decoder state body input restRoot continuation =
       failWith state reason := by
   simp [dcgCallStep, hDecode]
+
+/-- A decoded codes plan reaches only engine-owned allocation and canonical
+unification.  In particular, the decoder cannot install its own answer or
+continuation. -/
+theorem formatStep_codes_of_decode {σ : LPSignature}
+    (decoder : FormatDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (destination format arguments head tail : Addr)
+    (continuation : List Instruction) (encoding : CollectionEncoding σ)
+    (values : List σ.constants)
+    (hDecode : decoder.decode state.memory.heap destination format arguments =
+      .ok (.codes encoding head tail values)) :
+    formatStep decoder state destination format arguments continuation =
+      dcgConstantTerminalsStep state encoding values head tail continuation := by
+  simp [formatStep, hDecode]
+
+/-- Formatter rejection remains a typed runtime error and cannot become
+ordinary Prolog failure. -/
+theorem formatStep_error_of_decode {σ : LPSignature}
+    (decoder : FormatDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (destination format arguments : Addr)
+    (continuation : List Instruction) (reason : QueryError)
+    (hDecode : decoder.decode state.memory.heap destination format arguments =
+      .error reason) :
+    formatStep decoder state destination format arguments continuation =
+      failWith state reason := by
+  simp [formatStep, hDecode]
 
 /-- Meta-call decoding is reached through the canonical dispatch phase, not a
 wrapper-side resolution path.  The theorem pins the exact executable seam. -/

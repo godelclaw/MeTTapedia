@@ -351,6 +351,36 @@ def groundAcceptsRationalCompound : SourceSignature.Goal :=
 def groundRejectsRationalCompoundWithFreeLeaf : SourceSignature.Goal :=
   .conj (.unify x (compound "f" [x, y])) (groundTest x)
 
+/-! ## Cycle-safe proper-list recognition -/
+
+def isListTest (term : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "is_list" [term]
+
+def isListAcceptsFinite : SourceSignature.Goal :=
+  isListTest (SourceSignature.list [atom "a", atom "b"])
+
+def isListRejectsImproper : SourceSignature.Goal :=
+  isListTest (compound "[|]" [atom "a", atom "tail"])
+
+def isListRejectsVariable : SourceSignature.Goal := isListTest x
+
+def isListRejectsRationalSpine : SourceSignature.Goal :=
+  .conj (.unify x (compound "[|]" [atom "a", x])) (isListTest x)
+
+def isListAcceptsCyclicHead : SourceSignature.Goal :=
+  .conj (.unify y (compound "f" [y]))
+    (isListTest (SourceSignature.list [y]))
+
+/-! ## Pure codes-destination formatting -/
+
+def formatAtomicCodes (tail : SourceSignature.Term := SourceSignature.nil) :
+    SourceSignature.Goal :=
+  SourceSignature.call "format" [
+    compound "codes" [x, tail],
+    atom "~w",
+    SourceSignature.list [atom "a"]
+  ]
+
 /-- A heap-built meta-call returns to the same source service rather than
 using a second dynamic classification path. -/
 def metaAtomAcceptsAtom : SourceSignature.Goal :=
@@ -1155,6 +1185,17 @@ def laterCallSeesAssertion :
 #guard runCount [] groundRejectsNestedVariable == some (0, 0, 0)
 #guard runCount [] groundAcceptsRationalCompound == some (1, 0, 0)
 #guard runCount [] groundRejectsRationalCompoundWithFreeLeaf == some (0, 0, 0)
+#guard runCount [] isListAcceptsFinite == some (1, 0, 0)
+#guard runCount [] isListRejectsImproper == some (0, 0, 0)
+#guard runCount [] isListRejectsVariable == some (0, 0, 0)
+#guard runCount [] isListRejectsRationalSpine == some (0, 0, 0)
+#guard runCount [] isListAcceptsCyclicHead == some (1, 0, 0)
+#guard runShapesFor [] formatAtomicCodes xIdentity ==
+  some ([.compound "[|]" [.integer 97, .atom "[]"]], 0, 0)
+#guard runShapesFor [] (formatAtomicCodes (SourceSignature.list [integer 33]))
+    xIdentity ==
+  some ([.compound "[|]" [.integer 97,
+    .compound "[|]" [.integer 33, .atom "[]"]]], 0, 0)
 #guard runCount [] metaAtomAcceptsAtom == some (1, 0, 0)
 #guard runCount [] referenceIsAtomicButNotAtom == some (1, 0, 0)
 #guard runCount [] identitySameVariable == some (1, 0, 0)

@@ -265,6 +265,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .findall template (generator.map instruction) bag encoding
   | .metaCall callable extraArgs => .metaCall callable extraArgs
   | .dcgCall body input rest => .dcgCall body input rest
+  | .format destination format arguments decoder =>
+      .format destination format arguments decoder
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
   | .throw ball unboundError => .throw ball unboundError
@@ -854,6 +856,45 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
                   mapReturnFrame, mapStepResult, failWith, closeMemory,
                   hCleanup]
+          | format destination format arguments decoder =>
+              cases hDecode : decoder.decode memory.heap destination format
+                  arguments with
+              | error reason =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep, formatStep,
+                      mapState, mapControl, mapPhase, mapReturnFrame,
+                      mapStepResult, failWith, closeMemory, hDecode, hCleanup]
+              | ok plan =>
+                  cases plan with
+                  | codes encoding head tail values =>
+                      cases hAllocate : allocateConstants memory values with
+                      | error error =>
+                          cases hCleanup : memory.restore checkpoint <;>
+                            simp [mapDispatchAction, dispatchActionStep,
+                              formatStep, dcgConstantTerminalsStep,
+                              mapState, mapControl, mapPhase, mapReturnFrame,
+                              mapStepResult, failWith, closeMemory, hDecode,
+                              hAllocate, hCleanup]
+                      | ok allocated =>
+                          rcases allocated with ⟨roots, middle⟩
+                          cases hSegment : allocateAddressSegment encoding
+                              middle roots tail with
+                          | error error =>
+                              cases hCleanup : middle.restore checkpoint <;>
+                                simp [mapDispatchAction, dispatchActionStep,
+                                  formatStep, dcgConstantTerminalsStep,
+                                  dcgAddressTerminalsStep, mapState,
+                                  mapControl, mapAttempt, mapPhase,
+                                  mapReturnFrame, mapStepResult, failWith,
+                                  closeMemory, hDecode, hAllocate, hSegment,
+                                  hCleanup]
+                          | ok segment =>
+                              rcases segment with ⟨listRoot, final⟩
+                              simp [mapDispatchAction, dispatchActionStep,
+                                formatStep, dcgConstantTerminalsStep,
+                                dcgAddressTerminalsStep, mapState, mapControl,
+                                mapAttempt, mapPhase, mapReturnFrame,
+                                mapStepResult, hDecode, hAllocate, hSegment]
           | «catch» guarded catcher recovery =>
               simp [mapDispatchAction, dispatchActionStep, catchStep,
                 mapState, mapControl, mapPhase, mapReturnFrame,
@@ -880,6 +921,19 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                 mapStepResult]
           | termTest address test =>
               cases hMode : test.mode with
+              | properList encoding =>
+                  cases hList : termProperList encoding memory.heap address with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termTestStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, failWith, closeMemory,
+                          hMode, hList, hCleanup]
+                  | ok accepted =>
+                      cases accepted <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termTestStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, hMode, hList]
               | ground =>
                   cases hGround : termGround memory.heap address with
                   | error error =>

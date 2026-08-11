@@ -207,6 +207,21 @@ def main : IO Unit := do
   renderCount "ground_rational_free_leaf"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.groundRejectsRationalCompoundWithFreeLeaf)
+  renderCount "is_list_finite"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.isListAcceptsFinite)
+  renderCount "is_list_improper"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.isListRejectsImproper)
+  renderCount "is_list_variable"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.isListRejectsVariable)
+  renderCount "is_list_rational_spine"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.isListRejectsRationalSpine)
+  renderCount "is_list_cyclic_head"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.isListAcceptsCyclicHead)
   renderCount "identity_same_variable"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.identitySameVariable)

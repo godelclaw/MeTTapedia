@@ -453,6 +453,13 @@ structure Services (sigma : LP.LPSignature) where
   integerComparison? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.IntegerComparison ×
       LP.RuntimeQuery.IntegerArithmeticEncoding sigma) := fun _ => none
+  /-- Recognize `format/3` without inspecting its roots.  Read-only payload
+  decoding is a separate capability; allocation and unification remain in the
+  shared engine. -/
+  format? : RuntimeAtom sigma.scoped → Option (Addr × Addr × Addr) :=
+    fun _ => none
+  formatter : LP.RuntimeQuery.FormatDecoder sigma :=
+    LP.RuntimeQuery.rejectingFormatDecoder sigma
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -489,6 +496,8 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   univ? _ := none
   integerIs? _ := none
   integerComparison? _ := none
+  format? _ := none
+  formatter := LP.RuntimeQuery.rejectingFormatDecoder sigma
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -584,12 +593,17 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                   .integerCompare leftRoot rightRoot comparison
                                     encoding
                               | none =>
-                                  match services.dcgCall? goal with
-                                  | some (body, input, rest) =>
-                                      .dcgCall body input rest
+                                  match services.format? goal with
+                                  | some (destination, format, arguments) =>
+                                      .format destination format arguments
+                                        services.formatter
                                   | none =>
-                                      .call goal
-                                        (Program.clausesFor program goal.symbol)
+                                      match services.dcgCall? goal with
+                                      | some (body, input, rest) =>
+                                          .dcgCall body input rest
+                                      | none =>
+                                          .call goal
+                                            (Program.clausesFor program goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -696,6 +710,26 @@ theorem dispatchActionWith_integerComparison {sigma : LP.LPSignature}
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison]
 
+/-- `format/3` classification exposes only its three existing roots and one
+read-only decoder.  No heap result is computed by the classifier. -/
+theorem dispatchActionWith_format {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (destination format arguments : Addr)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal =
+      some (destination, format, arguments)) :
+    dispatchActionWith services program (.call goal) =
+      .format destination format arguments services.formatter := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat]
+
 /-- `phrase/3` reaches its distinct dynamic-grammar action only after every
 earlier disjoint service declines the call.  The classifier supplies three
 roots and no decoded instructions or memory. -/
@@ -710,11 +744,12 @@ theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
     (hDcg : services.dcgCall? goal = some (body, input, rest)) :
     dispatchActionWith services program (.call goal) =
       .dcgCall body input rest := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
-    hComparison, hDcg]
+    hComparison, hFormat, hDcg]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

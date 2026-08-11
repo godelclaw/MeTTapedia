@@ -266,6 +266,15 @@ def dcgCall? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 3 then some (body, input, rest) else none
   | _, _ => none
 
+/-- Recognize only `format/3`; the classifier exposes roots but does not read
+the destination, format text, or argument list. -/
+def format? (goal : RuntimeAtom Sigma.scoped) : Option (Addr × Addr × Addr) :=
+  match goal.symbol.name, goal.args.toList with
+  | "format", [destination, format, arguments] =>
+      if goal.symbol.arity = 3 then some (destination, format, arguments)
+      else none
+  | _, _ => none
+
 /-- SWI's `phrase_input/1` accepts an unbound variable, `[]`, or any outer
 list cell.  It deliberately does not traverse the tail at this boundary. -/
 private def checkPhraseState (heap : Heap Sigma.scoped) (address : Addr) :
@@ -285,6 +294,51 @@ private def stringCodeConstants (value : String) :
     List SourceSignature.Constant :=
   value.toList.map fun character =>
     .integer (Int.ofNat character.toNat)
+
+private def formatText (heap : Heap Sigma.scoped) (address : Addr) :
+    Except LP.RuntimeQuery.QueryError String := do
+  let cell ← dereferencedCell heap address
+  match cell with
+  | .const (.atom value) | .const (.string value) => pure value
+  | .var _ none => .error .invalidFormatString
+  | _ => .error .invalidFormatString
+
+/-- The first source-execution fragment needs SWI's default `~w` rendering of
+one atom or integer.  Compound, floating-point, and string writing and the
+other format directives remain typed unsupported cases rather than being
+approximated. -/
+private def renderWriteAtomic (heap : Heap Sigma.scoped) (address : Addr) :
+    Except LP.RuntimeQuery.QueryError String := do
+  let cell ← dereferencedCell heap address
+  match cell with
+  | .const (.atom value) => pure value
+  | .const (.integer value) => pure (toString value)
+  | .var _ none => .error .invalidFormatArguments
+  | _ => .error .unsupportedFormatDirective
+
+/-- Decode the pure `format(codes(Head,Tail), '~w', [Atomic])` fragment used
+by SWI's real `dcg/basics:atom//1`.  It produces only a codes plan; allocation,
+difference-list sharing, unification, and continuation remain engine-owned. -/
+def decodeFormat (heap : Heap Sigma.scoped) (destination format arguments : Addr) :
+    Except LP.RuntimeQuery.QueryError (LP.RuntimeQuery.FormatPlan Sigma) := do
+  let destinationCell ← dereferencedCell heap destination
+  let (head, tail) ←
+    match destinationCell with
+    | .app symbol roots =>
+        match symbol.name, symbol.arity, roots.toList with
+        | "codes", 2, [head, tail] => pure (head, tail)
+        | _, _, _ => .error .invalidFormatDestination
+    | _ => .error .invalidFormatDestination
+  let text ← formatText heap format
+  if text != "~w" then .error .unsupportedFormatDirective else
+  let argumentRoots ←
+    LP.RuntimeQuery.decodeAddressList collectionEncoding heap arguments
+  let argument ←
+    match argumentRoots with
+    | [argument] => pure argument
+    | _ => .error .invalidFormatArguments
+  let rendered ← renderWriteAtomic heap argument
+  pure (.codes collectionEncoding head tail (stringCodeConstants rendered))
 
 /-- Read one dynamic grammar body in the finite fragment needed by the pinned
 PeTTa parser.  Ordinary nonterminals reuse the callable decoder with the two
@@ -379,6 +433,10 @@ def termTest? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | "ground", [root] =>
       if goal.symbol.arity = 1 then some (root, .isGround) else none
+  | "is_list", [root] =>
+      if goal.symbol.arity = 1 then
+        some (root, .isProperList collectionEncoding)
+      else none
   | _, _ => none
 
 /-- Recognize strict identity and its negation.  The source layer exposes only
@@ -481,6 +539,8 @@ def services : RuntimeControl.Services Sigma where
   univ? := univ?
   integerIs? := integerIs?
   integerComparison? := integerComparison?
+  format? := format?
+  formatter := { decode := decodeFormat }
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -502,6 +562,12 @@ theorem services_collectionEncoding :
 
 @[simp]
 theorem services_dcgCall : services.dcgCall? = dcgCall? := rfl
+
+@[simp]
+theorem services_format : services.format? = format? := rfl
+
+@[simp]
+theorem services_formatter : services.formatter.decode = decodeFormat := rfl
 
 @[simp]
 theorem services_decodeDcg : services.decoder.decodeDcg = decodeDcg := rfl

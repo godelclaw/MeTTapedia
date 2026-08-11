@@ -4,9 +4,9 @@ import Mettapedia.Logic.Prolog.SourceRuntime
 import Mettapedia.Logic.LP.RuntimeReadback
 
 /-!
-Execute one real pinned `parser.pl` DCG through the canonical shared runtime.
-The loaded source slice retains unresolved loader obligations; this canary only
-claims the exercised `swrite_exp([])` path.
+Execute real pinned `parser.pl` DCG clauses through the canonical shared
+runtime.  The loaded source slice retains unresolved loader obligations; this
+canary claims only the exercised `swrite_exp([])` and `swrite_exp([a])` paths.
 -/
 
 open Mettapedia.Logic
@@ -47,6 +47,15 @@ def codesIdentity : SourceSignature.Variable := {
 def query : SourceSignature.Goal :=
   SourceSignature.call "phrase" [
     SourceSignature.compound "swrite_exp" [SourceSignature.nil],
+    .var codesIdentity,
+    SourceSignature.nil
+  ]
+
+def atomListQuery : SourceSignature.Goal :=
+  SourceSignature.call "phrase" [
+    SourceSignature.compound "swrite_exp" [
+      SourceSignature.list [SourceSignature.atom "a"]
+    ],
     .var codesIdentity,
     SourceSignature.nil
   ]
@@ -97,17 +106,9 @@ def renderTermAux : Nat -> LP.Term SourceRuntime.Sigma.scoped -> String
 def renderTerm (term : LP.Term SourceRuntime.Sigma.scoped) : String :=
   renderTermAux (term.size + 1) term
 
-def main (arguments : List String) : IO Unit := do
-  let [parserPath, dcgBasicsPath, listsPath, errorPath] := arguments
-    | throw <| IO.userError
-        "usage: pinned_parser_source_runtime \
-         <parser.pl> <dcg/basics.pl> <lists.pl> <error.pl>"
-  let program <- loadProgram
-    (← IO.FS.readFile parserPath)
-    (← IO.FS.readFile dcgBasicsPath)
-    (← IO.FS.readFile listsPath)
-    (← IO.FS.readFile errorPath)
-  let session <- match SourceRuntime.openEmpty program query with
+def execute (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) : IO (List Int × Nat × Nat) := do
+  let session <- match SourceRuntime.openEmpty program goal with
     | .ok session => pure session
     | .error _ => throw <| IO.userError "runtime failed to open"
   let (codes, resumed) <- match SourceRuntime.pullSession 8192 session with
@@ -122,10 +123,27 @@ def main (arguments : List String) : IO Unit := do
         throw <| IO.userError s!"runtime error: {repr error}"
     | .terminal (.raised packet _) _ =>
         throw <| IO.userError s!"runtime raised: {renderTerm packet.term}"
-  IO.println s!"codes={renderCodes codes}"
   match SourceRuntime.pullSession 8192 resumed with
   | .terminal (.completed memory) _ =>
-      IO.println s!"cleanup={memory.heap.size}/{memory.trail.size}"
+      pure (codes, memory.heap.size, memory.trail.size)
   | .answer _ _ => throw <| IO.userError "runtime produced an extra answer"
   | .open _ => throw <| IO.userError "runtime remained open after answer"
   | .terminal _ _ => throw <| IO.userError "runtime did not complete"
+
+def main (arguments : List String) : IO Unit := do
+  let [parserPath, dcgBasicsPath, listsPath, errorPath] := arguments
+    | throw <| IO.userError
+        "usage: pinned_parser_source_runtime \
+         <parser.pl> <dcg/basics.pl> <lists.pl> <error.pl>"
+  let program <- loadProgram
+    (← IO.FS.readFile parserPath)
+    (← IO.FS.readFile dcgBasicsPath)
+    (← IO.FS.readFile listsPath)
+    (← IO.FS.readFile errorPath)
+  let (emptyCodes, emptyHeap, emptyTrail) <- execute program query
+  let (atomListCodes, atomListHeap, atomListTrail) <-
+    execute program atomListQuery
+  IO.println s!"empty_codes={renderCodes emptyCodes}"
+  IO.println s!"empty_cleanup={emptyHeap}/{emptyTrail}"
+  IO.println s!"atom_list_codes={renderCodes atomListCodes}"
+  IO.println s!"atom_list_cleanup={atomListHeap}/{atomListTrail}"

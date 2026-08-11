@@ -174,10 +174,11 @@ scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
 The corresponding source-execution gate then runs the real pinned
-`parser.pl` DCG clause `phrase(swrite_exp([]), Codes)` through the same
+`parser.pl` DCG clauses `phrase(swrite_exp([]), Codes)` and
+`phrase(swrite_exp([a]), Codes)` through the same
 canonical `Logic.Prolog.SourceRuntime`, with those 297 linked clauses and no
-translated replacement.  It requires the exact SWI answer `[40,41]` and a
-clean final heap and trail:
+translated replacement.  It requires the exact SWI answers `[40,41]` and
+`[40,97,41]`, respectively, and a clean final heap and trail after both runs:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
@@ -196,7 +197,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 136 exact answer, exception, and persistent-store traces against
+It compares 141 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -226,6 +227,10 @@ Five recursive `ground/1` cases additionally cover a nested finite term,
 an unbound root, a nested free leaf, a closed rational cycle, and a rational
 cycle with a free leaf.  The cycle cases ensure graph traversal terminates
 without confusing revisitation with an unbound variable.
+Five `is_list/1` cases cover a finite list, an improper tail, an unbound root,
+a rationally cyclic spine, and a proper spine whose head is cyclic.  The last
+case pins the SWI distinction between list-spine recognition and whole-term
+acyclicity or groundness.
 Fourteen strict-identity cases compare `==/2` and `\==/2` through the shared
 read-only heap traversal: same and distinct variables, structural compounds,
 variable sharing, separately allocated rational cycles, non-binding failure,
