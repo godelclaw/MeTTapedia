@@ -44,4 +44,26 @@ def rejectsInvalidPriority : Bool :=
 
 #guard rejectsInvalidPriority
 
+def infixAssociativityRedeclarationReplaces : Bool :=
+  match declare 500 .xfx "fixture" defaults with
+  | .error _ => false
+  | .ok first =>
+      match declare 600 .xfy "fixture" first with
+      | .error _ => false
+      | .ok second =>
+          hasDeclaration second 600 .xfy "fixture" &&
+            !hasDeclaration second 500 .xfx "fixture"
+
+#guard infixAssociativityRedeclarationReplaces
+
+def infixRemovalIgnoresAssociativity : Bool :=
+  match declare 500 .xfy "fixture" defaults with
+  | .error _ => false
+  | .ok first =>
+      match declare 0 .xfx "fixture" first with
+      | .error _ => false
+      | .ok second => (infixes second "fixture").isEmpty
+
+#guard infixRemovalIgnoresAssociativity
+
 end Mettapedia.Logic.Prolog.ReaderOperatorRegression

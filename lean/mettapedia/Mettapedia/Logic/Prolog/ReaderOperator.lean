@@ -83,11 +83,14 @@ private def checkedPriority (value : Nat) : Except Error Priority :=
 
 private def replaces (name : String) (specifier : Specifier)
     (declaration : Declaration) : Bool :=
-  declaration.name = name && declaration.specifier = specifier
+  declaration.name = name &&
+    ((declaration.specifier.isPrefix && specifier.isPrefix) ||
+      (declaration.specifier.isPostfix && specifier.isPostfix) ||
+      (declaration.specifier.isInfix && specifier.isInfix))
 
 /-- Apply one `op/3` declaration. Priority zero removes the selected
-name/fixity; a positive priority replaces it without disturbing other
-fixities of the same name. -/
+name/fixity class; a positive priority replaces that class without disturbing
+prefix, postfix, or infix declarations in the other classes. -/
 def declare (priority : Nat) (specifier : Specifier) (name : String)
     (table : Table) : Except Error Table :=
   let remaining := table.filter (fun declaration =>
