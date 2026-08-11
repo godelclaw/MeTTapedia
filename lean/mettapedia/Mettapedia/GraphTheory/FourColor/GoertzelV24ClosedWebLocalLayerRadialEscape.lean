@@ -18,17 +18,22 @@ namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24ClosedWebAtGoodWord
 
+open GoertzelV24AnnularCrosscut
+open GoertzelV24AnnularCrosscut.SeparatedAlignedSimpleDualCrosscuts
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebComponentCensus
+open GoertzelV24ClosedWebHoleBoundaryOrder
 open GoertzelV24ClosedWebInnerTouching
 open GoertzelV24ClosedWebRadialComponents
 open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebTotalClosure
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24FiniteDeletionCyclicCut
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
+open GoertzelV24DualPathTransversal
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -408,6 +413,138 @@ theorem exists_radialPathOfInnerEnd_avoiding_cutEdges
   rw [innerEnd_card_eq_twenty data coloring web.tait,
     cutPairSlot_card_eq_sixteen layers hunique] at hcard
   omega
+
+/-- Avoiding the literal four-edge layer wall is exactly avoiding the
+value-level primal deletion set consumed by the source-crosscut component
+API. -/
+theorem ambientRadialPath_avoids_primalCut_of_avoids_cutEdges
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    {first second : Color}
+    {component : (colorPairSupportGraph coloring first second).ConnectedComponent}
+    (radial : ComponentRadialPath data coloring first second component)
+    (havoid : ∀ edge : G.edgeSet,
+      edge.1 ∈ (ambientRadialPath radial).edges → edge ∉ layers.cutEdges hunique) :
+    ∀ edge : G.edgeSet, edge.1 ∈ (ambientRadialPath radial).edges →
+      edge.1 ∉ edgeFinsetValueSet
+        ((layers.separatedLocalLayerPair hunique).primalCutEdges
+          web.annular.cellulation.rotation) := by
+  intro edge hedge hvalue
+  rcases (mem_edgeFinsetValueSet_iff
+    ((layers.separatedLocalLayerPair hunique).primalCutEdges
+      web.annular.cellulation.rotation) edge.1).1 hvalue with
+    ⟨other, hother, hvalueEq⟩
+  apply havoid other
+  · rw [hvalueEq]
+    exact hedge
+  · change other ∈ layers.cutEdges hunique at hother
+    exact hother
+
+/-- The finite radial-escape count supplies the source-mandated comparison
+walk: an outer-to-inner radial path that avoids the literal deletion wall.
+Together with the already-proved boundary avoidance, it retains the complete
+inner hole through the source-local splice. -/
+theorem sourceLocalLayerPair_innerHoleFaceKept_of_radialEscape
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength)
+    (hseparated :
+      ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique).MatchedCrossingsVertexDisjoint web.annular.cellulation.rotation) :
+    HoleFaceKept
+      ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique |>.sourceCrosscutLayerSpliceData web.annular.cellulation.rotation
+          (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext)
+          hseparated)
+      web.annular.cellulation.innerHole := by
+  let layers := sourceLocalLayerPair corridor hunique leftInterior hnext
+  obtain ⟨endpoint, havoids⟩ :=
+    exists_radialPathOfInnerEnd_avoiding_cutEdges layers hunique
+  let hinnerTouching : EveryColorPairComponentInnerTouching data coloring :=
+    everyColorPairComponentInnerTouching_of_totallyClosed
+      data web.boundary_wellFormed web.connected coloring web.tait web.totallyClosed
+  let radial := radialPathOfInnerEnd data web.boundary_wellFormed coloring web.tait
+    hinnerTouching endpoint
+  let source : G.Dart := outerBoundaryDart data web.boundary_wellFormed radial.outer
+  let root : G.Dart := innerBoundaryDart data web.boundary_wellFormed radial.inner
+  let bridge : G.Walk source.fst root.fst :=
+    (ambientRadialPath radial).reverse.copy
+      (by simpa [source] using radial.finish_eq_outerStub)
+      (by simpa [root] using radial.start_eq_innerStub)
+  have hsourceFace : dartOrbitFace web.annular.RS source =
+      web.annular.cellulation.outerHole := by
+    simpa [source] using outerBoundaryDart_on_outerHole
+      web.annular web.boundary_wellFormed radial.outer
+  have hrootFace : dartOrbitFace web.annular.RS root =
+      web.annular.cellulation.innerHole := by
+    simpa [root] using innerBoundaryDart_on_innerHole
+      web.annular web.boundary_wellFormed radial.inner
+  have hsourceSide : source.fst ∈
+      ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique).componentSide
+        (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext).component := by
+    exact sourceLocalLayerPair_outerHole_vertex_mem_componentSide
+      corridor hunique leftInterior hnext source hsourceFace
+  have hsource : source.fst ∈
+      (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext).component.supp :=
+    (((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+      hunique).mem_componentSide_iff
+        (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext).component
+        source.fst).1 hsourceSide
+  have hradialAvoid : ∀ edge : G.edgeSet,
+      edge.1 ∈ (ambientRadialPath radial).edges →
+      edge.1 ∉ edgeFinsetValueSet
+        ((layers.separatedLocalLayerPair hunique).primalCutEdges
+          web.annular.cellulation.rotation) := by
+    apply ambientRadialPath_avoids_primalCut_of_avoids_cutEdges layers hunique radial
+    intro edge hedge
+    exact havoids edge hedge
+  intro dart hdart
+  apply SourceCrosscutBoundaryData.face_vertex_mem_componentSide_of_bridge_and_boundary_avoids_primalCut
+    web.annular.cellulation.rotation
+    ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair hunique)
+    (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext)
+    source root dart bridge hsource
+  · intro edge hedge
+    apply hradialAvoid edge
+    have hedgeReverse : (edge : Sym2 V) ∈ (ambientRadialPath radial).edges.reverse := by
+      simpa only [bridge, SimpleGraph.Walk.edges_copy,
+        SimpleGraph.Walk.edges_reverse] using hedge
+    exact List.mem_reverse.mp hedgeReverse
+  · intro edge hedge hvalue
+    rcases (mem_edgeFinsetValueSet_iff
+      (((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique).primalCutEdges web.annular.cellulation.rotation) edge.1).1 hvalue with
+      ⟨other, hother, hotherValue⟩
+    have hotherCut : other ∈ dualWalkCrossingEdges
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+        ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+          hunique).dualLoop := by
+      simpa [SeparatedAlignedSimpleDualCrosscuts.primalCutEdges] using hother
+    have hedgeCut : edge ∈ dualWalkCrossingEdges
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+        ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+          hunique).dualLoop := by
+      simpa [Subtype.ext hotherValue] using hotherCut
+    rw [hrootFace] at hedge
+    exact (Finset.disjoint_left.mp
+      (sourceLocalLayerPair_dualLoopCrossingEdges_disjoint_innerHoleBoundary
+        corridor hunique leftInterior hnext) hedgeCut hedge)
+  · exact hdart.trans hrootFace.symm
 
 end LocalLayerFormation
 
