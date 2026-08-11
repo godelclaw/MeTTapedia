@@ -57,6 +57,17 @@ def nextCenterLayerFace
   realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
     (nextCorridorInterior leftInterior hnext).center
 
+/-- The next slab centre is one of the literal hexagonal faces of the source
+corridor. -/
+theorem nextCenterLayerFace_boundary_card_eq_six
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+      interface.nextCenterLayerFace.1).card = 6 := by
+  simpa [nextCenterLayerFace] using
+    realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      |>.hexagonal (nextCorridorInterior leftInterior hnext).center
+
 /-- The two central faces in a source slab are different positions of the
 actual simple clean corridor path. -/
 theorem centerLayerFace_ne_nextCenterLayerFace
