@@ -93,6 +93,23 @@ theorem localLayerCellBoundaryRegion_subset_finiteConnectivityInterface
       aligned.localLayerFiniteConnectivityInterface := by
   exact Finset.subset_union_right
 
+/-- The two incoming cut edges are outside the newly exposed hexagonal
+boundary.  Thus the displayed finite carrier is a genuine disjoint sum, not
+merely a union with a cardinality bound. -/
+theorem indexedLocalLayerPrefixCrossings_disjoint_cellBoundaryRegion
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    Disjoint
+      (indexedCrossingEdgeSet aligned.toInterface.localLayerPrefixCrossing)
+      aligned.toInterface.localLayerCellBoundaryRegion := by
+  rw [Finset.disjoint_left]
+  intro edge hedgeCrossing hedgeCell
+  rcases (mem_indexedCrossingEdgeSet_iff
+      aligned.toInterface.localLayerPrefixCrossing edge).1 hedgeCrossing with
+    ⟨step, rfl⟩
+  exact aligned.localLayerPrefixCrossing_not_mem_cellBoundaryRegion step
+    hedgeCell
+
 /-- The selected connectivity carrier has at most two old cut edges plus
 the six edges of the next source hexagon. -/
 theorem localLayerFiniteConnectivityInterface_card_le_eight
@@ -114,6 +131,25 @@ theorem localLayerFiniteConnectivityInterface_card_le_eight
         aligned.toInterface.localLayerPrefixCrossing)
       (le_of_eq hcell)
     _ = 8 := rfl
+
+/-- The selected carrier has exactly eight edges: the incoming crossing is
+injectively indexed by `Fin 2`, the new face boundary has six distinct edges,
+and the two blocks are disjoint. -/
+theorem localLayerFiniteConnectivityInterface_card_eq_eight
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    aligned.localLayerFiniteConnectivityInterface.card = 8 := by
+  have hcell :
+      aligned.toInterface.localLayerCellBoundaryRegion.card = 6 := by
+    simpa [SourceConsecutiveSlabInterface.localLayerCellBoundaryRegion] using
+      aligned.toInterface.nextCenterLayerFace_boundary_card_eq_six
+  rw [localLayerFiniteConnectivityInterface,
+    Finset.card_union_of_disjoint
+      aligned.indexedLocalLayerPrefixCrossings_disjoint_cellBoundaryRegion,
+    card_indexedCrossingEdgeSet_eq
+      aligned.toInterface.localLayerPrefixCrossing
+      aligned.toInterface.localLayerPrefixCrossing_injective,
+    hcell]
 
 /-- Every vertex used by the residual seam graph lies in the selected
 eight-edge interface. -/
