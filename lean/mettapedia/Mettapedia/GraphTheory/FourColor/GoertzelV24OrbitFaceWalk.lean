@@ -160,6 +160,53 @@ theorem map_edge_faceOrbitDarts_nodup
   apply Subtype.ext
   exact hedge
 
+/-- The rooted facial enumeration realizes a closed graph walk.  Unlike the
+trail refinement below, this applies to open boundary faces whose dart
+enumeration can legitimately revisit an underlying edge. -/
+theorem exists_rootedFaceWalk
+    (graphData : Data G)
+    (root : G.Dart) :
+    ∃ walk : G.Walk root.fst root.fst,
+      walk.darts = faceOrbitDarts graphData root ∧
+        (∀ edge : G.edgeSet,
+          edge.1 ∈ walk.edges →
+            edge ∈ orbitFaceBoundary graphData.toRotationSystem
+              (dartOrbitFace graphData.toRotationSystem root)) := by
+  let darts := faceOrbitDarts graphData root
+  have hdartsNe : darts ≠ [] := faceOrbitDarts_ne_nil graphData root
+  have hchain : List.IsChain G.DartAdj darts :=
+    faceOrbitDarts_isChain graphData root
+  have hhead : darts.head hdartsNe = root :=
+    faceOrbitDarts_head graphData root
+  have hlastAdj : G.DartAdj (darts.getLast hdartsNe) root :=
+    faceOrbitDarts_getLast_dartAdj_root graphData root
+  let openWalk : G.Walk (darts.head hdartsNe).fst
+      (darts.getLast hdartsNe).snd :=
+    SimpleGraph.Walk.ofDarts darts hdartsNe hchain
+  let walk : G.Walk root.fst root.fst :=
+    openWalk.copy (congrArg (fun dart : G.Dart => dart.fst) hhead)
+      (show (darts.getLast hdartsNe).snd = root.fst from hlastAdj)
+  have hwalkDarts : walk.darts = darts := by
+    simp [walk, openWalk]
+  have hwalkEdges : walk.edges =
+      darts.map (fun dart => dart.edge) := by
+    simp [SimpleGraph.Walk.edges, hwalkDarts]
+  refine ⟨walk, hwalkDarts, ?_⟩
+  intro edge hedge
+  rw [hwalkEdges] at hedge
+  rcases List.mem_map.mp hedge with ⟨dart, hdart, hdartEdge⟩
+  dsimp only [darts] at hdart
+  simp only [faceOrbitDarts, List.mem_ofFn] at hdart
+  rcases hdart with ⟨position, hposition⟩
+  have hboundary := faceCycleEdge_mem graphData.toRotationSystem
+    root position
+  have hedgeEq :
+      faceCycleEdge graphData.toRotationSystem root position = edge := by
+    apply Subtype.ext
+    simpa [faceCycleEdge, hposition] using hdartEdge
+  rw [← hedgeEq]
+  exact hboundary
+
 /-- The rooted facial enumeration realizes a closed graph trail, with its
 edge list exactly the ordered underlying face edges. -/
 theorem exists_rootedFaceTrail
