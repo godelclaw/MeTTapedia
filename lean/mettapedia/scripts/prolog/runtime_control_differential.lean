@@ -428,6 +428,24 @@ def main : IO Unit := do
   renderCount "copy_term_meta"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaCopyTerm)
+  renderCount "term_variables_order_identity"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termVariablesPreservesOrderAndIdentity)
+  renderCount "term_variables_deduplicates"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termVariablesDeduplicatesSharing)
+  renderCount "term_variables_ground_empty"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termVariablesGroundIsEmpty)
+  renderCount "term_variables_rational_leaf"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termVariablesRationalFreeLeaf)
+  renderCount "term_variables_output_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termVariablesOutputMismatch)
+  renderCount "term_variables_meta"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaTermVariables)
   renderIntegerAnswers "integer_addition"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerAddition

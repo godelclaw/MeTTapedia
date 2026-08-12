@@ -712,6 +712,38 @@ def metaCopyTerm : SourceSignature.Goal :=
 def copyTermRationalSource : SourceSignature.Goal :=
   .conj (.unify x (compound "f" [x])) (copyTerm x y)
 
+/-! ## Ordered source-variable discovery -/
+
+def termVariables (term output : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "term_variables" [term, output]
+
+def termVariablesPreservesOrderAndIdentity : SourceSignature.Goal :=
+  .conj (termVariables (pair y x) z)
+    (.conj (.unify z (SourceSignature.list [leftVar, rightVar]))
+      (.conj (strictIdentity leftVar y)
+        (strictIdentity rightVar x)))
+
+def termVariablesDeduplicatesSharing : SourceSignature.Goal :=
+  .conj (termVariables (pair x x) z)
+    (.conj (.unify z (SourceSignature.list [leftVar]))
+      (strictIdentity leftVar x))
+
+def termVariablesGroundIsEmpty : SourceSignature.Goal :=
+  termVariables (pair (atom "a") (atom "b")) SourceSignature.nil
+
+def termVariablesRationalFreeLeaf : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x, y]))
+    (.conj (termVariables x z)
+      (.conj (.unify z (SourceSignature.list [leftVar]))
+        (strictIdentity leftVar y)))
+
+def termVariablesOutputMismatch : SourceSignature.Goal :=
+  termVariables (pair x y) (SourceSignature.list [x])
+
+def metaTermVariables : SourceSignature.Goal :=
+  .conj (metaGoal (compound "term_variables" [pair x y, z]))
+    (.unify z (SourceSignature.list [leftVar, rightVar]))
+
 /-- Observe a typed runtime error without identifying ordinary Prolog
 failure with an engine-side malformed-operation result. -/
 def runQueryError? (program : SourceSignature.Program)
@@ -1690,6 +1722,12 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard match runQueryError? [] copyTermRationalSource with
   | some (.copyTermReadback _) => true
   | _ => false
+#guard runCount [] termVariablesPreservesOrderAndIdentity == some (1, 0, 0)
+#guard runCount [] termVariablesDeduplicatesSharing == some (1, 0, 0)
+#guard runCount [] termVariablesGroundIsEmpty == some (1, 0, 0)
+#guard runCount [] termVariablesRationalFreeLeaf == some (1, 0, 0)
+#guard runCount [] termVariablesOutputMismatch == some (0, 0, 0)
+#guard runCount [] metaTermVariables == some (1, 0, 0)
 #guard runShapesFor [] integerAddition xIdentity ==
   some ([.integer 5], 0, 0)
 #guard runShapesFor [] integerNestedArithmetic xIdentity ==
@@ -1790,6 +1828,7 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount binaryFactProgram (currentPredicate "p" 2) == some (1, 0, 0)
 #guard runCount binaryFactProgram (currentPredicate "q" 2) == some (0, 0, 0)
 #guard runCount [] (currentPredicate "copy_term" 2) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "term_variables" 2) == some (1, 0, 0)
 #guard match runQueryError? binaryFactProgram currentPredicateUnbound with
   | some .predicateIndicatorUnbound => true
   | _ => false

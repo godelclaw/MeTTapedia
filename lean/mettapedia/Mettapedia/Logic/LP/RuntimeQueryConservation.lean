@@ -353,6 +353,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .univ termRoot listRoot encoding
   | .copyTerm sourceRoot targetRoot =>
       .copyTerm sourceRoot targetRoot
+  | .termVariables termRoot variablesRoot encoding =>
+      .termVariables termRoot variablesRoot encoding
   | .integerIs resultRoot expressionRoot encoding =>
       .integerIs resultRoot expressionRoot encoding
   | .integerCompare leftRoot rightRoot comparison encoding =>
@@ -1350,6 +1352,28 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                         copyTermStep, beginUnifyStep, mapState, mapControl,
                         mapAttempt, mapPhase, mapReturnFrame, mapStepResult,
                         hCapture, hInstall]
+          | termVariables termRoot variablesRoot encoding =>
+              cases hRoots : termVariableRoots memory.heap termRoot with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      termVariablesStep, mapState, mapControl, mapAttempt,
+                      mapPhase, mapReturnFrame, mapStepResult, failWith,
+                      closeMemory, hRoots, hCleanup]
+              | ok roots =>
+                  cases hAllocate : allocateAddressList encoding memory roots with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termVariablesStep, mapState, mapControl, mapAttempt,
+                          mapPhase, mapReturnFrame, mapStepResult, failWith,
+                          closeMemory, hRoots, hAllocate, hCleanup]
+                  | ok allocated =>
+                      rcases allocated with ⟨listRoot, nextMemory⟩
+                      simp [mapDispatchAction, dispatchActionStep,
+                        termVariablesStep, beginUnifyStep, mapState, mapControl,
+                        mapAttempt, mapPhase, mapReturnFrame, mapStepResult,
+                        hRoots, hAllocate]
           | integerIs resultRoot expressionRoot encoding =>
               cases hEval : evalInteger encoding memory.heap expressionRoot with
               | error error =>

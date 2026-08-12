@@ -500,6 +500,10 @@ structure Services (sigma : LP.LPSignature) where
   /-- Recognize finite `copy_term/2` without inspecting either root.  Capture,
   freshening, allocation, and output unification remain shared-engine work. -/
   copyTerm? : RuntimeAtom sigma.scoped → Option (Addr × Addr) := fun _ => none
+  /-- Recognize `term_variables/2` without inspecting the term graph. -/
+  termVariables? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.CollectionEncoding sigma) :=
+      fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -546,6 +550,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   predicateIndicatorEncoding := none
   runtimePredicates := []
   copyTerm? _ := none
+  termVariables? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -682,9 +687,15 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                                               | some (sourceRoot, targetRoot) =>
                                                                   .copyTerm sourceRoot targetRoot
                                                               | none =>
-                                                                  .call goal
-                                                                    (Program.clausesFor program
-                                                                      goal.symbol)
+                                                                  match services.termVariables? goal with
+                                                                  | some (termRoot, variablesRoot,
+                                                                      encoding) =>
+                                                                      .termVariables termRoot
+                                                                        variablesRoot encoding
+                                                                  | none =>
+                                                                      .call goal
+                                                                        (Program.clausesFor program
+                                                                          goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right

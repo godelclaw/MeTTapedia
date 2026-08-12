@@ -950,6 +950,22 @@ def copyTermPredicate : PredicateIndicator := {
   arity := 2
 }
 
+/-- Recognize ISO `term_variables/2`; traversal and list construction stay in
+the shared runtime. -/
+def termVariables? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.CollectionEncoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "term_variables", [termRoot, variablesRoot] =>
+      if goal.symbol.arity = 2 then
+        some (termRoot, variablesRoot, collectionEncoding)
+      else none
+  | _, _ => none
+
+def termVariablesPredicate : PredicateIndicator := {
+  name := "term_variables"
+  arity := 2
+}
+
 def integerIs? (goal : RuntimeAtom Sigma.scoped) :
     Option (Addr × Addr × LP.RuntimeQuery.IntegerArithmeticEncoding Sigma) :=
   match goal.symbol.name, goal.args.toList with
@@ -1035,8 +1051,9 @@ def services : RuntimeControl.Services Sigma where
   listLength? := listLength?
   currentPredicate? := currentPredicate?
   predicateIndicatorEncoding := some predicateIndicatorEncoding
-  runtimePredicates := [copyTermPredicate]
+  runtimePredicates := [copyTermPredicate, termVariablesPredicate]
   copyTerm? := copyTerm?
+  termVariables? := termVariables?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -1064,7 +1081,7 @@ theorem services_copyTerm : services.copyTerm? = copyTerm? := rfl
 
 @[simp]
 theorem services_runtimePredicates :
-    services.runtimePredicates = [copyTermPredicate] := rfl
+    services.runtimePredicates = [copyTermPredicate, termVariablesPredicate] := rfl
 
 /-- The concrete source realization exposes `copy_term/2` as exactly the
 shared copy action; no source clause, decoder result, or fallback call is
@@ -1076,6 +1093,20 @@ theorem dispatchActionWith_copyTerm (program : SourceSignature.Program)
       symbol := copyTermPredicate
       args := #[sourceRoot, targetRoot]
     }) = .copyTerm sourceRoot targetRoot := by
+  rfl
+
+@[simp]
+theorem services_termVariables : services.termVariables? = termVariables? := rfl
+
+/-- The concrete source realization exposes `term_variables/2` as exactly the
+shared ordered-root traversal action. -/
+@[simp]
+theorem dispatchActionWith_termVariables (program : SourceSignature.Program)
+    (termRoot variablesRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := termVariablesPredicate
+      args := #[termRoot, variablesRoot]
+    }) = .termVariables termRoot variablesRoot collectionEncoding := by
   rfl
 
 @[simp]

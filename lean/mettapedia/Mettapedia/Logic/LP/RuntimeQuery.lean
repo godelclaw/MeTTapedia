@@ -70,6 +70,7 @@ inductive QueryError where
   | termIdentityBudgetExhausted
   | termGroundBudgetExhausted
   | termListBudgetExhausted
+  | termVariablesBudgetExhausted
   | standardOrderBudgetExhausted
   | unsupportedSortReference
   | invalidSortKey
@@ -812,6 +813,41 @@ def termProperList {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] (encoding : CollectionEncoding σ)
     (heap : Heap σ.scoped) (address : Addr) : Except QueryError Bool :=
   termProperListAux encoding heap (heap.size + 2) address []
+
+/-! ## Ordered variables of a finite or rational heap term -/
+
+/-- Cycle-safe, left-to-right variable discovery following SWI-Prolog's
+`term_variables_loop` work-agenda discipline (`src/pl-prims.c`).  Roots are
+deduplicated by heap identity, so repeated occurrences remain one output
+variable and rational application cycles terminate. -/
+def termVariableRootsAux {σ : LPSignature} (heap : Heap σ.scoped) :
+    Nat → List Addr → List Addr → List Addr → Except QueryError (List Addr)
+  | 0, _, _, _ => .error .termVariablesBudgetExhausted
+  | _ + 1, [], _, found => .ok found
+  | fuel + 1, address :: rest, visited, found =>
+      match heap.deref address with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root root) =>
+          if root ∈ visited then
+            termVariableRootsAux heap fuel rest visited found
+          else
+            match heap[root]? with
+            | none => .error (.memory (.invalidAddress root))
+            | some (.var _ none) =>
+                termVariableRootsAux heap fuel rest (root :: visited)
+                  (found ++ [root])
+            | some (.var _ (some _)) => .error (.memory .illFormedHeap)
+            | some (.const _) =>
+                termVariableRootsAux heap fuel rest (root :: visited) found
+            | some (.app _ arguments) =>
+                termVariableRootsAux heap fuel (arguments.toList ++ rest)
+                  (root :: visited) found
+
+def termVariableRoots {σ : LPSignature} (heap : Heap σ.scoped)
+    (address : Addr) : Except QueryError (List Addr) :=
+  termVariableRootsAux heap (termGroundFuel heap) [address] [] []
 
 /-! ## Read-only strict term identity -/
 
@@ -2720,6 +2756,38 @@ theorem copyTermStep_of_capture_install {σ : LPSignature}
       } installed.root targetRoot continuation := by
   simp [copyTermStep, hCapture, hInstall]
 
+/-- Execute `term_variables/2` by discovering existing unbound roots in
+left-to-right first-occurrence order, allocating only the result list spine,
+and entering the canonical unifier.  The listed variables are the source
+variables themselves, never copies. -/
+def termVariablesStep {σ : LPSignature} [DecidableEq σ.constants]
+    (encoding : CollectionEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot variablesRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match termVariableRoots state.memory.heap termRoot with
+  | .error error => failWith state error
+  | .ok variableRoots =>
+      match allocateAddressList encoding state.memory variableRoots with
+      | .error error => failWith state (.memory error)
+      | .ok (listRoot, memory) =>
+          beginUnifyStep { state with memory } variablesRoot listRoot continuation
+
+/-- Successful traversal and list allocation enter exactly one ordinary
+unification attempt over the source variables in the discovered order. -/
+theorem termVariablesStep_of_roots_allocate {σ : LPSignature}
+    [DecidableEq σ.constants]
+    (encoding : CollectionEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot variablesRoot : Addr) (continuation : List Instruction)
+    (roots : List Addr) (listRoot : Addr) (memory : Memory σ.scoped)
+    (hRoots : termVariableRoots state.memory.heap termRoot = .ok roots)
+    (hAllocate : allocateAddressList encoding state.memory roots =
+      .ok (listRoot, memory)) :
+    termVariablesStep encoding state termRoot variablesRoot continuation =
+      beginUnifyStep { state with memory } variablesRoot listRoot continuation := by
+  simp [termVariablesStep, hRoots, hAllocate]
+
 /-- Execute one bidirectional text/code plan.  Both directions allocate only
 fresh canonical cells and enter the ordinary graph unifier; the decoder never
 binds an output or decides a mismatching ground result itself. -/
@@ -3177,6 +3245,8 @@ inductive DispatchAction (σ : LPSignature)
   | termIdentity (left right : Addr) (expected : Bool)
   | univ (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
   | copyTerm (sourceRoot targetRoot : Addr)
+  | termVariables (termRoot variablesRoot : Addr)
+      (encoding : CollectionEncoding σ)
   | integerIs (resultRoot expressionRoot : Addr)
       (encoding : IntegerArithmeticEncoding σ)
   | integerCompare (leftRoot rightRoot : Addr)
@@ -3324,6 +3394,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
       univStep state termRoot listRoot encoding rest
   | .copyTerm sourceRoot targetRoot =>
       copyTermStep state sourceRoot targetRoot rest
+  | .termVariables termRoot variablesRoot encoding =>
+      termVariablesStep encoding state termRoot variablesRoot rest
   | .integerIs resultRoot expressionRoot encoding =>
       integerIsStep state resultRoot expressionRoot encoding rest
   | .integerCompare leftRoot rightRoot comparison encoding =>

@@ -612,6 +612,14 @@ def main (arguments : List String) : IO Unit := do
       .var termIdentity
     ])
     (SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"])
+  checkDatabaseGoal registeredDatabase "metta_term_variables_direct"
+    (SourceSignature.call "term_variables" [
+      SourceSignature.compound "pair" [
+        SourceRuntimeRegression.x, SourceRuntimeRegression.y],
+      .var termIdentity
+    ])
+    (SourceSignature.list [
+      SourceRuntimeRegression.x, SourceRuntimeRegression.y])
   checkDatabaseGoal registeredDatabase "metta_eval_compound"
     (evalQuery (SourceSignature.list
       [SourceSignature.atom "id", SourceSignature.atom "a"]))
