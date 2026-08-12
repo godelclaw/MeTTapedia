@@ -356,6 +356,40 @@ theorem sourceCorridorSerialInputTrackedSeamGraphAt_support_subset_outgoingCarri
     exact Or.inl
       ((mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, hbackward.1.symm⟩)
 
+/-- The tracked residual graph has at most fourteen non-isolated ambient
+edges, uniformly in the source graph and corridor position. -/
+theorem sourceCorridorSerialInputTrackedSeamGraphAt_support_card_le_fourteen
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color) (first second : Color) :
+    (sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic hrotation
+      htwoSided hunique offset color first second).support.ncard ≤ 14 := by
+  calc
+    (sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic hrotation
+        htwoSided hunique offset color first second).support.ncard ≤
+        (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic
+          hrotation htwoSided hunique offset : Set G.edgeSet).ncard :=
+      Set.ncard_le_ncard
+        (sourceCorridorSerialInputTrackedSeamGraphAt_support_subset_outgoingCarrier
+          realization hcubic hrotation htwoSided hunique offset color first
+          second)
+    _ = (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic
+          hrotation htwoSided hunique offset).card :=
+      Set.ncard_coe_finset _
+    _ ≤ 14 := sourceCorridorSerialOutgoingEdgeCarrierAt_card_le_fourteen
+      realization hcubic hrotation htwoSided hunique offset
+
 /-- Every face occurrence used by a facial residual projects to the same
 bounded outgoing-edge carrier. -/
 theorem sourceCorridorSerialInputFaceSeamGraphAt_support_projects_outgoingCarrier
@@ -399,6 +433,54 @@ theorem sourceCorridorSerialInputFaceSeamGraphAt_support_projects_outgoingCarrie
       |>.mem_edgeAdjacencyClosedCarrier_iff _ _).2
     exact Or.inl
       ((mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, hbackward.1.symm⟩)
+
+/-- On a two-sided rotation system, a face does not repeat an ambient edge.
+Thus every occurrence-sensitive facial residual also has support at most
+fourteen, not merely an edge projection of that size. -/
+theorem sourceCorridorSerialInputFaceSeamGraphAt_support_card_le_fourteen
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (root : embedded.cellulation.rotation.toRotationSystem.D) :
+    (sourceCorridorSerialInputFaceSeamGraphAt realization hcubic hrotation
+      htwoSided hunique offset root).support.ncard ≤ 14 := by
+  let support :=
+    (sourceCorridorSerialInputFaceSeamGraphAt realization hcubic hrotation
+      htwoSided hunique offset root).support
+  let project := faceCycleEdge
+    embedded.cellulation.rotation.toRotationSystem root
+  have himage : project '' support ⊆
+      (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+        htwoSided hunique offset : Set G.edgeSet) := by
+    intro edge hedge
+    rcases hedge with ⟨position, hposition, rfl⟩
+    exact
+      sourceCorridorSerialInputFaceSeamGraphAt_support_projects_outgoingCarrier
+        realization hcubic hrotation htwoSided hunique offset root position
+        hposition
+  calc
+    support.ncard = (project '' support).ncard :=
+      (Set.ncard_image_of_injective support
+        (faceCycleEdge_injective
+          embedded.cellulation.rotation.toRotationSystem htwoSided root)).symm
+    _ ≤ (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic
+          hrotation htwoSided hunique offset : Set G.edgeSet).ncard :=
+      Set.ncard_le_ncard himage
+    _ = (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic
+          hrotation htwoSided hunique offset).card :=
+      Set.ncard_coe_finset _
+    _ ≤ 14 := sourceCorridorSerialOutgoingEdgeCarrierAt_card_le_fourteen
+      realization hcubic hrotation htwoSided hunique offset
 
 end AnnularEmbedding
 
