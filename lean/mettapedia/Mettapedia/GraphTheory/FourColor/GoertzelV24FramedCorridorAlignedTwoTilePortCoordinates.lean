@@ -1,4 +1,6 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorProfilePortPartition
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTilePortBoundary
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBoundaryFaceCutProfile
 
 /-!
 # Physical port coordinates of an aligned two-tile slab
@@ -121,6 +123,37 @@ theorem sourceTwoTileAlignedTerminalProfileDataAt_portEdge_eq_orderedCrossing
       hrotation htwoSided hunique offset).terminalEdge terminal = _
     rw [sourceTwoTileAlignedTerminalProfileDataAt_terminalEdge]
     rfl
+
+/-- Every displayed physical `4 + 2` port belongs to the literal retained
+slab region.  This is the well-formedness direction needed before the
+six-edge slab can be used as an open generator; it does not assert that the
+six ports exhaust the boundary or persist across a different slab. -/
+theorem sourceTwoTileAlignedTerminalProfileDataAt_portsInRegion
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 4)) :
+    (sourceTwoTileAlignedTerminalProfileDataAt realization hcubic hrotation
+      htwoSided hunique offset).PortsInRegion := by
+  unfold sourceTwoTileAlignedTerminalProfileDataAt
+  apply GoertzelV24CorridorProfilePortPartition.GraphCorridorCutData.partitionCrossings_portsInRegion
+  simpa [sourceTwoTileAlignedOrderedProfileDataAt,
+    SourceCornerAlignedTwoTileLayerBoundary.orderedProfileData] using
+    GoertzelV24RotationBoundaryFaceCutProfile.vertexSetBoundaryGraphCutDataWithIndexing_portsInRegion
+      embedded.cellulation.rotation.toRotationSystem
+      (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+        htwoSided hunique offset).componentSide
+      (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+        htwoSided hunique offset).crossingIndexing
 
 end AnnularEmbedding
 

@@ -104,6 +104,21 @@ theorem GraphCorridorCutData.partitionCrossings_portEdge
         (partitionCorridorPort crossingIndex terminalIndex port) := by
   cases port <;> rfl
 
+/-- Reclassifying selected boundary entries preserves the fact that every
+displayed port belongs to the same regional edge set. -/
+theorem GraphCorridorCutData.partitionCrossings_portsInRegion
+    {RS : RotationSystem V E}
+    {crossingWidth terminalCount totalWidth faceFragmentCount : Nat}
+    (data : GraphCorridorCutData RS totalWidth 0 faceFragmentCount)
+    (crossingIndex : Fin crossingWidth → Fin totalWidth)
+    (terminalIndex : Fin terminalCount → Fin totalWidth)
+    (hports : data.PortsInRegion) :
+    (GraphCorridorCutData.partitionCrossings data crossingIndex terminalIndex
+      ).PortsInRegion := by
+  intro port
+  rw [GraphCorridorCutData.partitionCrossings_portEdge]
+  exact hports _
+
 /-- Regional profile construction commutes with splitting one ordered
 crossing list into moving crossings and fixed terminals. -/
 theorem GraphCorridorCutData.partitionCrossings_regionalProfile
