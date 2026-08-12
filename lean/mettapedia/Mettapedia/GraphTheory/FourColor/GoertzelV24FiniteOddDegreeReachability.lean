@@ -68,4 +68,20 @@ theorem exists_distinct_reachable_odd_of_odd
     component.reachable_of_mem_supp
       hstartComponent finishInComponent.2⟩
 
+omit [DecidableEq W] in
+/-- If every odd vertex of a finite support graph is one of its displayed
+boundary portals, then an odd portal is connected to a distinct displayed
+portal.  The geometric work in applications is the boundary classification;
+this lemma only packages the componentwise handshaking consequence. -/
+theorem exists_distinct_reachable_mem_of_odd_of_odd_subset
+    (start : W) (hstartOdd : Odd (H.degree start)) (boundary : Set W)
+    (hoddBoundary : ∀ vertex : W, Odd (H.degree vertex) → vertex ∈ boundary) :
+    ∃ finish : W, finish ≠ start ∧ finish ∈ boundary ∧
+      H.Reachable start finish := by
+  rcases exists_distinct_reachable_odd_of_odd
+      (H := H) start hstartOdd with
+    ⟨finish, hfinishNe, hfinishOdd, hfinishReachable⟩
+  exact ⟨finish, hfinishNe, hoddBoundary finish hfinishOdd,
+    hfinishReachable⟩
+
 end Mettapedia.GraphTheory.FourColor
