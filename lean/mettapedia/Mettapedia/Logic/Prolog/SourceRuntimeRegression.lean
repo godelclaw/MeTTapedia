@@ -827,6 +827,113 @@ def numberVariablesUnsupportedOptions : SourceSignature.Goal :=
   SourceSignature.call "numbervars" [pair x y, integer 0, z,
     SourceSignature.list [atom "unsupported"]]
 
+/-! ## Pinned SWI-compatible `term_hash/2` -/
+
+def termHashGoal (term output : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "term_hash" [term, output]
+
+def termHashAtom : SourceSignature.Goal := termHashGoal (atom "a") x
+
+def termHashInteger : SourceSignature.Goal := termHashGoal (integer 1) x
+
+def termHashNegativeInteger : SourceSignature.Goal :=
+  termHashGoal (integer (-1)) x
+
+def termHashString : SourceSignature.Goal := termHashGoal (string "x") x
+
+def termHashCompound : SourceSignature.Goal :=
+  termHashGoal (compound "f" [atom "a", integer 1]) x
+
+def termHashList : SourceSignature.Goal :=
+  termHashGoal (SourceSignature.list [atom "a", atom "b"]) x
+
+def termHashFloat : SourceSignature.Goal :=
+  termHashGoal (floatBits (1.0 : Float).toBits) x
+
+def termHashNegativeZero : SourceSignature.Goal :=
+  termHashGoal (floatBits (-0.0 : Float).toBits) x
+
+def termHashUnicodeAtom : SourceSignature.Goal :=
+  termHashGoal (atom "λ") x
+
+def termHashLatinOneAtom : SourceSignature.Goal :=
+  termHashGoal (atom "é") x
+
+def termHashUnicodeString : SourceSignature.Goal :=
+  termHashGoal (string "λ") x
+
+def termHashLatinOneString : SourceSignature.Goal :=
+  termHashGoal (string "é") x
+
+def termHashMixedWideString : SourceSignature.Goal :=
+  termHashGoal (string "éλ") x
+
+/-- Permanent guards for SWI's exact Latin-1/wide storage cutoff. -/
+def termHashLatinOneBoundaryAtom : SourceSignature.Goal :=
+  termHashGoal (atom "ÿ") x
+
+def termHashWideBoundaryAtom : SourceSignature.Goal :=
+  termHashGoal (atom "Ā") x
+
+def termHashLatinOneBoundaryString : SourceSignature.Goal :=
+  termHashGoal (string "ÿ") x
+
+def termHashWideBoundaryString : SourceSignature.Goal :=
+  termHashGoal (string "Ā") x
+
+def termHashMixedBoundaryAtom : SourceSignature.Goal :=
+  termHashGoal (atom "ÿĀ") x
+
+def termHashMixedBoundaryString : SourceSignature.Goal :=
+  termHashGoal (string "ÿĀ") x
+
+/-- Physical sharing and structural duplication have the same key. -/
+def termHashShared : SourceSignature.Goal :=
+  .conj (.unify x (compound "box" [atom "a"]))
+    (termHashGoal (pair x x) y)
+
+def termHashDuplicated : SourceSignature.Goal :=
+  termHashGoal (pair (compound "box" [atom "a"])
+    (compound "box" [atom "a"])) y
+
+/-- The shared graph hash uses SWI's cycle marker rather than diverging. -/
+def termHashCycle : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x])) (termHashGoal x y)
+
+/-- A cyclic child contributes SWI's cycle marker to its outer parent. -/
+def termHashOuterCycle : SourceSignature.Goal :=
+  .conj (.unify x (compound "g" [x]))
+    (termHashGoal (pair x (atom "a")) y)
+
+/-- Reusing one completed cyclic subgraph contributes the same cycle marker
+at each incoming edge. -/
+def termHashSharedCycle : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x])) (termHashGoal (pair x x) y)
+
+/-- A nonground term succeeds but leaves its hash output untouched. -/
+def termHashNongroundLeavesOutput : SourceSignature.Goal :=
+  .conj (termHashGoal (pair x (atom "a")) y) (.isVar y)
+
+def termHashNongroundKeepsBoundOutput : SourceSignature.Goal :=
+  termHashGoal (pair x (atom "a")) (integer 7)
+
+def termHashMismatch : SourceSignature.Goal :=
+  termHashGoal (atom "a") (integer 0)
+
+def termHashBigIntegerUnsupported : SourceSignature.Goal :=
+  termHashGoal (integer 72057594037927936) x
+
+def metaTermHash : SourceSignature.Goal :=
+  .conj (metaGoal (compound "term_hash" [atom "a", x]))
+    (.unify x (integer 45085902))
+
+/-- This is pinned PeTTa's real call shape: copy, variant-normalize, then hash
+the resulting ground key. -/
+def termHashNormalizedKey : SourceSignature.Goal :=
+  .conj (SourceSignature.call "copy_term" [pair x (pair x y), z])
+    (.conj (numberVariablesFour z 0 leftVar true)
+      (termHashGoal z rightVar))
+
 /-! ## ISO `functor/3` on the canonical graph -/
 
 def functorGoal (term name arity : SourceSignature.Term) :
@@ -1882,6 +1989,64 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard match runQueryError? [] numberVariablesUnsupportedOptions with
   | some .invalidNumberVariablesOptions => true
   | _ => false
+#guard runIntegersFor [] termHashAtom xIdentity ==
+  some ([45085902], 0, 0)
+#guard runIntegersFor [] termHashInteger xIdentity ==
+  some ([3261798158], 0, 0)
+#guard runIntegersFor [] termHashNegativeInteger xIdentity ==
+  some ([2513478484], 0, 0)
+#guard runIntegersFor [] termHashString xIdentity ==
+  some ([2879703217], 0, 0)
+#guard runIntegersFor [] termHashCompound xIdentity ==
+  some ([3911831286], 0, 0)
+#guard runIntegersFor [] termHashList xIdentity ==
+  some ([3640712072], 0, 0)
+#guard runIntegersFor [] termHashFloat xIdentity ==
+  some ([2548459879], 0, 0)
+#guard runIntegersFor [] termHashNegativeZero xIdentity ==
+  some ([3913372751], 0, 0)
+#guard runIntegersFor [] termHashUnicodeAtom xIdentity ==
+  some ([3442556481], 0, 0)
+#guard runIntegersFor [] termHashLatinOneAtom xIdentity ==
+  some ([1745793758], 0, 0)
+#guard runIntegersFor [] termHashUnicodeString xIdentity ==
+  some ([2700480543], 0, 0)
+#guard runIntegersFor [] termHashLatinOneString xIdentity ==
+  some ([1955271470], 0, 0)
+#guard runIntegersFor [] termHashMixedWideString xIdentity ==
+  some ([3039697503], 0, 0)
+#guard runIntegersFor [] termHashLatinOneBoundaryAtom xIdentity ==
+  some ([1600750448], 0, 0)
+#guard runIntegersFor [] termHashWideBoundaryAtom xIdentity ==
+  some ([76569204], 0, 0)
+#guard runIntegersFor [] termHashLatinOneBoundaryString xIdentity ==
+  some ([1106877724], 0, 0)
+#guard runIntegersFor [] termHashWideBoundaryString xIdentity ==
+  some ([1856102780], 0, 0)
+#guard runIntegersFor [] termHashMixedBoundaryAtom xIdentity ==
+  some ([3590090015], 0, 0)
+#guard runIntegersFor [] termHashMixedBoundaryString xIdentity ==
+  some ([4162070450], 0, 0)
+#guard runIntegersFor [] termHashShared yIdentity ==
+  some ([2364898277], 0, 0)
+#guard runIntegersFor [] termHashDuplicated yIdentity ==
+  some ([2364898277], 0, 0)
+#guard runIntegersFor [] termHashCycle yIdentity ==
+  some ([570532129], 0, 0)
+#guard runIntegersFor [] termHashOuterCycle yIdentity ==
+  some ([998265445], 0, 0)
+#guard runIntegersFor [] termHashSharedCycle yIdentity ==
+  some ([4110201651], 0, 0)
+#guard runCount [] termHashNongroundLeavesOutput == some (1, 0, 0)
+#guard runCount [] termHashNongroundKeepsBoundOutput == some (1, 0, 0)
+#guard runCount [] termHashMismatch == some (0, 0, 0)
+#guard match runQueryError? [] termHashBigIntegerUnsupported with
+  | some .unsupportedTermHashConstant => true
+  | _ => false
+#guard runCount [] metaTermHash == some (1, 0, 0)
+#guard runIntegersFor [] termHashNormalizedKey
+  { spelling := "Right", occurrence := 0 } ==
+    some ([4245664480], 0, 0)
 #guard runAtomsFor [] functorDecomposesCompound xIdentity ==
   some (["pair"], 0, 0)
 #guard runIntegersFor [] functorDecomposesCompound yIdentity ==
@@ -2018,6 +2183,7 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount [] (currentPredicate "term_variables" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "numbervars" 3) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "numbervars" 4) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "term_hash" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "functor" 3) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "nb_setval" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "nb_getval" 2) == some (1, 0, 0)

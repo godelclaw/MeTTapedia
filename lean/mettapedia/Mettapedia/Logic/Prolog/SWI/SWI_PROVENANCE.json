@@ -93,6 +93,21 @@
     },
     {
       "project": "swi-prolog",
+      "path": "src/pl-termhash.c",
+      "sha256": "d16bd45ff96a87fd32c029b05f5677a1e12ac466de793d4f42559e3eef9921ef"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-hash.c",
+      "sha256": "9288132f1364486b5aee8ba7d5f339fa91034514aac0f6ea4dede3f00605ee32"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "src/pl-hash.h",
+      "sha256": "2431e49b3ba54e7b2b942c01044a052f7b2781de331fa2a384f4ed25623c3674"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-gvar.c",
       "sha256": "af85ea1b60de4e0c545b5dad9d21f771bc86425a86fea6d433fa13d788569dd6"
     },
@@ -974,6 +989,41 @@
       ],
       "implementation_status": "adapted",
       "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-hash",
+      "project": "swi-prolog",
+      "sources": ["src/pl-termhash.c", "src/pl-hash.c", "src/pl-hash.h"],
+      "anchors": [
+        "PRED_IMPL(\"term_hash\", 2, term_hash, 0)",
+        "termHashValue",
+        "CYCLE_CONST",
+        "MurmurHashAligned2",
+        "#define MURMUR_SEED"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTermHash.lean",
         "Mettapedia/Logic/LP/RuntimeQuery.lean",
         "Mettapedia/Logic/Prolog/RuntimeControl.lean",
         "Mettapedia/Logic/Prolog/SourceRuntime.lean"

@@ -676,6 +676,18 @@ def main (arguments : List String) : IO Unit := do
       SourceSignature.compound "pair" [
         SourceRuntimeRegression.numberedVariable 0,
         SourceRuntimeRegression.singletonVariable]])
+  checkDatabaseGoal registeredDatabase "metta_term_hash_normalized_key"
+    (.conj
+      (SourceSignature.call "normalize_specialization_key" [
+        SourceSignature.compound "pair" [
+          SourceRuntimeRegression.x,
+          SourceSignature.compound "pair" [
+            SourceRuntimeRegression.x, SourceRuntimeRegression.y]],
+        SourceRuntimeRegression.z
+      ])
+      (SourceSignature.call "term_hash" [
+        SourceRuntimeRegression.z, .var termIdentity]))
+    (SourceSignature.integer 4245664480)
   checkDatabaseGoal registeredDatabase "metta_functor_decompose_direct"
     (SourceSignature.call "functor" [
       SourceSignature.compound "pair" [

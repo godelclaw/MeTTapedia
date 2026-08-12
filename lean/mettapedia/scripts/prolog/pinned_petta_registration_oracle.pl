@@ -59,6 +59,11 @@ main([MettaPath, TranslatorPath, SpecializerPath]) :-
       NormalizedKey),
     NormalizedKey = pair('$VAR'(0), pair('$VAR'(0), '$VAR'('_'))),
     format('metta_normalize_specialization_key=exact~n', []),
+    normalize_specialization_key(
+      pair(HashInput, pair(HashInput, _HashSingleton)), HashKey),
+    term_hash(HashKey, HashValue),
+    HashValue = 4245664480,
+    format('metta_term_hash_normalized_key=exact~n', []),
     functor(pair(a,b), pair, 2),
     format('metta_functor_decompose_direct=exact~n', []),
     functor(FunctorConstructed, pair, 2),

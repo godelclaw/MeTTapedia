@@ -83,6 +83,7 @@ metta_copy_term_direct=exact
 metta_term_variables_direct=exact
 metta_numbervars_direct=exact
 metta_normalize_specialization_key=exact
+metta_term_hash_normalized_key=exact
 metta_functor_decompose_direct=exact
 metta_functor_construct_direct=exact
 metta_nb_global_direct=exact
@@ -118,6 +119,7 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_term_variables_direct=exact' \
   'metta_numbervars_direct=exact' \
   'metta_normalize_specialization_key=exact' \
+  'metta_term_hash_normalized_key=exact' \
   'metta_functor_decompose_direct=exact' \
   'metta_functor_construct_direct=exact' \
   'metta_nb_global_direct=exact' \

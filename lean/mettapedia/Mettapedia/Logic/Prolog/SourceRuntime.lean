@@ -107,6 +107,24 @@ def numberVariablesEncoding : LP.RuntimeQuery.NumberVariablesEncoding Sigma wher
   indexConstant index := .integer (Int.ofNat index)
   singletonConstant := .atom "_"
 
+/-- Concrete primitive-token encoding for pinned SWI's `term_hash/2`.
+Clause references are opaque runtime capabilities rather than source terms and
+therefore remain deliberately unhashable in this fragment.  Integers outside
+pinned SWI's inline tagged range also fail closed: their indirect GMP-byte
+encoding is intentionally outside this partial conformance claim. -/
+def termHashEncoding : LP.RuntimeTermHash.Encoding Sigma where
+  primitive
+    | .atom name => some (.atom name)
+    | .integer value =>
+        if value < (-72057594037927936 : Int) ∨
+            value > (72057594037927935 : Int) then none
+        else some (.integer value)
+    | .floatBits bits => some (.floatBits bits)
+    | .string value => some (.string value)
+    | .clauseReference _ => none
+  functorName symbol := symbol.name
+  resultConstant hash := .integer (Int.ofNat hash.toNat)
+
 private def integerOperation (symbol : CompoundIndicator) :
     Option LP.RuntimeQuery.IntegerOperation :=
   if symbol.arity = 2 then
@@ -1082,6 +1100,22 @@ def numberVariablesPredicateFour : PredicateIndicator := {
   arity := 4
 }
 
+/-- Recognize `term_hash/2`; the source layer supplies only operand roots and
+the primitive encoding, never a hash value or answer. -/
+def termHash? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeTermHash.Encoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "term_hash", [termRoot, hashRoot] =>
+      if goal.symbol.arity = 2 then
+        some (termRoot, hashRoot, termHashEncoding)
+      else none
+  | _, _ => none
+
+def termHashPredicate : PredicateIndicator := {
+  name := "term_hash"
+  arity := 2
+}
+
 /-- Recognize ISO `functor/3`; mode selection and every heap mutation remain
 inside the shared runtime. -/
 def functor? (goal : RuntimeAtom Sigma.scoped) :
@@ -1220,10 +1254,12 @@ def services : RuntimeControl.Services Sigma where
   predicateIndicatorEncoding := some predicateIndicatorEncoding
   runtimePredicates := [copyTermPredicate, termVariablesPredicate,
     numberVariablesPredicateThree, numberVariablesPredicateFour,
-    functorPredicate, nbSetvalPredicate, nbGetvalPredicate, nbDeletePredicate]
+    termHashPredicate, functorPredicate, nbSetvalPredicate, nbGetvalPredicate,
+    nbDeletePredicate]
   copyTerm? := copyTerm?
   termVariables? := termVariables?
   numberVariables? := numberVariables?
+  termHash? := termHash?
   functor? := functor?
   databaseRequest? := databaseRequest?
   decodeGlobalName := decodeGlobalName
@@ -1255,7 +1291,7 @@ theorem services_copyTerm : services.copyTerm? = copyTerm? := rfl
 theorem services_runtimePredicates :
     services.runtimePredicates = [copyTermPredicate, termVariablesPredicate,
       numberVariablesPredicateThree, numberVariablesPredicateFour,
-      functorPredicate, nbSetvalPredicate, nbGetvalPredicate,
+      termHashPredicate, functorPredicate, nbSetvalPredicate, nbGetvalPredicate,
       nbDeletePredicate] := rfl
 
 @[simp]
@@ -1341,6 +1377,19 @@ theorem dispatchActionWith_numberVariablesFour
       args := #[termRoot, startRoot, endRoot, optionsRoot]
     }) = .numberVariables termRoot startRoot endRoot (some optionsRoot)
       numberVariablesDecoder := by
+  rfl
+
+@[simp]
+theorem services_termHash : services.termHash? = termHash? := rfl
+
+/-- `term_hash/2` exposes exactly one shared-runtime hashing action. -/
+@[simp]
+theorem dispatchActionWith_termHash (program : SourceSignature.Program)
+    (termRoot hashRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := termHashPredicate
+      args := #[termRoot, hashRoot]
+    }) = .termHash termRoot hashRoot termHashEncoding := by
   rfl
 
 @[simp]

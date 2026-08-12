@@ -358,6 +358,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .termVariables termRoot variablesRoot encoding
   | .numberVariables termRoot startRoot endRoot optionsRoot decoder =>
       .numberVariables termRoot startRoot endRoot optionsRoot decoder
+  | .termHash termRoot hashRoot encoding =>
+      .termHash termRoot hashRoot encoding
   | .functor termRoot nameRoot arityRoot encoding =>
       .functor termRoot nameRoot arityRoot encoding
   | .integerIs resultRoot expressionRoot encoding =>
@@ -1404,6 +1406,38 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                         numberVariablesStep, mapState, mapControl, mapAttempt,
                         mapPhase, mapReturnFrame, mapStepResult, hDecode,
                         hPrepare]
+          | termHash termRoot hashRoot encoding =>
+              cases hHash : RuntimeTermHash.hash? encoding memory.heap
+                  termRoot with
+              | error error =>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                    cases error <;>
+                    simp [mapDispatchAction, dispatchActionStep, termHashStep,
+                      termHashError, mapState, mapControl, mapAttempt, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hHash, hCleanup]
+              | ok hash =>
+                  cases hash with
+                  | none =>
+                      simp [mapDispatchAction, dispatchActionStep, termHashStep,
+                        mapState, mapControl, mapAttempt, mapPhase,
+                        mapReturnFrame, mapStepResult, hHash]
+                  | some hash =>
+                      cases hAllocate : memory.allocate
+                          (.const (encoding.resultConstant hash)) with
+                      | error error =>
+                          cases hCleanup : memory.restorePreserving heapFloor
+                              checkpoint <;>
+                            simp [mapDispatchAction, dispatchActionStep,
+                              termHashStep, mapState, mapControl, mapAttempt,
+                              mapPhase, mapReturnFrame, mapStepResult, failWith,
+                              closeMemory, hHash, hAllocate, hCleanup]
+                      | ok allocated =>
+                          rcases allocated with ⟨valueRoot, memory'⟩
+                          simp [mapDispatchAction, dispatchActionStep,
+                            termHashStep, beginUnifyStep, mapState, mapControl,
+                            mapAttempt, mapPhase, mapReturnFrame,
+                            mapStepResult, hHash, hAllocate]
           | functor termRoot nameRoot arityRoot encoding =>
               cases hPrepare : prepareFunctor encoding memory nextScope termRoot
                   nameRoot arityRoot with

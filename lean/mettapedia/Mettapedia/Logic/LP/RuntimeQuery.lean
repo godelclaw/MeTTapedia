@@ -1,6 +1,7 @@
 import Mettapedia.Logic.LP.RuntimeMaterialize
 import Mettapedia.Logic.LP.RuntimeClauseEntry
 import Mettapedia.Logic.LP.RuntimeException
+import Mettapedia.Logic.LP.RuntimeTermHash
 
 /-!
 # Demand-driven execution of typed LP clauses
@@ -75,6 +76,8 @@ inductive QueryError where
   | numberVariablesStartUnbound
   | invalidNumberVariablesStart
   | invalidNumberVariablesOptions
+  | termHashBudgetExhausted
+  | unsupportedTermHashConstant
   | standardOrderBudgetExhausted
   | unsupportedSortReference
   | invalidSortKey
@@ -3282,6 +3285,60 @@ theorem numberVariablesStep_of_decode_prepare {σ : LPSignature}
       } none := by
   simp [numberVariablesStep, hDecode, hPrepare]
 
+def termHashError : RuntimeTermHash.Error → QueryError
+  | .memory error => .memory error
+  | .budgetExhausted => .termHashBudgetExhausted
+  | .unsupportedConstant => .unsupportedTermHashConstant
+
+/-- Execute SWI-compatible `term_hash/2` on the canonical heap.  A nonground
+term consumes the instruction without binding the output.  A ground hash is
+allocated as one atomic cell and bound only through the canonical unifier. -/
+def termHashStep {σ : LPSignature}
+    (encoding : RuntimeTermHash.Encoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot hashRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match RuntimeTermHash.hash? encoding state.memory.heap termRoot with
+  | .error error => failWith state (termHashError error)
+  | .ok none =>
+      .next {
+        state with control := { state.control with current := continuation }
+      } none
+  | .ok (some hash) =>
+      match state.memory.allocate (.const (encoding.resultConstant hash)) with
+      | .error error => failWith state (.memory error)
+      | .ok (valueRoot, memory) =>
+          beginUnifyStep { state with memory } hashRoot valueRoot continuation
+
+/-- A nonground graph is a successful read-only step and leaves the output
+root untouched. -/
+theorem termHashStep_nonground {σ : LPSignature}
+    (encoding : RuntimeTermHash.Encoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot hashRoot : Addr) (continuation : List Instruction)
+    (hHash : RuntimeTermHash.hash? encoding state.memory.heap termRoot =
+      .ok none) :
+    termHashStep encoding state termRoot hashRoot continuation =
+      .next {
+        state with control := { state.control with current := continuation }
+      } none := by
+  simp [termHashStep, hHash]
+
+/-- A ground hash enters exactly one ordinary unifier activation after one
+atomic allocation. -/
+theorem termHashStep_of_hash_allocate {σ : LPSignature}
+    (encoding : RuntimeTermHash.Encoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot hashRoot valueRoot : Addr) (hash : UInt32)
+    (memory : Memory σ.scoped) (continuation : List Instruction)
+    (hHash : RuntimeTermHash.hash? encoding state.memory.heap termRoot =
+      .ok (some hash))
+    (hAllocate : state.memory.allocate
+      (.const (encoding.resultConstant hash)) = .ok (valueRoot, memory)) :
+    termHashStep encoding state termRoot hashRoot continuation =
+      beginUnifyStep { state with memory } hashRoot valueRoot continuation := by
+  simp [termHashStep, hHash, hAllocate]
+
 /-- Execute one bidirectional text/code plan.  Both directions allocate only
 fresh canonical cells and enter the ordinary graph unifier; the decoder never
 binds an output or decides a mismatching ground result itself. -/
@@ -3791,6 +3848,7 @@ inductive DispatchAction (σ : LPSignature)
       (encoding : CollectionEncoding σ)
   | numberVariables (termRoot startRoot endRoot : Addr)
       (optionsRoot : Option Addr) (decoder : NumberVariablesDecoder σ)
+  | termHash (termRoot hashRoot : Addr) (encoding : RuntimeTermHash.Encoding σ)
   | functor (termRoot nameRoot arityRoot : Addr)
       (encoding : FunctorEncoding σ)
   | integerIs (resultRoot expressionRoot : Addr)
@@ -3944,6 +4002,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
       termVariablesStep encoding state termRoot variablesRoot rest
   | .numberVariables termRoot startRoot endRoot optionsRoot decoder =>
       numberVariablesStep decoder state termRoot startRoot endRoot optionsRoot rest
+  | .termHash termRoot hashRoot encoding =>
+      termHashStep encoding state termRoot hashRoot rest
   | .functor termRoot nameRoot arityRoot encoding =>
       functorStep encoding state termRoot nameRoot arityRoot rest
   | .integerIs resultRoot expressionRoot encoding =>

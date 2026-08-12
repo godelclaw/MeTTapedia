@@ -474,6 +474,118 @@ def main : IO Unit := do
   renderCount "numbervars_meta"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaNumberVariables)
+  renderIntegerAnswers "term_hash_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashInteger
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_negative_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashNegativeInteger
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashCompound
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_list"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashList
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_float"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashFloat
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_negative_zero"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashNegativeZero
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_unicode_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashUnicodeAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_latin_one_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashLatinOneAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_unicode_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashUnicodeString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_latin_one_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashLatinOneString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_mixed_wide_string"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashMixedWideString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_atom_u00ff"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashLatinOneBoundaryAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_atom_u0100"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashWideBoundaryAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_string_u00ff"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashLatinOneBoundaryString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_string_u0100"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashWideBoundaryString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_atom_mixed_boundary"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashMixedBoundaryAtom
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_string_mixed_boundary"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashMixedBoundaryString
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "term_hash_shared"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashShared
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.yIdentity)
+  renderIntegerAnswers "term_hash_duplicated"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashDuplicated
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.yIdentity)
+  renderIntegerAnswers "term_hash_cycle"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashCycle
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.yIdentity)
+  renderIntegerAnswers "term_hash_outer_cycle"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashOuterCycle
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.yIdentity)
+  renderIntegerAnswers "term_hash_shared_cycle"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashSharedCycle
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.yIdentity)
+  renderCount "term_hash_nonground"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashNongroundLeavesOutput)
+  renderCount "term_hash_nonground_bound_output"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashNongroundKeepsBoundOutput)
+  renderCount "term_hash_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashMismatch)
+  renderCount "term_hash_meta"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaTermHash)
+  renderIntegerAnswers "term_hash_normalized_key"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.termHashNormalizedKey
+      { spelling := "Right", occurrence := 0 })
   renderCount "functor_decompose_compound"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorDecomposesCompound)
