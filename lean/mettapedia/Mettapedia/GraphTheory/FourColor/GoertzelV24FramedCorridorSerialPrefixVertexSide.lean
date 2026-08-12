@@ -85,6 +85,80 @@ theorem sourceSlabLiteralCellRegionAt_eq_vertexSetRegionEdges_cellSide
     sourceSlabLiteralCellRegionAt_eq_vertexSetRegionEdges_compl realization
       hcubic hrotation htwoSided hunique offset
 
+/-- The true frontier of one literal Cell is exactly its input interface
+union its output interface.  This is the graph-level object/morphism
+distinction: each interface has width two, while the Cell morphism has both
+interfaces in its total boundary. -/
+theorem sourceSlabLiteralCellTrueCrossingEdges_eq_input_union_output
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    vertexSetCrossingEdges embedded.cellulation.rotation.toRotationSystem
+        (sourceSlabLiteralCellVertexSideAt realization hcubic hrotation
+          htwoSided hunique offset) =
+      Finset.univ.image ((sourceSlabInterfaceAt realization hcubic hrotation
+          htwoSided hunique offset).localLayerPrefixCrossing) ∪
+        Finset.univ.image ((sourceSlabInterfaceAt realization hcubic hrotation
+          htwoSided hunique offset).nextLocalLayerPrefixCrossing) := by
+  let interface :=
+    sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique offset
+  let pair := interface.separatedLocalLayerPair
+  let boundary := interface.localLayerPairSourceCrosscutBoundaryData hcubic
+  ext edge
+  constructor
+  · intro hedge
+    have hedge' : edge ∈
+        vertexSetCrossingEdges
+          embedded.cellulation.rotation.toRotationSystem
+          ((interface.separatedLocalLayerPair.componentSide
+            (interface.localLayerPairSourceCrosscutBoundaryData
+              hcubic).component)ᶜ) := by
+      simpa [sourceSlabLiteralCellVertexSideAt, interface] using hedge
+    rcases sourceSlabLiteralCellCrossing_eq_input_or_output realization hcubic
+        hrotation htwoSided hunique offset hedge' with
+      ⟨step, rfl⟩ | ⟨step, rfl⟩
+    · exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨step, by simp⟩)
+    · exact Finset.mem_union_right _ (Finset.mem_image.mpr ⟨step, by simp⟩)
+  · intro hedge
+    rcases Finset.mem_union.mp hedge with hedge | hedge
+    · rcases Finset.mem_image.mp hedge with ⟨step, _hstep, rfl⟩
+      let crossing :=
+        pair.sourceCrosscutComplementPort embedded.cellulation.rotation
+          boundary
+          (.inl (Fin.cast interface.localLayer_walk_length_eq_two.symm step))
+      have hport := crossing.2
+      have hedgeEq : crossing.1 = interface.localLayerPrefixCrossing step := by
+        dsimp only [crossing]
+        rw [pair.sourceCrosscutComplementPort_left]
+        simp [pair, SourceConsecutiveSlabInterface.separatedLocalLayerPair,
+          SourceConsecutiveSlabInterface.localLayerPrefixCrossing]
+      rw [← hedgeEq]
+      simpa only [sourceSlabLiteralCellVertexSideAt, interface, pair] using hport
+    · rcases Finset.mem_image.mp hedge with ⟨step, _hstep, rfl⟩
+      let crossing :=
+        pair.sourceCrosscutComplementPort embedded.cellulation.rotation
+          boundary
+          (.inr (Fin.cast interface.nextLocalLayer_walk_length_eq_two.symm step))
+      have hport := crossing.2
+      have hedgeEq : crossing.1 =
+          interface.nextLocalLayerPrefixCrossing step := by
+        dsimp only [crossing]
+        rw [pair.sourceCrosscutComplementPort_right]
+        simp [pair, SourceConsecutiveSlabInterface.separatedLocalLayerPair,
+          SourceConsecutiveSlabInterface.nextLocalLayerPrefixCrossing]
+      rw [← hedgeEq]
+      simpa only [sourceSlabLiteralCellVertexSideAt, interface, pair] using hport
+
 /-- A literal Cell has four genuine vertex-side frontier edges: its two
 incoming source crossings and its two outgoing source crossings.  In
 particular, the displayed two-edge moving cut is one interface of the Cell,
