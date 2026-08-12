@@ -14,13 +14,14 @@ retained `maplist(register_fun, ...)` load goal through SWI's pinned
 `library(apply)` clauses and carries its persistent database forward.  Other
 retained loader obligations stay explicit; this canary claims only the named
 paths.  Compound evaluation remains gated by the standard-term-ordering
-operations used by pinned `lists:list_to_set/2`.
+operations and `library(pairs)` source used by pinned `lists:list_to_set/2`.
 -/
 
 open Mettapedia.Logic
 open Mettapedia.Logic.Prolog
 
-def resolver (dcgBasicsSource listsSource errorSource applySource : String) :
+def resolver (dcgBasicsSource listsSource errorSource applySource
+    pairsSource : String) :
     ReaderUnitClosure.Resolver String Unit := fun request =>
   match ReaderSWIProfile.sourceKey? request.source with
   | some "library(dcg/basics)" =>
@@ -28,25 +29,29 @@ def resolver (dcgBasicsSource listsSource errorSource applySource : String) :
   | some "library(lists)" => .ok [.source "library(lists)" listsSource]
   | some "library(error)" => .ok [.source "library(error)" errorSource]
   | some "library(apply)" => .ok [.source "library(apply)" applySource]
+  | some "library(pairs)" => .ok [.source "library(pairs)" pairsSource]
   | some key => .ok [.external key]
   | none => .error ()
 
 def loadParserClosure
-    (parserSource dcgBasicsSource listsSource errorSource : String) :
+    (parserSource dcgBasicsSource listsSource errorSource pairsSource : String) :
     IO (ReaderUnitClosure.Closure String) := do
   let closure <- match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
       ReaderOperator.defaults
-      (resolver dcgBasicsSource listsSource errorSource "") "parser" parserSource with
+      (resolver dcgBasicsSource listsSource errorSource "" pairsSource)
+      "parser" parserSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "source-unit closure failed"
   let linked <- match ReaderUnitClosure.linkDisjoint closure with
     | .ok linked => pure linked
     | .error _ => throw <| IO.userError "source-unit predicates collided"
-  if linked.program.length != 297 ||
-      closure.external.map (·.key) != ["library(pairs)", "library(debug)"] ||
-      linked.declarations.length != 4 || linked.pendingGoals.length != 3 then
-    throw <| IO.userError "source-unit boundary changed"
+  if linked.program.length != 318 ||
+      closure.external.map (·.key) != ["library(debug)"] ||
+      linked.declarations.length != 5 || linked.pendingGoals.length != 3 then
+    throw <| IO.userError s!"source-unit boundary changed: clauses={linked.program.length}, \
+      external={repr (closure.external.map (·.key))}, \
+      declarations={linked.declarations.length}, goals={linked.pendingGoals.length}"
   pure closure
 
 private def appendNewUnits
@@ -77,19 +82,19 @@ combined by key, and module qualification is applied to the same canonical
 clauses consumed by the shared runtime. -/
 def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
     (mettaSource translatorSource dcgBasicsSource listsSource
-      errorSource applySource : String) :
+      errorSource applySource pairsSource : String) :
     IO (ReaderUnitClosure.FlatLink String) := do
   let mettaClosure ← match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
       ReaderOperator.defaults
-      (resolver dcgBasicsSource listsSource errorSource applySource)
+      (resolver dcgBasicsSource listsSource errorSource applySource pairsSource)
       "metta" mettaSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "metta source-unit closure failed"
   let translatorClosure ← match ReaderUnitClosure.loadWith 4
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
       ReaderOperator.defaults
-      (resolver dcgBasicsSource listsSource errorSource applySource)
+      (resolver dcgBasicsSource listsSource errorSource applySource pairsSource)
       "translator" translatorSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "translator source-unit closure failed"
@@ -123,7 +128,7 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       clause.head.symbol = { name := "sexpr", arity := 5 } &&
         numberSymbol ∈ calledSymbols clause.body) then
     throw <| IO.userError "parser number//1 call was not module-qualified"
-  if linked.program.length != 566 then
+  if linked.program.length != 587 then
     throw <| IO.userError s!"module-aware source boundary changed: \
       clauses={linked.program.length}"
   pure linked
@@ -445,22 +450,24 @@ def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
 
 def main (arguments : List String) : IO Unit := do
   let [mettaPath, parserPath, translatorPath, dcgBasicsPath, listsPath,
-      errorPath, applyPath] := arguments
+      errorPath, applyPath, pairsPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
          <metta.pl> <parser.pl> <translator.pl> \
-         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl>"
+         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
+    (← IO.FS.readFile pairsPath)
   let linked ← loadPeTTaSlice parserClosure (← IO.FS.readFile mettaPath)
     (← IO.FS.readFile translatorPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
     (← IO.FS.readFile applyPath)
+    (← IO.FS.readFile pairsPath)
   let program := linked.program
   let (emptyCodes, emptyHeap, emptyTrail) <- execute program query
   let (atomListCodes, atomListHeap, atomListTrail) <-
@@ -543,5 +550,9 @@ def main (arguments : List String) : IO Unit := do
     (SourceSignature.call "fun" [SourceSignature.atom "id"])
   checkDatabaseGoal registeredDatabase "metta_id_direct"
     (SourceSignature.call "id"
-      [SourceSignature.atom "a", .var termIdentity])
+    [SourceSignature.atom "a", .var termIdentity])
+    (SourceSignature.atom "a")
+  checkDatabaseGoal registeredDatabase "metta_eval_compound"
+    (evalQuery (SourceSignature.list
+      [SourceSignature.atom "id", SourceSignature.atom "a"]))
     (SourceSignature.atom "a")

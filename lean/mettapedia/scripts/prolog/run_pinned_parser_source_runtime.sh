@@ -31,12 +31,14 @@ ERROR="$(swipl -q -g \
   "absolute_file_name(library(error), P, [file_type(prolog), access(read)]), write(P), halt")"
 APPLY="$(swipl -q -g \
   "absolute_file_name(library(apply), P, [file_type(prolog), access(read)]), write(P), halt")"
+PAIRS="$(swipl -q -g \
+  "absolute_file_name(library(pairs), P, [file_type(prolog), access(read)]), write(P), halt")"
 
 pushd "$ROOT_DIR" >/dev/null
 if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
     "$TMP/src/metta.pl" "$TMP/src/parser.pl" \
     "$TMP/src/translator.pl" \
-    "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" > "$TMP/lean.out"; then
+    "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" "$PAIRS" > "$TMP/lean.out"; then
   cat "$TMP/lean.out" >&2
   popd >/dev/null
   exit 1
@@ -77,6 +79,7 @@ metta_repr=exact
 metta_eval_atomic=exact
 metta_fun_id_registered=exact
 metta_id_direct=exact
+metta_eval_compound=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
@@ -92,4 +95,4 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   > "$TMP/swi-registration.expected"
 diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
 
-echo "Pinned PeTTa source runtime: PASS (parser wrappers, atomic eval, and source registration exact; module-aware closure)"
+echo "Pinned PeTTa source runtime: PASS (parser wrappers, atomic/compound eval, and source registration exact; module-aware closure)"

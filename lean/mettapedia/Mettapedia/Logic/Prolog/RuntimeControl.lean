@@ -472,6 +472,22 @@ structure Services (sigma : LP.LPSignature) where
   binaryTest? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.BinaryTestDecoder sigma) :=
       fun _ => none
+  /-- Recognize a sorting predicate without inspecting the heap.  The
+  returned decoder may order existing roots read-only; the shared engine owns
+  allocation of the result spine and output unification. -/
+  sort? : RuntimeAtom sigma.scoped → Option (LP.RuntimeQuery.SortDecoder sigma) :=
+    fun _ => none
+  /-- Recognize finite deterministic `length/2` without inspecting the heap.
+  The engine owns list traversal, result allocation, and unification. -/
+  listLength? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.ListLengthEncoding sigma) :=
+      fun _ => none
+  /-- Recognize a ground `current_predicate/1` query.  The service supplies
+  only representation syntax; membership is tested by the engine against
+  the exact visible program passed to `dispatchActionWith`. -/
+  currentPredicate? : RuntimeAtom sigma.scoped → Option Addr := fun _ => none
+  predicateIndicatorEncoding :
+    Option (LP.RuntimeQuery.PredicateIndicatorEncoding sigma) := none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -512,6 +528,10 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   formatter := LP.RuntimeQuery.rejectingFormatDecoder sigma
   textConversion? _ := none
   binaryTest? _ := none
+  sort? _ := none
+  listLength? _ := none
+  currentPredicate? _ := none
+  predicateIndicatorEncoding := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -624,9 +644,28 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                               | some (body, input, rest) =>
                                                   .dcgCall body input rest
                                               | none =>
-                                                  .call goal
-                                                    (Program.clausesFor program
-                                                      goal.symbol)
+                                                  match services.sort? goal with
+                                                  | some decoder => .sort decoder
+                                                  | none =>
+                                                      match services.listLength? goal with
+                                                      | some (listRoot, lengthRoot,
+                                                          encoding) =>
+                                                          .listLength listRoot lengthRoot
+                                                            encoding
+                                                      | none =>
+                                                          match services.currentPredicate? goal,
+                                                              services.predicateIndicatorEncoding with
+                                                          | some indicatorRoot, some encoding =>
+                                                              .predicateDefined indicatorRoot
+                                                                (program.map fun clause =>
+                                                                  clause.head.symbol)
+                                                                encoding
+                                                          | some _, none =>
+                                                              .error .unsupportedInstruction
+                                                          | none, _ =>
+                                                              .call goal
+                                                                (Program.clausesFor program
+                                                                  goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -819,6 +858,87 @@ theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
       .dcgCall body input rest := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg]
+
+/-- Sorting reaches the shared engine only after every earlier disjoint
+service declines the call.  The classifier exports one read-only decoder;
+allocation of the result list and output unification remain engine-owned. -/
+theorem dispatchActionWith_sort {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped)
+    (decoder : LP.RuntimeQuery.SortDecoder sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = none)
+    (hBinary : services.binaryTest? goal = none)
+    (hDcg : services.dcgCall? goal = none)
+    (hSort : services.sort? goal = some decoder) :
+    dispatchActionWith services program (.call goal) = .sort decoder := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat, hText, hBinary, hDcg, hSort]
+
+/-- Finite deterministic `length/2` exposes only its two existing roots and
+representation encoding.  Traversal, allocation, and unification are owned by
+the shared engine. -/
+theorem dispatchActionWith_listLength {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (listRoot lengthRoot : Addr)
+    (encoding : LP.RuntimeQuery.ListLengthEncoding sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = none)
+    (hBinary : services.binaryTest? goal = none)
+    (hDcg : services.dcgCall? goal = none)
+    (hSort : services.sort? goal = none)
+    (hLength : services.listLength? goal =
+      some (listRoot, lengthRoot, encoding)) :
+    dispatchActionWith services program (.call goal) =
+      .listLength listRoot lengthRoot encoding := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat, hText, hBinary, hDcg, hSort, hLength]
+
+/-- Ground `current_predicate/1` membership is coupled to the exact program
+visible at this dispatch.  In particular, the classifier cannot substitute a
+stale or fabricated predicate inventory. -/
+theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (indicatorRoot : Addr)
+    (encoding : LP.RuntimeQuery.PredicateIndicatorEncoding sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = none)
+    (hBinary : services.binaryTest? goal = none)
+    (hDcg : services.dcgCall? goal = none)
+    (hSort : services.sort? goal = none)
+    (hLength : services.listLength? goal = none)
+    (hCurrent : services.currentPredicate? goal = some indicatorRoot)
+    (hEncoding : services.predicateIndicatorEncoding = some encoding) :
+    dispatchActionWith services program (.call goal) =
+      .predicateDefined indicatorRoot
+        (program.map fun clause => clause.head.symbol) encoding := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat, hText, hBinary, hDcg, hSort, hLength, hCurrent,
+    hEncoding]
 
 @[simp]
 theorem dispatchActionWith_neg {sigma : LP.LPSignature}

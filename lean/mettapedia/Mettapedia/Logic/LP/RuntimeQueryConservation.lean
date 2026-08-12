@@ -271,6 +271,11 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .textConversion text codes decoder
   | .binaryTest left right decoder =>
       .binaryTest left right decoder
+  | .sort decoder => .sort decoder
+  | .listLength listRoot lengthRoot encoding =>
+      .listLength listRoot lengthRoot encoding
+  | .predicateDefined indicatorRoot candidates encoding =>
+      .predicateDefined indicatorRoot candidates encoding
   | .catch guarded catcher recovery =>
       .catch (guarded.map instruction) catcher (recovery.map instruction)
   | .throw ball unboundError => .throw ball unboundError
@@ -964,6 +969,57 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     simp [mapDispatchAction, dispatchActionStep,
                       binaryTestStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, hDecode]
+          | sort decoder =>
+              cases hDecode : decoder.decode memory.heap with
+              | error reason =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep, sortStep,
+                      mapState, mapControl, mapPhase, mapReturnFrame,
+                      mapStepResult, failWith, closeMemory, hDecode, hCleanup]
+              | ok plan =>
+                  rcases plan with ⟨encoding, output, elements⟩
+                  cases hList : allocateAddressList encoding memory elements with
+                  | error error =>
+                      cases hCleanup : memory.restore checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep, sortStep,
+                          mapState, mapControl, mapPhase, mapReturnFrame,
+                          mapStepResult, failWith, closeMemory, hDecode, hList,
+                          hCleanup]
+                  | ok allocated =>
+                      rcases allocated with ⟨listRoot, final⟩
+                      simp [mapDispatchAction, dispatchActionStep, sortStep,
+                        beginUnifyStep, mapState, mapControl, mapAttempt,
+                        mapPhase, mapReturnFrame, mapStepResult, hDecode,
+                        hList]
+          | listLength listRoot lengthRoot encoding =>
+              cases hPrepare : prepareListLength encoding memory listRoot
+                  lengthRoot with
+              | error reason =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      listLengthStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hPrepare, hCleanup]
+              | ok prepared =>
+                  rcases prepared with ⟨final, preparedLength, valueRoot⟩
+                  simp [mapDispatchAction, dispatchActionStep,
+                    listLengthStep, beginUnifyStep, mapState, mapControl,
+                    mapAttempt, mapPhase, mapReturnFrame, mapStepResult,
+                    hPrepare]
+          | predicateDefined indicatorRoot candidates encoding =>
+              cases hDecode : decodePredicateIndicator encoding memory.heap
+                  indicatorRoot with
+              | error reason =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      predicateDefinedStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hDecode, hCleanup]
+              | ok relation =>
+                  by_cases hMember : relation ∈ candidates <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      predicateDefinedStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, hDecode, hMember]
           | «catch» guarded catcher recovery =>
               simp [mapDispatchAction, dispatchActionStep, catchStep,
                 mapState, mapControl, mapPhase, mapReturnFrame,

@@ -446,6 +446,27 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaIntegerAddition
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderIntegerAnswers "length_finite"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.finiteListLength
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "length_matching"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.matchingListLength)
+  renderCount "length_mismatching"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.mismatchingListLength)
+  renderCount "current_predicate_known"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
+      (Mettapedia.Logic.Prolog.SourceRuntimeRegression.currentPredicate "p" 2))
+  renderCount "current_predicate_missing"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
+      (Mettapedia.Logic.Prolog.SourceRuntimeRegression.currentPredicate "q" 2))
+  renderCount "current_predicate_after_assert"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertedPredicateBecomesCurrent)
   renderStringAnswers "catch_ground"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtGround)

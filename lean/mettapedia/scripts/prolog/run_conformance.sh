@@ -10,6 +10,8 @@ mkdir -p "$(dirname "$RESULTS_PATH")"
 pushd "$ROOT_DIR" >/dev/null
 
 python3 scripts/check_swi_provenance.py
+scripts/prolog/run_runtime_control_differential.sh
+scripts/prolog/run_source_term_order_differential.sh
 swipl -q -s scripts/prolog/swi_fixture_runner.pl -- "$RESULTS_PATH"
 python3 scripts/prolog/check_lean_swi_parity.py \
   --lean-file Mettapedia/Logic/Prolog/FixtureCorpus.lean \

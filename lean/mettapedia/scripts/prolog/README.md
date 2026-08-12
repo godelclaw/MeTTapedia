@@ -174,18 +174,18 @@ scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
 The corresponding source-execution gate combines the real pinned `metta.pl`,
-`parser.pl`, and `translator.pl` units with those three SWI libraries and
-`library(apply)` using the static
+`parser.pl`, and `translator.pl` units with those three SWI libraries plus
+the real `library(apply)` and `library(pairs)` sources using the static
 module-aware linker.  The linker separates user `exp/2` from
 `dcg_basics:exp/2`, resolves explicit imports and the unique loaded export
 used by SWI autoload, and fails on ambiguous exports or a literal predicate
-that would collide with generated qualification.  The resulting 566
+that would collide with generated qualification.  The resulting 587
 canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
 `(1.5)`, `(1e2)`, `("a")`, `((a))`, `(a-b)`, `(1_2_3)`, `(#foo)`, an
 escaped string, `$x`, `$x $x`, and `$_ $_` through the same
-canonical `Logic.Prolog.SourceRuntime`, with those 508 linked clauses and no
+canonical `Logic.Prolog.SourceRuntime`, with the linked source clauses and no
 translated replacement.  It requires the exact SWI answers `[40,41]` and
 `[40,97,41]`, and `[45,52,50]` for the writers and `[a]`, `[a,b]`, `[1]`,
 `[-2]`, `[1.5]`, `[100.0]`, `["a"]`, and `[[a]]` for the original readers.
@@ -203,8 +203,12 @@ Finally, the gate executes the exact retained
 `maplist(register_fun, ...)` source goal through SWI's real `apply:maplist/2`
 clauses using the canonical persistent runtime.  The returned database must
 make `fun(id)` visible to a fresh query, and the actual pinned `id/2` clause
-must then produce `a`; an independent SWI oracle reads and executes the same
-registration directive:
+must then produce `a`.  The next path runs `eval([id,a], Out)` through the
+pinned translator, real `lists:list_to_set/2`, real `pairs_keys/2`, shared
+finite standard-order sorting, finite `length/2`, call-time
+`current_predicate/1`, and the registered `id/2` clause, producing exactly
+`a`.  An independent SWI oracle reads and executes the same registration
+directive:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
@@ -215,14 +219,24 @@ named registration directive remain explicit closure obligations; linked
 clauses retain their original units as provenance while the qualified
 executable projection clears context-dependent source-term reflection.
 General meta-predicate argument qualification, reexports, runtime module
-creation, and full source-order loader scheduling remain unsupported.  The
-compound evaluator path currently stops at SWI `sort/4`, required by the real
-`lists:list_to_set/2`; no PeTTa-specific replacement is substituted.  Passing
-this gate therefore does not claim that the entire PeTTa source closure is yet
-executable.  Numeric reading covers the
+creation, and full source-order loader scheduling remain unsupported.
+`length/2` currently covers finite proper-list inputs, and
+`current_predicate/1` covers fully instantiated indicators against the exact
+call-time visible program; their generative modes fail closed as explicit
+runtime errors rather than false Prolog failure.  No PeTTa-specific
+replacement is substituted.  Passing this gate therefore does not claim that
+the entire PeTTa source closure is yet executable.  Numeric reading covers the
 decimal and scientific forms
 produced by pinned `dcg/basics:number//1`; integer writing is exact, while
 float-to-code rendering remains explicitly unsupported.
+
+The finite standard-order implementation has its own exact SWI 10.1.9
+differential over mixed integers/floats, strings, atoms, duplicate retention,
+pair-key stability, positional keys, and descending unique order:
+
+```bash
+scripts/prolog/run_source_term_order_differential.sh
+```
 
 ### Shared-runtime control differential
 

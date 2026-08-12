@@ -69,6 +69,16 @@ inductive QueryError where
   | termIdentityBudgetExhausted
   | termGroundBudgetExhausted
   | termListBudgetExhausted
+  | standardOrderBudgetExhausted
+  | unsupportedSortReference
+  | invalidSortKey
+  | invalidSortOrder
+  | invalidSortList
+  | listLengthNeedsEnumeration
+  | invalidListLength
+  | invalidListLengthValue
+  | predicateIndicatorUnbound
+  | invalidPredicateIndicator
   | univListUnbound
   | invalidUnivList
   | univFunctorUnbound
@@ -180,6 +190,20 @@ character-class tests such as the pinned parser's `code_type/2` calls. -/
 structure BinaryTestDecoder (σ : LPSignature) where
   decode : Heap σ.scoped → Addr → Addr → Except QueryError Bool
 
+/-- A read-only sorting result contains only existing element roots, one
+language-owned proper-list encoding, and the output root to unify.  It cannot
+allocate, bind, schedule, select a clause, or emit an answer. -/
+structure SortPlan (σ : LPSignature) where
+  encoding : CollectionEncoding σ
+  output : Addr
+  elements : List Addr
+
+/-- Read-only interpretation of one language sorting call.  Term ordering and
+key extraction inspect the current heap, while the shared engine retains all
+result-spine allocation and canonical unification authority. -/
+structure SortDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Except QueryError (SortPlan σ)
+
 /-- Language-owned symbols for `=../2`.  The engine owns heap traversal,
 allocation, and unification.  A realization supplies only the existing list
 encoding and the lossless atom/functor name bridge for its signature. -/
@@ -205,6 +229,37 @@ def allocateAddressList {σ : LPSignature} (encoding : CollectionEncoding σ) :
   | memory, head :: tail => do
       let (tailRoot, memory) ← allocateAddressList encoding memory tail
       memory.allocate (.app encoding.cons #[head, tailRoot])
+
+/-- A sorted-result list adds exactly one cell per element plus its nil cell,
+and construction never writes the trail.  The element graphs are therefore
+reused rather than copied. -/
+theorem allocateAddressList_size_trail {σ : LPSignature}
+    (encoding : CollectionEncoding σ) (memory memory' : Memory σ.scoped)
+    (heads : List Addr) (root : Addr)
+    (h : allocateAddressList encoding memory heads = .ok (root, memory')) :
+    memory'.heap.size = memory.heap.size + heads.length + 1 ∧
+      memory'.trailMark = memory.trailMark := by
+  induction heads generalizing memory root memory' with
+  | nil =>
+      simp only [allocateAddressList] at h
+      have hSize := Memory.allocate_heap_size_succ h
+      have hTrail := Memory.allocate_trailMark h
+      simp only [List.length_nil, Nat.add_zero]
+      exact ⟨hSize, hTrail⟩
+  | cons head tail ih =>
+      simp only [allocateAddressList] at h
+      cases hTail : allocateAddressList encoding memory tail with
+      | error error =>
+          rw [hTail] at h
+          contradiction
+      | ok result =>
+          rcases result with ⟨tailRoot, middle⟩
+          rw [hTail] at h
+          have hIH := ih memory middle tailRoot hTail
+          constructor
+          · rw [Memory.allocate_heap_size_succ h, hIH.1]
+            simp [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
+          · rw [Memory.allocate_trailMark h, hIH.2]
 
 /-- Allocate a list segment whose final tail is an existing heap root.  Only
 the spine is new; element and tail identities are reused exactly. -/
@@ -443,6 +498,113 @@ structure IntegerArithmeticEncoding (σ : LPSignature) where
   encodeInteger : Int → σ.constants
   decode_encode : ∀ value, decodeInteger (encodeInteger value) = some value
   operation : σ.functionSymbols → Option IntegerOperation
+
+/-- Language-owned encodings needed by ISO `length/2`.  The shared engine
+owns list traversal, integer allocation, and result unification. -/
+structure ListLengthEncoding (σ : LPSignature) where
+  list : CollectionEncoding σ
+  integer : IntegerArithmeticEncoding σ
+
+/-- Language-owned syntax for a predicate indicator such as `name/arity`.
+The engine decodes the graph and tests the resulting symbol only against the
+actual call-time program snapshot supplied to the transition. -/
+structure PredicateIndicatorEncoding (σ : LPSignature) where
+  indicator : σ.functionSymbols
+  indicator_arity_two : σ.functionArity indicator = 2
+  relationOf : σ.constants → σ.constants → Option σ.relationSymbols
+
+/-- The bounded deterministic result of `length/2`: one freshly allocated
+integer root to unify with the caller's second argument. -/
+structure ListLengthPrepared (σ : LPSignature) where
+  memory : Memory σ.scoped
+  lengthRoot : Addr
+  valueRoot : Addr
+
+/-- Prepare the finite deterministic modes of ISO `length/2`.  A proper list
+is counted without copying its elements.  If the length argument is already
+bound it must be a nonnegative integer; equality is still decided by the
+canonical graph unifier.  Open-list generation is reported explicitly rather
+than being collapsed into ordinary failure. -/
+def prepareListLength {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (encoding : ListLengthEncoding σ)
+    (memory : Memory σ.scoped) (listRoot lengthRoot : Addr) :
+    Except QueryError (ListLengthPrepared σ) := do
+  let elements ←
+    match decodeAddressList encoding.list memory.heap listRoot with
+    | .ok elements => .ok elements
+    | .error .univListUnbound => .error .listLengthNeedsEnumeration
+    | .error .invalidUnivList => .error .invalidListLength
+    | .error error => .error error
+  let lengthCell ←
+    match memory.heap.deref lengthRoot with
+    | .error error => .error (.memory error)
+    | .ok (.variableCycle cycle) =>
+        .error (.memory (.variableReferenceCycle cycle))
+    | .ok (.root root) =>
+        match memory.heap[root]? with
+        | none => .error (.memory (.invalidAddress root))
+        | some cell => .ok cell
+  match lengthCell with
+  | .var _ none => pure ()
+  | .const value =>
+      match encoding.integer.decodeInteger value with
+      | some length =>
+          if length < 0 then .error .invalidListLengthValue else pure ()
+      | none => .error .invalidListLengthValue
+  | _ => .error .invalidListLengthValue
+  let (valueRoot, memory) ←
+    match memory.allocate
+        (.const (encoding.integer.encodeInteger (Int.ofNat elements.length))) with
+    | .ok result => .ok result
+    | .error error => .error (.memory error)
+  pure { memory, lengthRoot, valueRoot }
+
+private def predicateIndicatorConstant {σ : LPSignature}
+    (heap : Heap σ.scoped) (address : Addr) : Except QueryError σ.constants := do
+  let dereferenced ←
+    match heap.deref address with
+    | .ok result => .ok result
+    | .error error => .error (.memory error)
+  match dereferenced with
+  | .variableCycle cycle =>
+      .error (.memory (.variableReferenceCycle cycle))
+  | .root root =>
+      match heap[root]? with
+      | none => .error (.memory (.invalidAddress root))
+      | some (.var _ none) => .error .predicateIndicatorUnbound
+      | some (.const value) => .ok value
+      | _ => .error .invalidPredicateIndicator
+
+/-- Decode a fully instantiated predicate indicator on the existing heap.
+Enumeration of unbound indicators is deliberately a separate future engine
+transition; it cannot be mistaken for ordinary failure here. -/
+def decodePredicateIndicator {σ : LPSignature}
+    [DecidableEq σ.functionSymbols]
+    (encoding : PredicateIndicatorEncoding σ) (heap : Heap σ.scoped)
+    (address : Addr) : Except QueryError σ.relationSymbols := do
+  let dereferenced ←
+    match heap.deref address with
+    | .ok result => .ok result
+    | .error error => .error (.memory error)
+  match dereferenced with
+  | .variableCycle cycle =>
+      .error (.memory (.variableReferenceCycle cycle))
+  | .root root =>
+      match heap[root]? with
+      | none => .error (.memory (.invalidAddress root))
+      | some (.var _ none) => .error .predicateIndicatorUnbound
+      | some (.app symbol arguments) =>
+          if symbol = encoding.indicator ∧ arguments.size = 2 then
+            match arguments[0]?, arguments[1]? with
+            | some nameRoot, some arityRoot =>
+                let name ← predicateIndicatorConstant heap nameRoot
+                let arity ← predicateIndicatorConstant heap arityRoot
+                match encoding.relationOf name arity with
+                | some relation => .ok relation
+                | none => .error .invalidPredicateIndicator
+            | _, _ => .error (.memory .illFormedHeap)
+          else .error .invalidPredicateIndicator
+      | _ => .error .invalidPredicateIndicator
 
 def IntegerOperation.apply : IntegerOperation → Int → Int →
     Except QueryError Int
@@ -2370,6 +2532,56 @@ def binaryTestStep {σ : LPSignature}
       } none
   | .ok false => .next { state with phase := .backtrack } none
 
+/-- Allocate only the proper-list spine named by a certified read-only sort
+plan, then bind the output through the canonical graph unifier.  Element roots
+are reused exactly, preserving variables and sharing. -/
+def sortStep {σ : LPSignature}
+    (decoder : SortDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap with
+  | .error reason => failWith state reason
+  | .ok plan =>
+      match allocateAddressList plan.encoding state.memory plan.elements with
+      | .error error => failWith state (.memory error)
+      | .ok (listRoot, memory) =>
+          beginUnifyStep { state with memory } plan.output listRoot continuation
+
+/-- Count one finite proper list and bind its length through the canonical
+graph unifier.  The language realization supplies only list/integer symbols;
+it cannot bind, schedule, or emit an answer. -/
+def listLengthStep {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols]
+    (encoding : ListLengthEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (listRoot lengthRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match prepareListLength encoding state.memory listRoot lengthRoot with
+  | .error reason => failWith state reason
+  | .ok prepared =>
+      beginUnifyStep { state with memory := prepared.memory }
+        prepared.lengthRoot prepared.valueRoot continuation
+
+/-- Test one ground predicate indicator against the exact call-time program
+snapshot.  This is read-only and cannot bind, allocate, or synthesize a
+predicate occurrence. -/
+def predicateDefinedStep {σ : LPSignature}
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (encoding : PredicateIndicatorEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (indicatorRoot : Addr) (candidates : List σ.relationSymbols)
+    (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decodePredicateIndicator encoding state.memory.heap indicatorRoot with
+  | .error reason => failWith state reason
+  | .ok relation =>
+      if relation ∈ candidates then
+        .next {
+          state with control := { state.control with current := continuation }
+        } none
+      else .next { state with phase := .backtrack } none
+
 /-- Bind a successful database insertion's stable identity through the same
 canonical graph unifier as every other Prolog binding.  The session supplies
 only the opaque atomic value; it cannot write the heap or schedule the
@@ -2720,6 +2932,12 @@ inductive DispatchAction (σ : LPSignature)
   | format (destination format arguments : Addr) (decoder : FormatDecoder σ)
   | textConversion (text codes : Addr) (decoder : TextConversionDecoder σ)
   | binaryTest (left right : Addr) (decoder : BinaryTestDecoder σ)
+  | sort (decoder : SortDecoder σ)
+  | listLength (listRoot lengthRoot : Addr)
+      (encoding : ListLengthEncoding σ)
+  | predicateDefined (indicatorRoot : Addr)
+      (candidates : List σ.relationSymbols)
+      (encoding : PredicateIndicatorEncoding σ)
   | catch (guarded : List Instruction) (catcher : Addr)
       (recovery : List Instruction)
   | throw (ball : Addr)
@@ -2830,7 +3048,7 @@ instruction has already been removed; `rest` always comes from the live goal
 stack rather than from the classifier. -/
 @[simp]
 def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
-    [DecidableEq σ.functionSymbols]
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
     (rest : List Instruction) :
@@ -2857,6 +3075,11 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       textConversionStep textDecoder state text codes rest
   | .binaryTest left right testDecoder =>
       binaryTestStep testDecoder state left right rest
+  | .sort sortDecoder => sortStep sortDecoder state rest
+  | .listLength listRoot lengthRoot encoding =>
+      listLengthStep encoding state listRoot lengthRoot rest
+  | .predicateDefined indicatorRoot candidates encoding =>
+      predicateDefinedStep encoding state indicatorRoot candidates rest
   | .catch guarded catcher recovery =>
       catchStep state guarded catcher recovery rest
   | .throw ball unboundError => throwStep state ball unboundError
@@ -3401,6 +3624,92 @@ theorem binaryTestStep_error_of_decode {σ : LPSignature}
     binaryTestStep decoder state left right continuation =
       failWith state reason := by
   simp [binaryTestStep, hDecode]
+
+/-- A successful read-only sort plan reaches only engine-owned list
+allocation and the canonical unifier. -/
+theorem sortStep_of_decode_allocate {σ : LPSignature}
+    (decoder : SortDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (continuation : List Instruction)
+    (encoding : CollectionEncoding σ) (output listRoot : Addr)
+    (elements : List Addr) (memory : Memory σ.scoped)
+    (hDecode : decoder.decode state.memory.heap =
+      .ok { encoding, output, elements })
+    (hList : allocateAddressList encoding state.memory elements =
+      .ok (listRoot, memory)) :
+    sortStep decoder state continuation =
+      beginUnifyStep { state with memory } output listRoot continuation := by
+  simp [sortStep, hDecode, hList]
+
+/-- Sort decoding failure uses the canonical typed-error cleanup path and
+cannot become ordinary Prolog failure. -/
+theorem sortStep_error_of_decode {σ : LPSignature}
+    (decoder : SortDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (continuation : List Instruction) (reason : QueryError)
+    (hDecode : decoder.decode state.memory.heap = .error reason) :
+    sortStep decoder state continuation = failWith state reason := by
+  simp [sortStep, hDecode]
+
+/-- A prepared finite list length reaches exactly one canonical unifier
+activation; the helper cannot manufacture control or observations. -/
+theorem listLengthStep_of_prepare {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (encoding : ListLengthEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (listRoot lengthRoot : Addr) (continuation : List Instruction)
+    (prepared : ListLengthPrepared σ)
+    (hPrepare : prepareListLength encoding state.memory listRoot lengthRoot =
+      .ok prepared) :
+    listLengthStep encoding state listRoot lengthRoot continuation =
+      beginUnifyStep { state with memory := prepared.memory }
+        prepared.lengthRoot prepared.valueRoot continuation := by
+  simp [listLengthStep, hPrepare]
+
+/-- Unsupported or malformed list-length modes use the typed-error cleanup
+path and cannot masquerade as Prolog failure. -/
+theorem listLengthStep_error_of_prepare {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (encoding : ListLengthEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (listRoot lengthRoot : Addr) (continuation : List Instruction)
+    (reason : QueryError)
+    (hPrepare : prepareListLength encoding state.memory listRoot lengthRoot =
+      .error reason) :
+    listLengthStep encoding state listRoot lengthRoot continuation =
+      failWith state reason := by
+  simp [listLengthStep, hPrepare]
+
+/-- A decoded indicator present in the call-time candidate set advances the
+existing continuation without changing memory or search ownership. -/
+theorem predicateDefinedStep_accepts {σ : LPSignature}
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (encoding : PredicateIndicatorEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (indicatorRoot : Addr) (candidates : List σ.relationSymbols)
+    (continuation : List Instruction) (relation : σ.relationSymbols)
+    (hDecode : decodePredicateIndicator encoding state.memory.heap
+      indicatorRoot = .ok relation)
+    (hMember : relation ∈ candidates) :
+    predicateDefinedStep encoding state indicatorRoot candidates continuation =
+      .next {
+        state with control := { state.control with current := continuation }
+      } none := by
+  simp [predicateDefinedStep, hDecode, hMember]
+
+/-- A decoded but absent indicator is ordinary Prolog failure. -/
+theorem predicateDefinedStep_rejects {σ : LPSignature}
+    [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
+    (encoding : PredicateIndicatorEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (indicatorRoot : Addr) (candidates : List σ.relationSymbols)
+    (continuation : List Instruction) (relation : σ.relationSymbols)
+    (hDecode : decodePredicateIndicator encoding state.memory.heap
+      indicatorRoot = .ok relation)
+    (hMissing : relation ∉ candidates) :
+    predicateDefinedStep encoding state indicatorRoot candidates continuation =
+      .next { state with phase := .backtrack } none := by
+  simp [predicateDefinedStep, hDecode, hMissing]
 
 /-- Meta-call decoding is reached through the canonical dispatch phase, not a
 wrapper-side resolution path.  The theorem pins the exact executable seam. -/

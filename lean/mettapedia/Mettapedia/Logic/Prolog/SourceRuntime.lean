@@ -3,6 +3,7 @@ import Mettapedia.Logic.Prolog.ReaderNumber
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeClauseDecode
 import Mettapedia.Logic.Prolog.ClauseReflection
+import Mettapedia.Logic.Prolog.SourceTermOrder
 
 /-!
 # Concrete callable decoding for Prolog source terms
@@ -91,6 +92,24 @@ def integerArithmeticEncoding :
   encodeInteger := .integer
   decode_encode _ := rfl
   operation := integerOperation
+
+/-- Source list and unbounded-integer symbols for the shared `length/2`
+transition. -/
+def listLengthEncoding : LP.RuntimeQuery.ListLengthEncoding Sigma where
+  list := collectionEncoding
+  integer := integerArithmeticEncoding
+
+/-- Concrete `Name/Arity` syntax for program reflection. -/
+def predicateIndicatorEncoding :
+    LP.RuntimeQuery.PredicateIndicatorEncoding Sigma where
+  indicator := { name := "/", arity := 2 }
+  indicator_arity_two := rfl
+  relationOf name arity :=
+    match name, arity with
+    | .atom spelling, .integer value =>
+        if value >= 0 then some { name := spelling, arity := value.toNat }
+        else none
+    | _, _ => none
 
 /-- Canonical source symbols used by the shared engine to normalize and
 inspect dynamic facts/rules and to expose opaque stable references. -/
@@ -657,6 +676,141 @@ def binaryTest? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | _, _ => none
 
+private inductive SortKind where
+  | sort
+  | msort
+  | keysort
+  | sortBy (key order : Addr)
+
+private def sortError : SourceTermOrder.Error → LP.RuntimeQuery.QueryError
+  | .memory error => .memory error
+  | .comparisonBudgetExhausted => .standardOrderBudgetExhausted
+  | .unsupportedClauseReference => .unsupportedSortReference
+  | .invalidSortKey => .invalidSortKey
+
+private def sortListError : LP.RuntimeQuery.QueryError →
+    LP.RuntimeQuery.QueryError
+  | .invalidUnivList | .univListUnbound => .invalidSortList
+  | error => error
+
+private def sortKeyIndex (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError Nat := do
+  match ← dereferencedCell heap root with
+  | .const (.integer value) =>
+      if value > 0 then return value.toNat else .error .invalidSortKey
+  | _ => .error .invalidSortKey
+
+private def decodeSortKey (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError SourceTermOrder.Key := do
+  match ← dereferencedCell heap root with
+  | .const (.integer value) =>
+      if value = 0 then return .whole
+      else if value > 0 then return .positions [value.toNat]
+      else .error .invalidSortKey
+  | .app symbol _ =>
+      if symbol = collectionEncoding.cons then
+        match LP.RuntimeQuery.decodeAddressList collectionEncoding heap root with
+        | .error error => .error (sortListError error)
+        | .ok roots =>
+            let indices ← roots.mapM (sortKeyIndex heap)
+            if indices.isEmpty then .error .invalidSortKey
+            else return .positions indices
+      else .error .invalidSortKey
+  | _ => .error .invalidSortKey
+
+private def decodeSortOrder (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (SourceTermOrder.Direction × Bool) := do
+  match ← dereferencedCell heap root with
+  | .const (.atom "<") | .const (.atom "@<") =>
+      return (.ascending, true)
+  | .const (.atom "=<") | .const (.atom "@=<") =>
+      return (.ascending, false)
+  | .const (.atom ">") | .const (.atom "@>") =>
+      return (.descending, true)
+  | .const (.atom ">=") | .const (.atom "@>=") =>
+      return (.descending, false)
+  | _ => .error .invalidSortOrder
+
+private def decodeSortSpec (heap : Heap Sigma.scoped) : SortKind →
+    Except LP.RuntimeQuery.QueryError SourceTermOrder.Spec
+  | .sort => .ok {
+      key := .whole
+      direction := .ascending
+      removeDuplicates := true
+    }
+  | .msort => .ok {
+      key := .whole
+      direction := .ascending
+      removeDuplicates := false
+    }
+  | .keysort => .ok {
+      key := .pair
+      direction := .ascending
+      removeDuplicates := false
+    }
+  | .sortBy keyRoot orderRoot => do
+      let key ← decodeSortKey heap keyRoot
+      let (direction, removeDuplicates) ← decodeSortOrder heap orderRoot
+      return { key, direction, removeDuplicates }
+
+/-- Read and order existing roots only.  The result list is not built here;
+`RuntimeQuery.sortStep` allocates its spine and invokes the canonical unifier. -/
+private def decodeSort (kind : SortKind) (input output : Addr)
+    (heap : Heap Sigma.scoped) :
+    Except LP.RuntimeQuery.QueryError (LP.RuntimeQuery.SortPlan Sigma) := do
+  let addresses ←
+    match LP.RuntimeQuery.decodeAddressList collectionEncoding heap input with
+    | .ok addresses => .ok addresses
+    | .error error => .error (sortListError error)
+  let spec ← decodeSortSpec heap kind
+  match SourceTermOrder.sortAddresses heap spec addresses with
+  | .error error => .error (sortError error)
+  | .ok elements => .ok { encoding := collectionEncoding, output, elements }
+
+/-- Recognize the four SWI sorting entry points without inspecting heap
+content.  The attached decoder is read-only and carries no scheduling or
+answer authority. -/
+def sort? (goal : RuntimeAtom Sigma.scoped) :
+    Option (LP.RuntimeQuery.SortDecoder Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "sort", [input, output] =>
+      if goal.symbol.arity = 2 then
+        some { decode := decodeSort .sort input output }
+      else none
+  | "msort", [input, output] =>
+      if goal.symbol.arity = 2 then
+        some { decode := decodeSort .msort input output }
+      else none
+  | "keysort", [input, output] =>
+      if goal.symbol.arity = 2 then
+        some { decode := decodeSort .keysort input output }
+      else none
+  | "sort", [key, order, input, output] =>
+      if goal.symbol.arity = 4 then
+        some { decode := decodeSort (.sortBy key order) input output }
+      else none
+  | _, _ => none
+
+/-- Recognize ISO `length/2`; all heap inspection and binding stay in the
+shared engine. -/
+def listLength? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.ListLengthEncoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "length", [listRoot, lengthRoot] =>
+      if goal.symbol.arity = 2 then
+        some (listRoot, lengthRoot, listLengthEncoding)
+      else none
+  | _, _ => none
+
+/-- Recognize the one predicate-table reflection entry point.  Groundness is
+checked later by `RuntimeQuery.decodePredicateIndicator`. -/
+def currentPredicate? (goal : RuntimeAtom Sigma.scoped) : Option Addr :=
+  match goal.symbol.name, goal.args.toList with
+  | "current_predicate", [indicatorRoot] =>
+      if goal.symbol.arity = 1 then some indicatorRoot else none
+  | _, _ => none
+
 /-- Read one dynamic grammar body in the finite fragment needed by the pinned
 PeTTa parser.  Ordinary nonterminals reuse the callable decoder with the two
 state arguments appended.  Proper lists and strings become terminal plans;
@@ -860,6 +1014,10 @@ def services : RuntimeControl.Services Sigma where
   formatter := { decode := decodeFormat }
   textConversion? := textConversion?
   binaryTest? := binaryTest?
+  sort? := sort?
+  listLength? := listLength?
+  currentPredicate? := currentPredicate?
+  predicateIndicatorEncoding := some predicateIndicatorEncoding
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -894,6 +1052,20 @@ theorem services_textConversion :
 
 @[simp]
 theorem services_binaryTest : services.binaryTest? = binaryTest? := rfl
+
+@[simp]
+theorem services_sort : services.sort? = sort? := rfl
+
+@[simp]
+theorem services_listLength : services.listLength? = listLength? := rfl
+
+@[simp]
+theorem services_currentPredicate :
+    services.currentPredicate? = currentPredicate? := rfl
+
+@[simp]
+theorem services_predicateIndicatorEncoding :
+    services.predicateIndicatorEncoding = some predicateIndicatorEncoding := rfl
 
 @[simp]
 theorem services_decodeDcg : services.decoder.decodeDcg = decodeDcg := rfl

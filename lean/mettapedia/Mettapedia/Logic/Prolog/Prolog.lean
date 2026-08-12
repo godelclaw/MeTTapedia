@@ -40,6 +40,7 @@ import Mettapedia.Logic.Prolog.RuntimeControlSoundness
 import Mettapedia.Logic.Prolog.RuntimeControlSoundnessRegression
 import Mettapedia.Logic.Prolog.SourceRuntime
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
+import Mettapedia.Logic.Prolog.SourceTermOrderRegression
 import Mettapedia.Logic.Prolog.RuntimeClauseDecode
 import Mettapedia.Logic.Prolog.RuntimeClauseDecodeRegression
 import Mettapedia.Logic.Prolog.RuntimeClauseDecodeAudit
@@ -105,6 +106,8 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
 | `SourceRuntime` | concrete read-only `call/N` decoding invoked by the shared runtime |
 | `SourceRuntimeRegression` | heap-built callable, argument-extension, DFS, and cut-boundary gates |
+| `SourceTermOrder` | finite SWI-compatible standard order over the canonical heap graph |
+| `SourceTermOrderRegression` | executable mixed-number, key-order, stability, and duplicate gates |
 | `RuntimeClauseDecode` | finite heap readback and capture-free dynamic clause decoding through `ReaderSource` |
 | `RuntimeClauseDecodeRegression` | sharing, separation, control reuse, and rejection canaries for asserted terms |
 | `RuntimeClauseDecodeAudit` | trusted-base gate for capture-free rebasing and materialized-heap decoding |

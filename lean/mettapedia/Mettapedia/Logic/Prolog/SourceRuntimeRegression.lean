@@ -1356,6 +1356,33 @@ def laterCallSeesAssertion :
     (SourceSignature.call "p" [x])).toOption
   collectAtoms 8 session
 
+/-! ## Finite list length and call-time predicate reflection -/
+
+def finiteListLength : SourceSignature.Goal :=
+  SourceSignature.call "length"
+    [SourceSignature.list [atom "a", atom "b", atom "c"], x]
+
+def matchingListLength : SourceSignature.Goal :=
+  SourceSignature.call "length"
+    [SourceSignature.list [atom "a", atom "b"], integer 2]
+
+def mismatchingListLength : SourceSignature.Goal :=
+  SourceSignature.call "length"
+    [SourceSignature.list [atom "a", atom "b"], integer 1]
+
+def generativeListLength : SourceSignature.Goal :=
+  SourceSignature.call "length" [x, integer 2]
+
+def currentPredicate (name : String) (arity : Int) : SourceSignature.Goal :=
+  SourceSignature.call "current_predicate"
+    [compound "/" [atom name, integer arity]]
+
+def currentPredicateUnbound : SourceSignature.Goal :=
+  SourceSignature.call "current_predicate" [x]
+
+def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
+  .conj (assertzGoal (assertedP "a")) (currentPredicate "p" 1)
+
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
 #guard runAtoms [] metaCutRetainsCaller == some (["c"], 0, 0)
 #guard runCount binaryFactProgram callThree == some (1, 0, 0)
@@ -1630,5 +1657,17 @@ def laterCallSeesAssertion :
   some (["b"], 0, 0)
 #guard snapshotDoesNotDrift
 #guard laterCallSeesAssertion == some (["old", "new"], 0, 0)
+#guard runIntegersFor [] finiteListLength xIdentity == some ([3], 0, 0)
+#guard runCount [] matchingListLength == some (1, 0, 0)
+#guard runCount [] mismatchingListLength == some (0, 0, 0)
+#guard match runQueryError? [] generativeListLength with
+  | some .listLengthNeedsEnumeration => true
+  | _ => false
+#guard runCount binaryFactProgram (currentPredicate "p" 2) == some (1, 0, 0)
+#guard runCount binaryFactProgram (currentPredicate "q" 2) == some (0, 0, 0)
+#guard match runQueryError? binaryFactProgram currentPredicateUnbound with
+  | some .predicateIndicatorUnbound => true
+  | _ => false
+#guard runCount [] assertedPredicateBecomesCurrent == some (1, 0, 0)
 
 end Mettapedia.Logic.Prolog.SourceRuntimeRegression
