@@ -141,6 +141,76 @@ theorem sourceCorridorSerialPrefixRegion_eq_vertexSetRegionEdges
     rw [sourceSlabLiteralCellRegionAt_eq_vertexSetRegionEdges_cellSide]
     exact hedge
 
+/-- The actual graph-theoretic frontier of the cumulative literal prefix.
+Unlike the displayed `Fin 2` moving cut, this definition computes every edge
+crossing the prefix's proved vertex side. -/
+noncomputable def sourceCorridorSerialPrefixTrueCrossingEdges
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (cut : Nat) : Finset G.edgeSet :=
+  vertexSetCrossingEdges embedded.cellulation.rotation.toRotationSystem
+    (sourceCorridorSerialPrefixVertexSide realization hcubic hrotation
+      htwoSided hunique cut)
+
+/-- A genuine frontier edge of the cumulative prefix must be an incoming or
+outgoing crossing of one of its literal Cells.  This is an exact finite
+classification of the candidates, but not yet the cancellation theorem that
+would reduce them to the two ends of the serial prefix. -/
+theorem sourceCorridorSerialPrefixTrueCrossingEdge_eq_cell_input_or_output
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (cut : Nat) {edge : G.edgeSet}
+    (hedge : edge ∈ sourceCorridorSerialPrefixTrueCrossingEdges realization
+      hcubic hrotation htwoSided hunique cut) :
+    ∃ offset : Fin (blockLength - 3), offset.val < cut ∧
+      ((∃ step : Fin 2,
+          edge = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+            hunique offset).localLayerPrefixCrossing step) ∨
+        ∃ step : Fin 2,
+          edge = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+            hunique offset).nextLocalLayerPrefixCrossing step) := by
+  let indices :=
+    Finset.univ.filter fun offset : Fin (blockLength - 3) => offset.val < cut
+  have hcandidate := vertexSetCrossingEdges_biUnion_subset
+    embedded.cellulation.rotation.toRotationSystem indices
+      (sourceSlabLiteralCellVertexSideAt realization hcubic hrotation
+        htwoSided hunique) hedge
+  rcases Finset.mem_biUnion.mp hcandidate with
+    ⟨offset, hoffset, hedgeCell⟩
+  have hoffsetLt : offset.val < cut := by
+    simpa [indices] using hoffset
+  have hedgeCell' : edge ∈
+      vertexSetCrossingEdges embedded.cellulation.rotation.toRotationSystem
+        ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+            offset).separatedLocalLayerPair.componentSide
+          ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+              hunique offset).localLayerPairSourceCrosscutBoundaryData
+            hcubic).component)ᶜ := by
+    simpa [sourceSlabLiteralCellVertexSideAt] using hedgeCell
+  exact ⟨offset, hoffsetLt,
+    sourceSlabLiteralCellCrossing_eq_input_or_output realization hcubic
+      hrotation htwoSided hunique offset hedgeCell'⟩
+
 end AnnularEmbedding
 
 end SourceTrail

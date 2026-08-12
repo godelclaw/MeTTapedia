@@ -33,6 +33,30 @@ theorem vertexSetRegionEdges_biUnion
   · rintro ⟨vertex, hvertexEndpoint, index, hindex, hvertexSide⟩
     exact ⟨index, hindex, vertex, hvertexEndpoint, hvertexSide⟩
 
+/-- Every edge crossing a finite union of vertex sides crosses at least one
+of the constituent sides.  The reverse inclusion need not hold: an edge
+between two constituent sides is internal after the union is formed. -/
+theorem vertexSetCrossingEdges_biUnion_subset
+    (RS : RotationSystem V E) (indices : Finset I)
+    (side : I → Finset V) :
+    vertexSetCrossingEdges RS (indices.biUnion side) ⊆
+      indices.biUnion (fun index => vertexSetCrossingEdges RS (side index)) := by
+  intro edge hedge
+  rw [mem_vertexSetCrossingEdges_iff] at hedge
+  rcases hedge with
+    ⟨inner, hinnerEndpoint, hinnerUnion,
+      outer, houterEndpoint, houterNotUnion⟩
+  rcases Finset.mem_biUnion.mp hinnerUnion with
+    ⟨index, hindex, hinnerSide⟩
+  apply Finset.mem_biUnion.mpr
+  refine ⟨index, hindex, ?_⟩
+  rw [mem_vertexSetCrossingEdges_iff]
+  refine ⟨inner, hinnerEndpoint, hinnerSide,
+    outer, houterEndpoint, ?_⟩
+  intro houterSide
+  exact houterNotUnion (Finset.mem_biUnion.mpr
+    ⟨index, hindex, houterSide⟩)
+
 end GoertzelV24RotationVertexCutProfile
 
 end Mettapedia.GraphTheory.FourColor
