@@ -30,6 +30,31 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+/-- Forgetting fixed terminals commutes with selecting a moving crossing
+block.  This is the generic square used when a terminal-aware slab relation
+is projected to its crossing-only presentation. -/
+theorem forgetTerminals_restrictCrossings
+    {smallWidth largeWidth terminalCount faceFragmentCount : Nat}
+    (profile : CorridorCutProfile largeWidth terminalCount faceFragmentCount)
+    (inclusion : Fin smallWidth → Fin largeWidth) :
+    forgetTerminals
+        (CorridorCutProfile.restrictCrossings profile inclusion) =
+      CorridorCutProfile.restrictCrossings (forgetTerminals profile)
+        inclusion := by
+  unfold forgetTerminals
+  unfold CorridorCutProfile.restrictCrossings
+  congr 1
+  · funext pair first second
+    rcases first with first | impossible
+    · rcases second with second | impossible
+      · rfl
+      · exact Fin.elim0 impossible
+    · exact Fin.elim0 impossible
+  · funext fragment port
+    rcases port with crossing | impossible
+    · rfl
+    · exact Fin.elim0 impossible
+
 /-- Partitioning a crossing list, selecting one moving block, and forgetting
 the fixed terminals is the same five-field profile as selecting that block
 directly from the original list. -/
