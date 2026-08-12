@@ -247,6 +247,39 @@ pair-key stability, positional keys, and descending unique order:
 scripts/prolog/run_source_term_order_differential.sh
 ```
 
+### Single-sided rule differential
+
+Committed `Head => Body` and guarded `Head, Guard => Body` rules execute on
+the shared clause cursor and graph unifier.  The engine accepts a head match
+only when the match's new trail suffix contains no write into the caller's
+pre-materialization heap prefix.  It then runs the guard normally and reaches
+the existing cut transition only after guard success.
+
+```bash
+scripts/prolog/run_single_sided_rule_differential.sh
+```
+
+The six exact SWI 10.1.9 traces distinguish rejection of caller-binding,
+specific ground selection, guard fall-through, guard commitment, legal fresh
+clause-variable bindings, and unchanged ordinary-head unification.  The
+pinned-assoc source gate additionally requires the portable conditional arm
+to contain exactly 18 typed SSU rules and no private `$btree_find_node/5`
+call:
+
+```bash
+scripts/prolog/run_pinned_assoc_conditional.sh /path/to/swipl-devel
+```
+
+This tranche does not yet model SWI's catchable
+`existence_error(matching_rule, Goal)` when an SSU predicate has no matching
+rule or its permission error for mixing `=>` and `:-` in one predicate.  The
+separate deterministic `?=>` rule neck is rejected explicitly rather than
+silently compiled as an ordinary predicate.
+Pinned `library(assoc)` covers the constructors of its intended `t`/`t(...)`
+tree representation, so normal portable-library calls do not require the
+unmatched-rule path.  Malformed tree inputs may reach that path and therefore
+remain outside the current parity claim.
+
 ### Shared-runtime control differential
 
 The canonical runtime's structured-choice path has a separate observable gate:
@@ -255,7 +288,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 164 exact answer, exception, and persistent-store traces against
+It compares 254 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older

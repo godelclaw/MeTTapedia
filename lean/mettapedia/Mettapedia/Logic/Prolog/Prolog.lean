@@ -43,6 +43,7 @@ import Mettapedia.Logic.Prolog.RuntimeControlSoundness
 import Mettapedia.Logic.Prolog.RuntimeControlSoundnessRegression
 import Mettapedia.Logic.Prolog.SourceRuntime
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
+import Mettapedia.Logic.Prolog.SingleSidedRuleRegression
 import Mettapedia.Logic.Prolog.SourceTermOrderRegression
 import Mettapedia.Logic.Prolog.RuntimeClauseDecode
 import Mettapedia.Logic.Prolog.RuntimeClauseDecodeRegression
@@ -84,7 +85,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 
 | File | Contents |
 |------|----------|
-| `Syntax` | canonical `Goal` and `Clause` over `Logic.LP`, exact pure-Horn embedding, optional source-clause provenance |
+| `Syntax` | canonical `Goal` and neck-typed `Clause` over `Logic.LP`, exact pure-Horn embedding, optional source-clause provenance |
 | `SourceSignature` | name/arity-indexed concrete source symbols and exact atomic payloads |
 | `ReaderLexer` | SWI-shaped located tokens for the concrete source reader |
 | `ReaderNumber` | exact integer, character-code, and IEEE float token interpretation |
@@ -111,6 +112,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
 | `SourceRuntime` | concrete read-only `call/N` decoding invoked by the shared runtime |
 | `SourceRuntimeRegression` | heap-built callable, argument-extension, DFS, and cut-boundary gates |
+| `SingleSidedRuleRegression` | source-shaped SSU caller-protection, fresh-head binding, and guard-commit gates |
 | `SourceTermOrder` | finite SWI-compatible standard order over the canonical heap graph |
 | `SourceTermOrderRegression` | executable mixed-number, key-order, stability, and duplicate gates |
 | `RuntimeClauseDecode` | finite heap readback and capture-free dynamic clause decoding through `ReaderSource` |

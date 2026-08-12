@@ -72,6 +72,23 @@ def readShape (source : String) : Option FormShape :=
 
 #guard readShape "fact(a)." == some (.clause "fact" 1 .succeed)
 
+#guard readShape "select(a) => chosen." == some (.clause "select" 1
+  (.conj .cut (.call "chosen" 0)))
+
+#guard readShape "select(X), nonvar(X) => chosen(X)." == some
+  (.clause "select" 1
+    (.conj (.neg .isVar) (.conj .cut (.call "chosen" 1))))
+
+def rejectsDeterministicNeck : Bool :=
+  match classify (compound "?=>" [
+      compound "select" [atom "a"], atom "chosen"]) with
+  | .error (.unsupportedClauseNeck name) => name == "?=>"
+  | _ => false
+
+-- Unsupported rule necks fail closed; they must never become ordinary facts
+-- headed by the neck functor.
+#guard rejectsDeterministicNeck
+
 #guard readShape ":- use_module(library(clpfd))." == some
   (.directive (.call "use_module" 1))
 
@@ -135,6 +152,24 @@ def sourceTermExact (source : String) (expected : SourceSignature.Term) : Bool :
   (atom "p")
   (compound ";" [compound "->" [atom "a", atom "b"], atom "c"]))
 
+-- SSU reflection retains the rule neck and guard exactly; reclassification
+-- therefore cannot silently turn a rule into an ordinary clause.
+#guard sourceTermExact "select(X), nonvar(X) => chosen(X)."
+  (compound "=>" [
+    compound "," [compound "select" [var "X" 0],
+      compound "nonvar" [var "X" 0]],
+    compound "chosen" [var "X" 0]])
+
+def readClauseNeck (source : String) : Option ClauseNeck := do
+  let result <- (ReaderTerm.readOne defaults source).toOption
+  let form <- (classify result.term).toOption
+  match form with
+  | .clause clause => some clause.neck
+  | _ => none
+
+#guard readClauseNeck "ordinary(a)." == some .ordinary
+#guard readClauseNeck "select(a) => chosen." == some .singleSided
+
 def sourceTermReclassifies (source : String) : Bool :=
   match ReaderTerm.readOne defaults source with
   | .error _ => false
@@ -147,6 +182,7 @@ def sourceTermReclassifies (source : String) : Bool :=
               match classify normalized with
               | .ok (.clause replayed) =>
                   formShape (.clause original) == formShape (.clause replayed) &&
+                    decide (original.neck = replayed.neck) &&
                     replayed.sourceTerm.map ReaderTermRegression.shape ==
                       some (ReaderTermRegression.shape normalized)
               | _ => false
@@ -154,6 +190,8 @@ def sourceTermReclassifies (source : String) : Bool :=
 
 #guard sourceTermReclassifies
   "p(X) :- (q(X), ! ; catch(r(X), E, throw(E)))."
+#guard sourceTermReclassifies
+  "select(X), nonvar(X) => chosen(X)."
 
 def ambiguousControlShape : Option GoalShape :=
   match toGoal (compound ";" [

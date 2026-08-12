@@ -43,7 +43,7 @@ def pureCoreRealization {sigma : LP.LPSignature}
     cases hMaterialize : LP.RuntimeMaterialize.materializeClause memory
         (clause.atScope scope) <;>
       simp [hMaterialize, Except.map, mapMaterializedBody,
-        RuntimeClause.ofLP, RuntimeGoal.calls]
+        Clause.ofLP, RuntimeClause.ofLP, RuntimeGoal.calls]
   · intro next
     simp [dispatchAction, dispatchActionWith, noServices,
       LP.RuntimeQuery.lpDispatchAction, PureRuntime.noControl,

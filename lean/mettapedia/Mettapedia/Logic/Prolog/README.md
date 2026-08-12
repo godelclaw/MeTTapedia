@@ -60,6 +60,7 @@ lake build Mettapedia.Logic.Prolog.Prolog
 | [RuntimeControl.lean](RuntimeControl.lean) | typed control materialization and canonical LP runtime specialization |
 | [SourceRuntime.lean](SourceRuntime.lean) | concrete source-signature services for the shared runtime, including meta-call, term inspection, `=../2`, integer arithmetic, exceptions, collections, and the persistent database |
 | [SourceRuntimeRegression.lean](SourceRuntimeRegression.lean) | executable source-shaped canaries for the same shared runtime path |
+| [SingleSidedRuleRegression.lean](SingleSidedRuleRegression.lean) | source-to-runtime SSU caller-protection and guard-commit canaries |
 | [RuntimeControlSoundness.lean](RuntimeControlSoundness.lean) | proves the typed runtime conserves the shared LP execution and grounds pure answers in scoped SLD and the least Herbrand model |
 | [RuntimeControlSoundnessRegression.lean](RuntimeControlSoundnessRegression.lean) | executable ordered-answer canary on the typed entrypoint plus its concrete least-model theorem specialization |
 | [PureRuntimeSoundness.lean](PureRuntimeSoundness.lean) | pure runtime answers grounded in scoped SLD and the least Herbrand model |
@@ -115,4 +116,4 @@ engine); it is evidence of conformance, not part of the Lean kernel guarantee.
 - Paulo Moura, [Logtalk Prolog conformance test suite](https://github.com/LogtalkDotOrg/logtalk3/tree/master/tests/prolog) — the upstream source of the 63 ISO test IDs.
 
 ---
-*Status updated 2026-08-11; the module table above is the maintained scope record.*
+*Status updated 2026-08-12; the module table above is the maintained scope record.*

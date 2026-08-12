@@ -19,6 +19,7 @@ open SourceSignature
 inductive Error where
   | nonCallableHead
   | nonCallableGoal
+  | unsupportedClauseNeck (name : String)
   | exhaustedInputMeasure
 deriving DecidableEq, Repr
 
@@ -135,6 +136,39 @@ def normalizedClauseTerm (head body : SourceSignature.Term) :
     SourceSignature.Term :=
   SourceSignature.compound ":-" [head, body]
 
+/-- Compile the committed part of an SSU rule into existing Prolog control.
+The engine validates the head match first; the ordinary cut then commits only
+after any source guard has produced its first success. -/
+private def committedRuleBody (body : SourceSignature.Goal) :
+    SourceSignature.Goal :=
+  .conj .cut body
+
+/-- Classify `Head => Body` and `Head, Guard => Body` without inventing a
+second rule language.  The original canonical term remains the reflection
+payload, while the clause neck records the distinct head-entry discipline. -/
+private def classifySingleSided (source left body : SourceSignature.Term) :
+    Except Error Form :=
+  match application? left with
+  | some (",", [head, guard]) => do
+      let parsedHead <- toHead head
+      let parsedGuard <- toGoal guard
+      let parsedBody <- toGoal body
+      pure (.clause {
+        head := parsedHead
+        body := .conj parsedGuard (committedRuleBody parsedBody)
+        neck := .singleSided
+        sourceTerm := some source
+      })
+  | _ => do
+      let parsedHead <- toHead left
+      let parsedBody <- toGoal body
+      pure (.clause {
+        head := parsedHead
+        body := committedRuleBody parsedBody
+        neck := .singleSided
+        sourceTerm := some source
+      })
+
 @[simp]
 private theorem except_pure_eq_ok {alpha epsilon : Type*} (value : alpha) :
     (pure value : Except epsilon alpha) = .ok value := rfl
@@ -145,12 +179,15 @@ def classify (term : SourceSignature.Term) : Except Error Form :=
   | some (":-", [directive]) => .directive <$> toGoal directive
   | some ("?-", [query]) => .query <$> toGoal query
   | some ("-->", [head, body]) => .ok (.dcg head body)
+  | some ("?=>", _) => .error (.unsupportedClauseNeck "?=>")
+  | some ("=>", [left, body]) => classifySingleSided term left body
   | some (":-", [head, body]) => do
       let parsedHead <- toHead head
       let parsedBody <- toGoal body
       pure (.clause {
         head := parsedHead
         body := parsedBody
+        neck := .ordinary
         sourceTerm := some (normalizedClauseTerm head body)
       })
   | _ => do
@@ -158,6 +195,7 @@ def classify (term : SourceSignature.Term) : Except Error Form :=
       pure (.clause {
         head := parsedHead
         body := .succeed
+        neck := .ordinary
         sourceTerm := some (normalizedClauseTerm term (SourceSignature.atom "true"))
       })
 
@@ -192,6 +230,17 @@ private theorem sourceTermPresent_query
     (result : Except Error SourceSignature.Goal) :
     sourceTermPresent (.query <$> result) := by
   cases result <;> simp [sourceTermPresent]
+
+private theorem sourceTermPresent_singleSided
+    (source left body : SourceSignature.Term) :
+    sourceTermPresent (classifySingleSided source left body) := by
+  unfold classifySingleSided
+  split
+  · next head guard _ =>
+      cases toHead head <;> cases toGoal guard <;> cases toGoal body <;>
+        simp [Bind.bind, Except.bind, sourceTermPresent]
+  · cases toHead left <;> cases toGoal body <;>
+      simp [Bind.bind, Except.bind, sourceTermPresent]
 
 private theorem sourceTermPresent_rule (head body : SourceSignature.Term) :
     sourceTermPresent (do
@@ -245,9 +294,12 @@ private theorem classify_sourceTermPresent (term : SourceSignature.Term) :
   case h_2 query _ =>
     exact sourceTermPresent_query (toGoal query)
   case h_3 => trivial
-  case h_4 head body _ =>
+  case h_4 => trivial
+  case h_5 left body _ =>
+    exact sourceTermPresent_singleSided term left body
+  case h_6 head body _ =>
     exact sourceTermPresent_rule head body
-  case h_5 =>
+  case h_7 =>
     exact sourceTermPresent_fact term
 
 /-- Every successfully classified clause carries database-reflection data;

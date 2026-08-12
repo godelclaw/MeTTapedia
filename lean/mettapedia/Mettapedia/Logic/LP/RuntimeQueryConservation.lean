@@ -257,6 +257,7 @@ def mapAttempt (instruction : Instruction₁ → Instruction₂)
   body := attempt.body.map instruction
   cutDepth := attempt.cutDepth
   frames := attempt.frames.map (mapReturnFrame instruction)
+  singleSided := attempt.singleSided
   onSuccess := attempt.onSuccess
 
 /-- Map one phase of the shared machine. -/
@@ -299,6 +300,7 @@ def mapMaterializedBody (instruction : Instruction₁ → Instruction₂)
   memory := body.memory
   head := body.head
   body := body.body.map instruction
+  headMatch := body.headMatch
 
 /-- Representation change on the narrow output of query materialization. -/
 def mapMaterializedQuery (instruction : Instruction₁ → Instruction₂)
@@ -1637,9 +1639,18 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
       | terminal result =>
           cases result with
           | success successMemory =>
-              cases hSuccess : attempt.onSuccess <;>
-                simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
-                  mapCursor, mapStepResult, unifyingStep, hSuccess]
+              cases hSingle : attempt.singleSided with
+              | none =>
+                  cases hSuccess : attempt.onSuccess <;>
+                    simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
+                      mapCursor, mapStepResult, unifyingStep, hSuccess, hSingle]
+              | some check =>
+                  cases hProtected : successMemory.protectsHeapPrefixSince
+                      check.trailMark check.protectedHeapSize <;>
+                    cases hSuccess : attempt.onSuccess <;>
+                    simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
+                      mapCursor, mapStepResult, unifyingStep, hSuccess, hSingle,
+                      hProtected]
           | failure failureMemory =>
               simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
                 mapCursor, mapStepResult, unifyingStep]

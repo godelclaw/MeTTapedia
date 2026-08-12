@@ -34,6 +34,11 @@ attributed in SWI-Prolog's `src/pl-hash.c` to Austin Appleby and released to
 the public domain.  The surrounding cycle-safe term-hash traversal is covered
 by the SWI-Prolog BSD-2-Clause notice above.
 
+The single-sided rule-head check and guard-delayed commitment follow the SSU
+design documented in `man/ssu.plx` and implemented by `I_SSU_CHOICE` and
+`I_SSU_COMMIT` in `src/pl-vmi.c`, adapted to the Lean graph runtime's explicit
+heap-address and trail representation.
+
 The Janus operator-export profile additionally references the official
 SWI-Prolog Python package at tag V10.1.9, commit
 4ef253996f1f7ad8f9c811727473a2ed06436038.  Its `janus/janus.pl` source is

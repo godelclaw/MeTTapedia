@@ -372,8 +372,10 @@ theorem materializeClause_trail_exact {sigma : LP.LPSignature}
     · contradiction
 
 /-- Typed Prolog clauses instantiate the shared query machine's deliberately
-narrow materializer interface.  The adapter can supply only the copied memory,
-head, and body; the shared transition retains all search authority. -/
+narrow materializer interface.  The adapter supplies copied memory, head,
+body, and the source neck's head-match policy; the shared transition alone
+captures the caller prefix, runs the unifier, validates its writes, and owns
+all search authority. -/
 def clauseMaterializer {sigma : LP.LPSignature}
     [DecidableEq sigma.scoped.vars] :
     LP.RuntimeQuery.ClauseMaterializer sigma (RuntimeGoal sigma.scoped)
@@ -385,6 +387,9 @@ def clauseMaterializer {sigma : LP.LPSignature}
         memory := result.memory
         head := result.clause.head
         body := result.clause.body
+        headMatch := match clause.neck with
+          | .ordinary => .unify
+          | .singleSided => .singleSided
       }
 
 /-! ## Shared base-control dispatch -/

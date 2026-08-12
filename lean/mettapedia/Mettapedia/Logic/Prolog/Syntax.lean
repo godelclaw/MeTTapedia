@@ -136,6 +136,15 @@ end Goal
 
 /-! ## Prolog clauses and the exact pure-Horn embedding -/
 
+/-- The source neck determines how a selected head may instantiate its call.
+Ordinary clauses use symmetric unification.  A committed single-sided rule
+may bind only cells allocated for its fresh clause copy while matching the
+head; its guard and commitment remain ordinary body control. -/
+inductive ClauseNeck where
+  | ordinary
+  | singleSided
+deriving DecidableEq, Repr
+
 /-- A Prolog clause has an LP head and a control-aware body.
 
 `sourceTerm` retains the normalized ordinary clause term when a clause enters
@@ -148,6 +157,7 @@ clauses may leave it absent. -/
 structure Clause (sigma : LP.LPSignature) where
   head : LP.Atom sigma
   body : Goal sigma
+  neck : ClauseNeck := .ordinary
   sourceTerm : Option (LP.Term sigma) := none
 
 /-- A source-ordered Prolog program. -/
@@ -160,14 +170,18 @@ order. -/
 def ofLP {sigma : LP.LPSignature} (clause : LP.Clause sigma) : Clause sigma where
   head := clause.head
   body := Goal.calls clause.body
+  neck := .ordinary
   sourceTerm := none
 
 /-- Project a clause back to LP exactly when its body is a pure conjunction of
 ordinary calls. -/
 def toLP? {sigma : LP.LPSignature} (clause : Clause sigma) :
-    Option (LP.Clause sigma) := do
-  let body <- clause.body.toAtoms?
-  pure { head := clause.head, body }
+    Option (LP.Clause sigma) :=
+  match clause.neck with
+  | .singleSided => none
+  | .ordinary => do
+      let body <- clause.body.toAtoms?
+      pure { head := clause.head, body }
 
 @[simp]
 theorem toLP?_ofLP {sigma : LP.LPSignature} (clause : LP.Clause sigma) :
@@ -193,6 +207,7 @@ def atScope {sigma : LP.LPSignature} (scope : Nat)
     (clause : Clause sigma) : Clause sigma.scoped where
   head := clause.head.atScope scope
   body := clause.body.atScope scope
+  neck := clause.neck
   sourceTerm := clause.sourceTerm.map (LP.Term.atScope scope)
 
 @[simp]
@@ -210,6 +225,7 @@ theorem atScope_ofLP {sigma : LP.LPSignature} (scope : Nat)
       apply Clause.ext
       · rfl
       · exact Goal.atScope_calls scope body
+      · rfl
       · rfl
 
 end Clause

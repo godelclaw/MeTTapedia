@@ -1384,11 +1384,28 @@ inductive AttemptSuccess where
   | eraseRef (reference : Nat)
 deriving DecidableEq, Repr
 
+/-- Clause-head entry policy supplied by a narrow materializer.  Both modes
+use the same graph unifier; single-sided entry adds only an engine-owned check
+over the writes that the unifier actually performed. -/
+inductive HeadMatchMode where
+  | unify
+  | singleSided
+deriving DecidableEq, Repr
+
+/-- Runtime coordinates captured before a single-sided head is entered.
+They name the caller-owned heap prefix and the exact start of this match's
+trail suffix; neither coordinate can be supplied by source syntax. -/
+structure SingleSidedCheck where
+  trailMark : Nat
+  protectedHeapSize : Nat
+deriving DecidableEq, Repr
+
 /-- Information retained while the graph unifier executes one selected head. -/
 structure AttemptCore (σ : LPSignature) (Instruction : Type*) where
   body : List Instruction
   cutDepth : Nat
   frames : List (ReturnFrameCore σ Instruction)
+  singleSided : Option SingleSidedCheck := none
   onSuccess : AttemptSuccess := .continue
 
 /-- The established pure-LP unification attempt. -/
@@ -1863,6 +1880,7 @@ structure MaterializedBody (σ : LPSignature) (Instruction : Type*) where
   memory : Memory σ.scoped
   head : RuntimeAtom σ.scoped
   body : List Instruction
+  headMatch : HeadMatchMode := .unify
 
 /-- Materialize one source clause at an explicit activation scope.  Search
 order, cursor retention, fresh-scope advancement, and head entry remain owned
@@ -1906,6 +1924,12 @@ def selectStep {σ : LPSignature} [DecidableEq σ.relationSymbols]
                 body := entered.body
                 cutDepth := cursor.cutDepth
                 frames := cursor.frames
+                singleSided := match copied.headMatch with
+                  | .unify => none
+                  | .singleSided => some {
+                      trailMark := state.memory.trail.size
+                      protectedHeapSize := state.memory.heap.size
+                    }
               }
               .next {
                 state with
@@ -2384,10 +2408,17 @@ def unifyingStep {σ : LPSignature} [DecidableEq σ.constants]
         }
         phase := .dispatch
       }
-      match attempt.onSuccess with
-      | .continue => .next succeeded none
-      | .eraseRef reference =>
-          .databaseRequest (.eraseRef reference) succeeded
+      let accepted : Bool := match attempt.singleSided with
+        | none => true
+        | some check => memory.protectsHeapPrefixSince check.trailMark
+            check.protectedHeapSize
+      if accepted then
+        match attempt.onSuccess with
+        | .continue => .next succeeded none
+        | .eraseRef reference =>
+            .databaseRequest (.eraseRef reference) succeeded
+      else
+        .next { state with memory, phase := .backtrack } none
   | .terminal (.failure memory) =>
       .next { state with memory, phase := .backtrack } none
   | .terminal (.runtimeError error memory) =>
@@ -4176,7 +4207,9 @@ theorem unifyingStep_eraseRef_success {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (attempt : AttemptCore σ Instruction)
     (reference : Nat) (memory : Memory σ.scoped) :
-    unifyingStep state { attempt with onSuccess := .eraseRef reference }
+    unifyingStep state { attempt with
+        singleSided := none
+        onSuccess := .eraseRef reference }
         (.terminal (.success memory)) =
       .databaseRequest (.eraseRef reference) {
         state with
@@ -4187,7 +4220,68 @@ theorem unifyingStep_eraseRef_success {σ : LPSignature}
           frames := attempt.frames
         }
         phase := .dispatch
-      } := rfl
+      } := by simp [unifyingStep]
+
+/-- A successful ordinary head unification enters its already-materialized
+body exactly as before the single-sided extension. -/
+theorem unifyingStep_ordinary_success {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (attempt : AttemptCore σ Instruction) (memory : Memory σ.scoped) :
+    unifyingStep state { attempt with
+        singleSided := none
+        onSuccess := .continue }
+        (.terminal (.success memory)) =
+      .next {
+        state with
+        memory
+        control := {
+          current := attempt.body
+          cutDepth := attempt.cutDepth
+          frames := attempt.frames
+        }
+        phase := .dispatch
+      } none := by
+  simp [unifyingStep]
+
+/-- A single-sided match whose new trail suffix touches the caller prefix is
+converted to ordinary clause mismatch/backtracking before its body can run. -/
+theorem unifyingStep_singleSided_rejects_caller_write {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (attempt : AttemptCore σ Instruction) (check : SingleSidedCheck)
+    (memory : Memory σ.scoped)
+    (hProtected : memory.protectsHeapPrefixSince check.trailMark
+      check.protectedHeapSize = false) :
+    unifyingStep state { attempt with singleSided := some check }
+        (.terminal (.success memory)) =
+      .next { state with memory, phase := .backtrack } none := by
+  simp [unifyingStep, hProtected]
+
+/-- If every new binding is confined to the fresh clause-copy suffix, the
+single-sided check enters the same body/control state as ordinary matching. -/
+theorem unifyingStep_singleSided_accepts_fresh_writes {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (state : StateCore σ Instruction SourceClause)
+    (attempt : AttemptCore σ Instruction) (check : SingleSidedCheck)
+    (memory : Memory σ.scoped)
+    (hProtected : memory.protectsHeapPrefixSince check.trailMark
+      check.protectedHeapSize = true) :
+    unifyingStep state { attempt with
+        singleSided := some check
+        onSuccess := .continue }
+        (.terminal (.success memory)) =
+      .next {
+        state with
+        memory
+        control := {
+          current := attempt.body
+          cutDepth := attempt.cutDepth
+          frames := attempt.frames
+        }
+        phase := .dispatch
+      } none := by
+  simp [unifyingStep, hProtected]
 
 /-- A cut whose captured depth is exactly the older suffix removes a newest
 structured branch while retaining every older caller alternative. -/

@@ -143,6 +143,10 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.databaseClauseSelectStep_inspect_cons_of_materialize_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.backtrackStep_databaseClause_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.unifyingStep_eraseRef_success
+#print axioms Mettapedia.Logic.LP.RuntimeTerm.Memory.protectsHeapPrefixSince_eq_true_iff
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.unifyingStep_ordinary_success
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.unifyingStep_singleSided_rejects_caller_write
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.unifyingStep_singleSided_accepts_fresh_writes
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_asserta_of_decode
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_assertz_of_decode
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_assertaWithReference_of_decode_bind

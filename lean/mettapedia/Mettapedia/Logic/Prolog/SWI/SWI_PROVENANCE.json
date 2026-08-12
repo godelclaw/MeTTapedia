@@ -138,6 +138,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "man/ssu.plx",
+      "sha256": "c9d78333d064592f902e1ad7a6da17a940f60b5452f362bfc7a17971b6a2bdb8"
+    },
+    {
+      "project": "swi-prolog",
       "path": "boot/syspred.pl",
       "sha256": "8fe12fec547142af47975e55a75376c93caf3f58044774e1894ed6debd190298"
     },

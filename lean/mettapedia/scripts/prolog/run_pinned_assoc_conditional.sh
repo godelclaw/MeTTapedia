@@ -27,9 +27,9 @@ clauses=106
 directives=4
 pending_goals=0
 private_btree_calls=0
-ssu_heads=18
-get_assoc_heads=6
+ssu_rules=18
+get_assoc_heads=10
 EOF
 
 diff -u "$TMP/expected" "$TMP/actual"
-echo "Pinned assoc conditional selection: PASS (portable arm selected; SSU dependency explicit)"
+echo "Pinned assoc conditional selection: PASS (portable arm selected; 18 SSU rules typed)"

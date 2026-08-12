@@ -1113,6 +1113,7 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
       (machine : RuntimeUnification.Machine σ.scoped)
       (answer : Answer σ) (resumed : State σ),
       state.phase = .unifying attempt machine →
+      attempt.singleSided = none →
       pull builtins program fuel state = .answer answer resumed →
       ∃ (unifierSteps rest : Nat), fuel = unifierSteps + 1 + rest ∧
         ((∃ m, RuntimeUnification.runSteps unifierSteps machine =
@@ -1127,10 +1128,10 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
   intro fuel
   induction fuel with
   | zero =>
-      intro state attempt machine answer resumed hPhase hPull
+      intro state attempt machine answer resumed hPhase hSingle hPull
       simp [pull, RuntimeQuery.pullCore_zero] at hPull
   | succ fuel ih =>
-      intro state attempt machine answer resumed hPhase hPull
+      intro state attempt machine answer resumed hPhase hSingle hPull
       simp only [pull, RuntimeQuery.pullCore_succ,
         RuntimeQuery.lp_stepCore_eq_step] at hPull
       cases machine with
@@ -1144,7 +1145,7 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
               dsimp only at hPull
               obtain ⟨k, rest, hfuel, hdisj⟩ :=
                 ih { state with phase := .unifying attempt next } attempt next
-                  answer resumed rfl hPull
+                  answer resumed rfl hSingle hPull
               refine ⟨k + 1, rest, ?_, ?_⟩
               · rw [hfuel]
                 exact Nat.add_right_comm (k + 1) rest 1
@@ -1167,7 +1168,7 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
                   have hstep : RuntimeQuery.step builtins program state = .next
                       (unifySuccessState state attempt m) none := by
                     simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase,
-                      hSuccess, unifySuccessState]
+                      hSuccess, hSingle, unifySuccessState]
                   rw [hstep] at hPull
                   dsimp only at hPull
                   exact ⟨0, fuel, by omega, .inl ⟨m, rfl, hPull⟩⟩
@@ -1176,7 +1177,7 @@ theorem pull_unifying_extract {σ : LPSignature} [DecidableEq σ.vars]
                       .databaseRequest (.eraseRef reference)
                         (unifySuccessState state attempt m) := by
                     simp [RuntimeQuery.step, RuntimeQuery.stepCore, hPhase,
-                      hSuccess, unifySuccessState]
+                      hSuccess, hSingle, unifySuccessState]
                   rw [hstep] at hPull
                   dsimp only at hPull
                   obtain ⟨result, hTerminal⟩ := failPullWith_terminal
@@ -3251,7 +3252,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       obtain ⟨k', rest', hfuelEq, hdisj⟩ :=
                         pull_unifying_extract builtins program fuel
                           (unifyEntryState state cursor remaining copied)
-                          _ _ ans resumed rfl hPull
+                          _ _ ans resumed rfl rfl hPull
                       rcases hdisj with ⟨m₁, hrunU, hPull'⟩ |
                         ⟨mF, hrunF, hPull'⟩
                       · -- unify success

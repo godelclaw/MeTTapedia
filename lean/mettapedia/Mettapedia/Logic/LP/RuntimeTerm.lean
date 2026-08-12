@@ -297,6 +297,36 @@ def write {σ : LPSignature} (memory : Memory σ) (address : Addr) (cell : Cell 
   else
     .error (.invalidAddress address)
 
+/-- Every write appended since `trailMark` targets an address outside the
+protected heap prefix.  This is the graph-runtime form of single-sided head
+matching: freshly materialized clause cells may be bound, but no cell owned by
+the caller may be changed.  A stale mark fails closed. -/
+def protectsHeapPrefixSince {σ : LPSignature} (memory : Memory σ)
+    (trailMark protectedHeapSize : Nat) : Bool :=
+  decide (trailMark ≤ memory.trail.size) &&
+    (memory.trail.toList.drop trailMark).all fun entry =>
+      decide (protectedHeapSize ≤ entry.address)
+
+/-- The executable prefix check is exactly a valid trail suffix plus the
+pointwise address floor; it does not infer acceptance from trail length alone. -/
+theorem protectsHeapPrefixSince_eq_true_iff {σ : LPSignature}
+    (memory : Memory σ) (trailMark protectedHeapSize : Nat) :
+    memory.protectsHeapPrefixSince trailMark protectedHeapSize = true ↔
+      trailMark ≤ memory.trail.size ∧
+        ∀ entry ∈ memory.trail.toList.drop trailMark,
+          protectedHeapSize ≤ entry.address := by
+  simp [protectsHeapPrefixSince]
+
+/-- With no writes after a valid mark, single-sided matching accepts
+regardless of the protected prefix size. -/
+@[simp]
+theorem protectsHeapPrefixSince_at_end {σ : LPSignature}
+    (memory : Memory σ) (protectedHeapSize : Nat) :
+    memory.protectsHeapPrefixSince memory.trail.size protectedHeapSize = true := by
+  simp only [protectsHeapPrefixSince, le_refl, decide_true, Bool.true_and]
+  rw [List.drop_eq_nil_of_le (by simp)]
+  rfl
+
 /-- Undo exactly the most recent trailed write.  Query-level rollback repeats
 this operation until it reaches the choice-point mark, making rollback itself
 available as a visible microstep. -/
