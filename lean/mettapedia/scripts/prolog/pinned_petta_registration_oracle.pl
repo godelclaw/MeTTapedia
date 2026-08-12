@@ -83,6 +83,10 @@ main([MettaPath, TranslatorPath, SpecializerPath]) :-
     emit_eval(metta_eval_first_pair, ['first-from-pair',[a,b]], a),
     emit_eval(metta_eval_size, ['size-atom',[a,b]], 2),
     emit_eval(metta_eval_unique, ['unique-atom',[b,a,b]], [b,a]),
+    'alpha-unique-atom'(
+        [pair(X,X),pair(Y,Y),pair(Z,a)], AlphaUnique),
+    AlphaUnique == [pair(X,X),pair(Z,a)],
+    format('metta_alpha_unique_direct=exact~n', []),
     emit_answers(metta_eval_superpose_order, [superpose,[a,b]], [a,b]),
     emit_eval(metta_eval_collapse, [collapse,[superpose,[a,b]]], [a,b]),
     emit_eval(metta_eval_once, [once,[superpose,[a,b]]], a),

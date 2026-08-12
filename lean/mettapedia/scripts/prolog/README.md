@@ -184,7 +184,7 @@ materialize one canonical forwarding clause per imported predicate so that
 runtime-built calls and ground predicate reflection see the same `user`-module
 visibility as statically written calls. The pinned `specializer.pl` dependency
 is linked as source rather than relying on missing-predicate failure. The
-resulting 691
+resulting 800
 canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
@@ -214,13 +214,20 @@ finite standard-order sorting, finite `length/2`, call-time
 `current_predicate/1`, and the registered `id/2` clause, producing exactly
 `a`. Eight more evaluator paths cover nested arithmetic, imported `reverse/2`,
 translated conditionals, recursive `map-atom` and `foldl-atom`, pair
-projection, list size, and stable uniqueness. An independent SWI oracle reads
-the same pinned translator, specializer, and runtime clauses, executes the
-same registration directive, and requires the exact singleton result for all
-nine compound evaluations:
+projection, list size, and stable uniqueness.  A direct path through pinned
+`alpha-unique-atom/2` then distinguishes repeated alpha-equivalent variable
+terms from a structurally different term through the portable conditional arm
+of SWI `library(assoc)`.  The closure
+asserts that `library(assoc)` is no longer external, its qualified definitions
+are present, and PeTTa's alpha-list predicates call the qualified
+`empty_assoc/1`, `get_assoc/3`, and `put_assoc/4` definitions. An independent
+SWI oracle reads the same pinned translator, specializer, and runtime clauses,
+executes the same registration directive, and requires the exact singleton
+result for all nine compound evaluations plus the alpha-variant result:
 
 ```bash
-scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
+scripts/prolog/run_pinned_parser_source_runtime.sh \
+  /path/to/PeTTa /path/to/swipl-devel
 ```
 
 This is a deliberately narrow executable slice.  Loader goals other than the

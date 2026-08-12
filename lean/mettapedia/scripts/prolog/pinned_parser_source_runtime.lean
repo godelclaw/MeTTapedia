@@ -15,6 +15,9 @@ executes the real retained `maplist(register_fun, ...)` load goal through SWI's 
 retained loader obligations stay explicit; this canary claims only the named
 paths.  Compound evaluation remains gated by the standard-term-ordering
 operations and `library(pairs)` source used by pinned `lists:list_to_set/2`.
+The alpha-normalized uniqueness path additionally links the portable
+conditional arm of SWI `library(assoc)` as a real module; it is not satisfied
+through an unresolved external predicate.
 -/
 
 open Mettapedia.Logic
@@ -82,7 +85,7 @@ combined by key, and module qualification is applied to the same canonical
 clauses consumed by the shared runtime. -/
 def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
     (mettaSource translatorSource specializerSource dcgBasicsSource listsSource
-      errorSource applySource pairsSource : String) :
+      errorSource applySource pairsSource assocSource : String) :
     IO (ReaderUnitClosure.FlatLink String) := do
   let mettaClosure ← match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
@@ -105,16 +108,60 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       "specializer" specializerSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "specializer source-unit closure failed"
-  let userUnits := appendNewUnits mettaClosure.units parserClosure.units
+  let assocUnit ← match ReaderUnit.loadConditionalSourceWith
+      ReaderSWIProfile.pinnedPeTTaCondition
+      (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
+      ReaderOperator.defaults assocSource with
+    | .ok unit => pure unit
+    | .error _ => throw <| IO.userError "assoc conditional source loading failed"
+  if assocUnit.program.length != 106 ||
+      assocUnit.program.countP (fun clause => clause.neck = .singleSided) != 18 ||
+      assocUnit.program.any (fun clause =>
+        { name := "$btree_find_node", arity := 5 } ∈ calledSymbols clause.body) then
+    throw <| IO.userError "assoc portable source boundary changed"
+  let assocNamed : ReaderUnitClosure.NamedUnit String := {
+    key := "library(assoc)"
+    unit := assocUnit
+  }
+  let userUnits := appendNewUnits mettaClosure.units [assocNamed]
+  let userUnits := appendNewUnits userUnits parserClosure.units
   let userUnits := appendNewUnits userUnits translatorClosure.units
   let combined : ReaderUnitClosure.Closure String := {
     units := appendNewUnits userUnits specializerClosure.units
-    external := mettaClosure.external ++ parserClosure.external ++
-      translatorClosure.external ++ specializerClosure.external
+    external := (mettaClosure.external ++ parserClosure.external ++
+      translatorClosure.external ++ specializerClosure.external).filter
+        fun external => external.key != "library(assoc)"
   }
   let linked ← match ReaderModuleLink.link ReaderSWIProfile.sourceKey? combined with
     | .ok linked => pure linked
     | .error _ => throw <| IO.userError "module-aware source link failed"
+  let assocEmpty : SourceSignature.PredicateIndicator := {
+    name := "assoc:empty_assoc"
+    arity := 1
+  }
+  let assocGet : SourceSignature.PredicateIndicator := {
+    name := "assoc:get_assoc"
+    arity := 3
+  }
+  let assocPut : SourceSignature.PredicateIndicator := {
+    name := "assoc:put_assoc"
+    arity := 4
+  }
+  let assocExternal := linked.external.any fun external =>
+    external.key = "library(assoc)"
+  let assocDefined := [assocEmpty, assocGet, assocPut].all fun symbol =>
+    linked.program.any fun clause => clause.head.symbol = symbol
+  let alphaEntryLinked := linked.program.any fun clause =>
+        clause.head.symbol = { name := "alpha_list_to_set", arity := 2 } &&
+          assocEmpty ∈ calledSymbols clause.body
+  let alphaStepLinked := linked.program.any fun clause =>
+        clause.head.symbol = { name := "alpha_list_to_set_assoc", arity := 3 } &&
+          assocGet ∈ calledSymbols clause.body &&
+          assocPut ∈ calledSymbols clause.body
+  if assocExternal || !assocDefined || !alphaEntryLinked || !alphaStepLinked then
+    throw <| IO.userError s!"PeTTa alpha-unique assoc link changed: \
+      external={assocExternal}, defined={assocDefined}, \
+      entry={alphaEntryLinked}, step={alphaStepLinked}"
   let some mettaUnit := mettaClosure.units.find? fun named => named.key = "metta"
     | throw <| IO.userError "metta root unit missing"
   let some translatorUnit := translatorClosure.units.find? fun named =>
@@ -142,7 +189,7 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       clause.head.symbol = { name := "sexpr", arity := 5 } &&
         numberSymbol ∈ calledSymbols clause.body) then
     throw <| IO.userError "parser number//1 call was not module-qualified"
-  if linked.program.length != 691 then
+  if linked.program.length != 800 then
     throw <| IO.userError s!"module-aware source boundary changed: \
       clauses={linked.program.length}"
   pure linked
@@ -524,12 +571,12 @@ def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
 def main (arguments : List String) : IO Unit := do
   let [mettaPath, parserPath, translatorPath, specializerPath,
       dcgBasicsPath, listsPath,
-      errorPath, applyPath, pairsPath] := arguments
+      errorPath, applyPath, pairsPath, assocPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
          <metta.pl> <parser.pl> <translator.pl> \
          <specializer.pl> \
-         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl>"
+         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl> <assoc.pl>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
     (← IO.FS.readFile dcgBasicsPath)
@@ -544,6 +591,7 @@ def main (arguments : List String) : IO Unit := do
     (← IO.FS.readFile errorPath)
     (← IO.FS.readFile applyPath)
     (← IO.FS.readFile pairsPath)
+    (← IO.FS.readFile assocPath)
   let program := linked.program
   let (emptyCodes, emptyHeap, emptyTrail) <- execute program query
   let (atomListCodes, atomListHeap, atomListTrail) <-
@@ -781,6 +829,22 @@ def main (arguments : List String) : IO Unit := do
         SourceSignature.atom "b"]
     ]))
     (SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a"])
+  checkDatabaseGoal registeredDatabase "metta_alpha_unique_direct"
+    (SourceSignature.call "alpha-unique-atom" [
+      SourceSignature.list [
+        SourceSignature.compound "pair"
+          [SourceRuntimeRegression.x, SourceRuntimeRegression.x],
+        SourceSignature.compound "pair"
+          [SourceRuntimeRegression.y, SourceRuntimeRegression.y],
+        SourceSignature.compound "pair"
+          [SourceRuntimeRegression.z, SourceSignature.atom "a"]],
+      .var termIdentity
+    ])
+    (SourceSignature.list [
+      SourceSignature.compound "pair"
+        [SourceRuntimeRegression.x, SourceRuntimeRegression.x],
+      SourceSignature.compound "pair"
+        [SourceRuntimeRegression.z, SourceSignature.atom "a"]])
   checkDatabaseAnswers registeredDatabase "metta_eval_superpose_order"
     (evalQuery (SourceSignature.list [
       SourceSignature.atom "superpose",

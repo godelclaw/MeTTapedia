@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 <PeTTa git tree>" >&2
+if [[ $# -ne 2 ]]; then
+  echo "usage: $0 <PeTTa git tree> <SWI-Prolog git tree>" >&2
   exit 2
 fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PETTA_TREE="$(realpath "$1")"
+SWI_TREE="$(realpath "$2")"
 PIN="6b7f52f064bdbc82fabd0a0998404121fb01d52e"
+SWI_PIN="6be143dbd030cc9ea621cde719a37f8385575453"
 SWI_VERSION="SWI-Prolog version 10.1.9"
 
 if [[ "$(swipl --version)" != "$SWI_VERSION"* ]]; then
@@ -17,11 +19,16 @@ if [[ "$(swipl --version)" != "$SWI_VERSION"* ]]; then
 fi
 
 git -C "$PETTA_TREE" cat-file -e "$PIN^{commit}"
+if [[ "$(git -C "$SWI_TREE" rev-parse HEAD)" != "$SWI_PIN" ]]; then
+  echo "pinned parser runtime gate requires SWI source commit $SWI_PIN" >&2
+  exit 1
+fi
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 git -C "$PETTA_TREE" archive "$PIN" \
   src/metta.pl src/parser.pl src/translator.pl src/specializer.pl | tar -x -C "$TMP"
+git -C "$SWI_TREE" archive "$SWI_PIN" library/assoc.pl | tar -x -C "$TMP"
 
 DCG_BASICS="$(swipl -q -g \
   "absolute_file_name(library('dcg/basics'), P, [file_type(prolog), access(read)]), write(P), halt")"
@@ -33,12 +40,14 @@ APPLY="$(swipl -q -g \
   "absolute_file_name(library(apply), P, [file_type(prolog), access(read)]), write(P), halt")"
 PAIRS="$(swipl -q -g \
   "absolute_file_name(library(pairs), P, [file_type(prolog), access(read)]), write(P), halt")"
+ASSOC="$TMP/library/assoc.pl"
 
 pushd "$ROOT_DIR" >/dev/null
 if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
     "$TMP/src/metta.pl" "$TMP/src/parser.pl" \
     "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
-    "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" "$PAIRS" > "$TMP/lean.out"; then
+    "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" "$PAIRS" "$ASSOC" \
+    > "$TMP/lean.out"; then
   cat "$TMP/lean.out" >&2
   popd >/dev/null
   exit 1
@@ -96,6 +105,7 @@ metta_eval_foldl_atom=exact
 metta_eval_first_pair=exact
 metta_eval_size=exact
 metta_eval_unique=exact
+metta_alpha_unique_direct=exact
 metta_eval_superpose_order=exact
 metta_eval_collapse=exact
 metta_eval_once=exact
@@ -132,6 +142,7 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_eval_first_pair=exact' \
   'metta_eval_size=exact' \
   'metta_eval_unique=exact' \
+  'metta_alpha_unique_direct=exact' \
   'metta_eval_superpose_order=exact' \
   'metta_eval_collapse=exact' \
   'metta_eval_once=exact' \
