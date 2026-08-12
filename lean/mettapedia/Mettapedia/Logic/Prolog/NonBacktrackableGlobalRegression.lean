@@ -42,13 +42,17 @@ private def hasAnswer (goal : SourceSignature.Goal) : Bool :=
       | .answer _ _ => true
       | _ => false
 
-private def hasUndefinedGlobalError (goal : SourceSignature.Goal) : Bool :=
-  match SourceRuntime.openEmpty [] goal with
-  | .error _ => false
-  | .ok session =>
-      match SourceRuntime.pullSession 4096 session with
-      | .terminal (.runtimeError (.undefinedGlobalVariable) _) _ => true
-      | _ => false
+private def catchesUndefinedGlobal (name : String)
+    (guarded : SourceSignature.Goal) : SourceSignature.Goal :=
+  let contextVariable := sourceVar "Context" 0
+  let catcher := compound "error" [
+    compound "existence_error" [atom "variable", atom name],
+    compound "context" [
+      compound ":" [atom "system", compound "/" [atom "nb_getval", integer 2]],
+      contextVariable
+    ]
+  ]
+  .catch guarded catcher (.isVar contextVariable)
 
 private def y := sourceVar "Y" 0
 private def first := sourceVar "First" 0
@@ -106,13 +110,23 @@ def setSurvivesOlderChoice : Bool :=
 /-- Deletion itself is non-backtrackable, while deleting an absent atom is a
 successful no-op. -/
 def deleteSurvivesOlderChoice : Bool :=
-  hasUndefinedGlobalError <|
+  hasAnswer <| catchesUndefinedGlobal "deleted" <|
     .conj (setGlobal "deleted" (atom "value"))
       (.conj
         (.disj (.conj (deleteGlobal "deleted") .fail) .succeed)
         (getGlobal "deleted" first))
 
 #guard deleteSurvivesOlderChoice
+
+/-- Reading a name that was never installed raises SWI's catchable
+`existence_error(variable, Name)` packet rather than a fatal runtime error.
+The handler additionally requires the context's final field to remain a
+variable, pinning the complete normalized packet shape. -/
+def missingGetRaisesCatchableExistenceError : Bool :=
+  hasAnswer <| catchesUndefinedGlobal "never_installed" <|
+    getGlobal "never_installed" first
+
+#guard missingGetRaisesCatchableExistenceError
 
 def deleteMissingSucceeds : Bool :=
   hasAnswer (deleteGlobal "already_absent")

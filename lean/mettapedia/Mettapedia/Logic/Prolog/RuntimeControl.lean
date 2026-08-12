@@ -549,6 +549,12 @@ structure Services (sigma : LP.LPSignature) where
   The persistent session uses this only to build a source-ordered snapshot;
   matching and occurrence selection remain shared-engine operations. -/
   reflectClause : Clause sigma → Option (LP.Term sigma) := fun _ => none
+  /-- Optional language-level payload for reading an absent non-backtrackable
+  global. The persistent session decides that the name is absent; this
+  callback supplies only immutable exception content. Raising, catcher
+  selection, unwind, and recovery remain canonical engine transitions. -/
+  undefinedGlobalError : sigma.constants →
+    Option (LP.RuntimeException.Packet sigma) := fun _ => none
   /-- Optional language-level payload for `throw(Variable)`.  The shared
   engine alone decides whether the heap root is unbound and raises it through
   the canonical exception phases. -/
@@ -590,6 +596,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   decodeGlobalName _ _ := .error .invalidGlobalVariableName
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
+  undefinedGlobalError _ := none
   unboundThrowError := none
   collectionEncoding := none
   clauseEncoding := none
@@ -1479,7 +1486,14 @@ def applyDatabaseRequest [DecidableEq sigma.scoped.vars]
       | .error error => failSession session state error
       | .ok name =>
           match session.globals.lookup name with
-          | none => failSession session state .undefinedGlobalVariable
+          | none =>
+              match session.services.undefinedGlobalError name with
+              | some packet =>
+                  .next {
+                    session with
+                    state := { state with phase := .raising packet }
+                  } none
+              | none => failSession session state .undefinedGlobalVariable
           | some storedRoot =>
               match LP.RuntimeQuery.beginUnifyStep state storedRoot valueRoot
                   state.control.current with
@@ -1708,6 +1722,41 @@ theorem applyDatabaseRequest_globalGet_of_decode_lookup_bind
   simp only [applyDatabaseRequest, hName]
   simp only [hLookup]
   rw [hBind]
+
+/-- A realization that supplies an exception packet for an absent global
+enters the canonical raising phase. The session layer neither installs a
+catcher nor unwinds any control frame itself. -/
+theorem applyDatabaseRequest_globalGet_missing_of_error_packet
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma)
+    (nameRoot valueRoot : Addr) (name : sigma.constants)
+    (packet : LP.RuntimeException.Packet sigma)
+    (hName : session.services.decodeGlobalName state.memory.heap nameRoot =
+      .ok name)
+    (hLookup : session.globals.lookup name = none)
+    (hPacket : session.services.undefinedGlobalError name = some packet) :
+    applyDatabaseRequest session state (.globalGet nameRoot valueRoot) =
+      .next {
+        session with
+        state := { state with phase := .raising packet }
+      } none := by
+  simp [applyDatabaseRequest, hName, hLookup, hPacket]
+
+/-- Generic realizations that provide no language packet retain the explicit
+runtime error rather than silently turning an absent global into failure. -/
+theorem applyDatabaseRequest_globalGet_missing_without_error_packet
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma)
+    (nameRoot valueRoot : Addr) (name : sigma.constants)
+    (hName : session.services.decodeGlobalName state.memory.heap nameRoot =
+      .ok name)
+    (hLookup : session.globals.lookup name = none)
+    (hPacket : session.services.undefinedGlobalError name = none) :
+    applyDatabaseRequest session state (.globalGet nameRoot valueRoot) =
+      failSession session state .undefinedGlobalVariable := by
+  simp [applyDatabaseRequest, hName, hLookup, hPacket]
 
 /-- Deleting a decoded name is exactly persistent-map erasure and never
 depends on whether that name was present. -/

@@ -184,7 +184,7 @@ materialize one canonical forwarding clause per imported predicate so that
 runtime-built calls and ground predicate reflection see the same `user`-module
 visibility as statically written calls. The pinned `specializer.pl` dependency
 is linked as source rather than relying on missing-predicate failure. The
-resulting 800
+resulting 832
 canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
@@ -230,6 +230,28 @@ result for all ten compound evaluations plus the direct alpha-variant result:
 scripts/prolog/run_pinned_parser_source_runtime.sh \
   /path/to/PeTTa /path/to/swipl-devel
 ```
+
+The same gate now explicitly links pinned `filereader.pl` and `spaces.pl` and
+executes a two-form string defining `(= (fresh-id $x) (id $x))` and then
+running `!(fresh-id a)`, producing the exact result `[a]`.  Because `fresh-id`
+does not exist in the loaded program (an explicit pre-execution assertion in
+the gate), this forces PeTTa's source compiler and persistent dynamic-clause
+path before the subsequent runnable can succeed.
+For this finite canary, the complete pinned `.metta` text-to-answer path runs
+on the shared runtime: PeTTa's own string-to-codes conversion, DCG parser,
+form classifier, translator, source-space predicates, persistent database,
+and evaluator all run as their Prolog clauses.  The gate installs
+`silent(true)` through the ordinary persistent `assertz/1` transition to model
+a silent CLI invocation;
+the retained `current_prolog_flag(argv, ...)` loader goal is not claimed.
+`library(readutil)` and `library(pcre)` remain asserted external obligations,
+so direct file loading and regular-expression preprocessing are likewise not
+covered by this string-input canary.
+The world returned by `process_metta_string/2` is then reused as a persistent
+database, and a fresh query executes `fresh-id(a, Out)` again with exact
+`Out = a` and empty query-local heap/trail cleanup.  This distinguishes an
+answer produced only inside the defining call from a clause that was actually
+installed for later calls.
 
 This is a deliberately narrow executable slice.  Loader goals other than the
 named registration directive remain explicit closure obligations; linked
@@ -309,7 +331,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 261 exact answer, exception, and persistent-store traces against
+It compares 262 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -397,7 +419,12 @@ separation, sharing, non-collapse, and SWI's exact
 `error(instantiation_error, context(system:throw/1,_))` behavior for a bare
 variable ball.  Findall cases pin answer order and multiplicity, binding
 isolation, empty collection, cut scope, exception transparency, and copied
-variable sharing/separation.  Dynamic-database cases cover persistent
+variable sharing/separation.  Seven non-backtrackable-global cases cover copied
+set values, sharing across repeated gets, ordinary binding rollback, set and
+delete persistence across older choice points, absent-name deletion, and the
+exact catchable `error(existence_error(variable, Name),
+context(system:nb_getval/2,_))` shape for a missing get.  Dynamic-database
+cases cover persistent
 `asserta/1,2`/`assertz/1,2`, opaque stable-reference binding and round-trip,
 call-snapshot isolation, and nondeterministic
 `retract/1`: source-order retry, cut pruning, fact/rule distinction,

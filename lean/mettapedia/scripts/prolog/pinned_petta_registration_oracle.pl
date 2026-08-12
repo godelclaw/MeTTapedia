@@ -2,6 +2,7 @@
 
 :- use_module(library(apply)).
 :- use_module(library(clpfd)).
+:- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(library(yall), except([(/)/3])).
@@ -26,6 +27,30 @@ load_source(Path, Registration0, Registration) :-
                        read_source(Stream, Registration0, Registration),
                        close(Stream)).
 
+read_expanded_source(Stream) :-
+    read_term(Stream, Term, []),
+    ( Term == end_of_file
+    -> true
+    ; Term = (:- dynamic(Declaration))
+    -> dynamic(Declaration), read_expanded_source(Stream)
+    ; Term = (:- _)
+    -> read_expanded_source(Stream)
+    ; expand_term(Term, Expanded),
+      assert_expanded(Expanded),
+      read_expanded_source(Stream)
+    ).
+
+assert_expanded([]).
+assert_expanded([Head|Tail]) :- !,
+    assertz(Head),
+    assert_expanded(Tail).
+assert_expanded(Term) :- assertz(Term).
+
+load_expanded_source(Path) :-
+    setup_call_cleanup(open(Path, read, Stream),
+                       read_expanded_source(Stream),
+                       close(Stream)).
+
 emit_answers(Label, Input, ExpectedAnswers) :-
     findall(Out, eval(Input, Out), Answers),
     ( Answers == ExpectedAnswers
@@ -36,12 +61,18 @@ emit_answers(Label, Input, ExpectedAnswers) :-
 emit_eval(Label, Input, Expected) :-
     emit_answers(Label, Input, [Expected]).
 
-main([MettaPath, TranslatorPath, SpecializerPath]) :-
+main([MettaPath, TranslatorPath, SpecializerPath,
+      ParserPath, FilereaderPath, SpacesPath]) :-
     load_source(TranslatorPath, none, _),
     load_source(SpecializerPath, none, _),
+    load_expanded_source(ParserPath),
+    load_expanded_source(SpacesPath),
+    load_expanded_source(FilereaderPath),
     load_source(MettaPath, none, RegistrationTerm),
     RegistrationTerm = (:- Registration),
     call(Registration),
+    assertz(silent(true)),
+    format('metta_silent_setup=exact~n', []),
     fun(id),
     format('metta_fun_id_registered=exact~n', []),
     id(a, a),
@@ -83,6 +114,11 @@ main([MettaPath, TranslatorPath, SpecializerPath]) :-
     emit_eval(metta_eval_first_pair, ['first-from-pair',[a,b]], a),
     emit_eval(metta_eval_size, ['size-atom',[a,b]], 2),
     emit_eval(metta_eval_unique, ['unique-atom',[b,a,b]], [b,a]),
+    process_metta_string(
+        "(= (fresh-id $x) (id $x))\n!(fresh-id a)", [a]),
+    format('metta_process_string=exact~n', []),
+    'fresh-id'(a, a),
+    format('metta_fresh_id_persisted=exact~n', []),
     'alpha-unique-atom'(
         [pair(X,X),pair(Y,Y),pair(Z,a)], AlphaUnique),
     AlphaUnique == [pair(X,X),pair(Z,a)],

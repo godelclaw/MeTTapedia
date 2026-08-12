@@ -54,6 +54,30 @@ theorem throwInstantiationError_term :
     throwInstantiationError.term =
       LP.Term.atScope 0 throwInstantiationErrorTerm := rfl
 
+/-- SWI-Prolog's exception term for reading a missing non-backtrackable
+global, normalized to the precise predicate context emitted by V10.1.9. -/
+def undefinedGlobalErrorTerm (name : SourceSignature.Constant) :
+    SourceSignature.Term :=
+  compound "error" [
+    compound "existence_error" [atom "variable", .const name],
+    compound "context" [
+      compound ":" [atom "system", compound "/" [atom "nb_getval", integer 2]],
+      var "_" 0
+    ]
+  ]
+
+/-- Language-owned immutable packet content for an absent `nb_getval/2`
+name. The shared runtime owns the raise and every subsequent control step. -/
+def undefinedGlobalError (name : SourceSignature.Constant) :
+    LP.RuntimeException.Packet Sigma := {
+  term := LP.Term.atScope 0 (undefinedGlobalErrorTerm name)
+}
+
+@[simp]
+theorem undefinedGlobalError_term (name : SourceSignature.Constant) :
+    (undefinedGlobalError name).term =
+      LP.Term.atScope 0 (undefinedGlobalErrorTerm name) := rfl
+
 /-- Concrete Prolog list symbols used by the shared collector. -/
 def collectionEncoding : LP.RuntimeQuery.CollectionEncoding Sigma where
   nil := .atom "[]"
@@ -1317,6 +1341,7 @@ def services : RuntimeControl.Services Sigma where
   decodeGlobalName := decodeGlobalName
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
+  undefinedGlobalError := fun name => some (undefinedGlobalError name)
   unboundThrowError := some throwInstantiationError
   collectionEncoding := some collectionEncoding
   clauseEncoding := some clauseEncoding
@@ -1324,6 +1349,10 @@ def services : RuntimeControl.Services Sigma where
 @[simp]
 theorem services_unboundThrowError :
     services.unboundThrowError = some throwInstantiationError := rfl
+
+@[simp]
+theorem services_undefinedGlobalError (name : SourceSignature.Constant) :
+    services.undefinedGlobalError name = some (undefinedGlobalError name) := rfl
 
 @[simp]
 theorem services_clauseEncoding :

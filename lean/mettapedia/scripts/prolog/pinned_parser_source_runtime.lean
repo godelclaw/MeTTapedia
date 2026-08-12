@@ -84,8 +84,9 @@ The closures are read independently, their already-loaded source units are
 combined by key, and module qualification is applied to the same canonical
 clauses consumed by the shared runtime. -/
 def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
-    (mettaSource translatorSource specializerSource dcgBasicsSource listsSource
-      errorSource applySource pairsSource assocSource : String) :
+    (mettaSource translatorSource specializerSource filereaderSource spacesSource
+      dcgBasicsSource listsSource errorSource applySource pairsSource
+      assocSource : String) :
     IO (ReaderUnitClosure.FlatLink String) := do
   let mettaClosure ← match ReaderUnitClosure.loadWith 32
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
@@ -108,6 +109,18 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       "specializer" specializerSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "specializer source-unit closure failed"
+  let filereaderClosure ← match ReaderUnitClosure.loadWith 8
+      (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
+      ReaderOperator.defaults
+      (resolver dcgBasicsSource listsSource errorSource applySource pairsSource)
+      "filereader" filereaderSource with
+    | .ok closure => pure closure
+    | .error _ => throw <| IO.userError "filereader source-unit closure failed"
+  let spacesUnit ← match ReaderUnit.loadSourceWith
+      (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
+      ReaderOperator.defaults spacesSource with
+    | .ok unit => pure unit
+    | .error _ => throw <| IO.userError "spaces source loading failed"
   let assocUnit ← match ReaderUnit.loadConditionalSourceWith
       ReaderSWIProfile.pinnedPeTTaCondition
       (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
@@ -123,14 +136,23 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
     key := "library(assoc)"
     unit := assocUnit
   }
+  let spacesNamed : ReaderUnitClosure.NamedUnit String := {
+    key := "spaces"
+    unit := spacesUnit
+  }
   let userUnits := appendNewUnits mettaClosure.units [assocNamed]
   let userUnits := appendNewUnits userUnits parserClosure.units
   let userUnits := appendNewUnits userUnits translatorClosure.units
+  let userUnits := appendNewUnits userUnits filereaderClosure.units
+  let userUnits := appendNewUnits userUnits [spacesNamed]
+  let allUnits := appendNewUnits userUnits specializerClosure.units
+  let allExternal := mettaClosure.external ++ parserClosure.external ++
+    translatorClosure.external ++ filereaderClosure.external ++
+    specializerClosure.external
   let combined : ReaderUnitClosure.Closure String := {
-    units := appendNewUnits userUnits specializerClosure.units
-    external := (mettaClosure.external ++ parserClosure.external ++
-      translatorClosure.external ++ specializerClosure.external).filter
-        fun external => external.key != "library(assoc)"
+    units := allUnits
+    external := allExternal.filter fun external =>
+      allUnits.all fun named => named.key != external.key
   }
   let linked ← match ReaderModuleLink.link ReaderSWIProfile.sourceKey? combined with
     | .ok linked => pure linked
@@ -168,8 +190,11 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       named.key = "translator"
     | throw <| IO.userError "translator root unit missing"
   let some specializerUnit := specializerClosure.units.find? fun named =>
-      named.key = "specializer"
+    named.key = "specializer"
     | throw <| IO.userError "specializer root unit missing"
+  let some filereaderUnit := filereaderClosure.units.find? fun named =>
+    named.key = "filereader"
+    | throw <| IO.userError "filereader root unit missing"
   if mettaUnit.unit.program.length != 159 then
     throw <| IO.userError s!"metta source boundary changed: \
       clauses={mettaUnit.unit.program.length}"
@@ -179,6 +204,31 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
   if specializerUnit.unit.program.length != 13 then
     throw <| IO.userError s!"specializer source boundary changed: \
       clauses={specializerUnit.unit.program.length}"
+  if filereaderUnit.unit.program.length != 21 ||
+      spacesUnit.program.length != 11 then
+    throw <| IO.userError s!"source-processing boundary changed: \
+      filereader={filereaderUnit.unit.program.length}, \
+      spaces={spacesUnit.program.length}"
+  let processTwo : SourceSignature.PredicateIndicator := {
+    name := "process_metta_string"
+    arity := 2
+  }
+  let processThree : SourceSignature.PredicateIndicator := {
+    name := "process_metta_string"
+    arity := 3
+  }
+  let addSexp : SourceSignature.PredicateIndicator := {
+    name := "add_sexp"
+    arity := 2
+  }
+  if !(linked.program.any fun clause =>
+      clause.head.symbol = processTwo && processThree ∈ calledSymbols clause.body) ||
+      !(linked.program.any fun clause => clause.head.symbol = processThree) ||
+      !(linked.program.any fun clause => clause.head.symbol = addSexp) ||
+      !(linked.external.any fun external =>
+        external.key = "library(readutil)") ||
+      !(linked.external.any fun external => external.key = "library(pcre)") then
+    throw <| IO.userError "PeTTa source-processing link changed"
   let numberSymbol : SourceSignature.PredicateIndicator := {
     name := "dcg_basics:number"
     arity := 3
@@ -189,7 +239,7 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       clause.head.symbol = { name := "sexpr", arity := 5 } &&
         numberSymbol ∈ calledSymbols clause.body) then
     throw <| IO.userError "parser number//1 call was not module-qualified"
-  if linked.program.length != 800 then
+  if linked.program.length != 832 then
     throw <| IO.userError s!"module-aware source boundary changed: \
       clauses={linked.program.length}"
   pure linked
@@ -570,12 +620,12 @@ def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
 
 def main (arguments : List String) : IO Unit := do
   let [mettaPath, parserPath, translatorPath, specializerPath,
-      dcgBasicsPath, listsPath,
+      filereaderPath, spacesPath, dcgBasicsPath, listsPath,
       errorPath, applyPath, pairsPath, assocPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
          <metta.pl> <parser.pl> <translator.pl> \
-         <specializer.pl> \
+         <specializer.pl> <filereader.pl> <spaces.pl> \
          <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl> <assoc.pl>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
@@ -586,6 +636,8 @@ def main (arguments : List String) : IO Unit := do
   let linked ← loadPeTTaSlice parserClosure (← IO.FS.readFile mettaPath)
     (← IO.FS.readFile translatorPath)
     (← IO.FS.readFile specializerPath)
+    (← IO.FS.readFile filereaderPath)
+    (← IO.FS.readFile spacesPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
@@ -670,7 +722,11 @@ def main (arguments : List String) : IO Unit := do
     (evalQuery (SourceSignature.atom "a"))
     (SourceSignature.atom "a")
   let registeredWorld ← executeRegistration linked
-  let registeredDatabase := registeredWorld.database
+  let silentWorld ← requireWorldGoals registeredWorld "metta_silent_setup" [
+    SourceSignature.call "assertz" [
+      SourceSignature.compound "silent" [SourceSignature.atom "true"]]
+  ]
+  let registeredDatabase := silentWorld.database
   requireDatabaseGoal registeredDatabase "metta_fun_id_registered"
     (SourceSignature.call "fun" [SourceSignature.atom "id"])
   checkDatabaseGoal registeredDatabase "metta_id_direct"
@@ -829,6 +885,23 @@ def main (arguments : List String) : IO Unit := do
         SourceSignature.atom "b"]
     ]))
     (SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a"])
+  if registeredDatabase.visibleClauses.any fun entry =>
+      entry.2.head.symbol.name = "fresh-id" then
+    throw <| IO.userError "fresh-id unexpectedly existed before source processing"
+  let processedWorld ← requireWorldGoals silentWorld "metta_process_string" [
+    .conj
+      (SourceSignature.call "process_metta_string" [
+        SourceSignature.string
+          "(= (fresh-id $x) (id $x))\n!(fresh-id a)",
+        .var termIdentity
+      ])
+      (.unify (.var termIdentity)
+        (SourceSignature.list [SourceSignature.atom "a"]))
+  ]
+  checkDatabaseGoal processedWorld.database "metta_fresh_id_persisted"
+    (SourceSignature.call "fresh-id" [
+      SourceSignature.atom "a", .var termIdentity])
+    (SourceSignature.atom "a")
   checkDatabaseGoal registeredDatabase "metta_alpha_unique_direct"
     (SourceSignature.call "alpha-unique-atom" [
       SourceSignature.list [

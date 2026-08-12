@@ -27,7 +27,8 @@ fi
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 git -C "$PETTA_TREE" archive "$PIN" \
-  src/metta.pl src/parser.pl src/translator.pl src/specializer.pl | tar -x -C "$TMP"
+  src/metta.pl src/parser.pl src/translator.pl src/specializer.pl \
+  src/filereader.pl src/spaces.pl | tar -x -C "$TMP"
 git -C "$SWI_TREE" archive "$SWI_PIN" library/assoc.pl | tar -x -C "$TMP"
 
 DCG_BASICS="$(swipl -q -g \
@@ -46,6 +47,7 @@ pushd "$ROOT_DIR" >/dev/null
 if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
     "$TMP/src/metta.pl" "$TMP/src/parser.pl" \
     "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
+    "$TMP/src/filereader.pl" "$TMP/src/spaces.pl" \
     "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" "$PAIRS" "$ASSOC" \
     > "$TMP/lean.out"; then
   cat "$TMP/lean.out" >&2
@@ -86,6 +88,7 @@ swrite_compound=exact
 metta_parse=exact
 metta_repr=exact
 metta_eval_atomic=exact
+metta_silent_setup=exact
 metta_fun_id_registered=exact
 metta_id_direct=exact
 metta_copy_term_direct=exact
@@ -105,6 +108,8 @@ metta_eval_foldl_atom=exact
 metta_eval_first_pair=exact
 metta_eval_size=exact
 metta_eval_unique=exact
+metta_process_string=exact
+metta_fresh_id_persisted=exact
 metta_alpha_unique_direct=exact
 metta_eval_alpha_unique=exact
 metta_eval_superpose_order=exact
@@ -125,8 +130,10 @@ diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
 swipl -q -f scripts/prolog/pinned_petta_registration_oracle.pl -- \
   "$TMP/src/metta.pl" "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
+  "$TMP/src/parser.pl" "$TMP/src/filereader.pl" "$TMP/src/spaces.pl" \
   > "$TMP/swi-registration.out"
-printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
+printf '%s\n' 'metta_silent_setup=exact' \
+  'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_term_variables_direct=exact' \
   'metta_numbervars_direct=exact' \
   'metta_normalize_specialization_key=exact' \
@@ -143,6 +150,8 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_eval_first_pair=exact' \
   'metta_eval_size=exact' \
   'metta_eval_unique=exact' \
+  'metta_process_string=exact' \
+  'metta_fresh_id_persisted=exact' \
   'metta_alpha_unique_direct=exact' \
   'metta_eval_alpha_unique=exact' \
   'metta_eval_superpose_order=exact' \

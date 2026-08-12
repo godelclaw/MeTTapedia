@@ -629,6 +629,8 @@ def main : IO Unit := do
     Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.setSurvivesOlderChoice
   renderBool "nb_delete_survives_older_choice"
     Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.deleteSurvivesOlderChoice
+  renderBool "nb_getval_missing_catchable"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.missingGetRaisesCatchableExistenceError
   renderBool "nb_delete_missing_succeeds"
     Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.deleteMissingSucceeds
   renderIntegerAnswers "integer_addition"

@@ -98,6 +98,8 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.GlobalStore.lookup_erase_self
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalSet_of_decode_capture_install
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalGet_of_decode_lookup_bind
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalGet_missing_of_error_packet
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalGet_missing_without_error_packet
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalDelete_of_decode
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_decodeGlobalName
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_nbSetval
@@ -181,6 +183,8 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.throwStep_conserves
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.throwInstantiationError_term
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_unboundThrowError
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.undefinedGlobalError_term
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_undefinedGlobalError
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.findCatchTarget_head
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.raiseUnhandled_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.passException_no_outer
