@@ -28,8 +28,8 @@ popd >/dev/null
 
 diff -u "$TMP/swi.txt" "$TMP/lean.txt"
 COUNT="$(wc -l < "$TMP/lean.txt" | tr -d '[:space:]')"
-if [[ "$COUNT" != 4 ]]; then
-  echo "pinned assoc runtime expected 4 traces, got $COUNT" >&2
+if [[ "$COUNT" != 15 ]]; then
+  echo "pinned assoc runtime expected 15 traces, got $COUNT" >&2
   exit 1
 fi
 echo "Pinned assoc runtime: PASS ($COUNT/$COUNT exact ordered traces)"

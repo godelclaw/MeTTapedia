@@ -280,11 +280,14 @@ tree representation, so normal portable-library calls do not require the
 unmatched-rule path.  Malformed tree inputs may reach that path and therefore
 remain outside the current parity claim.
 
-The portable arm can now execute real `get_assoc/3` lookups through those SSU
-rules and the canonical shared-runtime `compare/3` action.  The gate loads the
-pinned source into Lean, compares root, left, right, and missing-key traces to
-the pinned SWI library, and therefore exercises selection and term comparison
-together rather than as compatible isolated fixtures:
+The portable arm can now execute lookup, traversal, enumeration, extrema,
+functional update, and insertion through those SSU rules and the canonical
+shared-runtime `compare/3` action.  The gate loads the pinned source into Lean
+and compares 15 exact ordered traces with the pinned SWI library.  It covers
+`get_assoc/3`, `get_assoc/5`, `assoc_to_keys/2`, `assoc_to_values/2`,
+`gen_assoc/3`, `min_assoc/3`, `max_assoc/3`, and `put_assoc/4`, exercising
+selection, recursion, backtracking, and term comparison together rather than
+as compatible isolated fixtures:
 
 ```bash
 scripts/prolog/run_pinned_assoc_runtime.sh /path/to/swipl-devel
