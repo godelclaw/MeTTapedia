@@ -356,6 +356,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .copyTerm sourceRoot targetRoot
   | .termVariables termRoot variablesRoot encoding =>
       .termVariables termRoot variablesRoot encoding
+  | .numberVariables termRoot startRoot endRoot optionsRoot decoder =>
+      .numberVariables termRoot startRoot endRoot optionsRoot decoder
   | .functor termRoot nameRoot arityRoot encoding =>
       .functor termRoot nameRoot arityRoot encoding
   | .integerIs resultRoot expressionRoot encoding =>
@@ -1380,6 +1382,28 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                         termVariablesStep, beginUnifyStep, mapState, mapControl,
                         mapAttempt, mapPhase, mapReturnFrame, mapStepResult,
                         hRoots, hAllocate]
+          | numberVariables termRoot startRoot endRoot optionsRoot decoder =>
+              cases hDecode : decoder.decode memory.heap startRoot optionsRoot with
+              | error error =>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      numberVariablesStep, mapState, mapControl, mapAttempt,
+                      mapPhase, mapReturnFrame, mapStepResult, failWith,
+                      closeMemory, hDecode, hCleanup]
+              | ok plan =>
+                  cases hPrepare : prepareNumberVariables plan memory termRoot
+                      endRoot with
+                  | error error =>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          numberVariablesStep, mapState, mapControl, mapAttempt,
+                          mapPhase, mapReturnFrame, mapStepResult, failWith,
+                          closeMemory, hDecode, hPrepare, hCleanup]
+                  | ok prepared =>
+                      simp [mapDispatchAction, dispatchActionStep,
+                        numberVariablesStep, mapState, mapControl, mapAttempt,
+                        mapPhase, mapReturnFrame, mapStepResult, hDecode,
+                        hPrepare]
           | functor termRoot nameRoot arityRoot encoding =>
               cases hPrepare : prepareFunctor encoding memory nextScope termRoot
                   nameRoot arityRoot with

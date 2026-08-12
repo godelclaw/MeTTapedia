@@ -98,6 +98,15 @@ def functorEncoding : LP.RuntimeQuery.FunctorEncoding Sigma where
   freshVariable := functorVariable
   freshVariable_injective := functorVariable_injective
 
+/-- Concrete `$VAR/1` representation used by ISO `numbervars/3,4`.  The
+shared runtime owns occurrence traversal, numbering order, allocation, and
+unification; this value supplies only source-language symbols. -/
+def numberVariablesEncoding : LP.RuntimeQuery.NumberVariablesEncoding Sigma where
+  numberedSymbol := { name := "$VAR", arity := 1 }
+  numberedArity := rfl
+  indexConstant index := .integer (Int.ofNat index)
+  singletonConstant := .atom "_"
+
 private def integerOperation (symbol : CompoundIndicator) :
     Option LP.RuntimeQuery.IntegerOperation :=
   if symbol.arity = 2 then
@@ -993,6 +1002,86 @@ def termVariablesPredicate : PredicateIndicator := {
   arity := 2
 }
 
+/-- Decode one `singletons(Boolean)` option.  This is deliberately the finite
+option fragment used by pinned PeTTa; malformed or additional options fail
+closed rather than being ignored. -/
+private def decodeNumberVariablesSingletonOption
+    (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError Bool := do
+  let cell ← dereferencedCell heap root
+  match cell with
+  | .app symbol arguments =>
+      if symbol.name = "singletons" ∧ symbol.arity = 1 ∧ arguments.size = 1 then
+        match arguments[0]? with
+        | none => .error .invalidNumberVariablesOptions
+        | some valueRoot =>
+            let value ← dereferencedCell heap valueRoot
+            match value with
+            | .const (.atom "true") => .ok true
+            | .const (.atom "false") => .ok false
+            | _ => .error .invalidNumberVariablesOptions
+      else .error .invalidNumberVariablesOptions
+  | _ => .error .invalidNumberVariablesOptions
+
+/-- Read the nonnegative starting index and the supported singleton option
+without acquiring heap mutation or control authority.  Negative starts and
+unrecognized options are outside pinned PeTTa's call sites and fail closed;
+pinned SWI accepts those cases, so full SWI option conformance is not claimed. -/
+def decodeNumberVariables (heap : Heap Sigma.scoped) (startRoot : Addr)
+    (optionsRoot : Option Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.NumberVariablesPlan Sigma) := do
+  let startCell ← dereferencedCell heap startRoot
+  let start ←
+    match startCell with
+    | .var _ none => .error .numberVariablesStartUnbound
+    | .const (.integer value) =>
+        if value < 0 then .error .invalidNumberVariablesStart
+        else .ok value.toNat
+    | _ => .error .invalidNumberVariablesStart
+  let singletons ←
+    match optionsRoot with
+    | none => .ok false
+    | some root =>
+        match LP.RuntimeQuery.decodeAddressList collectionEncoding heap root with
+        | .error (.memory error) => .error (.memory error)
+        | .error _ => .error .invalidNumberVariablesOptions
+        | .ok [] => .ok false
+        | .ok [optionRoot] =>
+            decodeNumberVariablesSingletonOption heap optionRoot
+        | .ok _ => .error .invalidNumberVariablesOptions
+  pure { encoding := numberVariablesEncoding, start, singletons }
+
+def numberVariablesDecoder : LP.RuntimeQuery.NumberVariablesDecoder Sigma where
+  decode := decodeNumberVariables
+
+/-- Recognize the ISO three-argument form and PeTTa's four-argument singleton
+form without inspecting the heap. -/
+def numberVariables? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × Addr × Option Addr ×
+      LP.RuntimeQuery.NumberVariablesDecoder Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "numbervars", [termRoot, startRoot, endRoot] =>
+      if goal.symbol.arity = 3 then
+        some (termRoot, startRoot, endRoot, none, numberVariablesDecoder)
+      else none
+  | "numbervars", [termRoot, startRoot, endRoot, optionsRoot] =>
+      if goal.symbol.arity = 4 then
+        some (termRoot, startRoot, endRoot, some optionsRoot,
+          numberVariablesDecoder)
+      else none
+  | _, _ => none
+
+def numberVariablesPredicateThree : PredicateIndicator := {
+  name := "numbervars"
+  arity := 3
+}
+
+def numberVariablesPredicateFour : PredicateIndicator := {
+  name := "numbervars"
+  arity := 4
+}
+
 /-- Recognize ISO `functor/3`; mode selection and every heap mutation remain
 inside the shared runtime. -/
 def functor? (goal : RuntimeAtom Sigma.scoped) :
@@ -1130,9 +1219,11 @@ def services : RuntimeControl.Services Sigma where
   currentPredicate? := currentPredicate?
   predicateIndicatorEncoding := some predicateIndicatorEncoding
   runtimePredicates := [copyTermPredicate, termVariablesPredicate,
+    numberVariablesPredicateThree, numberVariablesPredicateFour,
     functorPredicate, nbSetvalPredicate, nbGetvalPredicate, nbDeletePredicate]
   copyTerm? := copyTerm?
   termVariables? := termVariables?
+  numberVariables? := numberVariables?
   functor? := functor?
   databaseRequest? := databaseRequest?
   decodeGlobalName := decodeGlobalName
@@ -1163,6 +1254,7 @@ theorem services_copyTerm : services.copyTerm? = copyTerm? := rfl
 @[simp]
 theorem services_runtimePredicates :
     services.runtimePredicates = [copyTermPredicate, termVariablesPredicate,
+      numberVariablesPredicateThree, numberVariablesPredicateFour,
       functorPredicate, nbSetvalPredicate, nbGetvalPredicate,
       nbDeletePredicate] := rfl
 
@@ -1221,6 +1313,34 @@ theorem dispatchActionWith_termVariables (program : SourceSignature.Program)
       symbol := termVariablesPredicate
       args := #[termRoot, variablesRoot]
     }) = .termVariables termRoot variablesRoot collectionEncoding := by
+  rfl
+
+@[simp]
+theorem services_numberVariables :
+    services.numberVariables? = numberVariables? := rfl
+
+/-- `numbervars/3` exposes exactly one shared-runtime numbering action. -/
+@[simp]
+theorem dispatchActionWith_numberVariablesThree
+    (program : SourceSignature.Program) (termRoot startRoot endRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := numberVariablesPredicateThree
+      args := #[termRoot, startRoot, endRoot]
+    }) = .numberVariables termRoot startRoot endRoot none
+      numberVariablesDecoder := by
+  rfl
+
+/-- `numbervars/4` differs only by supplying the existing options root to the
+same read-only decoder. -/
+@[simp]
+theorem dispatchActionWith_numberVariablesFour
+    (program : SourceSignature.Program)
+    (termRoot startRoot endRoot optionsRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := numberVariablesPredicateFour
+      args := #[termRoot, startRoot, endRoot, optionsRoot]
+    }) = .numberVariables termRoot startRoot endRoot (some optionsRoot)
+      numberVariablesDecoder := by
   rfl
 
 @[simp]

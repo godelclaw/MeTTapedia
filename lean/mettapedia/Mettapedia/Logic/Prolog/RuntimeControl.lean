@@ -504,6 +504,12 @@ structure Services (sigma : LP.LPSignature) where
   termVariables? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.CollectionEncoding sigma) :=
       fun _ => none
+  /-- Recognize `numbervars/3,4` without inspecting its heap operands.  The
+  decoder is read-only; traversal, allocation, binding, and rollback remain
+  shared-engine work. -/
+  numberVariables? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × Addr × Option Addr ×
+      LP.RuntimeQuery.NumberVariablesDecoder sigma) := fun _ => none
   /-- Recognize `functor/3` without inspecting any operand graph. -/
   functor? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × Addr × LP.RuntimeQuery.FunctorEncoding sigma) :=
@@ -561,6 +567,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   runtimePredicates := []
   copyTerm? _ := none
   termVariables? _ := none
+  numberVariables? _ := none
   functor? _ := none
   databaseRequest? _ := none
   decodeGlobalName _ _ := .error .invalidGlobalVariableName
@@ -705,15 +712,22 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                                                       .termVariables termRoot
                                                                         variablesRoot encoding
                                                                   | none =>
-                                                                      match services.functor? goal with
-                                                                      | some (termRoot, nameRoot,
-                                                                          arityRoot, encoding) =>
-                                                                          .functor termRoot nameRoot
-                                                                            arityRoot encoding
+                                                                      match services.numberVariables? goal with
+                                                                      | some (termRoot, startRoot,
+                                                                          endRoot, optionsRoot, decoder) =>
+                                                                          .numberVariables termRoot
+                                                                            startRoot endRoot optionsRoot
+                                                                            decoder
                                                                       | none =>
-                                                                          .call goal
-                                                                            (Program.clausesFor program
-                                                                              goal.symbol)
+                                                                          match services.functor? goal with
+                                                                          | some (termRoot, nameRoot,
+                                                                              arityRoot, encoding) =>
+                                                                              .functor termRoot nameRoot
+                                                                                arityRoot encoding
+                                                                          | none =>
+                                                                              .call goal
+                                                                                (Program.clausesFor program
+                                                                                  goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right

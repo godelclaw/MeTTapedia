@@ -643,6 +643,39 @@ def main (arguments : List String) : IO Unit := do
     ])
     (SourceSignature.list [
       SourceRuntimeRegression.x, SourceRuntimeRegression.y])
+  checkDatabaseGoal registeredDatabase "metta_numbervars_direct"
+    (.conj
+      (SourceSignature.call "numbervars" [
+        SourceSignature.compound "pair" [
+          SourceRuntimeRegression.x,
+          SourceSignature.compound "pair" [
+            SourceRuntimeRegression.x, SourceRuntimeRegression.y]],
+        SourceSignature.integer 0,
+        SourceRuntimeRegression.z,
+        SourceSignature.list [SourceSignature.compound "singletons"
+          [SourceSignature.atom "true"]]
+      ])
+      (.unify (.var termIdentity)
+        (SourceSignature.compound "result" [
+          SourceRuntimeRegression.x, SourceRuntimeRegression.y,
+          SourceRuntimeRegression.z])))
+    (SourceSignature.compound "result" [
+      SourceRuntimeRegression.numberedVariable 0,
+      SourceRuntimeRegression.singletonVariable,
+      SourceSignature.integer 1])
+  checkDatabaseGoal registeredDatabase "metta_normalize_specialization_key"
+    (SourceSignature.call "normalize_specialization_key" [
+      SourceSignature.compound "pair" [
+        SourceRuntimeRegression.x,
+        SourceSignature.compound "pair" [
+          SourceRuntimeRegression.x, SourceRuntimeRegression.y]],
+      .var termIdentity
+    ])
+    (SourceSignature.compound "pair" [
+      SourceRuntimeRegression.numberedVariable 0,
+      SourceSignature.compound "pair" [
+        SourceRuntimeRegression.numberedVariable 0,
+        SourceRuntimeRegression.singletonVariable]])
   checkDatabaseGoal registeredDatabase "metta_functor_decompose_direct"
     (SourceSignature.call "functor" [
       SourceSignature.compound "pair" [

@@ -744,6 +744,89 @@ def metaTermVariables : SourceSignature.Goal :=
   .conj (metaGoal (compound "term_variables" [pair x y, z]))
     (.unify z (SourceSignature.list [leftVar, rightVar]))
 
+/-! ## ISO `numbervars/3,4` on finite source-materialized heap graphs -/
+
+def numberedVariable (index : Nat) : SourceSignature.Term :=
+  compound "$VAR" [integer (Int.ofNat index)]
+
+def singletonVariable : SourceSignature.Term :=
+  compound "$VAR" [atom "_"]
+
+def numberVariablesThree (term : SourceSignature.Term) (start : Int)
+    (endIndex : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "numbervars" [term, integer start, endIndex]
+
+def numberVariablesFour (term : SourceSignature.Term) (start : Int)
+    (endIndex : SourceSignature.Term) (singletons : Bool) :
+    SourceSignature.Goal :=
+  SourceSignature.call "numbervars" [term, integer start, endIndex,
+    SourceSignature.list [compound "singletons"
+      [atom (if singletons then "true" else "false")]]]
+
+/-- First occurrence assigns an index and repeated occurrences retain one
+binding; the final index counts distinct numbered roots. -/
+def numberVariablesPreservesSharingAndOrder : SourceSignature.Goal :=
+  .conj (numberVariablesThree (pair x (pair x y)) 0 z)
+    (.conj (.unify x (numberedVariable 0))
+      (.conj (.unify y (numberedVariable 1)) (.unify z (integer 2))))
+
+/-- PeTTa's singleton option labels a once-occurring variable with `_` and
+does not consume an integer index for it. -/
+def numberVariablesMarksSingletons : SourceSignature.Goal :=
+  .conj (numberVariablesFour (pair x (pair x y)) 0 z true)
+    (.conj (.unify x (numberedVariable 0))
+      (.conj (.unify y singletonVariable) (.unify z (integer 1))))
+
+def numberVariablesStartsAtFive : SourceSignature.Goal :=
+  .conj (numberVariablesFour (pair x (pair x y)) 5 z true)
+    (.conj (.unify x (numberedVariable 5))
+      (.conj (.unify y singletonVariable) (.unify z (integer 6))))
+
+def numberVariablesSingletonsFalse : SourceSignature.Goal :=
+  .conj (numberVariablesFour (pair x y) 0 z false)
+    (.conj (.unify x (numberedVariable 0))
+      (.conj (.unify y (numberedVariable 1)) (.unify z (integer 2))))
+
+/-- Sharing an acyclic application through a bound variable contributes its
+free leaf once per logical occurrence, not once per physical heap root. -/
+def numberVariablesCountsSharedApplications : SourceSignature.Goal :=
+  .conj (.unify x (compound "box" [y]))
+    (.conj (numberVariablesFour (pair x x) 0 z true)
+      (.conj (.unify y (numberedVariable 0)) (.unify z (integer 1))))
+
+/-- Pinned SWI disables singleton labeling for a rational term as a whole;
+the finite free leaf is therefore numbered normally. -/
+def numberVariablesCycleDisablesSingletons : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x, y]))
+    (.conj (numberVariablesFour x 0 z true)
+      (.conj (.unify y (numberedVariable 0)) (.unify z (integer 1))))
+
+/-- All bindings introduced by numbering are ordinary trailed unifications;
+backtracking over the left disjunct restores both source variables. -/
+def numberVariablesBindingsBacktrack : SourceSignature.Goal :=
+  .disj
+    (.conj (numberVariablesThree (pair x y) 0 z) .fail)
+    (.conj (.isVar x) (.isVar y))
+
+/-- A prebound incompatible final index fails through the canonical unifier
+and restores every allocation at query completion. -/
+def numberVariablesEndMismatch : SourceSignature.Goal :=
+  numberVariablesThree (pair x y) 0 (integer 3)
+
+def metaNumberVariables : SourceSignature.Goal :=
+  .conj (metaGoal (compound "numbervars" [pair x y, integer 0, z]))
+    (.unify z (integer 2))
+
+def numberVariablesStartUnbound : SourceSignature.Goal :=
+  SourceSignature.call "numbervars" [pair x y, z, leftVar]
+
+def numberVariablesNegativeStart : SourceSignature.Goal :=
+  numberVariablesThree (pair x y) (-1) z
+
+def numberVariablesUnsupportedOptions : SourceSignature.Goal :=
+  SourceSignature.call "numbervars" [pair x y, integer 0, z,
+    SourceSignature.list [atom "unsupported"]]
+
 /-! ## ISO `functor/3` on the canonical graph -/
 
 def functorGoal (term name arity : SourceSignature.Term) :
@@ -1781,6 +1864,24 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount [] termVariablesRationalFreeLeaf == some (1, 0, 0)
 #guard runCount [] termVariablesOutputMismatch == some (0, 0, 0)
 #guard runCount [] metaTermVariables == some (1, 0, 0)
+#guard runCount [] numberVariablesPreservesSharingAndOrder == some (1, 0, 0)
+#guard runCount [] numberVariablesMarksSingletons == some (1, 0, 0)
+#guard runCount [] numberVariablesStartsAtFive == some (1, 0, 0)
+#guard runCount [] numberVariablesSingletonsFalse == some (1, 0, 0)
+#guard runCount [] numberVariablesCountsSharedApplications == some (1, 0, 0)
+#guard runCount [] numberVariablesCycleDisablesSingletons == some (1, 0, 0)
+#guard runCount [] numberVariablesBindingsBacktrack == some (1, 0, 0)
+#guard runCount [] numberVariablesEndMismatch == some (0, 0, 0)
+#guard runCount [] metaNumberVariables == some (1, 0, 0)
+#guard match runQueryError? [] numberVariablesStartUnbound with
+  | some .numberVariablesStartUnbound => true
+  | _ => false
+#guard match runQueryError? [] numberVariablesNegativeStart with
+  | some .invalidNumberVariablesStart => true
+  | _ => false
+#guard match runQueryError? [] numberVariablesUnsupportedOptions with
+  | some .invalidNumberVariablesOptions => true
+  | _ => false
 #guard runAtomsFor [] functorDecomposesCompound xIdentity ==
   some (["pair"], 0, 0)
 #guard runIntegersFor [] functorDecomposesCompound yIdentity ==
@@ -1915,6 +2016,8 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount binaryFactProgram (currentPredicate "q" 2) == some (0, 0, 0)
 #guard runCount [] (currentPredicate "copy_term" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "term_variables" 2) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "numbervars" 3) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "numbervars" 4) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "functor" 3) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "nb_setval" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "nb_getval" 2) == some (1, 0, 0)

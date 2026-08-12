@@ -71,6 +71,10 @@ inductive QueryError where
   | termGroundBudgetExhausted
   | termListBudgetExhausted
   | termVariablesBudgetExhausted
+  | numberVariablesBudgetExhausted
+  | numberVariablesStartUnbound
+  | invalidNumberVariablesStart
+  | invalidNumberVariablesOptions
   | standardOrderBudgetExhausted
   | unsupportedSortReference
   | invalidSortKey
@@ -252,6 +256,32 @@ structure FunctorPrepared (σ : LPSignature) where
   memory : Memory σ.scoped
   pairs : List (Addr × Addr)
   nextScope : Nat
+
+/-- Language-owned syntax for ISO `numbervars/3,4`.  The engine discovers
+the existing variable roots, allocates `$VAR` cells, and binds them through
+the canonical unifier; the realization supplies only its concrete symbols. -/
+structure NumberVariablesEncoding (σ : LPSignature) where
+  numberedSymbol : σ.functionSymbols
+  numberedArity : σ.functionArity numberedSymbol = 1
+  indexConstant : Nat → σ.constants
+  singletonConstant : σ.constants
+
+/-- A read-only language decoder selects the nonnegative starting index and
+the supported singleton policy.  It cannot allocate, bind, or schedule. -/
+structure NumberVariablesPlan (σ : LPSignature) where
+  encoding : NumberVariablesEncoding σ
+  start : Nat
+  singletons : Bool
+
+structure NumberVariablesDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Addr → Option Addr →
+    Except QueryError (NumberVariablesPlan σ)
+
+/-- Complete bounded preparation for one numbering action. -/
+structure NumberVariablesPrepared (σ : LPSignature) where
+  memory : Memory σ.scoped
+  pairs : List (Addr × Addr)
+  endIndex : Nat
 
 /-- Allocate a proper list whose heads are existing graph roots.  The roots
 are reused, not read back and rematerialized, preserving variable identity
@@ -1032,6 +1062,41 @@ def termVariableRootsAux {σ : LPSignature} (heap : Heap σ.scoped) :
 def termVariableRoots {σ : LPSignature} (heap : Heap σ.scoped)
     (address : Addr) : Except QueryError (List Addr) :=
   termVariableRootsAux heap (termGroundFuel heap) [address] [] []
+
+/-- Path-sensitive variable occurrences for singleton-sensitive numbering.
+Shared acyclic applications are traversed once per incoming path, matching
+SWI's logical occurrence count rather than physical heap-root count.  Only an
+application already on the active path witnesses a rational cycle; its edge is
+not unfolded, and the returned Bool disables singleton labeling for the whole
+term exactly as pinned SWI does. -/
+def termVariableOccurrencesAux {σ : LPSignature} (heap : Heap σ.scoped) :
+    Nat → Addr → List Addr → Except QueryError (List Addr × Bool)
+  | 0, _, _ => .error .numberVariablesBudgetExhausted
+  | fuel + 1, address, active =>
+      match heap.deref address with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root root) =>
+          match heap[root]? with
+          | none => .error (.memory (.invalidAddress root))
+          | some (.var _ none) => .ok ([root], true)
+          | some (.var _ (some _)) => .error (.memory .illFormedHeap)
+          | some (.const _) => .ok ([], true)
+          | some (.app _ arguments) =>
+              if root ∈ active then .ok ([], false)
+              else
+                arguments.toList.foldlM (init := ([], true)) fun accumulated child => do
+                  let (found, acyclic) ←
+                    termVariableOccurrencesAux heap fuel child (root :: active)
+                  pure (accumulated.1 ++ found, accumulated.2 && acyclic)
+/-- Inspect one finite heap graph for logical variable occurrences and
+acyclicity.  Heap size bounds active-path depth; shared DAG paths may be
+revisited deliberately because that multiplicity is observable to
+`singletons(true)`. -/
+def termVariableOccurrences {σ : LPSignature} (heap : Heap σ.scoped)
+    (address : Addr) : Except QueryError (List Addr × Bool) :=
+  termVariableOccurrencesAux heap (heap.size + 1) address []
 
 /-! ## Read-only strict term identity -/
 
@@ -3001,6 +3066,222 @@ theorem termVariablesStep_of_roots_allocate {σ : LPSignature}
       beginUnifyStep { state with memory } variablesRoot listRoot continuation := by
   simp [termVariablesStep, hRoots, hAllocate]
 
+private def numberVariableAssignments (occurrences : List Addr)
+    (singletons : Bool) : Nat → List Addr → List (Addr × Option Nat) × Nat
+  | next, [] => ([], next)
+  | next, root :: rest =>
+      if singletons && occurrences.count root = 1 then
+        let (tail, final) := numberVariableAssignments occurrences singletons
+          next rest
+        ((root, none) :: tail, final)
+      else
+        let (tail, final) := numberVariableAssignments occurrences singletons
+          (next + 1) rest
+        ((root, some next) :: tail, final)
+
+/-- Allocate one `$VAR(Payload)` graph per distinct source variable, without
+binding the source roots.  `none` denotes SWI's singleton payload `_`; a
+numbered payload carries its exact nonnegative index. -/
+def allocateNumberVariableCells {σ : LPSignature}
+    (encoding : NumberVariablesEncoding σ) :
+    Memory σ.scoped → List (Addr × Option Nat) →
+      Except MemoryError (List (Addr × Addr) × Memory σ.scoped)
+  | memory, [] => .ok ([], memory)
+  | memory, (variableRoot, payload) :: rest => do
+      let payloadValue := match payload with
+        | some index => encoding.indexConstant index
+        | none => encoding.singletonConstant
+      let (payloadRoot, memory) ← memory.allocate (.const payloadValue)
+      let (numberedRoot, memory) ←
+        memory.allocate (.app encoding.numberedSymbol #[payloadRoot])
+      let (tail, memory) ← allocateNumberVariableCells encoding memory rest
+      pure ((variableRoot, numberedRoot) :: tail, memory)
+
+/-- Numbering preparation is finitely bounded: each distinct source variable
+adds exactly one payload cell and one `$VAR/1` application, returns one
+unification pair, and does not write the trail. -/
+theorem allocateNumberVariableCells_size_trail {σ : LPSignature}
+    (encoding : NumberVariablesEncoding σ)
+    (memory memory' : Memory σ.scoped)
+    (assignments : List (Addr × Option Nat))
+    (pairs : List (Addr × Addr))
+    (h : allocateNumberVariableCells encoding memory assignments =
+      .ok (pairs, memory')) :
+    pairs.length = assignments.length ∧
+      memory'.heap.size = memory.heap.size + 2 * assignments.length ∧
+      memory'.trailMark = memory.trailMark := by
+  induction assignments generalizing memory pairs memory' with
+  | nil =>
+      simp only [allocateNumberVariableCells] at h
+      cases h
+      simp
+  | cons assignment assignments ih =>
+      rcases assignment with ⟨variableRoot, payload⟩
+      cases payload with
+      | none =>
+          simp only [allocateNumberVariableCells] at h
+          cases hPayload : memory.allocate
+              (.const encoding.singletonConstant) with
+          | error error =>
+              rw [hPayload] at h
+              simp only [Bind.bind, Except.bind] at h
+              contradiction
+          | ok allocated =>
+              rcases allocated with ⟨payloadRoot, middle₁⟩
+              rw [hPayload] at h
+              simp only [Bind.bind, Except.bind] at h
+              cases hNumbered : middle₁.allocate
+                  (.app encoding.numberedSymbol #[payloadRoot]) with
+              | error error =>
+                  rw [hNumbered] at h
+                  dsimp only [Bind.bind, Except.bind] at h
+                  contradiction
+              | ok allocated =>
+                  rcases allocated with ⟨numberedRoot, middle₂⟩
+                  rw [hNumbered] at h
+                  dsimp only [Bind.bind, Except.bind] at h
+                  cases hRest : allocateNumberVariableCells encoding middle₂
+                      assignments with
+                  | error error =>
+                      rw [hRest] at h
+                      dsimp only [Functor.map, Except.map] at h
+                      contradiction
+                  | ok result =>
+                      rcases result with ⟨tail, final₁⟩
+                      rw [hRest] at h
+                      dsimp only [Functor.map, Except.map] at h
+                      injection h with hResult
+                      injection hResult with hPairs hMemory
+                      subst pairs
+                      subst memory'
+                      have hIH := ih middle₂ final₁ tail hRest
+                      constructor
+                      · simp [hIH.1]
+                      constructor
+                      · rw [hIH.2.1,
+                          Memory.allocate_heap_size_succ hNumbered,
+                          Memory.allocate_heap_size_succ hPayload]
+                        simp only [List.length_cons]
+                        omega
+                      · rw [hIH.2.2,
+                          Memory.allocate_trailMark hNumbered,
+                          Memory.allocate_trailMark hPayload]
+      | some index =>
+          simp only [allocateNumberVariableCells] at h
+          cases hPayload : memory.allocate
+              (.const (encoding.indexConstant index)) with
+          | error error =>
+              rw [hPayload] at h
+              simp only [Bind.bind, Except.bind] at h
+              contradiction
+          | ok allocated =>
+              rcases allocated with ⟨payloadRoot, middle₁⟩
+              rw [hPayload] at h
+              simp only [Bind.bind, Except.bind] at h
+              cases hNumbered : middle₁.allocate
+                  (.app encoding.numberedSymbol #[payloadRoot]) with
+              | error error =>
+                  rw [hNumbered] at h
+                  dsimp only [Bind.bind, Except.bind] at h
+                  contradiction
+              | ok allocated =>
+                  rcases allocated with ⟨numberedRoot, middle₂⟩
+                  rw [hNumbered] at h
+                  dsimp only [Bind.bind, Except.bind] at h
+                  cases hRest : allocateNumberVariableCells encoding middle₂
+                      assignments with
+                  | error error =>
+                      rw [hRest] at h
+                      dsimp only [Functor.map, Except.map] at h
+                      contradiction
+                  | ok result =>
+                      rcases result with ⟨tail, final₁⟩
+                      rw [hRest] at h
+                      dsimp only [Functor.map, Except.map] at h
+                      injection h with hResult
+                      injection hResult with hPairs hMemory
+                      subst pairs
+                      subst memory'
+                      have hIH := ih middle₂ final₁ tail hRest
+                      constructor
+                      · simp [hIH.1]
+                      constructor
+                      · rw [hIH.2.1,
+                          Memory.allocate_heap_size_succ hNumbered,
+                          Memory.allocate_heap_size_succ hPayload]
+                        simp only [List.length_cons]
+                        omega
+                      · rw [hIH.2.2,
+                          Memory.allocate_trailMark hNumbered,
+                          Memory.allocate_trailMark hPayload]
+
+/-- Read the source graph, decide singleton labels, allocate every numbered
+term and the final index, and return only a canonical unification agenda. -/
+def prepareNumberVariables {σ : LPSignature}
+    (plan : NumberVariablesPlan σ) (memory : Memory σ.scoped)
+    (termRoot endRoot : Addr) :
+    Except QueryError (NumberVariablesPrepared σ) := do
+  let (occurrences, acyclic) ← termVariableOccurrences memory.heap termRoot
+  let uniqueRoots := occurrences.eraseDups
+  let useSingletons := plan.singletons && acyclic
+  let (assignments, endIndex) :=
+    numberVariableAssignments occurrences useSingletons plan.start uniqueRoots
+  let (pairs, memory) ←
+    (allocateNumberVariableCells plan.encoding memory assignments).mapError .memory
+  let (endValueRoot, memory) ←
+    (memory.allocate (.const (plan.encoding.indexConstant endIndex))).mapError
+      .memory
+  pure { memory, pairs := pairs ++ [(endRoot, endValueRoot)], endIndex }
+
+/-- Execute `numbervars/3,4` as a read-only plan, bounded canonical allocation,
+and one ordinary unifier run.  All variable bindings are therefore trailed and
+undo through the same choice-point restoration as clause-head unification. -/
+def numberVariablesStep {σ : LPSignature}
+    (decoder : NumberVariablesDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot startRoot endRoot : Addr) (optionsRoot : Option Addr)
+    (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap startRoot optionsRoot with
+  | .error error => failWith state error
+  | .ok plan =>
+      match prepareNumberVariables plan state.memory termRoot endRoot with
+      | .error error => failWith state error
+      | .ok prepared =>
+          .next {
+            state with
+            memory := prepared.memory
+            phase := .unifying {
+              body := continuation
+              cutDepth := state.control.cutDepth
+              frames := state.control.frames
+            } (RuntimeUnification.startMany prepared.memory prepared.pairs)
+          } none
+
+/-- Successful decoding and preparation determine the entire transition and
+cannot directly emit an answer. -/
+theorem numberVariablesStep_of_decode_prepare {σ : LPSignature}
+    (decoder : NumberVariablesDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot startRoot endRoot : Addr) (optionsRoot : Option Addr)
+    (continuation : List Instruction) (plan : NumberVariablesPlan σ)
+    (prepared : NumberVariablesPrepared σ)
+    (hDecode : decoder.decode state.memory.heap startRoot optionsRoot = .ok plan)
+    (hPrepare : prepareNumberVariables plan state.memory termRoot endRoot =
+      .ok prepared) :
+    numberVariablesStep decoder state termRoot startRoot endRoot optionsRoot
+        continuation =
+      .next {
+        state with
+        memory := prepared.memory
+        phase := .unifying {
+          body := continuation
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany prepared.memory prepared.pairs)
+      } none := by
+  simp [numberVariablesStep, hDecode, hPrepare]
+
 /-- Execute one bidirectional text/code plan.  Both directions allocate only
 fresh canonical cells and enter the ordinary graph unifier; the decoder never
 binds an output or decides a mismatching ground result itself. -/
@@ -3508,6 +3789,8 @@ inductive DispatchAction (σ : LPSignature)
   | copyTerm (sourceRoot targetRoot : Addr)
   | termVariables (termRoot variablesRoot : Addr)
       (encoding : CollectionEncoding σ)
+  | numberVariables (termRoot startRoot endRoot : Addr)
+      (optionsRoot : Option Addr) (decoder : NumberVariablesDecoder σ)
   | functor (termRoot nameRoot arityRoot : Addr)
       (encoding : FunctorEncoding σ)
   | integerIs (resultRoot expressionRoot : Addr)
@@ -3659,6 +3942,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
       copyTermStep state sourceRoot targetRoot rest
   | .termVariables termRoot variablesRoot encoding =>
       termVariablesStep encoding state termRoot variablesRoot rest
+  | .numberVariables termRoot startRoot endRoot optionsRoot decoder =>
+      numberVariablesStep decoder state termRoot startRoot endRoot optionsRoot rest
   | .functor termRoot nameRoot arityRoot encoding =>
       functorStep encoding state termRoot nameRoot arityRoot rest
   | .integerIs resultRoot expressionRoot encoding =>

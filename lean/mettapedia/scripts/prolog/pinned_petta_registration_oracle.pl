@@ -49,6 +49,16 @@ main([MettaPath, TranslatorPath, SpecializerPath]) :-
     term_variables(pair(TermVariablesLeft, TermVariablesRight), TermVariables),
     TermVariables = [TermVariablesLeft, TermVariablesRight],
     format('metta_term_variables_direct=exact~n', []),
+    numbervars(pair(Numbered, pair(Numbered, Singleton)), 0, NumberEnd,
+      [singletons(true)]),
+    result(Numbered, Singleton, NumberEnd) =
+      result('$VAR'(0), '$VAR'('_'), 1),
+    format('metta_numbervars_direct=exact~n', []),
+    normalize_specialization_key(
+      pair(Normalized, pair(Normalized, _NormalizedSingleton)),
+      NormalizedKey),
+    NormalizedKey = pair('$VAR'(0), pair('$VAR'(0), '$VAR'('_'))),
+    format('metta_normalize_specialization_key=exact~n', []),
     functor(pair(a,b), pair, 2),
     format('metta_functor_decompose_direct=exact~n', []),
     functor(FunctorConstructed, pair, 2),

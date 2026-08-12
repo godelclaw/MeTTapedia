@@ -447,6 +447,33 @@ def main : IO Unit := do
   renderCount "term_variables_meta"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaTermVariables)
+  renderCount "numbervars_order_sharing"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesPreservesSharingAndOrder)
+  renderCount "numbervars_singletons"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesMarksSingletons)
+  renderCount "numbervars_start_five"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesStartsAtFive)
+  renderCount "numbervars_singletons_false"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesSingletonsFalse)
+  renderCount "numbervars_shared_application"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesCountsSharedApplications)
+  renderCount "numbervars_cycle_disables_singletons"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesCycleDisablesSingletons)
+  renderCount "numbervars_backtracks"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesBindingsBacktrack)
+  renderCount "numbervars_end_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.numberVariablesEndMismatch)
+  renderCount "numbervars_meta"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaNumberVariables)
   renderCount "functor_decompose_compound"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorDecomposesCompound)
