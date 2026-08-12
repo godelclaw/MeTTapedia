@@ -50,6 +50,7 @@ inductive QueryError where
   | unsupportedInstruction
   | exceptionReadback (error : RuntimeReadback.ReadbackError)
   | collectionReadback (error : RuntimeReadback.ReadbackError)
+  | copyTermReadback (error : RuntimeReadback.ReadbackError)
   | dynamicClauseReadback (error : RuntimeReadback.ReadbackError)
   | invalidDynamicClause
   | invalidFormatDestination
@@ -2679,6 +2680,46 @@ def beginUnifyStep {σ : LPSignature}
       (RuntimeUnification.startMany state.memory [(left, right)])
   } none
 
+/-- Execute finite `copy_term/2` on the one canonical heap.  Capture first
+materializes the source's current instantiation as an immutable term;
+installation then renames every residual variable above the live activation
+supply.  Only the existing graph unifier may bind the caller's output. -/
+def copyTermStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (sourceRoot targetRoot : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match RuntimeException.capture state.memory.heap sourceRoot with
+  | .error error => failWith state (.copyTermReadback error)
+  | .ok packet =>
+      match packet.install state.memory state.nextScope with
+      | .error error => failWith state (.memory error)
+      | .ok installed =>
+          beginUnifyStep {
+            state with
+            memory := installed.memory
+            nextScope := installed.nextScope
+          } installed.root targetRoot continuation
+
+/-- A successful finite capture and installation enters exactly one ordinary
+unification attempt, preserves the caller's control delimiters, and advances
+the persistent scope supply to the installer's certified frontier. -/
+theorem copyTermStep_of_capture_install {σ : LPSignature}
+    [DecidableEq σ.scoped.vars]
+    (state : StateCore σ Instruction SourceClause)
+    (sourceRoot targetRoot : Addr) (continuation : List Instruction)
+    (packet : RuntimeException.Packet σ)
+    (installed : RuntimeException.Installed σ)
+    (hCapture : RuntimeException.capture state.memory.heap sourceRoot =
+      .ok packet)
+    (hInstall : packet.install state.memory state.nextScope = .ok installed) :
+    copyTermStep state sourceRoot targetRoot continuation =
+      beginUnifyStep {
+        state with
+        memory := installed.memory
+        nextScope := installed.nextScope
+      } installed.root targetRoot continuation := by
+  simp [copyTermStep, hCapture, hInstall]
+
 /-- Execute one bidirectional text/code plan.  Both directions allocate only
 fresh canonical cells and enter the ordinary graph unifier; the decoder never
 binds an output or decides a mismatching ground result itself. -/
@@ -3135,6 +3176,7 @@ inductive DispatchAction (σ : LPSignature)
   | termTest (address : Addr) (test : TermTest σ)
   | termIdentity (left right : Addr) (expected : Bool)
   | univ (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
+  | copyTerm (sourceRoot targetRoot : Addr)
   | integerIs (resultRoot expressionRoot : Addr)
       (encoding : IntegerArithmeticEncoding σ)
   | integerCompare (leftRoot rightRoot : Addr)
@@ -3236,7 +3278,8 @@ theorem checkedDatabaseRequestStep_assertzWithReference_bound
 instruction has already been removed; `rest` always comes from the live goal
 stack rather than from the classifier. -/
 @[simp]
-def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
+def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
+    [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] [DecidableEq σ.relationSymbols]
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
@@ -3279,6 +3322,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
       termIdentityStep state left right expected rest
   | .univ termRoot listRoot encoding =>
       univStep state termRoot listRoot encoding rest
+  | .copyTerm sourceRoot targetRoot =>
+      copyTermStep state sourceRoot targetRoot rest
   | .integerIs resultRoot expressionRoot encoding =>
       integerIsStep state resultRoot expressionRoot encoding rest
   | .integerCompare leftRoot rightRoot comparison encoding =>

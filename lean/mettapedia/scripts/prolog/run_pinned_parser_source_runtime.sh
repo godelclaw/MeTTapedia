@@ -79,6 +79,7 @@ metta_repr=exact
 metta_eval_atomic=exact
 metta_fun_id_registered=exact
 metta_id_direct=exact
+metta_copy_term_direct=exact
 metta_eval_compound=exact
 metta_eval_nested_arithmetic=exact
 metta_eval_imported_reverse=exact
@@ -94,6 +95,7 @@ metta_eval_once=exact
 metta_eval_if_false=exact
 metta_eval_empty=exact
 metta_eval_transaction=exact
+metta_eval_copy_term=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
@@ -122,6 +124,7 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_eval_if_false=exact' \
   'metta_eval_empty=exact' \
   'metta_eval_transaction=exact' \
+  'metta_eval_copy_term=exact' \
   > "$TMP/swi-registration.expected"
 diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
 

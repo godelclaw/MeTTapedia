@@ -679,6 +679,39 @@ def univNonAtomFunctor : SourceSignature.Goal :=
 def univExplicitZeroArityCompound : SourceSignature.Goal :=
   univ (compound "f" []) x
 
+/-! ## Finite `copy_term/2` through capture, freshening, and one unifier -/
+
+def copyTerm (source target : SourceSignature.Term) : SourceSignature.Goal :=
+  SourceSignature.call "copy_term" [source, target]
+
+/-- Repeated occurrences of one source variable remain one variable in the
+copy. -/
+def copyTermPreservesSharing : SourceSignature.Goal :=
+  .conj (copyTerm (pair x x) (pair y z)) (strictIdentity y z)
+
+/-- A copied residual variable is fresh relative to its source variable. -/
+def copyTermSeparatesSource : SourceSignature.Goal :=
+  .conj (copyTerm x y) (strictNonIdentity x y)
+
+/-- Two calls at the persistent scope high-water cannot reuse a copied
+variable identity. -/
+def successiveCopiesAreSeparate : SourceSignature.Goal :=
+  .conj (copyTerm x y)
+    (.conj (copyTerm x z) (strictNonIdentity y z))
+
+/-- Copy observes the source's current instantiation, not its entry syntax. -/
+def copyTermUsesCurrentInstantiation : SourceSignature.Goal :=
+  .conj (.unify x (atom "a"))
+    (copyTerm (pair x x) y)
+
+/-- Heap-built `call(copy_term(...))` returns to the same service and shared
+engine transition as a statically present call. -/
+def metaCopyTerm : SourceSignature.Goal :=
+  metaGoal (compound "copy_term" [pair x x, pair y z])
+
+def copyTermRationalSource : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x])) (copyTerm x y)
+
 /-- Observe a typed runtime error without identifying ordinary Prolog
 failure with an engine-side malformed-operation result. -/
 def runQueryError? (program : SourceSignature.Program)
@@ -1647,6 +1680,16 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard univRejectsUnboundFunctor
 #guard univRejectsNonAtomFunctor
 #guard univRejectsExplicitZeroArityCompound
+#guard runCount [] copyTermPreservesSharing == some (1, 0, 0)
+#guard runCount [] copyTermSeparatesSource == some (1, 0, 0)
+#guard runCount [] successiveCopiesAreSeparate == some (1, 0, 0)
+#guard runShapesFor [] copyTermUsesCurrentInstantiation yIdentity ==
+  some ([runtimeTermShape (expectedScoped (pair (atom "a") (atom "a")))],
+    0, 0)
+#guard runCount [] metaCopyTerm == some (1, 0, 0)
+#guard match runQueryError? [] copyTermRationalSource with
+  | some (.copyTermReadback _) => true
+  | _ => false
 #guard runShapesFor [] integerAddition xIdentity ==
   some ([.integer 5], 0, 0)
 #guard runShapesFor [] integerNestedArithmetic xIdentity ==
@@ -1746,6 +1789,7 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
   | _ => false
 #guard runCount binaryFactProgram (currentPredicate "p" 2) == some (1, 0, 0)
 #guard runCount binaryFactProgram (currentPredicate "q" 2) == some (0, 0, 0)
+#guard runCount [] (currentPredicate "copy_term" 2) == some (1, 0, 0)
 #guard match runQueryError? binaryFactProgram currentPredicateUnbound with
   | some .predicateIndicatorUnbound => true
   | _ => false

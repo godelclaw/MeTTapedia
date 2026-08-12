@@ -64,8 +64,12 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentical_same_of_deref
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termIdentity
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.univStep_of_prepare
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.copyTermStep_of_capture_install
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_univ
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_univ
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_copyTerm
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_runtimePredicates
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_copyTerm
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.integerIsStep_of_eval_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.integerCompareStep_of_eval
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_integerIs

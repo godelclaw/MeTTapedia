@@ -60,4 +60,5 @@ main([MettaPath, TranslatorPath, SpecializerPath]) :-
     emit_eval(metta_eval_once, [once,[superpose,[a,b]]], a),
     emit_eval(metta_eval_if_false, [if,[>,1,2],then,else], else),
     emit_answers(metta_eval_empty, [empty], []),
-    emit_eval(metta_eval_transaction, [transaction,[id,a]], a).
+    emit_eval(metta_eval_transaction, [transaction,[id,a]], a),
+    emit_eval(metta_eval_copy_term, [copy_term,[a,b]], [a,b]).

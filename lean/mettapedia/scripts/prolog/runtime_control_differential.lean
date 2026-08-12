@@ -413,6 +413,21 @@ def main : IO Unit := do
   renderCount "univ_meta_construct"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaUnivConstructsCompound)
+  renderCount "copy_term_preserves_sharing"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.copyTermPreservesSharing)
+  renderCount "copy_term_separates_source"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.copyTermSeparatesSource)
+  renderCount "copy_term_successive_separate"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.successiveCopiesAreSeparate)
+  renderCount "copy_term_current_instantiation"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.copyTermUsesCurrentInstantiation)
+  renderCount "copy_term_meta"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaCopyTerm)
   renderIntegerAnswers "integer_addition"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerAddition

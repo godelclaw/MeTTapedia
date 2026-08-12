@@ -606,6 +606,12 @@ def main (arguments : List String) : IO Unit := do
     (SourceSignature.call "id"
     [SourceSignature.atom "a", .var termIdentity])
     (SourceSignature.atom "a")
+  checkDatabaseGoal registeredDatabase "metta_copy_term_direct"
+    (SourceSignature.call "copy_term" [
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"],
+      .var termIdentity
+    ])
+    (SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"])
   checkDatabaseGoal registeredDatabase "metta_eval_compound"
     (evalQuery (SourceSignature.list
       [SourceSignature.atom "id", SourceSignature.atom "a"]))
@@ -700,3 +706,9 @@ def main (arguments : List String) : IO Unit := do
       SourceSignature.list [SourceSignature.atom "id", SourceSignature.atom "a"]
     ]))
     [SourceSignature.atom "a"]
+  checkDatabaseAnswers registeredDatabase "metta_eval_copy_term"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "copy_term",
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]
+    ]))
+    [SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]]

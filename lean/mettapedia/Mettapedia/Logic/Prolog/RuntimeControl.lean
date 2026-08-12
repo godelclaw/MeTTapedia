@@ -493,6 +493,13 @@ structure Services (sigma : LP.LPSignature) where
   currentPredicate? : RuntimeAtom sigma.scoped → Option Addr := fun _ => none
   predicateIndicatorEncoding :
     Option (LP.RuntimeQuery.PredicateIndicatorEncoding sigma) := none
+  /-- Predicate indicators backed by actual engine transitions rather than
+  source clauses.  This list is deliberately explicit: `current_predicate/1`
+  may expose a builtin only in the tranche that installs its transition. -/
+  runtimePredicates : List sigma.relationSymbols := []
+  /-- Recognize finite `copy_term/2` without inspecting either root.  Capture,
+  freshening, allocation, and output unification remain shared-engine work. -/
+  copyTerm? : RuntimeAtom sigma.scoped → Option (Addr × Addr) := fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -537,6 +544,8 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   listLength? _ := none
   currentPredicate? _ := none
   predicateIndicatorEncoding := none
+  runtimePredicates := []
+  copyTerm? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -662,15 +671,20 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                                               services.predicateIndicatorEncoding with
                                                           | some indicatorRoot, some encoding =>
                                                               .predicateDefined indicatorRoot
-                                                                (program.map fun clause =>
-                                                                  clause.head.symbol)
+                                                                ((program.map fun clause =>
+                                                                  clause.head.symbol) ++
+                                                                  services.runtimePredicates)
                                                                 encoding
                                                           | some _, none =>
                                                               .error .unsupportedInstruction
                                                           | none, _ =>
-                                                              .call goal
-                                                                (Program.clausesFor program
-                                                                  goal.symbol)
+                                                              match services.copyTerm? goal with
+                                                              | some (sourceRoot, targetRoot) =>
+                                                                  .copyTerm sourceRoot targetRoot
+                                                              | none =>
+                                                                  .call goal
+                                                                    (Program.clausesFor program
+                                                                      goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -917,8 +931,9 @@ theorem dispatchActionWith_listLength {sigma : LP.LPSignature}
     hComparison, hFormat, hText, hBinary, hDcg, hSort, hLength]
 
 /-- Ground `current_predicate/1` membership is coupled to the exact program
-visible at this dispatch.  In particular, the classifier cannot substitute a
-stale or fabricated predicate inventory. -/
+visible at this dispatch plus the realization's explicit transition-backed
+builtin inventory.  Neither source clauses nor runtime capabilities can be
+substituted after the instruction is classified. -/
 theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
     (services : Services sigma) (program : Program sigma)
@@ -941,7 +956,8 @@ theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
     (hEncoding : services.predicateIndicatorEncoding = some encoding) :
     dispatchActionWith services program (.call goal) =
       .predicateDefined indicatorRoot
-        (program.map fun clause => clause.head.symbol) encoding := by
+        ((program.map fun clause => clause.head.symbol) ++
+          services.runtimePredicates) encoding := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg, hSort, hLength, hCurrent,
     hEncoding]
