@@ -13,6 +13,7 @@ inductive GoalShape where
   | ifThenElse (condition thenBranch elseBranch : GoalShape)
   | softIfThenElse (condition thenBranch elseBranch : GoalShape)
   | once (goal : GoalShape)
+  | transaction (goal : GoalShape)
   | neg (goal : GoalShape)
   | unify | notUnify | isVar
   | findall (generator : GoalShape)
@@ -34,6 +35,7 @@ def goalShape : SourceSignature.Goal -> GoalShape
       .softIfThenElse (goalShape condition) (goalShape thenBranch)
         (goalShape elseBranch)
   | .once goal => .once (goalShape goal)
+  | .transaction goal => .transaction (goalShape goal)
   | .neg goal => .neg (goalShape goal)
   | .unify _ _ => .unify
   | .notUnify _ _ => .notUnify
@@ -90,6 +92,9 @@ def readShape (source : String) : Option FormShape :=
 
 #guard readShape "p(X) :- memberchk(X, [a,b])." == some
   (.clause "p" 1 (.once (.call "member" 2)))
+
+#guard readShape "p :- transaction((a ; b))." == some
+  (.clause "p" 0 (.transaction (.disj (.call "a" 0) (.call "b" 0))))
 
 #guard readShape "p :- nonvar(X), forall(q(X), r(X))." == some
   (.clause "p" 0

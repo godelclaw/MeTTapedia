@@ -88,6 +88,12 @@ metta_eval_foldl_atom=exact
 metta_eval_first_pair=exact
 metta_eval_size=exact
 metta_eval_unique=exact
+metta_eval_superpose_order=exact
+metta_eval_collapse=exact
+metta_eval_once=exact
+metta_eval_if_false=exact
+metta_eval_empty=exact
+metta_eval_transaction=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
@@ -110,6 +116,12 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_eval_first_pair=exact' \
   'metta_eval_size=exact' \
   'metta_eval_unique=exact' \
+  'metta_eval_superpose_order=exact' \
+  'metta_eval_collapse=exact' \
+  'metta_eval_once=exact' \
+  'metta_eval_if_false=exact' \
+  'metta_eval_empty=exact' \
+  'metta_eval_transaction=exact' \
   > "$TMP/swi-registration.expected"
 diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
 

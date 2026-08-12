@@ -93,6 +93,8 @@ inductive QueryError where
   | invalidDcgBody
   | unhandledDatabaseRequest
   | missingCollectionBoundary
+  | missingTransactionBoundary
+  | transactionStackUnderflow
   | exceptionCleanupFailed (cleanup : MemoryError)
   | cleanupFailed (primary : QueryError) (cleanup : MemoryError)
 deriving Repr
@@ -932,6 +934,14 @@ structure CollectionHandlerCore (σ : LPSignature) where
   choiceDepth : Nat
   template : Addr
 
+/-- Engine-owned delimiter data for one database transaction.  The database
+snapshot itself deliberately lives in the persistent session; the shared
+query state carries only the checkpoint and positional choice ownership needed
+to commit or unwind the protected search. -/
+structure TransactionHandlerCore where
+  checkpoint : Memory.Checkpoint
+  choiceDepth : Nat
+
 /-- Success behavior attached to one return frame.  `hard` discards the
 conditional marker together with condition-local alternatives.  `soft`
 discards only its distinguished else marker, leaving condition alternatives
@@ -951,6 +961,7 @@ structure ReturnFrameCore (σ : LPSignature) (Instruction : Type*) where
   commit : ReturnCommit := .ordinary
   handler : Option (CatchHandlerCore σ Instruction) := none
   collection : Option (CollectionHandlerCore σ) := none
+  transaction : Option TransactionHandlerCore := none
 
 /-- The nearest exception delimiter together with the outer frames that
 survive if it handles the packet.  Frames above it are exactly the unwound
@@ -959,6 +970,20 @@ structure CatchTargetCore (σ : LPSignature) (Instruction : Type*) where
   frame : ReturnFrameCore σ Instruction
   handler : CatchHandlerCore σ Instruction
   outerFrames : List (ReturnFrameCore σ Instruction)
+
+/-- The nearest database-transaction delimiter crossed by exception unwind.
+The persistent database snapshot is not present here; it remains exclusively
+owned by the session. -/
+structure TransactionTargetCore (σ : LPSignature) (Instruction : Type*) where
+  frame : ReturnFrameCore σ Instruction
+  handler : TransactionHandlerCore
+  outerFrames : List (ReturnFrameCore σ Instruction)
+
+/-- The first exception-relevant delimiter in frame order.  A catch may stop
+unwind; a transaction must roll back before search can continue outward. -/
+inductive ExceptionBoundaryCore (σ : LPSignature) (Instruction : Type*) where
+  | catcher (target : CatchTargetCore σ Instruction)
+  | transaction (target : TransactionTargetCore σ Instruction)
 
 /-- State retained while the canonical graph unifier tests a catcher against
 the throw-time packet. -/
@@ -1008,6 +1033,13 @@ structure BranchChoiceCore (σ : LPSignature) (Instruction : Type*) where
   checkpoint : Memory.Checkpoint
   control : ControlCore σ Instruction
 
+/-- Failure boundary for one database transaction.  Backtracking to this
+sentinel restores the transaction-entry memory and caller control before the
+persistent session rolls its database snapshot back. -/
+structure TransactionChoiceCore (σ : LPSignature) (Instruction : Type*) where
+  checkpoint : Memory.Checkpoint
+  control : ControlCore σ Instruction
+
 /-- Exhaustion delimiter and detached answer store for one `findall/3`.
 The outer continuation is transferred here once; generated alternatives sit
 above this sentinel on the same canonical choice stack. -/
@@ -1044,6 +1076,8 @@ inductive ChoicePointCore (σ : LPSignature)
   | softElse (alternative : BranchChoiceCore σ Instruction)
   /-- Backtracking to this sentinel means the generator is exhausted. -/
   | collection (boundary : CollectionChoiceCore σ Instruction)
+  /-- Database transaction rollback sentinel. -/
+  | transaction (boundary : TransactionChoiceCore σ Instruction)
   /-- Later reflected clauses retained by `retract/1` or `clause/3`. -/
   | databaseClause (cursor : DatabaseClauseCursorCore σ Instruction)
 
@@ -1135,6 +1169,11 @@ inductive DatabaseRequest where
   | clause (headRoot bodyRoot referenceRoot : Addr)
   /-- Apply the stable occurrence selected by a successful engine unifier. -/
   | eraseRef (reference : Nat)
+  /-- Begin, commit, or roll back the session-owned database snapshot for one
+  typed transaction delimiter. -/
+  | transactionBegin
+  | transactionCommit
+  | transactionRollback
 deriving DecidableEq, Repr
 
 inductive Terminal (σ : LPSignature) where
@@ -1308,6 +1347,21 @@ def findCatchTarget {σ : LPSignature} :
       match frame.handler with
       | some handler => some { frame, handler, outerFrames }
       | none => findCatchTarget outerFrames
+
+/-- Locate the nearest catch or transaction delimiter in strict frame order.
+This is the exception-unwind analogue of the one newest-first choice stack;
+it never inspects a language instruction or a persistent database. -/
+def findExceptionBoundary {σ : LPSignature} :
+    List (ReturnFrameCore σ Instruction) →
+      Option (ExceptionBoundaryCore σ Instruction)
+  | [] => none
+  | frame :: outerFrames =>
+      match frame.handler with
+      | some handler => .some (.catcher { frame, handler, outerFrames })
+      | none =>
+          match frame.transaction with
+          | some handler => .some (.transaction { frame, handler, outerFrames })
+          | none => findExceptionBoundary outerFrames
 
 /-- Close an uncaught exception distinctly from ordinary completion and
 runtime corruption.  The detached packet survives exact query cleanup. -/
@@ -1708,6 +1762,21 @@ def recordCollectionChoice {σ : LPSignature}
         | none => none
         | some updated => some (choice :: updated)
 
+/-- Consume exactly the transaction sentinel with `mark` older choices below
+it, discarding every protected alternative above it.  A different resource at
+the claimed position is rejected rather than silently pruned. -/
+def closeTransactionChoice {σ : LPSignature}
+    (mark : Nat) :
+    List (ChoicePointCore σ Instruction SourceClause) →
+      Option (List (ChoicePointCore σ Instruction SourceClause))
+  | [] => none
+  | choice :: older =>
+      if older.length = mark then
+        match choice with
+        | .transaction _ => some older
+        | _ => none
+      else closeTransactionChoice mark older
+
 /-- A positional collection update reaches exactly its owned sentinel, leaves
 every newer generator alternative and older caller alternative in place, and
 prepends one detached answer. -/
@@ -1726,6 +1795,22 @@ theorem recordCollectionChoice_marker {σ : LPSignature}
       have hLength : newer.length + (older.length + 1) ≠ older.length := by
         omega
       simp [recordCollectionChoice, hLength, ih]
+
+/-- A transaction close consumes its uniquely positioned sentinel together
+with every protected alternative above it, and cannot touch an older caller
+choice.  This is the resource-linearity fact used by both commit and exception
+rollback. -/
+theorem closeTransactionChoice_marker {σ : LPSignature}
+    (newer older : List (ChoicePointCore σ Instruction SourceClause))
+    (boundary : TransactionChoiceCore σ Instruction) :
+    closeTransactionChoice older.length
+        (newer ++ .transaction boundary :: older) = some older := by
+  induction newer with
+  | nil => simp [closeTransactionChoice]
+  | cons choice newer ih =>
+      have hLength : newer.length + (older.length + 1) ≠ older.length := by
+        omega
+      simp [closeTransactionChoice, hLength, ih]
 
 /-- Privately consume one generator success.  The template is detached from
 the live heap and renamed immediately at the persistent high-water, so later
@@ -1748,6 +1833,29 @@ def collectAnswerStep {σ : LPSignature}
               RuntimeException.scopeCeiling packet.term
             phase := .backtrack
           } none
+
+/-- Commit a successful transaction exactly once.  Protected alternatives and
+the rollback sentinel are consumed together; the live bindings and persistent
+database are kept, while the session receives the commit request. -/
+def commitTransactionStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (frame : ReturnFrameCore σ Instruction)
+    (handler : TransactionHandlerCore)
+    (frames : List (ReturnFrameCore σ Instruction)) :
+    StepResultCore σ Instruction SourceClause :=
+  match closeTransactionChoice handler.choiceDepth state.choices with
+  | none => failWith state .missingTransactionBoundary
+  | some choices =>
+      .databaseRequest .transactionCommit {
+        state with
+        control := {
+          current := frame.continuation
+          cutDepth := frame.callerCutDepth
+          frames
+        }
+        choices
+        phase := .dispatch
+      }
 
 /-- A successful private capture emits no public observation, advances the
 persistent fresh scope by the copied term's exact ceiling, and enters ordinary
@@ -1840,6 +1948,17 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   | .softElse alternative :: older => resumeBranchStep state alternative older
   | .collection boundary :: older =>
       finalizeCollectionStep state boundary older
+  | .transaction boundary :: older =>
+      match state.memory.restore boundary.checkpoint with
+      | .error error => failWith state (.memory error)
+      | .ok memory =>
+          .databaseRequest .transactionRollback {
+            state with
+            memory
+            control := boundary.control
+            choices := older
+            phase := .backtrack
+          }
   | .databaseClause cursor :: older =>
       match state.memory.restore cursor.checkpoint with
       | .error error => failWith state (.memory error)
@@ -1878,6 +1997,8 @@ def emptyCurrentStep {σ : LPSignature}
   | frame :: frames =>
       match frame.collection with
       | some handler => collectAnswerStep state handler
+      | none => match frame.transaction with
+      | some handler => commitTransactionStep state frame handler frames
       | none => match frame.commit with
       | .ordinary =>
           .next {
@@ -2018,19 +2139,47 @@ def throwStep {σ : LPSignature}
           | _ => captureThrowStep state ball
       | _ => captureThrowStep state ball
 
-/-- Continue catcher search at the next outer delimiter without unwinding.
-All candidate catchers must observe the same throw-time bindings, matching
-SWI's `findCatcher` walk.  Actual restoration and pruning happen only after a
-candidate has matched. -/
+/-- Roll an exception across one transaction delimiter.  The detached packet
+survives restoration; protected bindings and choices are discarded here, and
+the database rollback itself remains an explicit persistent-session request. -/
+def rollbackTransactionException {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (packet : RuntimeException.Packet σ)
+    (target : TransactionTargetCore σ Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match state.memory.restore target.handler.checkpoint with
+  | .error error => failWith state (.memory error)
+  | .ok memory =>
+      match closeTransactionChoice target.handler.choiceDepth state.choices with
+      | none => failWith { state with memory } .missingTransactionBoundary
+      | some choices =>
+          .databaseRequest .transactionRollback {
+            state with
+            memory
+            control := {
+              current := target.frame.continuation
+              cutDepth := target.frame.callerCutDepth
+              frames := target.outerFrames
+            }
+            choices
+            phase := .raising packet
+          }
+
+/-- Continue exception search at the next outer delimiter.  Rejected catchers
+retain the same throw-time memory; crossing a transaction first restores its
+entry state and asks the persistent session to roll the database back. -/
 def passException {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (selection : CatchSelectionCore σ Instruction) :
     StepResultCore σ Instruction SourceClause :=
-  match findCatchTarget selection.target.outerFrames with
+  match findExceptionBoundary selection.target.outerFrames with
   | none =>
       raiseUnhandled { state with memory := selection.throwMemory }
         selection.packet
-  | some target =>
+  | some (.transaction target) =>
+      rollbackTransactionException { state with memory := selection.throwMemory }
+        selection.packet target
+  | some (.catcher target) =>
       let nextSelection := { selection with target }
       .next {
         state with
@@ -2076,9 +2225,11 @@ def raisingStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
     (state : StateCore σ Instruction SourceClause)
     (packet : RuntimeException.Packet σ) :
     StepResultCore σ Instruction SourceClause :=
-  match findCatchTarget state.control.frames with
+  match findExceptionBoundary state.control.frames with
   | none => raiseUnhandled state packet
-  | some target =>
+  | some (.transaction target) =>
+      rollbackTransactionException state packet target
+  | some (.catcher target) =>
       match packet.install state.memory state.nextScope with
       | .error error => failWith state (.memory error)
       | .ok installed =>
@@ -2304,6 +2455,43 @@ def onceStep {σ : LPSignature}
       frames := success :: state.control.frames
     }
   } none
+
+/-- Enter one database transaction on the same choice/frame stack as ordinary
+control.  Search is once-like: the first success commits and discards protected
+alternatives; exhaustion or escaping exception restores the entry checkpoint
+and requests database rollback.  Only the persistent session owns the actual
+database snapshot. -/
+@[simp]
+def transactionStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (goals rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let mark := state.choices.length
+  let checkpoint := state.memory.checkpoint
+  let outerControl : ControlCore σ Instruction := {
+    current := rest
+    cutDepth := state.control.cutDepth
+    frames := state.control.frames
+  }
+  let boundary : TransactionChoiceCore σ Instruction := {
+    checkpoint
+    control := outerControl
+  }
+  let frame : ReturnFrameCore σ Instruction := {
+    continuation := rest
+    callerCutDepth := state.control.cutDepth
+    transaction := some { checkpoint, choiceDepth := mark }
+  }
+  .databaseRequest .transactionBegin {
+    state with
+    control := {
+      current := goals
+      cutDepth := mark + 1
+      frames := frame :: state.control.frames
+    }
+    choices := .transaction boundary :: state.choices
+    phase := .dispatch
+  }
 
 /-- Enter `findall/3` by transferring the outer continuation into one
 collection sentinel on the canonical choice stack.  Generator successes are
@@ -2925,6 +3113,7 @@ inductive DispatchAction (σ : LPSignature)
   | ifThenElse (condition thenBranch elseBranch : List Instruction)
   | softIfThenElse (condition thenBranch elseBranch : List Instruction)
   | once (goals : List Instruction)
+  | transaction (goals : List Instruction)
   | findall (template : Addr) (generator : List Instruction) (bag : Addr)
       (encoding : CollectionEncoding σ)
   | metaCall (callable : Addr) (extraArgs : List Addr)
@@ -3063,6 +3252,7 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.constants]
   | .softIfThenElse condition thenBranch elseBranch =>
       softIfThenElseStep state condition thenBranch elseBranch rest
   | .once goals => onceStep state goals rest
+  | .transaction goals => transactionStep state goals rest
   | .findall template generator bag encoding =>
       findallStep state template generator bag encoding rest
   | .metaCall callable extraArgs =>
@@ -3324,6 +3514,7 @@ theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
     (mark : Nat)
     (hFrames : state.control.frames = frame :: frames)
     (hCollection : frame.collection = none)
+    (hTransaction : frame.transaction = none)
     (hCommit : frame.commit = .hard mark)
     (hDepth : mark ≤ state.choices.length) :
     emptyCurrentStep state =
@@ -3336,7 +3527,7 @@ theorem emptyCurrentStep_commit_of_depth {σ : LPSignature}
         }
         choices := retainBottom mark state.choices
       } none := by
-  simp [emptyCurrentStep, hFrames, hCollection, hCommit, hDepth]
+  simp [emptyCurrentStep, hFrames, hCollection, hTransaction, hCommit, hDepth]
 
 /-- Soft success removes its else marker at the marked boundary but preserves
 all choices created by the condition. -/
@@ -3409,6 +3600,7 @@ theorem emptyCurrentStep_soft_of_marker {σ : LPSignature}
     (alternative : BranchChoiceCore σ Instruction)
     (hFrames : state.control.frames = frame :: frames)
     (hCollection : frame.collection = none)
+    (hTransaction : frame.transaction = none)
     (hCommit : frame.commit = .soft older.length)
     (hChoices : state.choices = newer ++ .softElse alternative :: older) :
     emptyCurrentStep state =
@@ -3421,7 +3613,7 @@ theorem emptyCurrentStep_soft_of_marker {σ : LPSignature}
         }
         choices := newer ++ older
       } none := by
-  simp [emptyCurrentStep, hFrames, hCollection, hCommit, hChoices,
+  simp [emptyCurrentStep, hFrames, hCollection, hTransaction, hCommit, hChoices,
     eraseSoftElseAboveBottom_marker]
   omega
 
@@ -3828,7 +4020,7 @@ packet from the original throw-time heap and performs ordinary query cleanup. -/
 theorem passException_no_outer {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (selection : CatchSelectionCore σ Instruction)
-    (hOuter : findCatchTarget selection.target.outerFrames = none) :
+    (hOuter : findExceptionBoundary selection.target.outerFrames = none) :
     passException state selection =
       raiseUnhandled { state with memory := selection.throwMemory }
         selection.packet := by
@@ -3840,7 +4032,8 @@ theorem passException_next_outer {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (selection : CatchSelectionCore σ Instruction)
     (target : CatchTargetCore σ Instruction)
-    (hOuter : findCatchTarget selection.target.outerFrames = some target) :
+    (hOuter : findExceptionBoundary selection.target.outerFrames =
+      some (.catcher target)) :
     passException state selection =
       .next {
         state with

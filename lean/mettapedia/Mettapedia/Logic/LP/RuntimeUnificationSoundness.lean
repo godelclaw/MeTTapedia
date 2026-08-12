@@ -1421,7 +1421,7 @@ def FramesWF {σ : LPSignature} (heap : Heap σ.scoped)
     (frames : List (ReturnFrame σ)) : Prop :=
   ∀ frame ∈ frames,
     frame.commit = .ordinary ∧ AtomsWF heap frame.continuation ∧
-      frame.collection = none
+      frame.collection = none ∧ frame.transaction = none
 
 /-- Every query variable's cell is present, carrying its identity. -/
 def VarMapCellsWF {σ : LPSignature} (heap : Heap σ.scoped)
@@ -1447,7 +1447,7 @@ theorem FramesWF.mono {σ : LPSignature} {heap heap' : Heap σ.scoped}
     FramesWF heap' frames :=
   fun frame hframe =>
     ⟨(h frame hframe).1, (h frame hframe).2.1.mono hle,
-      (h frame hframe).2.2⟩
+      (h frame hframe).2.2.1, (h frame hframe).2.2.2⟩
 
 /-- Cells survive verbatim under prefix-preserving growth. -/
 theorem VarMapCellsWF.of_prefix {σ : LPSignature}
@@ -1822,7 +1822,7 @@ theorem ControlWF.callCursor {σ : LPSignature}
     fun f hf => by
       rcases List.mem_cons.mp hf with rfl | hf'
       · exact ⟨rfl, fun atom hatom => h.1 atom
-          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom), rfl⟩
+          (by rw [hcurrent]; exact List.mem_cons_of_mem _ hatom), rfl, rfl⟩
       · exact h.2 f hf',
     fun c hc => hc⟩
 
@@ -3037,6 +3037,10 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hchain := hq.chain
                       rw [hchoices] at hchain
                       cases hchain
+                  | transaction boundary =>
+                      have hchain := hq.chain
+                      rw [hchoices] at hchain
+                      cases hchain
                   | databaseClause cursor =>
                       have hchain := hq.chain
                       rw [hchoices] at hchain
@@ -3091,12 +3095,15 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                         (hCW.2 frame (by rw [hframes]; exact List.mem_cons_self ..)).1
                       have hcollection : frame.collection = none :=
                         (hCW.2 frame
-                          (by rw [hframes]; exact List.mem_cons_self ..)).2.2
+                          (by rw [hframes]; exact List.mem_cons_self ..)).2.2.1
+                      have htransaction : frame.transaction = none :=
+                        (hCW.2 frame
+                          (by rw [hframes]; exact List.mem_cons_self ..)).2.2.2
                       have hstep : RuntimeQuery.step builtins program state =
                           .next (framePopState state frame frames') none := by
                         simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
                           hcurrent, hframes, hcommit, hcollection,
-                          framePopState]
+                          htransaction, framePopState]
                       rw [hstep] at hPull
                       dsimp only at hPull
                       refine ih fuel (Nat.lt_succ_self _)

@@ -69,7 +69,7 @@ private def calledSymbols : SourceSignature.Goal →
   | .softIfThenElse condition thenBranch elseBranch =>
       calledSymbols condition ++ calledSymbols thenBranch ++
         calledSymbols elseBranch
-  | .once goal | .neg goal => calledSymbols goal
+  | .once goal | .transaction goal | .neg goal => calledSymbols goal
   | .findall _ generator _ => calledSymbols generator
   | .catch guarded _ recovery =>
       calledSymbols guarded ++ calledSymbols recovery
@@ -368,6 +368,43 @@ def checkDatabaseGoal (database : ReaderLoadRuntime.Database) (label : String)
     throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
   IO.println s!"{label}=exact"
 
+private def collectTermAnswers : Nat → SourceRuntime.Session →
+    List (LP.Term SourceRuntime.Sigma.scoped) →
+    IO (List (LP.Term SourceRuntime.Sigma.scoped) × Nat × Nat)
+  | 0, _, _ => throw <| IO.userError "answer collection exhausted pull budget"
+  | pulls + 1, session, reversed =>
+      match SourceRuntime.pullSession 262144 session with
+      | .answer answer resumed =>
+          match answerTerm? answer with
+          | some term => collectTermAnswers pulls resumed (term :: reversed)
+          | none => throw <| IO.userError "collected answer readback failed"
+      | .open _ => throw <| IO.userError "answer collection remained open"
+      | .terminal (.completed memory) _ =>
+          pure (reversed.reverse, memory.heap.size, memory.trail.size)
+      | .terminal (.runtimeError error _) _ =>
+          throw <| IO.userError s!"answer collection runtime error: {repr error}"
+      | .terminal (.raised packet _) _ =>
+          throw <| IO.userError s!"answer collection raised: {renderTerm packet.term}"
+
+/-- Compare the complete ordered answer stream, including zero answers and
+multiplicity, then require canonical query cleanup. -/
+def checkDatabaseAnswers (database : ReaderLoadRuntime.Database) (label : String)
+    (goal : SourceSignature.Goal) (expected : List SourceSignature.Term) : IO Unit := do
+  let session ← match SourceRuntime.openDatabase database goal with
+    | .ok session => pure session
+    | .error error =>
+        throw <| IO.userError s!"{label}: failed to open: {repr error}"
+  let (actual, heapSize, trailSize) ← collectTermAnswers 64 session []
+  let actualShapes := actual.map SourceRuntimeRegression.runtimeTermShape
+  let expectedShapes := expected.map fun term =>
+    SourceRuntimeRegression.runtimeTermShape (LP.Term.atScope 0 term)
+  if actualShapes != expectedShapes then
+    throw <| IO.userError s!"{label}: expected {repr expectedShapes}, \
+      got {repr actualShapes}"
+  if heapSize != 0 || trailSize != 0 then
+    throw <| IO.userError s!"{label}: cleanup left {heapSize}/{trailSize}"
+  IO.println s!"{label}=exact"
+
 def requireDatabaseGoal (database : ReaderLoadRuntime.Database) (label : String)
     (goal : SourceSignature.Goal) : IO Unit := do
   let session ← match SourceRuntime.openDatabase database goal with
@@ -627,3 +664,39 @@ def main (arguments : List String) : IO Unit := do
         SourceSignature.atom "b"]
     ]))
     (SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a"])
+  checkDatabaseAnswers registeredDatabase "metta_eval_superpose_order"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "superpose",
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]
+    ]))
+    [SourceSignature.atom "a", SourceSignature.atom "b"]
+  checkDatabaseAnswers registeredDatabase "metta_eval_collapse"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "collapse",
+      SourceSignature.list [SourceSignature.atom "superpose",
+        SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]]
+    ]))
+    [SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]]
+  checkDatabaseAnswers registeredDatabase "metta_eval_once"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "once",
+      SourceSignature.list [SourceSignature.atom "superpose",
+        SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]]
+    ]))
+    [SourceSignature.atom "a"]
+  checkDatabaseAnswers registeredDatabase "metta_eval_if_false"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "if",
+      SourceSignature.list [SourceSignature.atom ">",
+        SourceSignature.integer 1, SourceSignature.integer 2],
+      SourceSignature.atom "then", SourceSignature.atom "else"
+    ]))
+    [SourceSignature.atom "else"]
+  checkDatabaseAnswers registeredDatabase "metta_eval_empty"
+    (evalQuery (SourceSignature.list [SourceSignature.atom "empty"])) []
+  checkDatabaseAnswers registeredDatabase "metta_eval_transaction"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "transaction",
+      SourceSignature.list [SourceSignature.atom "id", SourceSignature.atom "a"]
+    ]))
+    [SourceSignature.atom "a"]

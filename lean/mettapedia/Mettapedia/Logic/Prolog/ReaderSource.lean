@@ -84,6 +84,8 @@ private def toGoalAux : Nat -> SourceSignature.Term ->
                   let parsedThen <- toGoalAux fuel thenBranch
                   pure (.softIfThenElse parsedCondition parsedThen .fail)
               | "once", [goal] => .once <$> toGoalAux fuel goal
+              | "transaction", [goal] =>
+                  .transaction <$> toGoalAux fuel goal
               /- SWI defines `memberchk/2` as semantically equivalent to
               `once(member/2)`.  This source elaboration deliberately covers
               that finite proper-list law; SWI's additional partial- and

@@ -1101,6 +1101,78 @@ def failedBranchAssertionPersists : SourceSignature.Goal :=
     (.disj (.conj (assertzGoal (assertedP "a")) .fail) .succeed)
     (SourceSignature.call "p" [x])
 
+/-! ## Database transactions on the same shared control stack -/
+
+/-- Transaction success is once-like: only the first protected answer is
+committed, while an older caller alternative remains available. -/
+def transactionFirstSolutionRetainsCaller : SourceSignature.Goal :=
+  .disj
+    (.transaction (.disj (.unify x (atom "a")) (.unify x (atom "b"))))
+    (.unify x (atom "c"))
+
+/-- A transaction assembled on the heap and entered through `call/1` reaches
+the same typed delimiter as source-written control. -/
+def metaTransactionFirstSolution : SourceSignature.Goal :=
+  metaGoal (compound "transaction" [
+    disjunction (equality x (atom "a")) (equality x (atom "b"))
+  ])
+
+/-- Successful transaction updates persist into the caller continuation. -/
+def successfulTransactionCommits : SourceSignature.Goal :=
+  .conj (.transaction (assertzGoal (assertedP "a")))
+    (SourceSignature.call "p" [x])
+
+/-- Failure restores the transaction-entry database even though ordinary
+assertions are persistent across ordinary Prolog backtracking. -/
+def failedTransactionRollsBack : SourceSignature.Goal :=
+  .conj
+    (.disj
+      (.transaction (.conj (assertzGoal (assertedP "a")) .fail))
+      .succeed)
+    (SourceSignature.call "p" [x])
+
+/-- An exception that escapes the protected goal rolls the database back
+before the outer catcher runs. -/
+def raisedTransactionRollsBack : SourceSignature.Goal :=
+  .conj
+    (.catch
+      (.transaction
+        (.conj (assertzGoal (assertedP "a")) (.throw (atom "ball"))))
+      (atom "ball") .succeed)
+    (SourceSignature.call "p" [x])
+
+/-- A packet handled inside the protected goal does not cross the transaction
+delimiter; the recovered goal may therefore commit its database updates. -/
+def caughtInsideTransactionCommits : SourceSignature.Goal :=
+  .conj
+    (.transaction
+      (.conj (assertzGoal (assertedP "a"))
+        (.catch (.throw (atom "ball")) (atom "ball") .succeed)))
+    (SourceSignature.call "p" [x])
+
+/-- Committing an inner transaction does not escape a later rollback of its
+outer transaction. -/
+def outerRollbackUndoesInnerCommit : SourceSignature.Goal :=
+  .conj
+    (.disj
+      (.transaction
+        (.conj (assertzGoal (assertedP "a"))
+          (.conj (.transaction (assertzGoal (assertedP "b"))) .fail)))
+      .succeed)
+    (SourceSignature.call "p" [x])
+
+/-- Rolling back an inner transaction restores the outer transaction's live
+database, which can then commit normally. -/
+def innerRollbackPreservesOuterUpdate : SourceSignature.Goal :=
+  .conj
+    (.transaction
+      (.conj (assertzGoal (assertedP "a"))
+        (.disj
+          (.transaction
+            (.conj (assertzGoal (assertedP "b")) .fail))
+          .succeed)))
+    (SourceSignature.call "p" [x])
+
 def assertaAndAssertzOrder : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "b"))
     (.conj (assertaGoal (assertedP "a"))
@@ -1630,6 +1702,15 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard findallAnswerThenLoopHasOpenPrivatePrefix
 #guard runAtoms [] assertzThenCall == some (["a"], 0, 0)
 #guard runAtoms [] failedBranchAssertionPersists == some (["a"], 0, 0)
+#guard runAtoms [] transactionFirstSolutionRetainsCaller ==
+  some (["a", "c"], 0, 0)
+#guard runAtoms [] metaTransactionFirstSolution == some (["a"], 0, 0)
+#guard runAtoms [] successfulTransactionCommits == some (["a"], 0, 0)
+#guard runAtoms [] failedTransactionRollsBack == some ([], 0, 0)
+#guard runAtoms [] raisedTransactionRollsBack == some ([], 0, 0)
+#guard runAtoms [] caughtInsideTransactionCommits == some (["a"], 0, 0)
+#guard runAtoms [] outerRollbackUndoesInnerCommit == some ([], 0, 0)
+#guard runAtoms [] innerRollbackPreservesOuterUpdate == some (["a"], 0, 0)
 #guard runAtoms [] assertaAndAssertzOrder == some (["a", "b"], 0, 0)
 #guard runCount [] assertzReferenceIsBound == some (1, 0, 0)
 #guard runCount [] assertaReferenceIsBound == some (1, 0, 0)

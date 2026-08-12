@@ -63,6 +63,7 @@ inductive GoalToken where
   | ifThenElse
   | softIfThenElse
   | once
+  | transaction
   | neg
   | unify (left right : List TermToken)
   | notUnify (left right : List TermToken)
@@ -86,6 +87,7 @@ def goalCode : SourceSignature.Goal → List GoalToken
       .softIfThenElse :: goalCode condition ++ goalCode thenBranch ++
         goalCode elseBranch
   | .once goal => .once :: goalCode goal
+  | .transaction goal => .transaction :: goalCode goal
   | .neg goal => .neg :: goalCode goal
   | .unify left right => [.unify (termCode left) (termCode right)]
   | .notUnify left right => [.notUnify (termCode left) (termCode right)]

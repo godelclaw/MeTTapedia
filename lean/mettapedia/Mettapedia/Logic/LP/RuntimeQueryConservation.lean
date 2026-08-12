@@ -39,6 +39,7 @@ def mapReturnFrame (instruction : Instruction₁ → Instruction₂)
   commit := frame.commit
   handler := frame.handler.map (mapCatchHandler instruction)
   collection := frame.collection
+  transaction := frame.transaction
 
 /-- Map the instruction payloads retained by catcher selection. -/
 def mapCatchTarget (instruction : Instruction₁ → Instruction₂)
@@ -55,6 +56,20 @@ def mapCatchSelection (instruction : Instruction₁ → Instruction₂)
   target := mapCatchTarget instruction selection.target
   throwMemory := selection.throwMemory
   packetRoot := selection.packetRoot
+
+def mapTransactionTarget (instruction : Instruction₁ → Instruction₂)
+    (target : TransactionTargetCore sigma Instruction₁) :
+    TransactionTargetCore sigma Instruction₂ where
+  frame := mapReturnFrame instruction target.frame
+  handler := target.handler
+  outerFrames := target.outerFrames.map (mapReturnFrame instruction)
+
+def mapExceptionBoundary (instruction : Instruction₁ → Instruction₂) :
+    ExceptionBoundaryCore sigma Instruction₁ →
+      ExceptionBoundaryCore sigma Instruction₂
+  | .catcher target => .catcher (mapCatchTarget instruction target)
+  | .transaction target =>
+      .transaction (mapTransactionTarget instruction target)
 
 /-- Catcher search depends only on frame position and therefore commutes with
 instruction representation changes. -/
@@ -73,6 +88,29 @@ theorem findCatchTarget_map (instruction : Instruction₁ → Instruction₂)
       | some handler =>
           simp [findCatchTarget, mapReturnFrame, mapCatchTarget,
             mapCatchHandler, hHandler]
+
+@[simp]
+theorem findExceptionBoundary_map
+    (instruction : Instruction₁ → Instruction₂)
+    (frames : List (ReturnFrameCore sigma Instruction₁)) :
+    findExceptionBoundary (frames.map (mapReturnFrame instruction)) =
+      (findExceptionBoundary frames).map (mapExceptionBoundary instruction) := by
+  induction frames with
+  | nil => rfl
+  | cons frame outer inductionHypothesis =>
+      cases hHandler : frame.handler with
+      | some handler =>
+          simp [findExceptionBoundary, mapReturnFrame, mapExceptionBoundary,
+            mapCatchTarget, mapCatchHandler, hHandler]
+      | none =>
+          cases hTransaction : frame.transaction with
+          | some handler =>
+              simp [findExceptionBoundary, mapReturnFrame,
+                mapExceptionBoundary, mapTransactionTarget, hHandler,
+                hTransaction]
+          | none =>
+              simp [findExceptionBoundary, mapReturnFrame, hHandler,
+                hTransaction, inductionHypothesis]
 
 /-- Map only the instruction payload of backtrackable control. -/
 def mapControl (instruction : Instruction₁ → Instruction₂)
@@ -100,6 +138,12 @@ def mapBranchChoice (instruction : Instruction₁ → Instruction₂)
     BranchChoiceCore sigma Instruction₂ where
   checkpoint := alternative.checkpoint
   control := mapControl instruction alternative.control
+
+def mapTransactionChoice (instruction : Instruction₁ → Instruction₂)
+    (boundary : TransactionChoiceCore sigma Instruction₁) :
+    TransactionChoiceCore sigma Instruction₂ where
+  checkpoint := boundary.checkpoint
+  control := mapControl instruction boundary.control
 
 /-- Map the transferred outer continuation of a collection sentinel while
 leaving its detached answers and list encoding unchanged. -/
@@ -137,6 +181,8 @@ def mapChoicePoint (instruction : Instruction₁ → Instruction₂)
       .softElse (mapBranchChoice instruction alternative)
   | .collection boundary =>
       .collection (mapCollectionChoice instruction boundary)
+  | .transaction boundary =>
+      .transaction (mapTransactionChoice instruction boundary)
   | .databaseClause cursor =>
       .databaseClause (mapDatabaseClauseCursor instruction cursor)
 
@@ -163,6 +209,25 @@ theorem recordCollectionChoice_map
       · simp only [h, if_false]
         rw [ih]
         cases recordCollectionChoice mark answer older <;> rfl
+
+@[simp]
+theorem closeTransactionChoice_map
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (mark : Nat)
+    (choices : List (ChoicePointCore sigma Instruction₁ SourceClause₁)) :
+    closeTransactionChoice mark
+        (choices.map (mapChoicePoint instruction sourceClause)) =
+      (closeTransactionChoice mark choices).map
+        (List.map (mapChoicePoint instruction sourceClause)) := by
+  induction choices with
+  | nil => rfl
+  | cons choice older ih =>
+      simp only [List.map_cons, closeTransactionChoice, List.length_map]
+      by_cases h : older.length = mark
+      · simp [h]
+        cases choice <;> rfl
+      · simp [h, ih]
 
 /-- Removing a soft-conditional delimiter is independent of the instruction
 and source-clause representation. -/
@@ -261,6 +326,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .softIfThenElse (condition.map instruction) (thenBranch.map instruction)
         (elseBranch.map instruction)
   | .once goals => .once (goals.map instruction)
+  | .transaction goals => .transaction (goals.map instruction)
   | .findall template generator bag encoding =>
       .findall template (generator.map instruction) bag encoding
   | .metaCall callable extraArgs => .metaCall callable extraArgs
@@ -437,6 +503,67 @@ theorem throwStep_conserves
                         captureThrowStep_conserves instruction sourceClause
                           state ball
 
+/-- Exception unwind across a database transaction is representation-blind:
+the checkpoint and persistent rollback request are engine-owned, while every
+saved instruction payload is mapped structurally. -/
+theorem rollbackTransactionException_conserves
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (packet : RuntimeException.Packet sigma)
+    (target : TransactionTargetCore sigma Instruction₁) :
+    rollbackTransactionException (mapState instruction sourceClause state)
+        packet (mapTransactionTarget instruction target) =
+      mapStepResult instruction sourceClause
+        (rollbackTransactionException state packet target) := by
+  rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  rcases target with ⟨frame, handler, outerFrames⟩
+  cases hRestore : memory.restore handler.checkpoint with
+  | error error =>
+      cases hCleanup : memory.restore checkpoint <;>
+        simp [rollbackTransactionException, mapState, mapPhase, mapControl,
+          mapTransactionTarget, mapReturnFrame, mapStepResult,
+          failWith, closeMemory, hRestore, hCleanup]
+  | ok restored =>
+      cases hClose : closeTransactionChoice handler.choiceDepth choices with
+      | none =>
+          cases hCleanup : restored.restore checkpoint <;>
+            simp [rollbackTransactionException, mapState, mapPhase, mapControl,
+              mapTransactionTarget, mapReturnFrame,
+              mapStepResult, failWith, closeMemory, hRestore, hClose, hCleanup]
+      | some remaining =>
+          simp [rollbackTransactionException, mapState, mapPhase, mapControl,
+            mapTransactionTarget, mapReturnFrame,
+            mapStepResult, hRestore, hClose]
+
+/-- Successful transaction close is likewise independent of language payloads:
+the exact sentinel is consumed by position and the session receives the same
+commit request on both representations. -/
+theorem commitTransactionStep_conserves
+    (instruction : Instruction₁ → Instruction₂)
+    (sourceClause : SourceClause₁ → SourceClause₂)
+    (state : StateCore sigma Instruction₁ SourceClause₁)
+    (frame : ReturnFrameCore sigma Instruction₁)
+    (handler : TransactionHandlerCore)
+    (frames : List (ReturnFrameCore sigma Instruction₁)) :
+    commitTransactionStep (mapState instruction sourceClause state)
+        (mapReturnFrame instruction frame) handler
+        (frames.map (mapReturnFrame instruction)) =
+      mapStepResult instruction sourceClause
+        (commitTransactionStep state frame handler frames) := by
+  rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
+    nextScope, phase⟩
+  cases hClose : closeTransactionChoice handler.choiceDepth choices with
+  | none =>
+      cases hCleanup : memory.restore checkpoint <;>
+        simp [commitTransactionStep, mapState, mapPhase, mapControl,
+          mapStepResult, failWith, closeMemory,
+          hClose, hCleanup]
+  | some remaining =>
+      simp [commitTransactionStep, mapState, mapPhase, mapControl,
+        mapReturnFrame, mapStepResult, hClose]
+
 set_option linter.unusedSimpArgs false in
 theorem passException_conserves
     (instruction : Instruction₁ → Instruction₂)
@@ -451,17 +578,27 @@ theorem passException_conserves
     nextScope, phase⟩
   rcases selection with ⟨packet, target, throwMemory, packetRoot⟩
   rcases target with ⟨frame, handler, outerFrames⟩
-  cases hOuter : findCatchTarget outerFrames with
+  cases hOuter : findExceptionBoundary outerFrames with
   | none =>
       cases hCleanup : throwMemory.restore checkpoint <;>
         simp [passException, raiseUnhandled, mapState, mapPhase, mapControl,
           mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
-          mapChoicePoint, mapStepResult, findCatchTarget_map, closeMemory,
+          mapChoicePoint, mapStepResult, findExceptionBoundary_map, closeMemory,
           hOuter, hCleanup]
-  | some nextTarget =>
-      simp [passException, mapState, mapPhase, mapControl,
-        mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
-        mapChoicePoint, mapStepResult, findCatchTarget_map, hOuter]
+  | some boundary =>
+      cases boundary with
+      | catcher nextTarget =>
+          simp [passException, mapState, mapPhase, mapControl,
+            mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
+            mapChoicePoint, mapStepResult, findExceptionBoundary_map,
+            mapExceptionBoundary, hOuter]
+      | transaction nextTarget =>
+          simpa [passException, mapState, mapCatchSelection, mapCatchTarget,
+            mapExceptionBoundary, findExceptionBoundary_map, hOuter] using
+            rollbackTransactionException_conserves instruction sourceClause
+              (StateCore.mk throwMemory control choices checkpoint queryVarMap
+                nextScope phase)
+              packet nextTarget
 
 set_option linter.unusedSimpArgs false in
 theorem beginCatchRecovery_conserves [DecidableEq sigma.scoped.vars]
@@ -514,22 +651,33 @@ theorem raisingStep_conserves [DecidableEq sigma.scoped.vars]
       mapStepResult instruction sourceClause (raisingStep state packet) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
     nextScope, phase⟩
-  cases hTarget : findCatchTarget control.frames with
+  cases hTarget : findExceptionBoundary control.frames with
   | none =>
       cases hCleanup : memory.restore checkpoint <;>
         simp [raisingStep, raiseUnhandled, mapState, mapPhase, mapControl,
-          mapStepResult, findCatchTarget_map, hTarget, closeMemory, hCleanup]
-  | some target =>
-      cases hInstall : packet.install memory nextScope with
-      | error error =>
-          cases hCleanup : memory.restore checkpoint <;>
-            simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
-              findCatchTarget_map, hTarget, failWith, closeMemory, hInstall,
-              hCleanup]
-      | ok installed =>
-          simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
-            mapCatchSelection, mapCatchTarget, mapCatchHandler,
-            findCatchTarget_map, hTarget, hInstall]
+          mapStepResult, findExceptionBoundary_map, hTarget, closeMemory,
+          hCleanup]
+  | some boundary =>
+      cases boundary with
+      | transaction target =>
+          simpa [raisingStep, mapState, mapControl, mapExceptionBoundary,
+            findExceptionBoundary_map, hTarget] using
+            rollbackTransactionException_conserves instruction sourceClause
+              (StateCore.mk memory control choices checkpoint queryVarMap
+                nextScope phase)
+              packet target
+      | catcher target =>
+          cases hInstall : packet.install memory nextScope with
+          | error error =>
+              cases hCleanup : memory.restore checkpoint <;>
+                simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
+                  mapExceptionBoundary, findExceptionBoundary_map, hTarget,
+                  failWith, closeMemory, hInstall, hCleanup]
+          | ok installed =>
+              simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
+                mapCatchSelection, mapCatchTarget, mapCatchHandler,
+                mapExceptionBoundary, findExceptionBoundary_map, hTarget,
+                hInstall]
 
 set_option linter.unusedSimpArgs false in
 theorem catchSelectingStep_conserves [DecidableEq sigma.scoped.vars]
@@ -757,6 +905,12 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   (StateCore.mk memory control
                     (.collection boundary :: older) checkpoint queryVarMap
                     nextScope .backtrack) boundary older
+          | transaction boundary =>
+              cases hRestore : memory.restore boundary.checkpoint <;>
+                cases hCleanup : memory.restore checkpoint <;>
+                simp [stepCore, mapState, mapPhase, mapControl,
+                  mapTransactionChoice, mapChoicePoint, mapStepResult,
+                  backtrackStep, failWith, closeMemory, hRestore, hCleanup]
           | databaseClause cursor =>
               cases hRestore : memory.restore cursor.checkpoint <;>
                 cases hCleanup : memory.restore checkpoint <;>
@@ -774,7 +928,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | cons frame frames =>
               rcases frame with
                 ⟨continuation, callerCutDepth, commit, handlerOption,
-                  collectionOption⟩
+                  collectionOption, transactionOption⟩
               cases collectionOption with
               | some handler =>
                   simpa [stepCore, mapState, mapPhase, mapControl,
@@ -783,34 +937,49 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                       (StateCore.mk memory
                         ⟨[], cutDepth,
                           ⟨continuation, callerCutDepth, commit, handlerOption,
-                            some handler⟩ :: frames⟩
+                            some handler, transactionOption⟩ :: frames⟩
                         choices checkpoint queryVarMap nextScope .dispatch)
                       handler
               | none =>
-                  cases commit with
-                  | ordinary =>
-                      simp [stepCore, mapState, mapPhase, mapControl,
-                        mapReturnFrame, mapStepResult, emptyCurrentStep]
-                  | hard mark =>
-                      by_cases hDepth : mark ≤ choices.length
-                      · simp [stepCore, mapState, mapPhase, mapControl,
-                          mapReturnFrame, mapChoicePoint, mapStepResult,
-                          emptyCurrentStep, retainBottom, hDepth]
-                      · cases hCleanup : memory.restore checkpoint <;>
+                  cases transactionOption with
+                  | some transactionHandler =>
+                      simpa [stepCore, mapState, mapPhase, mapControl,
+                        mapReturnFrame, emptyCurrentStep] using
+                        commitTransactionStep_conserves instruction sourceClause
+                          (StateCore.mk memory
+                            ⟨[], cutDepth,
+                              ⟨continuation, callerCutDepth, commit,
+                                handlerOption, none,
+                                some transactionHandler⟩ :: frames⟩
+                            choices checkpoint queryVarMap nextScope .dispatch)
+                          ⟨continuation, callerCutDepth, commit, handlerOption,
+                            none, some transactionHandler⟩
+                          transactionHandler frames
+                  | none =>
+                      cases commit with
+                      | ordinary =>
                           simp [stepCore, mapState, mapPhase, mapControl,
-                            mapReturnFrame, mapChoicePoint, mapStepResult,
-                            emptyCurrentStep, failWith, closeMemory, hDepth,
-                            hCleanup]
-                  | soft mark =>
-                      by_cases hDepth : mark ≤ choices.length
-                      · simp [stepCore, mapState, mapPhase, mapControl,
-                          mapReturnFrame, mapChoicePoint, mapStepResult,
-                          emptyCurrentStep, hDepth]
-                      · cases hCleanup : memory.restore checkpoint <;>
-                          simp [stepCore, mapState, mapPhase, mapControl,
-                            mapReturnFrame, mapChoicePoint, mapStepResult,
-                            emptyCurrentStep, failWith, closeMemory, hDepth,
-                            hCleanup]
+                            mapReturnFrame, mapStepResult, emptyCurrentStep]
+                      | hard mark =>
+                          by_cases hDepth : mark ≤ choices.length
+                          · simp [stepCore, mapState, mapPhase, mapControl,
+                              mapReturnFrame, mapChoicePoint, mapStepResult,
+                              emptyCurrentStep, retainBottom, hDepth]
+                          · cases hCleanup : memory.restore checkpoint <;>
+                              simp [stepCore, mapState, mapPhase, mapControl,
+                                mapReturnFrame, mapChoicePoint, mapStepResult,
+                                emptyCurrentStep, failWith, closeMemory, hDepth,
+                                hCleanup]
+                      | soft mark =>
+                          by_cases hDepth : mark ≤ choices.length
+                          · simp [stepCore, mapState, mapPhase, mapControl,
+                              mapReturnFrame, mapChoicePoint, mapStepResult,
+                              emptyCurrentStep, hDepth]
+                          · cases hCleanup : memory.restore checkpoint <;>
+                              simp [stepCore, mapState, mapPhase, mapControl,
+                                mapReturnFrame, mapChoicePoint, mapStepResult,
+                                emptyCurrentStep, failWith, closeMemory, hDepth,
+                                hCleanup]
       | cons next rest =>
           simp only [stepCore, stepCoreWithMeta, mapState, mapPhase, mapControl,
             List.map_cons]
@@ -848,6 +1017,11 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | once goals =>
               simp [mapDispatchAction, dispatchActionStep, onceStep,
                 mapState, mapControl, mapPhase, mapReturnFrame, mapStepResult]
+          | transaction goals =>
+              simp [mapDispatchAction, dispatchActionStep, transactionStep,
+                mapState, mapControl, mapPhase, mapReturnFrame,
+                mapTransactionChoice, mapChoicePoint, mapStepResult,
+                List.map_append]
           | findall template generator bag encoding =>
               simp [mapDispatchAction, dispatchActionStep, findallStep,
                 mapState, mapControl, mapPhase, mapReturnFrame,
@@ -1254,6 +1428,21 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                         checkedDatabaseRequestStep, databaseRequestStep,
                         mapState, mapControl, mapPhase, mapReturnFrame,
                         mapStepResult, hCheck]
+              | transactionBegin =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | transactionCommit =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | transactionRollback =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
           | error reason =>
               cases hCleanup : memory.restore checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, mapState,

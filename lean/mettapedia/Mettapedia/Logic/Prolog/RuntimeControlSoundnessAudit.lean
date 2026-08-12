@@ -92,6 +92,14 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.collectAnswerStep_conserves
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.finalizeCollectionStep_conserves
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_collectionEncoding
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.closeTransactionChoice_marker
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.closeTransactionChoice_map
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.commitTransactionStep_conserves
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.Conservation.rollbackTransactionException_conserves
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_transactionBegin
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_transactionCommit
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_transactionRollback
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.Session.rollbackAllDatabase_two
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.databaseRequestStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.bindDatabaseReferenceStep_of_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.checkedDatabaseRequestStep_assertzWithReference_unbound

@@ -29,6 +29,7 @@ inductive RuntimeGoal (sigma : LP.LPSignature) where
   | ifThenElse (condition thenBranch elseBranch : List (RuntimeGoal sigma))
   | softIfThenElse (condition thenBranch elseBranch : List (RuntimeGoal sigma))
   | once (goals : List (RuntimeGoal sigma))
+  | transaction (goals : List (RuntimeGoal sigma))
   | neg (goals : List (RuntimeGoal sigma))
   | unify (left right : Addr)
   | notUnify (left right : Addr)
@@ -65,6 +66,7 @@ mutual
         checkAll heap condition && checkAll heap thenBranch &&
           checkAll heap elseBranch
     | .once goals => checkAll heap goals
+    | .transaction goals => checkAll heap goals
     | .neg goals => checkAll heap goals
     | .unify left right => left < heap.size && right < heap.size
     | .notUnify left right => left < heap.size && right < heap.size
@@ -131,6 +133,9 @@ def materializeGoalAux {sigma : LP.LPSignature} [DecidableEq sigma.vars] :
   | .once goal => do
       let copied ← materializeGoalAux goal
       pure [.once copied]
+  | .transaction goal => do
+      let copied ← materializeGoalAux goal
+      pure [.transaction copied]
   | .neg goal => do
       let copied ← materializeGoalAux goal
       pure [.neg copied]
@@ -674,6 +679,7 @@ def dispatchActionWith {sigma : LP.LPSignature}
   | .softIfThenElse condition thenBranch elseBranch =>
       .softIfThenElse condition thenBranch elseBranch
   | .once goals => .once goals
+  | .transaction goals => .transaction goals
   /- Negation as failure is the established hard-if checkpoint pattern: the
   first protected success commits to failure; exhaustion takes the empty
   success branch. No second search mechanism is introduced. -/
@@ -1014,12 +1020,29 @@ structure Session (sigma : LP.LPSignature) where
   database : LP.RuntimeDatabase.Database (Clause sigma)
   state : State sigma
   services : Services sigma := noServices sigma
+  /-- Newest-first entry snapshots of active database transactions.  This
+  stack is persistent session state, never a query choice or return frame. -/
+  transactionSnapshots :
+    List (LP.RuntimeDatabase.Database (Clause sigma)) := []
 
 namespace Session
 
 /-- Source clauses currently visible to a newly opened predicate call. -/
 def program (session : Session sigma) : Program sigma :=
   session.database.visibleClauses.map Prod.snd
+
+/-- Database visible after defensively rolling every still-open transaction
+back.  Nested snapshots are newest first, so the oldest entry is the outermost
+transaction's exact pre-state. -/
+def rollbackAllDatabase (session : Session sigma) :
+    LP.RuntimeDatabase.Database (Clause sigma) :=
+  let rec oldest? :
+      List (LP.RuntimeDatabase.Database (Clause sigma)) →
+        Option (LP.RuntimeDatabase.Database (Clause sigma))
+    | [] => none
+    | [snapshot] => some snapshot
+    | _ :: rest => oldest? rest
+  (oldest? session.transactionSnapshots).getD session.database
 
 end Session
 
@@ -1097,10 +1120,11 @@ def failSession (session : Session sigma)
     (state : State sigma) (error : LP.RuntimeQuery.QueryError) :
     SessionStepResult sigma :=
   match state.memory.restore state.queryCheckpoint with
-  | .ok memory => .terminal (.runtimeError error memory) session.database
+  | .ok memory =>
+      .terminal (.runtimeError error memory) session.rollbackAllDatabase
   | .error cleanup =>
       .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
-        session.database
+        session.rollbackAllDatabase
 
 /-- Call-time visible and successfully revalidated database-clause candidates,
 in source order with stable identities. Invalid or absent provenance is
@@ -1121,6 +1145,27 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
     (state : State sigma) (request : LP.RuntimeQuery.DatabaseRequest) :
     SessionStepResult sigma :=
   match request with
+  | .transactionBegin =>
+      .next {
+        session with
+        state
+        transactionSnapshots := session.database :: session.transactionSnapshots
+      } none
+  | .transactionCommit =>
+      match session.transactionSnapshots with
+      | [] => failSession session state .transactionStackUnderflow
+      | _ :: snapshots =>
+          .next { session with state, transactionSnapshots := snapshots } none
+  | .transactionRollback =>
+      match session.transactionSnapshots with
+      | [] => failSession session state .transactionStackUnderflow
+      | database :: snapshots =>
+          .next {
+            session with
+            database
+            state
+            transactionSnapshots := snapshots
+          } none
   | .asserta root =>
       match session.services.decodeClause state.memory.heap root with
       | .error error => failSession session state error
@@ -1205,6 +1250,54 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
       match session.database.eraseRef reference with
       | none => .next { session with state } none
       | some (_, database) => .next { session with database, state } none
+
+/-- Beginning a transaction transfers the current persistent database into the
+newest snapshot slot without changing the database or query state. -/
+theorem applyDatabaseRequest_transactionBegin
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma) :
+    applyDatabaseRequest session state .transactionBegin =
+      .next {
+        session with
+        state
+        transactionSnapshots := session.database :: session.transactionSnapshots
+      } none := rfl
+
+/-- Commit consumes exactly the newest snapshot and preserves the live database
+produced by the protected computation. -/
+theorem applyDatabaseRequest_transactionCommit
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma)
+    (snapshot : LP.RuntimeDatabase.Database (Clause sigma)) (snapshots) :
+    applyDatabaseRequest
+        { session with transactionSnapshots := snapshot :: snapshots }
+        state .transactionCommit =
+      .next { session with state, transactionSnapshots := snapshots } none := rfl
+
+/-- Rollback consumes exactly the newest snapshot and restores it as the live
+database, leaving every enclosing transaction snapshot in place. -/
+theorem applyDatabaseRequest_transactionRollback
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma)
+    (snapshot : LP.RuntimeDatabase.Database (Clause sigma)) (snapshots) :
+    applyDatabaseRequest
+        { session with transactionSnapshots := snapshot :: snapshots }
+        state .transactionRollback =
+      .next {
+        session with
+        database := snapshot
+        state
+        transactionSnapshots := snapshots
+      } none := rfl
+
+/-- Defensive terminal cleanup of two nested transactions selects the outer
+entry snapshot, not the inner one or the current partially updated database. -/
+theorem Session.rollbackAllDatabase_two
+    (session : Session sigma)
+    (inner outer : LP.RuntimeDatabase.Database (Clause sigma)) :
+    Session.rollbackAllDatabase
+        ({ session with transactionSnapshots := [inner, outer] } : Session sigma) =
+      outer := rfl
 
 /-- A successfully decoded `asserta/1` request performs exactly one front
 insertion and leaves the already-advanced canonical query state untouched. -/
@@ -1325,7 +1418,7 @@ def stepSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
   | .next state observation => .next { session with state } observation
   | .databaseRequest request state =>
       applyDatabaseRequest session state request
-  | .terminal result => .terminal result session.database
+  | .terminal result => .terminal result session.rollbackAllDatabase
 
 /-- An ordinary shared-machine step cannot change the persistent database;
 only the explicit database-request arm above has that authority. -/

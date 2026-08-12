@@ -524,6 +524,30 @@ def main : IO Unit := do
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.copiedSolutionsAreFreshAndShared
   renderBool "findall_copy_separation"
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.copiedSolutionPreservesSeparation
+  renderStringAnswers "transaction_first_solution"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.transactionFirstSolutionRetainsCaller)
+  renderStringAnswers "transaction_meta_first_solution"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaTransactionFirstSolution)
+  renderStringAnswers "transaction_success_commits"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.successfulTransactionCommits)
+  renderStringAnswers "transaction_failure_rolls_back"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.failedTransactionRollsBack)
+  renderStringAnswers "transaction_exception_rolls_back"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.raisedTransactionRollsBack)
+  renderStringAnswers "transaction_caught_inside_commits"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.caughtInsideTransactionCommits)
+  renderStringAnswers "transaction_outer_rollback_undoes_inner_commit"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.outerRollbackUndoesInnerCommit)
+  renderStringAnswers "transaction_inner_rollback_preserves_outer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.innerRollbackPreservesOuterUpdate)
   renderStringAnswers "db_assertz_then_call"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.assertzThenCall)

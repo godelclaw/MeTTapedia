@@ -236,6 +236,9 @@ def decodeCallableAux : Nat → Heap Sigma.scoped → Addr → List Addr →
             | "once", [goal] => do
                 let decoded ← decodeCallableAux fuel heap goal []
                 pure [.once decoded]
+            | "transaction", [goal] => do
+                let decoded ← decodeCallableAux fuel heap goal []
+                pure [.transaction decoded]
             /- Keep heap-built `call(memberchk(E,L))` on the same typed
             expansion as source `memberchk/2`.  Decoding is read-only; the
             shared engine runs the loaded `member/2` clauses and owns the

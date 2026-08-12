@@ -32,6 +32,7 @@ inductive Goal (sigma : LP.LPSignature) where
   | ifThenElse (condition thenBranch elseBranch : Goal sigma)
   | softIfThenElse (condition thenBranch elseBranch : Goal sigma)
   | once (goal : Goal sigma)
+  | transaction (goal : Goal sigma)
   | neg (goal : Goal sigma)
   | unify (left right : LP.Term sigma)
   | notUnify (left right : LP.Term sigma)
@@ -102,6 +103,7 @@ def atScope {sigma : LP.LPSignature} (scope : Nat) :
       .softIfThenElse (condition.atScope scope) (thenBranch.atScope scope)
         (elseBranch.atScope scope)
   | .once goal => .once (goal.atScope scope)
+  | .transaction goal => .transaction (goal.atScope scope)
   | .neg goal => .neg (goal.atScope scope)
   | .unify left right => .unify (left.atScope scope) (right.atScope scope)
   | .notUnify left right =>

@@ -26,12 +26,15 @@ load_source(Path, Registration0, Registration) :-
                        read_source(Stream, Registration0, Registration),
                        close(Stream)).
 
-emit_eval(Label, Input, Expected) :-
+emit_answers(Label, Input, ExpectedAnswers) :-
     findall(Out, eval(Input, Out), Answers),
-    ( Answers == [Expected]
+    ( Answers == ExpectedAnswers
     -> format('~w=exact~n', [Label])
-    ; throw(error(eval_mismatch(Label, Answers, Expected), _))
+    ; throw(error(eval_mismatch(Label, Answers, ExpectedAnswers), _))
     ).
+
+emit_eval(Label, Input, Expected) :-
+    emit_answers(Label, Input, [Expected]).
 
 main([MettaPath, TranslatorPath, SpecializerPath]) :-
     load_source(TranslatorPath, none, _),
@@ -51,4 +54,10 @@ main([MettaPath, TranslatorPath, SpecializerPath]) :-
     emit_eval(metta_eval_foldl_atom, ['foldl-atom',[1,2],0,'+'], 3),
     emit_eval(metta_eval_first_pair, ['first-from-pair',[a,b]], a),
     emit_eval(metta_eval_size, ['size-atom',[a,b]], 2),
-    emit_eval(metta_eval_unique, ['unique-atom',[b,a,b]], [b,a]).
+    emit_eval(metta_eval_unique, ['unique-atom',[b,a,b]], [b,a]),
+    emit_answers(metta_eval_superpose_order, [superpose,[a,b]], [a,b]),
+    emit_eval(metta_eval_collapse, [collapse,[superpose,[a,b]]], [a,b]),
+    emit_eval(metta_eval_once, [once,[superpose,[a,b]]], a),
+    emit_eval(metta_eval_if_false, [if,[>,1,2],then,else], else),
+    emit_answers(metta_eval_empty, [empty], []),
+    emit_eval(metta_eval_transaction, [transaction,[id,a]], a).

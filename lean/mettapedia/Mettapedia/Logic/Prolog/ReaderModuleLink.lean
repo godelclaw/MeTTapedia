@@ -191,7 +191,7 @@ private def calledSymbols : SourceSignature.Goal →
   | .softIfThenElse condition thenBranch elseBranch =>
       calledSymbols condition ++ calledSymbols thenBranch ++
         calledSymbols elseBranch
-  | .once goal | .neg goal => calledSymbols goal
+  | .once goal | .transaction goal | .neg goal => calledSymbols goal
   | .findall _ generator _ => calledSymbols generator
   | .catch guarded _ recovery =>
       calledSymbols guarded ++ calledSymbols recovery
@@ -292,6 +292,7 @@ private def mapGoal (resolve : SourceSignature.PredicateIndicator →
       .softIfThenElse (mapGoal resolve condition) (mapGoal resolve thenBranch)
         (mapGoal resolve elseBranch)
   | .once goal => .once (mapGoal resolve goal)
+  | .transaction goal => .transaction (mapGoal resolve goal)
   | .neg goal => .neg (mapGoal resolve goal)
   | .unify left right => .unify left right
   | .notUnify left right => .notUnify left right
