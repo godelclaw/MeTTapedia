@@ -84,4 +84,38 @@ theorem exists_distinct_reachable_mem_of_odd_of_odd_subset
   exact ⟨finish, hfinishNe, hoddBoundary finish hfinishOdd,
     hfinishReachable⟩
 
+omit [DecidableEq W] in
+/-- If a regional graph keeps exactly the ambient neighbors lying in a named
+region, then odd regional degree at a vertex of even ambient degree exposes an
+ambient edge leaving that region.  This is the local parity step used before
+the geometric classification of the possible boundary portals. -/
+theorem exists_ambient_adj_not_mem_of_odd_regional_degree
+    (regional ambient : SimpleGraph W)
+    [DecidableRel regional.Adj] [DecidableRel ambient.Adj]
+    (region : Set W) (start : W)
+    (hadj : ∀ neighbor : W,
+      regional.Adj start neighbor ↔
+        ambient.Adj start neighbor ∧ neighbor ∈ region)
+    (hregionalOdd : Odd (regional.degree start))
+    (hambientEven : Even (ambient.degree start)) :
+    ∃ neighbor : W, ambient.Adj start neighbor ∧ neighbor ∉ region := by
+  classical
+  by_contra hnoEscape
+  push Not at hnoEscape
+  have hneighbors : regional.neighborFinset start =
+      ambient.neighborFinset start := by
+    ext neighbor
+    simp only [SimpleGraph.mem_neighborFinset]
+    rw [hadj neighbor]
+    constructor
+    · exact And.left
+    · intro hambient
+      exact ⟨hambient, hnoEscape neighbor hambient⟩
+  have hdegree : regional.degree start = ambient.degree start := by
+    rw [← regional.card_neighborFinset_eq_degree,
+      ← ambient.card_neighborFinset_eq_degree, hneighbors]
+  have hregionalEven : Even (regional.degree start) := by
+    simpa [hdegree] using hambientEven
+  exact (Nat.not_even_iff_odd.mpr hregionalOdd) hregionalEven
+
 end Mettapedia.GraphTheory.FourColor
