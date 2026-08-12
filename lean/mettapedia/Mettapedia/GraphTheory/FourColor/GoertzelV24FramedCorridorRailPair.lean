@@ -155,6 +155,11 @@ structure SourceCornerAlignedRailPair
     firstRail.support.Disjoint secondRail.support
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
+  /-- Across each source hexagon the two exterior rails have total length
+  exactly two: the three source words give the cases `0 + 2`, `1 + 1`, and
+  `2 + 0`. -/
+  firstRail_length_add_secondRail_length_eq_two :
+    firstRail.length + secondRail.length = 2
   /-- Every face on a local rail is an actual side neighbor of one of the
   two source cells that the rail joins.  Retaining this provenance lets the
   global construction exclude remote rail collisions from the L1 geodesic,
@@ -639,6 +644,7 @@ theorem sourceCornerAlignedRailPair_of_forwardTwo
       · exact hAD hsecond
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
+    firstRail_length_add_secondRail_length_eq_two := by simp
     firstRail_support_adjacent_to_source := by
       intro face hface
       have hfaceEq : face = first.toInterface.firstLayerFace := by
@@ -743,6 +749,7 @@ theorem sourceCornerAlignedRailPair_of_forwardThree
         · exact hCD hsecond
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
+    firstRail_length_add_secondRail_length_eq_two := by simp
     firstRail_support_adjacent_to_source := by
       intro face hface
       simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
@@ -826,6 +833,7 @@ theorem sourceCornerAlignedRailPair_of_forwardFour
       · exact hBC.symm hsecond
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
+    firstRail_length_add_secondRail_length_eq_two := by simp
     firstRail_support_adjacent_to_source := by
       have hmiddle :
           (interiorDualGraph
