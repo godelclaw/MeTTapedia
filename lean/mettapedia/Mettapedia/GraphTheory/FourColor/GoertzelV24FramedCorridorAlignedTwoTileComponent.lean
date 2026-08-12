@@ -129,6 +129,123 @@ theorem exists_sourceTwoTileAlignedBoundaryComponent_exactBoundary
   rw [hcomponentBoundary]
   exact hboundary
 
+/-- The aligned boundary can be oriented by the distinguished outer vertex.
+The selected component has the exact six-edge boundary, and a vertex on the
+other side witnesses that the retained carrier is strictly smaller. -/
+theorem exists_sourceTwoTileAlignedOuterComponent_exactBoundary_and_removed
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 4)) :
+    ∃ component : (G.deleteEdges (localEdgeFinsetValueSet
+        (sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic
+          hrotation htwoSided hunique offset))).ConnectedComponent,
+      ∃ removedVertex : V,
+        embedded.cellulation.rotation.toRotationSystem.vertOf
+            embedded.cellulation.rotation.toRotationSystem.outer ∈
+          component.supp ∧
+        removedVertex ∉ component.supp ∧
+        localComponentCrossingEdges
+            (sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic
+              hrotation htwoSided hunique offset) component =
+          sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic
+            hrotation htwoSided hunique offset := by
+  let removedEdges :=
+    sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic hrotation
+      htwoSided hunique offset
+  let walk := sourceTwoTileAlignedBoundaryWalkAt realization hcubic hrotation
+    htwoSided hunique offset
+  have hnotConnected :
+      ¬ (G.deleteEdges (localEdgeFinsetValueSet removedEdges)).Connected := by
+    simpa [removedEdges] using
+      sourceTwoTileAlignedBoundaryCut_not_connected realization hcubic hrotation
+        htwoSided hunique offset
+  let outerVertex := embedded.cellulation.rotation.toRotationSystem.vertOf
+    embedded.cellulation.rotation.toRotationSystem.outer
+  let outerComponent : (G.deleteEdges
+      (localEdgeFinsetValueSet removedEdges)).ConnectedComponent :=
+    (G.deleteEdges (localEdgeFinsetValueSet removedEdges)).connectedComponentMk
+      outerVertex
+  have houterMem : outerVertex ∈ outerComponent.supp := by
+    dsimp [outerComponent]
+    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+  rcases exists_distinct_localComponents_of_not_connected
+      embedded.cellulation.connected removedEdges hnotConnected with
+    ⟨inside, outside, hdistinct⟩
+  have outerBoundary_of_distinct
+      (other : (G.deleteEdges
+        (localEdgeFinsetValueSet removedEdges)).ConnectedComponent)
+      (hother : outerComponent ≠ other) :
+      localComponentCrossingEdges removedEdges outerComponent =
+        removedEdges := by
+    have hcomponentBoundary :
+        localComponentCrossingEdges removedEdges outerComponent =
+          localCrossingEdgeFinset G
+            (fun vertex => vertex ∈ outerComponent.supp) := by
+      ext edge
+      simp [localComponentCrossingEdges, localCrossingEdgeFinset]
+    have hsubset : localCrossingEdgeFinset G
+        (fun vertex => vertex ∈ outerComponent.supp) ⊆ removedEdges := by
+      rw [← hcomponentBoundary]
+      exact localComponentCrossingEdges_subset_removed removedEdges
+        outerComponent
+    have hnonempty : (localCrossingEdgeFinset G
+        (fun vertex => vertex ∈ outerComponent.supp)).Nonempty := by
+      rw [← hcomponentBoundary]
+      exact localComponentCrossingEdges_nonempty_of_distinct
+        embedded.cellulation.connected removedEdges outerComponent other hother
+    have hboundary : localCrossingEdgeFinset G
+        (fun vertex => vertex ∈ outerComponent.supp) = removedEdges := by
+      apply
+        crossingEdgeFinset_eq_dualWalkCrossingEdges_of_isCycle_of_subset_of_supportTwoSided
+          embedded.cellulation.rotation hunique walk
+          (by
+            simpa [walk] using
+              sourceTwoTileAlignedBoundaryWalkAt_isCycle realization hcubic
+                hrotation htwoSided hunique offset)
+          (fun vertex => vertex ∈ outerComponent.supp)
+      · change localCrossingEdgeFinset G
+          (fun vertex => vertex ∈ outerComponent.supp) ⊆ removedEdges
+        exact hsubset
+      · exact hnonempty
+      · intro _face _hface dart _hdart
+        exact htwoSided dart
+    rw [hcomponentBoundary]
+    exact hboundary
+  by_cases hinside : inside = outerComponent
+  · have houterNeOutside : outerComponent ≠ outside := by
+      intro heq
+      exact hdistinct (hinside.trans heq)
+    rcases outside.nonempty_supp with ⟨removedVertex, hremoved⟩
+    have hremovedNotOuter : removedVertex ∉ outerComponent.supp := by
+      intro houter
+      have heq : outside = outerComponent :=
+        SimpleGraph.ConnectedComponent.eq_of_common_vertex hremoved houter
+      exact hdistinct (hinside.trans heq.symm)
+    refine ⟨outerComponent, removedVertex, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact outerBoundary_of_distinct outside houterNeOutside
+  · have houterNeInside : outerComponent ≠ inside := by
+      intro heq
+      exact hinside heq.symm
+    rcases inside.nonempty_supp with ⟨removedVertex, hremoved⟩
+    have hremovedNotOuter : removedVertex ∉ outerComponent.supp := by
+      intro houter
+      exact hinside (SimpleGraph.ConnectedComponent.eq_of_common_vertex
+        hremoved houter)
+    refine ⟨outerComponent, removedVertex, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact outerBoundary_of_distinct inside houterNeInside
+
 end AnnularEmbedding
 
 end SourceTrail
