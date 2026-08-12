@@ -51,6 +51,41 @@ theorem alpha_eq_of_boundaryDart_edgeOf_eq_of_not_keep_vert
     exact right.1.2
   · exact hopposite.symm
 
+/-- Conversely, alpha-opposite exposed darts force the first dart's base
+vertex to lie outside the second retained side.  Together with
+`alpha_eq_of_boundaryDart_edgeOf_eq_of_not_keep_vert`, this makes the
+orientation condition on a shared physical edge exactly one endpoint-side
+membership condition. -/
+theorem not_keep_vert_of_alpha_eq_boundaryDart
+    (RS : RotationSystem V E) (leftKeep rightKeep : V → Prop)
+    (left : BoundaryDart RS leftKeep) (right : BoundaryDart RS rightKeep)
+    (halpha : RS.alpha left.1.1 = right.1.1) :
+    ¬ rightKeep (RS.vertOf left.1.1) := by
+  intro hkeep
+  apply right.2
+  have halphaReverse : RS.alpha right.1.1 = left.1.1 := by
+    calc
+      RS.alpha right.1.1 = RS.alpha (RS.alpha left.1.1) := by
+        rw [halpha]
+      _ = left.1.1 := RS.alpha_involutive left.1.1
+  rw [halphaReverse]
+  exact hkeep
+
+/-- On a fixed physical edge, the two literal boundary darts are
+alpha-opposite exactly when the first base vertex is outside the second
+retained side.  This is generic cut plumbing; it does not supply that
+source-side membership fact for any particular corridor. -/
+theorem alpha_eq_boundaryDart_iff_not_keep_vert_of_edgeOf_eq
+    (RS : RotationSystem V E) (leftKeep rightKeep : V → Prop)
+    (left : BoundaryDart RS leftKeep) (right : BoundaryDart RS rightKeep)
+    (hedge : RS.edgeOf left.1.1 = RS.edgeOf right.1.1) :
+    RS.alpha left.1.1 = right.1.1 ↔
+      ¬ rightKeep (RS.vertOf left.1.1) := by
+  constructor
+  · exact not_keep_vert_of_alpha_eq_boundaryDart RS leftKeep rightKeep left right
+  · exact alpha_eq_of_boundaryDart_edgeOf_eq_of_not_keep_vert
+      RS leftKeep rightKeep left right hedge
+
 end
 
 end GoertzelV24RotationCutDartDecomposition

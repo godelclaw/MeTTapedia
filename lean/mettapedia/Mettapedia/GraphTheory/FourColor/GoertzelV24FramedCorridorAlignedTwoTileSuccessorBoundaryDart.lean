@@ -178,6 +178,50 @@ theorem sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_alpha_successorInput
       realization hcubic hrotation htwoSided hunique offset step
   · exact hnotKeep
 
+/-- The remaining source-side orientation fact is not merely sufficient: on
+the already matched transverse edge it is exactly equivalent to alpha-opposite
+boundary darts.  Thus physical serial gluing has one concrete endpoint-side
+obligation before any ambient-carrier or union argument is attempted. -/
+theorem sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_alpha_successorInput_iff_not_keep
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 5)) (step : Fin 2) :
+    embedded.cellulation.rotation.toRotationSystem.alpha
+        (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+          hrotation htwoSided hunique offset step).1.1 =
+      (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+        hcubic hrotation htwoSided hunique offset step).1.1 ↔
+    ¬ deletedRegionKeep
+      (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+        htwoSided hunique (sourceTwoTileSuccessorNextOffset offset)).componentSide
+      (embedded.cellulation.rotation.toRotationSystem.vertOf
+        (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+          hrotation htwoSided hunique offset step).1.1) := by
+  exact alpha_eq_boundaryDart_iff_not_keep_vert_of_edgeOf_eq
+    embedded.cellulation.rotation.toRotationSystem
+    (deletedRegionKeep
+      (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+        htwoSided hunique (sourceTwoTileSuccessorStartOffset offset)).componentSide)
+    (deletedRegionKeep
+      (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+        htwoSided hunique (sourceTwoTileSuccessorNextOffset offset)).componentSide)
+    (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+      hrotation htwoSided hunique offset step)
+    (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+      hcubic hrotation htwoSided hunique offset step)
+    (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_edgeOf_eq_successorInput
+      realization hcubic hrotation htwoSided hunique offset step)
+
 end AnnularEmbedding
 
 end SourceTrail
