@@ -57,6 +57,22 @@ theorem vertexSetCrossingEdges_biUnion_subset
   exact houterNotUnion (Finset.mem_biUnion.mpr
     ⟨index, hindex, houterSide⟩)
 
+/-- An edge whose two endpoints have already entered a vertex side is not on
+that side's true crossing frontier.  This is the exact absorption criterion
+used when adjoining a local corridor piece: endpoint membership, rather than
+an equality of displayed cut coordinates, removes an interior edge from the
+frontier. -/
+theorem not_mem_vertexSetCrossingEdges_of_endpoints_subset
+    (RS : RotationSystem V E) (inside : Finset V) (edge : E)
+    (hendpoints : RS.endpoints edge ⊆ inside) :
+    edge ∉ vertexSetCrossingEdges RS inside := by
+  intro hcrossing
+  rw [mem_vertexSetCrossingEdges_iff RS] at hcrossing
+  rcases hcrossing with
+    ⟨_inner, _hinnerEndpoint, _hinnerInside,
+      outer, houterEndpoint, houterOutside⟩
+  exact houterOutside (hendpoints houterEndpoint)
+
 end GoertzelV24RotationVertexCutProfile
 
 end Mettapedia.GraphTheory.FourColor
