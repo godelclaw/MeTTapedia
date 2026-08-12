@@ -153,6 +153,14 @@ structure SourceCornerAlignedRailPair
   three-way rung geometry, not inferred from a finite profile code. -/
   firstRail_support_disjoint_secondRail :
     firstRail.support.Disjoint secondRail.support
+  firstRail_avoids_firstCenter :
+    first.toInterface.centerLayerFace ∉ firstRail.support
+  firstRail_avoids_secondCenter :
+    second.toInterface.centerLayerFace ∉ firstRail.support
+  secondRail_avoids_firstCenter :
+    first.toInterface.centerLayerFace ∉ secondRail.support
+  secondRail_avoids_secondCenter :
+    second.toInterface.centerLayerFace ∉ secondRail.support
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
   /-- Across each source hexagon the two exterior rails have total length
@@ -580,6 +588,60 @@ theorem sourceCornerAlignedRailPair_second_first_support_disjoint_of_add_three_l
     exact rightPair.firstRail_support_adjacent_to_axis face hface
   · exact hseparated
 
+/-- Exterior faces at either end of a source tile avoid the opposite
+corridor center. -/
+private theorem sourceCornerAlignedInterface_cross_center_ne
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext :
+      (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    (first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (second : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior leftInterior hnext) hnextNext) :
+    first.toInterface.firstLayerFace ≠ second.toInterface.centerLayerFace ∧
+    first.toInterface.secondLayerFace ≠ second.toInterface.centerLayerFace ∧
+    second.toInterface.firstLayerFace ≠ first.toInterface.centerLayerFace ∧
+    second.toInterface.secondLayerFace ≠ first.toInterface.centerLayerFace := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simpa [SourceConsecutiveSlabInterface.firstLayerFace,
+      SourceConsecutiveSlabInterface.centerLayerFace] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        (realization.slabPlacementAt htwoSided hunique leftInterior)
+        first.toInterface.leftBeforePos
+        (nextCorridorInterior leftInterior hnext).center
+  · simpa [SourceConsecutiveSlabInterface.secondLayerFace,
+      SourceConsecutiveSlabInterface.centerLayerFace] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        (realization.slabPlacementAt htwoSided hunique leftInterior)
+        first.toInterface.leftAfterPos
+        (nextCorridorInterior leftInterior hnext).center
+  · simpa [SourceConsecutiveSlabInterface.firstLayerFace,
+      SourceConsecutiveSlabInterface.centerLayerFace] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        (realization.slabPlacementAt htwoSided hunique
+          (nextCorridorInterior leftInterior hnext))
+        second.toInterface.leftBeforePos leftInterior.center
+  · simpa [SourceConsecutiveSlabInterface.secondLayerFace,
+      SourceConsecutiveSlabInterface.centerLayerFace] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        (realization.slabPlacementAt htwoSided hunique
+          (nextCorridorInterior leftInterior hnext))
+        second.toInterface.leftAfterPos leftInterior.center
+
 /-- A `forwardTwo` source word gives a shared first rail endpoint and a
 two-edge second rail through its certified exterior middle face. -/
 theorem sourceCornerAlignedRailPair_of_forwardTwo
@@ -612,6 +674,26 @@ theorem sourceCornerAlignedRailPair_of_forwardTwo
       first second hdistance with ⟨rail⟩
   rcases sourceCornerAlignedExteriorFaces_pairwise_ne_of_forwardTwo first second
       rail hdistance with ⟨hAB, hAM, hAD, hBM, hBD, hMD⟩
+  rcases sourceCornerAlignedInterface_cross_center_ne first second with
+    ⟨hAY, hBY, _, hDX⟩
+  have hAX := first.toInterface.firstLayerFace_ne_centerLayerFace
+  have hBX := first.toInterface.secondLayerFace_ne_centerLayerFace
+  have hDY := second.toInterface.secondLayerFace_ne_centerLayerFace
+  let sharedPlacement := realization.slabPlacementAt htwoSided hunique
+    (nextCorridorInterior leftInterior hnext)
+  have hMX : rail.middleFace ≠ first.toInterface.centerLayerFace := by
+    simpa [SourceCornerAlignedForwardTwoRailWitness.middleFace,
+      SourceConsecutiveSlabInterface.centerLayerFace, sharedPlacement] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        sharedPlacement rail.middlePosition leftInterior.center
+  have hMY : rail.middleFace ≠ second.toInterface.centerLayerFace := by
+    simpa [SourceCornerAlignedForwardTwoRailWitness.middleFace,
+      SourceConsecutiveSlabInterface.centerLayerFace, sharedPlacement] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        sharedPlacement rail.middlePosition
+        (nextCorridorInterior leftInterior hnext).center
   refine ⟨{
     firstRail := SimpleGraph.Walk.nil.copy rfl rail.sharedFirst
     secondRail := SimpleGraph.Walk.cons rail.middleToFirst.symm
@@ -642,6 +724,20 @@ theorem sourceCornerAlignedRailPair_of_forwardTwo
       · exact hAM (by
           simpa [SourceCornerAlignedForwardTwoRailWitness.middleFace] using hsecond)
       · exact hAD hsecond
+    firstRail_avoids_firstCenter := by
+      simpa only [SimpleGraph.Walk.support_copy,
+        SimpleGraph.Walk.support_nil, List.mem_singleton] using hAX.symm
+    firstRail_avoids_secondCenter := by
+      simpa only [SimpleGraph.Walk.support_copy,
+        SimpleGraph.Walk.support_nil, List.mem_singleton] using hAY.symm
+    secondRail_avoids_firstCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hBX.symm, hMX.symm, hDX.symm⟩
+    secondRail_avoids_secondCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hBY.symm, hMY.symm, hDY.symm⟩
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
     firstRail_length_add_secondRail_length_eq_two := by simp
@@ -730,6 +826,12 @@ theorem sourceCornerAlignedRailPair_of_forwardThree
   rcases sourceCornerAlignedExteriorFaces_pairwise_ne_of_oppositeRungs
       first second (by simpa [sharedPlacement] using hopposite) with
     ⟨hAB, hAC, hAD, hBC, hBD, hCD⟩
+  rcases sourceCornerAlignedInterface_cross_center_ne first second with
+    ⟨hAY, hBY, hCX, hDX⟩
+  have hAX := first.toInterface.firstLayerFace_ne_centerLayerFace
+  have hBX := first.toInterface.secondLayerFace_ne_centerLayerFace
+  have hCY := second.toInterface.firstLayerFace_ne_centerLayerFace
+  have hDY := second.toInterface.secondLayerFace_ne_centerLayerFace
   exact ⟨{
     firstRail := rails.1.toWalk
     secondRail := rails.2.toWalk
@@ -747,6 +849,22 @@ theorem sourceCornerAlignedRailPair_of_forwardThree
       · rcases hsecond with hsecond | hsecond
         · exact hBC.symm hsecond
         · exact hCD hsecond
+    firstRail_avoids_firstCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hAX.symm, hCX.symm⟩
+    firstRail_avoids_secondCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hAY.symm, hCY.symm⟩
+    secondRail_avoids_firstCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hBX.symm, hDX.symm⟩
+    secondRail_avoids_secondCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hBY.symm, hDY.symm⟩
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
     firstRail_length_add_secondRail_length_eq_two := by simp
@@ -802,6 +920,26 @@ theorem sourceCornerAlignedRailPair_of_forwardFour
       first second hdistance with ⟨rail⟩
   rcases sourceCornerAlignedExteriorFaces_pairwise_ne_of_forwardFour first second
       rail hdistance with ⟨hAB, hAM, hAC, hBM, hBC, hMC⟩
+  rcases sourceCornerAlignedInterface_cross_center_ne first second with
+    ⟨hAY, hBY, hCX, _⟩
+  have hAX := first.toInterface.firstLayerFace_ne_centerLayerFace
+  have hBX := first.toInterface.secondLayerFace_ne_centerLayerFace
+  have hCY := second.toInterface.firstLayerFace_ne_centerLayerFace
+  let sharedPlacement := realization.slabPlacementAt htwoSided hunique
+    (nextCorridorInterior leftInterior hnext)
+  have hMX : rail.middleFace ≠ first.toInterface.centerLayerFace := by
+    simpa [SourceCornerAlignedForwardFourRailWitness.middleFace,
+      SourceConsecutiveSlabInterface.centerLayerFace, sharedPlacement] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        sharedPlacement rail.middlePosition leftInterior.center
+  have hMY : rail.middleFace ≠ second.toInterface.centerLayerFace := by
+    simpa [SourceCornerAlignedForwardFourRailWitness.middleFace,
+      SourceConsecutiveSlabInterface.centerLayerFace, sharedPlacement] using
+      placementSideNeighbor_ne_faceAt
+        realization.toCleanOrbitHexCorridorSkeleton htwoSided hunique
+        sharedPlacement rail.middlePosition
+        (nextCorridorInterior leftInterior hnext).center
   refine ⟨{
     firstRail := SimpleGraph.Walk.cons rail.firstToMiddle
       (SimpleGraph.Walk.cons rail.middleToSecond SimpleGraph.Walk.nil)
@@ -831,6 +969,20 @@ theorem sourceCornerAlignedRailPair_of_forwardFour
       · exact hBM.symm (by
           simpa [SourceCornerAlignedForwardFourRailWitness.middleFace] using hsecond)
       · exact hBC.symm hsecond
+    firstRail_avoids_firstCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hAX.symm, hMX.symm, hCX.symm⟩
+    firstRail_avoids_secondCenter := by
+      simpa only [SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+        or_false, not_or] using ⟨hAY.symm, hMY.symm, hCY.symm⟩
+    secondRail_avoids_firstCenter := by
+      simpa only [SimpleGraph.Walk.support_copy,
+        SimpleGraph.Walk.support_nil, List.mem_singleton] using hBX.symm
+    secondRail_avoids_secondCenter := by
+      simpa only [SimpleGraph.Walk.support_copy,
+        SimpleGraph.Walk.support_nil, List.mem_singleton] using hBY.symm
     firstRail_length_le_two := by simp
     secondRail_length_le_two := by simp
     firstRail_length_add_secondRail_length_eq_two := by simp
