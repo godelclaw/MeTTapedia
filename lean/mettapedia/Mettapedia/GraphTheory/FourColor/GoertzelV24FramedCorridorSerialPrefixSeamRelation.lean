@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CubicEdgeAdjacencyNeighborhood
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixSeamSupport
 
 /-!
@@ -23,7 +24,10 @@ open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24RegionalBoundaryProfileFiniteState
 open GoertzelV24RotationFaceFragments
+open GoertzelV24RotationVertexCutProfile
+open GoertzelV24TerminalProfileRegionalCoverage
 open GoertzelV24TerminalProfileSeamResidual
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -260,6 +264,141 @@ theorem sourceCorridorSerialInputFaceSeamGraphAt_adj_iff_exists_outgoingTurn
       apply (faceRegionalSeamGraph_adj_iff RS root leftRegion cellRegion
         x y).2
       exact ⟨hface.symm, Or.inr ⟨hxCell, hxNotLeft, hyLeft, hyNotCell⟩⟩
+
+/-- The two outgoing crossings together with all their adjacent ambient
+edges.  This is a finite carrier for both species of residual seam turn. -/
+noncomputable def sourceCorridorSerialOutgoingEdgeCarrierAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) : Finset G.edgeSet :=
+  embedded.cellulation.rotation.toRotationSystem.edgeAdjacencyClosedCarrier
+    (indexedCrossingEdgeSet
+      ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        offset).nextLocalLayerPrefixCrossing))
+
+/-- The residual carrier has a uniform graph-independent bound: two outgoing
+edges, each with a closed cubic edge neighborhood of size at most seven. -/
+theorem sourceCorridorSerialOutgoingEdgeCarrierAt_card_le_fourteen
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+      htwoSided hunique offset).card ≤ 14 := by
+  let output :=
+    (sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+      offset).nextLocalLayerPrefixCrossing
+  calc
+    (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+      htwoSided hunique offset).card ≤
+        7 * (indexedCrossingEdgeSet output).card := by
+      exact embedded.cellulation.rotation.toRotationSystem
+        |>.edgeAdjacencyClosedCarrier_card_le_seven_mul hcubic _
+    _ ≤ 7 * 2 := Nat.mul_le_mul_left 7
+      (card_indexedCrossingEdgeSet_le output)
+    _ = 14 := by norm_num
+
+/-- Every edge used by a tracked residual seam belongs to the bounded
+outgoing-edge carrier. -/
+theorem sourceCorridorSerialInputTrackedSeamGraphAt_support_subset_outgoingCarrier
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color) (first second : Color) :
+    (sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic hrotation
+      htwoSided hunique offset color first second).support ⊆
+      sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+        htwoSided hunique offset := by
+  intro edge hedge
+  rcases (SimpleGraph.mem_support
+      (sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic hrotation
+        htwoSided hunique offset color first second)).1 hedge with
+    ⟨neighbor, hadj⟩
+  rcases sourceCorridorSerialInputTrackedSeamGraphAt_adj_iff_exists_outgoingTurn
+      realization hcubic hrotation htwoSided hunique offset color first second
+      edge neighbor |>.1 hadj with ⟨step, hforward | hbackward⟩
+  · apply (embedded.cellulation.rotation.toRotationSystem
+      |>.mem_edgeAdjacencyClosedCarrier_iff _ edge).2
+    exact Or.inr ⟨_,
+      (mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, hforward.1.symm⟩,
+      hforward.2.1.1⟩
+  · apply (embedded.cellulation.rotation.toRotationSystem
+      |>.mem_edgeAdjacencyClosedCarrier_iff _ edge).2
+    exact Or.inl
+      ((mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, hbackward.1.symm⟩)
+
+/-- Every face occurrence used by a facial residual projects to the same
+bounded outgoing-edge carrier. -/
+theorem sourceCorridorSerialInputFaceSeamGraphAt_support_projects_outgoingCarrier
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (root : embedded.cellulation.rotation.toRotationSystem.D) :
+    ∀ position ∈
+      (sourceCorridorSerialInputFaceSeamGraphAt realization hcubic hrotation
+        htwoSided hunique offset root).support,
+      faceCycleEdge embedded.cellulation.rotation.toRotationSystem root
+          position ∈
+        sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+          htwoSided hunique offset := by
+  intro position hposition
+  rcases (SimpleGraph.mem_support
+      (sourceCorridorSerialInputFaceSeamGraphAt realization hcubic hrotation
+        htwoSided hunique offset root)).1 hposition with
+    ⟨neighbor, hadj⟩
+  rcases sourceCorridorSerialInputFaceSeamGraphAt_adj_iff_exists_outgoingTurn
+      realization hcubic hrotation htwoSided hunique offset root
+      position neighbor |>.1 hadj with ⟨step, hforward | hbackward⟩
+  · apply (embedded.cellulation.rotation.toRotationSystem
+      |>.mem_edgeAdjacencyClosedCarrier_iff _ _).2
+    refine Or.inr ⟨_,
+      (mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, hforward.1.symm⟩, ?_⟩
+    exact edgeAdjacencyGraph_adj_of_faceCyclePositionGraph_adj
+      embedded.cellulation.rotation.toRotationSystem hcubic hrotation root
+      hforward.2.1
+  · apply (embedded.cellulation.rotation.toRotationSystem
+      |>.mem_edgeAdjacencyClosedCarrier_iff _ _).2
+    exact Or.inl
+      ((mem_indexedCrossingEdgeSet_iff _ _).2 ⟨step, hbackward.1.symm⟩)
 
 end AnnularEmbedding
 
