@@ -155,6 +155,30 @@ theorem composeNonempty_acceptsBoundaryWords_iff_exactTransferWord
       · rintro ⟨middleWord, hfirst, hrest⟩
         exact ⟨middleWord, hfirst, (ih next middleWord).2 hrest⟩
 
+/-- A pointwise map of a heterogeneous relation word sends every exact path
+to an exact path.  The theorem is deliberately one-way: projecting a finite
+profile can merge states, so a path between projected words need not lift
+without a separate factorization theorem. -/
+theorem exactTransferWord_map_of_forall₂
+    {Profile Word : Type*}
+    (project : Profile → Word)
+    {profileSteps : List (Profile → Profile → Prop)}
+    {wordSteps : List (Word → Word → Prop)}
+    (hsteps : List.Forall₂
+      (fun profileStep wordStep =>
+        ∀ left right, profileStep left right →
+          wordStep (project left) (project right))
+      profileSteps wordSteps)
+    {left right : Profile}
+    (hpath : ExactTransferWord profileSteps left right) :
+    ExactTransferWord wordSteps (project left) (project right) := by
+  induction hsteps generalizing left with
+  | nil =>
+      simpa [ExactTransferWord] using congrArg project hpath
+  | cons hstep _hrest ih =>
+      rcases hpath with ⟨middle, hfirst, htail⟩
+      exact ⟨project middle, hstep left middle hfirst, ih htail⟩
+
 end CoordinatizedTwoSidedOpenTangle
 
 end
