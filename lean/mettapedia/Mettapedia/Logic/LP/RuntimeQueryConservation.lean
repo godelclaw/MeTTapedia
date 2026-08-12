@@ -355,6 +355,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .copyTerm sourceRoot targetRoot
   | .termVariables termRoot variablesRoot encoding =>
       .termVariables termRoot variablesRoot encoding
+  | .functor termRoot nameRoot arityRoot encoding =>
+      .functor termRoot nameRoot arityRoot encoding
   | .integerIs resultRoot expressionRoot encoding =>
       .integerIs resultRoot expressionRoot encoding
   | .integerCompare leftRoot rightRoot comparison encoding =>
@@ -1374,6 +1376,19 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                         termVariablesStep, beginUnifyStep, mapState, mapControl,
                         mapAttempt, mapPhase, mapReturnFrame, mapStepResult,
                         hRoots, hAllocate]
+          | functor termRoot nameRoot arityRoot encoding =>
+              cases hPrepare : prepareFunctor encoding memory nextScope termRoot
+                  nameRoot arityRoot with
+              | error error =>
+                  cases hCleanup : memory.restore checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep, functorStep,
+                      mapState, mapControl, mapAttempt, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hPrepare, hCleanup]
+              | ok prepared =>
+                  simp [mapDispatchAction, dispatchActionStep, functorStep,
+                    mapState, mapControl, mapAttempt, mapPhase,
+                    mapReturnFrame, mapStepResult, hPrepare]
           | integerIs resultRoot expressionRoot encoding =>
               cases hEval : evalInteger encoding memory.heap expressionRoot with
               | error error =>

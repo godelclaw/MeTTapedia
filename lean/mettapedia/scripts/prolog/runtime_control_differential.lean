@@ -446,6 +446,30 @@ def main : IO Unit := do
   renderCount "term_variables_meta"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaTermVariables)
+  renderCount "functor_decompose_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorDecomposesCompound)
+  renderCount "functor_decompose_atomic"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorDecomposesAtomic)
+  renderCount "functor_construct_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorConstructsCompound)
+  renderCount "functor_construct_distinct"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorConstructsDistinctFreshArguments)
+  renderCount "functor_construct_atomic"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorConstructsAtomicAtZero)
+  renderCount "functor_rational_root"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorDecomposesRationalRoot)
+  renderCount "functor_output_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.functorOutputMismatch)
+  renderCount "functor_meta"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaFunctorConstructsCompound)
   renderIntegerAnswers "integer_addition"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerAddition

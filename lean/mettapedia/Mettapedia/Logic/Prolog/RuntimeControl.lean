@@ -504,6 +504,10 @@ structure Services (sigma : LP.LPSignature) where
   termVariables? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.CollectionEncoding sigma) :=
       fun _ => none
+  /-- Recognize `functor/3` without inspecting any operand graph. -/
+  functor? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × Addr × LP.RuntimeQuery.FunctorEncoding sigma) :=
+      fun _ => none
   /-- Recognize persistent database operations without inspecting the heap.
   The shared engine consumes the instruction and emits the request; only a
   `Session` may apply it. -/
@@ -551,6 +555,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   runtimePredicates := []
   copyTerm? _ := none
   termVariables? _ := none
+  functor? _ := none
   databaseRequest? _ := none
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -693,9 +698,15 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                                                       .termVariables termRoot
                                                                         variablesRoot encoding
                                                                   | none =>
-                                                                      .call goal
-                                                                        (Program.clausesFor program
-                                                                          goal.symbol)
+                                                                      match services.functor? goal with
+                                                                      | some (termRoot, nameRoot,
+                                                                          arityRoot, encoding) =>
+                                                                          .functor termRoot nameRoot
+                                                                            arityRoot encoding
+                                                                      | none =>
+                                                                          .call goal
+                                                                            (Program.clausesFor program
+                                                                              goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right

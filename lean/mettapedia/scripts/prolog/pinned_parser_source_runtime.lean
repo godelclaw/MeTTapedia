@@ -620,6 +620,26 @@ def main (arguments : List String) : IO Unit := do
     ])
     (SourceSignature.list [
       SourceRuntimeRegression.x, SourceRuntimeRegression.y])
+  checkDatabaseGoal registeredDatabase "metta_functor_decompose_direct"
+    (SourceSignature.call "functor" [
+      SourceSignature.compound "pair" [
+        SourceSignature.atom "a", SourceSignature.atom "b"],
+      .var termIdentity,
+      SourceSignature.integer 2
+    ])
+    (SourceSignature.atom "pair")
+  checkDatabaseGoal registeredDatabase "metta_functor_construct_direct"
+    (.conj
+      (SourceSignature.call "functor" [
+        .var termIdentity,
+        SourceSignature.atom "pair",
+        SourceSignature.integer 2
+      ])
+      (.unify (.var termIdentity)
+        (SourceSignature.compound "pair" [
+          SourceSignature.atom "a", SourceSignature.atom "b"])))
+    (SourceSignature.compound "pair" [
+      SourceSignature.atom "a", SourceSignature.atom "b"])
   checkDatabaseGoal registeredDatabase "metta_eval_compound"
     (evalQuery (SourceSignature.list
       [SourceSignature.atom "id", SourceSignature.atom "a"]))

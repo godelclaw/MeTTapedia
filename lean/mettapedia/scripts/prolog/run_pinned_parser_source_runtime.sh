@@ -81,6 +81,8 @@ metta_fun_id_registered=exact
 metta_id_direct=exact
 metta_copy_term_direct=exact
 metta_term_variables_direct=exact
+metta_functor_decompose_direct=exact
+metta_functor_construct_direct=exact
 metta_eval_compound=exact
 metta_eval_nested_arithmetic=exact
 metta_eval_imported_reverse=exact
@@ -111,6 +113,8 @@ swipl -q -f scripts/prolog/pinned_petta_registration_oracle.pl -- \
   > "$TMP/swi-registration.out"
 printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_term_variables_direct=exact' \
+  'metta_functor_decompose_direct=exact' \
+  'metta_functor_construct_direct=exact' \
   'metta_eval_compound=exact' \
   'metta_eval_nested_arithmetic=exact' \
   'metta_eval_imported_reverse=exact' \

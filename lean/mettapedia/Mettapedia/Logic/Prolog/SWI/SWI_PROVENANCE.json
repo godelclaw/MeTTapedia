@@ -959,6 +959,34 @@
       ]
     },
     {
+      "id": "runtime.functor",
+      "project": "swi-prolog",
+      "sources": ["src/pl-prims.c"],
+      "anchors": ["PRED_IMPL(\"functor\", 3, functor, 0)", "PL_unify_functor"],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
       "id": "runtime.clause-materialization",
       "project": "swi-prolog",
       "sources": ["src/pl-wam.c", "src/pl-copyterm.c"],

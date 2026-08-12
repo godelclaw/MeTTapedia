@@ -71,6 +71,33 @@ def univEncoding : LP.RuntimeQuery.UnivEncoding Sigma where
     | .atom name => some ⟨{ name, arity }, rfl⟩
     | _ => none
 
+/-- Deterministic source identities for fresh arguments created by
+`functor/3`.  The shared engine adds the persistent activation scope. -/
+def functorVariable (index : Nat) : SourceSignature.Variable := {
+  spelling := "_Functor"
+  occurrence := index
+}
+
+theorem functorVariable_injective : Function.Injective functorVariable := by
+  intro left right equal
+  have := congrArg SourceSignature.Variable.occurrence equal
+  simpa [functorVariable] using this
+
+/-- Concrete atom/arity representation for the shared `functor/3` action. -/
+def functorEncoding : LP.RuntimeQuery.FunctorEncoding Sigma where
+  nameConstant symbol := .atom symbol.name
+  functionOf constant arity :=
+    match constant with
+    | .atom name => some ⟨{ name, arity }, rfl⟩
+    | _ => none
+  arityConstant arity := .integer (Int.ofNat arity)
+  arityOf constant :=
+    match constant with
+    | .integer value => if value < 0 then none else some value.toNat
+    | _ => none
+  freshVariable := functorVariable
+  freshVariable_injective := functorVariable_injective
+
 private def integerOperation (symbol : CompoundIndicator) :
     Option LP.RuntimeQuery.IntegerOperation :=
   if symbol.arity = 2 then
@@ -966,6 +993,22 @@ def termVariablesPredicate : PredicateIndicator := {
   arity := 2
 }
 
+/-- Recognize ISO `functor/3`; mode selection and every heap mutation remain
+inside the shared runtime. -/
+def functor? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × Addr × LP.RuntimeQuery.FunctorEncoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "functor", [termRoot, nameRoot, arityRoot] =>
+      if goal.symbol.arity = 3 then
+        some (termRoot, nameRoot, arityRoot, functorEncoding)
+      else none
+  | _, _ => none
+
+def functorPredicate : PredicateIndicator := {
+  name := "functor"
+  arity := 3
+}
+
 def integerIs? (goal : RuntimeAtom Sigma.scoped) :
     Option (Addr × Addr × LP.RuntimeQuery.IntegerArithmeticEncoding Sigma) :=
   match goal.symbol.name, goal.args.toList with
@@ -1051,9 +1094,11 @@ def services : RuntimeControl.Services Sigma where
   listLength? := listLength?
   currentPredicate? := currentPredicate?
   predicateIndicatorEncoding := some predicateIndicatorEncoding
-  runtimePredicates := [copyTermPredicate, termVariablesPredicate]
+  runtimePredicates := [copyTermPredicate, termVariablesPredicate,
+    functorPredicate]
   copyTerm? := copyTerm?
   termVariables? := termVariables?
+  functor? := functor?
   databaseRequest? := databaseRequest?
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
@@ -1081,7 +1126,8 @@ theorem services_copyTerm : services.copyTerm? = copyTerm? := rfl
 
 @[simp]
 theorem services_runtimePredicates :
-    services.runtimePredicates = [copyTermPredicate, termVariablesPredicate] := rfl
+    services.runtimePredicates = [copyTermPredicate, termVariablesPredicate,
+      functorPredicate] := rfl
 
 /-- The concrete source realization exposes `copy_term/2` as exactly the
 shared copy action; no source clause, decoder result, or fallback call is
@@ -1107,6 +1153,20 @@ theorem dispatchActionWith_termVariables (program : SourceSignature.Program)
       symbol := termVariablesPredicate
       args := #[termRoot, variablesRoot]
     }) = .termVariables termRoot variablesRoot collectionEncoding := by
+  rfl
+
+@[simp]
+theorem services_functor : services.functor? = functor? := rfl
+
+/-- The source realization exposes `functor/3` as exactly the shared
+construction/decomposition action. -/
+@[simp]
+theorem dispatchActionWith_functor (program : SourceSignature.Program)
+    (termRoot nameRoot arityRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := functorPredicate
+      args := #[termRoot, nameRoot, arityRoot]
+    }) = .functor termRoot nameRoot arityRoot functorEncoding := by
   rfl
 
 @[simp]

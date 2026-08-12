@@ -73,6 +73,11 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termVariablesStep_of_roots_allocate
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termVariables
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_termVariables
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.allocateFunctorVariables_size_trail
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.functorStep_of_prepare
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.functorVariable_injective
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_functor
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_functor
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.integerIsStep_of_eval_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.integerCompareStep_of_eval
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_integerIs

@@ -744,6 +744,56 @@ def metaTermVariables : SourceSignature.Goal :=
   .conj (metaGoal (compound "term_variables" [pair x y, z]))
     (.unify z (SourceSignature.list [leftVar, rightVar]))
 
+/-! ## ISO `functor/3` on the canonical graph -/
+
+def functorGoal (term name arity : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "functor" [term, name, arity]
+
+def functorDecomposesCompound : SourceSignature.Goal :=
+  functorGoal (pair (atom "a") (atom "b")) x y
+
+def functorDecomposesAtomic : SourceSignature.Goal :=
+  functorGoal (integer 7) x y
+
+def functorConstructsCompound : SourceSignature.Goal :=
+  functorGoal x (atom "pair") (integer 2)
+
+/-- Positive-arity construction creates two distinct unbound argument roots,
+not one repeated placeholder. -/
+def functorConstructsDistinctFreshArguments : SourceSignature.Goal :=
+  .conj (functorGoal x (atom "pair") (integer 2))
+    (.conj (.unify x (pair y z))
+      (.conj (.isVar y) (.conj (.isVar z) (strictNonIdentity y z))))
+
+def functorConstructsAtomicAtZero : SourceSignature.Goal :=
+  functorGoal x (integer 7) (integer 0)
+
+def functorDecomposesRationalRoot : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x]))
+    (functorGoal x y z)
+
+def functorOutputMismatch : SourceSignature.Goal :=
+  functorGoal (pair (atom "a") (atom "b")) (atom "wrong") (integer 2)
+
+def metaFunctorConstructsCompound : SourceSignature.Goal :=
+  metaGoal (compound "functor" [x, atom "pair", integer 2])
+
+def functorNameUnbound : SourceSignature.Goal :=
+  functorGoal x y (integer 1)
+
+def functorArityUnbound : SourceSignature.Goal :=
+  functorGoal x (atom "pair") y
+
+def functorNegativeArity : SourceSignature.Goal :=
+  functorGoal x (atom "pair") (integer (-1))
+
+def functorNonAtomPositiveName : SourceSignature.Goal :=
+  functorGoal x (pair (atom "a") (atom "b")) (integer 1)
+
+def functorExplicitZeroArityCompound : SourceSignature.Goal :=
+  functorGoal (compound "f" []) x y
+
 /-- Observe a typed runtime error without identifying ordinary Prolog
 failure with an engine-side malformed-operation result. -/
 def runQueryError? (program : SourceSignature.Program)
@@ -902,6 +952,7 @@ def bagIdentity : SourceSignature.Variable := { spelling := "Bag", occurrence :=
 def outerIdentity : SourceSignature.Variable := { spelling := "Outer", occurrence := 0 }
 def xIdentity : SourceSignature.Variable := { spelling := "X", occurrence := 0 }
 def yIdentity : SourceSignature.Variable := { spelling := "Y", occurrence := 0 }
+def zIdentity : SourceSignature.Variable := { spelling := "Z", occurrence := 0 }
 
 def expectedScoped (term : SourceSignature.Term) : LP.Term Sigma.scoped :=
   LP.Term.atScope 0 term
@@ -1728,6 +1779,39 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount [] termVariablesRationalFreeLeaf == some (1, 0, 0)
 #guard runCount [] termVariablesOutputMismatch == some (0, 0, 0)
 #guard runCount [] metaTermVariables == some (1, 0, 0)
+#guard runAtomsFor [] functorDecomposesCompound xIdentity ==
+  some (["pair"], 0, 0)
+#guard runIntegersFor [] functorDecomposesCompound yIdentity ==
+  some ([2], 0, 0)
+#guard runShapesFor [] functorDecomposesAtomic xIdentity ==
+  some ([.integer 7], 0, 0)
+#guard runIntegersFor [] functorDecomposesAtomic yIdentity ==
+  some ([0], 0, 0)
+#guard runCount [] functorConstructsCompound == some (1, 0, 0)
+#guard runCount [] functorConstructsDistinctFreshArguments == some (1, 0, 0)
+#guard runShapesFor [] functorConstructsAtomicAtZero xIdentity ==
+  some ([.integer 7], 0, 0)
+#guard runAtomsFor [] functorDecomposesRationalRoot yIdentity ==
+  some (["f"], 0, 0)
+#guard runIntegersFor [] functorDecomposesRationalRoot zIdentity ==
+  some ([1], 0, 0)
+#guard runCount [] functorOutputMismatch == some (0, 0, 0)
+#guard runCount [] metaFunctorConstructsCompound == some (1, 0, 0)
+#guard match runQueryError? [] functorNameUnbound with
+  | some .functorNameUnbound => true
+  | _ => false
+#guard match runQueryError? [] functorArityUnbound with
+  | some .functorArityUnbound => true
+  | _ => false
+#guard match runQueryError? [] functorNegativeArity with
+  | some .invalidFunctorArity => true
+  | _ => false
+#guard match runQueryError? [] functorNonAtomPositiveName with
+  | some .invalidFunctorName => true
+  | _ => false
+#guard match runQueryError? [] functorExplicitZeroArityCompound with
+  | some .zeroArityCompoundFunctor => true
+  | _ => false
 #guard runShapesFor [] integerAddition xIdentity ==
   some ([.integer 5], 0, 0)
 #guard runShapesFor [] integerNestedArithmetic xIdentity ==
@@ -1829,6 +1913,7 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount binaryFactProgram (currentPredicate "q" 2) == some (0, 0, 0)
 #guard runCount [] (currentPredicate "copy_term" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "term_variables" 2) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "functor" 3) == some (1, 0, 0)
 #guard match runQueryError? binaryFactProgram currentPredicateUnbound with
   | some .predicateIndicatorUnbound => true
   | _ => false

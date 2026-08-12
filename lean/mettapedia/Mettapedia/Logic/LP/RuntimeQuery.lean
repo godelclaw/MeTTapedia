@@ -85,6 +85,11 @@ inductive QueryError where
   | invalidUnivList
   | univFunctorUnbound
   | invalidUnivFunctor
+  | functorNameUnbound
+  | functorArityUnbound
+  | invalidFunctorName
+  | invalidFunctorArity
+  | zeroArityCompoundFunctor
   | arithmeticEvaluationBudgetExhausted
   | arithmeticOperandUnbound
   | invalidArithmeticOperand
@@ -224,6 +229,26 @@ structure UnivPrepared (σ : LPSignature) where
   left : Addr
   right : Addr
 
+/-- Language-owned symbol bridges for ISO `functor/3`.  The shared engine
+owns mode selection, heap inspection, fresh argument allocation, and
+unification; a realization supplies only representations of names, arities,
+and fresh source-variable identities. -/
+structure FunctorEncoding (σ : LPSignature) where
+  nameConstant : σ.functionSymbols → σ.constants
+  functionOf : (constant : σ.constants) → (arity : Nat) →
+    Option { symbol : σ.functionSymbols // σ.functionArity symbol = arity }
+  arityConstant : Nat → σ.constants
+  arityOf : σ.constants → Option Nat
+  freshVariable : Nat → σ.vars
+  freshVariable_injective : Function.Injective freshVariable
+
+/-- A prepared `functor/3` transition carries only allocation state, an
+ordered unification agenda, and the persistent activation high-water. -/
+structure FunctorPrepared (σ : LPSignature) where
+  memory : Memory σ.scoped
+  pairs : List (Addr × Addr)
+  nextScope : Nat
+
 /-- Allocate a proper list whose heads are existing graph roots.  The roots
 are reused, not read back and rematerialized, preserving variable identity
 and sharing exactly. -/
@@ -361,6 +386,67 @@ theorem allocateConstants_size_trail {σ : LPSignature}
                 simp [Nat.add_assoc, Nat.add_comm]
               · rw [hIH.2, Memory.allocate_trailMark hAllocate]
 
+/-- Allocate distinct unbound argument cells for a constructed compound.
+The engine supplies the activation scope; the realization supplies an
+injective source-variable naming scheme only. -/
+def allocateFunctorVariables {σ : LPSignature}
+    (encoding : FunctorEncoding σ) (scope : Nat) :
+    Memory σ.scoped → List Nat →
+      Except MemoryError (List Addr × Memory σ.scoped)
+  | memory, [] => .ok ([], memory)
+  | memory, index :: indices => do
+      let (root, memory) ← memory.allocate
+        (.var (ScopedVar.at scope (encoding.freshVariable index)) none)
+      let (roots, memory) ←
+        allocateFunctorVariables encoding scope memory indices
+      pure (root :: roots, memory)
+
+/-- Fresh functor arguments add exactly one cell per requested position and
+never alter the trail. -/
+theorem allocateFunctorVariables_size_trail {σ : LPSignature}
+    (encoding : FunctorEncoding σ) (scope : Nat)
+    (memory memory' : Memory σ.scoped) (indices : List Nat)
+    (roots : List Addr)
+    (h : allocateFunctorVariables encoding scope memory indices =
+      .ok (roots, memory')) :
+    roots.length = indices.length ∧
+      memory'.heap.size = memory.heap.size + indices.length ∧
+      memory'.trailMark = memory.trailMark := by
+  induction indices generalizing memory roots memory' with
+  | nil =>
+      simp only [allocateFunctorVariables] at h
+      cases h
+      simp
+  | cons index indices ih =>
+      simp only [allocateFunctorVariables] at h
+      cases hAllocate : memory.allocate
+          (.var (ScopedVar.at scope (encoding.freshVariable index)) none) with
+      | error error =>
+          rw [hAllocate] at h
+          contradiction
+      | ok allocated =>
+          rcases allocated with ⟨root, middle⟩
+          rw [hAllocate] at h
+          simp only [Bind.bind, Except.bind] at h
+          cases hRest : allocateFunctorVariables encoding scope middle indices with
+          | error error =>
+              rw [hRest] at h
+              contradiction
+          | ok result =>
+              rcases result with ⟨tailRoots, final⟩
+              rw [hRest] at h
+              injection h with hResult
+              injection hResult with hRoots hMemory
+              subst roots
+              subst memory'
+              have hIH := ih middle final tailRoots hRest
+              constructor
+              · simp [hIH.1]
+              constructor
+              · rw [hIH.2.1, Memory.allocate_heap_size_succ hAllocate]
+                simp [Nat.add_assoc, Nat.add_comm]
+              · rw [hIH.2.2, Memory.allocate_trailMark hAllocate]
+
 /-- Decode only the proper-list spine, retaining each element's existing heap
 root.  Rational or malformed spines fail visibly; element graphs themselves
 are not copied or traversed. -/
@@ -473,6 +559,100 @@ def prepareUniv {σ : LPSignature} [DecidableEq σ.constants]
             | .ok (list, memory) =>
                 .ok { memory, left := listRoot, right := list }
       else .error (.memory .illFormedHeap)
+
+/-- Dereference one live root and return its terminal cell.  A linked
+variable at the returned root would contradict `Heap.deref`; it is reported
+as corruption rather than treated as an unbound variable. -/
+def dereferencedRootCell {σ : LPSignature} (heap : Heap σ.scoped)
+    (address : Addr) : Except QueryError (Addr × Cell σ.scoped) := do
+  let root ← match heap.deref address with
+    | .error error => .error (.memory error)
+    | .ok (.variableCycle cycle) =>
+        .error (.memory (.variableReferenceCycle cycle))
+    | .ok (.root root) => .ok root
+  match heap[root]? with
+  | none => .error (.memory (.invalidAddress root))
+  | some (.var _ (some _)) => .error (.memory .illFormedHeap)
+  | some cell => .ok (root, cell)
+
+/-- Prepare ISO `functor/3` in the mode selected by the dereferenced first
+argument.  Decomposition reuses an atomic root or exposes an application
+symbol and arity.  Construction allocates fresh argument variables at the
+persistent activation high-water.  All caller-visible binding is deferred to
+one ordered canonical-unifier agenda. -/
+def prepareFunctor {σ : LPSignature} [DecidableEq σ.constants]
+    (encoding : FunctorEncoding σ) (memory : Memory σ.scoped)
+    (nextScope : Nat) (termRoot nameRoot arityRoot : Addr) :
+    Except QueryError (FunctorPrepared σ) := do
+  let (termAddress, termCell) ← dereferencedRootCell memory.heap termRoot
+  match termCell with
+  | .const _ =>
+      let (encodedArity, memory) ←
+        match memory.allocate (.const (encoding.arityConstant 0)) with
+        | .error error => .error (.memory error)
+        | .ok allocated => .ok allocated
+      .ok {
+        memory
+        pairs := [(nameRoot, termAddress), (arityRoot, encodedArity)]
+        nextScope
+      }
+  | .app symbol arguments =>
+      if arguments.size = 0 then
+        .error .zeroArityCompoundFunctor
+      else if arguments.size = σ.functionArity symbol then
+        let (encodedName, memory) ←
+          match memory.allocate (.const (encoding.nameConstant symbol)) with
+          | .error error => .error (.memory error)
+          | .ok allocated => .ok allocated
+        let (encodedArity, memory) ←
+          match memory.allocate (.const
+              (encoding.arityConstant arguments.size)) with
+          | .error error => .error (.memory error)
+          | .ok allocated => .ok allocated
+        .ok {
+          memory
+          pairs := [(nameRoot, encodedName), (arityRoot, encodedArity)]
+          nextScope
+        }
+      else .error (.memory .illShapedCell)
+  | .var _ none =>
+      let (nameAddress, nameCell) ←
+        dereferencedRootCell memory.heap nameRoot
+      let name ← match nameCell with
+        | .var _ none => .error .functorNameUnbound
+        | .const value => .ok value
+        | .app _ _ => .error .invalidFunctorName
+        | .var _ (some _) => .error (.memory .illFormedHeap)
+      let (_, arityCell) ← dereferencedRootCell memory.heap arityRoot
+      let arity ← match arityCell with
+        | .var _ none => .error .functorArityUnbound
+        | .const value =>
+            match encoding.arityOf value with
+            | some arity => .ok arity
+            | none => .error .invalidFunctorArity
+        | .app _ _ => .error .invalidFunctorArity
+        | .var _ (some _) => .error (.memory .illFormedHeap)
+      if arity = 0 then
+        .ok { memory, pairs := [(termRoot, nameAddress)], nextScope }
+      else
+        match encoding.functionOf name arity with
+        | none => .error .invalidFunctorName
+        | some symbol =>
+            let (arguments, memory) ←
+              match allocateFunctorVariables encoding nextScope memory
+                  (List.range arity) with
+              | .error error => .error (.memory error)
+              | .ok allocated => .ok allocated
+            let (constructed, memory) ←
+              match memory.allocate (.app symbol.1 arguments.toArray) with
+              | .error error => .error (.memory error)
+              | .ok allocated => .ok allocated
+            .ok {
+              memory
+              pairs := [(termRoot, constructed)]
+              nextScope := nextScope + 1
+            }
+  | .var _ (some _) => .error (.memory .illFormedHeap)
 
 /-! ## Integer arithmetic on the shared graph -/
 
@@ -3125,6 +3305,54 @@ theorem univStep_of_prepare {σ : LPSignature}
       } none := by
   simp [univStep, hPrepare]
 
+/-- Execute `functor/3` through one preparation followed by the existing
+transactional graph unifier.  Constructed argument identities consume one
+persistent activation scope before unification, so failure/backtracking can
+never recycle them. -/
+def functorStep {σ : LPSignature} [DecidableEq σ.constants]
+    (encoding : FunctorEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot nameRoot arityRoot : Addr) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match prepareFunctor encoding state.memory state.nextScope termRoot nameRoot
+      arityRoot with
+  | .error error => failWith state error
+  | .ok prepared =>
+      .next {
+        state with
+        memory := prepared.memory
+        nextScope := prepared.nextScope
+        phase := .unifying {
+          body := rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany prepared.memory prepared.pairs)
+      } none
+
+/-- Successful preparation determines the complete `functor/3` transition;
+the action cannot emit an answer or schedule anything outside the canonical
+unifier. -/
+theorem functorStep_of_prepare {σ : LPSignature}
+    [DecidableEq σ.constants]
+    (encoding : FunctorEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (termRoot nameRoot arityRoot : Addr) (rest : List Instruction)
+    (prepared : FunctorPrepared σ)
+    (hPrepare : prepareFunctor encoding state.memory state.nextScope termRoot
+      nameRoot arityRoot = .ok prepared) :
+    functorStep encoding state termRoot nameRoot arityRoot rest =
+      .next {
+        state with
+        memory := prepared.memory
+        nextScope := prepared.nextScope
+        phase := .unifying {
+          body := rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        } (RuntimeUnification.startMany prepared.memory prepared.pairs)
+      } none := by
+  simp [functorStep, hPrepare]
+
 /-- Evaluate one integer expression, allocate its canonical constant, and
 enter the existing graph unifier against the result root. -/
 def integerIsStep {σ : LPSignature} [DecidableEq σ.constants]
@@ -3247,6 +3475,8 @@ inductive DispatchAction (σ : LPSignature)
   | copyTerm (sourceRoot targetRoot : Addr)
   | termVariables (termRoot variablesRoot : Addr)
       (encoding : CollectionEncoding σ)
+  | functor (termRoot nameRoot arityRoot : Addr)
+      (encoding : FunctorEncoding σ)
   | integerIs (resultRoot expressionRoot : Addr)
       (encoding : IntegerArithmeticEncoding σ)
   | integerCompare (leftRoot rightRoot : Addr)
@@ -3396,6 +3626,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
       copyTermStep state sourceRoot targetRoot rest
   | .termVariables termRoot variablesRoot encoding =>
       termVariablesStep encoding state termRoot variablesRoot rest
+  | .functor termRoot nameRoot arityRoot encoding =>
+      functorStep encoding state termRoot nameRoot arityRoot rest
   | .integerIs resultRoot expressionRoot encoding =>
       integerIsStep state resultRoot expressionRoot encoding rest
   | .integerCompare leftRoot rightRoot comparison encoding =>
