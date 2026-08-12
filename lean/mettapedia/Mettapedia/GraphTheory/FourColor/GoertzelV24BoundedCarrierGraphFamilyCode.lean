@@ -143,6 +143,52 @@ theorem boundedCarrierGraphFamilyCode_reachable_iff
     (φ := SimpleGraph.Iso.map (carrierCoordinate carrier)
       ((graphs family).induce (carrier : Set Vertex)))
 
+/-- If every non-isolated vertex of a graph lies in `carrier`, inducing on
+that carrier loses no reachability between its vertices.  The reflexive case
+is kept separate because an isolated named point need not lie in the graph's
+support. -/
+theorem induce_reachable_iff_of_support_subset
+    {Vertex : Type v} [Fintype Vertex]
+    (graph : SimpleGraph Vertex) (carrier : Finset Vertex)
+    (hsupport : graph.support ⊆ (carrier : Set Vertex))
+    (first second : {vertex // vertex ∈ carrier}) :
+    (graph.induce (carrier : Set Vertex)).Reachable first second ↔
+      graph.Reachable first.1 second.1 := by
+  constructor
+  · intro hreachable
+    exact hreachable.map
+      (SimpleGraph.Embedding.induce (carrier : Set Vertex)).toHom
+  · rintro ⟨walk⟩
+    by_cases hnil : walk.Nil
+    · have hfirstSecond : first = second := Subtype.ext hnil.eq
+      subst second
+      exact ⟨.nil⟩
+    · refine ⟨walk.induce (carrier : Set Vertex) ?_⟩
+      intro vertex hvertex
+      exact hsupport
+        (SimpleGraph.mem_support_of_mem_walk_support walk hnil hvertex)
+
+/-- Under a common support bound, the finite code preserves reachability in
+the original ambient graph, not only in its induced carrier graph. -/
+theorem boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
+    {Vertex : Type v} [Fintype Vertex]
+    {Family : Type u}
+    (carrier : Finset Vertex) (bound pointCount : Nat)
+    (hcard : carrier.card ≤ bound)
+    (points : Fin pointCount → {vertex // vertex ∈ carrier})
+    (graphs : Family → SimpleGraph Vertex)
+    (family : Family)
+    (hsupport : (graphs family).support ⊆ (carrier : Set Vertex))
+    (first second : {vertex // vertex ∈ carrier}) :
+    ((boundedCarrierGraphFamilyCode carrier bound pointCount hcard points
+        graphs).graph family).Reachable
+          (carrierCoordinate carrier first)
+          (carrierCoordinate carrier second) ↔
+      (graphs family).Reachable first.1 second.1 := by
+  rw [boundedCarrierGraphFamilyCode_reachable_iff]
+  exact induce_reachable_iff_of_support_subset
+    (graphs family) carrier hsupport first second
+
 end
 
 end GoertzelV24BoundedCarrierGraphFamilyCode

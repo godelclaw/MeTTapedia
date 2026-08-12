@@ -223,6 +223,57 @@ theorem sourceCorridorSerialInputTrackedSeamFamilyCodeAt_reachable_iff
         first second := by
   exact boundedCarrierGraphFamilyCode_reachable_iff _ _ _ _ _ _ _ _ _
 
+/-- Because every non-isolated residual edge lies in the common carrier, the
+finite family preserves the literal ambient seam reachability itself. -/
+theorem sourceCorridorSerialInputTrackedSeamFamilyCodeAt_ambient_reachable_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) (color : G.edgeSet → Color)
+    (pair : TrackedColorPair)
+    (first second : {edge // edge ∈
+      sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+        htwoSided hunique offset}) :
+    ((sourceCorridorSerialInputTrackedSeamFamilyCodeAt realization hcubic
+        hrotation htwoSided hunique offset color).graph pair).Reachable
+        (carrierCoordinate
+          (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic
+            hrotation htwoSided hunique offset) first)
+        (carrierCoordinate
+          (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic
+            hrotation htwoSided hunique offset) second) ↔
+      (sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic hrotation
+        htwoSided hunique offset color
+        (trackedColorPairColors pair).1
+        (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
+  exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
+    (sourceCorridorSerialOutgoingEdgeCarrierAt realization hcubic hrotation
+      htwoSided hunique offset)
+    14 2
+    (sourceCorridorSerialOutgoingEdgeCarrierAt_card_le_fourteen realization
+      hcubic hrotation htwoSided hunique offset)
+    (sourceCorridorSerialOutgoingCrossingPointAt realization hcubic hrotation
+      htwoSided hunique offset)
+    (fun tracked =>
+      sourceCorridorSerialInputTrackedSeamGraphAt realization hcubic hrotation
+        htwoSided hunique offset color
+        (trackedColorPairColors tracked).1
+        (trackedColorPairColors tracked).2)
+    pair
+    (sourceCorridorSerialInputTrackedSeamGraphAt_support_subset_outgoingCarrier
+      realization hcubic hrotation htwoSided hunique offset color
+      (trackedColorPairColors pair).1 (trackedColorPairColors pair).2)
+    first second
+
 end AnnularEmbedding
 
 end SourceTrail
