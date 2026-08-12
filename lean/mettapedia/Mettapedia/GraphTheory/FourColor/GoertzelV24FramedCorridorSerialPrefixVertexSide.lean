@@ -85,6 +85,82 @@ theorem sourceSlabLiteralCellRegionAt_eq_vertexSetRegionEdges_cellSide
     sourceSlabLiteralCellRegionAt_eq_vertexSetRegionEdges_compl realization
       hcubic hrotation htwoSided hunique offset
 
+/-- A literal Cell has four genuine vertex-side frontier edges: its two
+incoming source crossings and its two outgoing source crossings.  In
+particular, the displayed two-edge moving cut is one interface of the Cell,
+not the whole graph-theoretic frontier of its vertex side. -/
+theorem sourceSlabLiteralCellTrueCrossingEdges_card_eq_four
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    (vertexSetCrossingEdges
+      embedded.cellulation.rotation.toRotationSystem
+      (sourceSlabLiteralCellVertexSideAt realization hcubic hrotation
+        htwoSided hunique offset)).card = 4 := by
+  let interface :=
+    sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique offset
+  let pair := interface.separatedLocalLayerPair
+  let boundary := interface.localLayerPairSourceCrosscutBoundaryData hcubic
+  rw [← card_vertexSetCrossingEdge]
+  calc
+    Fintype.card (VertexSetCrossingEdge
+        embedded.cellulation.rotation.toRotationSystem
+        (sourceSlabLiteralCellVertexSideAt realization hcubic hrotation
+          htwoSided hunique offset)) =
+        Fintype.card
+          (Fin pair.left.walk.length ⊕ Fin pair.right.walk.length) := by
+      apply Fintype.card_congr
+      simpa [sourceSlabLiteralCellVertexSideAt, interface, pair, boundary] using
+        (pair.sourceCrosscutComplementPort
+          embedded.cellulation.rotation boundary).symm
+    _ = 4 := by
+      simp [pair, interface,
+        SourceConsecutiveSlabInterface.separatedLocalLayerPair,
+        interface.localLayer_walk_length_eq_two,
+        interface.nextLocalLayer_walk_length_eq_two]
+
+/-- The two outgoing crossings are not, by themselves, the true boundary of
+the literal Cell vertex side.  They are the moving output interface; the two
+incoming crossings remain the fixed input interface. -/
+theorem sourceSlabLiteralCellTrueCrossingEdges_ne_outputCut
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3)) :
+    vertexSetCrossingEdges embedded.cellulation.rotation.toRotationSystem
+        (sourceSlabLiteralCellVertexSideAt realization hcubic hrotation
+          htwoSided hunique offset) ≠
+      Finset.univ.image ((sourceSlabInterfaceAt realization hcubic hrotation
+        htwoSided hunique offset).nextLocalLayerPrefixCrossing) := by
+  intro heq
+  have hcard := congrArg Finset.card heq
+  rw [sourceSlabLiteralCellTrueCrossingEdges_card_eq_four realization hcubic
+      hrotation htwoSided hunique offset,
+    Finset.card_image_iff.mpr
+      ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
+        offset).nextLocalLayerPrefixCrossing_injective.injOn)] at hcard
+  simp only [Finset.card_univ, Fintype.card_fin] at hcard
+  omega
+
 /-- The retained vertex data of the first `cut` literal Cells. -/
 noncomputable def sourceCorridorSerialPrefixVertexSide
     {source : SourceTrail G}
