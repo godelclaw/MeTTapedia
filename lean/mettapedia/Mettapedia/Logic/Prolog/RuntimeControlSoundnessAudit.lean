@@ -19,7 +19,7 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_neg
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_notUnify
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_termTest
-#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_termIdentity
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_termRelation
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.softIfThenElseStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.backtrackStep_softElse_of_restore
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.emptyCurrentStep_soft_of_marker
@@ -65,9 +65,10 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_predicateIndicatorEncoding
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_binaryTest
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_binaryTest
-#print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentityStep_of_result
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.termRelationStep_of_result
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termIdentical_same_of_deref
-#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termIdentity
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.termVariant_unbound_of_deref
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termRelation
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.univStep_of_prepare
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.copyTermStep_of_capture_install
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_univ

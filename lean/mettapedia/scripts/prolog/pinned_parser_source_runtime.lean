@@ -807,13 +807,13 @@ def main (arguments : List String) : IO Unit := do
     (SourceSignature.call "file-id" [
       SourceSignature.atom "a", .var termIdentity])
     (SourceSignature.atom "a")
-  /- `identity.metta` calls PeTTa's diagnostic `test/3`, whose body depends on
-  SWI variant equality `=@=/2` and observable `format/2`.  Neither predicate is
-  implemented by the canonical runtime; `=@=/2` is the first failing goal.
-  Pin the current empty first result separately from SWI's `[true]` so these
-  diagnostic-builtin gaps cannot borrow this file PASS. -/
+  /- `identity.metta` calls PeTTa's diagnostic `test/3`. Variant equality
+  `=@=/2` now succeeds through the canonical read-only graph relation, leaving
+  observable `format/2` as the unimplemented dependency. Pin the current empty
+  first result separately from SWI's `[true]` so the output-effect gap cannot
+  borrow this file PASS. -/
   let identityGapWorld ← requireWorldTermWith fileServices silentWorld
-    "metta_identity_diagnostic_gap_lean_empty"
+    "metta_identity_output_gap_lean_empty"
       (SourceSignature.call "load_metta_file" [
         SourceSignature.string identityInputPath,
         .var termIdentity,
@@ -821,7 +821,7 @@ def main (arguments : List String) : IO Unit := do
       ])
       (SourceSignature.list [])
   checkDatabaseGoal identityGapWorld.database
-    "metta_identity_definition_despite_diagnostic_gap"
+    "metta_identity_definition_despite_output_gap"
     (SourceSignature.call "f" [
       SourceSignature.integer 3, .var termIdentity])
     (SourceSignature.integer 9)

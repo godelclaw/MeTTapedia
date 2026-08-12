@@ -619,6 +619,62 @@ def identityEqualStrings : SourceSignature.Goal :=
 def identityAtomNotZeroArityCompound : SourceSignature.Goal :=
   strictIdentity (atom "f") (compound "f" [])
 
+/-! ## Read-only variance modulo a variable bijection -/
+
+def variantEqual (left right : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "=@=" [left, right]
+
+def notVariant (left right : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "\\=@=" [left, right]
+
+def variantDistinctVariables : SourceSignature.Goal := variantEqual x y
+
+def variantPreservesSharing : SourceSignature.Goal :=
+  variantEqual (pair x x) (pair y y)
+
+def variantRejectsSharingCollapse : SourceSignature.Goal :=
+  variantEqual (pair x x) (pair y z)
+
+/-- The inverse sharing mismatch is equally important: a variance check must
+maintain a bijection, not merely a function from left variables to right. -/
+def variantRejectsSharingExpansion : SourceSignature.Goal :=
+  variantEqual (pair x y) (pair z z)
+
+def notVariantAcceptsSharingMismatch : SourceSignature.Goal :=
+  notVariant (pair x x) (pair y z)
+
+def notVariantAcceptsSharingExpansion : SourceSignature.Goal :=
+  notVariant (pair x y) (pair z z)
+
+def variantPermutesVariableNames : SourceSignature.Goal :=
+  variantEqual (pair x y) (pair y x)
+
+def variantEqualRationalCycles : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x]))
+    (.conj (.unify y (compound "f" [y])) (variantEqual x y))
+
+/-- SWI regards one-node and two-node presentations of the same rational
+unfolding as variants; compound allocation topology is not observable. -/
+def variantEqualRationalUnfoldings : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x]))
+    (.conj (.unify y (compound "f" [z]))
+      (.conj (.unify z (compound "f" [y])) (variantEqual x y)))
+
+def variantRejectsDifferentRationalFunctor : SourceSignature.Goal :=
+  .conj (.unify x (compound "f" [x]))
+    (.conj (.unify y (compound "g" [y])) (variantEqual x y))
+
+/-- A failed variance test does not perform trial binding before DFS enters
+the caller's right alternative. -/
+def variantFailureDoesNotBind : SourceSignature.Goal :=
+  .disj (variantEqual (pair x x) (pair y z))
+    (.conj (.isVar x) (.unify x (atom "b")))
+
+def metaVariantDistinctVariables : SourceSignature.Goal :=
+  metaGoal (compound "=@=" [x, y])
+
 def nonIdentityDifferentCompounds : SourceSignature.Goal :=
   strictNonIdentity (pair (atom "a") (atom "b"))
     (pair (atom "a") (atom "c"))
@@ -2017,6 +2073,19 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
 #guard runCount [] identityEqualStrings == some (1, 0, 0)
 #guard runCount [] identityAtomNotZeroArityCompound == some (0, 0, 0)
 #guard runCount [] nonIdentityDifferentCompounds == some (1, 0, 0)
+#guard runCount [] variantDistinctVariables == some (1, 0, 0)
+#guard runCount [] variantPreservesSharing == some (1, 0, 0)
+#guard runCount [] variantRejectsSharingCollapse == some (0, 0, 0)
+#guard runCount [] variantRejectsSharingExpansion == some (0, 0, 0)
+#guard runCount [] notVariantAcceptsSharingMismatch == some (1, 0, 0)
+#guard runCount [] notVariantAcceptsSharingExpansion == some (1, 0, 0)
+#guard runCount [] variantPermutesVariableNames == some (1, 0, 0)
+#guard runCount [] variantEqualRationalCycles == some (1, 0, 0)
+#guard runCount [] variantEqualRationalUnfoldings == some (1, 0, 0)
+#guard runCount [] variantRejectsDifferentRationalFunctor == some (0, 0, 0)
+#guard runAtomsFor [] variantFailureDoesNotBind xIdentity ==
+  some (["b"], 0, 0)
+#guard runCount [] metaVariantDistinctVariables == some (1, 0, 0)
 #guard runShapesFor [] univDecomposesCompound xIdentity ==
   some ([runtimeTermShape (expectedScoped
     (SourceSignature.list [atom "pair", atom "a", atom "b"]))], 0, 0)

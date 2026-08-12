@@ -93,6 +93,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "src/pl-variant.c",
+      "sha256": "47fd316a3977e0957eedcf2b22779c7bc281dd370a29c0b23636016eb2a8bfea"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-termhash.c",
       "sha256": "d16bd45ff96a87fd32c029b05f5677a1e12ac466de793d4f42559e3eef9921ef"
     },
@@ -352,6 +357,37 @@
       "implementation_status": "adapted",
       "implementation_evidence": [
         "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
+      "id": "runtime.term-variance",
+      "project": "swi-prolog",
+      "sources": ["src/pl-variant.c"],
+      "anchors": [
+        "variant",
+        "isomorphic",
+        "is_variant_ptr",
+        "PRED_IMPL(\"=@=\", 2, variant, 0)",
+        "PRED_IMPL(\"\\\\=@=\", 2, not_variant, 0)"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
         "Mettapedia/Logic/Prolog/SourceRuntime.lean"
       ],
       "proof_status": "partial",

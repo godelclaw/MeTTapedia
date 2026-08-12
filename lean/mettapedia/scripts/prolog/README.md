@@ -256,9 +256,11 @@ fragment, and cannot construct goals, clauses, continuations, or answers.
 `library(pcre)` remains an external obligation.  A separate expected-
 divergence canary pins `identity.metta`: SWI obtains `[true]`, while the Lean
 runtime currently obtains `[]` because PeTTa's diagnostic `test/3` depends on
-two unimplemented SWI predicates: variant equality `=@=/2` (the first failing
-goal) and observable `format/2`.  The test deliberately does not replace
-either dependency with silent success.
+observable `format/2`, whose output-effect transition is not implemented yet.
+Variant equality `=@=/2`, previously the first failing goal in `test/3`, is
+now covered by the shared read-only graph relation and exact SWI differential.
+The test deliberately does not replace the remaining effect with silent
+success.
 The world returned by `process_metta_string/2` is then reused as a persistent
 database, and a fresh query executes `fresh-id(a, Out)` again with exact
 `Out = a` and empty query-local heap/trail cleanup.  This distinguishes an

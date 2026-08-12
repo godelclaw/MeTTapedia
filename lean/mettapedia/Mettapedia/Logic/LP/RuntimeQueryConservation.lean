@@ -352,8 +352,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .throw ball unboundError => .throw ball unboundError
   | .unify left right => .unify left right
   | .termTest address test => .termTest address test
-  | .termIdentity left right expected =>
-      .termIdentity left right expected
+  | .termRelation left right relation expected =>
+      .termRelation left right relation expected
   | .univ termRoot listRoot encoding =>
       .univ termRoot listRoot encoding
   | .copyTerm sourceRoot targetRoot =>
@@ -1343,19 +1343,36 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                                       TermTest.accepts, mapState, mapControl,
                                       mapPhase, mapReturnFrame, mapStepResult,
                                       hMode, hDeref, hCell, hAccept]
-          | termIdentity left right expected =>
-              cases hResult : termIdentical memory.heap left right with
-              | error error =>
-                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
-                    simp [mapDispatchAction, dispatchActionStep,
-                      termIdentityStep, mapState, mapControl, mapPhase,
-                      mapReturnFrame, mapStepResult, failWith, closeMemory,
-                      hResult, hCleanup]
-              | ok actual =>
-                  cases actual <;> cases expected <;>
-                    simp [mapDispatchAction, dispatchActionStep,
-                      termIdentityStep, mapState, mapControl, mapPhase,
-                      mapReturnFrame, mapStepResult, hResult]
+          | termRelation left right relation expected =>
+              cases relation with
+              | identity =>
+                  cases hResult : termIdentical memory.heap left right with
+                  | error error =>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termRelationStep, TermRelation.evaluate, mapState,
+                          mapControl, mapPhase, mapReturnFrame, mapStepResult,
+                          failWith, closeMemory, hResult, hCleanup]
+                  | ok actual =>
+                      cases actual <;> cases expected <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termRelationStep, TermRelation.evaluate, mapState,
+                          mapControl, mapPhase, mapReturnFrame, mapStepResult,
+                          hResult]
+              | variant =>
+                  cases hResult : termVariant memory.heap left right with
+                  | error error =>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termRelationStep, TermRelation.evaluate, mapState,
+                          mapControl, mapPhase, mapReturnFrame, mapStepResult,
+                          failWith, closeMemory, hResult, hCleanup]
+                  | ok actual =>
+                      cases actual <;> cases expected <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termRelationStep, TermRelation.evaluate, mapState,
+                          mapControl, mapPhase, mapReturnFrame, mapStepResult,
+                          hResult]
           | univ termRoot listRoot encoding =>
               cases hPrepare : prepareUniv encoding memory termRoot listRoot with
               | error error =>

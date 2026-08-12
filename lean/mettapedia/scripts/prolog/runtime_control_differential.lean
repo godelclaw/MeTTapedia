@@ -399,6 +399,43 @@ def main : IO Unit := do
   renderCount "nonidentity_different_compounds"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.nonIdentityDifferentCompounds)
+  renderCount "variant_distinct_variables"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantDistinctVariables)
+  renderCount "variant_sharing_same"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantPreservesSharing)
+  renderCount "variant_sharing_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantRejectsSharingCollapse)
+  renderCount "variant_sharing_mismatch_mirror"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantRejectsSharingExpansion)
+  renderCount "not_variant_sharing_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.notVariantAcceptsSharingMismatch)
+  renderCount "not_variant_sharing_mismatch_mirror"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.notVariantAcceptsSharingExpansion)
+  renderCount "variant_variable_permutation"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantPermutesVariableNames)
+  renderCount "variant_equal_rational_cycles"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantEqualRationalCycles)
+  renderCount "variant_equal_rational_unfoldings"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantEqualRationalUnfoldings)
+  renderCount "variant_different_rational_functor"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantRejectsDifferentRationalFunctor)
+  renderStringAnswers "variant_failure_no_bind"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.variantFailureDoesNotBind
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "variant_meta_distinct_variables"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaVariantDistinctVariables)
   renderCount "univ_decompose_compound"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.univDecomposesCompound)

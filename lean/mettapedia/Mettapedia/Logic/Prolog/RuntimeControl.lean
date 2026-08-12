@@ -446,10 +446,10 @@ structure Services (sigma : LP.LPSignature) where
   backtracking; a realization supplies only a test descriptor. -/
   termTest? : RuntimeAtom sigma.scoped →
     Option (Addr × LP.RuntimeQuery.TermTest sigma) := fun _ => none
-  /-- Recognize strict identity and non-identity without inspecting the heap.
-  The Bool is the expected result; graph comparison stays engine-owned. -/
-  termIdentity? : RuntimeAtom sigma.scoped →
-    Option (Addr × Addr × Bool) := fun _ => none
+  /-- Recognize one read-only term relation without inspecting the heap. The
+  Bool is the expected result; graph comparison stays engine-owned. -/
+  termRelation? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × LP.RuntimeQuery.TermRelation × Bool) := fun _ => none
   /-- Recognize `Term =.. List` without inspecting the heap.  The realization
   supplies only roots and its signature encoding; traversal, allocation, and
   unification remain owned by the shared engine. -/
@@ -578,7 +578,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
     (RuntimeGoal sigma.scoped)
   dcgCall? _ := none
   termTest? _ := none
-  termIdentity? _ := none
+  termRelation? _ := none
   univ? _ := none
   integerIs? _ := none
   integerComparison? _ := none
@@ -678,9 +678,9 @@ def dispatchActionWith {sigma : LP.LPSignature}
               match services.termTest? goal with
               | some (address, test) => .termTest address test
               | none =>
-                  match services.termIdentity? goal with
-                  | some (left, right, expected) =>
-                      .termIdentity left right expected
+                  match services.termRelation? goal with
+                  | some (left, right, relation, expected) =>
+                      .termRelation left right relation expected
                   | none =>
                       match services.univ? goal with
                       | some (termRoot, listRoot, encoding) =>
@@ -811,20 +811,22 @@ theorem dispatchActionWith_termTest {sigma : LP.LPSignature}
       .termTest address test := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest]
 
-/-- Strict identity is selected only after the earlier disjoint services
-decline the call; the classifier supplies roots and polarity, not equality. -/
-theorem dispatchActionWith_termIdentity {sigma : LP.LPSignature}
+/-- A read-only graph relation is selected only after the earlier disjoint
+services decline the call; the classifier supplies roots, relation, and
+polarity, not the comparison result. -/
+theorem dispatchActionWith_termRelation {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
     (services : Services sigma) (program : Program sigma)
-    (goal : RuntimeAtom sigma.scoped) (left right : Addr) (expected : Bool)
+    (goal : RuntimeAtom sigma.scoped) (left right : Addr)
+    (relation : LP.RuntimeQuery.TermRelation) (expected : Bool)
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal =
-      some (left, right, expected)) :
+    (hRelation : services.termRelation? goal =
+      some (left, right, relation, expected)) :
     dispatchActionWith services program (.call goal) =
-      .termIdentity left right expected := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity]
+      .termRelation left right relation expected := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation]
 
 /-- `=../2` is selected only after the earlier disjoint services decline the
 call.  The source realization supplies no heap-dependent result. -/
@@ -836,11 +838,11 @@ theorem dispatchActionWith_univ {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = some (termRoot, listRoot, encoding)) :
     dispatchActionWith services program (.call goal) =
       .univ termRoot listRoot encoding := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv]
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv]
 
 theorem dispatchActionWith_integerIs {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
@@ -850,13 +852,13 @@ theorem dispatchActionWith_integerIs {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal =
       some (resultRoot, expressionRoot, encoding)) :
     dispatchActionWith services program (.call goal) =
       .integerIs resultRoot expressionRoot encoding := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs]
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs]
 
 theorem dispatchActionWith_integerComparison {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
@@ -867,14 +869,14 @@ theorem dispatchActionWith_integerComparison {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal =
       some (leftRoot, rightRoot, comparison, encoding)) :
     dispatchActionWith services program (.call goal) =
       .integerCompare leftRoot rightRoot comparison encoding := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison]
 
 /-- `format/3` classification exposes only its three existing roots and one
@@ -886,7 +888,7 @@ theorem dispatchActionWith_format {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -894,7 +896,7 @@ theorem dispatchActionWith_format {sigma : LP.LPSignature}
       some (destination, format, arguments)) :
     dispatchActionWith services program (.call goal) =
       .format destination format arguments services.formatter := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat]
 
 /-- Text/code classification exposes only two existing roots and a read-only
@@ -907,7 +909,7 @@ theorem dispatchActionWith_textConversion {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -915,7 +917,7 @@ theorem dispatchActionWith_textConversion {sigma : LP.LPSignature}
     (hText : services.textConversion? goal = some (text, codes, decoder)) :
     dispatchActionWith services program (.call goal) =
       .textConversion text codes decoder := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText]
 
 /-- A binary test reaches the engine only after every earlier disjoint
@@ -929,7 +931,7 @@ theorem dispatchActionWith_binaryTest {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -938,7 +940,7 @@ theorem dispatchActionWith_binaryTest {sigma : LP.LPSignature}
     (hBinary : services.binaryTest? goal = some (left, right, decoder)) :
     dispatchActionWith services program (.call goal) =
       .binaryTest left right decoder := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText, hBinary]
 
 /-- `phrase/3` reaches its distinct dynamic-grammar action only after every
@@ -951,7 +953,7 @@ theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -961,7 +963,7 @@ theorem dispatchActionWith_dcgCall {sigma : LP.LPSignature}
     (hDcg : services.dcgCall? goal = some (body, input, rest)) :
     dispatchActionWith services program (.call goal) =
       .dcgCall body input rest := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg]
 
 /-- Sorting reaches the shared engine only after every earlier disjoint
@@ -975,7 +977,7 @@ theorem dispatchActionWith_sort {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -985,7 +987,7 @@ theorem dispatchActionWith_sort {sigma : LP.LPSignature}
     (hDcg : services.dcgCall? goal = none)
     (hSort : services.sort? goal = some decoder) :
     dispatchActionWith services program (.call goal) = .sort decoder := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg, hSort]
 
 /-- Standard-term comparison reaches the shared engine as three existing
@@ -999,7 +1001,7 @@ theorem dispatchActionWith_termCompare {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -1012,7 +1014,7 @@ theorem dispatchActionWith_termCompare {sigma : LP.LPSignature}
       some (result, left, right, decoder, encoding)) :
     dispatchActionWith services program (.call goal) =
       .termCompare result left right decoder encoding := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg, hSort, hTermCompare]
 
 /-- Finite deterministic `length/2` exposes only its two existing roots and
@@ -1026,7 +1028,7 @@ theorem dispatchActionWith_listLength {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -1040,7 +1042,7 @@ theorem dispatchActionWith_listLength {sigma : LP.LPSignature}
       some (listRoot, lengthRoot, encoding)) :
     dispatchActionWith services program (.call goal) =
       .listLength listRoot lengthRoot encoding := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg, hSort, hTermCompare, hLength]
 
 /-- Ground `current_predicate/1` membership is coupled to the exact program
@@ -1055,7 +1057,7 @@ theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
-    (hIdentity : services.termIdentity? goal = none)
+    (hRelation : services.termRelation? goal = none)
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
@@ -1072,7 +1074,7 @@ theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
       .predicateDefined indicatorRoot
         ((program.map fun clause => clause.head.symbol) ++
           services.runtimePredicates) encoding := by
-  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg, hSort, hTermCompare, hLength, hCurrent,
     hEncoding]
 

@@ -69,6 +69,7 @@ inductive QueryError where
   | invalidNumberCodes
   | databaseReferenceOutputNotVariable
   | termIdentityBudgetExhausted
+  | termVariantBudgetExhausted
   | termGroundBudgetExhausted
   | termListBudgetExhausted
   | termVariablesBudgetExhausted
@@ -1146,7 +1147,7 @@ def termVariableOccurrences {σ : LPSignature} (heap : Heap σ.scoped)
 bound follows the counting argument that an application root can be paired
 with at most `heap.size` other roots.  Until the general no-exhaustion theorem
 is established, exhaustion remains an explicit error rather than inequality. -/
-def termIdentityFuel (heap : Heap σ) : Nat :=
+def termGraphRelationFuel (heap : Heap σ) : Nat :=
   let edges := heap.foldl (fun total cell =>
     total + cell.references.length) 0
   (heap.size + 1) * (edges + 1) + 1
@@ -1208,7 +1209,7 @@ is a typed runtime error, never ordinary inequality or fabricated completion. -/
 def termIdentical {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols] (heap : Heap σ.scoped)
     (left right : Addr) : Except QueryError Bool :=
-  termIdenticalAux heap (termIdentityFuel heap) [(left, right)] []
+  termIdenticalAux heap (termGraphRelationFuel heap) [(left, right)] []
 
 /-- Reflexivity is reached through real dereference and the nonempty computed
 budget; invalid or variable-cycle roots are deliberately outside the premise. -/
@@ -1217,7 +1218,7 @@ theorem termIdentical_same_of_deref {σ : LPSignature}
     (heap : Heap σ.scoped) (address root : Addr)
     (hDeref : heap.deref address = .ok (.root root)) :
     termIdentical heap address address = .ok true := by
-  simp [termIdentical, termIdentityFuel, termIdenticalAux, hDeref]
+  simp [termIdentical, termGraphRelationFuel, termIdenticalAux, hDeref]
   generalize hFuel :
     (heap.size + 1) *
       (heap.foldl (fun total cell =>
@@ -1231,6 +1232,119 @@ theorem termIdentical_same_of_deref {σ : LPSignature}
         Nat.mul_pos (Nat.zero_lt_succ _) (Nat.zero_lt_succ _)
       omega
   | succ fuel => rfl
+
+/-! ## Read-only term variance -/
+
+private def relationImage? (pairs : List (Addr × Addr)) (left : Addr) :
+    Option Addr :=
+  (pairs.find? fun entry => decide (entry.1 = left)).map Prod.snd
+
+private def relationPreimage? (pairs : List (Addr × Addr)) (right : Addr) :
+    Option Addr :=
+  (pairs.find? fun entry => decide (entry.2 = right)).map Prod.fst
+
+/-- Read-only counterpart of SWI-Prolog V10.1.9's `variant()` traversal
+(`src/pl-variant.c`). Unbound roots are related by a partial bijection, so
+variable sharing is observable while variable names are not. Compound roots
+carry only a left-to-right representative: repeated occurrences are checked
+by strict rational-graph identity because compound sharing itself is not a
+Prolog term distinction. The heap is never written or trailed. -/
+def termVariantAux {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (heap : Heap σ.scoped) :
+    Nat → List (Addr × Addr) → List (Addr × Addr) →
+      List (Addr × Addr) → Except QueryError Bool
+  | _, [], _, _ => .ok true
+  | 0, _, _, _ => .error .termVariantBudgetExhausted
+  | fuel + 1, (left, right) :: rest, compoundMap, variableMap =>
+      match heap.deref left with
+      | .error error => .error (.memory error)
+      | .ok (.variableCycle cycle) =>
+          .error (.memory (.variableReferenceCycle cycle))
+      | .ok (.root leftRoot) =>
+          match heap.deref right with
+          | .error error => .error (.memory error)
+          | .ok (.variableCycle cycle) =>
+              .error (.memory (.variableReferenceCycle cycle))
+          | .ok (.root rightRoot) =>
+              match heap[leftRoot]?, heap[rightRoot]? with
+              | some (.var _ none), some (.var _ none) =>
+                  match relationImage? variableMap leftRoot,
+                      relationPreimage? variableMap rightRoot with
+                  | none, none =>
+                      termVariantAux heap fuel rest compoundMap
+                        ((leftRoot, rightRoot) :: variableMap)
+                  | some mappedRight, some mappedLeft =>
+                      if mappedRight = rightRoot ∧ mappedLeft = leftRoot then
+                        termVariantAux heap fuel rest compoundMap variableMap
+                      else .ok false
+                  | _, _ => .ok false
+              | some (.var _ none), some _ => .ok false
+              | some _, some (.var _ none) => .ok false
+              | some (.const leftValue), some (.const rightValue) =>
+                  if leftValue = rightValue then
+                    termVariantAux heap fuel rest compoundMap variableMap
+                  else .ok false
+              | some (.app leftSymbol leftArgs),
+                  some (.app rightSymbol rightArgs) =>
+                  if leftSymbol = rightSymbol ∧
+                      leftArgs.size = rightArgs.size then
+                    match relationImage? compoundMap leftRoot with
+                    | some representative =>
+                        match termIdentical heap representative rightRoot with
+                        | .error error => .error error
+                        | .ok true =>
+                            termVariantAux heap fuel rest compoundMap variableMap
+                        | .ok false => .ok false
+                    | none =>
+                        termVariantAux heap fuel
+                          (leftArgs.toList.zip rightArgs.toList ++ rest)
+                          ((leftRoot, rightRoot) :: compoundMap) variableMap
+                  else .ok false
+              | some (.var _ (some _)), _ =>
+                  .error (.memory .illFormedHeap)
+              | _, some (.var _ (some _)) =>
+                  .error (.memory .illFormedHeap)
+              | some _, some _ => .ok false
+              | none, _ => .error (.memory (.invalidAddress leftRoot))
+              | _, none => .error (.memory (.invalidAddress rightRoot))
+
+/-- Decide whether two finite or rational heap terms differ only by a
+bijection on their unbound variables. Exhaustion is an explicit runtime
+error, never ordinary non-variance or fabricated completion. -/
+def termVariant {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (heap : Heap σ.scoped)
+    (left right : Addr) : Except QueryError Bool :=
+  termVariantAux heap (termGraphRelationFuel heap) [(left, right)] [] []
+
+/-- The two read-only graph relations supported by the shared runtime. -/
+inductive TermRelation where
+  | identity
+  | variant
+deriving DecidableEq, Repr
+
+def TermRelation.evaluate {σ : LPSignature} [DecidableEq σ.constants]
+    [DecidableEq σ.functionSymbols] (relation : TermRelation)
+    (heap : Heap σ.scoped) (left right : Addr) : Except QueryError Bool :=
+  match relation with
+  | .identity => termIdentical heap left right
+  | .variant => termVariant heap left right
+
+/-- Two reachable unbound variables are variants even when their heap roots
+differ. This is the smallest theorem discriminating variance from strict
+identity; it reaches the real partial-bijection insertion case. -/
+theorem termVariant_unbound_of_deref {σ : LPSignature}
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    (heap : Heap σ.scoped) (left right leftRoot rightRoot : Addr)
+    (leftIdentity rightIdentity : σ.scoped.vars)
+    (hLeft : heap.deref left = .ok (.root leftRoot))
+    (hRight : heap.deref right = .ok (.root rightRoot))
+    (hLeftCell : heap[leftRoot]? =
+      some (.var (σ := σ.scoped) leftIdentity none))
+    (hRightCell : heap[rightRoot]? =
+      some (.var (σ := σ.scoped) rightIdentity none)) :
+    termVariant heap left right = .ok true := by
+  simp [termVariant, termGraphRelationFuel, termVariantAux, hLeft, hRight,
+    hLeftCell, hRightCell, relationImage?, relationPreimage?]
 
 /-- One immutable candidate in a call-time database-clause snapshot. Stable
 identity is separate from the normalized clause term so matching cannot forge
@@ -3715,15 +3829,16 @@ theorem termTestStep_properList_rejects {σ : LPSignature}
       .next { state with phase := .backtrack } none := by
   simp [termTestStep, TermTest.isProperList, hList]
 
-/-- Test strict graph identity without binding.  `expected = true` realizes
-`==/2`; `expected = false` realizes `\==/2` through the same comparison and
-ordinary backtracking path. -/
-def termIdentityStep {σ : LPSignature} [DecidableEq σ.constants]
+/-- Test one read-only graph relation without binding. `expected` selects the
+positive or negative Prolog predicate through the same ordinary backtracking
+path. -/
+def termRelationStep {σ : LPSignature} [DecidableEq σ.constants]
     [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
-    (left right : Addr) (expected : Bool) (rest : List Instruction) :
+    (left right : Addr) (relation : TermRelation) (expected : Bool)
+    (rest : List Instruction) :
     StepResultCore σ Instruction SourceClause :=
-  match termIdentical state.memory.heap left right with
+  match relation.evaluate state.memory.heap left right with
   | .error error => failWith state error
   | .ok actual =>
       if actual = expected then
@@ -3733,21 +3848,22 @@ def termIdentityStep {σ : LPSignature} [DecidableEq σ.constants]
         } none
       else .next { state with phase := .backtrack } none
 
-/-- A completed identity comparison has exactly the polarity-controlled
+/-- A completed graph comparison has exactly the polarity-controlled
 shared transition; it cannot bind, trail, emit an answer, or choose work. -/
-theorem termIdentityStep_of_result {σ : LPSignature}
+theorem termRelationStep_of_result {σ : LPSignature}
     [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
     (state : StateCore σ Instruction SourceClause)
-    (left right : Addr) (expected actual : Bool) (rest : List Instruction)
-    (hResult : termIdentical state.memory.heap left right = .ok actual) :
-    termIdentityStep state left right expected rest =
+    (left right : Addr) (relation : TermRelation)
+    (expected actual : Bool) (rest : List Instruction)
+    (hResult : relation.evaluate state.memory.heap left right = .ok actual) :
+    termRelationStep state left right relation expected rest =
       if actual = expected then
         .next {
           state with
           control := { state.control with current := rest }
         } none
       else .next { state with phase := .backtrack } none := by
-  simp [termIdentityStep, hResult]
+  simp [termRelationStep, hResult]
 
 /-- Execute one prepared `=../2` operation through the canonical graph
 unifier.  Preparation owns only finite heap inspection/allocation; all binding,
@@ -3960,7 +4076,8 @@ inductive DispatchAction (σ : LPSignature)
       (unboundError : Option (RuntimeException.Packet σ))
   | unify (left right : Addr)
   | termTest (address : Addr) (test : TermTest σ)
-  | termIdentity (left right : Addr) (expected : Bool)
+  | termRelation (left right : Addr) (relation : TermRelation)
+      (expected : Bool)
   | univ (termRoot listRoot : Addr) (encoding : UnivEncoding σ)
   | copyTerm (sourceRoot targetRoot : Addr)
   | termVariables (termRoot variablesRoot : Addr)
@@ -4113,8 +4230,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   | .throw ball unboundError => throwStep state ball unboundError
   | .unify left right => beginUnifyStep state left right rest
   | .termTest address test => termTestStep state address test rest
-  | .termIdentity left right expected =>
-      termIdentityStep state left right expected rest
+  | .termRelation left right relation expected =>
+      termRelationStep state left right relation expected rest
   | .univ termRoot listRoot encoding =>
       univStep state termRoot listRoot encoding rest
   | .copyTerm sourceRoot targetRoot =>

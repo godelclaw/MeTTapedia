@@ -1042,16 +1042,28 @@ def termTest? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | _, _ => none
 
-/-- Recognize strict identity and its negation.  The source layer exposes only
-two roots and the expected Bool; rational-graph comparison remains in the
-shared LP runtime. -/
-def termIdentity? (goal : RuntimeAtom Sigma.scoped) :
-    Option (Addr × Addr × Bool) :=
+/-- Recognize strict identity, variance, and their negations. The source layer
+exposes only two roots, a relation tag, and the expected Bool; rational-graph
+comparison remains in the shared LP runtime. -/
+def termRelation? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × LP.RuntimeQuery.TermRelation × Bool) :=
   match goal.symbol.name, goal.args.toList with
   | "==", [left, right] =>
-      if goal.symbol.arity = 2 then some (left, right, true) else none
+      if goal.symbol.arity = 2 then
+        some (left, right, .identity, true)
+      else none
   | "\\==", [left, right] =>
-      if goal.symbol.arity = 2 then some (left, right, false) else none
+      if goal.symbol.arity = 2 then
+        some (left, right, .identity, false)
+      else none
+  | "=@=", [left, right] =>
+      if goal.symbol.arity = 2 then
+        some (left, right, .variant, true)
+      else none
+  | "\\=@=", [left, right] =>
+      if goal.symbol.arity = 2 then
+        some (left, right, .variant, false)
+      else none
   | _, _ => none
 
 /-- Recognize `=../2` without inspecting the heap.  Direction selection and
@@ -1367,7 +1379,7 @@ def services : RuntimeControl.Services Sigma where
   decoder := { decode := decodeCallable, decodeDcg := decodeDcg }
   dcgCall? := dcgCall?
   termTest? := termTest?
-  termIdentity? := termIdentity?
+  termRelation? := termRelation?
   univ? := univ?
   integerIs? := integerIs?
   integerComparison? := integerComparison?
@@ -1620,8 +1632,8 @@ theorem services_termTest :
     services.termTest? = termTest? := rfl
 
 @[simp]
-theorem services_termIdentity :
-    services.termIdentity? = termIdentity? := rfl
+theorem services_termRelation :
+    services.termRelation? = termRelation? := rfl
 
 @[simp]
 theorem services_univ :
