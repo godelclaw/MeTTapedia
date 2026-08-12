@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryProfileFiniteState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedCorridorOpenProfile
 
 /-!
@@ -20,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24CorridorProfileRestriction
 
 open GoertzelV24CorridorProfile
+open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24GraphDerivedCorridorCutProfile
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
@@ -69,6 +71,39 @@ def CorridorCutProfile.restrictCrossings
   fragmentContainsPort fragment port :=
     profile.fragmentContainsPort fragment (mapCorridorPort inclusion port)
   faceLengthCap := profile.faceLengthCap
+
+/-- Restrict the crossing coordinates of a bounded profile without changing
+its recorded face-fragment count.  This is only dependent-carrier packaging:
+the complete five-field payload is restricted by the underlying raw-profile
+operation. -/
+def restrictBoundedCrossings
+    {smallWidth largeWidth terminalCount faceFragmentBound : Nat}
+    (profile : BoundedCorridorCutProfile largeWidth terminalCount
+      faceFragmentBound)
+    (inclusion : Fin smallWidth → Fin largeWidth) :
+    BoundedCorridorCutProfile smallWidth terminalCount faceFragmentBound where
+  faceFragmentCount := profile.faceFragmentCount
+  profile := CorridorCutProfile.restrictCrossings profile.profile inclusion
+
+@[simp]
+theorem restrictBoundedCrossings_faceFragmentCount
+    {smallWidth largeWidth terminalCount faceFragmentBound : Nat}
+    (profile : BoundedCorridorCutProfile largeWidth terminalCount
+      faceFragmentBound)
+    (inclusion : Fin smallWidth → Fin largeWidth) :
+    (restrictBoundedCrossings profile inclusion).faceFragmentCount =
+      profile.faceFragmentCount :=
+  rfl
+
+@[simp]
+theorem restrictBoundedCrossings_profile
+    {smallWidth largeWidth terminalCount faceFragmentBound : Nat}
+    (profile : BoundedCorridorCutProfile largeWidth terminalCount
+      faceFragmentBound)
+    (inclusion : Fin smallWidth → Fin largeWidth) :
+    (restrictBoundedCrossings profile inclusion).profile =
+      CorridorCutProfile.restrictCrossings profile.profile inclusion :=
+  rfl
 
 /-- Restrict the raw crossing coordinates of graph-derived cut data while
 leaving its region, terminals, and fragment indexing unchanged. -/
