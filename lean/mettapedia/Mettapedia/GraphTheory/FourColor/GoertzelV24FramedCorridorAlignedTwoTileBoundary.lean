@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorIntercellRailSupport
-import Mettapedia.GraphTheory.FourColor.GoertzelV24DualCycleCrossingInjective
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedLocalDualCycleSeparator
 
 /-!
 # Source-aligned two-tile boundary support
@@ -19,6 +19,7 @@ open GoertzelV24CleanHexCorridor
 open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24FramedLocalDualCycleSeparator
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
@@ -441,6 +442,46 @@ theorem sourceTwoTileAlignedBoundaryCrossingEdgesAt_card_eq_six
     (sourceTwoTileAlignedBoundaryWalkAt_isCycle realization hcubic hrotation
       htwoSided hunique offset),
     sourceTwoTileAlignedBoundaryWalkAt_length_eq_six]
+
+/-- Deleting the six primal edges crossed by the source-aligned boundary
+disconnects the ambient graph. -/
+theorem sourceTwoTileAlignedBoundaryCut_not_connected
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 4)) :
+    ¬ (G.deleteEdges (localEdgeFinsetValueSet
+      (sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic hrotation
+        htwoSided hunique offset))).Connected := by
+  let walk := sourceTwoTileAlignedBoundaryWalkAt realization hcubic hrotation
+    htwoSided hunique offset
+  have hcut : localDualWalkPrimalCut embedded.cellulation.rotation hunique walk =
+      localEdgeFinsetValueSet
+        (sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic hrotation
+          htwoSided hunique offset) := by
+    exact localDualWalkPrimalCut_eq_localEdgeFinsetValueSet_dualWalkCrossingEdges
+      embedded.cellulation.rotation hunique walk
+  rw [← hcut]
+  apply not_connected_deleteEdges_localDualWalkPrimalCut_of_isCycle
+    embedded.cellulation.rotation
+  · apply
+      GoertzelV24NonisolatedFaceDualConnectedness.orbitFaceInteriorDual_connected_of_simpleGraph
+        embedded.cellulation.rotation embedded.cellulation.connected
+    exact embedded.cellulation.vertexRotation_cyclic
+  · exact embedded.cellulation.connected
+  · exact embedded.cellulation.euler
+  · simpa [walk] using
+      sourceTwoTileAlignedBoundaryWalkAt_isCycle realization hcubic hrotation
+        htwoSided hunique offset
 
 /-- Even before simplicity is used, the provenance theorem gives the sharp
 six-edge upper bound: two crossings from each transverse layer and exactly
