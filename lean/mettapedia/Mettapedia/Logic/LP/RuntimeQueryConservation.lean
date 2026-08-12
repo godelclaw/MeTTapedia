@@ -289,6 +289,7 @@ def mapState (instruction : Instruction₁ → Instruction₂)
   queryCheckpoint := state.queryCheckpoint
   queryVarMap := state.queryVarMap
   nextScope := state.nextScope
+  persistentHeapFloor := state.persistentHeapFloor
   phase := mapPhase instruction sourceClause state.phase
 
 /-- Representation change on the narrow output of clause materialization. -/
@@ -387,17 +388,17 @@ theorem collectAnswerStep_conserves
       mapStepResult instruction sourceClause
         (collectAnswerStep state handler) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   cases hCapture : RuntimeException.capture memory.heap handler.template with
   | error error =>
-      cases hCleanup : memory.restore checkpoint <;>
+      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
         simp [collectAnswerStep, mapState, mapControl, mapPhase,
           mapStepResult, failWith, closeMemory, hCapture, hCleanup]
   | ok packet =>
       cases hRecord : recordCollectionChoice handler.choiceDepth
           (packet.freshTerm nextScope) choices with
       | none =>
-          cases hCleanup : memory.restore checkpoint <;>
+          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
             simp [collectAnswerStep, mapState, mapControl, mapPhase,
               mapStepResult, failWith, closeMemory,
               hCapture, hRecord, hCleanup]
@@ -420,10 +421,10 @@ theorem finalizeCollectionStep_conserves [DecidableEq sigma.scoped.vars]
       mapStepResult instruction sourceClause
         (finalizeCollectionStep state boundary older) := by
   rcases state with ⟨stateMemory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
-  cases hRestore : stateMemory.restore boundary.checkpoint with
+    nextScope, heapFloor, phase⟩
+  cases hRestore : stateMemory.restorePreserving heapFloor boundary.checkpoint with
   | error error =>
-      cases hCleanup : stateMemory.restore checkpoint <;>
+      cases hCleanup : stateMemory.restorePreserving heapFloor checkpoint <;>
         simp [finalizeCollectionStep, mapState, mapControl, mapPhase,
           mapCollectionChoice, mapStepResult, failWith,
           closeMemory, hRestore, hCleanup]
@@ -431,7 +432,7 @@ theorem finalizeCollectionStep_conserves [DecidableEq sigma.scoped.vars]
       cases hMaterialize : RuntimeMaterialize.materializeTerm restored
           (boundary.encoding.listTerm boundary.reversed.reverse) with
       | error error =>
-          cases hCleanup : restored.restore checkpoint <;>
+          cases hCleanup : restored.restorePreserving heapFloor checkpoint <;>
             simp [finalizeCollectionStep, mapState, mapControl, mapPhase,
               mapCollectionChoice, mapStepResult, failWith,
               closeMemory, hRestore, hMaterialize, hCleanup]
@@ -450,10 +451,10 @@ theorem captureThrowStep_conserves
     captureThrowStep (mapState instruction sourceClause state) ball =
       mapStepResult instruction sourceClause (captureThrowStep state ball) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   cases hCapture : RuntimeException.capture memory.heap ball with
   | error error =>
-      cases hCleanup : memory.restore checkpoint <;>
+      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
         simp [captureThrowStep, mapState, mapControl, mapPhase,
           mapStepResult, failWith, closeMemory, hCapture, hCleanup]
   | ok packet =>
@@ -523,18 +524,18 @@ theorem rollbackTransactionException_conserves
       mapStepResult instruction sourceClause
         (rollbackTransactionException state packet target) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   rcases target with ⟨frame, handler, outerFrames⟩
-  cases hRestore : memory.restore handler.checkpoint with
+  cases hRestore : memory.restorePreserving heapFloor handler.checkpoint with
   | error error =>
-      cases hCleanup : memory.restore checkpoint <;>
+      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
         simp [rollbackTransactionException, mapState, mapPhase, mapControl,
           mapTransactionTarget, mapReturnFrame, mapStepResult,
           failWith, closeMemory, hRestore, hCleanup]
   | ok restored =>
       cases hClose : closeTransactionChoice handler.choiceDepth choices with
       | none =>
-          cases hCleanup : restored.restore checkpoint <;>
+          cases hCleanup : restored.restorePreserving heapFloor checkpoint <;>
             simp [rollbackTransactionException, mapState, mapPhase, mapControl,
               mapTransactionTarget, mapReturnFrame,
               mapStepResult, failWith, closeMemory, hRestore, hClose, hCleanup]
@@ -559,10 +560,10 @@ theorem commitTransactionStep_conserves
       mapStepResult instruction sourceClause
         (commitTransactionStep state frame handler frames) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   cases hClose : closeTransactionChoice handler.choiceDepth choices with
   | none =>
-      cases hCleanup : memory.restore checkpoint <;>
+      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
         simp [commitTransactionStep, mapState, mapPhase, mapControl,
           mapStepResult, failWith, closeMemory,
           hClose, hCleanup]
@@ -581,12 +582,12 @@ theorem passException_conserves
       mapStepResult instruction sourceClause
         (passException state selection) := by
   rcases state with ⟨stateMemory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   rcases selection with ⟨packet, target, throwMemory, packetRoot⟩
   rcases target with ⟨frame, handler, outerFrames⟩
   cases hOuter : findExceptionBoundary outerFrames with
   | none =>
-      cases hCleanup : throwMemory.restore checkpoint <;>
+      cases hCleanup : throwMemory.restorePreserving heapFloor checkpoint <;>
         simp [passException, raiseUnhandled, mapState, mapPhase, mapControl,
           mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
           mapChoicePoint, mapStepResult, findExceptionBoundary_map, closeMemory,
@@ -603,7 +604,7 @@ theorem passException_conserves
             mapExceptionBoundary, findExceptionBoundary_map, hOuter] using
             rollbackTransactionException_conserves instruction sourceClause
               (StateCore.mk throwMemory control choices checkpoint queryVarMap
-                nextScope phase)
+                nextScope heapFloor phase)
               packet nextTarget
 
 set_option linter.unusedSimpArgs false in
@@ -618,13 +619,13 @@ theorem beginCatchRecovery_conserves [DecidableEq sigma.scoped.vars]
       mapStepResult instruction sourceClause
         (beginCatchRecovery state selection memory) := by
   rcases state with ⟨stateMemory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   rcases selection with ⟨packet, target, throwMemory, packetRoot⟩
   rcases target with ⟨frame, handler, outerFrames⟩
   by_cases hDepth : handler.choiceDepth ≤ choices.length
-  · cases hRestore : memory.restore handler.checkpoint with
+  · cases hRestore : memory.restorePreserving heapFloor handler.checkpoint with
     | error error =>
-        cases hCleanup : memory.restore checkpoint <;>
+        cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
           simp [beginCatchRecovery, mapState, mapPhase, mapControl,
             mapCatchSelection, mapCatchTarget, mapCatchHandler,
             mapReturnFrame, mapChoicePoint, mapStepResult, failWith,
@@ -632,7 +633,7 @@ theorem beginCatchRecovery_conserves [DecidableEq sigma.scoped.vars]
     | ok restored =>
         cases hInstall : packet.install restored nextScope with
         | error error =>
-            cases hCleanup : restored.restore checkpoint <;>
+            cases hCleanup : restored.restorePreserving heapFloor checkpoint <;>
               simp [beginCatchRecovery, mapState, mapPhase, mapControl,
                 mapCatchSelection, mapCatchTarget, mapCatchHandler,
                 mapReturnFrame, mapChoicePoint, mapStepResult, failWith,
@@ -642,7 +643,7 @@ theorem beginCatchRecovery_conserves [DecidableEq sigma.scoped.vars]
               mapCatchSelection, mapCatchTarget, mapCatchHandler,
               mapReturnFrame, mapChoicePoint, mapStepResult, retainBottom,
               hDepth, hRestore, hInstall]
-  · cases hCleanup : memory.restore checkpoint <;>
+  · cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
       simp [beginCatchRecovery, mapState, mapPhase, mapControl,
         mapCatchSelection, mapCatchTarget, mapCatchHandler, mapReturnFrame,
         mapChoicePoint, mapStepResult, failWith, closeMemory, hDepth, hCleanup]
@@ -656,10 +657,10 @@ theorem raisingStep_conserves [DecidableEq sigma.scoped.vars]
     raisingStep (mapState instruction sourceClause state) packet =
       mapStepResult instruction sourceClause (raisingStep state packet) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   cases hTarget : findExceptionBoundary control.frames with
   | none =>
-      cases hCleanup : memory.restore checkpoint <;>
+      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
         simp [raisingStep, raiseUnhandled, mapState, mapPhase, mapControl,
           mapStepResult, findExceptionBoundary_map, hTarget, closeMemory,
           hCleanup]
@@ -670,12 +671,12 @@ theorem raisingStep_conserves [DecidableEq sigma.scoped.vars]
             findExceptionBoundary_map, hTarget] using
             rollbackTransactionException_conserves instruction sourceClause
               (StateCore.mk memory control choices checkpoint queryVarMap
-                nextScope phase)
+                nextScope heapFloor phase)
               packet target
       | catcher target =>
           cases hInstall : packet.install memory nextScope with
           | error error =>
-              cases hCleanup : memory.restore checkpoint <;>
+              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [raisingStep, mapState, mapPhase, mapControl, mapStepResult,
                   mapExceptionBoundary, findExceptionBoundary_map, hTarget,
                   failWith, closeMemory, hInstall, hCleanup]
@@ -702,8 +703,8 @@ theorem catchSelectingStep_conserves [DecidableEq sigma.scoped.vars]
       cases hStep : RuntimeUnification.step (.running running) with
       | none =>
           rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-            nextScope, phase⟩
-          cases hCleanup : memory.restore checkpoint <;>
+            nextScope, heapFloor, phase⟩
+          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
             simp [catchSelectingStep, mapState, mapPhase, mapControl,
               mapStepResult, failWith, closeMemory, hStep, hCleanup]
       | some next =>
@@ -719,8 +720,8 @@ theorem catchSelectingStep_conserves [DecidableEq sigma.scoped.vars]
             selection
       | runtimeError error memory =>
           rcases state with ⟨stateMemory, control, choices, checkpoint,
-            queryVarMap, nextScope, phase⟩
-          cases hCleanup : memory.restore checkpoint <;>
+            queryVarMap, nextScope, heapFloor, phase⟩
+          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
             simp [catchSelectingStep, mapState, mapPhase, mapControl,
               mapStepResult, failWith, closeMemory, hCleanup]
 
@@ -741,8 +742,8 @@ theorem catchRecoveringStep_conserves [DecidableEq sigma.constants]
       cases hStep : RuntimeUnification.step (.running running) with
       | none =>
           rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-            nextScope, phase⟩
-          cases hCleanup : memory.restore checkpoint <;>
+            nextScope, heapFloor, phase⟩
+          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
             simp [catchRecoveringStep, mapState, mapPhase, mapControl,
               mapStepResult, failWith, closeMemory, hStep, hCleanup]
       | some next =>
@@ -761,8 +762,8 @@ theorem catchRecoveringStep_conserves [DecidableEq sigma.constants]
             selection
       | runtimeError error memory =>
           rcases state with ⟨stateMemory, control, choices, checkpoint,
-            queryVarMap, nextScope, phase⟩
-          cases hCleanup : memory.restore checkpoint <;>
+            queryVarMap, nextScope, heapFloor, phase⟩
+          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
             simp [catchRecoveringStep, mapState, mapPhase, mapControl,
               mapStepResult, failWith, closeMemory, hCleanup]
 
@@ -856,50 +857,50 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
       mapStepResult instruction sourceClause
         (stepCore sourceMaterializer sourceClassify state) := by
   rcases state with ⟨memory, control, choices, checkpoint, queryVarMap,
-    nextScope, phase⟩
+    nextScope, heapFloor, phase⟩
   cases phase with
   | raising packet =>
       simpa [stepCore, stepCoreWithMeta, mapState, mapPhase] using
         raisingStep_conserves instruction sourceClause
           (StateCore.mk memory control choices checkpoint queryVarMap nextScope
-            (.raising packet)) packet
+            heapFloor (.raising packet)) packet
   | catchSelecting selection machine =>
       simpa [stepCore, stepCoreWithMeta, mapState, mapPhase] using
         catchSelectingStep_conserves instruction sourceClause
           (StateCore.mk memory control choices checkpoint queryVarMap nextScope
-            (.catchSelecting selection machine)) selection machine
+            heapFloor (.catchSelecting selection machine)) selection machine
   | catchRecovering selection machine =>
       simpa [stepCore, stepCoreWithMeta, mapState, mapPhase] using
         catchRecoveringStep_conserves instruction sourceClause
           (StateCore.mk memory control choices checkpoint queryVarMap nextScope
-            (.catchRecovering selection machine)) selection machine
+            heapFloor (.catchRecovering selection machine)) selection machine
   | afterAnswer =>
       simp [stepCore, mapState, mapPhase, mapControl, mapStepResult,
         afterAnswerStep]
   | backtrack =>
       cases choices with
       | nil =>
-          cases hRestore : memory.restore checkpoint <;>
+          cases hRestore : memory.restorePreserving heapFloor checkpoint <;>
             simp [stepCore, mapState, mapPhase, mapControl, mapStepResult,
               backtrackStep, complete, closeMemory, hRestore]
       | cons cursor older =>
           cases cursor with
           | clause cursor =>
-              cases hRestore : memory.restore cursor.checkpoint <;>
-                cases hCleanup : memory.restore checkpoint <;>
+              cases hRestore : memory.restorePreserving heapFloor cursor.checkpoint <;>
+                cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl, mapCursor,
                   mapChoicePoint, mapStepResult, backtrackStep, failWith,
                   closeMemory, hRestore, hCleanup]
           | branch alternative =>
-              cases hRestore : memory.restore alternative.checkpoint <;>
-                cases hCleanup : memory.restore checkpoint <;>
+              cases hRestore : memory.restorePreserving heapFloor alternative.checkpoint <;>
+                cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl,
                   mapBranchChoice, mapChoicePoint, mapStepResult,
                   backtrackStep, resumeBranchStep, failWith, closeMemory,
                   hRestore, hCleanup]
           | softElse alternative =>
-              cases hRestore : memory.restore alternative.checkpoint <;>
-                cases hCleanup : memory.restore checkpoint <;>
+              cases hRestore : memory.restorePreserving heapFloor alternative.checkpoint <;>
+                cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl,
                   mapBranchChoice, mapChoicePoint, mapStepResult,
                   backtrackStep, resumeBranchStep, failWith, closeMemory,
@@ -910,16 +911,16 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                 finalizeCollectionStep_conserves instruction sourceClause
                   (StateCore.mk memory control
                     (.collection boundary :: older) checkpoint queryVarMap
-                    nextScope .backtrack) boundary older
+                    nextScope heapFloor .backtrack) boundary older
           | transaction boundary =>
-              cases hRestore : memory.restore boundary.checkpoint <;>
-                cases hCleanup : memory.restore checkpoint <;>
+              cases hRestore : memory.restorePreserving heapFloor boundary.checkpoint <;>
+                cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl,
                   mapTransactionChoice, mapChoicePoint, mapStepResult,
                   backtrackStep, failWith, closeMemory, hRestore, hCleanup]
           | databaseClause cursor =>
-              cases hRestore : memory.restore cursor.checkpoint <;>
-                cases hCleanup : memory.restore checkpoint <;>
+              cases hRestore : memory.restorePreserving heapFloor cursor.checkpoint <;>
+                cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl,
                   mapDatabaseClauseCursor, mapChoicePoint, mapStepResult,
                   backtrackStep, failWith, closeMemory, hRestore, hCleanup]
@@ -944,7 +945,8 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                         ⟨[], cutDepth,
                           ⟨continuation, callerCutDepth, commit, handlerOption,
                             some handler, transactionOption⟩ :: frames⟩
-                        choices checkpoint queryVarMap nextScope .dispatch)
+                        choices checkpoint queryVarMap nextScope heapFloor
+                        .dispatch)
                       handler
               | none =>
                   cases transactionOption with
@@ -957,7 +959,8 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                               ⟨continuation, callerCutDepth, commit,
                                 handlerOption, none,
                                 some transactionHandler⟩ :: frames⟩
-                            choices checkpoint queryVarMap nextScope .dispatch)
+                            choices checkpoint queryVarMap nextScope heapFloor
+                            .dispatch)
                           ⟨continuation, callerCutDepth, commit, handlerOption,
                             none, some transactionHandler⟩
                           transactionHandler frames
@@ -971,7 +974,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                           · simp [stepCore, mapState, mapPhase, mapControl,
                               mapReturnFrame, mapChoicePoint, mapStepResult,
                               emptyCurrentStep, retainBottom, hDepth]
-                          · cases hCleanup : memory.restore checkpoint <;>
+                          · cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                               simp [stepCore, mapState, mapPhase, mapControl,
                                 mapReturnFrame, mapChoicePoint, mapStepResult,
                                 emptyCurrentStep, failWith, closeMemory, hDepth,
@@ -981,7 +984,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                           · simp [stepCore, mapState, mapPhase, mapControl,
                               mapReturnFrame, mapChoicePoint, mapStepResult,
                               emptyCurrentStep, hDepth]
-                          · cases hCleanup : memory.restore checkpoint <;>
+                          · cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                               simp [stepCore, mapState, mapPhase, mapControl,
                                 mapReturnFrame, mapChoicePoint, mapStepResult,
                                 emptyCurrentStep, failWith, closeMemory, hDepth,
@@ -1003,7 +1006,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               · simp [mapDispatchAction, dispatchActionStep, cutStep,
                   mapState, mapControl, mapCursor, mapPhase, mapReturnFrame,
                   mapStepResult, retainBottom, hDepth]
-              · cases hCleanup : memory.restore checkpoint <;>
+              · cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                   simp [mapDispatchAction, dispatchActionStep, cutStep,
                     mapState, mapControl, mapCursor, mapPhase, mapReturnFrame,
                     mapStepResult, failWith, closeMemory, retainBottom,
@@ -1034,13 +1037,13 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                 mapCollectionChoice, mapChoicePoint, mapStepResult,
                 List.map_append]
           | metaCall callable extraArgs =>
-              cases hCleanup : memory.restore checkpoint <;>
+              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, metaCallStep,
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
                   mapReturnFrame, mapStepResult, failWith, closeMemory,
                   hCleanup]
           | dcgCall body input restRoot =>
-              cases hCleanup : memory.restore checkpoint <;>
+              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, dcgCallStep,
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
                   mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1049,7 +1052,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               cases hDecode : decoder.decode memory.heap destination format
                   arguments with
               | error reason =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, formatStep,
                       mapState, mapControl, mapPhase, mapReturnFrame,
                       mapStepResult, failWith, closeMemory, hDecode, hCleanup]
@@ -1058,7 +1061,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   | codes encoding head tail values =>
                       cases hAllocate : allocateConstants memory values with
                       | error error =>
-                          cases hCleanup : memory.restore checkpoint <;>
+                          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                             simp [mapDispatchAction, dispatchActionStep,
                               formatStep, dcgConstantTerminalsStep,
                               mapState, mapControl, mapPhase, mapReturnFrame,
@@ -1069,7 +1072,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                           cases hSegment : allocateAddressSegment encoding
                               middle roots tail with
                           | error error =>
-                              cases hCleanup : middle.restore checkpoint <;>
+                              cases hCleanup : middle.restorePreserving heapFloor checkpoint <;>
                                 simp [mapDispatchAction, dispatchActionStep,
                                   formatStep, dcgConstantTerminalsStep,
                                   dcgAddressTerminalsStep, mapState,
@@ -1087,7 +1090,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | textConversion text codes decoder =>
               cases hDecode : decoder.decode memory.heap text codes with
               | error reason =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       textConversionStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1097,7 +1100,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   | codes encoding output values =>
                       cases hValues : allocateConstants memory values with
                       | error error =>
-                          cases hCleanup : memory.restore checkpoint <;>
+                          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                             simp [mapDispatchAction, dispatchActionStep,
                               textConversionStep, mapState, mapControl,
                               mapPhase, mapReturnFrame, mapStepResult,
@@ -1108,7 +1111,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                           cases hList : allocateAddressList encoding middle
                               roots with
                           | error error =>
-                              cases hCleanup : memory.restore checkpoint <;>
+                              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                                 simp [mapDispatchAction, dispatchActionStep,
                                   textConversionStep, mapState, mapControl,
                                   mapPhase, mapReturnFrame, mapStepResult,
@@ -1124,7 +1127,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   | text output value =>
                       cases hValue : memory.allocate (.const value) with
                       | error error =>
-                          cases hCleanup : memory.restore checkpoint <;>
+                          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                             simp [mapDispatchAction, dispatchActionStep,
                               textConversionStep, mapState, mapControl,
                               mapPhase, mapReturnFrame, mapStepResult,
@@ -1139,7 +1142,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | binaryTest left right decoder =>
               cases hDecode : decoder.decode memory.heap left right with
               | error reason =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       binaryTestStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1152,7 +1155,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | sort decoder =>
               cases hDecode : decoder.decode memory.heap with
               | error reason =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, sortStep,
                       mapState, mapControl, mapPhase, mapReturnFrame,
                       mapStepResult, failWith, closeMemory, hDecode, hCleanup]
@@ -1160,7 +1163,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   rcases plan with ⟨encoding, output, elements⟩
                   cases hList : allocateAddressList encoding memory elements with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep, sortStep,
                           mapState, mapControl, mapPhase, mapReturnFrame,
                           mapStepResult, failWith, closeMemory, hDecode, hList,
@@ -1175,7 +1178,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               cases hPrepare : prepareListLength encoding memory listRoot
                   lengthRoot with
               | error reason =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       listLengthStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1190,7 +1193,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               cases hDecode : decodePredicateIndicator encoding memory.heap
                   indicatorRoot with
               | error reason =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       predicateDefinedStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1218,6 +1221,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     queryCheckpoint := checkpoint
                     queryVarMap
                     nextScope
+                    persistentHeapFloor := heapFloor
                     phase := .dispatch }
                   ball unboundError
           | unify left right =>
@@ -1229,7 +1233,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               | properList encoding =>
                   cases hList : termProperList encoding memory.heap address with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           termTestStep, mapState, mapControl, mapPhase,
                           mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1242,7 +1246,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               | ground =>
                   cases hGround : termGround memory.heap address with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           termTestStep, mapState, mapControl, mapPhase,
                           mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1255,7 +1259,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               | shallow =>
                   cases hDeref : memory.heap.deref address with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           termTestStep, mapState, mapControl, mapPhase,
                           mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1263,7 +1267,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   | ok result =>
                       cases result with
                       | variableCycle cycle =>
-                          cases hCleanup : memory.restore checkpoint <;>
+                          cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                             simp [mapDispatchAction, dispatchActionStep,
                               termTestStep, mapState, mapControl, mapPhase,
                               mapReturnFrame, mapStepResult, failWith,
@@ -1271,7 +1275,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                       | root root =>
                           cases hCell : memory.heap[root]? with
                           | none =>
-                              cases hCleanup : memory.restore checkpoint <;>
+                              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                                 simp [mapDispatchAction, dispatchActionStep,
                                   termTestStep, mapState, mapControl, mapPhase,
                                   mapReturnFrame, mapStepResult, failWith,
@@ -1311,7 +1315,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | termIdentity left right expected =>
               cases hResult : termIdentical memory.heap left right with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       termIdentityStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1324,7 +1328,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | univ termRoot listRoot encoding =>
               cases hPrepare : prepareUniv encoding memory termRoot listRoot with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, univStep,
                       mapState, mapControl, mapAttempt, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1336,7 +1340,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | copyTerm sourceRoot targetRoot =>
               cases hCapture : RuntimeException.capture memory.heap sourceRoot with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, copyTermStep,
                       mapState, mapControl, mapAttempt, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1344,7 +1348,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               | ok packet =>
                   cases hInstall : packet.install memory nextScope with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           copyTermStep, mapState, mapControl, mapAttempt,
                           mapPhase, mapReturnFrame, mapStepResult, failWith,
@@ -1357,7 +1361,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | termVariables termRoot variablesRoot encoding =>
               cases hRoots : termVariableRoots memory.heap termRoot with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       termVariablesStep, mapState, mapControl, mapAttempt,
                       mapPhase, mapReturnFrame, mapStepResult, failWith,
@@ -1365,7 +1369,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               | ok roots =>
                   cases hAllocate : allocateAddressList encoding memory roots with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           termVariablesStep, mapState, mapControl, mapAttempt,
                           mapPhase, mapReturnFrame, mapStepResult, failWith,
@@ -1380,7 +1384,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               cases hPrepare : prepareFunctor encoding memory nextScope termRoot
                   nameRoot arityRoot with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, functorStep,
                       mapState, mapControl, mapAttempt, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1392,7 +1396,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | integerIs resultRoot expressionRoot encoding =>
               cases hEval : evalInteger encoding memory.heap expressionRoot with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, integerIsStep,
                       mapState, mapControl, mapAttempt, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1401,7 +1405,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   cases hAllocate : memory.allocate
                       (.const (encoding.encodeInteger value)) with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           integerIsStep, mapState, mapControl, mapAttempt,
                           mapPhase, mapReturnFrame, mapStepResult, failWith,
@@ -1415,7 +1419,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           | integerCompare leftRoot rightRoot comparison encoding =>
               cases hLeft : evalInteger encoding memory.heap leftRoot with
               | error error =>
-                  cases hCleanup : memory.restore checkpoint <;>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep,
                       integerCompareStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1423,7 +1427,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               | ok left =>
                   cases hRight : evalInteger encoding memory.heap rightRoot with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           integerCompareStep, mapState, mapControl, mapPhase,
                           mapReturnFrame, mapStepResult, failWith, closeMemory,
@@ -1464,7 +1468,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   cases hCheck : checkDatabaseReferenceOutput memory
                       referenceRoot with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           checkedDatabaseRequestStep, databaseRequestStep,
                           mapState, mapControl, mapPhase, mapReturnFrame,
@@ -1479,7 +1483,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   cases hCheck : checkDatabaseReferenceOutput memory
                       referenceRoot with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [mapDispatchAction, dispatchActionStep,
                           checkedDatabaseRequestStep, databaseRequestStep,
                           mapState, mapControl, mapPhase, mapReturnFrame,
@@ -1505,8 +1509,23 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     checkedDatabaseRequestStep, databaseRequestStep,
                     mapState, mapControl, mapPhase, mapReturnFrame,
                     mapStepResult]
+              | globalSet nameRoot valueRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | globalGet nameRoot valueRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
+              | globalDelete nameRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
           | error reason =>
-              cases hCleanup : memory.restore checkpoint <;>
+              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, mapState,
                   mapControl, mapPhase, mapStepResult, failWith, closeMemory,
                   hCleanup]
@@ -1524,7 +1543,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           cases hMaterialize :
               sourceMaterializer.materialize memory nextScope clause with
           | error error =>
-              cases hCleanup : memory.restore checkpoint <;>
+              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [Except.map, mapStepResult, mapState, mapControl,
                   mapCursor, mapPhase, failWith, closeMemory, hMaterialize,
                   hCleanup]
@@ -1537,13 +1556,13 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                       mapAttempt, mapPhase,
                       mapReturnFrame, replacementChoices, hMaterialize,
                       RuntimeClauseEntry.enter, hPredicate, hArity]
-                · cases hCleanup : memory.restore checkpoint <;>
+                · cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [Except.map, mapMaterializedBody, mapStepResult,
                       mapState, mapControl, mapCursor, mapAttempt, mapPhase,
                       mapReturnFrame, replacementChoices, failWith,
                       closeMemory, hMaterialize, RuntimeClauseEntry.enter,
                       hPredicate, hArity, hCleanup]
-              · cases hCleanup : memory.restore checkpoint <;>
+              · cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                   simp [Except.map, mapMaterializedBody, mapStepResult,
                     mapState, mapControl, mapCursor, mapAttempt, mapPhase,
                     mapReturnFrame, replacementChoices, failWith,
@@ -1553,7 +1572,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
       cases machine with
       | running running =>
           cases hStep : RuntimeUnification.step (.running running) <;>
-            cases hCleanup : memory.restore checkpoint <;>
+            cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
             simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
               mapCursor, mapStepResult, unifyingStep, failWith, closeMemory,
               hStep, hCleanup]
@@ -1567,7 +1586,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
               simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
                 mapCursor, mapStepResult, unifyingStep]
           | runtimeError error errorMemory =>
-              cases hCleanup : errorMemory.restore checkpoint <;>
+              cases hCleanup : errorMemory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, mapState, mapPhase, mapControl, mapAttempt,
                   mapCursor, mapStepResult, unifyingStep, failWith,
                   closeMemory, hCleanup]
@@ -1580,7 +1599,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
           cases hMaterialize : RuntimeMaterialize.materializeTerm memory
               (candidate.clause.atScope nextScope) with
           | error error =>
-              cases hCleanup : memory.restore checkpoint <;>
+              cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
                   mapControl, mapDatabaseClauseCursor, mapChoicePoint, mapAttempt,
                   mapStepResult, databaseClauseSelectStep, hCandidates,
@@ -1599,7 +1618,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   cases hAllocate : copied.memory.allocate
                       (.const (referenceConstant candidate.reference)) with
                   | error error =>
-                      cases hCleanup : memory.restore checkpoint <;>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                         simp [stepCore, stepCoreWithMeta, mapState, mapPhase,
                           mapControl, mapDatabaseClauseCursor, mapChoicePoint,
                           mapAttempt, mapReturnFrame, mapStepResult,
@@ -1646,7 +1665,7 @@ theorem pullCore_conserves [DecidableEq sigma.scoped.vars]
       cases hStep : stepCore sourceMaterializer sourceClassify state with
       | terminal result => rfl
       | databaseRequest request next =>
-          cases hRestore : next.memory.restore next.queryCheckpoint <;>
+          cases hRestore : next.memory.restorePreserving next.persistentHeapFloor next.queryCheckpoint <;>
             simp [mapStepResult, mapPullResult, mapState, failPullWith,
               closeMemory, hRestore]
       | next next observation =>

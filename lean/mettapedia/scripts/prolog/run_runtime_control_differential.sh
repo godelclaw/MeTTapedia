@@ -15,6 +15,7 @@ trap 'rm -rf "$TMP"' EXIT
 pushd "$ROOT_DIR" >/dev/null
 lake build Mettapedia.Logic.Prolog.RuntimeControlRegression \
   Mettapedia.Logic.Prolog.SourceRuntimeRegression \
+  Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression \
   Mettapedia.Logic.Prolog.ReaderDCGRegression >/dev/null
 lake env lean --run scripts/prolog/runtime_control_differential.lean \
   > "$TMP/lean.txt"

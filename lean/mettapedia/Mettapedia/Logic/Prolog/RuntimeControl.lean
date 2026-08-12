@@ -513,6 +513,12 @@ structure Services (sigma : LP.LPSignature) where
   `Session` may apply it. -/
   databaseRequest? : RuntimeAtom sigma.scoped →
     Option LP.RuntimeQuery.DatabaseRequest := fun _ => none
+  /-- Decode the atom naming a non-backtrackable global.  Recognition remains
+  heap-blind; only the persistent session may invoke this read-only decoder
+  after the canonical engine has consumed the instruction. -/
+  decodeGlobalName : Heap sigma.scoped → Addr →
+    Except LP.RuntimeQuery.QueryError sigma.constants :=
+      fun _ _ => .error .invalidGlobalVariableName
   /-- Read-only conversion of a heap root into the one canonical source-clause
   representation.  It owns neither mutation nor continuation scheduling. -/
   decodeClause : Heap sigma.scoped → Addr →
@@ -557,6 +563,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   termVariables? _ := none
   functor? _ := none
   databaseRequest? _ := none
+  decodeGlobalName _ _ := .error .invalidGlobalVariableName
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
   unboundThrowError := none
@@ -1050,12 +1057,56 @@ def pullWith {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
   LP.RuntimeQuery.pullCoreWithMeta clauseMaterializer services.decoder
     (dispatchActionWith services program)
 
+/-- One persistent non-backtrackable global names an ordinary root in the
+canonical heap.  Roots below `StateCore.persistentHeapFloor` survive arena
+restoration, while writes to their variables remain on the ordinary trail and
+therefore still undo on Prolog backtracking. -/
+abbrev GlobalStore (sigma : LP.LPSignature) := List (sigma.constants × Addr)
+
+namespace GlobalStore
+
+def lookup [DecidableEq sigma.constants] (store : GlobalStore sigma)
+    (name : sigma.constants) : Option Addr :=
+  (store.find? fun entry => entry.1 = name).map Prod.snd
+
+def set [DecidableEq sigma.constants] (store : GlobalStore sigma)
+    (name : sigma.constants) (root : Addr) : GlobalStore sigma :=
+  (name, root) :: store.filter (fun entry => entry.1 != name)
+
+def erase [DecidableEq sigma.constants] (store : GlobalStore sigma)
+    (name : sigma.constants) : GlobalStore sigma :=
+  store.filter (fun entry => entry.1 != name)
+
+@[simp]
+theorem lookup_set_self [DecidableEq sigma.constants]
+    (store : GlobalStore sigma) (name : sigma.constants) (root : Addr) :
+    (store.set name root).lookup name = some root := by
+  simp [set, lookup]
+
+@[simp]
+theorem lookup_erase_self [DecidableEq sigma.constants]
+    (store : GlobalStore sigma) (name : sigma.constants) :
+    (store.erase name).lookup name = none := by
+  simp [erase, lookup, List.find?_eq_none]
+
+end GlobalStore
+
+/-- Persistent state that crosses top-level source goals.  The database and
+global-name table are non-backtrackable; `memory` contains their protected
+heap graph and `nextScope` dominates every allocated variable identity. -/
+structure World (sigma : LP.LPSignature) where
+  database : LP.RuntimeDatabase.Database (Clause sigma)
+  memory : Memory sigma.scoped
+  nextScope : Nat
+  globals : GlobalStore sigma := []
+
 /-- A resumable typed session retains the persistent logical-update database
-beside the one canonical query state.  The database is structurally outside
-the backtrackable `State`, choice points, and return frames; restoring any of
-those resources therefore cannot restore a stale database generation. -/
+and non-backtrackable globals beside the one canonical query state.  Both are
+structurally outside the backtrackable `State`, choice points, and return
+frames; restoring those resources cannot restore stale persistent state. -/
 structure Session (sigma : LP.LPSignature) where
   database : LP.RuntimeDatabase.Database (Clause sigma)
+  globals : GlobalStore sigma := []
   state : State sigma
   services : Services sigma := noServices sigma
   /-- Newest-first entry snapshots of active database transactions.  This
@@ -1081,6 +1132,28 @@ def rollbackAllDatabase (session : Session sigma) :
     | [snapshot] => some snapshot
     | _ :: rest => oldest? rest
   (oldest? session.transactionSnapshots).getD session.database
+
+/-- Package the session's persistent resources around an explicitly selected
+memory.  Database transactions roll back defensively; global updates do not. -/
+def worldWithMemory (session : Session sigma)
+    (memory : Memory sigma.scoped) : World sigma := {
+  database := session.rollbackAllDatabase
+  memory
+  nextScope := session.state.nextScope
+  globals := session.globals
+}
+
+/-- Commit the current successful query prefix as the next top-level world.
+Clearing the trail commits its live bindings; protecting the complete current
+heap makes every stored global root valid when the next query opens.  Hidden
+query-local cells are harmless retained garbage and can be compacted later
+without changing semantics. -/
+def commitWorld (session : Session sigma) : World sigma := {
+  database := session.database
+  memory := { session.state.memory with trail := #[] }
+  nextScope := session.state.nextScope
+  globals := session.globals
+}
 
 end Session
 
@@ -1110,6 +1183,21 @@ def openSessionDatabaseWith {sigma : LP.LPSignature}
     Except LP.RuntimeQuery.QueryError (Session sigma) := do
   let state ← openQuery memory queryScope nextScope goal
   pure { database, state, services }
+
+/-- Open a fresh top-level query over the complete persistent world.  The new
+query receives a fresh activation scope, and every carried heap cell starts
+below the protected floor so no query-local choice can reclaim global roots. -/
+def openSessionWorldWith {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars]
+    (services : Services sigma) (world : World sigma) (goal : Goal sigma) :
+    Except LP.RuntimeQuery.QueryError (Session sigma) := do
+  let state ← openQuery world.memory world.nextScope (world.nextScope + 1) goal
+  pure {
+    database := world.database
+    globals := world.globals
+    state := { state with persistentHeapFloor := world.memory.heap.size }
+    services
+  }
 
 /-- Opening a session installs exactly the supplied source program as the
 generation-zero visible database.  Adding stable references is representation
@@ -1145,24 +1233,25 @@ def openEmpty {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
   openSession (Memory.empty sigma.scoped) 0 1 program goal
 
 /-- One session step either retains the complete live session or closes the
-query while still returning its persistent database. -/
+query while returning every persistent resource needed by a later query. -/
 inductive SessionStepResult (sigma : LP.LPSignature) where
   | next (session : Session sigma)
       (observation : Option (LP.RuntimeQuery.Observation sigma))
   | terminal (result : LP.RuntimeQuery.Terminal sigma)
-      (database : LP.RuntimeDatabase.Database (Clause sigma))
+      (world : World sigma)
 
 /-- Close a session error through the same exact query-checkpoint restoration
-as the shared runtime, while preserving the persistent database separately. -/
+as the shared runtime, while preserving the complete persistent world. -/
 def failSession (session : Session sigma)
     (state : State sigma) (error : LP.RuntimeQuery.QueryError) :
     SessionStepResult sigma :=
-  match state.memory.restore state.queryCheckpoint with
+  match state.memory.restorePreserving state.persistentHeapFloor
+      state.queryCheckpoint with
   | .ok memory =>
-      .terminal (.runtimeError error memory) session.rollbackAllDatabase
+      .terminal (.runtimeError error memory) (session.worldWithMemory memory)
   | .error cleanup =>
       .terminal (.runtimeError (.cleanupFailed error cleanup) state.memory)
-        session.rollbackAllDatabase
+        (session.worldWithMemory state.memory)
 
 /-- Call-time visible and successfully revalidated database-clause candidates,
 in source order with stable identities. Invalid or absent provenance is
@@ -1178,7 +1267,8 @@ def databaseClauseCandidates (session : Session sigma) :
 /-- Apply one engine-issued persistent request. Decoding/reflection is
 read-only; generation advance and database replacement happen exactly here,
 outside all backtrackable query resources. -/
-def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
+def applyDatabaseRequest [DecidableEq sigma.scoped.vars]
+    [DecidableEq sigma.constants] [DecidableEq sigma.functionSymbols]
     (session : Session sigma)
     (state : State sigma) (request : LP.RuntimeQuery.DatabaseRequest) :
     SessionStepResult sigma :=
@@ -1239,7 +1329,8 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
                     state := next
                   } observation
               | .terminal terminal =>
-                  .terminal terminal session.database
+                  .terminal terminal
+                    (session.worldWithMemory terminal.memory)
               | .databaseRequest _ next =>
                   failSession session next .unhandledDatabaseRequest
   | .assertzWithReference root referenceRoot =>
@@ -1259,7 +1350,8 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
                     state := next
                   } observation
               | .terminal terminal =>
-                  .terminal terminal session.database
+                  .terminal terminal
+                    (session.worldWithMemory terminal.memory)
               | .databaseRequest _ next =>
                   failSession session next .unhandledDatabaseRequest
   | .retract pattern =>
@@ -1270,7 +1362,8 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
               (databaseClauseCandidates session) with
           | .next next observation =>
               .next { session with state := next } observation
-          | .terminal terminal => .terminal terminal session.database
+          | .terminal terminal =>
+              .terminal terminal (session.worldWithMemory terminal.memory)
           | .databaseRequest _ next =>
               failSession session next .unhandledDatabaseRequest
   | .clause head body reference =>
@@ -1281,17 +1374,59 @@ def applyDatabaseRequest [DecidableEq sigma.functionSymbols]
               (databaseClauseCandidates session) with
           | .next next observation =>
               .next { session with state := next } observation
-          | .terminal terminal => .terminal terminal session.database
+          | .terminal terminal =>
+              .terminal terminal (session.worldWithMemory terminal.memory)
           | .databaseRequest _ next =>
               failSession session next .unhandledDatabaseRequest
   | .eraseRef reference =>
       match session.database.eraseRef reference with
       | none => .next { session with state } none
       | some (_, database) => .next { session with database, state } none
+  | .globalSet nameRoot valueRoot =>
+      match session.services.decodeGlobalName state.memory.heap nameRoot with
+      | .error error => failSession session state error
+      | .ok name =>
+          match LP.RuntimeException.capture state.memory.heap valueRoot with
+          | .error error => failSession session state (.globalValueReadback error)
+          | .ok packet =>
+              match packet.install state.memory state.nextScope with
+              | .error error => failSession session state (.memory error)
+              | .ok installed =>
+                  .next {
+                    session with
+                    globals := session.globals.set name installed.root
+                    state := {
+                      state with
+                      memory := installed.memory
+                      nextScope := installed.nextScope
+                      persistentHeapFloor := installed.memory.heap.size
+                    }
+                  } none
+  | .globalGet nameRoot valueRoot =>
+      match session.services.decodeGlobalName state.memory.heap nameRoot with
+      | .error error => failSession session state error
+      | .ok name =>
+          match session.globals.lookup name with
+          | none => failSession session state .undefinedGlobalVariable
+          | some storedRoot =>
+              match LP.RuntimeQuery.beginUnifyStep state storedRoot valueRoot
+                  state.control.current with
+              | .next next observation =>
+                  .next { session with state := next } observation
+              | .terminal terminal =>
+                  .terminal terminal (session.worldWithMemory terminal.memory)
+              | .databaseRequest _ next =>
+                  failSession session next .unhandledDatabaseRequest
+  | .globalDelete nameRoot =>
+      match session.services.decodeGlobalName state.memory.heap nameRoot with
+      | .error error => failSession session state error
+      | .ok name =>
+          .next { session with globals := session.globals.erase name, state } none
 
 /-- Beginning a transaction transfers the current persistent database into the
 newest snapshot slot without changing the database or query state. -/
 theorem applyDatabaseRequest_transactionBegin
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) :
     applyDatabaseRequest session state .transactionBegin =
@@ -1304,6 +1439,7 @@ theorem applyDatabaseRequest_transactionBegin
 /-- Commit consumes exactly the newest snapshot and preserves the live database
 produced by the protected computation. -/
 theorem applyDatabaseRequest_transactionCommit
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma)
     (snapshot : LP.RuntimeDatabase.Database (Clause sigma)) (snapshots) :
@@ -1315,6 +1451,7 @@ theorem applyDatabaseRequest_transactionCommit
 /-- Rollback consumes exactly the newest snapshot and restores it as the live
 database, leaving every enclosing transaction snapshot in place. -/
 theorem applyDatabaseRequest_transactionRollback
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma)
     (snapshot : LP.RuntimeDatabase.Database (Clause sigma)) (snapshots) :
@@ -1340,6 +1477,7 @@ theorem Session.rollbackAllDatabase_two
 /-- A successfully decoded `asserta/1` request performs exactly one front
 insertion and leaves the already-advanced canonical query state untouched. -/
 theorem applyDatabaseRequest_asserta_of_decode
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) (root : Addr)
     (clause : Clause sigma)
@@ -1356,6 +1494,7 @@ theorem applyDatabaseRequest_asserta_of_decode
 /-- A successfully decoded `assertz/1` request performs exactly one back
 insertion and leaves the already-advanced canonical query state untouched. -/
 theorem applyDatabaseRequest_assertz_of_decode
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) (root : Addr)
     (clause : Clause sigma)
@@ -1372,6 +1511,7 @@ theorem applyDatabaseRequest_assertz_of_decode
 /-- `asserta/2` inserts exactly once only after the shared engine has begun
 canonical binding of the stable reference output. -/
 theorem applyDatabaseRequest_assertaWithReference_of_decode_bind
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state next : State sigma)
     (root referenceRoot : Addr) (clause : Clause sigma)
@@ -1399,6 +1539,7 @@ theorem applyDatabaseRequest_assertaWithReference_of_decode_bind
 /-- `assertz/2` has the analogous single-insertion/reference-binding handoff
 for source-order back insertion. -/
 theorem applyDatabaseRequest_assertzWithReference_of_decode_bind
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state next : State sigma)
     (root referenceRoot : Addr) (clause : Clause sigma)
@@ -1426,6 +1567,7 @@ theorem applyDatabaseRequest_assertzWithReference_of_decode_bind
 /-- Successful occurrence erasure advances exactly to the database returned
 by the stable-reference operation and preserves the live query state. -/
 theorem applyDatabaseRequest_eraseRef_of_some
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) (reference : Nat)
     (clause : Clause sigma)
@@ -1439,12 +1581,74 @@ theorem applyDatabaseRequest_eraseRef_of_some
 is a successful no-op on retry, matching SWI's redo discipline; it neither
 rewinds nor advances the database. -/
 theorem applyDatabaseRequest_eraseRef_of_none
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
     [DecidableEq sigma.functionSymbols]
     (session : Session sigma) (state : State sigma) (reference : Nat)
     (hErase : session.database.eraseRef reference = none) :
     applyDatabaseRequest session state (.eraseRef reference) =
       .next { session with state } none := by
   simp [applyDatabaseRequest, hErase]
+
+/-- A successful global set is one finite capture followed by one ordinary
+packet installation.  The exact installed root is entered in the persistent
+name table, and the protected floor advances to the resulting heap top. -/
+theorem applyDatabaseRequest_globalSet_of_decode_capture_install
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma)
+    (nameRoot valueRoot : Addr) (name : sigma.constants)
+    (packet : LP.RuntimeException.Packet sigma)
+    (installed : LP.RuntimeException.Installed sigma)
+    (hName : session.services.decodeGlobalName state.memory.heap nameRoot =
+      .ok name)
+    (hCapture : LP.RuntimeException.capture state.memory.heap valueRoot =
+      .ok packet)
+    (hInstall : packet.install state.memory state.nextScope = .ok installed) :
+    applyDatabaseRequest session state (.globalSet nameRoot valueRoot) =
+      .next {
+        session with
+        globals := session.globals.set name installed.root
+        state := {
+          state with
+          memory := installed.memory
+          nextScope := installed.nextScope
+          persistentHeapFloor := installed.memory.heap.size
+        }
+      } none := by
+  simp [applyDatabaseRequest, hName, hCapture, hInstall]
+
+/-- A successful global get selects exactly the root stored under the decoded
+name and hands that root to the canonical unifier.  The session layer neither
+copies nor otherwise interprets the stored graph. -/
+theorem applyDatabaseRequest_globalGet_of_decode_lookup_bind
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state next : State sigma)
+    (nameRoot valueRoot storedRoot : Addr) (name : sigma.constants)
+    (observation : Option (LP.RuntimeQuery.Observation sigma))
+    (hName : session.services.decodeGlobalName state.memory.heap nameRoot =
+      .ok name)
+    (hLookup : session.globals.lookup name = some storedRoot)
+    (hBind : LP.RuntimeQuery.beginUnifyStep state storedRoot valueRoot
+      state.control.current = .next next observation) :
+    applyDatabaseRequest session state (.globalGet nameRoot valueRoot) =
+      .next { session with state := next } observation := by
+  simp only [applyDatabaseRequest, hName]
+  simp only [hLookup]
+  rw [hBind]
+
+/-- Deleting a decoded name is exactly persistent-map erasure and never
+depends on whether that name was present. -/
+theorem applyDatabaseRequest_globalDelete_of_decode
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma) (nameRoot : Addr)
+    (name : sigma.constants)
+    (hName : session.services.decodeGlobalName state.memory.heap nameRoot =
+      .ok name) :
+    applyDatabaseRequest session state (.globalDelete nameRoot) =
+      .next { session with globals := session.globals.erase name, state } none := by
+  simp [applyDatabaseRequest, hName]
 
 /-- One session transition delegates search to `stepCoreWithMeta` and handles
 only the persistent request that the shared engine may return. -/
@@ -1456,7 +1660,8 @@ def stepSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
   | .next state observation => .next { session with state } observation
   | .databaseRequest request state =>
       applyDatabaseRequest session state request
-  | .terminal result => .terminal result session.rollbackAllDatabase
+  | .terminal result =>
+      .terminal result (session.worldWithMemory result.memory)
 
 /-- An ordinary shared-machine step cannot change the persistent database;
 only the explicit database-request arm above has that authority. -/
@@ -1475,7 +1680,7 @@ inductive SessionPullResult (sigma : LP.LPSignature) where
   | open (session : Session sigma)
   | answer (value : LP.RuntimeQuery.Answer sigma) (session : Session sigma)
   | terminal (result : LP.RuntimeQuery.Terminal sigma)
-      (database : LP.RuntimeDatabase.Database (Clause sigma))
+      (world : World sigma)
 
 /-- Pull and repackage only the resumable session; execution remains in
 `RuntimeQuery.pullCore`. -/
@@ -1487,7 +1692,7 @@ def pullSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
   | 0 => .open session
   | fuel + 1 =>
       match stepSession session with
-      | .terminal result database => .terminal result database
+      | .terminal result world => .terminal result world
       | .next next none => pullSession fuel next
       | .next next (some (.answer answer)) => .answer answer next
 

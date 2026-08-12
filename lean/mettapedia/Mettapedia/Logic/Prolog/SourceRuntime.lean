@@ -1009,6 +1009,21 @@ def functorPredicate : PredicateIndicator := {
   arity := 3
 }
 
+def nbSetvalPredicate : PredicateIndicator := {
+  name := "nb_setval"
+  arity := 2
+}
+
+def nbGetvalPredicate : PredicateIndicator := {
+  name := "nb_getval"
+  arity := 2
+}
+
+def nbDeletePredicate : PredicateIndicator := {
+  name := "nb_delete"
+  arity := 1
+}
+
 def integerIs? (goal : RuntimeAtom Sigma.scoped) :
     Option (Addr × Addr × LP.RuntimeQuery.IntegerArithmeticEncoding Sigma) :=
   match goal.symbol.name, goal.args.toList with
@@ -1065,7 +1080,27 @@ def databaseRequest? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 3 then
         some (.clause headRoot bodyRoot referenceRoot)
       else none
+  | "nb_setval", [nameRoot, valueRoot] =>
+      if goal.symbol.arity = 2 then
+        some (.globalSet nameRoot valueRoot)
+      else none
+  | "nb_getval", [nameRoot, valueRoot] =>
+      if goal.symbol.arity = 2 then
+        some (.globalGet nameRoot valueRoot)
+      else none
+  | "nb_delete", [nameRoot] =>
+      if goal.symbol.arity = 1 then some (.globalDelete nameRoot) else none
   | _, _ => none
+
+/-- Decode exactly an atom name for SWI-style global variables. -/
+def decodeGlobalName (heap : Heap Sigma.scoped) (root : Addr) :
+    Except LP.RuntimeQuery.QueryError SourceSignature.Constant := do
+  let cell ← dereferencedCell heap root
+  match cell with
+  | .var _ none => .error .globalVariableNameUnbound
+  | .var _ (some _) => .error (.memory .illFormedHeap)
+  | .const name@(.atom _) => .ok name
+  | _ => .error .invalidGlobalVariableName
 
 /-- Map the precise local decoder boundary into runtime errors.  ISO packet
 construction for these errors remains an explicit later conformance step. -/
@@ -1095,11 +1130,12 @@ def services : RuntimeControl.Services Sigma where
   currentPredicate? := currentPredicate?
   predicateIndicatorEncoding := some predicateIndicatorEncoding
   runtimePredicates := [copyTermPredicate, termVariablesPredicate,
-    functorPredicate]
+    functorPredicate, nbSetvalPredicate, nbGetvalPredicate, nbDeletePredicate]
   copyTerm? := copyTerm?
   termVariables? := termVariables?
   functor? := functor?
   databaseRequest? := databaseRequest?
+  decodeGlobalName := decodeGlobalName
   decodeClause := decodeClause
   reflectClause := ClauseReflection.reflect?
   unboundThrowError := some throwInstantiationError
@@ -1127,7 +1163,39 @@ theorem services_copyTerm : services.copyTerm? = copyTerm? := rfl
 @[simp]
 theorem services_runtimePredicates :
     services.runtimePredicates = [copyTermPredicate, termVariablesPredicate,
-      functorPredicate] := rfl
+      functorPredicate, nbSetvalPredicate, nbGetvalPredicate,
+      nbDeletePredicate] := rfl
+
+@[simp]
+theorem services_decodeGlobalName :
+    services.decodeGlobalName = decodeGlobalName := rfl
+
+@[simp]
+theorem dispatchActionWith_nbSetval (program : SourceSignature.Program)
+    (nameRoot valueRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := nbSetvalPredicate
+      args := #[nameRoot, valueRoot]
+    }) = .database (.globalSet nameRoot valueRoot) := by
+  rfl
+
+@[simp]
+theorem dispatchActionWith_nbGetval (program : SourceSignature.Program)
+    (nameRoot valueRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := nbGetvalPredicate
+      args := #[nameRoot, valueRoot]
+    }) = .database (.globalGet nameRoot valueRoot) := by
+  rfl
+
+@[simp]
+theorem dispatchActionWith_nbDelete (program : SourceSignature.Program)
+    (nameRoot : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := nbDeletePredicate
+      args := #[nameRoot]
+    }) = .database (.globalDelete nameRoot) := by
+  rfl
 
 /-- The concrete source realization exposes `copy_term/2` as exactly the
 shared copy action; no source clause, decoder result, or fallback call is
@@ -1246,6 +1314,13 @@ def openDatabase
     Except LP.RuntimeQuery.QueryError Session :=
   RuntimeControl.openSessionDatabaseWith services
     (Memory.empty Sigma.scoped) 0 1 database goal
+
+/-- Open a later top-level source goal over the complete persistent world,
+including non-backtrackable global roots and their protected heap graph. -/
+def openWorld (world : RuntimeControl.World Sigma)
+    (goal : SourceSignature.Goal) :
+    Except LP.RuntimeQuery.QueryError Session :=
+  RuntimeControl.openSessionWorldWith services world goal
 
 /-- Session resumption delegates to `RuntimeControl.pullSession`; the stored
 service selects `pullCoreWithMeta` inside the same canonical phase loop. -/

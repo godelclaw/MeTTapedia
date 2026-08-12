@@ -28,9 +28,9 @@ mutation, and a later fresh query observes that exact insertion. -/
 def successfulDirectiveCarriesDatabase : Bool :=
   match ReaderLoadRuntime.runFirst 128 emptyDatabase
       (assertz (asserted "loaded" "a")) with
-  | .ok (.succeeded database) =>
-      database.generation == 1 &&
-        hasFirstAnswer database (SourceSignature.call "loaded"
+  | .ok (.succeeded world) =>
+      world.database.generation == 1 &&
+        hasFirstAnswer world.database (SourceSignature.call "loaded"
           [SourceSignature.atom "a"])
   | _ => false
 
@@ -43,9 +43,9 @@ def remainingSolutionsAreNotExecuted : Bool :=
   let goal : SourceSignature.Goal := .disj .succeed
     (assertz (asserted "late" "value"))
   match ReaderLoadRuntime.runFirst 128 emptyDatabase goal with
-  | .ok (.succeeded database) =>
-      database.generation == 0 &&
-        !hasFirstAnswer database (SourceSignature.call "late"
+  | .ok (.succeeded world) =>
+      world.database.generation == 0 &&
+        !hasFirstAnswer world.database (SourceSignature.call "late"
           [SourceSignature.atom "value"])
   | _ => false
 
@@ -55,9 +55,9 @@ def remainingSolutionsAreNotExecuted : Bool :=
 completion and not a fabricated answer. -/
 def failureIsDistinct : Bool :=
   match ReaderLoadRuntime.runFirst 128 emptyDatabase .fail with
-  | .ok (.failed memory database) =>
+  | .ok (.failed memory world) =>
       memory.heap.isEmpty && memory.trail.isEmpty &&
-        database.generation == 0
+        world.database.generation == 0
   | _ => false
 
 #guard failureIsDistinct

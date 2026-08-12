@@ -93,6 +93,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "src/pl-gvar.c",
+      "sha256": "af85ea1b60de4e0c545b5dad9d21f771bc86425a86fea6d433fa13d788569dd6"
+    },
+    {
+      "project": "swi-prolog",
       "path": "src/pl-list.c",
       "sha256": "eac442f7b9f765a054048c7cce17719deec26d99996e20579e2150b7b4304a52"
     },
@@ -978,6 +983,42 @@
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
         "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.nb-global",
+      "project": "swi-prolog",
+      "sources": ["src/pl-gvar.c"],
+      "anchors": [
+        "PRED_IMPL(\"nb_setval\", 2, nb_setval, 0)",
+        "PRED_IMPL(\"nb_getval\", 2, nb_getval, 0)",
+        "PRED_IMPL(\"nb_delete\", 1, nb_delete, 0)",
+        "setval_duplicate"
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeTerm.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean",
+        "Mettapedia/Logic/LP/RuntimeUnificationSoundness.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/NonBacktrackableGlobalRegression.lean",
         "scripts/prolog/runtime_control_differential.lean",
         "scripts/prolog/runtime_control_oracle.pl",
         "scripts/prolog/run_runtime_control_differential.sh",

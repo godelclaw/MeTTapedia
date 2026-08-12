@@ -78,6 +78,17 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.functorVariable_injective
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_functor
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_functor
+#print axioms Mettapedia.Logic.LP.RuntimeTerm.Memory.restorePreserving_heap_size
+#print axioms Mettapedia.Logic.LP.RuntimeTerm.Memory.le_restorePreserving_heap_size
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.GlobalStore.lookup_set_self
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.GlobalStore.lookup_erase_self
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalSet_of_decode_capture_install
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalGet_of_decode_lookup_bind
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalDelete_of_decode
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_decodeGlobalName
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_nbSetval
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_nbGetval
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_nbDelete
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.integerIsStep_of_eval_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.integerCompareStep_of_eval
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_integerIs

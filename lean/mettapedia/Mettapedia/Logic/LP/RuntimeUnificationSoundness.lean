@@ -1600,6 +1600,10 @@ structure QueryInv {σ : LPSignature} [DecidableEq σ.relationSymbols]
   varMap : VarMapCellsWF state.memory.heap state.queryVarMap
   chain : ChoiceChain program state.queryVarMap state.nextScope
     state.choices state.memory
+  /-- The least-model endpoint covers the pure LP realization, which owns no
+  protected session heap.  Persistent Prolog services establish separate
+  local certificates rather than entering this fixed-program theorem. -/
+  heapFloor : state.persistentHeapFloor = 0
 
 /-- The live control is bounded — required exactly at dispatch states. -/
 def ControlWF {σ : LPSignature} (state : State σ) : Prop :=
@@ -1747,7 +1751,7 @@ theorem openQuery_empty_queryInv {σ : LPSignature} [DecidableEq σ.vars]
     intro a cell hcell
     rw [empty_heap_getElem] at hcell
     cases hcell
-  refine ⟨⟨hWF, Heap.wellShaped_of_check hCWS, ?_, ?_, ?_, ?_, .nil 1 _⟩,
+  refine ⟨⟨hWF, Heap.wellShaped_of_check hCWS, ?_, ?_, ?_, ?_, .nil 1 _, rfl⟩,
     hAtoms, ?_⟩
   · intro _hFF
     exact materializeGoals_descendingOrConst hMat
@@ -1767,7 +1771,8 @@ theorem QueryInv.set_phase {σ : LPSignature}
     [DecidableEq σ.relationSymbols] {program : Program σ}
     {state : State σ} (h : QueryInv program state) (p : Phase σ) :
     QueryInv program { state with phase := p } :=
-  ⟨h.wf, h.shaped, h.ffDesc, h.inj, h.scopes, h.varMap, h.chain⟩
+  ⟨h.wf, h.shaped, h.ffDesc, h.inj, h.scopes, h.varMap, h.chain,
+    h.heapFloor⟩
 
 /-- Changing only the phase also keeps the control bounds. -/
 theorem ControlWF.set_phase {σ : LPSignature} {state : State σ}
@@ -1791,7 +1796,8 @@ theorem QueryInv.framePop {σ : LPSignature}
     {frames' : List (ReturnFrame σ)}
     (h : QueryInv program state) :
     QueryInv program (framePopState state frame frames') :=
-  ⟨h.wf, h.shaped, h.ffDesc, h.inj, h.scopes, h.varMap, h.chain⟩
+  ⟨h.wf, h.shaped, h.ffDesc, h.inj, h.scopes, h.varMap, h.chain,
+    h.heapFloor⟩
 
 theorem ControlWF.framePop {σ : LPSignature} {state : State σ}
     {frame : ReturnFrame σ} {frames' : List (ReturnFrame σ)}
@@ -1869,7 +1875,7 @@ theorem selectSuccess_inv {σ : LPSignature} [DecidableEq σ.vars]
     rw [hPrefix address (lt_of_getElem?_some hcell)]
     exact hcell
   refine ⟨⟨hWFc, Heap.wellShaped_of_check hWS', ?_, hFresh.injective, ?_,
-    hq.varMap.of_prefix hPrefix, ?_⟩, hExt, hClauseWF, hFresh⟩
+    hq.varMap.of_prefix hPrefix, ?_, hq.heapFloor⟩, hExt, hClauseWF, hFresh⟩
   · intro hFF
     exact materializeClause_descendingOrConst hMat
       (hq.ffDesc (hFunctionFreeBack hFF))
@@ -1926,7 +1932,7 @@ theorem unifySuccess_queryInv {σ : LPSignature}
     IdentityInjective.of_bindingExtension ext hsize hq.inj,
     hq.scopes.of_bindingExtension ext hsize,
     hq.varMap.of_bindingExtension ext,
-    hq.chain.anchor hExt⟩,
+    hq.chain.anchor hExt, hq.heapFloor⟩,
     hBody.mono ext.1, hFrames.mono ext.1⟩
 
 /-- **Backtrack boundary**: popping a cursor restores exactly the chained
@@ -1946,7 +1952,8 @@ theorem backtrackPop_inv {σ : LPSignature} [DecidableEq σ.relationSymbols]
       hclauses holder =>
       rename_i m₀
       refine ⟨m₀, ?_,
-        ⟨hwf, hshaped, hffDesc, hinj, hscopes, hvarMap, holder⟩,
+        ⟨hwf, hshaped, hffDesc, hinj, hscopes, hvarMap, holder,
+          hq.heapFloor⟩,
         ⟨hcp, hgoal, hframes, hclauses⟩⟩
       rw [hcp]
       exact hext.restore_exact (Heap.check_of_wellFormed hwf)
@@ -3014,7 +3021,7 @@ theorem pull_root_sound {σ : LPSignature} [DecidableEq σ.vars]
                       have hstep : RuntimeQuery.step builtins program state =
                           .next { state with memory := m₀, choices := older, phase := .select cursor } none := by
                         simp [RuntimeQuery.step, RuntimeQuery.stepCore, hphase,
-                          hchoices, hres]
+                          hchoices, hq.heapFloor, hres]
                       rw [hstep] at hPull
                       dsimp only at hPull
                       rw [hchoices] at hLC

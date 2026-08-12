@@ -1,5 +1,6 @@
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
+import Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression
 import Mettapedia.Logic.Prolog.ReaderDCGRegression
 
 /-!
@@ -470,6 +471,18 @@ def main : IO Unit := do
   renderCount "functor_meta"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.metaFunctorConstructsCompound)
+  renderBool "nb_setval_duplicates_source"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.setDuplicatesSource
+  renderBool "nb_getval_shares_variables"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.repeatedGetsShareStoredVariables
+  renderBool "nb_getval_bindings_backtrack"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.storedBindingsBacktrack
+  renderBool "nb_setval_survives_older_choice"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.setSurvivesOlderChoice
+  renderBool "nb_delete_survives_older_choice"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.deleteSurvivesOlderChoice
+  renderBool "nb_delete_missing_succeeds"
+    Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression.deleteMissingSucceeds
   renderIntegerAnswers "integer_addition"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runIntegersFor []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.integerAddition

@@ -479,14 +479,14 @@ private def registrationGoal? :
 retained source obligations.  All other load goals stay retained and outside
 this narrow source-execution claim. -/
 def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
-    IO ReaderLoadRuntime.Database := do
+    IO ReaderLoadRuntime.World := do
   let goals := linked.pendingGoals.filterMap registrationGoal?
   let [goal] := goals
     | throw <| IO.userError s!"registration source boundary changed: \
         matching_goals={goals.length}"
   let database := LP.RuntimeDatabase.Database.ofProgram linked.program
   match ReaderLoadRuntime.runFirst 262144 database goal with
-  | .ok (.succeeded database) => pure database
+  | .ok (.succeeded world) => pure world
   | .ok (.failed _ _) =>
       throw <| IO.userError "pinned registration goal failed"
   | .ok (.open _) =>
@@ -599,7 +599,8 @@ def main (arguments : List String) : IO Unit := do
   checkGoal program "metta_eval_atomic"
     (evalQuery (SourceSignature.atom "a"))
     (SourceSignature.atom "a")
-  let registeredDatabase ← executeRegistration linked
+  let registeredWorld ← executeRegistration linked
+  let registeredDatabase := registeredWorld.database
   requireDatabaseGoal registeredDatabase "metta_fun_id_registered"
     (SourceSignature.call "fun" [SourceSignature.atom "id"])
   checkDatabaseGoal registeredDatabase "metta_id_direct"
@@ -640,6 +641,20 @@ def main (arguments : List String) : IO Unit := do
           SourceSignature.atom "a", SourceSignature.atom "b"])))
     (SourceSignature.compound "pair" [
       SourceSignature.atom "a", SourceSignature.atom "b"])
+  requireDatabaseGoal registeredDatabase "metta_nb_global_direct"
+    (.conj
+      (SourceSignature.call "nb_setval" [
+        SourceSignature.atom "metta_runtime_global",
+        SourceSignature.compound "f" [SourceRuntimeRegression.x]
+      ])
+      (.conj (.unify SourceRuntimeRegression.x (SourceSignature.atom "source"))
+        (.conj
+          (SourceSignature.call "nb_getval" [
+            SourceSignature.atom "metta_runtime_global",
+            .var termIdentity
+          ])
+          (.unify (.var termIdentity)
+            (SourceSignature.compound "f" [SourceSignature.atom "stored"])))))
   checkDatabaseGoal registeredDatabase "metta_eval_compound"
     (evalQuery (SourceSignature.list
       [SourceSignature.atom "id", SourceSignature.atom "a"]))

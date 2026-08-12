@@ -354,6 +354,34 @@ def unwindTrail {σ : LPSignature} (memory : Memory σ) (mark : Nat) :
   else
     .error (.invalidTrailMark mark memory.trail.size)
 
+private theorem unwindLoop_heap_size {σ : LPSignature} {steps : Nat}
+    {memory restored : Memory σ}
+    (hUnwind : unwindLoop steps memory = .ok restored) :
+    restored.heap.size = memory.heap.size := by
+  induction steps generalizing memory with
+  | zero =>
+      simp only [unwindLoop] at hUnwind
+      cases hUnwind
+      rfl
+  | succ steps ih =>
+      simp only [unwindLoop] at hUnwind
+      cases hBack : memory.trail.back? with
+      | none => simp [hBack] at hUnwind
+      | some entry =>
+          simp only [hBack] at hUnwind
+          split at hUnwind
+          · have hSize := ih hUnwind
+            simpa using hSize
+          · contradiction
+
+theorem unwindTrail_heap_size {σ : LPSignature} {memory restored : Memory σ}
+    {mark : Nat} (hUnwind : memory.unwindTrail mark = .ok restored) :
+    restored.heap.size = memory.heap.size := by
+  simp only [unwindTrail] at hUnwind
+  split at hUnwind
+  · exact unwindLoop_heap_size hUnwind
+  · contradiction
+
 /-- Restore a full query checkpoint: unwind bindings first, then reclaim every
 heap cell allocated after the saved heap top. -/
 def restore {σ : LPSignature} (memory : Memory σ) (saved : Checkpoint) :
@@ -375,6 +403,51 @@ def restore {σ : LPSignature} (memory : Memory σ) (saved : Checkpoint) :
           .error .illFormedHeap
   else
     .error (.invalidHeapMark saved.heapSize memory.heap.size)
+
+/-- Restore a query checkpoint while retaining a monotone prefix of the heap.
+This is the canonical runtime analogue of SWI-Prolog's non-backtrackable
+global-stack frontier: ordinary bindings are still unwound to the saved trail
+mark, but cells below `heapFloor` cannot be reclaimed by a choice point that
+predates their persistent allocation. -/
+def restorePreserving {σ : LPSignature} (memory : Memory σ)
+    (heapFloor : Nat) (saved : Checkpoint) : Except MemoryError (Memory σ) :=
+  memory.restore { saved with heapSize := max saved.heapSize heapFloor }
+
+@[simp]
+theorem restorePreserving_zero {σ : LPSignature} (memory : Memory σ)
+    (saved : Checkpoint) :
+    memory.restorePreserving 0 saved = memory.restore saved := by
+  simp [restorePreserving]
+
+/-- A successful protected restore lands at exactly the larger of the saved
+arena top and the persistent floor. -/
+theorem restorePreserving_heap_size {σ : LPSignature}
+    {memory restored : Memory σ} {heapFloor : Nat} {saved : Checkpoint}
+    (hRestore : memory.restorePreserving heapFloor saved = .ok restored) :
+    restored.heap.size = max saved.heapSize heapFloor := by
+  simp only [restorePreserving, restore] at hRestore
+  split at hRestore
+  · next hHeap =>
+    split at hRestore
+    · next error => contradiction
+    · next unwound hUnwind =>
+      have hUnwindSize := unwindTrail_heap_size hUnwind
+      split at hRestore
+      · next hWellFormed =>
+        split at hRestore
+        · cases hRestore
+          simp
+          omega
+        · contradiction
+      · contradiction
+  · contradiction
+
+theorem le_restorePreserving_heap_size {σ : LPSignature}
+    {memory restored : Memory σ} {heapFloor : Nat} {saved : Checkpoint}
+    (hRestore : memory.restorePreserving heapFloor saved = .ok restored) :
+    heapFloor ≤ restored.heap.size := by
+  rw [restorePreserving_heap_size hRestore]
+  exact Nat.le_max_right _ _
 
 @[simp]
 theorem empty_trailMark {σ : LPSignature} : (empty σ).trailMark = 0 := rfl

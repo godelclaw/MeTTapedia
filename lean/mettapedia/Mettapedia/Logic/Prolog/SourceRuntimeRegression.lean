@@ -1329,9 +1329,10 @@ def preboundAssertReferenceRejectedBeforeInsert : Bool :=
       match SourceRuntime.pullSession 256 session with
       | .terminal
           (.runtimeError (.databaseReferenceOutputNotVariable) memory)
-          database =>
+          world =>
           memory.heap.size == 0 && memory.trail.size == 0 &&
-            database.generation == 0 && database.visibleClauses.isEmpty
+            world.database.generation == 0 &&
+            world.database.visibleClauses.isEmpty
       | _ => false
 
 /-- `retract/1` is nondeterministic over the call-time clause snapshot and
@@ -1433,9 +1434,10 @@ def clauseVariableHeadRejected : Bool :=
   | .error _ => false
   | .ok session =>
       match SourceRuntime.pullSession 128 session with
-      | .terminal (.runtimeError (.invalidDynamicClause) memory) database =>
+      | .terminal (.runtimeError (.invalidDynamicClause) memory) world =>
           memory.heap.size == 0 && memory.trail.size == 0 &&
-            database.generation == 0 && database.visibleClauses.isEmpty
+            world.database.generation == 0 &&
+            world.database.visibleClauses.isEmpty
       | _ => false
 
 /-- The visible-clause list is frozen when `clause/3` opens. A clause asserted
@@ -1479,7 +1481,7 @@ def collectCountDatabase : Nat → Nat → Session →
       | .answer _ next => collectCountDatabase budget (count + 1) next
       | .terminal (.runtimeError _ _) _ => none
       | .terminal (.raised _ _) _ => none
-      | .terminal (.completed _) database => some (count, database)
+      | .terminal (.completed _) world => some (count, world.database)
 
 def collectAtomsDatabase : Nat → Session →
     Option (List String × Nat × Nat ×
@@ -1490,8 +1492,8 @@ def collectAtomsDatabase : Nat → Session →
       | .open _ => none
       | .terminal (.runtimeError _ _) _ => none
       | .terminal (.raised _ _) _ => none
-      | .terminal (.completed memory) database =>
-          some ([], memory.heap.size, memory.trail.size, database)
+      | .terminal (.completed memory) world =>
+          some ([], memory.heap.size, memory.trail.size, world.database)
       | .answer answer resumed =>
           match answerAtom? answer, collectAtomsDatabase budget resumed with
           | some value, some (rest, heapSize, trailSize, database) =>
@@ -1914,6 +1916,9 @@ def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
 #guard runCount [] (currentPredicate "copy_term" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "term_variables" 2) == some (1, 0, 0)
 #guard runCount [] (currentPredicate "functor" 3) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "nb_setval" 2) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "nb_getval" 2) == some (1, 0, 0)
+#guard runCount [] (currentPredicate "nb_delete" 1) == some (1, 0, 0)
 #guard match runQueryError? binaryFactProgram currentPredicateUnbound with
   | some .predicateIndicatorUnbound => true
   | _ => false

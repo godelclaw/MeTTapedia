@@ -90,6 +90,10 @@ inductive QueryError where
   | invalidFunctorName
   | invalidFunctorArity
   | zeroArityCompoundFunctor
+  | globalVariableNameUnbound
+  | invalidGlobalVariableName
+  | undefinedGlobalVariable
+  | globalValueReadback (error : RuntimeReadback.ReadbackError)
   | arithmeticEvaluationBudgetExhausted
   | arithmeticOperandUnbound
   | invalidArithmeticOperand
@@ -1352,6 +1356,10 @@ structure StateCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   queryCheckpoint : Memory.Checkpoint
   queryVarMap : List (ScopedVar σ.vars × Addr)
   nextScope : Nat
+  /-- Monotone heap prefix owned by persistent session resources.  Choice,
+  exception, collection, and query checkpoints may unwind bindings in this
+  prefix but may never reclaim its cells.  Pure LP leaves the floor at zero. -/
+  persistentHeapFloor : Nat := 0
   phase : PhaseCore σ Instruction SourceClause
 
 /-- The established pure-LP query state.  Existing execution and soundness
@@ -1391,12 +1399,30 @@ inductive DatabaseRequest where
   | transactionBegin
   | transactionCommit
   | transactionRollback
+  /-- Duplicate a finite value into the session's protected heap prefix and
+  replace one non-backtrackable global binding. -/
+  | globalSet (nameRoot valueRoot : Addr)
+  /-- Unify with the exact stored graph; repeated reads therefore share its
+  residual variables rather than manufacturing a fresh copy per read. -/
+  | globalGet (nameRoot valueRoot : Addr)
+  /-- Remove a non-backtrackable global binding.  Missing names succeed. -/
+  | globalDelete (nameRoot : Addr)
 deriving DecidableEq, Repr
 
 inductive Terminal (σ : LPSignature) where
   | completed (memory : Memory σ.scoped)
   | raised (packet : RuntimeException.Packet σ) (memory : Memory σ.scoped)
   | runtimeError (error : QueryError) (memory : Memory σ.scoped)
+
+namespace Terminal
+
+/-- The cleaned or live memory carried by every terminal tag. -/
+def memory : Terminal σ → Memory σ.scoped
+  | .completed memory => memory
+  | .raised _ memory => memory
+  | .runtimeError _ memory => memory
+
+end Terminal
 
 inductive StepResultCore (σ : LPSignature) (Instruction SourceClause : Type*) where
   | next (state : StateCore σ Instruction SourceClause)
@@ -1525,7 +1551,7 @@ def openQuery {σ : LPSignature} [DecidableEq σ.vars]
 def closeMemory {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause) :
     Except MemoryError (Memory σ.scoped) :=
-  state.memory.restore state.queryCheckpoint
+  state.memory.restorePreserving state.persistentHeapFloor state.queryCheckpoint
 
 def complete {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause) :
@@ -2102,7 +2128,8 @@ def resumeBranchStep {σ : LPSignature}
     (alternative : BranchChoiceCore σ Instruction)
     (older : List (ChoicePointCore σ Instruction SourceClause)) :
     StepResultCore σ Instruction SourceClause :=
-  match state.memory.restore alternative.checkpoint with
+  match state.memory.restorePreserving state.persistentHeapFloor
+      alternative.checkpoint with
   | .error error => failWith state (.memory error)
   | .ok memory =>
       .next {
@@ -2122,7 +2149,8 @@ def finalizeCollectionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
     (boundary : CollectionChoiceCore σ Instruction)
     (older : List (ChoicePointCore σ Instruction SourceClause)) :
     StepResultCore σ Instruction SourceClause :=
-  match state.memory.restore boundary.checkpoint with
+  match state.memory.restorePreserving state.persistentHeapFloor
+      boundary.checkpoint with
   | .error error => failWith state (.memory error)
   | .ok restored =>
       let listTerm := boundary.encoding.listTerm boundary.reversed.reverse
@@ -2152,7 +2180,8 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   match state.choices with
   | [] => complete state
   | .clause cursor :: older =>
-      match state.memory.restore cursor.checkpoint with
+      match state.memory.restorePreserving state.persistentHeapFloor
+          cursor.checkpoint with
       | .error error => failWith state (.memory error)
       | .ok memory =>
           .next {
@@ -2166,7 +2195,8 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   | .collection boundary :: older =>
       finalizeCollectionStep state boundary older
   | .transaction boundary :: older =>
-      match state.memory.restore boundary.checkpoint with
+      match state.memory.restorePreserving state.persistentHeapFloor
+          boundary.checkpoint with
       | .error error => failWith state (.memory error)
       | .ok memory =>
           .databaseRequest .transactionRollback {
@@ -2177,7 +2207,8 @@ def backtrackStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
             phase := .backtrack
           }
   | .databaseClause cursor :: older =>
-      match state.memory.restore cursor.checkpoint with
+      match state.memory.restorePreserving state.persistentHeapFloor
+          cursor.checkpoint with
       | .error error => failWith state (.memory error)
       | .ok memory =>
           .next {
@@ -2364,7 +2395,8 @@ def rollbackTransactionException {σ : LPSignature}
     (packet : RuntimeException.Packet σ)
     (target : TransactionTargetCore σ Instruction) :
     StepResultCore σ Instruction SourceClause :=
-  match state.memory.restore target.handler.checkpoint with
+  match state.memory.restorePreserving state.persistentHeapFloor
+      target.handler.checkpoint with
   | .error error => failWith state (.memory error)
   | .ok memory =>
       match closeTransactionChoice target.handler.choiceDepth state.choices with
@@ -2416,7 +2448,8 @@ def beginCatchRecovery {σ : LPSignature} [DecidableEq σ.scoped.vars]
     StepResultCore σ Instruction SourceClause :=
   let target := selection.target
   if _hDepth : target.handler.choiceDepth ≤ state.choices.length then
-    match memory.restore target.handler.checkpoint with
+    match memory.restorePreserving state.persistentHeapFloor
+        target.handler.checkpoint with
     | .error error => failWith { state with memory } (.memory error)
     | .ok restored =>
         match selection.packet.install restored state.nextScope with
@@ -3758,7 +3791,8 @@ theorem backtrackStep_branch_of_restore {σ : LPSignature}
     (older : List (ChoicePointCore σ Instruction SourceClause))
     (memory : Memory σ.scoped)
     (hChoices : state.choices = .branch alternative :: older)
-    (hRestore : state.memory.restore alternative.checkpoint = .ok memory) :
+    (hRestore : state.memory.restorePreserving state.persistentHeapFloor
+      alternative.checkpoint = .ok memory) :
     backtrackStep state =
       .next {
         state with
@@ -3778,7 +3812,8 @@ theorem backtrackStep_databaseClause_of_restore {σ : LPSignature}
     (older : List (ChoicePointCore σ Instruction SourceClause))
     (memory : Memory σ.scoped)
     (hChoices : state.choices = .databaseClause cursor :: older)
-    (hRestore : state.memory.restore cursor.checkpoint = .ok memory) :
+    (hRestore : state.memory.restorePreserving state.persistentHeapFloor
+      cursor.checkpoint = .ok memory) :
     backtrackStep state =
       .next {
         state with
@@ -3928,7 +3963,8 @@ theorem backtrackStep_softElse_of_restore {σ : LPSignature}
     (older : List (ChoicePointCore σ Instruction SourceClause))
     (memory : Memory σ.scoped)
     (hChoices : state.choices = .softElse alternative :: older)
-    (hRestore : state.memory.restore alternative.checkpoint = .ok memory) :
+    (hRestore : state.memory.restorePreserving state.persistentHeapFloor
+      alternative.checkpoint = .ok memory) :
     backtrackStep state =
       .next {
         state with
@@ -4360,7 +4396,8 @@ it is never collapsed into ordinary completion. -/
 theorem raiseUnhandled_of_restore {σ : LPSignature}
     (state : StateCore σ Instruction SourceClause)
     (packet : RuntimeException.Packet σ) (memory : Memory σ.scoped)
-    (hRestore : state.memory.restore state.queryCheckpoint = .ok memory) :
+    (hRestore : state.memory.restorePreserving state.persistentHeapFloor
+      state.queryCheckpoint = .ok memory) :
     raiseUnhandled state packet = .terminal (.raised packet memory) := by
   simp [raiseUnhandled, closeMemory, hRestore]
 
@@ -4402,7 +4439,8 @@ theorem beginCatchRecovery_of_restore_install {σ : LPSignature}
     (memory restored : Memory σ.scoped)
     (installed : RuntimeException.Installed σ)
     (hDepth : selection.target.handler.choiceDepth ≤ state.choices.length)
-    (hRestore : memory.restore selection.target.handler.checkpoint =
+    (hRestore : memory.restorePreserving state.persistentHeapFloor
+      selection.target.handler.checkpoint =
       .ok restored)
     (hInstall : selection.packet.install restored state.nextScope =
       .ok installed) :
@@ -4495,7 +4533,8 @@ theorem step_empty_backtrack_completes {σ : LPSignature}
     (memory : Memory σ.scoped)
     (hPhase : state.phase = .backtrack)
     (hChoices : state.choices = [])
-    (hRestore : state.memory.restore state.queryCheckpoint = .ok memory) :
+    (hRestore : state.memory.restorePreserving state.persistentHeapFloor
+      state.queryCheckpoint = .ok memory) :
     step builtins program state = .terminal (.completed memory) := by
   simp [step, stepCore, stepCoreWithMeta, hPhase, hChoices, complete,
     closeMemory, hRestore]
