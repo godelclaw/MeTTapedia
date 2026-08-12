@@ -659,6 +659,16 @@ theorem EqualProfile.five_le_fragment_sum_add_iff
 
 /-! ## Optional reverse completion for the zero-count route -/
 
+/-- The exact logical polarity consumed by reductive descent: colorability of
+the shortened object implies colorability of the source object.  Unlike
+`ReverseCompletion`, this proposition does not require preserving a chosen
+shortened coloring.  That weaker quantifier is sufficient for preservation of
+non-colorability and is the form naturally supplied by support-level pumping.
+-/
+def ColorabilityReflection
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount) : Prop :=
+  TaitColorable data.output → TaitColorable (RS := RS)
+
 /-- The semantic descent obligation for an auxiliary zero-count reduction:
 every Tait coloring of the shortened object can be completed back to a Tait
 coloring of the original object.  This is deliberately separate from the
@@ -669,14 +679,31 @@ def ReverseCompletion
     data.output.IsTaitEdgeColoring coloring →
       TaitColorable (RS := RS)
 
+/-- Pointwise reverse completion is a sufficient, generally stronger, way to
+obtain the colorability reflection required by reductive descent. -/
+theorem colorabilityReflection_of_reverseCompletion
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (hcompletion : data.ReverseCompletion) :
+    data.ColorabilityReflection := by
+  rintro ⟨coloring, hcoloring⟩
+  exact hcompletion coloring hcoloring
+
+/-- Contraposition of the minimal colorability-reflection obligation. -/
+theorem not_taitColorable_output_of_colorabilityReflection
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (hreflection : data.ColorabilityReflection)
+    (hbad : ¬ TaitColorable (RS := RS)) :
+    ¬ TaitColorable data.output := by
+  intro houtput
+  exact hbad (hreflection houtput)
+
 theorem not_taitColorable_output_of_not_taitColorable
     (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
     (hcompletion : data.ReverseCompletion)
     (hbad : ¬ TaitColorable (RS := RS)) :
     ¬ TaitColorable data.output := by
-  intro houtput
-  rcases houtput with ⟨coloring, hcoloring⟩
-  exact hbad (hcompletion coloring hcoloring)
+  exact data.not_taitColorable_output_of_colorabilityReflection
+    (data.colorabilityReflection_of_reverseCompletion hcompletion) hbad
 
 /-! ## Semantic boundary profiles -/
 
@@ -789,7 +816,15 @@ fixed-rotation-system level because the eventual object family must still
 choose a uniform carrier for varying vertex and edge types. -/
 structure CompletedStep
     (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount) where
-  reverse_completion : data.ReverseCompletion
+  colorability_reflection : data.ColorabilityReflection
+
+/-- Every pointwise reverse-completion proof still constructs a completed
+step; callers that possess the stronger theorem lose no functionality. -/
+def CompletedStep.ofReverseCompletion
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (hcompletion : data.ReverseCompletion) : data.CompletedStep where
+  colorability_reflection :=
+    data.colorabilityReflection_of_reverseCompletion hcompletion
 
 theorem completedStep_strict_size
     (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
@@ -802,8 +837,8 @@ theorem completedStep_counterexample_preserved
     (step : data.CompletedStep)
     (hbad : ¬ TaitColorable (RS := RS)) :
     ¬ TaitColorable data.output :=
-  data.not_taitColorable_output_of_not_taitColorable
-    step.reverse_completion hbad
+  data.not_taitColorable_output_of_colorabilityReflection
+    step.colorability_reflection hbad
 
 end OrderedCutSpliceData
 

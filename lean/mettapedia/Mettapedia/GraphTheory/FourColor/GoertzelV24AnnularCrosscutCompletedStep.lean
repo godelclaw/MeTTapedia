@@ -62,10 +62,11 @@ noncomputable def sourceCrosscutCompletedStep_ofProfileDiagonalLift
             (fun index => boundary.rightCrosses
               (Fin.cast pair.length_eq index)) step).1.1.1)
     (hlift : pair.SourceCrosscutProfileDiagonalLift data boundary hcubic) :
-    (pair.sourceCrosscutSpliceData data boundary seamEndpoints).CompletedStep where
-  reverse_completion :=
-    pair.sourceCrosscutReverseCompletion_ofProfileDiagonalLift
-      data boundary hcubic seamEndpoints hlift
+    (pair.sourceCrosscutSpliceData data boundary seamEndpoints).CompletedStep :=
+  OrderedCutSpliceData.CompletedStep.ofReverseCompletion
+    (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+    (pair.sourceCrosscutReverseCompletion_ofProfileDiagonalLift
+      data boundary hcubic seamEndpoints hlift)
 
 /-- A passed generated seam audit supplies the completed reverse-completion
 step for one concrete source crosscut. -/
@@ -96,11 +97,13 @@ noncomputable def sourceCrosscutCompletedStep_ofFiniteSeamProfileAudit
               (Fin.cast pair.length_eq index)) step).1.1.1)
     (haudit : pair.SourceCrosscutFiniteSeamProfileAuditAgreement
       data boundary hcubic) :
-    (pair.sourceCrosscutSpliceData data boundary seamEndpoints).CompletedStep where
-  reverse_completion := reverseCompletion_of_semanticProfileBridge
+    (pair.sourceCrosscutSpliceData data boundary seamEndpoints).CompletedStep :=
+  OrderedCutSpliceData.CompletedStep.ofReverseCompletion
     (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
-    (pair.sourceCrosscutSemanticProfileBridge_ofFiniteSeamProfileAudit
-      data boundary hcubic seamEndpoints haudit)
+    (reverseCompletion_of_semanticProfileBridge
+      (pair.sourceCrosscutSpliceData data boundary seamEndpoints)
+      (pair.sourceCrosscutSemanticProfileBridge_ofFiniteSeamProfileAudit
+        data boundary hcubic seamEndpoints haudit))
 
 /-- The completed source-crosscut step preserves non-colorability in the
 required reductive direction. -/
