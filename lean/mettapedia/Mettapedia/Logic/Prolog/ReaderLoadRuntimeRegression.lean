@@ -71,4 +71,48 @@ def zeroFuelIsOpen : Bool :=
 
 #guard zeroFuelIsOpen
 
+private def sourceVar (name : String) (occurrence : Nat) :
+    SourceSignature.Term := .var { spelling := name, occurrence }
+
+private def setGlobal (name : String) (value : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "nb_setval" [SourceSignature.atom name, value]
+
+private def getGlobal (name : String) (value : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "nb_getval" [SourceSignature.atom name, value]
+
+/-- The first top-level goal stores a copied residual variable; the second
+fresh query sees and binds that exact persistent graph.  A batch runner that
+threads only the database cannot satisfy this witness. -/
+def goalsThreadCompleteWorld : Bool :=
+  let x := sourceVar "X" 0
+  let y := sourceVar "Y" 0
+  let goals := [
+    setGlobal "loader_world" (SourceSignature.compound "f" [x]),
+    .conj (getGlobal "loader_world" y)
+      (.unify y (SourceSignature.compound "f" [SourceSignature.atom "later"]))
+  ]
+  match ReaderLoadRuntime.runGoalsWorld 1024
+      (ReaderLoadRuntime.worldOfDatabase emptyDatabase) goals with
+  | .succeeded world =>
+      world.globals.lookup (.atom "loader_world") |>.isSome
+  | _ => false
+
+#guard goalsThreadCompleteWorld
+
+/-- Failure consumes the current goal but does not execute or discard the
+source-order tail. -/
+def failureRetainsUnexecutedTail : Bool :=
+  let late := setGlobal "must_not_run" (SourceSignature.atom "value")
+  match ReaderLoadRuntime.runGoalsWorld 128
+      (ReaderLoadRuntime.worldOfDatabase emptyDatabase) [.fail, late] with
+  | .failed _ world [.call remaining] =>
+      remaining.symbol.name == "nb_setval" &&
+        remaining.symbol.arity == 2 &&
+        (world.globals.lookup (.atom "must_not_run")).isNone
+  | _ => false
+
+#guard failureRetainsUnexecutedTail
+
 end Mettapedia.Logic.Prolog.ReaderLoadRuntimeRegression

@@ -4,3 +4,4 @@ import Mettapedia.Logic.Prolog.ReaderLoadRuntime
 
 #print axioms Mettapedia.Logic.Prolog.ReaderLoadRuntime.resumeFirst_answer
 #print axioms Mettapedia.Logic.Prolog.ReaderLoadRuntime.resumeFirst_completed
+#print axioms Mettapedia.Logic.Prolog.ReaderLoadRuntime.runGoalsWorld_cons_succeeded

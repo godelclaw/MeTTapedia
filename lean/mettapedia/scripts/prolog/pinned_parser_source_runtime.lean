@@ -421,6 +421,28 @@ def requireDatabaseGoal (database : ReaderLoadRuntime.Database) (label : String)
   | .terminal (.raised packet _) _ =>
       throw <| IO.userError s!"{label}: raised: {renderTerm packet.term}"
 
+/-- Require a source-order batch of distinct top-level goals to succeed while
+threading the complete persistent world between them. -/
+def requireWorldGoals (world : ReaderLoadRuntime.World) (label : String)
+    (goals : List SourceSignature.Goal) : IO ReaderLoadRuntime.World := do
+  match ReaderLoadRuntime.runGoalsWorld 32768 world goals with
+  | .succeeded nextWorld =>
+      IO.println s!"{label}=exact"
+      pure nextWorld
+  | .failed _ _ remaining =>
+      throw <| IO.userError s!"{label}: goal failed; remaining={remaining.length}"
+  | .open _ remaining =>
+      throw <| IO.userError s!"{label}: remained open; remaining={remaining.length}"
+  | .raised packet _ _ remaining =>
+      throw <| IO.userError s!"{label}: raised {renderTerm packet.term}; \
+        remaining={remaining.length}"
+  | .runtimeError error _ _ remaining =>
+      throw <| IO.userError s!"{label}: runtime error {repr error}; \
+        remaining={remaining.length}"
+  | .openingError error _ remaining =>
+      throw <| IO.userError s!"{label}: opening error {repr error}; \
+        remaining={remaining.length}"
+
 def checkRead (program : SourceSignature.Program) (label : String)
     (codes : List Int) (expected : SourceSignature.Term) : IO Unit :=
   checkGoal program label (readQuery codes) expected
@@ -641,20 +663,21 @@ def main (arguments : List String) : IO Unit := do
           SourceSignature.atom "a", SourceSignature.atom "b"])))
     (SourceSignature.compound "pair" [
       SourceSignature.atom "a", SourceSignature.atom "b"])
-  requireDatabaseGoal registeredDatabase "metta_nb_global_direct"
-    (.conj
+  let _ ← requireWorldGoals registeredWorld "metta_nb_global_direct" [
+    .conj
       (SourceSignature.call "nb_setval" [
         SourceSignature.atom "metta_runtime_global",
         SourceSignature.compound "f" [SourceRuntimeRegression.x]
       ])
-      (.conj (.unify SourceRuntimeRegression.x (SourceSignature.atom "source"))
-        (.conj
-          (SourceSignature.call "nb_getval" [
-            SourceSignature.atom "metta_runtime_global",
-            .var termIdentity
-          ])
-          (.unify (.var termIdentity)
-            (SourceSignature.compound "f" [SourceSignature.atom "stored"])))))
+      (.unify SourceRuntimeRegression.x (SourceSignature.atom "source")),
+    .conj
+      (SourceSignature.call "nb_getval" [
+        SourceSignature.atom "metta_runtime_global",
+        .var termIdentity
+      ])
+      (.unify (.var termIdentity)
+        (SourceSignature.compound "f" [SourceSignature.atom "stored"]))
+  ]
   checkDatabaseGoal registeredDatabase "metta_eval_compound"
     (evalQuery (SourceSignature.list
       [SourceSignature.atom "id", SourceSignature.atom "a"]))

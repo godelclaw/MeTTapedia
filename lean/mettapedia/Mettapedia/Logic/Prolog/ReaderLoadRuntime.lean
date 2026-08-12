@@ -78,6 +78,59 @@ def runFirst (fuel : Nat) (database : Database)
     Except LP.RuntimeQuery.QueryError FirstResult := do
   runFirstWorld fuel (worldOfDatabase database) goal
 
+/-- Outcome of executing loader goals in source order.  Every non-success arm
+retains the unexecuted tail.  An open arm also retains the live session for the
+current goal; an opening error retains that current goal as well. -/
+inductive GoalsResult where
+  | succeeded (world : World)
+  | failed (memory : LP.RuntimeTerm.Memory SourceRuntime.Sigma.scoped)
+      (world : World) (remaining : List SourceSignature.Goal)
+  | open (session : SourceRuntime.Session)
+      (remaining : List SourceSignature.Goal)
+  | raised (packet : LP.RuntimeException.Packet SourceRuntime.Sigma)
+      (memory : LP.RuntimeTerm.Memory SourceRuntime.Sigma.scoped)
+      (world : World) (remaining : List SourceSignature.Goal)
+  | runtimeError (error : LP.RuntimeQuery.QueryError)
+      (memory : LP.RuntimeTerm.Memory SourceRuntime.Sigma.scoped)
+      (world : World) (remaining : List SourceSignature.Goal)
+  | openingError (error : LP.RuntimeQuery.QueryError) (world : World)
+      (remaining : List SourceSignature.Goal)
+
+/-- Execute loader goals in source order, taking at most the first solution of
+each and threading the complete persistent world into the next fresh query.
+This is a loader policy over `runFirstWorld`; it does not add a transition or
+an answer path to the shared engine. -/
+def runGoalsWorld (fuelPerGoal : Nat) :
+    World → List SourceSignature.Goal → GoalsResult
+  | world, [] => .succeeded world
+  | world, goal :: remaining =>
+      match runFirstWorld fuelPerGoal world goal with
+      | .error error => .openingError error world (goal :: remaining)
+      | .ok (.succeeded nextWorld) =>
+          runGoalsWorld fuelPerGoal nextWorld remaining
+      | .ok (.failed memory nextWorld) =>
+          .failed memory nextWorld remaining
+      | .ok (.open session) => .open session remaining
+      | .ok (.raised packet memory nextWorld) =>
+          .raised packet memory nextWorld remaining
+      | .ok (.runtimeError error memory nextWorld) =>
+          .runtimeError error memory nextWorld remaining
+
+@[simp]
+theorem runGoalsWorld_empty (fuelPerGoal : Nat) (world : World) :
+    runGoalsWorld fuelPerGoal world [] = .succeeded world := rfl
+
+/-- One successful directive transfers exactly its returned world to the
+remaining source-order batch. -/
+theorem runGoalsWorld_cons_succeeded (fuelPerGoal : Nat)
+    (world nextWorld : World) (goal : SourceSignature.Goal)
+    (remaining : List SourceSignature.Goal)
+    (hRun : runFirstWorld fuelPerGoal world goal =
+      .ok (.succeeded nextWorld)) :
+    runGoalsWorld fuelPerGoal world (goal :: remaining) =
+      runGoalsWorld fuelPerGoal nextWorld remaining := by
+  simp [runGoalsWorld, hRun]
+
 @[simp]
 theorem resumeFirst_answer (fuel : Nat) (session resumed : SourceRuntime.Session)
     (answer : LP.RuntimeQuery.Answer SourceRuntime.Sigma)
