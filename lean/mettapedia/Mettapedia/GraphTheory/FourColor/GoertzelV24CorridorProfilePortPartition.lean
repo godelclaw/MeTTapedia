@@ -119,6 +119,26 @@ theorem GraphCorridorCutData.partitionCrossings_portsInRegion
   rw [GraphCorridorCutData.partitionCrossings_portEdge]
   exact hports _
 
+/-- Reclassifying selected boundary entries preserves port distinctness when
+the combined source-coordinate selection is injective.  The geometric proof
+of that selection's injectivity belongs to the concrete boundary module; this
+lemma only transports it through the reindexing operation. -/
+theorem GraphCorridorCutData.partitionCrossings_portsInjective
+    {RS : RotationSystem V E}
+    {crossingWidth terminalCount totalWidth faceFragmentCount : Nat}
+    (data : GraphCorridorCutData RS totalWidth 0 faceFragmentCount)
+    (crossingIndex : Fin crossingWidth → Fin totalWidth)
+    (terminalIndex : Fin terminalCount → Fin totalWidth)
+    (hports : data.PortsInjective)
+    (hindex : Function.Injective
+      (partitionCorridorPort crossingIndex terminalIndex)) :
+    (GraphCorridorCutData.partitionCrossings data crossingIndex terminalIndex
+      ).PortsInjective := by
+  intro first second heq
+  apply hindex
+  apply hports
+  simpa only [GraphCorridorCutData.partitionCrossings_portEdge] using heq
+
 /-- Regional profile construction commutes with splitting one ordered
 crossing list into moving crossings and fixed terminals. -/
 theorem GraphCorridorCutData.partitionCrossings_regionalProfile
