@@ -31,6 +31,17 @@ emit_count(Label, Goal) :-
     length(Answers, Count),
     format('~w=~w~n', [Label, Count]).
 
+emit_compare_error(Label, Goal) :-
+    catch((Goal -> Outcome = success ; Outcome = failure),
+          Error, Outcome = error(Error)),
+    (   Outcome = error(error(domain_error(order, _), _))
+    ->  Kind = 'domain_error(order)'
+    ;   Outcome = error(error(type_error(atom, _), _))
+    ->  Kind = 'type_error(atom)'
+    ;   Kind = Outcome
+    ),
+    format('~w=~w~n', [Label, Kind]).
+
 emit_bags(Label, Goal, Bag) :-
     findall(Bag, Goal, Answers),
     maplist(term_string, Answers, Rendered),
@@ -513,6 +524,13 @@ main(_) :-
         (retractall(p(_)), retractall(driver), assertz(p(old)),
          assertz((driver :- p(_), assertz(p(new)), fail)),
          \+ driver, p(X)), X),
+    emit(compare_atoms, compare(X, a, b), X),
+    emit(compare_equal_compounds, compare(X, f(a), f(a)), X),
+    emit(compare_compound_arity, compare(X, f(a), f(a,b)), X),
+    emit_count(compare_prebound_mismatch, compare(>, a, b)),
+    emit_compare_error(compare_invalid_order_atom, compare(foo, a, b)),
+    emit_compare_error(compare_invalid_order_integer, compare(1, a, b)),
+    emit_compare_error(compare_invalid_order_compound, compare(f(x), a, b)),
     emit_count(dcg_terminal_sharing, phrase(dcg_pair(a), [a, a])),
     emit_count(dcg_braced_goal, phrase(dcg_guarded(a), [a])),
     emit_count(dcg_disjunction, phrase(dcg_choice, [b])),

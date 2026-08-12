@@ -340,6 +340,8 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .textConversion text codes decoder
   | .binaryTest left right decoder =>
       .binaryTest left right decoder
+  | .termCompare result left right decoder encoding =>
+      .termCompare result left right decoder encoding
   | .sort decoder => .sort decoder
   | .listLength listRoot lengthRoot encoding =>
       .listLength listRoot lengthRoot encoding
@@ -1158,6 +1160,29 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     simp [mapDispatchAction, dispatchActionStep,
                       binaryTestStep, mapState, mapControl, mapPhase,
                       mapReturnFrame, mapStepResult, hDecode]
+          | termCompare result left right decoder encoding =>
+              cases hDecode : decoder.decode memory.heap result left right with
+              | error reason =>
+                  cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                    simp [mapDispatchAction, dispatchActionStep,
+                      termCompareStep, mapState, mapControl, mapPhase,
+                      mapReturnFrame, mapStepResult, failWith, closeMemory,
+                      hDecode, hCleanup]
+              | ok order =>
+                  cases hValue : memory.allocate
+                      (.const (encoding.constant order)) with
+                  | error error =>
+                      cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
+                        simp [mapDispatchAction, dispatchActionStep,
+                          termCompareStep, mapState, mapControl, mapPhase,
+                          mapReturnFrame, mapStepResult, failWith, closeMemory,
+                          hDecode, hValue, hCleanup]
+                  | ok allocated =>
+                      rcases allocated with ⟨valueRoot, final⟩
+                      simp [mapDispatchAction, dispatchActionStep,
+                        termCompareStep, beginUnifyStep, mapState, mapControl,
+                        mapAttempt, mapPhase, mapReturnFrame, mapStepResult,
+                        hDecode, hValue]
           | sort decoder =>
               cases hDecode : decoder.decode memory.heap with
               | error reason =>

@@ -280,6 +280,16 @@ tree representation, so normal portable-library calls do not require the
 unmatched-rule path.  Malformed tree inputs may reach that path and therefore
 remain outside the current parity claim.
 
+The portable arm can now execute real `get_assoc/3` lookups through those SSU
+rules and the canonical shared-runtime `compare/3` action.  The gate loads the
+pinned source into Lean, compares root, left, right, and missing-key traces to
+the pinned SWI library, and therefore exercises selection and term comparison
+together rather than as compatible isolated fixtures:
+
+```bash
+scripts/prolog/run_pinned_assoc_runtime.sh /path/to/swipl-devel
+```
+
 ### Shared-runtime control differential
 
 The canonical runtime's structured-choice path has a separate observable gate:
@@ -288,7 +298,7 @@ The canonical runtime's structured-choice path has a separate observable gate:
 scripts/prolog/run_runtime_control_differential.sh
 ```
 
-It compares 254 exact answer, exception, and persistent-store traces against
+It compares 261 exact answer, exception, and persistent-store traces against
 SWI-Prolog 10.1.9:
 left-first disjunction, restoration before entering the right branch, cut
 pruning the right branch, and a callee-local cut retaining its caller's older
@@ -351,6 +361,13 @@ read-only heap traversal: same and distinct variables, structural compounds,
 variable sharing, separately allocated rational cycles, non-binding failure,
 heap-built meta-call, numeric type distinction, strings, and the atom versus
 explicit zero-arity-compound distinction.
+Seven `compare/3` cases expose the existing standard-term-order traversal
+through the shared runtime: atom order, structural equality, compound arity,
+output-unification failure, and SWI's distinct invalid-order-atom versus
+non-atom error classes.  The language decoder returns only an error or
+`Ordering`; the engine owns result-atom allocation and graph unification.
+Exact ISO exception-packet construction for invalid result values remains
+outside this differential claim.
 Eight `=../2` cases cover decomposition and construction of compounds, atoms,
 and integers, preserve variable sharing in both directions, and execute a
 heap-built meta-call through the same service.  Malformed lists, unbound or

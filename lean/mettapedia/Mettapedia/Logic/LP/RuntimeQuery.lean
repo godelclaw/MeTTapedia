@@ -79,6 +79,9 @@ inductive QueryError where
   | termHashBudgetExhausted
   | unsupportedTermHashConstant
   | standardOrderBudgetExhausted
+  | unsupportedTermOrderReference
+  | invalidTermCompareOrder
+  | invalidTermCompareOrderType
   | unsupportedSortReference
   | invalidSortKey
   | invalidSortOrder
@@ -209,6 +212,26 @@ clause, or emit an answer.  This is the narrow capability used by ground
 character-class tests such as the pinned parser's `code_type/2` calls. -/
 structure BinaryTestDecoder (σ : LPSignature) where
   decode : Heap σ.scoped → Addr → Addr → Except QueryError Bool
+
+/-- Language-owned atoms representing the three results of ISO `compare/3`.
+The shared engine chooses one result from `Ordering`, allocates it, and binds
+the caller's output through the canonical graph unifier. -/
+structure TermCompareEncoding (σ : LPSignature) where
+  less : σ.constants
+  equal : σ.constants
+  greater : σ.constants
+
+def TermCompareEncoding.constant {σ : LPSignature}
+    (encoding : TermCompareEncoding σ) : Ordering → σ.constants
+  | .lt => encoding.less
+  | .eq => encoding.equal
+  | .gt => encoding.greater
+
+/-- Read-only standard-term comparison.  A decoder may inspect the result and
+two operand roots and return only an error or `Ordering`; it cannot allocate,
+bind, schedule, select a clause, or manufacture an answer. -/
+structure TermCompareDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Addr → Addr → Addr → Except QueryError Ordering
 
 /-- A read-only sorting result contains only existing element roots, one
 language-owned proper-list encoding, and the output root to unify.  It cannot
@@ -3411,6 +3434,48 @@ def binaryTestStep {σ : LPSignature}
       } none
   | .ok false => .next { state with phase := .backtrack } none
 
+/-- Compare two existing term roots read-only, allocate the corresponding
+language atom, and bind the output only through the canonical unifier. -/
+def termCompareStep {σ : LPSignature}
+    (decoder : TermCompareDecoder σ) (encoding : TermCompareEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (result left right : Addr) (continuation : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match decoder.decode state.memory.heap result left right with
+  | .error reason => failWith state reason
+  | .ok order =>
+      match state.memory.allocate (.const (encoding.constant order)) with
+      | .error error => failWith state (.memory error)
+      | .ok (valueRoot, memory) =>
+          beginUnifyStep { state with memory } result valueRoot continuation
+
+/-- A successful decoder result creates exactly one fresh atomic cell and
+enters one ordinary unifier activation. -/
+theorem termCompareStep_of_decode_allocate {σ : LPSignature}
+    (decoder : TermCompareDecoder σ) (encoding : TermCompareEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (result left right valueRoot : Addr) (order : Ordering)
+    (memory : Memory σ.scoped) (continuation : List Instruction)
+    (hDecode : decoder.decode state.memory.heap result left right = .ok order)
+    (hAllocate : state.memory.allocate (.const (encoding.constant order)) =
+      .ok (valueRoot, memory)) :
+    termCompareStep decoder encoding state result left right continuation =
+      beginUnifyStep { state with memory } result valueRoot continuation := by
+  simp [termCompareStep, hDecode, hAllocate]
+
+/-- Result validation and comparison failures use the ordinary exact query
+cleanup path; they cannot degrade into Prolog failure. -/
+theorem termCompareStep_error_of_decode {σ : LPSignature}
+    (decoder : TermCompareDecoder σ) (encoding : TermCompareEncoding σ)
+    (state : StateCore σ Instruction SourceClause)
+    (result left right : Addr) (continuation : List Instruction)
+    (reason : QueryError)
+    (hDecode : decoder.decode state.memory.heap result left right =
+      .error reason) :
+    termCompareStep decoder encoding state result left right continuation =
+      failWith state reason := by
+  simp [termCompareStep, hDecode]
+
 /-- Allocate only the proper-list spine named by a certified read-only sort
 plan, then bind the output through the canonical graph unifier.  Element roots
 are reused exactly, preserving variables and sharing. -/
@@ -3860,6 +3925,8 @@ inductive DispatchAction (σ : LPSignature)
   | format (destination format arguments : Addr) (decoder : FormatDecoder σ)
   | textConversion (text codes : Addr) (decoder : TextConversionDecoder σ)
   | binaryTest (left right : Addr) (decoder : BinaryTestDecoder σ)
+  | termCompare (result left right : Addr) (decoder : TermCompareDecoder σ)
+      (encoding : TermCompareEncoding σ)
   | sort (decoder : SortDecoder σ)
   | listLength (listRoot lengthRoot : Addr)
       (encoding : ListLengthEncoding σ)
@@ -4013,6 +4080,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
       textConversionStep textDecoder state text codes rest
   | .binaryTest left right testDecoder =>
       binaryTestStep testDecoder state left right rest
+  | .termCompare result left right compareDecoder encoding =>
+      termCompareStep compareDecoder encoding state result left right rest
   | .sort sortDecoder => sortStep sortDecoder state rest
   | .listLength listRoot lengthRoot encoding =>
       listLengthStep encoding state listRoot lengthRoot rest

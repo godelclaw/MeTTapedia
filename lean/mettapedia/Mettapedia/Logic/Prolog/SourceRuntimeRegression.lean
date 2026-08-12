@@ -1763,7 +1763,48 @@ def currentPredicateUnbound : SourceSignature.Goal :=
 def assertedPredicateBecomesCurrent : SourceSignature.Goal :=
   .conj (assertzGoal (assertedP "a")) (currentPredicate "p" 1)
 
+/-! ## ISO `compare/3` through the canonical standard-term order -/
+
+def termCompare (result left right : SourceSignature.Term) :
+    SourceSignature.Goal :=
+  SourceSignature.call "compare" [result, left, right]
+
+def compareAtoms : SourceSignature.Goal :=
+  termCompare x (atom "a") (atom "b")
+
+def compareEqualCompounds : SourceSignature.Goal :=
+  termCompare x (compound "f" [atom "a"]) (compound "f" [atom "a"])
+
+def compareCompoundArity : SourceSignature.Goal :=
+  termCompare x (compound "f" [atom "a"])
+    (compound "f" [atom "a", atom "b"])
+
+def comparePreboundMismatch : SourceSignature.Goal :=
+  termCompare (atom ">") (atom "a") (atom "b")
+
+def compareInvalidOrderAtom : SourceSignature.Goal :=
+  termCompare (atom "foo") (atom "a") (atom "b")
+
+def compareInvalidOrderInteger : SourceSignature.Goal :=
+  termCompare (integer 1) (atom "a") (atom "b")
+
+def compareInvalidOrderCompound : SourceSignature.Goal :=
+  termCompare (compound "f" [atom "x"]) (atom "a") (atom "b")
+
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
+#guard runAtomsFor [] compareAtoms xIdentity == some (["<"], 0, 0)
+#guard runAtomsFor [] compareEqualCompounds xIdentity == some (["="], 0, 0)
+#guard runAtomsFor [] compareCompoundArity xIdentity == some (["<"], 0, 0)
+#guard runCount [] comparePreboundMismatch == some (0, 0, 0)
+#guard match runQueryError? [] compareInvalidOrderAtom with
+  | some .invalidTermCompareOrder => true
+  | _ => false
+#guard match runQueryError? [] compareInvalidOrderInteger with
+  | some .invalidTermCompareOrderType => true
+  | _ => false
+#guard match runQueryError? [] compareInvalidOrderCompound with
+  | some .invalidTermCompareOrderType => true
+  | _ => false
 #guard runAtoms [] metaCutRetainsCaller == some (["c"], 0, 0)
 #guard runCount binaryFactProgram callThree == some (1, 0, 0)
 #guard runCount binaryFactProgram heapBuiltCallable == some (1, 0, 0)

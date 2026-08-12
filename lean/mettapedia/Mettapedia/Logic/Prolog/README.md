@@ -58,7 +58,7 @@ lake build Mettapedia.Logic.Prolog.Prolog
 | [ReaderConditional.lean](ReaderConditional.lean) | fail-closed conditional source selection before ordinary read-time effects |
 | [ReaderSWIProfile.lean](ReaderSWIProfile.lean) | fail-closed import-operator profile for the pinned PeTTa closure |
 | [RuntimeControl.lean](RuntimeControl.lean) | typed control materialization and canonical LP runtime specialization |
-| [SourceRuntime.lean](SourceRuntime.lean) | concrete source-signature services for the shared runtime, including meta-call, term inspection, `=../2`, integer arithmetic, exceptions, collections, and the persistent database |
+| [SourceRuntime.lean](SourceRuntime.lean) | concrete source-signature services for the shared runtime, including meta-call, term inspection and standard comparison, `=../2`, integer arithmetic, exceptions, collections, and the persistent database |
 | [SourceRuntimeRegression.lean](SourceRuntimeRegression.lean) | executable source-shaped canaries for the same shared runtime path |
 | [SingleSidedRuleRegression.lean](SingleSidedRuleRegression.lean) | source-to-runtime SSU caller-protection and guard-commit canaries |
 | [RuntimeControlSoundness.lean](RuntimeControlSoundness.lean) | proves the typed runtime conserves the shared LP execution and grounds pure answers in scoped SLD and the least Herbrand model |

@@ -849,6 +849,57 @@ def sort? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | _, _ => none
 
+def termCompareEncoding : LP.RuntimeQuery.TermCompareEncoding Sigma where
+  less := .atom "<"
+  equal := .atom "="
+  greater := .atom ">"
+
+private def termCompareError : SourceTermOrder.Error →
+    LP.RuntimeQuery.QueryError
+  | .memory error => .memory error
+  | .comparisonBudgetExhausted => .standardOrderBudgetExhausted
+  | .unsupportedClauseReference => .unsupportedTermOrderReference
+  | .invalidSortKey => .invalidSortKey
+
+/-- Validate the result mode before comparing, matching SWI's distinction
+between a non-order atom and a non-atom.  The decoder remains read-only and
+returns no answer content beyond `Ordering`. -/
+private def validateTermCompareResult (heap : Heap Sigma.scoped)
+    (result : Addr) : Except LP.RuntimeQuery.QueryError Unit := do
+  let (_, cell) ← LP.RuntimeQuery.dereferencedRootCell heap result
+  match cell with
+  | .var _ none => pure ()
+  | .const (.atom "<") | .const (.atom "=") | .const (.atom ">") =>
+      pure ()
+  | .const (.atom _) => .error .invalidTermCompareOrder
+  | _ => .error .invalidTermCompareOrderType
+
+/-- Read the canonical heap through the already-established SWI standard-term
+order.  The result is only `Ordering`; allocation and output unification stay
+inside the shared engine. -/
+def decodeTermCompare (heap : Heap Sigma.scoped) (result left right : Addr) :
+    Except LP.RuntimeQuery.QueryError Ordering :=
+  match validateTermCompareResult heap result with
+  | .error error => .error error
+  | .ok () =>
+      match SourceTermOrder.compareAt heap left right with
+      | .ok order => .ok order
+      | .error error => .error (termCompareError error)
+
+def termCompareDecoder : LP.RuntimeQuery.TermCompareDecoder Sigma where
+  decode := decodeTermCompare
+
+/-- Recognize ISO `compare/3` without inspecting its heap operands. -/
+def termCompare? (goal : RuntimeAtom Sigma.scoped) :
+    Option (Addr × Addr × Addr × LP.RuntimeQuery.TermCompareDecoder Sigma ×
+      LP.RuntimeQuery.TermCompareEncoding Sigma) :=
+  match goal.symbol.name, goal.args.toList with
+  | "compare", [result, left, right] =>
+      if goal.symbol.arity = 3 then
+        some (result, left, right, termCompareDecoder, termCompareEncoding)
+      else none
+  | _, _ => none
+
 /-- Recognize ISO `length/2`; all heap inspection and binding stay in the
 shared engine. -/
 def listLength? (goal : RuntimeAtom Sigma.scoped) :
@@ -1249,6 +1300,7 @@ def services : RuntimeControl.Services Sigma where
   textConversion? := textConversion?
   binaryTest? := binaryTest?
   sort? := sort?
+  termCompare? := termCompare?
   listLength? := listLength?
   currentPredicate? := currentPredicate?
   predicateIndicatorEncoding := some predicateIndicatorEncoding
@@ -1421,6 +1473,22 @@ theorem services_binaryTest : services.binaryTest? = binaryTest? := rfl
 
 @[simp]
 theorem services_sort : services.sort? = sort? := rfl
+
+@[simp]
+theorem services_termCompare : services.termCompare? = termCompare? := rfl
+
+/-- The concrete source realization exposes `compare/3` as exactly one
+read-only standard-order decoder followed by the shared engine's result
+allocation and graph unification. -/
+@[simp]
+theorem dispatchActionWith_compare (program : SourceSignature.Program)
+    (result left right : Addr) :
+    RuntimeControl.dispatchActionWith services program (.call {
+      symbol := { name := "compare", arity := 3 }
+      args := #[result, left, right]
+    }) = .termCompare result left right termCompareDecoder
+      termCompareEncoding := by
+  rfl
 
 @[simp]
 theorem services_listLength : services.listLength? = listLength? := rfl

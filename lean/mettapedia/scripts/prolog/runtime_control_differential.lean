@@ -42,6 +42,15 @@ def renderCount (label : String) : Option (Nat × Nat × Nat) -> IO Unit
       throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
   | none => throw <| IO.userError s!"{label}: runtime did not close"
 
+def renderCompareError (label : String) :
+    Option Mettapedia.Logic.LP.RuntimeQuery.QueryError → IO Unit
+  | some .invalidTermCompareOrder =>
+      IO.println s!"{label}=domain_error(order)"
+  | some .invalidTermCompareOrderType =>
+      IO.println s!"{label}=type_error(atom)"
+  | some error => throw <| IO.userError s!"{label}: unexpected error {repr error}"
+  | none => throw <| IO.userError s!"{label}: runtime did not raise an error"
+
 def renderIntegerAnswers (label : String) :
     Option (List Int × Nat × Nat) -> IO Unit
   | some (answers, 0, 0) =>
@@ -826,6 +835,30 @@ def main : IO Unit := do
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.snapshotDoesNotDrift
   renderStringAnswers "db_snapshot_later_call"
     Mettapedia.Logic.Prolog.SourceRuntimeRegression.laterCallSeesAssertion
+  renderStringAnswers "compare_atoms"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compareAtoms
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "compare_equal_compounds"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compareEqualCompounds
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderStringAnswers "compare_compound_arity"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compareCompoundArity
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.xIdentity)
+  renderCount "compare_prebound_mismatch"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.comparePreboundMismatch)
+  renderCompareError "compare_invalid_order_atom"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runQueryError? []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compareInvalidOrderAtom)
+  renderCompareError "compare_invalid_order_integer"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runQueryError? []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compareInvalidOrderInteger)
+  renderCompareError "compare_invalid_order_compound"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runQueryError? []
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.compareInvalidOrderCompound)
   renderBool "dcg_terminal_sharing"
     Mettapedia.Logic.Prolog.ReaderDCGRegression.terminalSharingExecutes
   renderBool "dcg_braced_goal"

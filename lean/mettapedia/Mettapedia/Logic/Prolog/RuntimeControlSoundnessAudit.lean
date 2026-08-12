@@ -44,6 +44,11 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.binaryTestStep_accepts
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.binaryTestStep_rejects
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.binaryTestStep_error_of_decode
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.termCompareStep_of_decode_allocate
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.termCompareStep_error_of_decode
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_termCompare
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termCompare
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_compare
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.allocateAddressList_size_trail
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.sortStep_of_decode_allocate
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.sortStep_error_of_decode

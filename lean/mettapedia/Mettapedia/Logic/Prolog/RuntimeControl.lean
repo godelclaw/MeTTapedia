@@ -487,6 +487,12 @@ structure Services (sigma : LP.LPSignature) where
   allocation of the result spine and output unification. -/
   sort? : RuntimeAtom sigma.scoped → Option (LP.RuntimeQuery.SortDecoder sigma) :=
     fun _ => none
+  /-- Recognize ISO `compare/3` without inspecting its operands.  The decoder
+  returns only `Ordering`; result allocation and unification remain shared-
+  engine work. -/
+  termCompare? : RuntimeAtom sigma.scoped →
+    Option (Addr × Addr × Addr × LP.RuntimeQuery.TermCompareDecoder sigma ×
+      LP.RuntimeQuery.TermCompareEncoding sigma) := fun _ => none
   /-- Recognize finite deterministic `length/2` without inspecting the heap.
   The engine owns list traversal, result allocation, and unification. -/
   listLength? : RuntimeAtom sigma.scoped →
@@ -570,6 +576,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   textConversion? _ := none
   binaryTest? _ := none
   sort? _ := none
+  termCompare? _ := none
   listLength? _ := none
   currentPredicate? _ := none
   predicateIndicatorEncoding := none
@@ -695,55 +702,61 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                                   match services.sort? goal with
                                                   | some decoder => .sort decoder
                                                   | none =>
-                                                      match services.listLength? goal with
-                                                      | some (listRoot, lengthRoot,
+                                                      match services.termCompare? goal with
+                                                      | some (result, left, right, decoder,
                                                           encoding) =>
-                                                          .listLength listRoot lengthRoot
+                                                          .termCompare result left right decoder
                                                             encoding
                                                       | none =>
-                                                          match services.currentPredicate? goal,
-                                                              services.predicateIndicatorEncoding with
-                                                          | some indicatorRoot, some encoding =>
-                                                              .predicateDefined indicatorRoot
-                                                                ((program.map fun clause =>
-                                                                  clause.head.symbol) ++
-                                                                  services.runtimePredicates)
+                                                          match services.listLength? goal with
+                                                          | some (listRoot, lengthRoot,
+                                                              encoding) =>
+                                                              .listLength listRoot lengthRoot
                                                                 encoding
-                                                          | some _, none =>
-                                                              .error .unsupportedInstruction
-                                                          | none, _ =>
-                                                              match services.copyTerm? goal with
-                                                              | some (sourceRoot, targetRoot) =>
-                                                                  .copyTerm sourceRoot targetRoot
-                                                              | none =>
-                                                                  match services.termVariables? goal with
-                                                                  | some (termRoot, variablesRoot,
-                                                                      encoding) =>
-                                                                      .termVariables termRoot
-                                                                        variablesRoot encoding
+                                                          | none =>
+                                                              match services.currentPredicate? goal,
+                                                                  services.predicateIndicatorEncoding with
+                                                              | some indicatorRoot, some encoding =>
+                                                                  .predicateDefined indicatorRoot
+                                                                    ((program.map fun clause =>
+                                                                      clause.head.symbol) ++
+                                                                      services.runtimePredicates)
+                                                                    encoding
+                                                              | some _, none =>
+                                                                  .error .unsupportedInstruction
+                                                              | none, _ =>
+                                                                  match services.copyTerm? goal with
+                                                                  | some (sourceRoot, targetRoot) =>
+                                                                      .copyTerm sourceRoot targetRoot
                                                                   | none =>
-                                                                      match services.numberVariables? goal with
-                                                                      | some (termRoot, startRoot,
-                                                                          endRoot, optionsRoot, decoder) =>
-                                                                          .numberVariables termRoot
-                                                                            startRoot endRoot optionsRoot
-                                                                            decoder
+                                                                      match services.termVariables? goal with
+                                                                      | some (termRoot, variablesRoot,
+                                                                          encoding) =>
+                                                                          .termVariables termRoot
+                                                                            variablesRoot encoding
                                                                       | none =>
-                                                                          match services.termHash? goal with
-                                                                          | some (termRoot, hashRoot,
-                                                                              encoding) =>
-                                                                              .termHash termRoot hashRoot
-                                                                                encoding
+                                                                          match services.numberVariables? goal with
+                                                                          | some (termRoot, startRoot,
+                                                                              endRoot, optionsRoot, decoder) =>
+                                                                              .numberVariables termRoot
+                                                                                startRoot endRoot optionsRoot
+                                                                                decoder
                                                                           | none =>
-                                                                              match services.functor? goal with
-                                                                              | some (termRoot, nameRoot,
-                                                                                  arityRoot, encoding) =>
-                                                                                  .functor termRoot nameRoot
-                                                                                    arityRoot encoding
+                                                                              match services.termHash? goal with
+                                                                              | some (termRoot, hashRoot,
+                                                                                  encoding) =>
+                                                                                  .termHash termRoot hashRoot
+                                                                                    encoding
                                                                               | none =>
-                                                                                  .call goal
-                                                                                    (Program.clausesFor program
-                                                                                      goal.symbol)
+                                                                                  match services.functor? goal with
+                                                                                  | some (termRoot, nameRoot,
+                                                                                      arityRoot, encoding) =>
+                                                                                      .functor termRoot nameRoot
+                                                                                        arityRoot encoding
+                                                                                  | none =>
+                                                                                      .call goal
+                                                                                        (Program.clausesFor program
+                                                                                          goal.symbol)
   | .fail => .fail
   | .cut => .cut
   | .disj left right => .branch left right
@@ -962,6 +975,33 @@ theorem dispatchActionWith_sort {sigma : LP.LPSignature}
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
     hComparison, hFormat, hText, hBinary, hDcg, hSort]
 
+/-- Standard-term comparison reaches the shared engine as three existing
+roots, one read-only decoder, and one result encoding. -/
+theorem dispatchActionWith_termCompare {sigma : LP.LPSignature}
+    [DecidableEq sigma.relationSymbols]
+    (services : Services sigma) (program : Program sigma)
+    (goal : RuntimeAtom sigma.scoped) (result left right : Addr)
+    (decoder : LP.RuntimeQuery.TermCompareDecoder sigma)
+    (encoding : LP.RuntimeQuery.TermCompareEncoding sigma)
+    (hDatabase : services.databaseRequest? goal = none)
+    (hMeta : services.metaCall? goal = none)
+    (hTest : services.termTest? goal = none)
+    (hIdentity : services.termIdentity? goal = none)
+    (hUniv : services.univ? goal = none)
+    (hIs : services.integerIs? goal = none)
+    (hComparison : services.integerComparison? goal = none)
+    (hFormat : services.format? goal = none)
+    (hText : services.textConversion? goal = none)
+    (hBinary : services.binaryTest? goal = none)
+    (hDcg : services.dcgCall? goal = none)
+    (hSort : services.sort? goal = none)
+    (hTermCompare : services.termCompare? goal =
+      some (result, left, right, decoder, encoding)) :
+    dispatchActionWith services program (.call goal) =
+      .termCompare result left right decoder encoding := by
+  simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
+    hComparison, hFormat, hText, hBinary, hDcg, hSort, hTermCompare]
+
 /-- Finite deterministic `length/2` exposes only its two existing roots and
 representation encoding.  Traversal, allocation, and unification are owned by
 the shared engine. -/
@@ -982,12 +1022,13 @@ theorem dispatchActionWith_listLength {sigma : LP.LPSignature}
     (hBinary : services.binaryTest? goal = none)
     (hDcg : services.dcgCall? goal = none)
     (hSort : services.sort? goal = none)
+    (hTermCompare : services.termCompare? goal = none)
     (hLength : services.listLength? goal =
       some (listRoot, lengthRoot, encoding)) :
     dispatchActionWith services program (.call goal) =
       .listLength listRoot lengthRoot encoding := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
-    hComparison, hFormat, hText, hBinary, hDcg, hSort, hLength]
+    hComparison, hFormat, hText, hBinary, hDcg, hSort, hTermCompare, hLength]
 
 /-- Ground `current_predicate/1` membership is coupled to the exact program
 visible at this dispatch plus the realization's explicit transition-backed
@@ -1010,6 +1051,7 @@ theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
     (hBinary : services.binaryTest? goal = none)
     (hDcg : services.dcgCall? goal = none)
     (hSort : services.sort? goal = none)
+    (hTermCompare : services.termCompare? goal = none)
     (hLength : services.listLength? goal = none)
     (hCurrent : services.currentPredicate? goal = some indicatorRoot)
     (hEncoding : services.predicateIndicatorEncoding = some encoding) :
@@ -1018,7 +1060,7 @@ theorem dispatchActionWith_currentPredicate {sigma : LP.LPSignature}
         ((program.map fun clause => clause.head.symbol) ++
           services.runtimePredicates) encoding := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hIdentity, hUniv, hIs,
-    hComparison, hFormat, hText, hBinary, hDcg, hSort, hLength, hCurrent,
+    hComparison, hFormat, hText, hBinary, hDcg, hSort, hTermCompare, hLength, hCurrent,
     hEncoding]
 
 @[simp]
