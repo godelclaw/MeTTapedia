@@ -128,6 +128,16 @@
     },
     {
       "project": "swi-prolog",
+      "path": "boot/expand.pl",
+      "sha256": "6aba01dfc13defa82945fedf3f7cb9ebdeebf1373afca48b957fdf521fa4bd55"
+    },
+    {
+      "project": "swi-prolog",
+      "path": "library/assoc.pl",
+      "sha256": "8cf114b4886b8841c919812cd54fb5521f5b8ced0cbfec096af251ea54f86e1d"
+    },
+    {
+      "project": "swi-prolog",
       "path": "boot/syspred.pl",
       "sha256": "8fe12fec547142af47975e55a75376c93caf3f58044774e1894ed6debd190298"
     },
@@ -1130,8 +1140,15 @@
     {
       "id": "runtime.reader",
       "project": "swi-prolog",
-      "sources": ["src/pl-read.c"],
-      "anchors": ["read_term", "read_term_from_stream"],
+      "sources": ["src/pl-read.c", "boot/expand.pl"],
+      "anchors": [
+        "read_term",
+        "read_term_from_stream",
+        "cond_compilation((:- if(G)), [])",
+        "cond_compilation((:- elif(G)), [])",
+        "cond_compilation((:- else), [])",
+        "cond_compilation((:- endif), [])"
+      ],
       "implementation_status": "adapted",
       "implementation_evidence": [
         "Mettapedia/Logic/Prolog/ReaderLexer.lean",
@@ -1141,6 +1158,7 @@
         "Mettapedia/Logic/Prolog/ReaderSource.lean",
         "Mettapedia/Logic/Prolog/ReaderLoader.lean",
         "Mettapedia/Logic/Prolog/ReaderDirective.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditional.lean",
         "Mettapedia/Logic/Prolog/ReaderSWIProfile.lean"
       ],
       "proof_status": "partial",
@@ -1150,7 +1168,8 @@
         "Mettapedia/Logic/Prolog/ReaderOperatorRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderTermRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderSourceRegression.lean",
-        "Mettapedia/Logic/Prolog/ReaderLoaderRegression.lean"
+        "Mettapedia/Logic/Prolog/ReaderLoaderRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditionalRegression.lean"
       ],
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
@@ -1182,6 +1201,7 @@
       "implementation_evidence": [
         "Mettapedia/Logic/Prolog/ReaderProgram.lean",
         "Mettapedia/Logic/Prolog/ReaderDCG.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditional.lean",
         "Mettapedia/Logic/Prolog/ReaderUnit.lean",
         "Mettapedia/Logic/Prolog/ReaderUnitClosure.lean"
       ],
@@ -1191,6 +1211,7 @@
         "Mettapedia/Logic/Prolog/ReaderProgramAudit.lean",
         "Mettapedia/Logic/Prolog/ReaderDCGRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderDCGAudit.lean",
+        "Mettapedia/Logic/Prolog/ReaderConditionalRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderUnitRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderUnitClosureRegression.lean",
         "Mettapedia/Logic/Prolog/ReaderUnitAudit.lean"
@@ -1203,6 +1224,8 @@
         "scripts/prolog/pinned_dcg_expansion.lean",
         "scripts/prolog/pinned_dcg_oracle.pl",
         "scripts/prolog/run_pinned_dcg_expansion.sh",
+        "scripts/prolog/pinned_assoc_conditional.lean",
+        "scripts/prolog/run_pinned_assoc_conditional.sh",
         "scripts/prolog/pinned_parser_unit_closure.lean",
         "scripts/prolog/run_pinned_parser_unit_closure.sh",
         "scripts/prolog/pinned_parser_source_runtime.lean",

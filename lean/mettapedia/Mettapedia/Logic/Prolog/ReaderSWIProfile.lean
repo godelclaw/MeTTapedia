@@ -1,4 +1,4 @@
-import Mettapedia.Logic.Prolog.ReaderDirective
+import Mettapedia.Logic.Prolog.ReaderConditional
 
 /-!
 # Pinned SWI read-time operator profile
@@ -21,6 +21,10 @@ open ReaderDirective SourceSignature
 inductive Error where
   | malformedImportSource
   | unclassifiedImport (source : String)
+deriving DecidableEq, Repr
+
+inductive ConditionError where
+  | unclassifiedCondition
 deriving DecidableEq, Repr
 
 private def update (priority : Nat) (specifier : ReaderOperator.Specifier)
@@ -116,5 +120,30 @@ def pinnedPeTTa : ReaderDirective.ImportProfile Error := fun source =>
   | some key =>
       if key ∈ operatorEmptyImports then .ok []
       else .error (.unclassifiedImport key)
+
+private def isPrivateBtreeIndicator : SourceSignature.Term -> Bool
+  | .app indicator arguments =>
+      match indicator.name, List.ofFn arguments with
+      | "/", [.const (.atom "$btree_find_node"),
+          .const (.integer (.ofNat 5))] => true
+      | _, _ => false
+  | _ => false
+
+/-- Read-time condition profile needed by the pinned `library(assoc)` source.
+The private C predicate `$btree_find_node/5` is absent from the verified
+runtime, so the source loader selects the library's portable Prolog arm.
+Pinned SWI itself provides that private predicate and selects its C-backed
+arm; this profile records the verified runtime's environment, not an assertion
+that both systems select the same source arm.
+Every other condition remains an explicit unsupported boundary. -/
+def pinnedPeTTaCondition :
+    ReaderConditional.ConditionProfile ConditionError
+  | .call atom =>
+      match atom.symbol.name, List.ofFn atom.args with
+      | "current_predicate", [indicator] =>
+          if isPrivateBtreeIndicator indicator then .ok false
+          else .error .unclassifiedCondition
+      | _, _ => .error .unclassifiedCondition
+  | _ => .error .unclassifiedCondition
 
 end Mettapedia.Logic.Prolog.ReaderSWIProfile

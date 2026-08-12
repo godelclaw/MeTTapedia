@@ -55,6 +55,7 @@ lake build Mettapedia.Logic.Prolog.Prolog
 | [ReaderSource.lean](ReaderSource.lean) | direct classification into canonical Prolog goals and clauses |
 | [ReaderLoader.lean](ReaderLoader.lean) | sequential parsing with directive effects between terms |
 | [ReaderDirective.lean](ReaderDirective.lean) | checked read-time operator effects for directives and imports |
+| [ReaderConditional.lean](ReaderConditional.lean) | fail-closed conditional source selection before ordinary read-time effects |
 | [ReaderSWIProfile.lean](ReaderSWIProfile.lean) | fail-closed import-operator profile for the pinned PeTTa closure |
 | [RuntimeControl.lean](RuntimeControl.lean) | typed control materialization and canonical LP runtime specialization |
 | [SourceRuntime.lean](SourceRuntime.lean) | concrete source-signature services for the shared runtime, including meta-call, term inspection, `=../2`, integer arithmetic, exceptions, collections, and the persistent database |

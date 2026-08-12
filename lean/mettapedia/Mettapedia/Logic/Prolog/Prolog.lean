@@ -19,6 +19,8 @@ import Mettapedia.Logic.Prolog.ClauseReflectionRegression
 import Mettapedia.Logic.Prolog.ClauseReflectionAudit
 import Mettapedia.Logic.Prolog.ReaderLoader
 import Mettapedia.Logic.Prolog.ReaderDirective
+import Mettapedia.Logic.Prolog.ReaderConditional
+import Mettapedia.Logic.Prolog.ReaderConditionalRegression
 import Mettapedia.Logic.Prolog.ReaderSWIProfile
 import Mettapedia.Logic.Prolog.ReaderLoaderRegression
 import Mettapedia.Logic.Prolog.ReaderProgram
@@ -94,6 +96,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ClauseReflection` | fail-closed source-clause reclassification and complete executable-code agreement |
 | `ReaderLoader` | sequential term loading with explicit between-term effects |
 | `ReaderDirective` | local and imported read-time operator effects |
+| `ReaderConditional` | fail-closed `if`/`elif`/`else`/`endif` source selection before ordinary read-time effects |
 | `ReaderSWIProfile` | fail-closed pinned PeTTa/SWI import-operator profile |
 | `ReaderProgram` | strict clause/DCG admission into the canonical executable program |
 | `ReaderProgramAudit` | trusted-base gate for exact clause-only admission |

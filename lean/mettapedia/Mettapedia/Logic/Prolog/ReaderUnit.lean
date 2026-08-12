@@ -1,4 +1,4 @@
-import Mettapedia.Logic.Prolog.ReaderDirective
+import Mettapedia.Logic.Prolog.ReaderConditional
 import Mettapedia.Logic.Prolog.ReaderDCG
 
 /-!
@@ -170,6 +170,18 @@ def loadSourceWith (effect : ReaderLoader.Effect epsilon)
     (operators : ReaderOperator.Table) (source : String) :
     Except (Error epsilon) Unit := do
   let loaded <- (ReaderLoader.loadSourceWith effect operators source).mapError
+    .reader
+  ofLoaded loaded
+
+/-- Read and classify one unit after fail-closed conditional compilation.
+Inactive arms and the conditional directives themselves never become unit
+items or pending runtime goals. -/
+def loadConditionalSourceWith
+    (profile : ReaderConditional.ConditionProfile rho)
+    (effect : ReaderLoader.Effect epsilon)
+    (operators : ReaderOperator.Table) (source : String) :
+    Except (Error (ReaderConditional.Error epsilon rho)) Unit := do
+  let loaded <- (ReaderConditional.loadSourceWith profile effect operators source).mapError
     .reader
   ofLoaded loaded
 
