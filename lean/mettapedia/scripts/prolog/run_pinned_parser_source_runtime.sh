@@ -21,7 +21,7 @@ git -C "$PETTA_TREE" cat-file -e "$PIN^{commit}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 git -C "$PETTA_TREE" archive "$PIN" \
-  src/metta.pl src/parser.pl src/translator.pl | tar -x -C "$TMP"
+  src/metta.pl src/parser.pl src/translator.pl src/specializer.pl | tar -x -C "$TMP"
 
 DCG_BASICS="$(swipl -q -g \
   "absolute_file_name(library('dcg/basics'), P, [file_type(prolog), access(read)]), write(P), halt")"
@@ -37,7 +37,7 @@ PAIRS="$(swipl -q -g \
 pushd "$ROOT_DIR" >/dev/null
 if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
     "$TMP/src/metta.pl" "$TMP/src/parser.pl" \
-    "$TMP/src/translator.pl" \
+    "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
     "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" "$PAIRS" > "$TMP/lean.out"; then
   cat "$TMP/lean.out" >&2
   popd >/dev/null
@@ -80,6 +80,14 @@ metta_eval_atomic=exact
 metta_fun_id_registered=exact
 metta_id_direct=exact
 metta_eval_compound=exact
+metta_eval_nested_arithmetic=exact
+metta_eval_imported_reverse=exact
+metta_eval_if=exact
+metta_eval_map_atom=exact
+metta_eval_foldl_atom=exact
+metta_eval_first_pair=exact
+metta_eval_size=exact
+metta_eval_unique=exact
 EOF
 diff -u "$TMP/lean.expected" "$TMP/lean.out"
 
@@ -90,8 +98,18 @@ printf '%s\n' '[40,41]' '[40,97,41]' '[45,52,50]' '[a]' '[a,b]' '[1]' '[-2]' '[1
 diff -u "$TMP/swi.expected" "$TMP/swi.out"
 
 swipl -q -f scripts/prolog/pinned_petta_registration_oracle.pl -- \
-  "$TMP/src/metta.pl" > "$TMP/swi-registration.out"
+  "$TMP/src/metta.pl" "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
+  > "$TMP/swi-registration.out"
 printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
+  'metta_eval_compound=exact' \
+  'metta_eval_nested_arithmetic=exact' \
+  'metta_eval_imported_reverse=exact' \
+  'metta_eval_if=exact' \
+  'metta_eval_map_atom=exact' \
+  'metta_eval_foldl_atom=exact' \
+  'metta_eval_first_pair=exact' \
+  'metta_eval_size=exact' \
+  'metta_eval_unique=exact' \
   > "$TMP/swi-registration.expected"
 diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
 

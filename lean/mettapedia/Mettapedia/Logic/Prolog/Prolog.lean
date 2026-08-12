@@ -30,6 +30,7 @@ import Mettapedia.Logic.Prolog.ReaderUnitClosure
 import Mettapedia.Logic.Prolog.ReaderUnitClosureRegression
 import Mettapedia.Logic.Prolog.ReaderModuleLink
 import Mettapedia.Logic.Prolog.ReaderModuleLinkRegression
+import Mettapedia.Logic.Prolog.ReaderModuleLinkAudit
 import Mettapedia.Logic.Prolog.ReaderLoadRuntime
 import Mettapedia.Logic.Prolog.ReaderLoadRuntimeRegression
 import Mettapedia.Logic.Prolog.ReaderLoadRuntimeAudit
@@ -99,6 +100,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderUnit` | source-ordered module/import/declaration/initializer obligations over canonical clauses and goals |
 | `ReaderUnitClosure` | finite import discovery and collision-safe flat linking with unresolved obligations retained |
 | `ReaderModuleLink` | static module/export/import qualification over the same canonical clauses and direct retained goals, with execution separate |
+| `ReaderModuleLinkAudit` | trusted-base gate for exact import-forwarding endpoints and absent synthetic provenance |
 | `ReaderLoadRuntime` | first-solution source-goal policy over the same persistent canonical runtime, with failure/open/raise/error kept distinct |
 | `ReaderUnitAudit` | trusted-base gate for exact canonical clause admission into source units |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |

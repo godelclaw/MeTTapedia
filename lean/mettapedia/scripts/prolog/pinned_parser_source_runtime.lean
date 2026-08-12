@@ -9,8 +9,8 @@ import Mettapedia.Logic.LP.RuntimeReadback
 /-!
 Execute real pinned `parser.pl` DCG clauses, the `parse/2` and `repr/2`
 wrappers from pinned `metta.pl`, and `eval/2` through pinned `translator.pl`
-on the canonical shared runtime.  The registration path executes the real
-retained `maplist(register_fun, ...)` load goal through SWI's pinned
+and `specializer.pl` on the canonical shared runtime. The registration path
+executes the real retained `maplist(register_fun, ...)` load goal through SWI's pinned
 `library(apply)` clauses and carries its persistent database forward.  Other
 retained loader obligations stay explicit; this canary claims only the named
 paths.  Compound evaluation remains gated by the standard-term-ordering
@@ -81,7 +81,7 @@ The closures are read independently, their already-loaded source units are
 combined by key, and module qualification is applied to the same canonical
 clauses consumed by the shared runtime. -/
 def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
-    (mettaSource translatorSource dcgBasicsSource listsSource
+    (mettaSource translatorSource specializerSource dcgBasicsSource listsSource
       errorSource applySource pairsSource : String) :
     IO (ReaderUnitClosure.FlatLink String) := do
   let mettaClosure ← match ReaderUnitClosure.loadWith 32
@@ -98,11 +98,19 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       "translator" translatorSource with
     | .ok closure => pure closure
     | .error _ => throw <| IO.userError "translator source-unit closure failed"
+  let specializerClosure ← match ReaderUnitClosure.loadWith 2
+      (ReaderDirective.effectWith ReaderSWIProfile.pinnedPeTTa)
+      ReaderOperator.defaults
+      (resolver dcgBasicsSource listsSource errorSource applySource pairsSource)
+      "specializer" specializerSource with
+    | .ok closure => pure closure
+    | .error _ => throw <| IO.userError "specializer source-unit closure failed"
   let userUnits := appendNewUnits mettaClosure.units parserClosure.units
+  let userUnits := appendNewUnits userUnits translatorClosure.units
   let combined : ReaderUnitClosure.Closure String := {
-    units := appendNewUnits userUnits translatorClosure.units
+    units := appendNewUnits userUnits specializerClosure.units
     external := mettaClosure.external ++ parserClosure.external ++
-      translatorClosure.external
+      translatorClosure.external ++ specializerClosure.external
   }
   let linked ← match ReaderModuleLink.link ReaderSWIProfile.sourceKey? combined with
     | .ok linked => pure linked
@@ -112,12 +120,18 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
   let some translatorUnit := translatorClosure.units.find? fun named =>
       named.key = "translator"
     | throw <| IO.userError "translator root unit missing"
+  let some specializerUnit := specializerClosure.units.find? fun named =>
+      named.key = "specializer"
+    | throw <| IO.userError "specializer root unit missing"
   if mettaUnit.unit.program.length != 159 then
     throw <| IO.userError s!"metta source boundary changed: \
       clauses={mettaUnit.unit.program.length}"
   if translatorUnit.unit.program.length != 52 then
     throw <| IO.userError s!"translator source boundary changed: \
       clauses={translatorUnit.unit.program.length}"
+  if specializerUnit.unit.program.length != 13 then
+    throw <| IO.userError s!"specializer source boundary changed: \
+      clauses={specializerUnit.unit.program.length}"
   let numberSymbol : SourceSignature.PredicateIndicator := {
     name := "dcg_basics:number"
     arity := 3
@@ -128,7 +142,7 @@ def loadPeTTaSlice (parserClosure : ReaderUnitClosure.Closure String)
       clause.head.symbol = { name := "sexpr", arity := 5 } &&
         numberSymbol ∈ calledSymbols clause.body) then
     throw <| IO.userError "parser number//1 call was not module-qualified"
-  if linked.program.length != 587 then
+  if linked.program.length != 691 then
     throw <| IO.userError s!"module-aware source boundary changed: \
       clauses={linked.program.length}"
   pure linked
@@ -449,11 +463,13 @@ def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
       throw <| IO.userError s!"pinned registration failed to open: {repr error}"
 
 def main (arguments : List String) : IO Unit := do
-  let [mettaPath, parserPath, translatorPath, dcgBasicsPath, listsPath,
+  let [mettaPath, parserPath, translatorPath, specializerPath,
+      dcgBasicsPath, listsPath,
       errorPath, applyPath, pairsPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
          <metta.pl> <parser.pl> <translator.pl> \
+         <specializer.pl> \
          <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
@@ -463,6 +479,7 @@ def main (arguments : List String) : IO Unit := do
     (← IO.FS.readFile pairsPath)
   let linked ← loadPeTTaSlice parserClosure (← IO.FS.readFile mettaPath)
     (← IO.FS.readFile translatorPath)
+    (← IO.FS.readFile specializerPath)
     (← IO.FS.readFile dcgBasicsPath)
     (← IO.FS.readFile listsPath)
     (← IO.FS.readFile errorPath)
@@ -556,3 +573,57 @@ def main (arguments : List String) : IO Unit := do
     (evalQuery (SourceSignature.list
       [SourceSignature.atom "id", SourceSignature.atom "a"]))
     (SourceSignature.atom "a")
+  checkDatabaseGoal registeredDatabase "metta_eval_nested_arithmetic"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "id",
+      SourceSignature.list [SourceSignature.atom "+",
+        SourceSignature.integer 1, SourceSignature.integer 2]
+    ]))
+    (SourceSignature.integer 3)
+  checkDatabaseGoal registeredDatabase "metta_eval_imported_reverse"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "reverse",
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]
+    ]))
+    (SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a"])
+  checkDatabaseGoal registeredDatabase "metta_eval_if"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "if",
+      SourceSignature.list [SourceSignature.atom ">",
+        SourceSignature.integer 2, SourceSignature.integer 1],
+      SourceSignature.atom "then", SourceSignature.atom "else"
+    ]))
+    (SourceSignature.atom "then")
+  checkDatabaseGoal registeredDatabase "metta_eval_map_atom"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "map-atom",
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"],
+      SourceSignature.atom "id"
+    ]))
+    (SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"])
+  checkDatabaseGoal registeredDatabase "metta_eval_foldl_atom"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "foldl-atom",
+      SourceSignature.list [SourceSignature.integer 1, SourceSignature.integer 2],
+      SourceSignature.integer 0, SourceSignature.atom "+"
+    ]))
+    (SourceSignature.integer 3)
+  checkDatabaseGoal registeredDatabase "metta_eval_first_pair"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "first-from-pair",
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]
+    ]))
+    (SourceSignature.atom "a")
+  checkDatabaseGoal registeredDatabase "metta_eval_size"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "size-atom",
+      SourceSignature.list [SourceSignature.atom "a", SourceSignature.atom "b"]
+    ]))
+    (SourceSignature.integer 2)
+  checkDatabaseGoal registeredDatabase "metta_eval_unique"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "unique-atom",
+      SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a",
+        SourceSignature.atom "b"]
+    ]))
+    (SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a"])

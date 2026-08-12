@@ -10,13 +10,16 @@ DCG exports, ordinary import lists, and unambiguous lookup in the loaded export
 index.  It rewrites only relation symbols in the existing `SourceSignature`;
 it introduces no term language or evaluator.
 
-Meta-predicate argument qualification, predicate indicators embedded as data,
-reexports, runtime module creation, and execution of retained loader goals
-remain outside this fragment.  Direct calls in retained declarations and
-loader goals are qualified by the same plan as clause bodies; this does not
-claim the unsupported meta-argument transformations.  Because a qualified
-executable clause no longer reclassifies from its original source term without
-module context, linked clauses deliberately clear `sourceTerm`.  The original
+Meta-predicate argument qualification inside named modules, reexports, runtime
+module creation, and execution of retained loader goals remain outside this
+fragment. Direct calls in retained declarations and loader goals are qualified
+by the same plan as clause bodies. For the finite collection of module-less
+units that share SWI's `user` context, imported predicates additionally receive
+one canonical forwarding clause. This makes ground predicate reflection and a
+runtime-built unqualified call observe the same import without teaching the
+runtime a second module resolver. Because a qualified executable clause no
+longer reclassifies from its original source term without module context,
+linked and forwarding clauses deliberately clear `sourceTerm`. The original
 source units remain in the result as the provenance authority.
 -/
 
@@ -307,6 +310,66 @@ private def mapClause (resolve : SourceSignature.PredicateIndicator →
   sourceTerm := none
 }
 
+/-- Canonical variables for one finite import forwarding clause.  Runtime
+standardization-apart supplies the activation scope; these source identities
+only preserve argument positions. -/
+def moduleAliasVariables (arity : Nat) : List SourceSignature.Term :=
+  (List.range arity).map fun occurrence =>
+    SourceSignature.var "__module_import" occurrence
+
+/-- Materialize one same-arity import as an ordinary canonical clause.  The
+shared runtime therefore resolves a dynamically constructed unqualified call
+by its normal clause-selection path, while the body uses the statically proven
+qualified target. -/
+def moduleAliasClause (source : SourceSignature.PredicateIndicator)
+    (targetName : String) :
+    SourceSignature.Clause :=
+  let arguments := moduleAliasVariables source.arity
+  {
+    head := SourceSignature.predicate source.name arguments
+    body := .call (SourceSignature.predicate targetName arguments)
+    sourceTerm := none
+  }
+
+@[simp]
+theorem moduleAliasClause_head_symbol
+    (source : SourceSignature.PredicateIndicator) (targetName : String) :
+    (moduleAliasClause source targetName).head.symbol = source := by
+  simp [moduleAliasClause, moduleAliasVariables, SourceSignature.predicate]
+
+@[simp]
+theorem moduleAliasClause_sourceTerm
+    (source : SourceSignature.PredicateIndicator) (targetName : String) :
+    (moduleAliasClause source targetName).sourceTerm = none := rfl
+
+@[simp]
+theorem moduleAliasClause_body_symbol
+    (source : SourceSignature.PredicateIndicator) (targetName : String) :
+    (match (moduleAliasClause source targetName).body with
+      | .call atom => some atom.symbol
+      | _ => none) =
+      some { name := targetName, arity := source.arity } := by
+  simp [moduleAliasClause, moduleAliasVariables, SourceSignature.predicate]
+
+private def sharedUserLocalSymbols (planned : List (Plan × List ImportBinding)) :
+    List SourceSignature.PredicateIndicator :=
+  (planned.flatMap fun entry =>
+    let (plan, _) := entry
+    if plan.moduleInfo.isNone then plan.localSymbols else []).eraseDups
+
+/-- Module-less source files are loaded into one `user` context.  Collect
+their imports once, discard aliases shadowed by a real user definition, merge
+identical imports, and reject target disagreement. -/
+private def sharedUserAliases (planned : List (Plan × List ImportBinding)) :
+    Except Error (List ImportBinding) := do
+  let locals := sharedUserLocalSymbols planned
+  let candidates := planned.flatMap fun entry =>
+    let (plan, bindings) := entry
+    if plan.moduleInfo.isNone then bindings else []
+  candidates.foldlM (fun aliases binding =>
+    if binding.source ∈ locals then pure aliases
+    else insertBinding "user" aliases binding) []
+
 private def appendProgram (program : SourceSignature.Program)
     (next : SourceSignature.Program) : Except Error SourceSignature.Program :=
   match ReaderUnitClosure.firstOverlap
@@ -327,10 +390,14 @@ def link (sourceKey? : SourceSignature.Term → Option String)
   let planned ← plans.mapM fun plan => do
     let bindings ← symbolBindings sourceKey? plans plan
     pure (plan, bindings)
-  let program ← planned.foldlM (fun program entry => do
+  let qualifiedProgram ← planned.foldlM (fun program entry => do
     let (plan, bindings) := entry
     let resolve := resolveSymbol plan bindings
     appendProgram program (plan.unit.program.map (mapClause resolve))) []
+  let aliases ← sharedUserAliases planned
+  let aliasProgram := aliases.map fun binding =>
+    moduleAliasClause binding.source binding.target.name
+  let program ← appendProgram qualifiedProgram aliasProgram
   pure {
     program
     units := closure.units

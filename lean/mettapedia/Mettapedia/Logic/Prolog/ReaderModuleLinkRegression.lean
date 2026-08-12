@@ -68,7 +68,20 @@ def linkedNames : Option (List String) := do
 keeps the user predicate and qualifies every library-local definition. -/
 #guard linkedNames == some
   ["exp", "run", "auto", "lib:helper", "lib:worker", "lib:exp",
-    "other:available", "other:boot"]
+    "other:available", "other:boot", "helper", "available", "boot"]
+
+def importedAliasTarget : Option String := do
+  let linked ← linked?
+  let forwarding ← linked.program.find? fun clause =>
+    clause.head.symbol = { name := "helper", arity := 1 }
+  match forwarding.body with
+  | .call atom => some atom.symbol.name
+  | _ => none
+
+/- A runtime-built `helper(X)` and ground `current_predicate(helper/1)` now
+see an ordinary canonical forwarding clause, while its body is fixed to the
+same qualified target as statically written calls. -/
+#guard importedAliasTarget == some "lib:helper"
 
 def runTarget : Option String := do
   let linked ← linked?

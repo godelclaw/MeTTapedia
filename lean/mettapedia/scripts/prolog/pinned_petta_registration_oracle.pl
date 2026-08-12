@@ -2,39 +2,53 @@
 
 :- use_module(library(apply)).
 :- use_module(library(clpfd)).
+:- use_module(library(lists)).
+:- use_module(library(pairs)).
+:- use_module(library(yall), except([(/)/3])).
 
-source_head((Head :- _), Head) :- !.
-source_head(Head, Head).
-
-selected_source_term(Term) :-
-    source_head(Term, Head),
-    functor(Head, Name, Arity),
-    ( Name == id, Arity =:= 2
-    ; Name == register_fun, Arity =:= 1
-    ).
-
-read_registration(Stream, Registration) :-
+read_source(Stream, Registration0, Registration) :-
     read_term(Stream, Term, []),
     ( Term == end_of_file
-    -> throw(error(missing_registration_directive, _))
+    -> Registration = Registration0
     ; Term = (:- maplist(register_fun, _))
-    -> Registration = Term
-    ; selected_source_term(Term)
-    -> assertz(Term),
-       read_registration(Stream, Registration)
-    ; read_registration(Stream, Registration)
+    -> read_source(Stream, Term, Registration)
+    ; Term = (:- dynamic(Declaration))
+    -> dynamic(Declaration),
+       read_source(Stream, Registration0, Registration)
+    ; Term = (:- _)
+    -> read_source(Stream, Registration0, Registration)
+    ; assertz(Term),
+      read_source(Stream, Registration0, Registration)
     ).
 
-load_registration(Path, Registration) :-
+load_source(Path, Registration0, Registration) :-
     setup_call_cleanup(open(Path, read, Stream),
-                       read_registration(Stream, Registration),
+                       read_source(Stream, Registration0, Registration),
                        close(Stream)).
 
-main([MettaPath]) :-
-    dynamic(fun/1),
-    load_registration(MettaPath, (:- Registration)),
+emit_eval(Label, Input, Expected) :-
+    findall(Out, eval(Input, Out), Answers),
+    ( Answers == [Expected]
+    -> format('~w=exact~n', [Label])
+    ; throw(error(eval_mismatch(Label, Answers, Expected), _))
+    ).
+
+main([MettaPath, TranslatorPath, SpecializerPath]) :-
+    load_source(TranslatorPath, none, _),
+    load_source(SpecializerPath, none, _),
+    load_source(MettaPath, none, RegistrationTerm),
+    RegistrationTerm = (:- Registration),
     call(Registration),
     fun(id),
     format('metta_fun_id_registered=exact~n', []),
     id(a, a),
-    format('metta_id_direct=exact~n', []).
+    format('metta_id_direct=exact~n', []),
+    emit_eval(metta_eval_compound, [id,a], a),
+    emit_eval(metta_eval_nested_arithmetic, [id,['+',1,2]], 3),
+    emit_eval(metta_eval_imported_reverse, [reverse,[a,b]], [b,a]),
+    emit_eval(metta_eval_if, [if,[>,2,1],then,else], then),
+    emit_eval(metta_eval_map_atom, ['map-atom',[a,b],id], [a,b]),
+    emit_eval(metta_eval_foldl_atom, ['foldl-atom',[1,2],0,'+'], 3),
+    emit_eval(metta_eval_first_pair, ['first-from-pair',[a,b]], a),
+    emit_eval(metta_eval_size, ['size-atom',[a,b]], 2),
+    emit_eval(metta_eval_unique, ['unique-atom',[b,a,b]], [b,a]).

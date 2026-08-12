@@ -982,7 +982,8 @@
       ],
       "proof_status": "partial",
       "proof_evidence": [
-        "Mettapedia/Logic/Prolog/ReaderModuleLinkRegression.lean"
+        "Mettapedia/Logic/Prolog/ReaderModuleLinkRegression.lean",
+        "Mettapedia/Logic/Prolog/ReaderModuleLinkAudit.lean"
       ],
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [

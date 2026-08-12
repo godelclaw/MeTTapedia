@@ -174,12 +174,17 @@ scripts/prolog/run_pinned_parser_unit_closure.sh /path/to/PeTTa
 ```
 
 The corresponding source-execution gate combines the real pinned `metta.pl`,
-`parser.pl`, and `translator.pl` units with those three SWI libraries plus
-the real `library(apply)` and `library(pairs)` sources using the static
+`parser.pl`, `translator.pl`, and `specializer.pl` units with those three SWI
+libraries plus the real `library(apply)` and `library(pairs)` sources using the static
 module-aware linker.  The linker separates user `exp/2` from
 `dcg_basics:exp/2`, resolves explicit imports and the unique loaded export
 used by SWI autoload, and fails on ambiguous exports or a literal predicate
-that would collide with generated qualification.  The resulting 587
+that would collide with generated qualification. Module-less units additionally
+materialize one canonical forwarding clause per imported predicate so that
+runtime-built calls and ground predicate reflection see the same `user`-module
+visibility as statically written calls. The pinned `specializer.pl` dependency
+is linked as source rather than relying on missing-predicate failure. The
+resulting 691
 canonical clauses execute `phrase(swrite_exp([]), Codes)`,
 `phrase(swrite_exp([a]), Codes)`, `phrase(swrite_exp(-42), Codes)`, and
 `phrase(sexpr(Term, [], _), Codes)` for `(a)`, `(a b)`, `(1)`, `(-2)`,
@@ -207,8 +212,12 @@ must then produce `a`.  The next path runs `eval([id,a], Out)` through the
 pinned translator, real `lists:list_to_set/2`, real `pairs_keys/2`, shared
 finite standard-order sorting, finite `length/2`, call-time
 `current_predicate/1`, and the registered `id/2` clause, producing exactly
-`a`.  An independent SWI oracle reads and executes the same registration
-directive:
+`a`. Eight more evaluator paths cover nested arithmetic, imported `reverse/2`,
+translated conditionals, recursive `map-atom` and `foldl-atom`, pair
+projection, list size, and stable uniqueness. An independent SWI oracle reads
+the same pinned translator, specializer, and runtime clauses, executes the
+same registration directive, and requires the exact singleton result for all
+nine compound evaluations:
 
 ```bash
 scripts/prolog/run_pinned_parser_source_runtime.sh /path/to/PeTTa
