@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe
+import Mettapedia.GraphTheory.FourColor.RotationSystemTrackedEdgeGraph
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -6,11 +7,6 @@ open SimpleGraph
 
 set_option maxRecDepth 100000
 set_option maxHeartbeats 4000000
-
-/-- Membership in the pair of colors whose connectivity profile is being
-tracked. -/
-def IsTrackedColor (a b c : Color) : Prop := c = a ∨ c = b
-  deriving Decidable
 
 /-- Four portal nodes followed by the four square-corner nodes. -/
 abbrev SquareLocalNode := Fin 8

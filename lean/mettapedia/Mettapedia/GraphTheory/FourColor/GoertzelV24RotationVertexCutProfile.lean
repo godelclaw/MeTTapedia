@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorSpliceObservables
-import Mettapedia.GraphTheory.FourColor.SimpleGraphRotationSystem
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationBridge
 import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -361,39 +361,6 @@ theorem exists_unique_vertexSetGraphCutData_crossingEdge_eq
 section SimpleGraphBridge
 
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
-
-/-- Rotation-system endpoints for a finite simple graph are exactly membership
-in the underlying unordered graph edge. -/
-theorem mem_simpleGraphRotationSystem_endpoints_iff
-    (data : SimpleGraphDartRotation.Data G)
-    (edge : G.edgeSet) (vertex : V) :
-    vertex ∈ data.toRotationSystem.endpoints edge ↔
-      vertex ∈ (edge : Sym2 V) := by
-  rw [RotationSystem.mem_endpoints_iff]
-  constructor
-  · rintro ⟨dart, hdart, hvert⟩
-    have hedgeSubtype :
-        data.toRotationSystem.edgeOf dart = edge :=
-      (data.toRotationSystem.mem_dartsOn).1 hdart
-    have hedge : dart.edge = (edge : Sym2 V) :=
-      congrArg Subtype.val hedgeSubtype
-    change dart.fst = vertex at hvert
-    have hfst : dart.fst ∈ dart.edge := by
-      simp [SimpleGraph.Dart.edge]
-    rw [hedge] at hfst
-    simpa [hvert] using hfst
-  · intro hvertex
-    let other := Sym2.Mem.other' hvertex
-    have hadj : G.Adj vertex other := by
-      rw [← SimpleGraph.mem_edgeSet]
-      rw [Sym2.other_spec' hvertex]
-      exact edge.property
-    let dart : G.Dart := ⟨(vertex, other), hadj⟩
-    refine ⟨dart, ?_, rfl⟩
-    rw [data.toRotationSystem.mem_dartsOn]
-    apply Subtype.ext
-    change s(vertex, other) = (edge : Sym2 V)
-    exact Sym2.other_spec' hvertex
 
 /-- The endpoint-derived crossing predicate agrees exactly with the existing
 simple-graph side-cut predicate. -/

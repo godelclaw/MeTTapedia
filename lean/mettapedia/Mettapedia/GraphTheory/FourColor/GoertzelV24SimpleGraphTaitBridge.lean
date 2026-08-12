@@ -1,5 +1,5 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationBridge
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity
-import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -22,28 +22,6 @@ noncomputable section
 local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
-/-- For rotation data built from a finite simple graph, the faithful
-rotation-system edge-adjacency graph is exactly the ordinary line graph. -/
-theorem toRotationSystem_edgeAdjacencyGraph_eq_lineGraph
-    (data : Data G) :
-    data.toRotationSystem.edgeAdjacencyGraph = G.lineGraph := by
-  ext first second
-  rw [data.toRotationSystem.edgeAdjacencyGraph_adj_iff,
-    SimpleGraph.lineGraph_adj_iff_exists]
-  constructor
-  · rintro ⟨hne, vertex, hfirst, hsecond⟩
-    exact ⟨hne, vertex,
-      (mem_simpleGraphRotationSystem_endpoints_iff
-        data first vertex).1 hfirst,
-      (mem_simpleGraphRotationSystem_endpoints_iff
-        data second vertex).1 hsecond⟩
-  · rintro ⟨hne, vertex, hfirst, hsecond⟩
-    exact ⟨hne, vertex,
-      (mem_simpleGraphRotationSystem_endpoints_iff
-        data first vertex).2 hfirst,
-      (mem_simpleGraphRotationSystem_endpoints_iff
-        data second vertex).2 hsecond⟩
-
 /-- A graph-backed rotation system is Tait colorable exactly when its
 underlying simple graph has an ordinary proper nonzero edge coloring. -/
 theorem rotationSystemTaitColorable_iff_graphTaitColorable
@@ -58,15 +36,6 @@ theorem rotationSystemTaitColorable_iff_graphTaitColorable
     (∃ coloring : G.lineGraph.Coloring Color,
       ∀ edge : G.edgeSet, coloring edge ≠ 0)
   rw [toRotationSystem_edgeAdjacencyGraph_eq_lineGraph data]
-
-/-- Rotation-system cubicity of graph-backed data is the exact local
-three-incident-edge hypothesis used by the deleted-edge Trail bridge. -/
-theorem incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
-    (data : Data G) (hcubic : data.toRotationSystem.IsCubic) :
-    ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3 := by
-  intro vertex
-  rw [GoertzelV24DeletedEdgeTrail.incidentEdgeFinset_card_eq_degree]
-  exact (data.toRotationSystem_isCubic_iff.mp hcubic) vertex
 
 /-- The rotation-system noncolorability field of the current graph-backed
 minimal-counterexample package is genuinely ordinary graph

@@ -10,18 +10,6 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
 variable (RS : RotationSystem V E)
 
-/-- The ambient line graph restricted to edges carrying either tracked
-color. Vertices remain on the original edge type. -/
-def trackedEdgeGraph (C : E → Color) (a b : Color) : SimpleGraph E where
-  Adj e f := RS.edgeAdjacencyGraph.Adj e f ∧
-    IsTrackedColor a b (C e) ∧ IsTrackedColor a b (C f)
-  symm := ⟨by
-    intro e f h
-    exact ⟨h.1.symm, h.2.2, h.2.1⟩⟩
-  loopless := ⟨by
-    intro e h
-    exact h.1.1 rfl⟩
-
 namespace FacialSquareData
 
 /-- Interpret the four portal nodes followed by the four internal line nodes
