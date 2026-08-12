@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorIntercellRailSupport
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DualCycleCrossingInjective
 
 /-!
 # Source-aligned two-tile boundary support
@@ -403,6 +404,43 @@ theorem sourceTwoTileAlignedBoundaryCrossingEdgesAt_eq_layers_union_rails
   ext edge
   simp only [Finset.mem_union]
   tauto
+
+/-- The source-aligned boundary crosses exactly six distinct primal edges,
+one for each step of its simple facial-dual cycle. -/
+theorem sourceTwoTileAlignedBoundaryCrossingEdgesAt_card_eq_six
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 4)) :
+    (sourceTwoTileAlignedBoundaryCrossingEdgesAt realization hcubic hrotation
+      htwoSided hunique offset).card = 6 := by
+  change (dualWalkCrossingEdges
+    (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+    (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)) hunique
+    (sourceTwoTileAlignedBoundaryWalkAt realization hcubic hrotation htwoSided
+      hunique offset)).card = 6
+  rw [card_dualWalkCrossingEdges_eq_length_of_isCycle_core
+    (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+    (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem))
+    (orbitFace_incidence_le_two
+      embedded.cellulation.rotation.toRotationSystem)
+    hunique
+    (sourceTwoTileAlignedBoundaryWalkAt realization hcubic hrotation htwoSided
+      hunique offset)
+    (sourceTwoTileAlignedBoundaryWalkAt_isCycle realization hcubic hrotation
+      htwoSided hunique offset),
+    sourceTwoTileAlignedBoundaryWalkAt_length_eq_six]
 
 /-- Even before simplicity is used, the provenance theorem gives the sharp
 six-edge upper bound: two crossings from each transverse layer and exactly
