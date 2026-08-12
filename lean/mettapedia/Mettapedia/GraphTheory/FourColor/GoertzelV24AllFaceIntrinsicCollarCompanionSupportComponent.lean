@@ -1,5 +1,6 @@
 import Mathlib.Combinatorics.SimpleGraph.Matching
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarCompanionCoordinateSwitch
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteOddDegreeReachability
 
 /-! Finite support components entered by complementary-coordinate turns. -/
 
@@ -106,66 +107,6 @@ theorem exists_reachable_odd_or_cycle_of_degree_eq_two_of_degree_le_two
     exact ⟨cycle,
       hcomponentCycle.map
         (SimpleGraph.Embedding.induce (G := H) component.supp).injective⟩
-
-/-- Every odd vertex in a finite graph shares its component with a distinct
-odd vertex. -/
-theorem exists_distinct_reachable_odd_of_odd
-    (start : W) (hstartOdd : Odd (H.degree start)) :
-    ∃ finish : W, finish ≠ start ∧ Odd (H.degree finish) ∧
-      H.Reachable start finish := by
-  classical
-  let component : H.ConnectedComponent := H.connectedComponentMk start
-  letI componentVertexFintype : Fintype component.supp :=
-    Subtype.fintype _
-  let componentGraph : SimpleGraph component.supp :=
-    H.induce component.supp
-  letI componentNeighborFintype
-      (vertex : component.supp) :
-      Fintype (componentGraph.neighborSet vertex) :=
-    Subtype.fintype _
-  have hstartComponent : start ∈ component.supp := by
-    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
-  let startInComponent : component.supp :=
-    ⟨start, hstartComponent⟩
-  have hstartNeighbors : H.neighborSet start ⊆ component.supp := by
-    intro neighbor hadjacent
-    exact component.mem_supp_of_adj_mem_supp
-      hstartComponent hadjacent
-  have hstartDegree : componentGraph.degree startInComponent =
-      H.degree start := by
-    have hinduced := SimpleGraph.degree_induce_of_neighborSet_subset
-      (G := H) (s := component.supp) (v := startInComponent)
-        hstartNeighbors
-    exact hinduced.trans
-      (degree_eq_of_neighborFintypes H start
-        (Subtype.fintype _) inferInstance)
-  have hstartComponentOdd :
-      Odd (componentGraph.degree startInComponent) := by
-    simpa [hstartDegree] using hstartOdd
-  obtain ⟨finishInComponent, hfinishNe, hfinishComponentOdd⟩ :=
-    componentGraph.exists_ne_odd_degree_of_exists_odd_degree
-      startInComponent hstartComponentOdd
-  have hfinishNeighbors : H.neighborSet finishInComponent.1 ⊆
-      component.supp := by
-    intro neighbor hadjacent
-    exact component.mem_supp_of_adj_mem_supp
-      finishInComponent.2 hadjacent
-  have hfinishDegree : componentGraph.degree finishInComponent =
-      H.degree finishInComponent.1 := by
-    have hinduced := SimpleGraph.degree_induce_of_neighborSet_subset
-      (G := H) (s := component.supp) (v := finishInComponent)
-        hfinishNeighbors
-    exact hinduced.trans
-      (degree_eq_of_neighborFintypes H finishInComponent.1
-        (Subtype.fintype _) inferInstance)
-  have hfinishOdd : Odd (H.degree finishInComponent.1) := by
-    simpa [hfinishDegree] using hfinishComponentOdd
-  have hfinishDistinct : finishInComponent.1 ≠ start := by
-    intro heq
-    exact hfinishNe (Subtype.ext heq)
-  exact ⟨finishInComponent.1, hfinishDistinct, hfinishOdd,
-    component.reachable_of_mem_supp
-      hstartComponent finishInComponent.2⟩
 
 omit [Fintype W] [DecidableRel H.Adj] in
 /-- Deleting an edge removes exactly its opposite endpoint from the neighbor
@@ -419,8 +360,15 @@ theorem exists_directed_odd_path_or_cycle_of_incident_pair
     omega
   have hdeletedStartOdd : Odd (deletedGraph.degree start) := by
     simp [hdeletedStartDegree]
+  have hdeletedStartOddCanonical :
+      Odd (@SimpleGraph.degree W deletedGraph start (Subtype.fintype _)) := by
+    have hdegree := degree_eq_of_neighborFintypes deletedGraph start
+      (inferInstance : Fintype (deletedGraph.neighborSet start))
+      (Subtype.fintype _)
+    rw [← hdegree]
+    exact hdeletedStartOdd
   rcases exists_distinct_reachable_odd_of_odd
-      (H := deletedGraph) start hdeletedStartOdd with
+      (H := deletedGraph) start hdeletedStartOddCanonical with
     ⟨finish, hfinishNe, hfinishOdd, hfinishReachable⟩
   by_cases hfinishFirst : finish ∈ first.1
   · right
@@ -459,8 +407,14 @@ theorem exists_directed_odd_path_or_cycle_of_incident_pair
         H.degree finish := by
       exact degree_deleteEdges_singleton_eq_of_not_mem
         first hfinishFirst
+    have hfinishDeletedOdd : Odd (deletedGraph.degree finish) := by
+      have hdegree := degree_eq_of_neighborFintypes deletedGraph finish
+        (Subtype.fintype _)
+        (inferInstance : Fintype (deletedGraph.neighborSet finish))
+      rw [← hdegree]
+      exact hfinishOdd
     have hfinishAmbientOdd : Odd (H.degree finish) := by
-      simpa [hfinishDegree] using hfinishOdd
+      simpa [hfinishDegree] using hfinishDeletedOdd
     rcases hfinishReachable.exists_isPath with
       ⟨deletedPath, hdeletedPath⟩
     let path : H.Walk start finish :=
