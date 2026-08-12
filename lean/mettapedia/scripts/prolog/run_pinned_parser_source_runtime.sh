@@ -106,6 +106,7 @@ metta_eval_first_pair=exact
 metta_eval_size=exact
 metta_eval_unique=exact
 metta_alpha_unique_direct=exact
+metta_eval_alpha_unique=exact
 metta_eval_superpose_order=exact
 metta_eval_collapse=exact
 metta_eval_once=exact
@@ -143,6 +144,7 @@ printf '%s\n' 'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_eval_size=exact' \
   'metta_eval_unique=exact' \
   'metta_alpha_unique_direct=exact' \
+  'metta_eval_alpha_unique=exact' \
   'metta_eval_superpose_order=exact' \
   'metta_eval_collapse=exact' \
   'metta_eval_once=exact' \

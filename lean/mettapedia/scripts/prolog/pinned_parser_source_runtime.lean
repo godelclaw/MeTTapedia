@@ -845,6 +845,20 @@ def main (arguments : List String) : IO Unit := do
         [SourceRuntimeRegression.x, SourceRuntimeRegression.x],
       SourceSignature.compound "pair"
         [SourceRuntimeRegression.z, SourceSignature.atom "a"]])
+  checkDatabaseAnswers registeredDatabase "metta_eval_alpha_unique"
+    (evalQuery (SourceSignature.list [
+      SourceSignature.atom "alpha-unique",
+      SourceSignature.list [SourceSignature.atom "superpose",
+        SourceSignature.list [SourceSignature.atom "b", SourceSignature.atom "a",
+          SourceSignature.atom "b"]]
+    ]))
+    [SourceSignature.atom "b", SourceSignature.atom "a",
+      SourceSignature.list
+        [SourceSignature.atom "alpha-unique", SourceSignature.atom "b"],
+      SourceSignature.list
+        [SourceSignature.atom "alpha-unique", SourceSignature.atom "a"],
+      SourceSignature.list
+        [SourceSignature.atom "alpha-unique", SourceSignature.atom "b"]]
   checkDatabaseAnswers registeredDatabase "metta_eval_superpose_order"
     (evalQuery (SourceSignature.list [
       SourceSignature.atom "superpose",
