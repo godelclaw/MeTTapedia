@@ -28,7 +28,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 git -C "$PETTA_TREE" archive "$PIN" \
   src/metta.pl src/parser.pl src/translator.pl src/specializer.pl \
-  src/filereader.pl src/spaces.pl | tar -x -C "$TMP"
+  src/filereader.pl src/spaces.pl examples/identity.metta | tar -x -C "$TMP"
 git -C "$SWI_TREE" archive "$SWI_PIN" library/assoc.pl | tar -x -C "$TMP"
 
 DCG_BASICS="$(swipl -q -g \
@@ -49,6 +49,8 @@ if ! lake env lean --run scripts/prolog/pinned_parser_source_runtime.lean \
     "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
     "$TMP/src/filereader.pl" "$TMP/src/spaces.pl" \
     "$DCG_BASICS" "$LISTS" "$ERROR" "$APPLY" "$PAIRS" "$ASSOC" \
+    "$ROOT_DIR/scripts/prolog/pinned_file_runtime_fixture.metta" \
+    "$TMP/examples/identity.metta" \
     > "$TMP/lean.out"; then
   cat "$TMP/lean.out" >&2
   popd >/dev/null
@@ -89,6 +91,11 @@ metta_parse=exact
 metta_repr=exact
 metta_eval_atomic=exact
 metta_silent_setup=exact
+metta_read_file_capability=exact
+metta_load_file=exact
+metta_loaded_file_definition=exact
+metta_identity_diagnostic_gap_lean_empty=exact
+metta_identity_definition_despite_diagnostic_gap=exact
 metta_fun_id_registered=exact
 metta_id_direct=exact
 metta_copy_term_direct=exact
@@ -131,8 +138,13 @@ diff -u "$TMP/swi.expected" "$TMP/swi.out"
 swipl -q -f scripts/prolog/pinned_petta_registration_oracle.pl -- \
   "$TMP/src/metta.pl" "$TMP/src/translator.pl" "$TMP/src/specializer.pl" \
   "$TMP/src/parser.pl" "$TMP/src/filereader.pl" "$TMP/src/spaces.pl" \
+  "$ROOT_DIR/scripts/prolog/pinned_file_runtime_fixture.metta" \
+  "$TMP/examples/identity.metta" \
   > "$TMP/swi-registration.out"
 printf '%s\n' 'metta_silent_setup=exact' \
+  'metta_load_file=exact' 'metta_loaded_file_definition=exact' \
+  'metta_identity_diagnostic_gap_swi_true=exact' \
+  'metta_identity_definition_swi=exact' \
   'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_term_variables_direct=exact' \
   'metta_numbervars_direct=exact' \
@@ -164,4 +176,4 @@ printf '%s\n' 'metta_silent_setup=exact' \
   > "$TMP/swi-registration.expected"
 diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
 
-echo "Pinned PeTTa source runtime: PASS (parser wrappers, atomic/compound eval, and source registration exact; module-aware closure)"
+echo "Pinned PeTTa source runtime: PASS (actual .metta file, parser wrappers, atomic/compound eval, and source registration exact; diagnostic-builtin gap pinned separately)"

@@ -104,6 +104,10 @@ inductive QueryError where
   | invalidGlobalVariableName
   | undefinedGlobalVariable
   | globalValueReadback (error : RuntimeReadback.ReadbackError)
+  | textFilePathUnbound
+  | invalidTextFilePath
+  | invalidTextFileOptions
+  | textFileUnavailable
   | arithmeticEvaluationBudgetExhausted
   | arithmeticOperandUnbound
   | invalidArithmeticOperand
@@ -190,6 +194,18 @@ structure FormatDecoder (σ : LPSignature) where
 /-- Runtimes without formatted output fail closed. -/
 def rejectingFormatDecoder (σ : LPSignature) : FormatDecoder σ where
   decode _ _ _ _ := .error .unsupportedInstruction
+
+/-- A read-only host text capability sees only the immutable heap roots that
+name a path and an options list.  Its result is one atomic language value;
+it cannot allocate, bind, mutate persistent state, schedule work, select a
+clause, or emit an answer.  The session and shared engine retain those powers. -/
+structure TextFileDecoder (σ : LPSignature) where
+  decode : Heap σ.scoped → Addr → Addr → Except QueryError σ.constants
+
+/-- A runtime without an explicitly installed host text capability fails
+closed rather than acquiring ambient filesystem authority. -/
+def rejectingTextFileDecoder (σ : LPSignature) : TextFileDecoder σ where
+  decode _ _ _ := .error .textFileUnavailable
 
 /-- A bidirectional text conversion produces one of two bounded plans.  A
 ground text value becomes a fresh proper code list; a ground code list becomes
@@ -1484,9 +1500,11 @@ structure Answer (σ : LPSignature) where
 inductive Observation (σ : LPSignature) where
   | answer (value : Answer σ)
 
-/-- Persistent clause-store operations recognized by a language realization.
+/-- Persistent session operations recognized by a language realization.
 The shared engine owns instruction consumption and continuation order, while a
-session outside backtrackable state owns the actual database update. -/
+session outside backtrackable state owns database/global updates and invokes
+explicitly installed read-only host capabilities.  The historical type name
+is retained to avoid a cosmetic migration of every existing proof site. -/
 inductive DatabaseRequest where
   | asserta (clauseRoot : Addr)
   | assertz (clauseRoot : Addr)
@@ -1515,6 +1533,9 @@ inductive DatabaseRequest where
   | globalGet (nameRoot valueRoot : Addr)
   /-- Remove a non-backtrackable global binding.  Missing names succeed. -/
   | globalDelete (nameRoot : Addr)
+  /-- Read one text resource through an explicit session capability and bind
+  its atomic result through the canonical engine unifier. -/
+  | readTextFile (pathRoot textRoot optionsRoot : Addr)
 deriving DecidableEq, Repr
 
 inductive Terminal (σ : LPSignature) where

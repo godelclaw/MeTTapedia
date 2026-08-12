@@ -1791,7 +1791,52 @@ def compareInvalidOrderInteger : SourceSignature.Goal :=
 def compareInvalidOrderCompound : SourceSignature.Goal :=
   termCompare (compound "f" [atom "x"]) (atom "a") (atom "b")
 
+/-! ## Explicit read-only host text capability -/
+
+def textFileRead : SourceSignature.Goal :=
+  .conj
+    (SourceSignature.call "read_file_to_string"
+      [SourceSignature.string "/fixture.metta", x, SourceSignature.list []])
+    (.unify x (SourceSignature.string "!(file-id a)\n"))
+
+def textFileReadWithOptions : SourceSignature.Goal :=
+  SourceSignature.call "read_file_to_string" [
+    SourceSignature.string "/fixture.metta", x,
+    SourceSignature.list [SourceSignature.atom "encoding(utf8)"]]
+
+def fixtureTextResources : TextFileResources := fun path =>
+  if path == "/fixture.metta" then some "!(file-id a)\n" else none
+
+def runCountWithServices (services : RuntimeControl.Services Sigma)
+    (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
+    Option (Nat × Nat × Nat) :=
+  match RuntimeControl.openSessionWith services
+      (LP.RuntimeTerm.Memory.empty Sigma.scoped) 0 1 program goal with
+  | .error _ => none
+  | .ok session => collectCount 8 0 session
+
+def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
+    (goal : SourceSignature.Goal) : Option LP.RuntimeQuery.QueryError :=
+  match RuntimeControl.openSessionWith services
+      (LP.RuntimeTerm.Memory.empty Sigma.scoped) 0 1 [] goal with
+  | .error error => some error
+  | .ok session =>
+      match SourceRuntime.pullSession 512 session with
+      | .terminal (.runtimeError error _) _ => some error
+      | _ => none
+
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
+#guard runCountWithServices (servicesWithTextFiles fixtureTextResources) []
+  textFileRead == some (1, 0, 0)
+#guard runCount [] textFileRead == some (0, 0, 0)
+#guard match runQueryErrorWithServices?
+    (servicesWithTextFiles fun _ => none) textFileRead with
+  | some .textFileUnavailable => true
+  | _ => false
+#guard match runQueryErrorWithServices?
+    (servicesWithTextFiles fixtureTextResources) textFileReadWithOptions with
+  | some .invalidTextFileOptions => true
+  | _ => false
 #guard runAtomsFor [] compareAtoms xIdentity == some (["<"], 0, 0)
 #guard runAtomsFor [] compareEqualCompounds xIdentity == some (["="], 0, 0)
 #guard runAtomsFor [] compareCompoundArity xIdentity == some (["<"], 0, 0)

@@ -61,12 +61,22 @@ def resumeFirst (fuel : Nat) (session : SourceRuntime.Session) : FirstResult :=
   | .terminal (.runtimeError error memory) world =>
       .runtimeError error memory world
 
-/-- Execute against a complete persistent source world. -/
-def runFirstWorld (fuel : Nat) (world : World)
+/-- Execute against a complete persistent source world with one explicit
+service realization.  This is the host-capability seam; it changes neither
+the query engine nor the loader's first-solution policy. -/
+def runFirstWorldWith (services : RuntimeControl.Services SourceRuntime.Sigma)
+    (fuel : Nat) (world : World)
     (goal : SourceSignature.Goal) :
     Except LP.RuntimeQuery.QueryError FirstResult := do
-  let session ← SourceRuntime.openWorld world goal
+  let session ← RuntimeControl.openSessionWorldWith services world goal
   pure (resumeFirst fuel session)
+
+/-- Execute against a complete persistent source world using the ordinary
+source realization with no ambient host-text authority. -/
+def runFirstWorld (fuel : Nat) (world : World)
+    (goal : SourceSignature.Goal) :
+    Except LP.RuntimeQuery.QueryError FirstResult :=
+  runFirstWorldWith SourceRuntime.services fuel world goal
 
 /-- Compatibility entry point for database-only callers.  It creates a new
 world, so callers that execute more than one top-level goal and need persistent
@@ -96,18 +106,20 @@ inductive GoalsResult where
   | openingError (error : LP.RuntimeQuery.QueryError) (world : World)
       (remaining : List SourceSignature.Goal)
 
-/-- Execute loader goals in source order, taking at most the first solution of
-each and threading the complete persistent world into the next fresh query.
-This is a loader policy over `runFirstWorld`; it does not add a transition or
-an answer path to the shared engine. -/
-def runGoalsWorld (fuelPerGoal : Nat) :
+/-- Execute a source-order batch under one explicit service realization,
+taking at most the first solution of each and threading the complete
+persistent world into the next fresh query.  This remains a loader policy; it
+does not add a transition or an answer path to the shared engine. -/
+def runGoalsWorldWith
+    (services : RuntimeControl.Services SourceRuntime.Sigma)
+    (fuelPerGoal : Nat) :
     World → List SourceSignature.Goal → GoalsResult
   | world, [] => .succeeded world
   | world, goal :: remaining =>
-      match runFirstWorld fuelPerGoal world goal with
+      match runFirstWorldWith services fuelPerGoal world goal with
       | .error error => .openingError error world (goal :: remaining)
       | .ok (.succeeded nextWorld) =>
-          runGoalsWorld fuelPerGoal nextWorld remaining
+          runGoalsWorldWith services fuelPerGoal nextWorld remaining
       | .ok (.failed memory nextWorld) =>
           .failed memory nextWorld remaining
       | .ok (.open session) => .open session remaining
@@ -115,6 +127,12 @@ def runGoalsWorld (fuelPerGoal : Nat) :
           .raised packet memory nextWorld remaining
       | .ok (.runtimeError error memory nextWorld) =>
           .runtimeError error memory nextWorld remaining
+
+/-- Execute source-order goals using the ordinary source realization with no
+ambient host-text authority. -/
+def runGoalsWorld (fuelPerGoal : Nat) :
+    World → List SourceSignature.Goal → GoalsResult :=
+  runGoalsWorldWith SourceRuntime.services fuelPerGoal
 
 @[simp]
 theorem runGoalsWorld_empty (fuelPerGoal : Nat) (world : World) :
@@ -129,7 +147,15 @@ theorem runGoalsWorld_cons_succeeded (fuelPerGoal : Nat)
       .ok (.succeeded nextWorld)) :
     runGoalsWorld fuelPerGoal world (goal :: remaining) =
       runGoalsWorld fuelPerGoal nextWorld remaining := by
-  simp [runGoalsWorld, hRun]
+  have hRun' :
+      runFirstWorldWith SourceRuntime.services fuelPerGoal world goal =
+        .ok (.succeeded nextWorld) := by
+    simpa [runFirstWorld] using hRun
+  change
+    runGoalsWorldWith SourceRuntime.services fuelPerGoal world
+        (goal :: remaining) =
+      runGoalsWorldWith SourceRuntime.services fuelPerGoal nextWorld remaining
+  simp [runGoalsWorldWith, hRun']
 
 @[simp]
 theorem resumeFirst_answer (fuel : Nat) (session resumed : SourceRuntime.Session)

@@ -534,6 +534,11 @@ structure Services (sigma : LP.LPSignature) where
   `Session` may apply it. -/
   databaseRequest? : RuntimeAtom sigma.scoped →
     Option LP.RuntimeQuery.DatabaseRequest := fun _ => none
+  /-- Resolve an explicitly recognized text-resource request.  This service
+  returns only one atomic value; the persistent session invokes it read-only,
+  while the shared engine owns allocation and output unification. -/
+  textFileDecoder : LP.RuntimeQuery.TextFileDecoder sigma :=
+    LP.RuntimeQuery.rejectingTextFileDecoder sigma
   /-- Decode the atom naming a non-backtrackable global.  Recognition remains
   heap-blind; only the persistent session may invoke this read-only decoder
   after the canonical engine has consumed the instruction. -/
@@ -593,6 +598,7 @@ def noServices (sigma : LP.LPSignature) : Services sigma where
   termHash? _ := none
   functor? _ := none
   databaseRequest? _ := none
+  textFileDecoder := LP.RuntimeQuery.rejectingTextFileDecoder sigma
   decodeGlobalName _ _ := .error .invalidGlobalVariableName
   decodeClause _ _ := .error .invalidDynamicClause
   reflectClause _ := none
@@ -1508,6 +1514,22 @@ def applyDatabaseRequest [DecidableEq sigma.scoped.vars]
       | .error error => failSession session state error
       | .ok name =>
           .next { session with globals := session.globals.erase name, state } none
+  | .readTextFile pathRoot textRoot optionsRoot =>
+      match session.services.textFileDecoder.decode state.memory.heap
+          pathRoot optionsRoot with
+      | .error error => failSession session state error
+      | .ok text =>
+          match state.memory.allocate (.const text) with
+          | .error error => failSession session state (.memory error)
+          | .ok (textValueRoot, memory) =>
+              match LP.RuntimeQuery.beginUnifyStep { state with memory }
+                  textRoot textValueRoot state.control.current with
+              | .next next observation =>
+                  .next { session with state := next } observation
+              | .terminal terminal =>
+                  .terminal terminal (session.worldWithMemory terminal.memory)
+              | .databaseRequest _ next =>
+                  failSession session next .unhandledDatabaseRequest
 
 /-- Beginning a transaction transfers the current persistent database into the
 newest snapshot slot without changing the database or query state. -/
@@ -1770,6 +1792,44 @@ theorem applyDatabaseRequest_globalDelete_of_decode
     applyDatabaseRequest session state (.globalDelete nameRoot) =
       .next { session with globals := session.globals.erase name, state } none := by
   simp [applyDatabaseRequest, hName]
+
+/-- A successful host text lookup contributes only one atomic value.  The
+session allocates that value on the canonical heap and delegates binding to
+the canonical graph unifier; the decoder cannot manufacture the continuation
+or an observation. -/
+theorem applyDatabaseRequest_readTextFile_of_decode_allocate_bind
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state next : State sigma)
+    (pathRoot textRoot optionsRoot textValueRoot : Addr)
+    (text : sigma.constants) (memory : Memory sigma.scoped)
+    (observation : Option (LP.RuntimeQuery.Observation sigma))
+    (hDecode : session.services.textFileDecoder.decode state.memory.heap
+      pathRoot optionsRoot = .ok text)
+    (hAllocate : state.memory.allocate (.const text) =
+      .ok (textValueRoot, memory))
+    (hBind : LP.RuntimeQuery.beginUnifyStep { state with memory }
+      textRoot textValueRoot state.control.current = .next next observation) :
+    applyDatabaseRequest session state
+        (.readTextFile pathRoot textRoot optionsRoot) =
+      .next { session with state := next } observation := by
+  simp only [applyDatabaseRequest, hDecode, hAllocate]
+  rw [hBind]
+
+/-- A rejected or unavailable host text lookup fails through the ordinary
+cleanup path before allocation or unification. -/
+theorem applyDatabaseRequest_readTextFile_of_error
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.constants]
+    [DecidableEq sigma.functionSymbols]
+    (session : Session sigma) (state : State sigma)
+    (pathRoot textRoot optionsRoot : Addr)
+    (error : LP.RuntimeQuery.QueryError)
+    (hDecode : session.services.textFileDecoder.decode state.memory.heap
+      pathRoot optionsRoot = .error error) :
+    applyDatabaseRequest session state
+        (.readTextFile pathRoot textRoot optionsRoot) =
+      failSession session state error := by
+  simp [applyDatabaseRequest, hDecode]
 
 /-- One session transition delegates search to `stepCoreWithMeta` and handles
 only the persistent request that the shared engine may return. -/

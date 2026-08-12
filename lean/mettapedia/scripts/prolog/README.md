@@ -244,9 +244,21 @@ and evaluator all run as their Prolog clauses.  The gate installs
 `silent(true)` through the ordinary persistent `assertz/1` transition to model
 a silent CLI invocation;
 the retained `current_prolog_flag(argv, ...)` loader goal is not claimed.
-`library(readutil)` and `library(pcre)` remain asserted external obligations,
-so direct file loading and regular-expression preprocessing are likewise not
-covered by this string-input canary.
+
+The gate also executes pinned `load_metta_file/3` on a physical `.metta`
+fixture.  The host installs that file's already-read text through an explicit
+read-only capability; pinned `filereader.pl`, the DCG parser, translator,
+space operations, and dynamic database perform every language-level step.
+The same file is passed to SWI and must produce the exact `[a]` result and a
+persistently callable `file-id/2` definition.  The capability is disabled in
+ordinary source services, accepts only the `read_file_to_string(Path,Text,[])`
+fragment, and cannot construct goals, clauses, continuations, or answers.
+`library(pcre)` remains an external obligation.  A separate expected-
+divergence canary pins `identity.metta`: SWI obtains `[true]`, while the Lean
+runtime currently obtains `[]` because PeTTa's diagnostic `test/3` depends on
+two unimplemented SWI predicates: variant equality `=@=/2` (the first failing
+goal) and observable `format/2`.  The test deliberately does not replace
+either dependency with silent success.
 The world returned by `process_metta_string/2` is then reused as a persistent
 database, and a fresh query executes `fresh-id(a, Out)` again with exact
 `Out = a` and empty query-local heap/trail cleanup.  This distinguishes an

@@ -1609,6 +1609,11 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                     checkedDatabaseRequestStep, databaseRequestStep,
                     mapState, mapControl, mapPhase, mapReturnFrame,
                     mapStepResult]
+              | readTextFile pathRoot textRoot optionsRoot =>
+                  simp [mapDispatchAction, dispatchActionStep,
+                    checkedDatabaseRequestStep, databaseRequestStep,
+                    mapState, mapControl, mapPhase, mapReturnFrame,
+                    mapStepResult]
           | error reason =>
               cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, mapState,

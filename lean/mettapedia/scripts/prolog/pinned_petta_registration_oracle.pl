@@ -62,7 +62,8 @@ emit_eval(Label, Input, Expected) :-
     emit_answers(Label, Input, [Expected]).
 
 main([MettaPath, TranslatorPath, SpecializerPath,
-      ParserPath, FilereaderPath, SpacesPath]) :-
+      ParserPath, FilereaderPath, SpacesPath, MettaInputPath,
+      IdentityInputPath]) :-
     load_source(TranslatorPath, none, _),
     load_source(SpecializerPath, none, _),
     load_expanded_source(ParserPath),
@@ -73,6 +74,15 @@ main([MettaPath, TranslatorPath, SpecializerPath,
     call(Registration),
     assertz(silent(true)),
     format('metta_silent_setup=exact~n', []),
+    load_metta_file(MettaInputPath, [a], '&self'),
+    format('metta_load_file=exact~n', []),
+    'file-id'(a, a),
+    format('metta_loaded_file_definition=exact~n', []),
+    with_output_to(string(_),
+      load_metta_file(IdentityInputPath, [true], '&self')),
+    format('metta_identity_diagnostic_gap_swi_true=exact~n', []),
+    f(3, 9),
+    format('metta_identity_definition_swi=exact~n', []),
     fun(id),
     format('metta_fun_id_registered=exact~n', []),
     id(a, a),

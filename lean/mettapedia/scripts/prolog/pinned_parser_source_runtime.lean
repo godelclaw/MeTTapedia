@@ -357,6 +357,17 @@ def answerTerm? (answer : LP.RuntimeQuery.Answer SourceRuntime.Sigma) :
   | .ok term => some term
   | .error _ => none
 
+/-- A later world query has a fresh scope rather than scope zero.  Its query
+map is already activation-local, so the source variable identity uniquely
+selects the result without guessing that scope. -/
+def answerTermInWorld? (answer : LP.RuntimeQuery.Answer SourceRuntime.Sigma) :
+    Option (LP.Term SourceRuntime.Sigma.scoped) := do
+  let (_, address) <- answer.queryVarMap.find? fun entry =>
+    decide (entry.1.name = termIdentity)
+  match LP.RuntimeReadback.Heap.readTerm answer.memory.heap address with
+  | .ok term => some term
+  | .error _ => none
+
 def renderCodes (values : List Int) : String :=
   "[" ++ String.intercalate "," (values.map toString) ++ "]"
 
@@ -518,11 +529,13 @@ def requireDatabaseGoal (database : ReaderLoadRuntime.Database) (label : String)
   | .terminal (.raised packet _) _ =>
       throw <| IO.userError s!"{label}: raised: {renderTerm packet.term}"
 
-/-- Require a source-order batch of distinct top-level goals to succeed while
-threading the complete persistent world between them. -/
-def requireWorldGoals (world : ReaderLoadRuntime.World) (label : String)
+/-- Require a source-order batch to succeed under one explicit service
+realization while threading the complete persistent world between them. -/
+def requireWorldGoalsWith
+    (services : RuntimeControl.Services SourceRuntime.Sigma)
+    (world : ReaderLoadRuntime.World) (label : String)
     (goals : List SourceSignature.Goal) : IO ReaderLoadRuntime.World := do
-  match ReaderLoadRuntime.runGoalsWorld 32768 world goals with
+  match ReaderLoadRuntime.runGoalsWorldWith services 32768 world goals with
   | .succeeded nextWorld =>
       IO.println s!"{label}=exact"
       pure nextWorld
@@ -539,6 +552,43 @@ def requireWorldGoals (world : ReaderLoadRuntime.World) (label : String)
   | .openingError error _ remaining =>
       throw <| IO.userError s!"{label}: opening error {repr error}; \
         remaining={remaining.length}"
+
+/-- Require the same batch under the ordinary source realization. -/
+def requireWorldGoals (world : ReaderLoadRuntime.World) (label : String)
+    (goals : List SourceSignature.Goal) : IO ReaderLoadRuntime.World :=
+  requireWorldGoalsWith SourceRuntime.services world label goals
+
+/-- Require one answer under explicit services, compare the query variable's
+exact finite value, and transfer the answered session's persistent world. -/
+def requireWorldTermWith
+    (services : RuntimeControl.Services SourceRuntime.Sigma)
+    (world : ReaderLoadRuntime.World) (label : String)
+    (goal : SourceSignature.Goal) (expected : SourceSignature.Term) :
+    IO ReaderLoadRuntime.World := do
+  let session ← match RuntimeControl.openSessionWorldWith services world goal with
+    | .ok session => pure session
+    | .error error =>
+        throw <| IO.userError s!"{label}: failed to open: {repr error}"
+  match SourceRuntime.pullSession 131072 session with
+  | .answer answer resumed =>
+      let actual ← match answerTermInWorld? answer with
+        | some term => pure term
+        | none => throw <| IO.userError s!"{label}: answer readback failed"
+      let actualShape := SourceRuntimeRegression.runtimeTermShape actual
+      let expectedShape :=
+        SourceRuntimeRegression.runtimeTermShape (LP.Term.atScope 0 expected)
+      if actualShape != expectedShape then
+        throw <| IO.userError s!"{label}: expected {repr expectedShape}, \
+          got {repr actualShape}"
+      IO.println s!"{label}=exact"
+      pure resumed.commitWorld
+  | .open _ => throw <| IO.userError s!"{label}: remained open"
+  | .terminal (.completed _) _ =>
+      throw <| IO.userError s!"{label}: completed without an answer"
+  | .terminal (.runtimeError error _) _ =>
+      throw <| IO.userError s!"{label}: runtime error: {repr error}"
+  | .terminal (.raised packet _) _ =>
+      throw <| IO.userError s!"{label}: raised: {renderTerm packet.term}"
 
 def checkRead (program : SourceSignature.Program) (label : String)
     (codes : List Int) (expected : SourceSignature.Term) : IO Unit :=
@@ -621,12 +671,14 @@ def executeRegistration (linked : ReaderUnitClosure.FlatLink String) :
 def main (arguments : List String) : IO Unit := do
   let [mettaPath, parserPath, translatorPath, specializerPath,
       filereaderPath, spacesPath, dcgBasicsPath, listsPath,
-      errorPath, applyPath, pairsPath, assocPath] := arguments
+      errorPath, applyPath, pairsPath, assocPath, mettaInputPath,
+      identityInputPath] := arguments
     | throw <| IO.userError
         "usage: pinned_parser_source_runtime \
          <metta.pl> <parser.pl> <translator.pl> \
          <specializer.pl> <filereader.pl> <spaces.pl> \
-         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl> <assoc.pl>"
+         <dcg/basics.pl> <lists.pl> <error.pl> <apply.pl> <pairs.pl> <assoc.pl> \
+         <input.metta> <identity.metta>"
   let parserClosure <- loadParserClosure
     (← IO.FS.readFile parserPath)
     (← IO.FS.readFile dcgBasicsPath)
@@ -727,6 +779,52 @@ def main (arguments : List String) : IO Unit := do
       SourceSignature.compound "silent" [SourceSignature.atom "true"]]
   ]
   let registeredDatabase := silentWorld.database
+  let mettaInputSource ← IO.FS.readFile mettaInputPath
+  let identityInputSource ← IO.FS.readFile identityInputPath
+  let fileServices := SourceRuntime.servicesWithTextFiles fun requestedPath =>
+    if requestedPath == mettaInputPath then some mettaInputSource
+    else if requestedPath == identityInputPath then some identityInputSource
+    else none
+  let _ ← requireWorldGoalsWith fileServices silentWorld
+    "metta_read_file_capability" [
+      .conj
+        (SourceSignature.call "read_file_to_string" [
+          SourceSignature.string mettaInputPath,
+          .var termIdentity,
+          SourceSignature.list []
+        ])
+        (.unify (.var termIdentity) (SourceSignature.string mettaInputSource))
+    ]
+  let loadedFileWorld ← requireWorldTermWith fileServices silentWorld
+    "metta_load_file"
+      (SourceSignature.call "load_metta_file" [
+        SourceSignature.string mettaInputPath,
+        .var termIdentity,
+        SourceSignature.atom "&self"
+      ])
+      (SourceSignature.list [SourceSignature.atom "a"])
+  checkDatabaseGoal loadedFileWorld.database "metta_loaded_file_definition"
+    (SourceSignature.call "file-id" [
+      SourceSignature.atom "a", .var termIdentity])
+    (SourceSignature.atom "a")
+  /- `identity.metta` calls PeTTa's diagnostic `test/3`, whose body depends on
+  SWI variant equality `=@=/2` and observable `format/2`.  Neither predicate is
+  implemented by the canonical runtime; `=@=/2` is the first failing goal.
+  Pin the current empty first result separately from SWI's `[true]` so these
+  diagnostic-builtin gaps cannot borrow this file PASS. -/
+  let identityGapWorld ← requireWorldTermWith fileServices silentWorld
+    "metta_identity_diagnostic_gap_lean_empty"
+      (SourceSignature.call "load_metta_file" [
+        SourceSignature.string identityInputPath,
+        .var termIdentity,
+        SourceSignature.atom "&self"
+      ])
+      (SourceSignature.list [])
+  checkDatabaseGoal identityGapWorld.database
+    "metta_identity_definition_despite_diagnostic_gap"
+    (SourceSignature.call "f" [
+      SourceSignature.integer 3, .var termIdentity])
+    (SourceSignature.integer 9)
   requireDatabaseGoal registeredDatabase "metta_fun_id_registered"
     (SourceSignature.call "fun" [SourceSignature.atom "id"])
   checkDatabaseGoal registeredDatabase "metta_id_direct"

@@ -101,6 +101,11 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalGet_missing_of_error_packet
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalGet_missing_without_error_packet
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_globalDelete_of_decode
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_readTextFile_of_decode_allocate_bind
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.applyDatabaseRequest_readTextFile_of_error
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.databaseRequestWithTextFiles_readTextFile
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.servicesWithTextFiles_decoder
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.servicesWithTextFiles_runtimePredicates
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_decodeGlobalName
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_nbSetval
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.dispatchActionWith_nbGetval

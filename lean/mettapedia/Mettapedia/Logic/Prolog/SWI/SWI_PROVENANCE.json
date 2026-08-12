@@ -138,6 +138,11 @@
     },
     {
       "project": "swi-prolog",
+      "path": "library/readutil.pl",
+      "sha256": "6ed87b035f42ded99747d673d36951c6158885f122e65439b9fd371f36e45723"
+    },
+    {
+      "project": "swi-prolog",
       "path": "man/ssu.plx",
       "sha256": "c9d78333d064592f902e1ad7a6da17a940f60b5452f362bfc7a17971b6a2bdb8"
     },
@@ -478,6 +483,36 @@
       "swi_conformance_evidence": [
         "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
         "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/run_pinned_parser_source_runtime.sh"
+      ]
+    },
+    {
+      "id": "runtime.read-file-to-string-capability",
+      "project": "swi-prolog",
+      "sources": ["library/readutil.pl"],
+      "anchors": [
+        "read_file_to_string/3",
+        "absolute_file_name/3",
+        "setup_call_cleanup",
+        "read_string("
+      ],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean",
+        "Mettapedia/Logic/Prolog/ReaderLoadRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/Prolog/RuntimeControl.lean",
+        "Mettapedia/Logic/Prolog/RuntimeControlSoundnessAudit.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
         "scripts/prolog/run_pinned_parser_source_runtime.sh"
       ]
     },

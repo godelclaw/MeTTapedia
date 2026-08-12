@@ -1222,6 +1222,11 @@ def nbDeletePredicate : PredicateIndicator := {
   arity := 1
 }
 
+def readTextFilePredicate : PredicateIndicator := {
+  name := "read_file_to_string"
+  arity := 3
+}
+
 def integerIs? (goal : RuntimeAtom Sigma.scoped) :
     Option (Addr × Addr × LP.RuntimeQuery.IntegerArithmeticEncoding Sigma) :=
   match goal.symbol.name, goal.args.toList with
@@ -1290,6 +1295,53 @@ def databaseRequest? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 1 then some (.globalDelete nameRoot) else none
   | _, _ => none
 
+/-- Recognize the host-text predicate only for a realization that explicitly
+installs such a capability.  Heap contents remain unavailable here. -/
+def textFileRequest? (goal : RuntimeAtom Sigma.scoped) :
+    Option LP.RuntimeQuery.DatabaseRequest :=
+  match goal.symbol.name, goal.args.toList with
+  | "read_file_to_string", [pathRoot, textRoot, optionsRoot] =>
+      if goal.symbol.arity = 3 then
+        some (.readTextFile pathRoot textRoot optionsRoot)
+      else none
+  | _, _ => none
+
+def databaseRequestWithTextFiles? (goal : RuntimeAtom Sigma.scoped) :
+    Option LP.RuntimeQuery.DatabaseRequest :=
+  match textFileRequest? goal with
+  | some request => some request
+  | none => databaseRequest? goal
+
+/-- A finite or otherwise pure resource table supplied by the host boundary.
+The runtime never opens a path itself: the caller reads approved bytes and
+installs exactly the mapping it intends this session to observe. -/
+abbrev TextFileResources := String → Option String
+
+/-- Decode the successful `read_file_to_string(Path, Text, [])` fragment used
+by pinned PeTTa's `filereader.pl`.  Path and option inspection is read-only;
+only one atomic string can cross the capability boundary. -/
+def decodeTextFile (resources : TextFileResources)
+    (heap : Heap Sigma.scoped) (pathRoot optionsRoot : Addr) :
+    Except LP.RuntimeQuery.QueryError SourceSignature.Constant := do
+  let options ←
+    match LP.RuntimeQuery.decodeAddressList collectionEncoding heap optionsRoot with
+    | .ok options => .ok options
+    | .error (.memory error) => .error (.memory error)
+    | .error _ => .error .invalidTextFileOptions
+  if !options.isEmpty then
+    .error .invalidTextFileOptions
+  else
+    let cell ← dereferencedCell heap pathRoot
+    let path ← match cell with
+      | .var _ none => .error .textFilePathUnbound
+      | .var _ (some _) => .error (.memory .illFormedHeap)
+      | .const (.atom path) => .ok path
+      | .const (.string path) => .ok path
+      | _ => .error .invalidTextFilePath
+    match resources path with
+    | some contents => .ok (.string contents)
+    | none => .error .textFileUnavailable
+
 /-- Decode exactly an atom name for SWI-style global variables. -/
 def decodeGlobalName (heap : Heap Sigma.scoped) (root : Addr) :
     Except LP.RuntimeQuery.QueryError SourceSignature.Constant := do
@@ -1345,6 +1397,36 @@ def services : RuntimeControl.Services Sigma where
   unboundThrowError := some throwInstantiationError
   collectionEncoding := some collectionEncoding
   clauseEncoding := some clauseEncoding
+
+/-- Install an explicit read-only text table without changing any other
+language service.  Recognition is enabled together with the decoder and the
+predicate becomes discoverable by `current_predicate/1` in the same update. -/
+def servicesWithTextFiles (resources : TextFileResources) :
+    RuntimeControl.Services Sigma := {
+  services with
+  runtimePredicates := readTextFilePredicate :: services.runtimePredicates
+  databaseRequest? := databaseRequestWithTextFiles?
+  textFileDecoder := { decode := decodeTextFile resources }
+}
+
+@[simp]
+theorem databaseRequestWithTextFiles_readTextFile
+    (pathRoot textRoot optionsRoot : Addr) :
+    databaseRequestWithTextFiles? {
+      symbol := readTextFilePredicate
+      args := #[pathRoot, textRoot, optionsRoot]
+    } = some (.readTextFile pathRoot textRoot optionsRoot) := rfl
+
+@[simp]
+theorem servicesWithTextFiles_decoder (resources : TextFileResources) :
+    (servicesWithTextFiles resources).textFileDecoder.decode =
+      decodeTextFile resources := rfl
+
+@[simp]
+theorem servicesWithTextFiles_runtimePredicates
+    (resources : TextFileResources) :
+    (servicesWithTextFiles resources).runtimePredicates =
+      readTextFilePredicate :: services.runtimePredicates := rfl
 
 @[simp]
 theorem services_unboundThrowError :
