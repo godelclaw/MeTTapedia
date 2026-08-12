@@ -426,6 +426,50 @@ theorem sideDartTrackedGraph_degree_outsideBoundary
       keep C a b d htracked]
   simp
 
+/-- Every odd vertex of the side-dart routing graph is the deleted-side
+opposite of a genuine retained boundary dart.  Unlike the two-portal
+corollary below, this classification does not assume that the boundary has a
+prescribed cardinality; source geometry may subsequently decompose its
+boundary darts into moving-cut portals and container-wall darts. -/
+theorem exists_boundaryDart_alpha_eq_of_odd_sideDartTrackedGraph_degree
+    (keep : V -> Prop) [DecidablePred keep]
+    (hCubic : RS.IsCubic)
+    (C : RS.EdgeColoring Color) (hC : RS.IsTaitEdgeColoring C)
+    (a b : Color) (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b)
+    (d : RS.D)
+    (hdOdd : Odd ((RS.sideDartTrackedGraph keep C a b).degree d)) :
+    ∃ boundary : BoundaryDart RS keep, RS.alpha boundary.1.1 = d := by
+  classical
+  by_cases htracked : IsTrackedColor a b (C (RS.edgeOf d))
+  · by_cases hinside : keep (RS.vertOf d)
+    · have hdegree := RS.sideDartTrackedGraph_degree_inside
+        keep hCubic C hC a b ha hb hab d hinside htracked
+      have hnotOdd : ¬ Odd
+          ((RS.sideDartTrackedGraph keep C a b).degree d) := by
+        rw [hdegree]
+        decide
+      exact False.elim (hnotOdd hdOdd)
+    · by_cases hopposite : keep (RS.vertOf (RS.alpha d))
+      · let boundary : BoundaryDart RS keep :=
+          ⟨⟨RS.alpha d, hopposite⟩, by
+            simpa [RS.alpha_involutive] using hinside⟩
+        refine ⟨boundary, ?_⟩
+        simpa [boundary] using RS.alpha_involutive d
+      · have hdegree := RS.sideDartTrackedGraph_degree_outside_untouched
+          keep C a b d hinside hopposite
+        have hnotOdd : ¬ Odd
+            ((RS.sideDartTrackedGraph keep C a b).degree d) := by
+          rw [hdegree]
+          decide
+        exact False.elim (hnotOdd hdOdd)
+  · have hdegree := RS.sideDartTrackedGraph_degree_untracked
+        keep C a b d htracked
+    have hnotOdd : ¬ Odd
+        ((RS.sideDartTrackedGraph keep C a b).degree d) := by
+      rw [hdegree]
+      decide
+    exact False.elim (hnotOdd hdOdd)
+
 /-- With exactly two retained boundary darts, a selected deleted-side portal
 is forced to connect to the other portal in the bicolored component. This is the
 handshaking step in the manuscript's two-cut routing argument. -/
@@ -446,42 +490,11 @@ theorem twoBoundaryDarts_bicolored_reachable
       keep C a b left hleftTracked]
     exact odd_one
   · intro d hdOdd
-    by_cases htracked : IsTrackedColor a b (C (RS.edgeOf d))
-    · by_cases hinside : keep (RS.vertOf d)
-      · have hdegree := RS.sideDartTrackedGraph_degree_inside
-          keep hCubic C hC a b ha hb hab d hinside htracked
-        have hnotOdd : ¬ Odd
-            ((RS.sideDartTrackedGraph keep C a b).degree d) := by
-          rw [hdegree]
-          decide
-        exact False.elim (hnotOdd hdOdd)
-      · by_cases hopposite : keep (RS.vertOf (RS.alpha d))
-        · let boundary : BoundaryDart RS keep :=
-            ⟨⟨RS.alpha d, hopposite⟩, by
-              simpa [RS.alpha_involutive] using hinside⟩
-          rcases hcover boundary with hleft | hright
-          · left
-            have h := congrArg
-              (fun x : BoundaryDart RS keep => RS.alpha x.1.1) hleft
-            simpa [boundary, RS.alpha_involutive] using h
-          · right
-            have h := congrArg
-              (fun x : BoundaryDart RS keep => RS.alpha x.1.1) hright
-            simpa [boundary, RS.alpha_involutive] using h
-        · have hdegree := RS.sideDartTrackedGraph_degree_outside_untouched
-            keep C a b d hinside hopposite
-          have hnotOdd : ¬ Odd
-              ((RS.sideDartTrackedGraph keep C a b).degree d) := by
-            rw [hdegree]
-            decide
-          exact False.elim (hnotOdd hdOdd)
-    · have hdegree := RS.sideDartTrackedGraph_degree_untracked
-          keep C a b d htracked
-      have hnotOdd : ¬ Odd
-          ((RS.sideDartTrackedGraph keep C a b).degree d) := by
-        rw [hdegree]
-        decide
-      exact False.elim (hnotOdd hdOdd)
+    rcases RS.exists_boundaryDart_alpha_eq_of_odd_sideDartTrackedGraph_degree
+        keep hCubic C hC a b ha hb hab d hdOdd with ⟨boundary, hboundary⟩
+    rcases hcover boundary with rfl | rfl
+    · exact Or.inl hboundary.symm
+    · exact Or.inr hboundary.symm
 
 /-- A retained boundary dart is supported on the computed edge boundary of
 the retained vertex finset. -/
