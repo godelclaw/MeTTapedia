@@ -137,6 +137,128 @@ theorem sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_edgeOf_eq_successorInpu
       rw [← sourceTwoTileAlignedEnclosedTerminalProfileDataAt_portEdge]
       rfl
 
+/-- On the matched transverse edge, the two literal exposed darts have only
+the two genuine possibilities: they are alpha-opposite, or they are the same
+ambient dart.  The latter alternative is not a serial seam; it records a
+shared enclosed endpoint and is kept explicit below. -/
+theorem sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_or_alpha_successorInput
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 5)) (step : Fin 2) :
+    (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+        hrotation htwoSided hunique offset step).1.1 =
+      (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+        hcubic hrotation htwoSided hunique offset step).1.1 ∨
+    embedded.cellulation.rotation.toRotationSystem.alpha
+        (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+          hrotation htwoSided hunique offset step).1.1 =
+      (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+        hcubic hrotation htwoSided hunique offset step).1.1 := by
+  let left := (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization
+    hcubic hrotation htwoSided hunique offset step).1.1
+  let right := (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt
+    realization hcubic hrotation htwoSided hunique offset step).1.1
+  have hedge : embedded.cellulation.rotation.toRotationSystem.edgeOf left =
+      embedded.cellulation.rotation.toRotationSystem.edgeOf right := by
+    simpa [left, right] using
+      sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_edgeOf_eq_successorInput
+        realization hcubic hrotation htwoSided hunique offset step
+  rcases embedded.cellulation.rotation.toRotationSystem.edge_fiber_two_cases
+      (e := embedded.cellulation.rotation.toRotationSystem.edgeOf left)
+      (d := left) (y := right) rfl hedge.symm with hsame | hopposite
+  · exact Or.inl hsame.symm
+  · exact Or.inr hopposite.symm
+
+/-- If the matched transverse darts are the same rather than alpha-opposite,
+then the two enclosed slab carriers literally share that dart's base vertex.
+This is an obstruction to treating the two vertex-side tangles as a disjoint
+serial composite. -/
+theorem sourceTwoTileAlignedEnclosed_vertexOverlap_of_outputBoundaryDart_eq_successorInput
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 5)) (step : Fin 2)
+    (hsame :
+      (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+          hrotation htwoSided hunique offset step).1.1 =
+        (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+          hcubic hrotation htwoSided hunique offset step).1.1) :
+    ∃ vertex,
+      deletedRegionKeep
+        (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+          htwoSided hunique (sourceTwoTileSuccessorStartOffset offset)).componentSide
+        vertex ∧
+      deletedRegionKeep
+        (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+          htwoSided hunique (sourceTwoTileSuccessorNextOffset offset)).componentSide
+        vertex := by
+  refine ⟨embedded.cellulation.rotation.toRotationSystem.vertOf
+    (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+      hrotation htwoSided hunique offset step).1.1, ?_, ?_⟩
+  · exact (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+      hrotation htwoSided hunique offset step).1.2
+  · rw [hsame]
+    exact (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+      hcubic hrotation htwoSided hunique offset step).1.2
+
+/-- Every named consecutive transverse edge is now classified without any
+unproved geometry: it is either a correctly oriented serial seam, or it
+exhibits a concrete shared vertex of the two enclosed carriers.  This does
+not decide which branch the source realization occupies. -/
+theorem sourceTwoTileAlignedEnclosed_alphaSeam_or_vertexOverlap
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 5)) (step : Fin 2) :
+    embedded.cellulation.rotation.toRotationSystem.alpha
+        (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+          hrotation htwoSided hunique offset step).1.1 =
+      (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+        hcubic hrotation htwoSided hunique offset step).1.1 ∨
+    ∃ vertex,
+      deletedRegionKeep
+        (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+          htwoSided hunique (sourceTwoTileSuccessorStartOffset offset)).componentSide
+        vertex ∧
+      deletedRegionKeep
+        (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+          htwoSided hunique (sourceTwoTileSuccessorNextOffset offset)).componentSide
+        vertex := by
+  rcases sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_or_alpha_successorInput
+      realization hcubic hrotation htwoSided hunique offset step with hsame | halpha
+  · exact Or.inr
+      (sourceTwoTileAlignedEnclosed_vertexOverlap_of_outputBoundaryDart_eq_successorInput
+        realization hcubic hrotation htwoSided hunique offset step hsame)
+  · exact Or.inl halpha
+
 /-- The remaining orientation condition for physical serial gluing is exactly
 that the outgoing base vertex lies outside the successor's enclosed side.
 Once that source-side fact is proved, the common transverse edge is exposed
