@@ -450,6 +450,27 @@ constructed positions.  The theorem neither assumes nor constructs that
 formation, and it does not by itself prove
 \texttt{CommonNeighborsExact} or the separated crosscut pair.
 
+The full-retention premise in that theorem is no longer a purely qualitative
+condition.  The generic cubic-map lemma in
+\texttt{GoertzelV24CubicFaceVertexSeparation} proves that two distinct
+facial cycles meeting at any primal vertex must be adjacent in the full
+facial dual.  Therefore two distinct dual-nonadjacent faces have disjoint
+primal vertex supports.  Taking the literal opening to retain precisely the
+complement of the vertices visited by a chosen cap face gives the constructive
+corollary
+
+\begin{center}
+\texttt{faceFullyRetained\_compl\_orbitFaceVertices\_of\_not\_adj}.
+\end{center}
+
+Thus any corridor face proved boundary-clean---distinct and dual-nonadjacent
+from the pentagonal cap---is automatically wholly retained by cap deletion;
+no separate vertex-by-vertex retention assumption is needed.  This settles
+the generic closed-map side of that premise.  It does not select the source
+pentagon, prove that the displayed Cell--3 faces are nonadjacent to it, build
+the two-hole annulus, or realize the long separated crosscuts.  Those are the
+remaining source-specific L1 formation statements.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
