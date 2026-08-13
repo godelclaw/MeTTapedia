@@ -406,6 +406,43 @@ theorems remove one formation gap; they do not themselves construct the
 crosscut pair, prove the L1 corridor comes from that opening, or assert that a
 flank face cut by the opening is wholly retained.
 
+The first carrier-changing part of the \emph{single-edge deletion} model is
+also now constructed, rather than postulated.  The generic permutation lemma
+
+\begin{center}
+\texttt{eraseTwoPointsSubtype}
+\end{center}
+
+removes the two oriented darts of the distinguished edge from the ambient
+vertex rotations: each removed dart becomes fixed in the auxiliary
+permutation, and its old predecessor is spliced directly to its old successor.
+Restricting to the complement and transporting along the exact dart
+equivalence gives
+
+\begin{center}
+\texttt{deletedEdgeData} :
+\texttt{Data G} $\longrightarrow$
+\texttt{Data (DeletedEdgeGraph G u v)}.
+\end{center}
+
+Every surviving dart remains based at the same vertex.  More importantly for
+face geometry, Lean proves
+
+\begin{center}
+\texttt{deletedEdgeData\_phi\_ambient\_eq\_of\_ne}.
+\end{center}
+
+If an ambient face step does not land on either orientation of the removed
+edge, the face step computed in the deleted graph maps back to exactly the old
+ambient face step.  Thus deletion changes face tracing only where the missing
+edge was actually encountered; remote face steps are not reconstructed by an
+unproved picture.  This is still only a bare rotation-system construction and
+a local transport theorem.  It does not yet transport planar-geometry fields,
+choose the source's missing edge, construct its container cycles or two holes,
+prove that the relevant Cell--3 face orbits avoid the deleted darts, or realize
+the long separated crosscut pair.  Those source-specific formation obligations
+remain the live gate.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
