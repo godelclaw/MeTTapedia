@@ -650,6 +650,24 @@ the source specialization visible: the actual Cell--3 cap/corridor selection
 must establish radius-one retention and identify the generic transported
 side faces with its named local rail data.
 
+The representative choice in that statement has now also been removed.
+Fully retained roots on one ambient facial orbit have equal images in the
+fixed opening, by
+
+\begin{center}
+\texttt{openFaceOrbit\_eq\_of\_dartOrbitFace\_eq}.
+\end{center}
+
+Consequently \texttt{open\_commonNeighbor\_eq\_sideFaceImage} states the
+consumer-facing result directly: every open common neighbour is one of the
+two explicit open facial orbits rooted at the opposite darts of the outgoing
+flanks.  This is stronger than retaining an unspecified ambient representative
+and then identifying its quotient face.  It remains a generic literal-opening
+theorem, however; it does not assert that the computed opening and the
+source-local closed-web annulus are definitionally the same carrier.  The next
+source formation adapter must prove that identification or an isomorphism
+preserving these named roots.
+
 The opened rotation is now also backed by an actual computed simple graph in
 \texttt{GoertzelV24OpenRegionGraphBacking}.  Its primal adjacency is defined
 from the opened dart endpoints.  Lean proves that mapping an opened dart to

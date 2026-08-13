@@ -76,6 +76,34 @@ theorem dartOrbitFace_eq_of_openFaceOrbit_eq
   exact (openFaceOrbit_ne_of_ambient_ne RS keep outer leftRoot rightRoot
     hleft hright hambient) hopen
 
+/-- Fully retained roots of the same ambient face determine the same face in
+one fixed literal opening.  This is the forward companion to
+`dartOrbitFace_eq_of_openFaceOrbit_eq`; together they make the transported
+face depend on the ambient orbit rather than on a chosen representative. -/
+theorem openFaceOrbit_eq_of_dartOrbitFace_eq
+    (RS : RotationSystem V G.edgeSet) (keep : V → Prop)
+    (outer : Dart RS keep) (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (hfaces : dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot) :
+    openFaceOrbit RS keep outer leftRoot hleft =
+      openFaceOrbit RS keep outer rightRoot hright := by
+  apply Quotient.sound
+  have hcycle : RS.phi.SameCycle leftRoot rightRoot := Quotient.exact hfaces
+  let rightPoint : {point // RS.phi.SameCycle leftRoot point} :=
+    ⟨rightRoot, hcycle⟩
+  have hmapped : (rotationSystem RS keep outer).phi.SameCycle
+      (openFaceRoot RS keep leftRoot hleft)
+      (openFaceDart RS keep leftRoot hleft rightPoint) :=
+    (openFaceCycleMap RS keep outer leftRoot hleft rightPoint).2
+  have hroot : openFaceDart RS keep leftRoot hleft rightPoint =
+      openFaceRoot RS keep rightRoot hright := by
+    apply congrArg Sum.inl
+    apply Subtype.ext
+    rfl
+  rw [hroot] at hmapped
+  exact hmapped
+
 /-- **L1 (closed classification transported through opening).** Every common
 open neighbour of two consecutive images of a closed minimal corridor has a
 fully retained ambient representative, and that representative is one of the
@@ -210,6 +238,126 @@ theorem exists_ambient_side_rep_of_open_commonNeighbor
   rcases hclassified with hbeforeFace | hafterFace
   · exact Or.inl (congrArg Subtype.val hbeforeFace)
   · exact Or.inr (congrArg Subtype.val hafterFace)
+
+/-- **L1 (literal side-face images after opening).** Under the same local
+retention hypotheses as the ambient classification, every open common
+neighbour is one of the two explicit opposite-dart side-face images of the
+closed Cell-3 placement.
+
+This removes the arbitrary ambient representative from the conclusion.  It
+still does not identify the opened rotation system with the source-local
+annular carrier; that source formation theorem remains a separate adapter. -/
+theorem open_commonNeighbor_eq_sideFaceImage
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {corridorLength : Nat}
+    (corridor : OrbitHexCorridorSkeleton graphData.toRotationSystem
+      corridorLength)
+    (keep : V → Prop) (outer : Dart graphData.toRotationSystem keep)
+    (hretained : ∀ offset,
+      FaceFullyRetained graphData.toRotationSystem keep
+        (orbitFaceRoot graphData.toRotationSystem
+          (corridor.faceAt offset).1))
+    (hneighborRetained : ∀ offset,
+      ∀ neighbor : AmbientFace
+        (Finset.univ : Finset (OrbitFace graphData.toRotationSystem)),
+        (interiorDualGraph
+          (orbitFaceBoundary graphData.toRotationSystem)
+          (Finset.univ : Finset
+            (OrbitFace graphData.toRotationSystem))).Adj
+            (corridor.faceAt offset) neighbor →
+          FaceFullyRetained graphData.toRotationSystem keep
+            (orbitFaceRoot graphData.toRotationSystem neighbor.1))
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor
+      (pairwiseUniqueSharedInteriorEdges graphData minimal) interior)
+    (before after : {position // position ∈ placementSidePositions placement})
+    (hbefore : placement.outgoingPosition.val ≡ before.1.val + 1 [MOD 6])
+    (hafter : after.1.val ≡ placement.outgoingPosition.val + 1 [MOD 6])
+    (neighbor : AmbientFace
+      (Finset.univ : Finset
+        (OrbitFace (rotationSystem graphData.toRotationSystem keep outer))))
+    (hleft : (interiorDualGraph
+      (orbitFaceBoundary
+        (rotationSystem graphData.toRotationSystem keep outer))
+      (Finset.univ : Finset
+        (OrbitFace
+          (rotationSystem graphData.toRotationSystem keep outer)))).Adj
+        (openOrbitHexCorridorSkeleton graphData.toRotationSystem
+          minimal.facesTwoSided corridor keep outer hretained |>.faceAt
+            interior.center)
+        neighbor)
+    (hright : (interiorDualGraph
+      (orbitFaceBoundary
+        (rotationSystem graphData.toRotationSystem keep outer))
+      (Finset.univ : Finset
+        (OrbitFace
+          (rotationSystem graphData.toRotationSystem keep outer)))).Adj
+        (openOrbitHexCorridorSkeleton graphData.toRotationSystem
+          minimal.facesTwoSided corridor keep outer hretained |>.faceAt
+            interior.outgoing.right)
+        neighbor) :
+    (∃ hbeforeRetained : FaceFullyRetained graphData.toRotationSystem keep
+        (graphData.toRotationSystem.alpha
+          (faceCycleDart graphData.toRotationSystem placement.root before.1)),
+      neighbor.1 = openFaceOrbit graphData.toRotationSystem keep outer
+        (graphData.toRotationSystem.alpha
+          (faceCycleDart graphData.toRotationSystem placement.root before.1))
+        hbeforeRetained) ∨
+      (∃ hafterRetained : FaceFullyRetained graphData.toRotationSystem keep
+          (graphData.toRotationSystem.alpha
+            (faceCycleDart graphData.toRotationSystem placement.root after.1)),
+        neighbor.1 = openFaceOrbit graphData.toRotationSystem keep outer
+          (graphData.toRotationSystem.alpha
+            (faceCycleDart graphData.toRotationSystem placement.root after.1))
+          hafterRetained) := by
+  rcases exists_ambient_side_rep_of_open_commonNeighbor graphData minimal
+      corridor keep outer hretained hneighborRetained placement before after
+      hbefore hafter neighbor hleft hright with
+    ⟨neighborRoot, hneighborRoot, hneighborImage,
+      hbeforeFace | hafterFace⟩
+  · left
+    let beforeRoot := graphData.toRotationSystem.alpha
+      (faceCycleDart graphData.toRotationSystem placement.root before.1)
+    have hbeforeFace' :
+        dartOrbitFace graphData.toRotationSystem neighborRoot =
+          dartOrbitFace graphData.toRotationSystem beforeRoot := by
+      change dartOrbitFace graphData.toRotationSystem neighborRoot =
+        dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha
+            (faceCycleDart graphData.toRotationSystem placement.root before.1))
+        at hbeforeFace
+      exact hbeforeFace
+    have hbeforeRoot : FaceFullyRetained graphData.toRotationSystem keep
+        beforeRoot :=
+      faceFullyRetained_of_dartOrbitFace_eq graphData.toRotationSystem keep
+        hneighborRoot hbeforeFace'
+    refine ⟨hbeforeRoot, hneighborImage.trans ?_⟩
+    apply openFaceOrbit_eq_of_dartOrbitFace_eq graphData.toRotationSystem
+      keep outer
+      neighborRoot beforeRoot hneighborRoot hbeforeRoot
+    exact hbeforeFace'
+  · right
+    let afterRoot := graphData.toRotationSystem.alpha
+      (faceCycleDart graphData.toRotationSystem placement.root after.1)
+    have hafterFace' :
+        dartOrbitFace graphData.toRotationSystem neighborRoot =
+          dartOrbitFace graphData.toRotationSystem afterRoot := by
+      change dartOrbitFace graphData.toRotationSystem neighborRoot =
+        dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha
+            (faceCycleDart graphData.toRotationSystem placement.root after.1))
+        at hafterFace
+      exact hafterFace
+    have hafterRoot : FaceFullyRetained graphData.toRotationSystem keep
+        afterRoot :=
+      faceFullyRetained_of_dartOrbitFace_eq graphData.toRotationSystem keep
+        hneighborRoot hafterFace'
+    refine ⟨hafterRoot, hneighborImage.trans ?_⟩
+    apply openFaceOrbit_eq_of_dartOrbitFace_eq graphData.toRotationSystem
+      keep outer
+      neighborRoot afterRoot hneighborRoot hafterRoot
+    exact hafterFace'
 
 end
 
