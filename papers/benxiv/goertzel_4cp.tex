@@ -935,6 +935,18 @@ closed theorem into \texttt{CommonNeighborsExact} for the source annulus.
 Doing so would silently strengthen the source hypotheses and still fail to
 construct the required formation.
 
+There is a sharper provenance boundary here.  The Fable source derives
+``girth at least five'' and ``no $2$-cut'' for an irreducible
+minimal-counterexample frontier before its annular opening.  The current
+\texttt{ClosedWebAtGoodWord.Instance}, by design, is instead a colored open
+annulus: its fields give boundary well-formedness, connectivity, the annular
+embedding, internal face-length/dual-connectivity geometry, and good-word
+closure.  It does not contain the closed minimal carrier or a no-two-cut
+consequence.  Thus the source formation must transport the relevant
+irreducible local facts into this annulus.  This observation does not claim
+that a no-two-cut fact alone resolves the two-shared-edge case; it prevents
+that unproved provenance from being used implicitly.
+
 The honest next object is consequently smaller and sharper than a general
 Jordan or Menger theorem: a source-specific finite local classification that
 derives the required common-vertex incidence on the actual Cell--3 annular
