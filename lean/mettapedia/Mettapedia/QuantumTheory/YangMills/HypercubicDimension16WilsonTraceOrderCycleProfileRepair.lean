@@ -168,6 +168,19 @@ theorem ourInvariantTraceCycleProfileCoordinate_exactFieldOrbitReynolds
   rw [Finset.sum_const, Finset.card_univ, Hypercubic4.card_hypercubic4]
   module
 
+/-- OUR profile coordinate vanishes on the derivative-free eight-field
+inclusion before any trace relation is imposed.  This is a structural
+zero: the inclusion has zero seven-field projection, so the profile does not
+need a separate finite replay for each field-eight generator. -/
+theorem ourInvariantTraceCycleProfileCoordinate_fieldEightExactEmbed_zero
+    (value : FieldEightOrbitSpace) :
+    ourInvariantTraceCycleProfileCoordinate (fieldEightExactEmbed value) = 0 := by
+  unfold ourInvariantTraceCycleProfileCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_fieldEightExactEmbed]
+  simp
+
 /-- OUR profile contribution to the incoming trace class. -/
 def ourTraceCycleProfileInvariantTraceContribution :
     ExactFieldRelabelOrbitSpace →ₗ[ℚ] FieldEightPhysicalTraceQuotient :=
@@ -179,6 +192,18 @@ def ourCycleProfileInvariantTraceOrderCorrection :
     ExactFieldRelabelOrbitSpace →ₗ[ℚ] FieldEightPhysicalTraceQuotient :=
   ourThreeCoordinateInvariantTraceOrderCorrection +
     ourTraceCycleProfileInvariantTraceContribution
+
+/-- OUR full profile correction is unchanged by exact-field Reynolds
+averaging. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds
+    (value : ExactFieldRelabelOrbitSpace) :
+    ourCycleProfileInvariantTraceOrderCorrection (exactFieldOrbitReynolds value) =
+      ourCycleProfileInvariantTraceOrderCorrection value := by
+  unfold ourCycleProfileInvariantTraceOrderCorrection
+    ourTraceCycleProfileInvariantTraceContribution
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply]
+  rw [ourThreeCoordinateInvariantTraceOrderCorrection_exactFieldOrbitReynolds,
+    ourInvariantTraceCycleProfileCoordinate_exactFieldOrbitReynolds]
 
 /-! ## Bounded replay on the canonical fundamental three-cut row -/
 
@@ -485,6 +510,40 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_ourTraceAnticommutator_zero
     ourInvariantTraceCycleProfileCoordinate_ourTraceAnticommutator]
   module
 
+/-- OUR profile correction retains every actual lifted derivative-free
+eight-field trace relation.  The theorem is uniform over the finite
+traceless, trace-anticommutator, and fundamental generators, rather than a
+sampled calculation. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_liftedTraceGenerator_zero
+    (policy : PhysicalRelationPolicy) (generator : FieldEightTraceGenerator) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourLiftFieldEightTraceGenerator policy generator) 1)) =
+      0 := by
+  unfold ourCycleProfileInvariantTraceOrderCorrection
+    ourTraceCycleProfileInvariantTraceContribution
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    LinearMap.smul_apply,
+    ourThreeCoordinateInvariantTraceOrderCorrection_liftedTraceGenerator_zero]
+  rw [show orbitPhysicalRelationOperator policy
+      (Finsupp.single (ourLiftFieldEightTraceGenerator policy generator) 1) =
+      fieldEightExactEmbed (fieldEightPhysicalTraceRow generator) by
+        exact ourOrbitPhysicalRelationOperator_lift policy generator,
+    ourInvariantTraceCycleProfileCoordinate_fieldEightExactEmbed_zero]
+  simp
+
+/-- OUR profile correction also retains the signed-Reynolds invariant member
+of every actual lifted derivative-free eight-field trace relation. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_invariantLiftedTraceGenerator_zero
+    (policy : PhysicalRelationPolicy) (generator : FieldEightTraceGenerator) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (exactFieldOrbitReynolds
+        (orbitPhysicalRelationOperator policy
+          (Finsupp.single (ourLiftFieldEightTraceGenerator policy generator) 1))) =
+      0 := by
+  rw [ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds,
+    ourCycleProfileInvariantTraceOrderCorrection_liftedTraceGenerator_zero]
+
 /-- The profile correction also kills the corresponding Reynolds-averaged
 fundamental relation member. -/
 theorem ourCycleProfileInvariantTraceOrderCorrection_invariantFundamentalThreeCut_zero
@@ -531,8 +590,12 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_invariantTraceAnticommutato
 #print axioms ourTraceAnticommutatorSplit_profileSignedWeight
 #print axioms ourInvariantTraceCycleProfileCoordinate_ourFundamentalThreeCut_zero
 #print axioms ourInvariantTraceCycleProfileCoordinate_ourTraceAnticommutator
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_ourFundamentalThreeCut_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_ourTraceAnticommutator_zero
+#print axioms ourInvariantTraceCycleProfileCoordinate_fieldEightExactEmbed_zero
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_liftedTraceGenerator_zero
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_invariantLiftedTraceGenerator_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_invariantFundamentalThreeCut_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_invariantTraceAnticommutator_zero
 
