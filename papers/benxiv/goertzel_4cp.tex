@@ -340,6 +340,20 @@ through an explicit closed-map-to-open-annulus formation, preserving the
 relevant interior faces and their shared boundary edges.  Adding minimality
 as a field of the open instance would be inconsistent, not a shortcut.
 
+The first generic piece of this formation is now constructed in
+\texttt{GoertzelV24OpenRegionFaceTransport}.  Let a closed ambient face orbit
+be wholly based at vertices retained by the literal open-region construction.
+Lean proves that following the ambient face permutation never enters a fresh
+boundary stub, that the old-dart embedding commutes with every face step, and
+that the complete ambient and open dart cycles are equivalent.  Thus an
+untouched face is transported as an actual finite orbit, not merely identified
+by a matching cardinality or assumed through a wrapper.  What remains is
+source-specific: prove that the Cell--3 flank faces satisfy the retention
+criterion, transport their shared primal boundary edges, and use the resulting
+ribbon boundary to turn the existing primal radial witness into the two
+separated facial-dual crosscuts.  The new theorem removes one formation gap;
+it does not itself construct the crosscut pair.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
