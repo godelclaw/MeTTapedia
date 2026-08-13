@@ -63,6 +63,15 @@ Current status:
   chart can be injective. This does not rule out the Wilson route; a full
   construction must retain noncommutative trace order and the coupled
   lower-field commutator data.
+- `HypercubicDimension16WilsonTraceOrderRepair.lean` proves the first local
+  repair requirement. On the concrete seven/eight-field commutator quotient,
+  the canonical eight-field trace coordinate cannot descend by itself; every
+  descended trace-order correction has a forced, nonzero seven-field value.
+  The explicit compensator realizes that value, kills the complete physical
+  commutator for either policy, and still detects its isolated eight-field
+  trace component. OUR repair data retain this rational coordinate alongside
+  the exact Cartan Wilson coefficient packet without identifying the pair
+  with a completed noncommutative Wilson functional.
 - The support recurrence is reduced to a manuscript branch choice:
   coarsen-then-thicken is uniformly bounded, while thicken-only is unbounded.
 - The two-marked centered correlation identity is a named API; a canary proves
@@ -89,9 +98,9 @@ recursion, support branch, two-marked identity, KP convergence, Wilson
 reflection positivity, and OS/subsequential-limit machinery are all instantiated
 for the same route.
 
-The next extraction-side proof step is to construct trace-order-aware,
-cross-sector Wilson-functional coordinates on this repaired joint quotient,
-then complete its policy-indexed relation census and sparse rank/conditioning
-certificates with analytic dual jets in the same norm. The recombination-side
-target remains the weighted connected-cumulant/tree/KP estimate for the actual
-Wilson activities in that same norm.
+The incomplete extraction-side mathematics is to extend this local
+trace-order-aware cross-sector coordinate to the full repaired joint quotient,
+then establish its policy-indexed relation census, sparse rank/conditioning
+certificates, and analytic dual jets in the same norm. The recombination-side
+mathematics remains the weighted connected-cumulant/tree/KP estimate for the
+actual Wilson activities in that same norm.
