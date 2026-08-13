@@ -918,6 +918,32 @@ two-shared-edge local case.  It is not a license to import the closed
 minimal-counterexample theorem that
 would rule the collision out globally.
 
+\paragraph{What the closed theorem does \emph{not} discharge.}  A source
+audit makes that last caution precise.  The current Fable manuscript first
+derives only the Seed-minimal frontier conditions ``girth at least five'' and
+``no $2$-cut,'' then names L1 as the finite local classification of the
+resulting all-hexagonal patch.  By contrast,
+\texttt{GoertzelV24MinimalDualTriangleClassification} obtains its
+common-corner conclusion from a \emph{closed}, spherical,
+vertex-minimal Tait counterexample; the formal proof uses the consequent
+cyclic-five-edge-connectivity of that closed map.  The literal
+\texttt{ClosedWebAtGoodWord.Instance} carries neither that closed-map carrier
+nor cyclic-five-edge-connectivity: its annular geometry supplies simple
+interior face boundaries, the lower bound five, and connected internal facial
+dual only.  Thus no type coercion or generic opening transport can turn the
+closed theorem into \texttt{CommonNeighborsExact} for the source annulus.
+Doing so would silently strengthen the source hypotheses and still fail to
+construct the required formation.
+
+The honest next object is consequently smaller and sharper than a general
+Jordan or Menger theorem: a source-specific finite local classification that
+derives the required common-vertex incidence on the actual Cell--3 annular
+carrier, or an actual formation from the same Seed-minimal frontier to that
+carrier which preserves the needed local hypotheses.  The existing Lean
+theorem proves that this incidence implies the literal rail classification;
+it does not supply the incidence.  This records a real boundary in the
+current construction, not a new Fable flag and not a conditional completion.
+
 The next finite case is now explicit as well.  For two consecutive surviving
 side slots around a selected Cell--3 hexagon,
 \texttt{selectedPlacementSideFaces\_eq\_or\_adjacent\_of\_forwardStep}
