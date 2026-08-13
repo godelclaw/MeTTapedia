@@ -576,6 +576,22 @@ theorems remove one formation gap; they do not themselves construct the
 crosscut pair, prove the L1 corridor comes from that opening, or assert that a
 flank face cut by the opening is wholly retained.
 
+The next formation step is now explicit in
+\texttt{GoertzelV24OpenRegionHexCorridorTransport}.  First, Lean proves that a
+fully retained two-sided face has exactly the same boundary-support cardinality
+after opening.  This is not inferred from two matching numbers: the retained
+face-cycle equivalence is combined with an edge-level injectivity proof that
+reflects equality of opened edges back to the ambient face.  It then constructs
+\texttt{openOrbitHexCorridorSkeleton}: any closed hex corridor all of whose
+selected faces are fully retained becomes an actual hex corridor in the one
+computed open rotation system, with the same length, injective face indexing,
+hexagonal boundaries, consecutive adjacencies, and separated non-adjacencies.
+Thus the generic transport of the L1 corridor is complete.  The remaining
+source theorem is narrower and geometric: under the actual cap/collar deletion,
+prove that the selected Cell--3 corridor faces are wholly retained (and identify
+the resulting opening with the source instance).  The constructor deliberately
+does not assume that source-specific fact.
+
 The opened rotation is now also backed by an actual computed simple graph in
 \texttt{GoertzelV24OpenRegionGraphBacking}.  Its primal adjacency is defined
 from the opened dart endpoints.  Lean proves that mapping an opened dart to
