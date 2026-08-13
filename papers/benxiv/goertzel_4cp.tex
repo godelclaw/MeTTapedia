@@ -368,6 +368,20 @@ assembled at the correct global scale rather than identified with adjacent
 local windows.  Nor is the live problem a general Menger-type existence
 theorem.
 
+\paragraph{Annular-separation implementation decision (14 August 2026).}
+An audit of the pinned Mathlib found no usable development of planar graph
+separation, combinatorial maps, rotation systems, or Menger's theorem.  Adding
+an external planarity library would not remove the work: it would introduce a
+second embedding language and require a compatibility proof with the rotation
+system and face-orbit infrastructure already used here.  The intended next
+mathematical object is therefore a narrow annular separation lemma stated in
+this development's own vocabulary.  Its input cannot be merely an arbitrary
+\texttt{ClosedWebAtGoodWord.Instance} or one dual-connectedness slit: the
+source requires the finite L1 local ladder classification to supply the
+relevant non-identification and endpoint data.  This is an implementation
+decision and a boundary on the theorem still to prove, not a claim that the
+separation construction has been completed.
+
 There is an important source-level separation here.  In Addendum XXVII and
 the formalization playbook, the radial-path witness is the L8 input to the L6
 length/depth dichotomy, whereas the boundary-clean hex corridor is the
