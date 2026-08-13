@@ -257,6 +257,260 @@ theorem localPlacementSideEdge_ne_rungs
       _ = faceCycleEdge web.annular.RS placement.root
           placement.outgoingPosition := placement.outgoing_edge.symm
 
+/-- A genuine side face of a boundary-clean Cell-3 corridor lies outside the
+entire corridor axis, not merely outside its two immediate neighbours.  This
+is the local-cubic counterpart of the clean-slab externality fact: a
+nonconsecutive identification would create a forbidden corridor chord, while
+an identification with either neighbour would turn the side edge into a
+canonical rung.  Keeping the full statement here is necessary before two
+local Cell-3 interfaces can be matched into a longer source transversal. -/
+theorem localPlacementSideFace_ne_faceAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (position : {position // position ∈ placementSidePositions placement})
+    (index : Fin blockLength) :
+    localPlacementSideFace placement position ≠
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        index := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  have hcenterBoundary : web.annular.RS.edgeOf sideDart ∈
+      orbitFaceBoundary web.annular.RS (skeleton.faceAt interior.center).1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace
+      web.annular.RS sideDart
+    rw [dartOrbitFace_faceCycleDart, placement.root_face] at hraw
+    exact hraw
+  have hsideBoundary : web.annular.RS.edgeOf sideDart ∈
+      orbitFaceBoundary web.annular.RS (localPlacementSideFace placement position).1 := by
+    change web.annular.RS.edgeOf sideDart ∈ orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart))
+    rw [← web.annular.RS.edge_alpha sideDart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha sideDart)
+  have hsideInterior : web.annular.RS.edgeOf sideDart ∈ interiorEdgeSupport
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) := by
+    apply InteriorFace.edge_mem_interiorEdgeSupport web sideDart
+    exact localPlacementSideDart_internal (corridor := corridor)
+      placement position
+  have hposition :=
+    (mem_placementSidePositions_iff placement position.1).1 position.2
+  intro hsame
+  have hadjIndex : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        (skeleton.faceAt interior.center) (skeleton.faceAt index) := by
+    have hadj := localPlacementSideFace_adjacent_center (corridor := corridor)
+      placement position
+    simpa [skeleton, hsame] using hadj
+  have hindexBoundary : web.annular.RS.edgeOf sideDart ∈
+      orbitFaceBoundary web.annular.RS (skeleton.faceAt index).1 := by
+    simpa [skeleton, hsame] using hsideBoundary
+  have hindex_ne_center : index.val ≠ interior.center.val := by
+    intro hval
+    have hindex : index = interior.center := Fin.ext hval
+    subst index
+    exact hadjIndex.ne rfl
+  rcases Nat.lt_or_gt_of_ne hindex_ne_center with hbefore | hafter
+  · have hnotSeparated : ¬ index.val + 1 < interior.center.val := by
+      intro hseparated
+      exact (skeleton.separated_not_adjacent index interior.center hseparated)
+        hadjIndex.symm
+    have hpredecessorVal : interior.center.val = index.val + 1 := by
+      omega
+    have hpredecessor : index = interior.incoming.left := by
+      apply Fin.ext
+      change index.val = interior.center.val - 1
+      have hcenterPositive := interior.center_pos
+      omega
+    have hshared : web.annular.RS.edgeOf sideDart ∈
+        sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))
+          (skeleton.faceAt interior.incoming.left).1
+          (skeleton.faceAt interior.incoming.right).1 := by
+      apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+      refine ⟨hsideInterior, ?_, ?_⟩
+      · simpa [hpredecessor] using hindexBoundary
+      · simpa using hcenterBoundary
+    have hrung := skeleton.rungEdge_eq_of_shared hunique interior.incoming hshared
+    apply hposition.1
+    apply InteriorFace.faceCycleEdge_injective web placement.root
+      (by
+        rw [placement.root_face]
+        exact corridor.face_internal interior.center)
+    calc
+      faceCycleEdge web.annular.RS placement.root position.1 =
+          web.annular.RS.edgeOf sideDart := rfl
+      _ = skeleton.rungEdge hunique interior.incoming := hrung.symm
+      _ = faceCycleEdge web.annular.RS placement.root
+          placement.incomingPosition := placement.incoming_edge.symm
+  · have hnotSeparated : ¬ interior.center.val + 1 < index.val := by
+      intro hseparated
+      exact (skeleton.separated_not_adjacent interior.center index hseparated)
+        hadjIndex
+    have hsuccessorVal : index.val = interior.center.val + 1 := by
+      omega
+    have hsuccessor : index = interior.outgoing.right := by
+      apply Fin.ext
+      exact hsuccessorVal
+    have hshared : web.annular.RS.edgeOf sideDart ∈
+        sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))
+          (skeleton.faceAt interior.outgoing.left).1
+          (skeleton.faceAt interior.outgoing.right).1 := by
+      apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+      refine ⟨hsideInterior, ?_, ?_⟩
+      · simpa using hcenterBoundary
+      · simpa [hsuccessor] using hindexBoundary
+    have hrung := skeleton.rungEdge_eq_of_shared hunique interior.outgoing hshared
+    apply hposition.2
+    apply InteriorFace.faceCycleEdge_injective web placement.root
+      (by
+        rw [placement.root_face]
+        exact corridor.face_internal interior.center)
+    calc
+      faceCycleEdge web.annular.RS placement.root position.1 =
+          web.annular.RS.edgeOf sideDart := rfl
+      _ = skeleton.rungEdge hunique interior.outgoing := hrung.symm
+      _ = faceCycleEdge web.annular.RS placement.root
+          placement.outgoingPosition := placement.outgoing_edge.symm
+
+/-- **L9 (framed boundary constants).** The four literal side slots of a
+boundary-clean Cell-3 hexagon are complete for external facial-dual
+neighbours.  This is the local-simple-boundary replacement for the older
+globally-two-sided slab lookup: an adjacent edge is located on the actual
+six-cycle, its two canonical rungs are excluded by the externality premise,
+and the opposite dart then identifies the requested neighbour. -/
+theorem exists_localPlacementSideFace_eq_of_adjacent_external
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (neighbor : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hadj : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center) neighbor)
+    (hexternal : ∀ index : Fin blockLength,
+      neighbor ≠
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          index) :
+    ∃ position : {position // position ∈ placementSidePositions placement},
+      localPlacementSideFace placement position = neighbor := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let center := skeleton.faceAt interior.center
+  rcases (interiorDualGraph_adj_iff (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))).1 hadj with
+      ⟨hcenterNeighbor, edge, hedgeInterior, hedgeCenter, hedgeNeighbor⟩
+  have hrootInternal : dartOrbitFace web.annular.RS placement.root ∈
+      web.annular.cellulation.interiorFaces := by
+    rw [placement.root_face]
+    exact corridor.face_internal interior.center
+  have hedgeRoot : edge ∈ orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS placement.root) := by
+    rw [placement.root_face]
+    simpa [center, skeleton] using hedgeCenter
+  rcases InteriorFace.existsUnique_faceCycleEdge_eq web placement.root
+      hrootInternal edge hedgeRoot with ⟨rawPosition, hrawEdge, _⟩
+  have hedgeNeIncoming : edge ≠ skeleton.rungEdge hunique interior.incoming := by
+    intro hedge
+    have hcenterPredecessor : center.1 ≠
+        (skeleton.faceAt interior.incoming.left).1 := by
+      intro hfaces
+      have hindices := skeleton.faceAt_injective (Subtype.ext hfaces)
+      have hvalues := congrArg Fin.val hindices
+      change interior.center.val = interior.center.val - 1 at hvalues
+      have hcenterPositive := interior.center_pos
+      omega
+    have hedgePredecessor : edge ∈ orbitFaceBoundary web.annular.RS
+        (skeleton.faceAt interior.incoming.left).1 := by
+      rw [hedge]
+      exact skeleton.rungEdge_mem_left hunique interior.incoming
+    have hcases :=
+      eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        (orbitFace_incidence_le_two web.annular.RS)
+        center.2 (skeleton.faceAt interior.incoming.left).2 neighbor.2
+        hcenterPredecessor hedgeCenter hedgePredecessor hedgeNeighbor
+    rcases hcases with hcenter | hpredecessor
+    · exact hcenterNeighbor hcenter.symm
+    · exact hexternal interior.incoming.left (Subtype.ext hpredecessor)
+  have hedgeNeOutgoing : edge ≠ skeleton.rungEdge hunique interior.outgoing := by
+    intro hedge
+    have hcenterSuccessor : center.1 ≠
+        (skeleton.faceAt interior.outgoing.right).1 := by
+      intro hfaces
+      have hindices := skeleton.faceAt_injective (Subtype.ext hfaces)
+      have hvalues := congrArg Fin.val hindices
+      change interior.center.val = interior.center.val + 1 at hvalues
+      omega
+    have hedgeSuccessor : edge ∈ orbitFaceBoundary web.annular.RS
+        (skeleton.faceAt interior.outgoing.right).1 := by
+      rw [hedge]
+      exact skeleton.rungEdge_mem_right hunique interior.outgoing
+    have hcases :=
+      eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        (orbitFace_incidence_le_two web.annular.RS)
+        center.2 (skeleton.faceAt interior.outgoing.right).2 neighbor.2
+        hcenterSuccessor hedgeCenter hedgeSuccessor hedgeNeighbor
+    rcases hcases with hcenter | hsuccessor
+    · exact hcenterNeighbor hcenter.symm
+    · exact hexternal interior.outgoing.right (Subtype.ext hsuccessor)
+  let position : {position // position ∈ placementSidePositions placement} :=
+    ⟨rawPosition, (mem_placementSidePositions_iff placement rawPosition).2 ⟨by
+      intro hposition
+      apply hedgeNeIncoming
+      calc
+        edge = faceCycleEdge web.annular.RS placement.root rawPosition := hrawEdge.symm
+        _ = faceCycleEdge web.annular.RS placement.root placement.incomingPosition := by
+          rw [hposition]
+        _ = skeleton.rungEdge hunique interior.incoming := placement.incoming_edge,
+      by
+        intro hposition
+        apply hedgeNeOutgoing
+        calc
+          edge = faceCycleEdge web.annular.RS placement.root rawPosition := hrawEdge.symm
+          _ = faceCycleEdge web.annular.RS placement.root placement.outgoingPosition := by
+            rw [hposition]
+          _ = skeleton.rungEdge hunique interior.outgoing := placement.outgoing_edge⟩⟩
+  refine ⟨position, ?_⟩
+  apply Subtype.ext
+  let sideDart := faceCycleDart web.annular.RS placement.root rawPosition
+  have hsideInternal : dartOrbitFace web.annular.RS sideDart ∈
+      web.annular.cellulation.interiorFaces := by
+    rw [dartOrbitFace_faceCycleDart, placement.root_face]
+    exact corridor.face_internal interior.center
+  have hsideCenter : dartOrbitFace web.annular.RS sideDart = center.1 := by
+    rw [dartOrbitFace_faceCycleDart, placement.root_face]
+  change dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) = neighbor.1
+  apply InteriorFace.alpha_face_eq_of_mem_other web sideDart hsideInternal
+    neighbor.1
+  · change faceCycleEdge web.annular.RS placement.root rawPosition ∈
+      orbitFaceBoundary web.annular.RS neighbor.1
+    rw [hrawEdge]
+    exact hedgeNeighbor
+  · intro hsame
+    apply hcenterNeighbor
+    exact hsideCenter.symm.trans hsame
+
 /-- The face across a side slot of an internal source hexagon cannot be the
 next corridor face.  If it were, that side edge would be the canonical
 outgoing rung, contradicting that the slot survived rung deletion. -/
