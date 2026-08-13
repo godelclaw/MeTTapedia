@@ -90,7 +90,7 @@ variable
     {rightIncomingBefore rightIncomingAfter rightOutgoingBefore rightOutgoingAfter :
       {position // position ∈ placementSidePositions rightPlacement}}
 
-/-- **L9 (remote literal rail separation, first/first).** First-track rail
+/-- **L1 (remote literal rail separation, first/first).** First-track rail
 steps generated at Cell-3 centres at least three positions apart cannot share
 a facial-dual vertex. -/
 theorem firstRail_support_disjoint_firstRail_of_add_two_lt
@@ -107,7 +107,7 @@ theorem firstRail_support_disjoint_firstRail_of_add_two_lt
     left.firstRail_support_adjacent_center
     right.firstRail_support_adjacent_center
 
-/-- **L9 (remote literal rail separation, first/second).** The first track of
+/-- **L1 (remote literal rail separation, first/second).** The first track of
 the left cell and second track of a remote right cell have disjoint support. -/
 theorem firstRail_support_disjoint_secondRail_of_add_two_lt
     (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
@@ -123,7 +123,7 @@ theorem firstRail_support_disjoint_secondRail_of_add_two_lt
     left.firstRail_support_adjacent_center
     right.secondRail_support_adjacent_center
 
-/-- **L9 (remote literal rail separation, second/first).** The second track of
+/-- **L1 (remote literal rail separation, second/first).** The second track of
 the left cell and first track of a remote right cell have disjoint support. -/
 theorem secondRail_support_disjoint_firstRail_of_add_two_lt
     (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
@@ -139,7 +139,7 @@ theorem secondRail_support_disjoint_firstRail_of_add_two_lt
     left.secondRail_support_adjacent_center
     right.firstRail_support_adjacent_center
 
-/-- **L9 (remote literal rail separation, second/second).** Second-track rail
+/-- **L1 (remote literal rail separation, second/second).** Second-track rail
 steps generated at Cell-3 centres at least three positions apart cannot share
 a facial-dual vertex. -/
 theorem secondRail_support_disjoint_secondRail_of_add_two_lt

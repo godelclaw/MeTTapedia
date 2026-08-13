@@ -187,6 +187,47 @@ theorem localPlacementSideFace_adjacent_center
     exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
       (web.annular.RS.alpha sideDart)
 
+/-- The literal edge at a surviving Cell-3 side slot is the canonical primal
+edge witnessing adjacency between the corridor centre and the corresponding
+side face.  This keeps the local source geometry in the edge language used by
+the closed-map dual-triangle classification. -/
+theorem sharedInteriorEdge_localPlacementSideFace_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (position : {position // position ∈ placementSidePositions placement}) :
+    sharedInteriorEdgeOfAdjOfPairwiseUnique
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
+        (localPlacementSideFace_adjacent_center
+          (corridor := corridor) placement position) =
+      web.annular.RS.edgeOf
+        (faceCycleDart web.annular.RS placement.root position.1) := by
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  apply sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+  apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+  refine ⟨?_, ?_, ?_⟩
+  · apply InteriorFace.edge_mem_interiorEdgeSupport web sideDart
+    exact localPlacementSideDart_internal (corridor := corridor)
+      placement position
+  · have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace
+      web.annular.RS sideDart
+    rw [dartOrbitFace_faceCycleDart, placement.root_face] at hraw
+    exact hraw
+  · change web.annular.RS.edgeOf sideDart ∈ orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart))
+    rw [← web.annular.RS.edge_alpha sideDart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha sideDart)
+
 /-- Radius-one cleanliness of the source corridor keeps every local side
 face away from both named holes. -/
 theorem localPlacementSideFace_internal
@@ -384,7 +425,7 @@ theorem localPlacementSideFace_ne_faceAt
       _ = faceCycleEdge web.annular.RS placement.root
           placement.outgoingPosition := placement.outgoing_edge.symm
 
-/-- **L9 (framed boundary constants).** The four literal side slots of a
+/-- **L1 (source Cell-3 local geometry).** The four literal side slots of a
 boundary-clean Cell-3 hexagon are complete for external facial-dual
 neighbours.  This is the local-simple-boundary replacement for the older
 globally-two-sided slab lookup: an adjacent edge is located on the actual

@@ -11,7 +11,7 @@ beside one cell's outgoing rung also occur as side faces of the next cell.
 This file proves precisely that local overlap from actual face incidence.  It
 does not assert that a chain of these windows is already a simple transversal,
 that their primal regions are disjoint, or that the resulting paths reach the
-two annular holes.  Those are the remaining source-local-to-global L9
+two annular holes.  Those are the remaining source-local-to-global L1
 construction obligations.
 -/
 
@@ -77,7 +77,7 @@ def LocalConsecutiveLayerSideSlotsMatch
         localPlacementSideFace leftPlacement leftAfter =
           localPlacementSideFace rightPlacement rightAfter
 
-/-- **L9 (local crosscut assembly).** Consecutive boundary-clean Cell-3
+/-- **L1 (source Cell-3 local geometry).** Consecutive boundary-clean Cell-3
 faces have two explicitly matched external side slots.  The match is derived
 from the outgoing-rung corner, full-axis externality, and the next face's
 complete four-slot lookup.  In particular no global cubicity or caller-made

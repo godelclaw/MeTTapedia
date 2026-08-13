@@ -317,7 +317,18 @@ not silently identify them.
 
 The literal Cell--3 rail construction belongs to the L1 corridor realization.
 Its remote noncollision is proved, and its adjacent append has been reduced to
-\texttt{CommonNeighborsExact}.  An extra common neighbour would form precisely
+\texttt{CommonNeighborsExact}.  Lean now proves that this face-level statement
+is equivalent to an edge-level statement: for every common neighbour, the
+canonical primal edge from the left centre to that face is one of the two
+literal flank edges of the shared rung.  The proof uses the fact that an edge
+of a planar cellular map is incident with at most two face orbits, together
+with a new exact identification of each literal flank edge with the canonical
+shared edge of its centre and side face.  Thus the bounded local gap is not a
+second, independent classification of faces; it is the transport of one
+closed-map primal-edge classification into the literal open Cell--3 carrier.
+This equivalence is a reduction of the obligation, not its discharge.
+
+An extra common neighbour would form precisely
 the small separating/nonfacial dual triangle excluded by v23's
 minimal-counterexample radius--one collar normal form.  The present open-annular
 \texttt{Instance}, however, records well-formed boundary stubs, coloring,
@@ -356,8 +367,12 @@ then identifies the three canonical pairwise shared primal edges themselves
 and proves that one ambient vertex belongs to all three.  Thus the dual
 triangle is the link of one primal vertex, rather than an arbitrary separating
 triangle.  This is the closed-map bounded-interaction classification needed by
-the source.  It does
-\emph{not} by itself prove \texttt{CommonNeighborsExact} for the Cell--3
+the source.  Combined with the new equivalence, it names the remaining bridge
+sharply: the three canonical shared edges of the closed dual triangle must be
+transported through the actual source opening, after which the cubic rotation
+at their common vertex must identify the two centre-to-neighbour edges with
+the two literal flank edges.  It does \emph{not} by itself prove
+\texttt{CommonNeighborsExact} for the Cell--3
 carrier: that carrier has degree-one boundary stubs and is provably
 incompatible with the closed cubic minimal-counterexample structure.  The
 remaining statement must therefore transport the classified face triangle

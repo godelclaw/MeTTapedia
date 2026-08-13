@@ -63,7 +63,7 @@ theorem nextLocalCorridorInterior_incoming_eq_outgoing
           simp only [hright, hleftStep, CorridorStep.mk.injEq] at hleft ⊢
           exact hleft
 
-/-- **L9 (local interface orientation).** The literal incoming dart of a
+/-- **L1 (local interface orientation).** The literal incoming dart of a
 consecutive Cell-3 face is the `alpha`-opposite of the preceding outgoing
 dart.  The proof uses the actual local interior-face certificate, rather than
 assuming globally two-sided annular faces. -/
@@ -146,7 +146,7 @@ theorem nextLocalPlacement_incomingDart_eq_alpha_outgoingDart
         halphaFace.symm
   · exact hopposite
 
-/-- **L9 (local rail identification).** The first third-edge rail at an
+/-- **L1 (local rail identification).** The first third-edge rail at an
 outgoing Cell-3 corner is a literal side edge of the next source face.  The
 matched face alone would be too weak for a later primal-boundary assembly, so
 this statement retains the equality of the actual ambient edges.  It is still
@@ -248,7 +248,7 @@ theorem exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge
       hrightShared hcornerShared
   exact ⟨rightPosition, hedgeEq, hrightFace.symm⟩
 
-/-- **L9 (local rail identification).** The second third-edge rail at an
+/-- **L1 (local rail identification).** The second third-edge rail at an
 outgoing Cell-3 corner is also a literal side edge of the next source face.
 Together with `exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge`,
 this identifies both rail tracks on the actual closed-web carrier; it still
@@ -504,7 +504,7 @@ theorem nextLocalPlacement_incoming_after_sidePosition_of_edge_eq
   rw [hposition]
   exact hcandidateMod
 
-/-- **L9 (canonical local rail cell).** The canonical Cell-3 placement and
+/-- **L1 (canonical local rail cell).** The canonical Cell-3 placement and
 its successor carry two distinct matched rail slots, and both matches retain
 the literal ambient edge as well as the intervening side face.  This is the
 one-step cell needed by a later lengthwise assembly; it does not assert that

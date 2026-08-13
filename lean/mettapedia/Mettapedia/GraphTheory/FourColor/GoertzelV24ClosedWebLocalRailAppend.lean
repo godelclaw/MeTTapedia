@@ -14,7 +14,7 @@ must have no common full-dual neighbor other than the two named flank faces of
 their shared rung.  Remote centres already satisfy the stronger disjointness
 theorems in `GoertzelV24ClosedWebLocalRailSeparation`; proving this bounded
 neighbor classification from the source annular geometry is the remaining
-local part of L9.
+local part of L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -130,7 +130,7 @@ theorem secondContinuation_isPath
     successor.secondContinuation.IsPath := by
   simpa [secondContinuation] using successor.rails.secondRail_isPath
 
-/-- **L9 (bounded adjacent-neighbor classification).** The two expected
+/-- **L1 (bounded adjacent-neighbor classification).** The two expected
 flank faces of the shared rung are all the common full-dual neighbors of two
 consecutive Cell-3 centres.  This is the exact local rotation/annulus theorem
 needed to append the literal rails; it is deliberately a named proposition,
@@ -150,6 +150,124 @@ def CommonNeighborsExact
             (nextCorridorInterior leftInterior hnext).center) face →
     face = localPlacementSideFace leftPlacement leftBefore ∨
       face = localPlacementSideFace leftPlacement leftAfter
+
+/-- Edge-level form of the bounded adjacent-neighbor classification.  For
+every common neighbour, the canonical primal edge seen from the left centre
+is one of the two literal edges flanking its outgoing rung.
+
+Unlike `CommonNeighborsExact`, this statement is in the language returned by
+the closed-map dual-triangle classification.  The equivalence below shows
+that no facial information is lost by making this change of interface. -/
+def CommonNeighborEdgesExact
+    (_successor : SourceLocalRailSuccessor hnext leftPlacement leftBefore
+      leftAfter hleftBefore hleftAfter rightPlacement) : Prop :=
+  ∀ (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+      (hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          ((corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
+      (_hright : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          ((corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton).faceAt
+              (nextCorridorInterior leftInterior hnext).center) face),
+    sharedInteriorEdgeOfAdjOfPairwiseUnique
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique hleft =
+          web.annular.RS.edgeOf
+            (faceCycleDart web.annular.RS leftPlacement.root leftBefore.1) ∨
+      sharedInteriorEdgeOfAdjOfPairwiseUnique
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique hleft =
+          web.annular.RS.edgeOf
+            (faceCycleDart web.annular.RS leftPlacement.root leftAfter.1)
+
+private theorem face_eq_localPlacementSideFace_of_sharedInteriorEdge_eq
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
+    (position : {position // position ∈ placementSidePositions leftPlacement})
+    (hedge : sharedInteriorEdgeOfAdjOfPairwiseUnique
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique hleft =
+      web.annular.RS.edgeOf
+        (faceCycleDart web.annular.RS leftPlacement.root position.1)) :
+    face = localPlacementSideFace leftPlacement position := by
+  let center := (corridor.toCleanOrbitHexCorridorSkeleton
+    |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center
+  let side := localPlacementSideFace leftPlacement position
+  let edge := web.annular.RS.edgeOf
+    (faceCycleDart web.annular.RS leftPlacement.root position.1)
+  have hedgeCenter : edge ∈ orbitFaceBoundary web.annular.RS center.1 := by
+    change web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS leftPlacement.root position.1) ∈
+        orbitFaceBoundary web.annular.RS center.1
+    rw [← hedge]
+    exact sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_left
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique hleft
+  have hedgeFace : edge ∈ orbitFaceBoundary web.annular.RS face.1 := by
+    change web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS leftPlacement.root position.1) ∈
+        orbitFaceBoundary web.annular.RS face.1
+    rw [← hedge]
+    exact sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_right
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique hleft
+  have hsideAdj := localPlacementSideFace_adjacent_center
+    (corridor := corridor) leftPlacement position
+  have hsideCanonical := sharedInteriorEdge_localPlacementSideFace_eq
+    (corridor := corridor) leftPlacement position
+  have hedgeSide : edge ∈ orbitFaceBoundary web.annular.RS side.1 := by
+    change web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS leftPlacement.root position.1) ∈
+        orbitFaceBoundary web.annular.RS side.1
+    rw [← hsideCanonical]
+    exact sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_right
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique hsideAdj
+  have hcenterFace : center.1 ≠ face.1 := by
+    intro hvalues
+    exact hleft.ne (Subtype.ext hvalues)
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (orbitFace_incidence_le_two web.annular.RS)
+      center.2 face.2 side.2 hcenterFace hedgeCenter hedgeFace hedgeSide
+  rcases hcases with hsideCenter | hsideFace
+  · exact False.elim
+      ((localPlacementSideFace_val_ne_center (corridor := corridor)
+        leftPlacement position) hsideCenter)
+  · exact Subtype.ext hsideFace.symm
+
+/-- The face-level and primal-edge-level adjacent classifications are
+equivalent.  Consequently the remaining L1 gap can be attacked entirely by
+transporting the closed minimal-counterexample theorem about the three
+crossed primal edges; no extra face-classification hypothesis is required. -/
+theorem commonNeighborsExact_iff_commonNeighborEdgesExact
+    (successor : SourceLocalRailSuccessor hnext leftPlacement leftBefore
+      leftAfter hleftBefore hleftAfter rightPlacement) :
+    successor.CommonNeighborsExact ↔ successor.CommonNeighborEdgesExact := by
+  constructor
+  · intro hfaces face hleft hright
+    rcases hfaces face hleft hright with hbefore | hafter
+    · subst face
+      exact Or.inl (sharedInteriorEdge_localPlacementSideFace_eq
+        (corridor := corridor) leftPlacement leftBefore)
+    · subst face
+      exact Or.inr (sharedInteriorEdge_localPlacementSideFace_eq
+        (corridor := corridor) leftPlacement leftAfter)
+  · intro hedges face hleft hright
+    rcases hedges face hleft hright with hbefore | hafter
+    · exact Or.inl
+        (face_eq_localPlacementSideFace_of_sharedInteriorEdge_eq
+          (corridor := corridor) face hleft leftBefore hbefore)
+    · exact Or.inr
+        (face_eq_localPlacementSideFace_of_sharedInteriorEdge_eq
+          (corridor := corridor) face hleft leftAfter hafter)
 
 private theorem start_not_mem_support_tail_of_isPath
     {F : Type*} {H : SimpleGraph F} {start finish : F}
@@ -282,7 +400,7 @@ theorem secondRail_support_disjoint_firstContinuation_tail
       successor.rails.firstRail_support_disjoint_secondRail hrightFull)
         hsecondStart
 
-/-- **L9 (two-cell literal rail append).** Under the one explicitly named
+/-- **L1 (two-cell literal rail append).** Under the one explicitly named
 bounded neighbor theorem, the two source-generated successor steps append to
 simple facial-dual paths.  No general disjoint-path existence theorem and no
 caller-chosen path witness is used. -/
@@ -312,7 +430,7 @@ theorem secondRail_append_isPath
 
 /-- The two appended rails remain mutually vertex-disjoint.  Together with
 the preceding two path theorems this is the complete two-cell rail invariant
-needed by a recursive L9 assembly. -/
+needed by a recursive L1 assembly. -/
 theorem append_support_disjoint
     (left : SourceLocalRailWalkPair leftPlacement leftIncomingBefore
       leftIncomingAfter leftBefore leftAfter)
