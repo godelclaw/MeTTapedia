@@ -1,5 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CovariantCompressionWall
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantBianchi
 
 /-!
 # OUR physical family of all certified seven-field fundamental trace sites
@@ -14,9 +16,11 @@ joint relation submodule.
 
 Thus the finite topology labels no longer stand apart from the physical
 relation syntax.  This establishes the source-side semantic identification;
-it does not yet prove that the cycle-profile correction annihilates every
-member of this family, identify all other physical relation families, or
-construct analytic noncommutative Wilson-functional coordinates.
+the exact field-eight projection of every one of these physical rows is also
+proved zero.  It does not yet prove that the cycle-profile correction
+annihilates every member's remaining seven-field component, identify all other
+physical relation families, or construct analytic noncommutative
+Wilson-functional coordinates.
 -/
 
 set_option autoImplicit false
@@ -27,10 +31,14 @@ namespace Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTra
 open HypercubicDimension16FundamentalTraceCycleProfile
 open HypercubicDimension16IncomingCommutatorTraceMismatch
 open HypercubicDimension16SU2TraceRelations
+open HypercubicDimension16ContextualQuotient
+open HypercubicDimension16CovariantCompressionWall
 open HypercubicDimension16PhysicalRelationOperator
 open HypercubicDimension16PhysicalOrbitOperator
 open HypercubicDimension16JointPhysicalQuotient
 open HypercubicDimension16JointQuotientInvariants
+open HypercubicDimension16IncomingCommutatorTraceCanonicalProjection
+open HypercubicDimension16WilsonTraceOrderInvariantBianchi
 open HypercubicDimension16FDIBPCochainJointBridge
 open HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair
 open V14HypercubicFDCensus
@@ -63,6 +71,65 @@ theorem ourFundamentalTraceSiteOf_injective :
   · exact congrArg (fun site => site.label 1) h
   · exact congrArg (fun site => site.label 2) h
 
+/-- The six trace-cycle types of an actual physical fundamental-trace site. -/
+def ourActualFundamentalTraceCycleSignature
+    (labels : OurCertifiedThreeCutLabel) : List (Multiset ℕ) :=
+  let site := ourFundamentalTraceSiteOf labels
+  [ Equiv.Perm.cycleType ourFieldSevenCommutatorCarrier.2.trace.traceOrder
+  , Equiv.Perm.cycleType
+      (rewireTraceCarrier ourFieldSevenCommutatorCarrier
+        (Equiv.swap site.first site.second)).2.trace.traceOrder
+  , Equiv.Perm.cycleType
+      (rewireTraceCarrier ourFieldSevenCommutatorCarrier
+        (Equiv.swap site.first site.third)).2.trace.traceOrder
+  , Equiv.Perm.cycleType
+      (rewireTraceCarrier ourFieldSevenCommutatorCarrier
+        (Equiv.swap site.second site.third)).2.trace.traceOrder
+  , Equiv.Perm.cycleType
+      (rewireTraceCarrier ourFieldSevenCommutatorCarrier
+        (fundamentalCycleForward site)).2.trace.traceOrder
+  , Equiv.Perm.cycleType
+      (rewireTraceCarrier ourFieldSevenCommutatorCarrier
+        (fundamentalCycleBackward site)).2.trace.traceOrder ]
+
+/-- The actual six-row trace topology is exactly the topology already
+enumerated by OUR finite cycle-profile certificate. -/
+theorem ourActualFundamentalTraceCycleSignature_eq_profile
+    (labels : OurCertifiedThreeCutLabel) :
+    ourActualFundamentalTraceCycleSignature labels =
+      ourFundamentalThreeCutCycleSignature labels.1 := by
+  rfl
+
+/-- The integer cycle-profile numerator computed from the actual six physical
+trace rewires. -/
+def ourActualFundamentalTraceCycleProfileNumerator
+    (labels : OurCertifiedThreeCutLabel) : Int :=
+  let signature := ourActualFundamentalTraceCycleSignature labels
+  12 * ourFundamentalThreeCutCycleGateSum 2 signature +
+    13 * ourFundamentalThreeCutCycleGateSum 3 signature -
+      10 * ourFundamentalThreeCutCycleGateSum 4 signature -
+        7 * ourFundamentalThreeCutCycleGateSum 5 signature -
+          6 * ourFundamentalThreeCutCycleGateSum 6 signature
+
+/-- Rational form of the actual physical six-rewire cycle profile. -/
+def ourActualFundamentalTraceCycleProfileValue
+    (labels : OurCertifiedThreeCutLabel) : ℚ :=
+  (ourActualFundamentalTraceCycleProfileNumerator labels : ℚ) / 10
+
+theorem ourActualFundamentalTraceCycleProfileValue_eq_profile
+    (labels : OurCertifiedThreeCutLabel) :
+    ourActualFundamentalTraceCycleProfileValue labels =
+      ourFundamentalThreeCutCycleProfileValue labels.1 := by
+  rfl
+
+/-- The forced profile vanishes on the actual six-rewire trace topology of
+every certified physical fundamental-trace site. -/
+theorem ourActualFundamentalTraceCycleProfileValue_zero
+    (labels : OurCertifiedThreeCutLabel) :
+    ourActualFundamentalTraceCycleProfileValue labels = 0 := by
+  rw [ourActualFundamentalTraceCycleProfileValue_eq_profile]
+  exact ourFundamentalThreeCutCycleProfileValue_zero labels.1 labels.2
+
 /-- OUR actual policy-indexed fundamental-trace generator attached to a
 certified label triple. -/
 def ourFundamentalTraceGeneratorAt
@@ -70,6 +137,60 @@ def ourFundamentalTraceGeneratorAt
     PhysicalRelationGenerator policy :=
   .fundamentalTrace ourFieldSevenCommutatorCarrier
     (ourFundamentalTraceSiteOf labels)
+
+/-- Every trace rewire of OUR fixed seven-field source has zero exact
+eight-field component after contextual normalization and field relabeling. -/
+theorem ourExactFieldEightProjection_normalizedRewire_zero
+    (rewire : Equiv.Perm (Fin 7)) :
+    exactFieldEightProjection
+      (normalizeExactFieldRelabel
+        (normalizeExactContextualBasis
+          (rewireTraceCarrier ourFieldSevenCommutatorCarrier rewire))) = 0 := by
+  rw [normalizeExactContextualBasis_fieldRelabel]
+  exact exactFieldEightProjection_sevenTarget_single _ _
+
+/-- The unrewired member of OUR fixed seven-field source also has zero exact
+eight-field component after the same normalization. -/
+theorem ourExactFieldEightProjection_normalizedBase_zero :
+    exactFieldEightProjection
+      (normalizeExactFieldRelabel
+        (normalizeExactContextualBasis ourFieldSevenCommutatorCarrier)) = 0 := by
+  rw [normalizeExactContextualBasis_fieldRelabel]
+  exact exactFieldEightProjection_sevenTarget_single _ _
+
+/-- Every actual certified fundamental-trace generator has zero exact
+eight-field component.  This is a field-sector transport theorem for the
+complete physical three-cut family; it does not assert that the remaining
+seven-field quotient coordinates vanish. -/
+theorem ourExactFieldEightProjection_fundamentalTraceGenerator_zero
+    (policy : PhysicalRelationPolicy) (labels : OurCertifiedThreeCutLabel) :
+    exactFieldEightProjection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFundamentalTraceGeneratorAt policy labels) 1)) = 0 := by
+  rw [orbitPhysicalRelationOperator, LinearMap.comp_apply,
+    normalizedPhysicalRelationOperator, LinearMap.comp_apply,
+    physicalRelationOperator_single]
+  simp only [one_smul, ourFundamentalTraceGeneratorAt, physicalRelationRow,
+    fundamentalTraceRow, map_sub, map_add]
+  rw [normalizeExactContextual_single, normalizeExactContextual_single,
+    normalizeExactContextual_single, normalizeExactContextual_single,
+    normalizeExactContextual_single, normalizeExactContextual_single]
+  simp only [one_smul]
+  rw [ourExactFieldEightProjection_normalizedBase_zero,
+    ourExactFieldEightProjection_normalizedRewire_zero
+      (Equiv.swap (ourFundamentalTraceSiteOf labels).first
+        (ourFundamentalTraceSiteOf labels).second),
+    ourExactFieldEightProjection_normalizedRewire_zero
+      (Equiv.swap (ourFundamentalTraceSiteOf labels).first
+        (ourFundamentalTraceSiteOf labels).third),
+    ourExactFieldEightProjection_normalizedRewire_zero
+      (Equiv.swap (ourFundamentalTraceSiteOf labels).second
+        (ourFundamentalTraceSiteOf labels).third),
+    ourExactFieldEightProjection_normalizedRewire_zero
+      (fundamentalCycleForward (ourFundamentalTraceSiteOf labels)),
+    ourExactFieldEightProjection_normalizedRewire_zero
+      (fundamentalCycleBackward (ourFundamentalTraceSiteOf labels))]
+  norm_num
 
 /-- The actual generator constructor preserves the distinction between
 certified three-cut labels. -/
@@ -173,6 +294,10 @@ theorem ourFundamentalTraceToJointRelation_canonical_val
   rfl
 
 #print axioms ourFundamentalTraceSiteOf_injective
+#print axioms ourActualFundamentalTraceCycleSignature_eq_profile
+#print axioms ourActualFundamentalTraceCycleProfileValue_zero
+#print axioms ourExactFieldEightProjection_normalizedRewire_zero
+#print axioms ourExactFieldEightProjection_fundamentalTraceGenerator_zero
 #print axioms ourFundamentalTraceGeneratorAt_injective
 #print axioms ourFundamentalTraceCochainEmbedding_injective
 #print axioms ourFundamentalTraceToJointRelation_single_val

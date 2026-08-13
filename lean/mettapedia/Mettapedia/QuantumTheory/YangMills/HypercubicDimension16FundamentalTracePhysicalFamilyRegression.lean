@@ -9,6 +9,7 @@ namespace YangMills
 open V14HypercubicFDCensus
 open HypercubicDimension16PhysicalRelationOperator
 open HypercubicDimension16PhysicalOrbitOperator
+open HypercubicDimension16IncomingCommutatorTraceCanonicalProjection
 open HypercubicDimension16JointPhysicalQuotient
 open HypercubicDimension16JointQuotientInvariants
 open HypercubicDimension16FundamentalTraceCycleProfile
@@ -23,6 +24,21 @@ example (labels : OurThreeCutLabels) :
 
 example : Function.Injective ourFundamentalTraceSiteOf :=
   ourFundamentalTraceSiteOf_injective
+
+example (labels : OurCertifiedThreeCutLabel) :
+    ourActualFundamentalTraceCycleSignature labels =
+      ourFundamentalThreeCutCycleSignature labels.1 :=
+  ourActualFundamentalTraceCycleSignature_eq_profile labels
+
+example (labels : OurCertifiedThreeCutLabel) :
+    ourActualFundamentalTraceCycleProfileValue labels = 0 :=
+  ourActualFundamentalTraceCycleProfileValue_zero labels
+
+example (policy : PhysicalRelationPolicy) (labels : OurCertifiedThreeCutLabel) :
+    exactFieldEightProjection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFundamentalTraceGeneratorAt policy labels) 1)) = 0 :=
+  ourExactFieldEightProjection_fundamentalTraceGenerator_zero policy labels
 
 example (policy : PhysicalRelationPolicy) :
     Function.Injective (ourFundamentalTraceGeneratorAt policy) :=
@@ -54,6 +70,10 @@ example (policy : PhysicalRelationPolicy) :
   ourFundamentalTraceToJointRelation_canonical_val policy
 
 #print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourFundamentalTraceSiteOf_injective
+#print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourActualFundamentalTraceCycleSignature_eq_profile
+#print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourActualFundamentalTraceCycleProfileValue_zero
+#print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourExactFieldEightProjection_normalizedRewire_zero
+#print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourExactFieldEightProjection_fundamentalTraceGenerator_zero
 #print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourFundamentalTraceGeneratorAt_injective
 #print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourFundamentalTraceCochainEmbedding_injective
 #print axioms HypercubicDimension16FundamentalTracePhysicalFamily.ourFundamentalTraceToJointRelation_single_val
