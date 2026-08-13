@@ -28,6 +28,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTraceP
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTracePhysicalFieldEight
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTracePhysicalCycleProfile
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTracePhysicalThreeCoordinate
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceAnticommutatorPhysicalFamily
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
@@ -78,6 +79,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileRepair
 open HypercubicDimension16FundamentalTracePhysicalFamily
 open HypercubicDimension16FundamentalTracePhysicalCycleProfile
 open HypercubicDimension16FundamentalTracePhysicalThreeCoordinate
+open HypercubicDimension16TraceAnticommutatorPhysicalFamily
 open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -634,8 +636,8 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. OUR HypercubicDimension16FundamentalTracePhysicalFieldEight proves that this whole family has zero exact field-eight invariant projection. OUR HypercubicDimension16FundamentalTracePhysicalCycleProfile proves the invariant trace-cycle-profile coordinate vanishes on every finite cochain in the family. OUR HypercubicDimension16FundamentalTracePhysicalThreeCoordinate proves that trace rewiring leaves the three earlier coordinate weights unchanged, so their six alternating coefficients cancel, and transports that identity through the actual physical relation operator. Hence the separate three-coordinate correction and the full current cycle-profile correction both annihilate every finite cochain in this family under either policy. This closes the source-side identification, field-eight sector, and every current correction coordinate for this family; it does not cover the remaining relation families, establish descent through the complete joint relation submodule, compute complete rank or conditioning, or construct noncommutative Wilson-functional coordinates."
-  nextObligation := "Test the remaining canonical join/split and relation families against the full current cycle-profile correction, then attempt descent through the complete coordinate-free relation submodule. The policy-indexed census, sparse dual conditioning, and noncommutative Wilson-functional analytic jets remain unproved."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. Its field-eight, profile, and three-coordinate bridges prove that the full current correction annihilates that 210-label physical family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle: each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction annihilates its complete finite cochain family under either policy. These are two realized trace-family blocks, not source-side identification of every physical generator or descent through the complete relation submodule. Complete rank, conditioning, and noncommutative Wilson-functional coordinates remain open."
+  nextObligation := "Test the remaining differential, traceless, covariant-commutator, and trace-family carrier blocks against the full current cycle-profile correction, then attempt descent through the complete coordinate-free relation submodule. The policy-indexed census, sparse dual conditioning, and noncommutative Wilson-functional analytic jets remain unproved."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -819,6 +821,20 @@ theorem currentYangMillsPhysicalThreeCut_cycleProfileCorrection_kernel
     policy cochain
 
 #print axioms currentYangMillsPhysicalThreeCut_cycleProfileCorrection_kernel
+
+/-- OUR complete seven-placement physical adjacent trace-anticommutator
+cochain family lies in the kernel of the full current cycle-profile
+correction.  This is a second realized trace-family block, not a statement
+about all trace-anticommutator carriers or the full joint relation submodule. -/
+theorem currentYangMillsPhysicalTraceAnticommutator_cycleProfileCorrection_kernel
+    (policy : PhysicalRelationPolicy)
+    (cochain : OurPhysicalTraceAnticommutatorCochainSpace) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      ((ourPhysicalTraceAnticommutatorToJointRelation policy cochain).1).1 = 0 :=
+  ourCycleProfileInvariantTraceOrderCorrection_physicalTraceAnticommutator_zero
+    policy cochain
+
+#print axioms currentYangMillsPhysicalTraceAnticommutator_cycleProfileCorrection_kernel
 
 /-- OUR current three-coordinate trace-order correction is certified not to
 annihilate the whole coordinate-free invariant relation submodule: a genuine
