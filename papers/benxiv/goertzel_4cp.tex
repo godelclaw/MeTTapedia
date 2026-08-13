@@ -318,6 +318,28 @@ Connecting the closed minimal-counterexample hypotheses to the open annular
 corridor---rather than adding the classification as a new assumption---is the
 live formation-to-graph obligation.
 
+The closed half of that argument is now machine-checked.  Given three
+pairwise adjacent faces in a graph-backed vertex-minimal Tait counterexample,
+
+
+\begin{center}
+\texttt{exists\_singleton\_primalCut\_of\_dual\_triangle}
+\end{center}
+
+
+constructs their literal length-three facial-dual cycle and proves that its
+three crossed primal edges separate a component containing exactly one
+vertex; moreover, the crossing-edge set of that singleton component is
+exactly the three edges read from the dual cycle.  This is the closed-map
+bounded-interaction classification needed by the source.  It does
+\emph{not} by itself prove \texttt{CommonNeighborsExact} for the Cell--3
+carrier: that carrier has degree-one boundary stubs and is provably
+incompatible with the closed cubic minimal-counterexample structure.  The
+remaining statement must therefore transport the classified face triangle
+through an explicit closed-map-to-open-annulus formation, preserving the
+relevant interior faces and their shared boundary edges.  Adding minimality
+as a field of the open instance would be inconsistent, not a shortcut.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
