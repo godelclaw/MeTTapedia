@@ -2,7 +2,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalRailAppend
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpace
 
 /-!
-# L1 common-neighbour incidence on the literal Cell-3 carrier
+# Local common-neighbour incidence on the literal Cell-3 carrier
 
 The closed minimal-counterexample theorem says that the three primal edges
 crossed by a facial-dual triangle meet at one ambient vertex.  This file
@@ -249,7 +249,7 @@ private theorem incidentEdges_inter_faceBoundary_eq_pair_of_local
       exact hedge)
     hpairSubset
 
-/-- **L1 (literal incidence-to-flank bridge).** The common-vertex incidence
+/-- **Local rail incidence-to-flank bridge (not Fable flag L1).** The common-vertex incidence
 left by the closed minimal-counterexample classification is sufficient on the
 literal open carrier: local cubicity and the simple interior face boundary
 force the target edge to be one of the two named flanks. -/

@@ -12,9 +12,9 @@ consecutive steps append to two simple, mutually disjoint facial-dual rails.
 The condition is not hidden in the constructor: consecutive corridor centres
 must have no common full-dual neighbor other than the two named flank faces of
 their shared rung.  Remote centres already satisfy the stronger disjointness
-theorems in `GoertzelV24ClosedWebLocalRailSeparation`; proving this bounded
-neighbor classification from the source annular geometry is the remaining
-local part of L1.
+theorems in `GoertzelV24ClosedWebLocalRailSeparation`.  This is an explicit
+bounded local premise for the experimental rail assembly; it is not itself
+Fable's L1, whose source statement is bulk hexagonal-corridor existence.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -130,7 +130,8 @@ theorem secondContinuation_isPath
     successor.secondContinuation.IsPath := by
   simpa [secondContinuation] using successor.rails.secondRail_isPath
 
-/-- **L1 (bounded adjacent-neighbor classification).** The two expected
+/-- **Local rail premise (not Fable flag L1): bounded adjacent-neighbor
+classification.** The two expected
 flank faces of the shared rung are all the common full-dual neighbors of two
 consecutive Cell-3 centres.  This is the exact local rotation/annulus theorem
 needed to append the literal rails; it is deliberately a named proposition,
@@ -244,9 +245,9 @@ private theorem face_eq_localPlacementSideFace_of_sharedInteriorEdge_eq
   · exact Subtype.ext hsideFace.symm
 
 /-- The face-level and primal-edge-level adjacent classifications are
-equivalent.  Consequently the remaining L1 gap can be attacked entirely by
-transporting the closed minimal-counterexample theorem about the three
-crossed primal edges; no extra face-classification hypothesis is required. -/
+equivalent.  Thus this bounded rail premise can be reduced to a primal-edge
+transport statement; no additional face-classification premise is required.
+This equivalence does not identify the premise with a current-source L1 flag. -/
 theorem commonNeighborsExact_iff_commonNeighborEdgesExact
     (successor : SourceLocalRailSuccessor hnext leftPlacement leftBefore
       leftAfter hleftBefore hleftAfter rightPlacement) :
@@ -400,7 +401,7 @@ theorem secondRail_support_disjoint_firstContinuation_tail
       successor.rails.firstRail_support_disjoint_secondRail hrightFull)
         hsecondStart
 
-/-- **L1 (two-cell literal rail append).** Under the one explicitly named
+/-- **Local rail append (not Fable flag L1).** Under the one explicitly named
 bounded neighbor theorem, the two source-generated successor steps append to
 simple facial-dual paths.  No general disjoint-path existence theorem and no
 caller-chosen path witness is used. -/
@@ -430,7 +431,7 @@ theorem secondRail_append_isPath
 
 /-- The two appended rails remain mutually vertex-disjoint.  Together with
 the preceding two path theorems this is the complete two-cell rail invariant
-needed by a recursive L1 assembly. -/
+needed by a recursive local-rail assembly. -/
 theorem append_support_disjoint
     (left : SourceLocalRailWalkPair leftPlacement leftIncomingBefore
       leftIncomingAfter leftBefore leftAfter)

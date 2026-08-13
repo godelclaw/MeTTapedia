@@ -280,8 +280,29 @@ The type \texttt{SeparatedAlignedSimpleDualCrosscuts} already states the right
 output: two aligned simple dual crosscuts, disjoint transverse supports, and a
 nondegeneracy condition.  Much of the splice development is parametrized by
 such an object.  What is not yet in the tree is a theorem producing the required
-long/end-capped instance from the actual minimal-counterexample annulus and its
-Cell--3 corridor.
+long/end-capped instance from the actual Cell--3 annular carrier and its
+selected source geometry.
+
+\paragraph{Source-alignment correction (13 August 2026).}
+Earlier local-rail modules used ``L1'' as a convenient internal tag.  That
+was misleading.  In the current Fable manuscript and playbook, L1 is the
+bulk statement that a sufficiently large frontier instance contains a long
+hexagonal ladder corridor.  The bounded common-neighbour premise used to
+append two locally constructed rails is not stated as Fable's L1, and no
+current-source theorem yet identifies it as the construction of L1's
+corridor.  The original v23 \emph{boundary locality} argument is historical
+evidence about radius--one collars, but it assumes confinement and
+bounded-interaction claims that the corrected Fable work records as refuted.
+It cannot license the present rail assembly.
+
+Accordingly, the local rail developments below are retained as elementary,
+kernel-checked geometry and as a conditional assembly interface; they do not
+count as a source realization or as progress through a Fable flag.  The next
+source-faithful question is narrower: which concrete current-source formation
+constructs the simple transversals/layer boundaries used by the Cell--3 splice,
+and does it entail the rail premise at all?  Until that formation is identified
+and proved, neither the L8 radial witness nor the closed-map opening transport
+is silently treated as the missing crosscut construction.
 
 Three nearby results delimit the gap.
 
@@ -315,7 +336,9 @@ witness into the L1 corridor crosscuts.  The absence of a Lean module relating
 the two types is therefore not by itself a missing source theorem, and we do
 not silently identify them.
 
-The literal Cell--3 rail construction belongs to the L1 corridor realization.
+The literal Cell--3 rail construction is a Lean-side exploratory candidate
+for a physical corridor realization; the current sources do not yet identify
+it with Fable's L1 construction.
 Its remote noncollision is proved, and its adjacent append has been reduced to
 \texttt{CommonNeighborsExact}.  Lean now proves that this face-level statement
 is equivalent to an edge-level statement: for every common neighbour, the
@@ -330,13 +353,14 @@ This equivalence is a reduction of the obligation, not its discharge.
 
 An extra common neighbour would form precisely
 the small separating/nonfacial dual triangle excluded by v23's
-minimal-counterexample radius--one collar normal form.  The present open-annular
+historical minimal-counterexample radius--one collar normal form.  The present open-annular
 \texttt{Instance}, however, records well-formed boundary stubs, coloring,
 closure, and the good word, but not the closed minimal-counterexample
-provenance from which that bounded-interaction fact is derived.  Connecting
-the closed source normal form to the open L1 corridor---rather than adding the
-classification as a new assumption---is the live formation-to-graph
-obligation.
+provenance from which that bounded-interaction fact is derived.  That old
+normal form is not a current-source justification for adding this
+classification to the Cell--3 instance.  Any future use needs a separate,
+current-source formation theorem; until then the result is only a conditional
+Lean interface.
 
 The closed half of that argument is now machine-checked.  Given three
 pairwise adjacent faces in a graph-backed vertex-minimal Tait counterexample,

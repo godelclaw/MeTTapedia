@@ -45,7 +45,7 @@ namespace Instance
 
 namespace LocalLayerFormation
 
-/-- **L1 (local rail adjacency).** Consecutive surviving slots of one
+/-- **Local rail adjacency (not Fable flag L1).** Consecutive surviving slots of one
 source-derived Cell-3 face give a genuine exterior facial-dual edge.  Unlike
 the framed-corridor analogue, this theorem assumes no global cubicity: it uses
 only the certified three-dart rotation at the displayed interior corner. -/
@@ -205,7 +205,7 @@ private theorem exists_forwardFour_middleSidePosition
     norm_num [hexSidePositions, hexForwardDistance, Nat.ModEq] at * <;>
     decide
 
-/-- **L1 (finite local rail shape).** The four literal flank slots around a
+/-- **Finite local rail shape (not Fable flag L1).** The four literal flank slots around a
 nonadjacent source Cell-3 placement have exactly one of the three rail shapes
 `0+2`, `1+1`, or `2+0`.  This is a finite cyclic-coordinate theorem, not an
 assumption about an ambient rail chain. -/
@@ -699,7 +699,7 @@ noncomputable def sourceLocalRailWalkPairOfShape
           or_false, not_or]
         exact ⟨hinAdj.ne, houterNe⟩
 
-/-- **L1 (literal local rail walks).** Every nonadjacent source Cell-3 flank
+/-- **Literal local rail walks (not Fable flag L1).** Every nonadjacent source Cell-3 flank
 quadruple constructs two simple exterior rail walks of total length two.  This
 is still one cell only; mutual support separation and lengthwise/end-cap
 assembly are stated and proved separately. -/
@@ -890,7 +890,7 @@ noncomputable def SourceLocalRailSuccessor.rails
         successor.afterEdge_eq)
     successor.outgoingBefore_mod successor.outgoingAfter_mod successor.shape
 
-/-- **L1 (literal successor rail cell).** Given the two outgoing flank slots
+/-- **Literal successor rail cell (not Fable flag L1).** Given the two outgoing flank slots
 of one source Cell-3 placement, construct the next placement's two incoming
 slots on the same ambient rail edges and return one dependent successor
 package.  Its `shape` is the certificate consumed definitionally by `rails`;

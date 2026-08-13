@@ -425,7 +425,7 @@ theorem localPlacementSideFace_ne_faceAt
       _ = faceCycleEdge web.annular.RS placement.root
           placement.outgoingPosition := placement.outgoing_edge.symm
 
-/-- **L1 (source Cell-3 local geometry).** The four literal side slots of a
+/-- **Source Cell-3 local geometry (not Fable flag L1).** The four literal side slots of a
 boundary-clean Cell-3 hexagon are complete for external facial-dual
 neighbours.  This is the local-simple-boundary replacement for the older
 globally-two-sided slab lookup: an adjacent edge is located on the actual
