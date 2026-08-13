@@ -320,6 +320,12 @@ Three nearby results delimit the gap.
         length witness.  It does not itself supply facial-dual crosscuts, and
         no module presently relates this witness type to
         \texttt{SeparatedAlignedSimpleDualCrosscuts}.
+  \item The coverage clause is now explicit in the ambient graph:
+        \texttt{interior\_vertex\_mem\_ambientRadialPath\_union} transports
+        \texttt{RadialPathPair.cover\_support} to prove that every interior
+        vertex lies on one of those two radial paths.  This is precisely the
+        ``jointly covering every internal vertex'' part of Addendum~XXII; it
+        still does not construct the two complementary sector sides.
 \end{itemize}
 
 The last item is a scoped refutation of a tempting Lean construction, not a
