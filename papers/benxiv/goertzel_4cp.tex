@@ -204,11 +204,15 @@ transversals, the portion between them should be removable: the two exposed
 ends carry the same information, so the exterior should not notice the splice.
 
 The word ``actual'' is the geometric heart of the proof.  Finite-state algebra
-can prove what follows \emph{from} a suitable pair of cuts; it cannot construct
-those cuts merely by naming them.  The current frontier is precisely the
-construction of a long, end-capped, source-positioned pair of simple dual
-crosscuts from the Cell--3 corridor geometry of the minimal-counterexample
-annulus.
+can prove what follows \emph{from} suitable simple transversals or layer
+boundaries; it cannot construct them merely by naming them.  The current Fable
+splice checklist requires such geometric representatives, but does not name
+the particular Lean type used below to package a pair of facial-dual
+crosscuts.  The source's named global formation task is instead L1: a finite
+local classification showing that a sufficiently large all-hexagonal patch
+contains a ladder corridor longer than the profile count.  Any eventual
+crosscut construction must be proved as part of a faithful realization of that
+source geometry, not promoted to an independent source flag by the Lean API.
 
 \subsection{What is presently machine-checked}
 
@@ -274,14 +278,16 @@ machine-checked counterexample admits an off-diagonal transition while having
 matching projected color support and no full-profile diagonal.  Connectivity
 and face data are therefore mathematical content, not bookkeeping.
 
-\subsection{The live geometric gate}
+\subsection{A Lean-side crosscut interface, not a source flag}
 
-The type \texttt{SeparatedAlignedSimpleDualCrosscuts} already states the right
-output: two aligned simple dual crosscuts, disjoint transverse supports, and a
-nondegeneracy condition.  Much of the splice development is parametrized by
-such an object.  What is not yet in the tree is a theorem producing the required
-long/end-capped instance from the actual Cell--3 annular carrier and its
-selected source geometry.
+The type \texttt{SeparatedAlignedSimpleDualCrosscuts} is a useful Lean-side
+interface: it packages two aligned simple dual crosscuts, disjoint transverse
+supports, and nondegeneracy, and much splice machinery is parametrized by it.
+It is nevertheless an interface chosen by this formalization, not a theorem or
+named obligation in the current Fable manuscript.  No theorem currently
+produces a long/end-capped instance from the Cell--3 annular carrier.  That is
+an open proposed realization of the interface, not evidence that the source
+reduces 4CT to this one existence statement.
 
 \paragraph{Source-alignment correction (13 August 2026).}
 Earlier local-rail modules used ``L1'' as a convenient internal tag.  That
@@ -297,12 +303,13 @@ It cannot license the present rail assembly.
 
 Accordingly, the local rail developments below are retained as elementary,
 kernel-checked geometry and as a conditional assembly interface; they do not
-count as a source realization or as progress through a Fable flag.  The next
-source-faithful question is narrower: which concrete current-source formation
-constructs the simple transversals/layer boundaries used by the Cell--3 splice,
-and does it entail the rail premise at all?  Until that formation is identified
-and proved, neither the L8 radial witness nor the closed-map opening transport
-is silently treated as the missing crosscut construction.
+count as a source realization or as progress through a Fable flag.  The
+source-faithful priority is the source's actual L1 classification and then the
+other named flags.  Separately, if the formalization needs this dual-crosscut
+interface to implement the manuscript's simple-transversal splice condition,
+it must construct and justify that connection explicitly.  Until then, neither
+the L8 radial witness nor the closed-map opening transport is silently treated
+as a crosscut construction.
 
 There is, however, now a direct handoff for the current Lean clean-block
 extraction which narrows this question further.
