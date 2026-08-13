@@ -21,6 +21,8 @@ noncomputable section
 namespace Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileBandReduction
 
 open HypercubicRawFDDimension16Census
+open HypercubicDimension16RelationEquivariance
+open HypercubicDimension16CovariantCommutator
 open HypercubicDimension16PhysicalRelationOperator
 open HypercubicDimension16PhysicalOrbitOperator
 open HypercubicDimension16PhysicalRelationBlocks
@@ -161,10 +163,115 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_so
     hfilter]
   simp
 
+/-- Neither observable output band is the six-field source sector. -/
+theorem ourCycleProfileObservableFieldBand_ne_six
+    (fieldCount : Fin 9)
+    (membership : ourCycleProfileObservableFieldBand fieldCount) :
+    fieldCount ≠ (6 : Fin 9) := by
+  rcases membership with hseven | height
+  · rw [hseven]
+    intro h
+    have hvalue := congrArg Fin.val h
+    norm_num [ourSevenFieldCount] at hvalue
+  · rw [height]
+    intro h
+    have hvalue := congrArg Fin.val h
+    norm_num [ourEightFieldCount] at hvalue
+
+/-- At source field count six, every noncommutator physical relation column
+is already invisible to OUR cycle-profile correction.  The only unclassified
+source-six family is therefore the genuinely cross-sector covariant
+commutator. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+    (policy : PhysicalRelationPolicy)
+    (generator : PhysicalRelationGenerator policy) (coefficient : ℚ)
+    (hsource : physicalRelationGeneratorSourceFieldCount generator = (6 : Fin 9))
+    (noncovariant : ∀ (carrier : RelationCarrier)
+      (site : CovariantCommutatorSite carrier),
+      generator ≠ .covariantCommutator carrier site) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single generator coefficient)) = 0 := by
+  have hfilter : orbitFieldFilter ourCycleProfileObservableFieldBand
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single generator coefficient)) = 0 := by
+    apply Finsupp.ext
+    intro target
+    by_cases htarget : ourCycleProfileObservableFieldBand target.1
+    · change (if ourCycleProfileObservableFieldBand target.1 then
+          orbitPhysicalRelationOperator policy
+            (Finsupp.single generator coefficient) target else 0) = 0
+      rw [if_pos htarget]
+      apply orbitPhysicalRelationOperator_single_apply_eq_zero_of_outside_source_field_of_not_covariantCommutator
+        generator coefficient noncovariant target
+      intro htargetSource
+      apply ourCycleProfileObservableFieldBand_ne_six target.1 htarget
+      calc
+        target.1 = physicalRelationGeneratorSourceFieldCount generator := htargetSource
+        _ = (6 : Fin 9) := hsource
+    · simp [orbitFieldFilter, htarget]
+  rw [← ourCycleProfileInvariantTraceOrderCorrection_observableFieldBand_filter,
+    hfilter]
+  simp
+
+/-- The complete source-six classification for the current correction:
+every physical generator is either a covariant commutator or already lies in
+the correction kernel.  This does not decide the remaining commutator branch. -/
+theorem sourceSixPhysicalRelationGenerator_covariantCommutator_or_profileCorrection_zero
+    (policy : PhysicalRelationPolicy)
+    (generator : PhysicalRelationGenerator policy) (coefficient : ℚ)
+    (hsource : physicalRelationGeneratorSourceFieldCount generator = (6 : Fin 9)) :
+    (∃ (carrier : RelationCarrier) (site : CovariantCommutatorSite carrier),
+      generator = .covariantCommutator carrier site) ∨
+      ourCycleProfileInvariantTraceOrderCorrection
+        (orbitPhysicalRelationOperator policy
+          (Finsupp.single generator coefficient)) = 0 := by
+  cases generator with
+  | covariantCommutator carrier site =>
+      exact Or.inl ⟨carrier, site, rfl⟩
+  | antisymmetry carrier slot =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.antisymmetry carrier slot) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+  | bianchi carrier field position innermost =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.bianchi carrier field position innermost) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+  | eom enabled carrier field position innermost =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.eom enabled carrier field position innermost) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+  | integrationByParts carrier position outermost =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.integrationByParts carrier position outermost) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+  | traceless carrier field singleton =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.traceless carrier field singleton) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+  | traceAnticommutator carrier site =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.traceAnticommutator carrier site) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+  | fundamentalTrace carrier site =>
+      exact Or.inr
+        (ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+          policy (.fundamentalTrace carrier site) coefficient hsource
+          (by intro carrier' site' hequal; cases hequal))
+
 #print axioms exactFieldSevenEightProjection_observableFieldBand_filter
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_zero_of_twoBandProjection_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_observableFieldBand_filter
 #print axioms sourceSuccessorBand_misses_observableBands_iff
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_lt_six
+#print axioms ourCycleProfileObservableFieldBand_ne_six
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six_of_not_covariantCommutator
+#print axioms sourceSixPhysicalRelationGenerator_covariantCommutator_or_profileCorrection_zero
 
 end Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileBandReduction
