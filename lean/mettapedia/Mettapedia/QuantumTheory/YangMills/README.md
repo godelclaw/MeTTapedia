@@ -54,6 +54,15 @@ Current status:
   semantics on shell. This identifies the finite relation object; it does not
   yet provide the full
   noncommutative Wilson-functional-to-cochain dual jets.
+- `HypercubicDimension16WilsonCartanJointMismatch.lean` now gives the exact
+  boundary of the existing Cartan Wilson chart. Its raw Cartan restriction
+  forgets trace order, so OUR raw restriction of the actual eighth-jet
+  coefficient kills the signed incoming commutator pair even though the
+  corresponding ordinary trace class is certified nonzero. Independently, no
+  map from that `98`-dimensional trace quotient into a `17`-coordinate Cartan
+  chart can be injective. This does not rule out the Wilson route; a full
+  construction must retain noncommutative trace order and the coupled
+  lower-field commutator data.
 - The support recurrence is reduced to a manuscript branch choice:
   coarsen-then-thicken is uniformly bounded, while thicken-only is unbounded.
 - The two-marked centered correlation identity is a named API; a canary proves
@@ -80,9 +89,9 @@ recursion, support branch, two-marked identity, KP convergence, Wilson
 reflection positivity, and OS/subsequential-limit machinery are all instantiated
 for the same route.
 
-The next extraction-side proof step is to complete the policy-indexed relation
-census and sparse rank/conditioning certificates on this repaired joint
-quotient, then construct Wilson-functional-to-cochain coordinates and analytic
-dual jets in the same norm. The recombination-side target remains the weighted
-connected-cumulant/tree/KP estimate for the actual Wilson activities in that
-same norm.
+The next extraction-side proof step is to construct trace-order-aware,
+cross-sector Wilson-functional coordinates on this repaired joint quotient,
+then complete its policy-indexed relation census and sparse rank/conditioning
+certificates with analytic dual jets in the same norm. The recombination-side
+target remains the weighted connected-cumulant/tree/KP estimate for the actual
+Wilson activities in that same norm.
