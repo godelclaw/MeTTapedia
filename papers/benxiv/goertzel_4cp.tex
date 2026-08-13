@@ -1,0 +1,1075 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+  literate=
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1
+    {→}{{$\to$}}1
+    {←}{{$\leftarrow$}}1
+    {↔}{{$\leftrightarrow$}}1
+    {¬}{{$\neg$}}1
+    {∧}{{$\wedge$}}1
+    {∨}{{$\vee$}}1
+    {∀}{{$\forall$}}1
+    {∃}{{$\exists$}}1
+    {∈}{{$\in$}}1
+    {∉}{{$\notin$}}1
+    {⊆}{{$\subseteq$}}1
+    {⊂}{{$\subset$}}1
+    {⊕}{{$\oplus$}}1
+    {⊥}{{$\perp$}}1
+    {∘}{{$\circ$}}1
+    {∪}{{$\cup$}}1
+    {∩}{{$\cap$}}1
+    {≤}{{$\leq$}}1
+    {≥}{{$\geq$}}1
+    {≠}{{$\neq$}}1
+    {×}{{$\times$}}1
+    {·}{{$\cdot$}}1
+    {∅}{{$\emptyset$}}1
+    {∂}{{$\partial$}}1
+    {Γ}{{$\Gamma$}}1
+    {Δ}{{$\Delta$}}1
+    {Ω}{{$\Omega$}}1
+    {σ}{{$\sigma$}}1
+    {τ}{{$\tau$}}1
+    {φ}{{$\varphi$}}1
+    {ψ}{{$\psi$}}1
+    {α}{{$\alpha$}}1
+    {β}{{$\beta$}}1
+    {₀}{{$_0$}}1
+    {₁}{{$_1$}}1
+    {₂}{{$_2$}}1
+    {₃}{{$_3$}}1
+    {₄}{{$_4$}}1
+    {₅}{{$_5$}}1,
+}
+\lstset{style=lean}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\GG}{\mathbb{G}}
+\newcommand{\FF}{\mathbb{F}_2}
+\newcommand{\Wz}{W_0}
+\newcommand{\Cl}{\mathrm{Cl}}
+\newcommand{\KC}{\mathrm{KC}}
+\newcommand{\LKR}{\mathrm{LKR}_{\mathrm{in}}}
+\newcommand{\colorset}{\{r,b,p\}}
+
+\title{A Living Machine-Checked Companion to Goertzel and Fable's\\
+Reductive--Compositional Route to the Four-Color Theorem:\\
+\large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
+\author{The MeTTapedia formalization effort}
+\date{Living revision: 13 August 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+This document is intentionally cumulative.  It preserves earlier audits of
+Goertzel's v23 proposal, including negative results and abandoned repairs,
+while the controlling status is now the current Goertzel/Fable
+reductive--compositional programme described in
+\emph{reductive\_vs\_covering (2)}, \emph{compositional\_proof\_note},
+\emph{4cp\_new\_theory}, and \emph{4cp-lean\_playbook}.  Where that package
+supersedes v23, the newer text controls.  Section~\ref{sec:current} records the
+current kernel-checked boundary: a large conditional descent tower is present,
+but the source-local-to-global realization of the required separated annular
+crosscuts, the concrete reductive-system instance, and the verified finite base
+remain open.  Accordingly this companion does not claim a new proof of the
+Four-Color Theorem.
+
+This is a living formalization companion to Ben Goertzel's manuscript \emph{A
+Human-Readable, Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}
+(v23), which organizes a candidate human-readable proof of the Four-Color Theorem
+(4CT) around three interacting pillars: (A) an annular difference-\emph{spanning}
+statement for a zero-boundary space $\Wz(H)$ (Theorem~4.9); (B) a CAP5-free
+normal form with radius-1 collar locality; and (C) an \emph{executability} layer
+that, refusing a false additivity of Kempe switches, reduces between-region Kempe
+connectivity to a single \emph{Local Kempe Reachability with fixed input}
+($\LKR$) property for one canonical three-cell collar gadget $\tau$ (Lemma~8.14),
+composes it along the collar chain (Lemmas~8.15, 8.18, Cor.~8.19), and assembles
+the wide annulus collar-by-collar (\S9.2). We record what the MeTTapedia
+formalization has machine-checked of this route, with an honest ledger separating
+what holds outright, what holds modulo one named remainder, and what is open, and
+we foreground the places where the formalization \emph{refutes} a step rather than
+discharging it.
+
+Machine-checked outright (no \texttt{sorry}; axioms $\subseteq
+\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$): finite
+encoded-model audits of the keystone $\LKR$ property (Lemma~8.14) and two-color
+\emph{transparency} (Lemma~8.15), together with completeness of the 192-state
+incidence enumeration --- graph-level Kempe-step soundness remains open; a
+proper-subspace strictness theorem against a larger unrestricted
+boundary-zero chain space, with four uniform peel oracles refuted and
+conditional need-based span infrastructure --- v23's actual cycle-space
+inclusion (Theorem~4.9) remains open; and a length-2/3
+radial-closing-edge fiber census for \S9.2 Step~3 --- the manuscript's
+all-outer-stub, arbitrary-length statement remains open. The Gate-2 composition
+(Lemmas~8.18/8.19) is \emph{reduced} --- the manuscript's own pointwise Step-1
+preparation is refuted and replaced by a frontier-automaton / fibration
+architecture --- to one live pin combining representative real-fiber
+connectivity audits with DFA-mode sufficiency.
+
+The formalization also produced a decisive negative in the encoded model.
+\S9.2 Step~4 --- the manuscript's reinterpretation of collar Kempe words as
+words of the ambient annulus --- fails in the encoded two-layer tau-chain
+model: a certified, collar-input-avoiding switch whose ambient component
+escapes the inner boundary, re-enters, and changes the collar restriction. Its
+realization as a simple planar, cyclically-five-edge-connected actual collar is
+a named open obligation, so this is a regression countermodel against the
+composition \emph{seam} as written, not a graph-level refutation --- and not a
+refutation of 4CT; its salvage (a normal-form confinement argument, or a
+face-collar redesign) is open. We make no claim about the Four-Color Theorem
+--- which is of course a theorem, via the Appel--Haken and
+Robertson--Sanders--Seymour--Thomas computer-assisted proofs. The
+human-readable v23 route remains \emph{open}, with its foundational layer
+audited in an encoded model, and its most dangerous assembly seam pinned down
+as broken in that model.
+
+A third development round turned to the v24 working material (\emph{Deserts,
+Pivots, and the Necklace}), which replaces v23's \S6--7. The v24 validation
+toolchain and its numerical claims were reproduced independently: the $5412$
+and $31704$ annular censuses with their Kempe fibers, the fullerene bases,
+the pentagon seals, the desert and strand specimens --- including the
+$688$-edge strand refuting the package's own Short Strand Conjecture --- and
+the GWCO exact base through twelve. On the structural side the development
+now carries a rotation-system Tait-coloring layer with exact facial linear
+algebra; the all-face discrete Gauss--Bonnet identity
+(\texttt{totalFaceCurvature\_eq\_twelve}); a proved \emph{weighted} pentagon
+budget correcting the package's at-most-twelve pentagon count; the
+locked-pentagon necklace assembly with singleton-strand forcing; a hexagonal
+corridor theory (rung classification, clean width-four slabs, oriented
+interfaces, Tait transfer, a sharp chirality barrier); congruence-correct
+corridor and tube-ring pumping; and a framed-trail layer with
+square/digon/rotor fiber calculi. The route's endgame --- fusion chains,
+chiral monodromy, Trail Completability with its L1--L10 dependency package,
+and a proved Short-Strand replacement --- remains open; the corridor and
+pumping infrastructure is the active replacement search.
+\end{abstract}
+
+\tableofcontents
+
+\section{Current controlling status: the reductive--compositional programme}
+\label{sec:current}
+
+\paragraph{Source precedence and route identity.}
+The present development formalizes the reductive route: a sufficiently large
+counterexample contains a finite-state corridor, two equal interface states
+permit a physical splice, and the splice produces a strictly smaller
+counterexample.  This is not the classical unavoidable-set, reducibility, and
+discharging architecture.  No configuration catalogue, discharging system,
+hubcap family, or per-configuration ring-coloring table is admissible as a
+substitute.  The current Fable manuscripts listed in the abstract govern this
+section; v23 remains a historical and mathematical source where it is
+consistent with them.
+
+\subsection{The idea in plain language}
+
+Imagine walking along a long annular corridor and recording, at every
+transversal, only what the rest of the graph can observe through that cut.  A
+full profile records boundary colors, tracked-color connectivity, face
+continuation, fragment-to-port incidence, and capped face progress.  There are
+only finitely many such records.  A sufficiently long walk therefore repeats a
+record.  If the two equal records occur on actual separated simple
+transversals, the portion between them should be removable: the two exposed
+ends carry the same information, so the exterior should not notice the splice.
+
+The word ``actual'' is the geometric heart of the proof.  Finite-state algebra
+can prove what follows \emph{from} a suitable pair of cuts; it cannot construct
+those cuts merely by naming them.  The current frontier is precisely the
+construction of a long, end-capped, source-positioned pair of simple dual
+crosscuts from the Cell--3 corridor geometry of the minimal-counterexample
+annulus.
+
+\subsection{What is presently machine-checked}
+
+The following items are green Lean developments.  Their scope matters: several
+are consumers of a crosscut pair rather than constructors of one.
+
+\begin{center}\small
+\begin{tabular}{@{}p{0.34\linewidth}p{0.57\linewidth}@{}}
+\toprule
+Layer & Kernel-checked content and boundary \\
+\midrule
+Finite profiles and L7 & A generic finite carrier, decidable equality, exact
+cardinality formulae, and finite-profile pigeonhole machinery. \\
+Relational transfer & Open-tangle relations, heterogeneous transfer words,
+composition, reachable-set pumping, and colorability-reflection consumers.
+The primitive transfer is relational; determinism is not assumed. \\
+Literal profile semantics & The five profile coordinates are related to actual
+Tait colorings.  Tracked connectivity and occurrence-sensitive facial progress
+are updated under one regional seam condition. \\
+Portal completeness & Both tracked components and face occurrences escaping a
+literal prefix are routed to named interface portals. \\
+Splice consumers & A literal Tait-coloring gluing equivalence, full-profile
+diagonal audits, and strict output-size decrease.  These consume the missing
+physical realization and reflection theorem. \\
+Source structure & Sector Alternation, two-rail separation, local Cell--3
+formation, consecutive side-interface matching and orientation, and local rail
+identification.  These are local formation facts, not yet a global annular
+crosscut pair. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This layer also contains a useful discipline theorem: equality of boundary
+color words alone cannot replace equality of full profiles.  A two-state
+machine-checked counterexample admits an off-diagonal transition while having
+matching projected color support and no full-profile diagonal.  Connectivity
+and face data are therefore mathematical content, not bookkeeping.
+
+\subsection{The live geometric gate}
+
+The type \texttt{SeparatedAlignedSimpleDualCrosscuts} already states the right
+output: two aligned simple dual crosscuts, disjoint transverse supports, and a
+nondegeneracy condition.  Much of the splice development is parametrized by
+such an object.  What is not yet in the tree is a theorem producing the required
+long/end-capped instance from the actual minimal-counterexample annulus and its
+Cell--3 corridor.
+
+Three nearby results delimit the gap.
+
+\begin{itemize}
+  \item Generic dual connectedness constructs one hole-to-hole crosscut.  It
+        does not produce a separated pair tied to the selected corridor.
+  \item The local Cell--3 layer produces a separated local interface package,
+        but its endpoints are not the required distant annular endpoints.
+  \item Consecutive six-edge aligned slab-boundary walks are proved
+        non-disjoint: they share their intervening dual interface.  They are
+        useful local windows, not the two radial cuts of the splice.
+\end{itemize}
+
+The last item is a scoped refutation of a tempting Lean construction, not a
+refutation of Goertzel's proof.  It says that the separated cuts must be
+assembled at the correct global scale rather than identified with adjacent
+local windows.  Existing remote rail-support disjointness results and the
+source's length coordinate provide ingredients; the formation-to-graph theorem
+joining them is the live obligation.
+
+\subsection{The closure chain}
+
+The remaining dependency order is:
+
+\begin{enumerate}
+  \item construct the long, end-capped separated crosscut pair from the actual
+        annular Cell--3 corridor;
+  \item use it to discharge the literal source
+        \texttt{SemanticProfileBridge} or the weaker sufficient
+        \texttt{ColorabilityReflection};
+  \item instantiate the carrier-changing \texttt{ReductiveSystem}.  Its size,
+        reduction, and strict-decrease ingredients exist; its concrete
+        counterexample-reflection field does not;
+  \item derive an explicit threshold and implement \texttt{BaseVerified} from
+        the route's own finite base.  No such instantiation exists at this
+        revision;
+  \item apply the abstract induction theorem to expose the concrete
+        source-facing Four-Color statement.
+\end{enumerate}
+
+The v23 three-cell micro-enumeration is base material, not a serial corridor
+generator.  Conversely, a raw bound on the entire over-encoded profile carrier
+is a finiteness witness, not a practical base census.  The eventual base must
+bound the reachable state space and replay compact certificates generated by
+the manuscript's own definitions.  If the argument were instead found to
+require an externally searched unavoidable catalogue, that would be a route
+failure requiring an explicit decision, not an implementation detail.
+
+\subsection{What the programme may explain---and what is not yet a theorem}
+
+The finite-state route suggests an information-theoretic explanation for why a
+short informal proof may be unavailable: the reduction can require preserving
+a large amount of interface information, and the terminal finite verification
+may contain irreducible case information.  This does \emph{not} imply that no
+human-friendly proof of 4CT can exist in every proof system.
+
+A formal non-compressibility result must first specify a presentation or proof
+class, an encoding, a description-length or verification-complexity measure,
+and uniform quantifiers.  Only then can a lower bound be meaningful.  The
+future formal endpoint is therefore the strongest such theorem supported by
+the compositional transfer presentation, together with an explicit boundary
+between proved mathematics and philosophical interpretation.  A large state
+count by itself is evidence about one representation, not a universal
+impossibility theorem.
+
+\subsection{How to read the rest of this companion}
+
+The remaining sections preserve earlier investigation strata: the v23
+three-pillar audit, machine-checked obstruction and repair attempts, the
+composition ladder, the transition to the v24/Fable work, and the graveyard of
+superseded routes.  They are retained because negative knowledge is expensive
+and because deleting it makes old mistakes attractive again.  When an older
+status statement conflicts with this section or with the current Fable
+manuscripts, this section and those primary sources control.
+
+\section{The problem and Ben Goertzel's three-pillar route}
+\label{sec:problem}
+
+\subsection{Tait's reduction and the minimal-counterexample target}
+
+The Four-Color Theorem asserts that every plane triangulation $G$ admits a
+proper vertex 4-coloring. Passing to the cubic dual $K=G^{*}$, Tait's classical
+equivalence (v23, Thm.~2.3) restates 4CT as: every bridgeless planar cubic
+graph admits a \emph{proper 3-edge-coloring}, i.e.\ a map
+$\chi:E(K)\to\colorset$ assigning distinct colors to the three edges at each
+vertex. The manuscript encodes the three colors as the three nonzero elements
+of $\GG=\FF^{2}$, with $r=(1,0)$, $b=(0,1)$, $p=(1,1)$, so that ``properness at
+a vertex'' is exactly $\chi(e_1)+\chi(e_2)+\chi(e_3)=r+b+p=0$ in $\GG$, and
+``integrating'' an edge-coloring across the planar dual becomes a path-sum in
+$\FF^{2}$.
+
+Following Spencer--Brown and Kauffman, the manuscript reformulates colorings as
+plane \emph{formations} (red/blue Jordan curves with purple overlaps), defines
+Kempe switches as the standard two-color interchange, and proves the
+\emph{Parity Lemma} (planar invariance of the mod-2 count of two-color
+circuits). The role of \S3 is to reduce 4CT, via Kauffman's parity/primality
+argument (Theorem~3.1), to the nonexistence of a minimal counterexample
+containing a \emph{between-region annulus} $H$ whose boundary-compatible
+colorings are \emph{not} connected by Kempe moves supported inside the annulus.
+Thus the entire analytic burden is shifted to a \emph{between-region Kempe
+connectivity} statement for an annulus $H\subseteq K$ with outer and inner
+boundary cycles $\Gamma_\infty,\Gamma_0$.
+
+\subsection{The three pillars}
+
+The manuscript's conceptual overview (v23, \S1.1) states the argument as three
+interacting pillars.
+
+\paragraph{Pillar~A: annular difference spanning (the linear ``accounting''
+layer).} Working in a between-region annulus $H$, one encodes boundary
+colorings and their differences as vectors in an $\FF$-space. Let $W(H)$ be the
+coordinatewise cycle space of $\GG$-chains on $E(H)$ satisfying the Kirchhoff/\allowbreak
+even-degree constraints at interior vertices, and let
+\[
+  \Wz(H) \;:=\; \{\,x\in W(H) : x(e)=0 \text{ for all boundary edges } e\in
+  B_1\cup B_2\,\}
+\]
+be the \emph{zero-boundary} subspace. For a fixed proper coloring $C_0$ of $H$
+with Kempe closure $\Cl(C_0)$, the manuscript defines a family $\KC(C_0)$ of
+\emph{Kempe-closure (polarized face) generators} $X_f^{ab}(C)$ supported in
+depth-1 collars (v23, Def.~4.8), and proves:
+\begin{theorem}[Spanning theorem for $\Wz(H)$, v23 Theorem~4.9]
+\label{thm:49}
+Let $H$ be an annular subgraph of a bridgeless planar cubic graph, with
+boundary cycles $\Gamma_0,\Gamma_\infty$. Fix any proper 3-edge-coloring $C_0$
+of $H$ and let $\mathcal{G}:=\KC(C_0)$. Then
+$\Wz(H)\subseteq\mathrm{span}_{\FF}(\mathcal{G})$; equivalently, if
+$z\in\Wz(H)$ satisfies $z\cdot g=0$ for every $g\in\mathcal{G}$, then $z=0$.
+\end{theorem}
+The manuscript proves Theorem~\ref{thm:49} in strong-dual annihilator form: it
+shows $U^{\perp}\cap\Wz(H)=\{0\}$ for $U=\mathrm{span}_{\FF}(\mathcal{G})$, by a
+planar orthogonality peeling along a dual spanning forest, after a
+``purification'' step (Lemma~4.4) that removes the polarization of the face
+generators.
+
+\paragraph{Pillar~B: CAP5-free geometry and radius-1 locality (the geometric
+locality layer).} Assuming a minimal counterexample, the manuscript eliminates
+the CAP5 separating obstruction and works in a CAP5-free normal form
+(Corollary~6.9). A tube-forcing argument then reduces every ``escape'' of an
+anchored Kempe chain to a finite three-cell gate enumeration, yielding radius-1
+confinement of anchored Kempe cycles together with a cap-aware
+disjointness/commutativity package (Lemmas~7.8, 7.9, 7.10). This is what
+licenses peeling the wide annulus into radius-1 collars.
+
+\paragraph{Pillar~C: executability without false additivity (the
+algebra-to-geometry bridge).} The decomposition $\Delta=\sum v_{f,g}$ provided
+by Pillar~A is a statement in $\Wz(H)$; it does \emph{not} by itself imply that
+one may \emph{execute} the corresponding mixed color-pair Kempe switches as if
+they formed an abelian sum. The manuscript is explicit that cross-pair
+interference is real: an $(a,b)$-switch can destroy the $(b,c)$-structure a
+later switch needs (v23, \S8.1), and Kempe switches using different color pairs
+on shared support need not commute (v23, \S8.3). To execute the decomposition
+honestly, the manuscript moves to an operator model: proper colorings form an
+orthonormal basis of a Penrose--Kauffman state space, and each Kempe switch is
+an involutive linear operator (generally noncommuting with switches of other
+color pairs). Using radius-1 locality, between-region Kempe connectivity is
+reduced to a single local property:
+\begin{definition}[Local Kempe reachability with fixed input, v23 Def.~8.12]
+\label{def:lkr}
+Let $X$ be a planar cubic tangle with ordered input stubs $S_{\mathrm{in}}$ and
+output stubs $S_{\mathrm{out}}$, and fix an input coloring $c$. Let
+$\Omega_X(c)$ be the set of proper 3-edge-colorings of $X$ extending $c$ on the
+input stubs. The \emph{Kempe graph} $\mathsf{K}_X(c)$ has vertex set
+$\Omega_X(c)$, with an edge whenever two colorings differ by a single Kempe
+switch supported on a two-color component touching no input-stub edge. We say
+$X$ satisfies $\LKR$ if $\mathsf{K}_X(c)$ is connected for every $c$ for which
+$\Omega_X(c)\neq\emptyset$.
+\end{definition}
+
+The chain of Pillar~C is then:
+\begin{itemize}
+  \item \textbf{Lemma~8.14}: the canonical three-cell collar gadget $\tau$
+        satisfies $\LKR$ (and so does its mirror);
+  \item \textbf{Lemma~8.15}: two-color \emph{transparency} of $\tau$ --- every
+        two-color component is a boundary-to-boundary path with no internal
+        cycle;
+  \item \textbf{Lemma~8.18 / Corollary~8.19}: $\LKR$ \emph{composes} across a
+        transparent interface, so an entire cut-open radius-1 collar tangle
+        $\widehat{A}=G_m\circ\cdots\circ G_1$ satisfies $\LKR$;
+  \item \textbf{\S9.2 assembly}: peel the wide annulus $H$ into nested radius-1
+        collars and use the collar $\LKR$ property to rewrite the current
+        coloring to the target collar-by-collar from outside to inside, the
+        cap-aware locality lemma (7.9) ensuring no switched component reaches
+        back to change a fixed boundary.
+\end{itemize}
+
+\subsection{Why Lemma~8.14 is the keystone}
+
+The manuscript states that its proof is human-readable and ``the only finite
+verification required is a small by-hand audit of a single three-cell gadget''
+(v23, Abstract and \S1). In the three-pillar architecture, every other step is
+either an explicit local lemma or a structural reduction; the one place where a
+finite, exhaustive check is genuinely unavoidable is the $\LKR$ property of the
+canonical gadget $\tau$. Formalizing Lemma~8.14 therefore certifies exactly the
+finite core that the manuscript isolates as load-bearing. The remainder of this
+companion describes that formalization (\S\ref{sec:lkr}), the resolution of the
+Pillar~A spanning question into a need-based repair (\S\ref{sec:pillarA}), the
+Pillar~C composition ladder --- what is proved, what is reduced to one pin, and
+where a decisive counterexample was found (\S\ref{sec:pillarC}) --- and a precise
+status ledger (\S\ref{sec:status}). Superseded routes are recorded in
+appendices.
+
+\section{The Pillar-C keystone, machine-checked: Lemma~8.14 and transparency 8.15}
+\label{sec:lkr}
+
+We restate the manuscript's keystone in its own notation and then describe the
+Lean encoding.
+
+\begin{lemma}[$\LKR$ for the canonical three-cell gadget, v23 Lemma~8.14]
+\label{lem:814}
+Let $\tau$ be the canonical three-cell collar gadget. It is a planar cubic
+tangle with internal vertices $F_0,\dots,F_5$ and boundary stubs
+$B_0,\dots,B_7$, whose internal edges form the tree
+\[
+  F_1 - F_0 - F_2 - F_4 - F_5, \qquad \text{with a leaf } F_3 \text{ attached to } F_2,
+\]
+and whose boundary stubs are attached by
+$F_0B_0,\,F_1B_1,\,F_1B_2,\,F_3B_3,\,F_3B_4,\,F_5B_5,\,F_5B_6,\,F_4B_7$. Take
+input stubs $\{B_0,B_1,B_2,B_3\}$ and output stubs $\{B_4,B_5,B_6,B_7\}$. Then
+$\tau$ satisfies $\LKR$. The same holds for the mirror gadget.
+\end{lemma}
+
+The manuscript proves Lemma~\ref{lem:814} by cutting $\tau$ along the internal
+interface edge $I=F_2F_4$ into $\tau=\sigma_{\mathrm{R}}\circ\sigma_{\mathrm{L}}$
+and doing a small case analysis on the two pieces. Our formalization instead
+audits the \emph{full} gadget directly, by exhibiting the proper-coloring state
+space and an explicit Kempe-path certificate connecting every fixed-input
+fiber; this is a strictly more direct realization of the same $\LKR$ claim, and
+it does not rely on the $\sigma_{\mathrm{L}},\sigma_{\mathrm{R}}$ split or on
+the composition Lemma~8.18.
+
+\subsection{The canonical gadget and its 192-state coloring space}
+
+The Lean module fixes the colors and the gadget incidence exactly as in
+Lemma~\ref{lem:814}: the three nonzero colors are an inductive type, and the
+gadget's edges (five internal edges plus the eight boundary stubs) and internal
+vertices are inductive types with an explicit incidence map.
+
+\begin{lstlisting}[language={}]
+inductive LColor | r | b | p
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+inductive TauEdge
+  | F1F0 | F0F2 | F2F3 | F2F4 | F4F5
+  | B0 | B1 | B2 | B3 | B4 | B5 | B6 | B7
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def tauInputEdges : List TauEdge := [TauEdge.B0, TauEdge.B1, TauEdge.B2, TauEdge.B3]
+\end{lstlisting}
+
+A proper 3-edge-coloring of $\tau$ is represented by the finite choices left
+after properness is imposed at every cubic vertex: an ordered color triple at
+the central vertex $F_2$, one binary choice for the forced edge $F_1F_0$, and one
+ordered-pair (swap) bit at each remaining boundary fork --- $6\times2^{5}=192$
+states. That this enumeration is exactly the proper-coloring state space is a
+checked fact ($192$ entries, no duplicates, proper at every vertex).
+
+\subsection{The Kempe audit and the machine-checked theorems}
+
+A Kempe step switches a two-color component \emph{disjoint from the input stubs}
+(Definition~\ref{def:lkr}). The $\LKR$ property is witnessed by an explicit
+indexed-path certificate: for each of the 192 states it records the
+representative of that state's fixed-input fiber and a path of at most two
+input-disjoint Kempe switches reaching it, plus a coherence audit that any two
+states with the same input edges share a representative (so fibers are well
+defined). The three finite audits each reduce to \texttt{true} by the kernel's
+decision procedure; the only axiom dependency is \texttt{propext}.
+
+\begin{lstlisting}[language={}]
+theorem tauStateSpaceAudit_ok : tauStateSpaceAudit = true := by decide
+theorem lemma814PathCertificate_rows_ok :
+    validIndexedRowsFrom 0 lemma814PathCertificate = true := by decide
+theorem representativeCoherenceAudit_ok : representativeCoherenceAudit = true := by decide
+
+/-- Lemma 8.14, closed by the finite state-space and indexed path certificate. -/
+theorem lemma814_tau_lkrIn_audit : lemma814_tau_lkrIn_finiteCheck = true := by
+  simp [lemma814_tau_lkrIn_finiteCheck, tauStateSpaceAudit_ok, tauLKRInAudit,
+    lemma814PathCertificateAudit_ok]
+\end{lstlisting}
+
+The mirror clause holds definitionally (reflection changes only the planar order
+of an isomorphic incidence tree). The incidence enumeration is complete for the
+encoded tau graph: every proper incidence coloring is one of the 192 enumerated
+colorings. The finite certificate audit is proved, but graph-level soundness of
+every encoded step remains the named obligation
+\texttt{Lemma814EncodedMovesAreGraphKempeSwitchesTarget}. Thus the current
+Lemma~8.14 result is a finite encoded-model audit, not yet the manuscript graph
+theorem.
+
+\begin{remark}[Transparency~8.15, finite encoded-model audit]
+\label{rem:815}
+The same module formalizes Lemma~8.15 (two-color transparency): for each of the
+192 colorings, every nonempty two-color component is a boundary-to-boundary tree
+path (\texttt{transparentComponent}), aggregated as
+\texttt{tauTreeTransparencyAudit}. That audit is now \emph{proved} ---
+\texttt{lemma815\_tau\_tree\_transparency\_audit} reduces to \texttt{true} by a
+range decomposition of the finite check, axiom-clean. The encoded transparency audit is proved. Its use as graph-level composition
+(\S\ref{sec:pillarC}) shares Lemma~8.14's named graph-fidelity obligation, so
+the local graph-theoretic core is not yet sealed.
+\end{remark}
+
+\section{Pillar~A: a proper-subspace obstruction, and its need-based repair}
+\label{sec:pillarA}
+
+Pillar~A (the spanning Theorem~\ref{thm:49}) is where the formalization first
+found --- and then routed around --- a real gap. We give both halves, because
+together they are a clean example of what a companion of this kind is for.
+
+\subsection{The obstruction: the spanning \emph{equality} over-reaches}
+
+On every \emph{closed-walk exact shell} --- a concrete annular configuration
+carrying the boundary-source and interior-endpoint witness data that
+Theorem~\ref{thm:49} is meant to cover --- the boundary-zero target that the
+Kempe-closure detector actually pins down is a \emph{strict} subspace of the full
+boundary-zero chain space.
+
+\begin{lstlisting}[language={}]
+/-- On every closed-walk exact shell, the Theorem-4.9 boundary-zero target is a
+proper subspace of the full selected-boundary-zero chain space. -/
+theorem theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_closedWalkExactShell
+    [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb) :
+    theorem49BoundaryZeroKirchhoffSubspace emb
+        (selectedBoundaryInteriorEdgeEndpointVertices emb) <
+      planarBoundaryZeroSubmodule emb
+\end{lstlisting}
+
+The strict inequality \texttt{<} is the load-bearing content: a proved
+\emph{proper}-subspace inclusion, not a heuristic. The structural reason (every
+closed-walk shell forces two distinct interior-support edges onto one face
+boundary) refutes the natural one-collar repairs, and a companion audit shows the
+four proposed \emph{uniform geometric oracles} that would each close
+Theorem~\ref{thm:49}'s synthesis are all false:
+\begin{lstlisting}[language={}]
+theorem not_interiorDualPeelOracle         : ¬ InteriorDualPeelOracle
+theorem not_wellFoundedPeelOracle          : ¬ WellFoundedPeelOracle
+theorem not_previousBoundaryGeometryOracle : ¬ PreviousBoundaryGeometryOracle
+theorem not_residualBoundaryGeometryOracle : ¬ ResidualBoundaryGeometryOracle
+\end{lstlisting}
+Lean proves that the formal detector is strictly smaller than a larger
+unrestricted selected-boundary-zero chain space. This does not refute v23's
+actual cycle-space/Kirchhoff-constrained claim
+$\Wz(H)\subseteq\mathrm{span}_{\FF}(\mathcal{G})$. That inclusion is now named
+\texttt{V23Theorem49W0ContainedInKempeClosureGeneratorSpanTarget} and remains
+open; the four uniform oracle routes that would have closed it uniformly are
+refuted.
+
+\subsection{The repair: the route never needs the full space}
+
+The resolution is that the synthesis does not \emph{use} the full boundary-zero
+space; it uses only the discrepancy classes of boundary-compatible coloring
+pairs, and those lie in the detector subspace the manuscript's own peeling
+witnesses span. Formally, the requirement actually consumed downstream is
+\emph{need-based}: it suffices that (1) the detector subspace is contained in the
+projected Kempe-closure generator span, (2) each execution step preserves that
+subspace, and (3) every route-used discrepancy class lies in it. All three are
+machine-checked in the route's natural cubic setting (module
+\texttt{PillarASmallerSpace}):
+\begin{lstlisting}[language={}]
+-- (3) discrepancy classes lie in the detector subspace (cubic setting):
+theorem routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples ...
+-- (2) a Kempe-switch execution step preserves detector membership:
+theorem routeKempeSwitchExecutionStep_preserves_detectorSubspace ...
+-- assembled sufficiency (inclusion form), discharging the requirement:
+theorem needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies ...
+\end{lstlisting}
+Proposition~(3) has a two-idea proof one can state aloud: a Tait coloring is a
+Klein-four flow at each cubic vertex, so two colorings agreeing on the selected
+boundary differ by a \emph{boundary-zero flow}, which is exactly what the
+Kirchhoff detector certifies. The manuscript's Theorem~4.9 states an \emph{inclusion}, not an equality. The
+existing need-based theorems are conditional on detector containment, step
+preservation, discrepancy membership, and embedding-specific peel data. They
+are conditional algebraic-span infrastructure, not a proof of Theorem~4.9. What remains a genuine per-embedding obligation is
+the \emph{supply} of a peeling witness for the synthesis's actual embedding
+class; that is a composition-stage task, not a spanning gap.
+
+\section{Pillar~C: the composition ladder}
+\label{sec:pillarC}
+
+Between the local keystone (\S\ref{sec:lkr}) and 4CT, v23's own argument climbs a
+ladder: single-gadget $\LKR$ $\to$ transparent composition to a whole collar
+chain (Gate-2) $\to$ closed re-glued collars (\S9.2 Step~3) $\to$ execution in the
+ambient annulus (\S9.2 Step~4) $\to$ the wide-annulus peel. This companion has
+now walked a substantial part of that ladder, with one step proved-modulo-a-pin
+and one step \emph{refuted}.
+
+\subsection{Gate-2: transparent composition, reduced to one pin}
+
+Corollary~8.19 lifts $\LKR$ from the single gadget to a whole cut-open radius-1
+collar chain across a transparent interface. The manuscript's own Step-1 proof of
+Lemma~8.18 (a pointwise preparation via Lemma~8.16) does \emph{not} go through ---
+the formalization refutes it directly:
+\begin{lstlisting}[language={}]
+theorem lemma818_pointwise_lift_preparation_obstruction : ...   -- axiom-clean
+\end{lstlisting}
+In its place the development builds a frontier-automaton / fibration architecture:
+a finite frontier state over the chain transcript, generated parent-row
+certificates, and a fibered-connectivity decomposition (base connected + fibers
+connected + lifts). The executable chain test \texttt{chainLKRInAudit} passes on
+all words up to length seven (real-fiber labs, all input fibers connected, zero
+failures). The former metadata-only classification audit has been replaced: the
+actual per-target test is
+\texttt{representativeTargetFiberKempeOrbitConnectivityAudit}, and Gate-2's
+single live pin is
+\begin{lstlisting}[language={}]
+Gate2RepresentativeFiberKempeOrbitConnectivityPin
+\end{lstlisting}
+combining fourteen representative real-fiber audits with DFA-mode sufficiency;
+the all-chain implication is proved conditional on this pin. (A separate refuted route,
+\texttt{not\_concreteChainFiberAppendPrefixFibrationClosed}, records a shortcut
+that provably fails and is kept dead.)
+
+\subsection{S2: length-2/3 radial-closing-edge fiber census}
+
+Gate-2 certifies $\LKR$ with the \emph{first} gadget's input stubs fixed;
+\S9.2 Step~3 needs the \emph{cyclically re-glued} collar with all outer-side stubs
+fixed --- different fibers, no bridging lemma in the manuscript. What is proved
+is a finite census: it ranges over twelve tau/mirror words of length 2 or 3 and
+fixes the four radial-closing edges (a lab found all 972 such fibers
+connected-or-empty --- 216 nonempty, 756 empty, zero disconnected --- and the
+census target was discharged with zero pins). It does \emph{not} fix every
+outer stub and does not range over arbitrary collar length. The actual
+manuscript claim is named
+\texttt{ManuscriptSection92S2AllOuterStubsFixedArbitraryCollarTarget} and
+remains open.
+\begin{lstlisting}[language={}]
+def closedCollarLength23RadialClosingEdgeFiberCensus : Prop := ...   -- proved
+def ManuscriptSection92S2AllOuterStubsFixedArbitraryCollarTarget : Prop  -- open
+\end{lstlisting}
+The route survey had rated S2 the sharpest mismatch in the manuscript --- a
+statement never written down in v23 and not implied by Gate-2 --- so proving it on
+the finite class is a real advance.
+
+\subsection{S4: abstract-chain ambient-escape regression}
+
+\S9.2 Step~4 reinterprets a collar Kempe word as a word of the \emph{ambient}
+annulus, and confines the switched components with a face-only locality lemma
+(7.9). The formalization proves an ambient-escape regression in the encoded
+tau-chain model --- a collar plus one deeper radial ring sharing the interface.
+No theorem currently realizes that witness as a simple planar,
+cyclically-five-edge-connected actual collar; graph-facing salvage is
+conditional on
+\texttt{ClosedWalkActualCollarRotationFaceIncidenceCutLiftObligation}, which
+remains open.
+\begin{lstlisting}[language={}]
+/-- A collar-certified, collar-input-avoiding Kempe switch whose ambient
+two-layer component leaves through the inner side, hits the fixed outer input,
+and does NOT restrict to the certified collar move. -/
+theorem section92Step4TwoLayerCounterexampleClass :
+    Section92Step4TwoLayerCounterexampleClass         -- axioms [propext]
+\end{lstlisting}
+Concretely (outer word $\tau\tau$, inner word $\tau$, input key $r,r,b,r$): a
+switch that is input-avoiding \emph{in the collar alone} balloons, in the
+two-layer object, into a component that crosses the shared inner boundary into the
+deeper ring, returns, meets the fixed outer input edge, and lands the collar on a
+\emph{different} coloring than the certified move. This refutes the reinterpretation
+as a regime-free, purely-local principle: the ambient switch is a \emph{different}
+move on the collar than the one Gate-2/S2 certified.
+
+We are precise about what this does and does not say. It is a defect in the
+manuscript's assembly \emph{seam} as argued (Step~4 invokes 7.9, a lemma proved
+for single-face collars, as if it were a global confinement), not a refutation of
+4CT.
+
+The cheapest repair has also been tested, and \emph{refuted}. Strengthening the
+certification so that switches avoid the entire outer interface --- both input
+\emph{and} output stubs, not only the inputs --- does eliminate the escape (a
+two-layer companion run finds zero escapes under full-interface avoidance), but at
+a fatal cost: on the same finite class, two colorings with the same fixed input
+are connected \emph{only} by a switch whose component touches the output stubs, so
+forbidding output touches disconnects the fibers (module
+\texttt{GoertzelLemma818TwoSidedAvoidance}: $432$ open and $216$ closed nonempty
+fibers disconnect). The escape channel is therefore \emph{load-bearing for
+connectivity}: the very moves that let a component escape the collar are the moves
+the fibers need to remain connected. Confinement and connectivity are in direct
+tension, so any repair must confine the escaping components \emph{without}
+severing collar connectivity --- a needle the simplest fix cannot thread.
+
+What remains is a genuinely regime-level salvage: a proof that the
+minimal-counterexample \emph{regime} (CAP5-free normal form) excludes the
+disconnecting/escaping configurations, or a \S9 redesign that only ever peels
+\emph{face} collars where 7.9 applies as stated. Neither is established; both need
+planar-normal-form infrastructure the development does not yet have; and the
+abstract gadget lab cannot decide them, since the tension may or may not dissolve
+in the actual normal form. As of this writing the seam is open, with both the
+escape and the failure of the cheapest repair pinned down as checked theorems.
+
+\subsection{Sharpening the open salvage: a winding invariant and a cyclic 2-cut reduction}
+
+Since the escape was pinned down, the formalization has \emph{sharpened} --- though
+not closed --- the open salvage, by asking a Spencer--Brown/Kauffman-native
+question: which two-color components can escape? On the closed annular collar a
+two-color component carries a well-defined mod-2 \emph{winding class} around the
+annulus generator --- the parity of its crossing count with a fixed radial cut ---
+a Parity-Lemma-style invariant, well defined per component and tracked across Kempe
+switches. In this language the escape is exactly a \emph{winding} move: the
+components that leave through the inner side and return are those of nonzero winding
+class. The precise form of the S4 freedom is then a homological statement,
+machine-checked on the witness class: \emph{winding is not boundary-determined} --- a
+fixed-boundary fiber can carry components of different total winding class, so the
+escaping (winding-1) moves are not forced by the boundary data alone.
+
+This localizes the difficulty to one geometric question: can a winding-freedom
+escape be \emph{realized on a genuinely simple planar collar}? The formalization
+reduces it to a classical connectivity fact. Any simple planar realization that
+preserves the winding profile must replace the escape's parallel endpoint bundle by
+a simple two-pole side; a tree-rank (handshaking) count ---
+$2\,|\text{side edges}| = 3\,|\text{internal}| + 4$ forces
+$|\text{internal}|+1 < |\text{side edges}|$, hence a cycle --- turns that side into
+a \emph{cyclic 2-cut} of the collar. A collar admitting no realized cyclic 2-cut
+therefore admits no escape realization:
+\begin{lstlisting}[language={}]
+-- every simple planar winding-escape realization forces a cyclic two-cut:
+theorem ...Escape_forces_cyclicTwoCut_allSizes : ...
+-- so a collar forbidding cyclic two-cuts (e.g. cyclically 5-edge-connected)
+-- admits no escape realization:
+theorem ...Escape_not_simplyRealizable_allSizes
+    (h : ...ForbidsCyclicTwoCut G) : ¬ ...SimplePlanarEscapeRealization G
+\end{lstlisting}
+
+We are precise about what this buys. It is a \emph{reduction of the open salvage to
+one named residual}, not a repair: the theorem is conditional on the collar
+forbidding cyclic 2-cuts, and the current realization datum carries the
+separating-pair structure as an obligation rather than deriving it from the collar's
+embedding. What it does is convert the vague ``the minimal-counterexample regime
+should exclude the escape'' into a concrete checkable target --- \emph{the escape
+collar carries no cyclic 2-cut}, i.e.\ it is cyclically sufficiently edge-connected,
+which is exactly the kind of property the minimal-counterexample normal form is
+expected to supply. And this residual is not an un-formalizable abstraction: the
+development already proves cyclic-five-edge-connectivity for concrete graphs (and
+refutes it for others), so discharging or refuting it \emph{for the escape collar}
+is a reachable next question --- the honest current frontier of the S4 salvage.
+
+\section{The v24 route: deserts, pivots, and the necklace}
+\label{sec:v24}
+
+Goertzel's v24 working package (July 2026) replaces v23's \S6--7 with a new
+architecture: pentagonal \emph{pivots}, hexagonal \emph{deserts}, a
+\emph{necklace} decomposition of the sphere relative to the twelve pentagons,
+winding and monodromy invariants along corridors, and a final \emph{Trail
+Completability} target from which the minimal-counterexample contradiction is
+to follow, conditional on a dependency chain L1--L10. The package proposes a
+universal Short Strand Conjecture and then refutes it itself with a
+$688$-edge, reach-$40$ strand, so the route requires a replacement bound.
+This section records what the formalization has established of this route so
+far; the formalization targets combinatorial rotation systems throughout, not
+topological planarity.
+
+\paragraph{Independent reproduction of the validation toolchain.} Every
+numerical claim consumed from the package was recomputed independently before
+use: the annular censuses ($5412$ and $31704$) with their Kempe fibers, the
+fullerene finite bases, the pentagon finite seals, tube seed growth, the
+desert and strand specimens (including the Short-Strand refuter), Goldberg
+normal-form specimens, and the GWCO exact base through twelve. A recurrent
+tube-ring transfer theorem replaces the package's Pascal-triangle
+extrapolation (\texttt{GoertzelV24TubeRingTransfer}).
+
+\paragraph{Rotation systems and facial linear algebra.} A Tait-coloring
+layer is built over rotation systems, with each edge's two faces identified,
+face simplicity reduced to two-sidedness, facial dual connectedness, and the
+exact facial linear algebra: facial boundary rank, primal cycle-space rank,
+the equality of the facial span with the cycle space, and the face winding
+classification (\texttt{GoertzelV24FaceBoundaryLinearAlgebra},
+\texttt{GoertzelV24OrbitFaceCycleSpaceEquality},
+\texttt{GoertzelV24WindingClassification}).
+
+\paragraph{Curvature.} The all-face discrete Gauss--Bonnet identity is
+proved from rotation-system data alone: the total face curvature
+$\sum_f\,(6-\ell(f))$ equals $12$ (\texttt{totalFaceCurvature\_eq\_twelve} in
+\texttt{GoertzelV24CurvatureScope}). The package's \emph{at-most-twelve
+pentagon} step, which is false as stated under minimum face size five, is
+corrected by a proved \emph{weighted} pentagon budget charging faces by
+$6-\ell(f)$; the fullerene hexagonal bulk is derived on orbit faces, and
+curvature-to-bulk corridor bounds connect the budget to corridor extraction
+(\texttt{GoertzelV24OrbitFaceCurvatureBulk}, \texttt{GoertzelV24BulkCorridor}).
+
+\paragraph{Necklace and corridors.} The locked-pentagon necklace is
+assembled and the singleton necklace strand forced
+(\texttt{GoertzelV24Necklace}). A hexagonal corridor theory is developed:
+defect-free corridor neighborhoods extracted from geodesic face paths; an
+internal rung classification with induced rung chains and the exclusion of
+adjacent induced rungs; clean width-four slabs with oriented interfaces and
+the matching of consecutive interfaces; Tait transfer across slabs with
+finite color-transition alphabets and color-state words; and a sharp
+chirality barrier under which transfer across a chiral reversal forces the
+melted state (\texttt{GoertzelV24CleanHexCorridor},
+\texttt{GoertzelV24HexFaceRungType}, \texttt{GoertzelV24OrientedHexSlab},
+\texttt{GoertzelV24HexCorridorColorTransfer},
+\texttt{GoertzelV24HexCorridorChiralityBarrier}).
+
+\paragraph{Pumping.} The corridor acceptance language is proved periodic and
+corridor pumping congruence-correct; with the recurrent tube-ring transfer
+these are the working tools of the Short-Strand replacement search
+(\texttt{GoertzelV24CorridorPumping}).
+
+\paragraph{Framed trails and local fiber calculi.} The framed-trail layer
+proves completion semantics and defect freedom --- the unique admissible
+missing color and the characterization of proper trail extensions
+(\texttt{missingColorAt\_is\_unique\_admissible},
+\texttt{hasMatchingDefectColors\_iff\_exists\_properTrailExtensionColor} in
+\texttt{GoertzelV24FramedTrail}) --- supported by exact local calculi: the
+square fiber table with its realized Kempe switch and local and
+compositional profile identities, the digon Kempe rung, rotor local color
+routes, and the two-edge-cut color parity (\texttt{GoertzelV24Square}\,%
+/\texttt{SquareKempe}/\texttt{SquareComposition}, \texttt{GoertzelV24Digon},
+\texttt{GoertzelV24Rotor}, \texttt{GoertzelV24TwoEdgeCut}).
+
+\paragraph{The minimality normal form (proved).} The full minimality
+connectivity ladder is now machine-checked on rotation systems, with no
+\texttt{sorry} and axioms in
+$\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$. The
+two-edge, cyclic three-edge, and cyclic four-edge cut reductions are each
+proved by capping both sides into strictly smaller cubic rotation systems and
+gluing their Tait colorings across the cut; a vertex-minimal Tait
+counterexample admits none of them, so it is cyclically five-edge-connected
+(\texttt{cyclicallyFiveEdgeConnected\_of\_vertexMinimalTaitCounterexample}).
+The four-edge rung is the classically hard one: at a four-edge cut the four
+boundary colors sum to zero in the Klein four-group, giving three boundary
+classes (all-equal and the two non-crossing adjacent pairings), and the two
+capped sides always share a reducible class. The load-bearing step --- that a
+side admitting an all-equal boundary escapes, by a Kempe swap, into a
+non-crossing adjacent class (never the crossing Birkhoff pairing) --- is
+\emph{proved}, not assumed, from the planarity of the interior Kempe chains
+(\texttt{GoertzelV24FourEdgeCutKempeEscape}), and a minimal counterexample is
+correspondingly forced to have minimum face size five. The corridor-existence
+side is lifted off the fullerene premise entirely: on any spherical cubic map
+of minimum face size five, the pentagon count equals $12$ plus the total
+negative curvature weight, and either the face count lies below a
+weight-dependent threshold or a clean hexagonal corridor exists
+(\texttt{GoertzelV24WeightedOrbitFaceCorridor}) --- no restriction to
+pentagonal and hexagonal faces is used anywhere.
+
+\paragraph{In progress and open.} On this normal form the endgame reduction is
+under active construction: a fusion-chain / rebase-pumping dynamics that, from
+any adjacent pair of the counterexample, produces either a fusion terminal or
+a strictly descending rebase pumping
+(\texttt{exists\_rotationOrderedFusionTerminalOrRebasePumping\_of\_}%
+\texttt{vertexMinimalTaitCounterexample}), together with an exhaustive scope
+classification of the remote facial-dual cycles it generates (length $\geq5$
+exact cut, length-three single-vertex cut, length-four adjacent-pair cut with
+an internal dual chord). What remains \emph{open} is the coloring transport
+that turns each classified case into a contradiction with minimality --- the
+large-cut splice/interface law and the explicit consumption of the
+singleton-star and adjacent-pair-collar cases --- and hence Trail
+Completability, the L1--L10 chain, and a proved Short-Strand replacement. The
+v23-era collar obligations are taken up only where this route consumes them.
+Nothing in this section claims the Four-Color Theorem or the completion of the
+v24 route.
+
+\paragraph{Canonical data at reentry joins.}
+The rotation ordering removes a small but potentially serious compositional
+ambiguity.  If two adjacent-pair presentations have the same ordered central
+edge, then their rotation-ordered four-port data are equal, regardless of the
+original enumeration of the four boundary ports.  We therefore refine the
+recursive relation so that each step retains its source fusion normal and its
+certified pumping launch.  Given two consecutive steps, the target Kempe
+package of the first supplies a normal with a genuine same-base Kempe escape,
+and the second supplies its source normal; the two recovered rotation-ordered
+data agree exactly.  Finite iteration consequently yields a structural
+terminal, a large exact remote separator, or a nonempty closed orbit whose
+successive normal forms are canonically aligned.  This alignment is a
+bookkeeping theorem, not yet a coloring-transport theorem: transport between
+different deleted adjacent pairs remains the next local collar problem.
+
+\section{Status and scope: machine-checked, reduced, and open}
+\label{sec:status}
+
+\paragraph{Historical snapshot.}
+This section records the companion's 21 July 2026 v23/v24 status.  It is kept
+for provenance and should not be read as the present closure ledger; the
+controlling August status is Section~\ref{sec:current}.
+
+We state the scope exactly. The full route is a ladder $S0,\dots,S9$ (Gate-2, then
+v23 \S9 and \S3); the table records each step's manuscript reference and current
+Lean status.
+
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Step & Content & v23 ref & Lean status \\
+\midrule
+--- & single-gadget $\LKR$                & Lem.~8.14        & finite encoded-model audit; graph move-soundness open \\
+--- & two-color transparency              & Lem.~8.15        & finite encoded-model audit; shares graph-fidelity boundary \\
+--- & Pillar~A                            & Thm.~4.9         & actual $\Wz$ inclusion open; unrestricted-oracle strictness proved \\
+S0  & Gate-2 chain $\LKR$                  & Lem.~8.18/8.19   & one actual fiber/orbit plus mode-sufficiency pin \\
+S2  & radial-closing-edge fiber census     & \S9.2 Step~3     & proved only at length 2/3; manuscript target open \\
+S4  & ambient escape regression            & \S9.2 Step~4     & abstract-chain countermodel; graph realization open \\
+S1  & collar $\Rightarrow\tau$/mirror chain & Lem.~8.5--8.6   & open (structural) \\
+S3  & annulus peeling well-definedness     & \S9.2 Step~2     & open (structural) \\
+S5  & interface to Kauffman Thm.~3.1       & \S9.2 / \S3      & open (statement-level) \\
+S6  & Kauffman parity/primality internals  & \S3.2--3.3       & open (structural) \\
+S7  & minimal-counterexample normal form   & Lem.~5.2--5.3    & open (structural) \\
+S8  & CAP5 reducibility                    & \S6              & partial \\
+S9  & minimality wrap ($+$ Tait)           & Def.~5.1 / Thm.~2.3 & open (structural) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Machine-checked outright.} The finite encoded-model audits for
+Lemmas~8.14 and 8.15, together with completeness of the 192-state incidence
+enumeration; unrestricted-oracle strictness and conditional need-based Pillar~A
+infrastructure (with four uniform peel oracles refuted); and the length-2/3
+radial-closing-edge S2 census. The corresponding graph move-soundness, actual
+v23 $\Wz(H)$ inclusion, and manuscript S2 statement remain open. All with no \texttt{sorry} and axioms
+$\subseteq\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$.
+
+\paragraph{Reduced to one pin.} Gate-2 (Lemmas~8.18/8.19): the manuscript's
+pointwise Step-1 preparation is refuted and replaced by the frontier-automaton /
+fibration architecture, whose real-fiber labs pass to length seven; the whole
+composition rests on a single named structural remainder.
+
+\paragraph{Regression countermodel.} \S9.2 Step~4's collar-word-to-ambient-word
+reinterpretation fails in the encoded two-layer tau-chain model. A simple planar
+cyclically-five-connected graph realization has not been proved; the
+actual-collar cut-lift obligation remains open. In the encoded model this
+lowers the odds that the v23 route completes \emph{as written}; its salvage is
+open.
+
+\paragraph{v24 scope.} See \S\ref{sec:v24}. The validation toolchain and
+censuses are independently reproduced; the all-face curvature identity and
+the corrected \emph{weighted} pentagon budget are proved; the
+necklace/corridor, pumping, and framed-trail layers are in the tree; the
+endgame (fusion chains, chiral monodromy, Trail Completability, L1--L10, and
+a proved Short-Strand replacement) is open.
+
+\paragraph{Open (the non-finite heart).} Steps S1, S3, S5--S9: the realization of
+abstract chains as actual collars, the wide-annulus peeling, the interface to
+Kauffman's reduction, and the Kauffman/normal-form/CAP5 internals. Their common
+cost is one shared planar-embedding/duality/Jordan infrastructure the development
+does not yet have; most carry a known proof shape, so their risk is
+formalization cost rather than mathematical doubt --- with the exception of the S4
+salvage, which is genuinely open.
+
+\paragraph{What is not claimed.} We do \emph{not} claim the Four-Color Theorem,
+and we do not claim that v23 proves it. The 4CT is a theorem via the
+computer-assisted proofs; what is at issue is solely the viability of the v23
+human-readable route, which remains \emph{open} --- its foundational layer now
+machine-checked, its most dangerous assembly seam pinned down as broken.
+
+\section*{Provenance}
+\addcontentsline{toc}{section}{Provenance}
+The August revision preserves the accumulated July audit and its negative
+results, and adds Section~\ref{sec:current} as the controlling status for the
+current Goertzel/Fable reductive--compositional development.  Future revisions
+should update that section when a closure obligation changes status and append
+failed constructions to Appendix~\ref{app:graveyard}, rather than erasing the
+reason they were abandoned.
+
+The manuscript discussed is Ben Goertzel, \emph{A Human-Readable,
+Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}, version~v23. The
+formalization is work of the MeTTapedia formalization effort. The keystone and
+transparency are module \texttt{GoertzelLemma814}; the Pillar-A obstruction and
+its need-based repair are \texttt{FrontierGeometric}, \texttt{GoalAudit}, and
+\texttt{PillarASmallerSpace}; the Gate-2 architecture is
+\texttt{GoertzelLemma818SemanticBridge} and the frontier-automaton modules; the
+S2 bridge is \texttt{GoertzelLemma818ClosedCollarS2Bridge}; the S4 counterexample
+and the refuted two-sided-avoidance repair are
+\texttt{GoertzelLemma818TwoLayerEscape} and
+\texttt{GoertzelLemma818TwoSidedAvoidance}. The v24 route of \S\ref{sec:v24}
+is the \texttt{GoertzelV24*} module family (roughly sixty modules; the primary
+mathematical source is the v24 working package \emph{Deserts, Pivots, and the
+Necklace}, July 2026). Lean listings are ASCII
+transliterations of the source declarations (the sources are normative); every
+headline was checked with \texttt{\#print axioms}. Per-declaration source links
+are omitted pending publication of the development tree.
+
+\appendix
+
+\section{A graveyard of superseded sub-routes}
+\label{app:graveyard}
+
+Each entry is a route or reading that was tried and set aside; several are
+themselves machine-checked theorems that a stated step \emph{fails}.
+
+\begin{description}
+  \item[The spanning \emph{equality} $\Wz(H)=\mathrm{span}(\mathcal{G})$.] Refuted
+        on every closed-walk exact shell (\S\ref{sec:pillarA}); superseded by the
+        need-based inclusion, which is what the synthesis actually consumes.
+  \item[The four uniform geometric peel oracles.] Each would have closed
+        Theorem~4.9's synthesis uniformly; all four are machine-checked false.
+        The route uses the manuscript's own per-embedding peeling witnesses
+        instead.
+  \item[The pointwise Step-1 preparation of Lemma~8.18.] The manuscript's own
+        pointwise lift (via Lemma~8.16) is refuted
+        (\texttt{lemma818\_pointwise\_lift\_preparation\_obstruction}); replaced by
+        the frontier-automaton / fibration composition.
+  \item[The prefix-fibration shortcut for Gate-2.] A tempting closed-form
+        shortcut, machine-checked to fail
+        (\texttt{not\_concreteChainFiberAppendPrefixFibrationClosed}); kept dead.
+  \item[The false ``additivity'' of Kempe switches.] An $\FF$-additive execution
+        of the Pillar-A decomposition $\Delta=\sum v_{f,g}$. This is \emph{not}
+        the manuscript's route --- Pillar~C is titled ``executability without
+        false additivity,'' and v23 \S8.1--8.3 show mixed color-pair switches on
+        shared support do not commute. Recorded only to set aside; the faithful
+        route is the operator/$\LKR$ execution of \S\ref{sec:lkr}.
+  \item[An $\FF$-additivity / evader reconstruction (disavowed).] An early
+        exploratory reconstruction outside the manuscript's route, which v23
+        explicitly disavows (additivity invalid for mixed color-pairs; Rmk.~8.10).
+        Not part of this companion's formalized content.
+  \item[Boundary color-word agreement as full profile agreement.] Refuted by a
+        two-state off-diagonal witness in
+        \texttt{GoertzelV24ProfileDiagonalLiftFalsifier}: matching projected
+        color support need not supply a diagonal entry for the full profile.
+        The source splice therefore uses the finite full-profile diagonal
+        audit, not its color projection.
+  \item[Consecutive six-edge slab boundaries as radial splice cuts.] Refuted by
+        \texttt{sourceTwoTileAlignedBoundaryWalks\_consecutive\_not\_disjoint}.
+        Consecutive local boundary walks share their intervening dual
+        interface.  This rules them out as the two separated annular cuts while
+        retaining them as useful local windows.
+  \item[A single generic hole crosscut as the corridor splice.] Generic dual
+        connectedness produces one simple hole-to-hole slit.  It supplies
+        neither a second disjoint slit nor alignment with the selected Cell--3
+        corridor, so promoting it to the source splice would change the
+        statement rather than prove it.
+\end{description}
+
+\end{document}
