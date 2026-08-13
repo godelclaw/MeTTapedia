@@ -847,6 +847,18 @@ two-shared-edge local case, precisely the kind of case Fable assigns to L1;
 it is not a license to import the closed minimal-counterexample theorem that
 would rule the collision out globally.
 
+\paragraph{Do not confuse L8 radial paths with L1 crosscuts.}  Lean already
+proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
+closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
+paths, distinct anchors on both boundary components, sector-alternation data,
+and a quantitative length alternative.  This is the L8-to-L6 package.  The
+splice instead requires \texttt{SeparatedAlignedSimpleDualCrosscuts}, a pair
+of simple \emph{facial-dual} transversals satisfying a dual-walk disjointness
+condition and the crosscut alignment hypotheses.  No theorem currently
+relates these types.  Thus the radial witness is a proved neighbouring asset,
+not yet a constructor for the L1 pair; treating it as one by renaming or
+duality intuition would hide precisely the missing primal--dual construction.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
