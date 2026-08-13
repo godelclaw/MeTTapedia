@@ -1043,6 +1043,20 @@ alone select a primal side.  This boundary keeps the eventual theorem at the
 strength used by the corridor, while making every genuinely topological input
 visible to kernel checking.
 
+\paragraph{What one dual cycle now yields, and what it does not.}  The
+framed separator has been tightened at exactly this representation boundary.
+For any supplied simple facial-dual cycle it now re-expresses the crossed
+primal support as a finite graph-edge carrier and extracts a deletion
+component with a nonempty computed boundary:
+\texttt{exists\_componentCrossingEdges\_nonempty\_of\_dualCycle}.
+This is useful because a later source construction need not guess the
+retained component or the finite edge carrier after it has built its actual
+dual cycle.  It is deliberately not a transversal construction: the theorem
+does not supply that cycle, prove its computed boundary equals an intended
+wall, choose the annular side, or establish the two side-cycle witnesses.
+Those are precisely the source-specific annular-separation obligations still
+visible in \texttt{CycleSideCertificate}.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:

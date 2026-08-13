@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24WalkFaceParityCut
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalSeparator
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteDeletionCyclicCut
 
 /-!
 # Bridge-safe separation by a facial-dual cycle
@@ -330,6 +331,90 @@ theorem not_connected_deleteEdges_dualWalkPrimalCut_of_isCycle
       exact False.elim (hnot (Finset.mem_univ firstStep))
   rw [hsumOne] at hcoordinates
   exact one_ne_zero hcoordinates
+
+/-- Re-express the set-valued primal cut of a dual walk as its finite graph
+edge carrier.  Keeping this bridge in the framed separator layer avoids
+importing an older cubic component package merely for a representation change. -/
+theorem dualWalkPrimalCut_eq_finiteDeletionValueSet_dualWalkCrossingEdges
+    (data : Data G)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace data.toRotationSystem)))
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Walk
+        start start) :
+    dualWalkPrimalCut data hunique walk =
+      GoertzelV24FiniteDeletionCyclicCut.edgeFinsetValueSet
+        (dualWalkCrossingEdges
+          (orbitFaceBoundary data.toRotationSystem)
+          (Finset.univ : Finset
+            (OrbitFace data.toRotationSystem)) hunique walk) := by
+  ext edge
+  rw [GoertzelV24FiniteDeletionCyclicCut.mem_edgeFinsetValueSet_iff]
+  constructor
+  · rintro ⟨step, hstep⟩
+    let crossing := dualWalkCrossingEdge
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk step
+    refine ⟨crossing, ?_, hstep⟩
+    exact (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk
+      crossing).2 ⟨step, rfl⟩
+  · rintro ⟨crossing, hcrossing, hvalue⟩
+    rcases (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk
+      crossing).1 hcrossing with ⟨step, hstep⟩
+    exact ⟨step, congrArg Subtype.val hstep |>.trans hvalue⟩
+
+/-- A simple facial-dual cycle supplies a concrete finite component with a
+nonempty graph-computed boundary.  This is the graph-facing part of annular
+separation: it does not construct the dual cycle, choose the source's retained
+side, saturate the boundary, or establish either side-cycle witness. -/
+theorem exists_componentCrossingEdges_nonempty_of_dualCycle
+    (data : Data G)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace data.toRotationSystem)))
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Walk
+        start start)
+    (hdualCycle : walk.IsCycle) :
+    ∃ component :
+        (G.deleteEdges
+          (GoertzelV24FiniteDeletionCyclicCut.edgeFinsetValueSet
+            (dualWalkCrossingEdges
+              (orbitFaceBoundary data.toRotationSystem)
+              (Finset.univ : Finset
+                (OrbitFace data.toRotationSystem)) hunique walk))).ConnectedComponent,
+      (GoertzelV24FiniteDeletionCyclicCut.componentCrossingEdges
+        (dualWalkCrossingEdges
+          (orbitFaceBoundary data.toRotationSystem)
+          (Finset.univ : Finset
+            (OrbitFace data.toRotationSystem)) hunique walk) component).Nonempty := by
+  apply GoertzelV24FiniteDeletionCyclicCut.exists_componentCrossingEdges_nonempty_of_not_connected hconnected
+  have hnotConnected : ¬ (G.deleteEdges
+      (dualWalkPrimalCut data hunique walk)).Connected :=
+    not_connected_deleteEdges_dualWalkPrimalCut_of_isCycle
+      data hdual hconnected heuler hunique walk hdualCycle
+  rw [dualWalkPrimalCut_eq_finiteDeletionValueSet_dualWalkCrossingEdges] at hnotConnected
+  exact hnotConnected
 
 end GoertzelV24FramedDualCycleSeparator
 

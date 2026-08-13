@@ -122,6 +122,55 @@ theorem card_componentCrossingEdges_le_removed
     (componentCrossingEdges removed component).card ≤ removed.card :=
   Finset.card_le_card (componentCrossingEdges_subset_removed removed component)
 
+omit [DecidableEq V] in
+/-- If two deletion components are distinct, connectedness of the original
+graph forces the computed boundary of either one to contain an edge.  This is
+pure finite graph theory: it neither supplies a planar side nor identifies the
+computed boundary with a proposed dual wall. -/
+theorem componentCrossingEdges_nonempty_of_distinct
+    (hconnected : G.Connected) (removed : Finset G.edgeSet)
+    (inside outside :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    (hdistinct : inside ≠ outside) :
+    (componentCrossingEdges removed inside).Nonempty := by
+  rcases inside.nonempty_supp with ⟨insideVertex, hinside⟩
+  rcases outside.nonempty_supp with ⟨outsideVertex, houtside⟩
+  have houtsideNotInside : outsideVertex ∉ inside.supp := by
+    intro hcommon
+    apply hdistinct
+    exact SimpleGraph.ConnectedComponent.eq_of_common_vertex hcommon houtside
+  rcases hconnected insideVertex outsideVertex with ⟨walk⟩
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides
+      (fun vertex => vertex ∈ inside.supp) walk hinside houtsideNotInside with
+    ⟨edge, _hwalkEdge, hcross⟩
+  exact ⟨edge,
+    (mem_componentCrossingEdges_iff removed inside edge).2 hcross⟩
+
+omit [DecidableEq V] in
+/-- A finite edge deletion that disconnects a connected graph has a component
+with a nonempty computed boundary.  Later annular geometry must still prove
+which component is the intended side and provide its two cycle witnesses. -/
+theorem exists_componentCrossingEdges_nonempty_of_not_connected
+    (hconnected : G.Connected) (removed : Finset G.edgeSet)
+    (hdelete : ¬ (G.deleteEdges (edgeFinsetValueSet removed)).Connected) :
+    ∃ component :
+        (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent,
+      (componentCrossingEdges removed component).Nonempty := by
+  let deleted := G.deleteEdges (edgeFinsetValueSet removed)
+  letI : Nonempty V := hconnected.nonempty
+  have hnotPreconnected : ¬ deleted.Preconnected := by
+    intro hpreconnected
+    exact hdelete ⟨hpreconnected⟩
+  rw [SimpleGraph.Preconnected] at hnotPreconnected
+  push Not at hnotPreconnected
+  rcases hnotPreconnected with ⟨insideVertex, outsideVertex, hnotReachable⟩
+  let inside := deleted.connectedComponentMk insideVertex
+  let outside := deleted.connectedComponentMk outsideVertex
+  refine ⟨inside, ?_⟩
+  apply componentCrossingEdges_nonempty_of_distinct hconnected removed inside outside
+  intro heq
+  exact hnotReachable (SimpleGraph.ConnectedComponent.exact heq)
+
 /-!
 The saturation equality is often the only set-theoretic line left after a
 Jordan/annulus argument has identified the two sides of the deleted wall.  We
