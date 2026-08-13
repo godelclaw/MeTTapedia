@@ -28,6 +28,7 @@ open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexSlabSideAdjacency
+open GoertzelV24InducedHexCorridorTypes
 open GoertzelV24MinimalDualTriangleClassification
 open GoertzelV24MinimalDualFourCycleClassification
 open GoertzelV24MinimalFaceIntersections
@@ -290,6 +291,148 @@ theorem commonNeighborEdge_eq_outgoing_flank
     rw [hpairs] at htargetMem
     simp only [Finset.mem_insert, Finset.mem_singleton] at htargetMem
     exact htargetMem.resolve_left htargetNeOutgoing
+
+/-- The closed-map face across a non-rung position of a placed corridor
+hexagon.  This is the generic rotation-system object underlying the
+source-specific `localPlacementSideFace`: no annular or opened-carrier data is
+needed to define it. -/
+noncomputable def placementSideFace
+    {RS : RotationSystem V G.edgeSet} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior)
+    (position : {position // position ∈ placementSidePositions placement}) :
+    AmbientFace (Finset.univ : Finset (OrbitFace RS)) :=
+  ⟨dartOrbitFace RS
+      (RS.alpha (faceCycleDart RS placement.root position.1)),
+    Finset.mem_univ _⟩
+
+/-- The literal face-cycle edge at a side slot belongs to the opposite-dart
+face selected by `placementSideFace`. -/
+theorem faceCycleEdge_mem_placementSideFace
+    {RS : RotationSystem V G.edgeSet} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior)
+    (position : {position // position ∈ placementSidePositions placement}) :
+    faceCycleEdge RS placement.root position.1 ∈
+      orbitFaceBoundary RS (placementSideFace placement position).1 := by
+  let dart := faceCycleDart RS placement.root position.1
+  change RS.edgeOf dart ∈ orbitFaceBoundary RS
+    (dartOrbitFace RS (RS.alpha dart))
+  rw [← RS.edge_alpha dart]
+  exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS (RS.alpha dart)
+
+/-- Two-sidedness separates the opposite-dart side face from the placed
+corridor centre. -/
+theorem placementSideFace_val_ne_center
+    {RS : RotationSystem V G.edgeSet} (htwoSided : OrbitFacesTwoSided RS)
+    {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))}
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor hunique interior)
+    (position : {position // position ∈ placementSidePositions placement}) :
+    (placementSideFace placement position).1 ≠
+      (corridor.faceAt interior.center).1 := by
+  let dart := faceCycleDart RS placement.root position.1
+  intro hsame
+  apply htwoSided dart
+  calc
+    dartOrbitFace RS dart = dartOrbitFace RS placement.root :=
+      dartOrbitFace_faceCycleDart RS placement.root position.1
+    _ = (corridor.faceAt interior.center).1 := placement.root_face
+    _ = dartOrbitFace RS (RS.alpha dart) := hsame.symm
+
+/-- **L1 (closed face-level bounded interaction).** The edge-level flank
+classification identifies the common neighbour itself with one of the two
+literal side faces.  This is the closed-map statement transported by the
+literal-opening layer. -/
+theorem commonNeighbor_eq_outgoing_sideFace
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {corridorLength : Nat}
+    (corridor : OrbitHexCorridorSkeleton graphData.toRotationSystem
+      corridorLength)
+    {interior : CorridorInterior corridorLength}
+    (placement : InternalHexRungPlacement corridor
+      (pairwiseUniqueSharedInteriorEdges graphData minimal) interior)
+    (before after : {position // position ∈ placementSidePositions placement})
+    (hbefore : placement.outgoingPosition.val ≡ before.1.val + 1 [MOD 6])
+    (hafter : after.1.val ≡ placement.outgoingPosition.val + 1 [MOD 6])
+    (face : AmbientFace
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem)))
+    (hleft : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Adj
+        (corridor.faceAt interior.center) face)
+    (hright : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Adj
+        (corridor.faceAt interior.outgoing.right) face) :
+    face = placementSideFace placement before ∨
+      face = placementSideFace placement after := by
+  let RS := graphData.toRotationSystem
+  let allFaces : Finset (OrbitFace RS) := Finset.univ
+  let hunique := pairwiseUniqueSharedInteriorEdges graphData minimal
+  have classify := commonNeighborEdge_eq_outgoing_flank graphData minimal
+    corridor placement before after hbefore hafter face hleft hright
+  rcases classify with hedge | hedge
+  · left
+    let center := corridor.faceAt interior.center
+    let side := placementSideFace placement before
+    let edge := sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary RS) allFaces hunique hleft
+    have hedgeCenter : edge ∈ orbitFaceBoundary RS center.1 :=
+      sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_left
+        (orbitFaceBoundary RS) allFaces hunique hleft
+    have hedgeFace : edge ∈ orbitFaceBoundary RS face.1 :=
+      sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_right
+        (orbitFaceBoundary RS) allFaces hunique hleft
+    have hedgeSide : edge ∈ orbitFaceBoundary RS side.1 := by
+      change edge = faceCycleEdge RS placement.root before.1 at hedge
+      rw [hedge]
+      exact faceCycleEdge_mem_placementSideFace placement before
+    have hcases :=
+      eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary RS) allFaces (orbitFace_incidence_le_two RS)
+        center.2 face.2 side.2 (fun h => hleft.ne (Subtype.ext h))
+        hedgeCenter hedgeFace hedgeSide
+    rcases hcases with hsideCenter | hsideFace
+    · exact False.elim
+        ((placementSideFace_val_ne_center minimal.facesTwoSided placement before)
+          hsideCenter)
+    · exact Subtype.ext hsideFace.symm
+  · right
+    let center := corridor.faceAt interior.center
+    let side := placementSideFace placement after
+    let edge := sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary RS) allFaces hunique hleft
+    have hedgeCenter : edge ∈ orbitFaceBoundary RS center.1 :=
+      sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_left
+        (orbitFaceBoundary RS) allFaces hunique hleft
+    have hedgeFace : edge ∈ orbitFaceBoundary RS face.1 :=
+      sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_right
+        (orbitFaceBoundary RS) allFaces hunique hleft
+    have hedgeSide : edge ∈ orbitFaceBoundary RS side.1 := by
+      change edge = faceCycleEdge RS placement.root after.1 at hedge
+      rw [hedge]
+      exact faceCycleEdge_mem_placementSideFace placement after
+    have hcases :=
+      eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary RS) allFaces (orbitFace_incidence_le_two RS)
+        center.2 face.2 side.2 (fun h => hleft.ne (Subtype.ext h))
+        hedgeCenter hedgeFace hedgeSide
+    rcases hcases with hsideCenter | hsideFace
+    · exact False.elim
+        ((placementSideFace_val_ne_center minimal.facesTwoSided placement after)
+          hsideCenter)
+    · exact Subtype.ext hsideFace.symm
 
 /-- **L1 (closed two-step rail collision).** A common neighbour of corridor
 faces two steps apart is either their displayed middle face, or its canonical

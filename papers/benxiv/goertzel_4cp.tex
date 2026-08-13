@@ -620,6 +620,36 @@ constructs all retention proofs automatically.  Thus boundary cleanliness is
 preserved as a theorem about actual face orbits, rather than inferred from a
 picture or from center-face retention alone.
 
+The adjacent common-neighbour classification has now been upgraded from its
+edge form to its literal face form.  The same closed module defines the face
+across a side-slot dart using only the ambient rotation system and proves
+
+\begin{center}
+\texttt{commonNeighbor\_eq\_outgoing\_sideFace}.
+\end{center}
+
+Thus a face adjacent to both consecutive corridor centres is not merely known
+to use one of two flank edges: two-sided facial incidence proves that it is
+exactly the opposite-dart face at one of those two flank positions.  This
+generic definition is deliberately independent of the later closed-web
+namespace; the proof uses the closed minimal-counterexample hypotheses only
+where they supply the edge classification.
+
+The new module
+\texttt{GoertzelV24OpenRegionMinimalCorridorCommonNeighbors} then joins that
+closed theorem to the boundary-clean opening.  An arbitrary open common
+neighbour is pulled back, from each of the two corridor centres, to a fully
+retained ambient neighbour.  Injectivity of retained face-orbit transport
+shows that the two pullbacks represent the same ambient face, after which the
+closed theorem classifies it as one of the two literal side faces.  The result
+\texttt{exists\_ambient\_side\_rep\_of\_open\_commonNeighbor} therefore proves
+the face-level bounded interaction through the computed opening without
+assuming cubic minimality of the noncubic open carrier, invoking a general
+disjoint-path theorem, or matching carriers by cardinality.  It still leaves
+the source specialization visible: the actual Cell--3 cap/corridor selection
+must establish radius-one retention and identify the generic transported
+side faces with its named local rail data.
+
 The opened rotation is now also backed by an actual computed simple graph in
 \texttt{GoertzelV24OpenRegionGraphBacking}.  Its primal adjacency is defined
 from the opened dart endpoints.  Lean proves that mapping an opened dart to
