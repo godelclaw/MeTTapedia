@@ -243,10 +243,11 @@ every nonadjacent cell as the exact rail shape (0+2), (1+1), or (2+0).
 Each case now constructs two literal simple facial-dual walks, each of length
 at most two and with combined length exactly two; the two local supports are
 disjoint.  Every face in either walk is additionally certified adjacent to
-the Cell--3 center that generated it.  This provenance is the exact local
-input needed by the existing remote-center exclusion theorem; the resulting
-remote noncollision theorem and the two bounded neighboring cases are not yet
-claimed.  A literal successor theorem carries each outgoing flank to an
+the Cell--3 center that generated it.  Combining this provenance with the
+boundary-clean geodesic exclusion now proves all four track combinations
+disjoint whenever their centers are at least three positions apart.  The two
+bounded neighboring gaps remain a finite local obligation.  A literal
+successor theorem carries each outgoing flank to an
 incoming flank of the next cell on the same ambient edge and exterior face,
 then returns the next outgoing flanks.  Lengthwise simplicity and end-cap
 attachment remain open.  These are local formation facts, not yet a global
