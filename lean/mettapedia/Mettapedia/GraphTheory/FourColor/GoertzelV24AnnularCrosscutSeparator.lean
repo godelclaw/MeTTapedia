@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutLoop
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairAmbientClosureCrossFacePairDifferenceBoundaryFaceFusionChainRebaseFaceCircuitRecoveryTransferPrimalSeparator
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleSeparator
 
 /-!
 # Annular-crosscut separation
@@ -20,6 +21,7 @@ namespace GoertzelV24AnnularCrosscut
 
 open GoertzelV24AnnularCrosscutSlitRotation
 open GoertzelV24DualCycleSeparator
+open GoertzelV24FramedDualCycleSeparator
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24OrbitFaceCurvatureBulk
@@ -81,6 +83,34 @@ theorem primalCut_not_connected
   exact not_connected_deleteEdges_dualWalkPrimalCut_of_isCycle
     data htwoSided hdual hconnected hsphere hunique pair.dualLoop
       pair.dualLoop_isCycle
+
+/-- The framed Euler specialization of annular-crosscut separation.  Unlike
+`primalCut_not_connected`, it does not assume the whole carrier is cubic:
+the bridge-safe dual-cycle separator needs only connectedness, the exact Euler
+identity, and unique interior shared edges.  This is the form appropriate for
+an open framed source trail, whose defect stubs deliberately preclude global
+cubicity.  It still takes the actual paired crosscuts as input; it does not
+construct the long L1 ladder or its end-capped transversals. -/
+theorem primalCut_not_connected_of_euler
+    (data : Data G)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    ¬ (G.deleteEdges (pair.primalCut data)).Connected := by
+  exact _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleSeparator.not_connected_deleteEdges_dualWalkPrimalCut_of_isCycle
+      data hdual hconnected heuler hunique pair.dualLoop pair.dualLoop_isCycle
 
 /-- The separator carries one distinct primal edge per dual-loop step.  Its
 size is consequently the sum of the two transverse interface widths. -/

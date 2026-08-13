@@ -198,6 +198,80 @@ theorem exists_sourceCrosscutBoundaryData
       exact pair.crossing_disjoint
     }⟩
 
+/-- Construct the source splice boundary on a framed Euler carrier.  This
+specialization removes the false global-cubic requirement from the old
+closed-map wrapper, but deliberately retains two-sidedness and the paired
+crosscuts as explicit inputs: those are the still-open L1/source-formation
+geometry, not consequences of Euler counting. -/
+theorem exists_sourceCrosscutBoundaryData_of_euler
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    Nonempty (SourceCrosscutBoundaryData data pair) := by
+  rcases pair.exists_outer_primalCutComponent_exactBoundary_and_removed_of_euler
+      data htwoSided hdual hconnected heuler with
+    ⟨component, removed, houter, hremoved, hboundary⟩
+  exact ⟨{
+    component := component
+    component_boundary := hboundary
+    outer_kept := (pair.mem_componentSide_iff component
+      (data.toRotationSystem.vertOf data.toRotationSystem.outer)).2 houter
+    removed := removed
+    removed_not_kept := by
+      intro hkept
+      exact hremoved ((pair.mem_componentSide_iff component removed).1 hkept)
+    leftCrosses := by
+      intro step
+      apply pair.exists_oriented_componentSide_crossingDart data component hboundary
+      rw [pair.primalCutEdges_eq_sourceCrossingSupport data]
+      exact Finset.mem_union_left _
+        ((pair.left.mem_crossingEdges_iff hunique _).2 ⟨step, rfl⟩)
+    rightCrosses := by
+      intro step
+      apply pair.exists_oriented_componentSide_crossingDart data component hboundary
+      rw [pair.primalCutEdges_eq_sourceCrossingSupport data]
+      exact Finset.mem_union_right _
+        ((pair.right.mem_crossingEdges_iff hunique _).2 ⟨step, rfl⟩)
+    leftInjective := pair.left.crossingEdge_injective
+      (orbitFace_incidence_le_two data.toRotationSystem) hunique
+    rightInjective := pair.right.crossingEdge_injective
+      (orbitFace_incidence_le_two data.toRotationSystem) hunique
+    cover := by
+      intro exposed
+      have hcut : data.toRotationSystem.edgeOf exposed.1.1 ∈
+          pair.primalCutEdges data := by
+        rw [← pair.vertexSetCrossingEdges_componentSide_eq_primalCutEdges
+          data component hboundary]
+        exact boundaryDart_edge_mem_vertexSetCrossingEdges
+          data.toRotationSystem (pair.componentSide component) exposed
+      rw [pair.primalCutEdges_eq_sourceCrossingSupport data] at hcut
+      rcases Finset.mem_union.1 hcut with hleft | hright
+      · left
+        rw [orderedCut_crossingEdge_eq_crossingEdges pair.left hunique]
+        exact hleft
+      · right
+        rw [orderedCut_crossingEdge_eq_crossingEdges pair.right hunique]
+        exact hright
+    disjoint := by
+      rw [orderedCut_crossingEdge_eq_crossingEdges pair.left hunique,
+        orderedCut_crossingEdge_eq_crossingEdges pair.right hunique]
+      exact pair.crossing_disjoint
+    }⟩
+
 /-! ## Source order on the actual paired boundary -/
 
 /-- The elementary finite equivalence that places the left interface before

@@ -81,6 +81,23 @@ theorem localLayerPair_sourceCrosscutBoundaryData_nonempty
     embedded.cellulation.connected hsphere
     interface.separatedLocalLayerPair
 
+/-- The same local splice boundary on the actual framed Euler carrier.  The
+well-formed source trail cannot satisfy the old global-cubic premise because
+of its defect stubs; this theorem removes precisely that invalid premise.
+It remains conditional on the genuine two-sidedness and unique-shared-edge
+geometry, and it does not claim that a local pair realizes the distant L1
+corridor crosscuts. -/
+theorem localLayerPair_sourceCrosscutBoundaryData_nonempty_of_euler
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext) :
+    Nonempty (SeparatedAlignedSimpleDualCrosscuts.SourceCrosscutBoundaryData
+      embedded.cellulation.rotation interface.separatedLocalLayerPair) := by
+  exact SeparatedAlignedSimpleDualCrosscuts.exists_sourceCrosscutBoundaryData_of_euler
+    embedded.cellulation.rotation htwoSided
+    embedded.cellulation.fullOrbitFaceInteriorDual_connected
+    embedded.cellulation.connected embedded.cellulation.euler
+    interface.separatedLocalLayerPair
+
 /-- The canonical source-derived deletion side of this literal corridor tile.
 All its boundary facts are projections of the preceding constructive theorem. -/
 noncomputable def localLayerPairSourceCrosscutBoundaryData

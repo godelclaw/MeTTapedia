@@ -142,6 +142,35 @@ theorem exists_distinct_primalCutComponents
   rw [← pair.primalCut_eq_edgeFinsetValueSet_primalCutEdges data]
   exact pair.primalCut_not_connected data htwoSided hdual hconnected hsphere
 
+/-- The framed Euler version of `exists_distinct_primalCutComponents`.
+It removes the global-cubic/spherical package from the separation step while
+retaining the exact paired-crosscut geometry as input. -/
+theorem exists_distinct_primalCutComponents_of_euler
+    (data : Data G)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    ∃ inside outside :
+        (G.deleteEdges
+          (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent,
+      inside ≠ outside := by
+  apply exists_distinct_components_of_not_connected hconnected
+    (pair.primalCutEdges data)
+  rw [← pair.primalCut_eq_edgeFinsetValueSet_primalCutEdges data]
+  exact pair.primalCut_not_connected_of_euler data hdual hconnected heuler
+
 /-- Every original-graph edge leaving a constructed deletion component belongs
 to the paired transversal's finite primal cut. -/
 theorem componentCrossingEdges_subset_primalCutEdges
@@ -281,6 +310,38 @@ theorem exists_primalCutComponent_exactBoundary
     pair.componentCrossingEdges_eq_primalCutEdges_of_distinct data htwoSided
       hconnected inside outside hdistinct⟩
 
+/-- The framed Euler specialization constructs an exact-boundary component
+without assuming the open source carrier is globally cubic.  Two-sidedness
+remains explicit because it is used by the boundary-equality, not by the
+bridge-safe separation argument. -/
+theorem exists_primalCutComponent_exactBoundary_of_euler
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    ∃ component : (G.deleteEdges
+        (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent,
+      componentCrossingEdges (pair.primalCutEdges data) component =
+        pair.primalCutEdges data := by
+  rcases pair.exists_distinct_primalCutComponents_of_euler data hdual
+      hconnected heuler with ⟨inside, outside, hdistinct⟩
+  exact ⟨inside,
+    pair.componentCrossingEdges_eq_primalCutEdges_of_distinct data htwoSided
+      hconnected inside outside hdistinct⟩
+
 /-- Choose the actual deletion side containing the distinguished outer dart.
 The paired source transversals leave a genuinely different component on the
 other side, so this supplies both the retained outer region and an actual
@@ -319,6 +380,72 @@ theorem exists_outer_primalCutComponent_exactBoundary_and_removed
     exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
   rcases pair.exists_distinct_primalCutComponents data htwoSided hdual
       hconnected hsphere with ⟨inside, outside, hdistinct⟩
+  by_cases hinside : inside = outerComponent
+  · have houterNeOutside : outerComponent ≠ outside := by
+      intro heq
+      exact hdistinct (hinside.trans heq)
+    rcases outside.nonempty_supp with ⟨removed, hremoved⟩
+    have hremovedNotOuter : removed ∉ outerComponent.supp := by
+      intro houter
+      have heq : outside = outerComponent :=
+        SimpleGraph.ConnectedComponent.eq_of_common_vertex hremoved houter
+      exact hdistinct (hinside.trans heq.symm)
+    refine ⟨outerComponent, removed, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact pair.componentCrossingEdges_eq_primalCutEdges_of_distinct data
+        htwoSided hconnected outerComponent outside houterNeOutside
+  · have houterNeInside : outerComponent ≠ inside := by
+      intro heq
+      exact hinside heq.symm
+    rcases inside.nonempty_supp with ⟨removed, hremoved⟩
+    have hremovedNotOuter : removed ∉ outerComponent.supp := by
+      intro houter
+      exact hinside (SimpleGraph.ConnectedComponent.eq_of_common_vertex
+        hremoved houter)
+    refine ⟨outerComponent, removed, ?_, hremovedNotOuter, ?_⟩
+    · simpa [outerVertex] using houterMem
+    · exact pair.componentCrossingEdges_eq_primalCutEdges_of_distinct data
+        htwoSided hconnected outerComponent inside houterNeInside
+
+/-- Select the outer exact-boundary component using the framed Euler
+separator.  This is the deletion-side constructor suitable for the framed
+source splice once its real paired crosscuts and two-sided boundary theorem
+have been supplied. -/
+theorem exists_outer_primalCutComponent_exactBoundary_and_removed_of_euler
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique) :
+    ∃ component : (G.deleteEdges
+        (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent,
+      ∃ removed : V,
+        data.toRotationSystem.vertOf data.toRotationSystem.outer ∈ component.supp ∧
+        removed ∉ component.supp ∧
+        componentCrossingEdges (pair.primalCutEdges data) component =
+          pair.primalCutEdges data := by
+  let outerVertex := data.toRotationSystem.vertOf data.toRotationSystem.outer
+  let outerComponent : (G.deleteEdges
+      (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent :=
+    (G.deleteEdges (edgeFinsetValueSet (pair.primalCutEdges data))).connectedComponentMk
+      outerVertex
+  have houterMem : outerVertex ∈ outerComponent.supp := by
+    dsimp [outerComponent]
+    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+  rcases pair.exists_distinct_primalCutComponents_of_euler data hdual
+      hconnected heuler with ⟨inside, outside, hdistinct⟩
   by_cases hinside : inside = outerComponent
   · have houterNeOutside : outerComponent ≠ outside := by
       intro heq
