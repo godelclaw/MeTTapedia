@@ -13,6 +13,7 @@ import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticBasis
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticWilsonBridge
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldFiveCommutatorSeparator
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 
 /-!
 # Yang-Mills proof state
@@ -41,6 +42,7 @@ open V14HypercubicFDCensusPaddingNoGo
 open HypercubicDimension16PhysicalRelationOperator
 open HypercubicDimension16JointPhysicalQuotient
 open HypercubicDimension16FieldFiveCommutatorSeparator
+open HypercubicDimension16FDIBPCochainJointBridge
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -596,8 +598,8 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy."
-  nextObligation := "Construct a complete policy-indexed relation census and sparse dual conditioning certificate for the joint quotient, then build Wilson-functional-to-cochain coordinates and analytic dual jets in the same repaired norm."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell."
+  nextObligation := "Construct a complete policy-indexed relation census and sparse dual conditioning certificate for the identified quotient, then build full Wilson-functional-to-cochain coordinates and analytic dual jets in the same repaired norm."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -736,6 +738,15 @@ theorem currentYangMillsJointPhysicalRelation_packet
   exact jointInvariantRelationSubmodule_rank_lower_bound_fieldFiveCommutator policy
 
 #print axioms currentYangMillsJointPhysicalRelation_packet
+
+/-- OUR finite `F,D`/IBP relation cochains surject onto the honest joint
+relation submodule under either relation policy. -/
+theorem currentYangMillsFDIBPCochainJointBridge_surjective
+    (policy : PhysicalRelationPolicy) :
+    Function.Surjective (ourFDIBPCochainToJointRelation policy) :=
+  ourFDIBPCochainToJointRelation_surjective policy
+
+#print axioms currentYangMillsFDIBPCochainJointBridge_surjective
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by

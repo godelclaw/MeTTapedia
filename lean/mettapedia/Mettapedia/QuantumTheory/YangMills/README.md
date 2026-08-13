@@ -46,6 +46,14 @@ Current status:
   and a field-five commutator separator certify rank at least `11558` for
   either policy. This is a lower bound only: it neither supplies the complete
   relation census nor the joint quotient dimension or conditioning.
+- `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
+  finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
+  physical operator and signed-hypercubic Reynolds average, surject onto that
+  same joint relation submodule for either policy, with range equal to the
+  whole submodule. Shared off-shell cochains retain their ambient invariant
+  semantics on shell. This identifies the finite relation object; it does not
+  yet provide the full
+  noncommutative Wilson-functional-to-cochain dual jets.
 - The support recurrence is reduced to a manuscript branch choice:
   coarsen-then-thicken is uniformly bounded, while thicken-only is unbounded.
 - The two-marked centered correlation identity is a named API; a canary proves

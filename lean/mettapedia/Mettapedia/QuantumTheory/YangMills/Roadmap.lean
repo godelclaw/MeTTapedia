@@ -26,6 +26,7 @@ open V14HypercubicQuarticWilsonBridge
 open V14HypercubicFDCensusPaddingNoGo
 open HypercubicDimension16PhysicalRelationOperator
 open HypercubicDimension16JointPhysicalQuotient
+open HypercubicDimension16FDIBPCochainJointBridge
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -138,8 +139,8 @@ def yangMillsJointPhysicalRelationRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 99
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "currentYangMillsJointPhysicalRelation_packet gives the lower bound 11558 for the coordinate-free joint invariant relation submodule under either policy. It combines 11556 field-eight trace rows, a seven-to-eight commutator relation, and a field-five separator; it is not a complete relation rank, quotient dimension, or conditioning result."
-  nextObligation := "Complete the policy-indexed relation census and sparse dual conditioning certificate for the joint quotient, then derive Wilson-functional-to-cochain coordinates and analytic estimates in the same repaired norm."
+  evidence := "currentYangMillsJointPhysicalRelation_packet gives the lower bound 11558 for the coordinate-free joint invariant relation submodule under either policy. It combines 11556 field-eight trace rows, a seven-to-eight commutator relation, and a field-five separator. OUR finite F,D/IBP cochain bridge is equivariant and has range equal to this whole submodule; common off-shell cochains have the same ambient invariant semantics on shell. This is not a complete relation rank, quotient dimension, conditioning result, or a full Wilson-functional coordinate construction."
+  nextObligation := "Complete the policy-indexed relation census and sparse dual conditioning certificate for the identified quotient, then derive full Wilson-functional-to-cochain coordinates and analytic estimates in the same repaired norm."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -300,8 +301,11 @@ theorem currentYangMillsRoadmap_records_joint_physical_relation_interface :
     yangMillsJointPhysicalRelationRoadmapEntry.status = .checked ∧
       yangMillsJointPhysicalRelationRoadmapEntry.progressPercent = 100 ∧
       (∀ policy : PhysicalRelationPolicy,
-        11558 ≤ Module.finrank ℚ (jointInvariantRelationSubmodule policy)) := by
-  exact ⟨rfl, rfl, currentYangMillsJointPhysicalRelation_packet⟩
+        11558 ≤ Module.finrank ℚ (jointInvariantRelationSubmodule policy)) ∧
+      (∀ policy : PhysicalRelationPolicy,
+        Function.Surjective (ourFDIBPCochainToJointRelation policy)) := by
+  exact ⟨rfl, rfl, currentYangMillsJointPhysicalRelation_packet,
+    currentYangMillsFDIBPCochainJointBridge_surjective⟩
 
 #print axioms currentYangMillsRoadmap_records_joint_physical_relation_interface
 
