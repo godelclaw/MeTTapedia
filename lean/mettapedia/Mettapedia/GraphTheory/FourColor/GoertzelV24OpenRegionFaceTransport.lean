@@ -355,6 +355,55 @@ theorem openFaceEdge_eq_of_ambient_edge_eq_two_faces
     rw [hdarts]
     exact ((rewiredDartSystem RS keep outer).edgeOf_alpha _).symm
 
+/-- Conversely, the literal opening does not identify ambient edges that
+belong to two different fully retained faces. -/
+theorem ambient_edge_eq_of_openFaceEdge_eq_two_faces
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (left : {point // RS.phi.SameCycle leftRoot point})
+    (right : {point // RS.phi.SameCycle rightRoot point})
+    (hedge : openFaceEdge RS keep outer leftRoot hleft left =
+      openFaceEdge RS keep outer rightRoot hright right) :
+    RS.edgeOf left.1 = RS.edgeOf right.1 := by
+  have hcases := ((rewiredDartSystem RS keep outer).edgeOf_eq_edgeOf_iff
+      (openFaceDart RS keep leftRoot hleft left)
+      (openFaceDart RS keep rightRoot hright right)).1 hedge
+  rcases hcases with hsame | hopposite
+  · change (Sum.inl ⟨left.1, hleft left.1 left.2⟩ : Dart RS keep) =
+      Sum.inl ⟨right.1, hright right.1 right.2⟩ at hsame
+    have hvalues : left.1 = right.1 := by
+      exact congrArg Subtype.val (Sum.inl.inj hsame)
+    rw [hvalues]
+  · change (Sum.inl ⟨left.1, hleft left.1 left.2⟩ : Dart RS keep) =
+      alpha RS keep (Sum.inl ⟨right.1, hright right.1 right.2⟩) at hopposite
+    rw [alpha_old_of_internal RS keep _
+      (alpha_endpoint_keep_of_faceFullyRetained
+        RS keep rightRoot hright right)] at hopposite
+    have hvalues : left.1 = RS.alpha right.1 := by
+      exact congrArg Subtype.val (Sum.inl.inj hopposite)
+    rw [hvalues, RS.edge_alpha]
+
+/-- Exact cross-face edge-incidence preservation for two fully retained
+ambient faces. -/
+theorem openFaceEdge_eq_iff_ambient_edge_eq_two_faces
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (left : {point // RS.phi.SameCycle leftRoot point})
+    (right : {point // RS.phi.SameCycle rightRoot point}) :
+    openFaceEdge RS keep outer leftRoot hleft left =
+        openFaceEdge RS keep outer rightRoot hright right ↔
+      RS.edgeOf left.1 = RS.edgeOf right.1 :=
+  ⟨ambient_edge_eq_of_openFaceEdge_eq_two_faces
+      RS keep outer leftRoot rightRoot hleft hright left right,
+    openFaceEdge_eq_of_ambient_edge_eq_two_faces
+      RS keep outer leftRoot rightRoot hleft hright left right⟩
+
 /-- The literal opening does not identify two distinct old ambient edges on
 a fully retained face. -/
 theorem ambient_edge_eq_of_openFaceEdge_eq
@@ -442,6 +491,86 @@ theorem openFaceOrbit_adj_of_shared_ambient_edge
     rw [mem_orbitFaceDarts_iff]
     apply Quotient.sound
     exact (openFaceCycleMap RS keep outer rightRoot hright right).2.symm
+
+/-- Every open dual adjacency between two fully retained face images comes
+from a shared ambient edge occurrence.  The cycle equivalences rule out a
+new adjacency manufactured solely by the boundary stubs. -/
+theorem exists_shared_ambient_edge_of_openFaceOrbit_adj
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (hadj :
+      (interiorDualGraph
+        (orbitFaceBoundary (rotationSystem RS keep outer))
+        (Finset.univ : Finset (OrbitFace (rotationSystem RS keep outer)))).Adj
+          ⟨openFaceOrbit RS keep outer leftRoot hleft, Finset.mem_univ _⟩
+          ⟨openFaceOrbit RS keep outer rightRoot hright, Finset.mem_univ _⟩) :
+    ∃ left : {point // RS.phi.SameCycle leftRoot point},
+      ∃ right : {point // RS.phi.SameCycle rightRoot point},
+        RS.edgeOf left.1 = RS.edgeOf right.1 := by
+  rcases (interiorDualGraph_adj_iff
+      (orbitFaceBoundary (rotationSystem RS keep outer))
+      (Finset.univ : Finset (OrbitFace (rotationSystem RS keep outer)))).1 hadj with
+    ⟨_, edge, _, hedgeLeft, hedgeRight⟩
+  rw [mem_orbitFaceBoundary_iff] at hedgeLeft hedgeRight
+  rcases hedgeLeft with ⟨leftDart, hleftDartFace, hleftEdge⟩
+  rcases hedgeRight with ⟨rightDart, hrightDartFace, hrightEdge⟩
+  have hleftCycle :
+      (rotationSystem RS keep outer).phi.SameCycle
+        (openFaceRoot RS keep leftRoot hleft) leftDart := by
+    rw [mem_orbitFaceDarts_iff] at hleftDartFace
+    exact (Quotient.exact hleftDartFace).symm
+  have hrightCycle :
+      (rotationSystem RS keep outer).phi.SameCycle
+        (openFaceRoot RS keep rightRoot hright) rightDart := by
+    rw [mem_orbitFaceDarts_iff] at hrightDartFace
+    exact (Quotient.exact hrightDartFace).symm
+  rcases (openFaceCycleEquiv RS keep outer leftRoot hleft).surjective
+      ⟨leftDart, hleftCycle⟩ with ⟨left, hleftImage⟩
+  rcases (openFaceCycleEquiv RS keep outer rightRoot hright).surjective
+      ⟨rightDart, hrightCycle⟩ with ⟨right, hrightImage⟩
+  have hleftImageDart : openFaceDart RS keep leftRoot hleft left = leftDart :=
+    congrArg Subtype.val hleftImage
+  have hrightImageDart : openFaceDart RS keep rightRoot hright right = rightDart :=
+    congrArg Subtype.val hrightImage
+  refine ⟨left, right, ?_⟩
+  apply ambient_edge_eq_of_openFaceEdge_eq_two_faces
+    RS keep outer leftRoot rightRoot hleft hright left right
+  calc
+    openFaceEdge RS keep outer leftRoot hleft left = edge := by
+      unfold openFaceEdge
+      rw [hleftImageDart]
+      exact hleftEdge
+    _ = openFaceEdge RS keep outer rightRoot hright right := by
+      unfold openFaceEdge
+      rw [hrightImageDart]
+      exact hrightEdge.symm
+
+/-- Exact facial-dual adjacency transport for two distinct fully retained
+ambient faces. -/
+theorem openFaceOrbit_adj_iff_exists_shared_ambient_edge
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (hne : dartOrbitFace RS leftRoot ≠ dartOrbitFace RS rightRoot) :
+    (interiorDualGraph
+      (orbitFaceBoundary (rotationSystem RS keep outer))
+      (Finset.univ : Finset (OrbitFace (rotationSystem RS keep outer)))).Adj
+        ⟨openFaceOrbit RS keep outer leftRoot hleft, Finset.mem_univ _⟩
+        ⟨openFaceOrbit RS keep outer rightRoot hright, Finset.mem_univ _⟩ ↔
+      ∃ left : {point // RS.phi.SameCycle leftRoot point},
+        ∃ right : {point // RS.phi.SameCycle rightRoot point},
+          RS.edgeOf left.1 = RS.edgeOf right.1 := by
+  constructor
+  · exact exists_shared_ambient_edge_of_openFaceOrbit_adj
+      RS keep outer leftRoot rightRoot hleft hright
+  · rintro ⟨left, right, hedge⟩
+    exact openFaceOrbit_adj_of_shared_ambient_edge
+      RS keep outer leftRoot rightRoot hleft hright hne left right hedge
 
 end
 
