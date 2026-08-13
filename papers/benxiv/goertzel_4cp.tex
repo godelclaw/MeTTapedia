@@ -416,6 +416,17 @@ reduction of the formation gap, not its solution.  The incidence predicate is
 not assumed by the source instance and the new module does not construct the
 Cell--3 opening that must establish it.
 
+The generic opening calculation needed by that construction is now available
+in \texttt{GoertzelV24OpenRegionEndpointIncidence}.  If two ambient edges meet
+at a vertex and that vertex is retained, their computed literal-open edges
+meet at the corresponding retained vertex.  Applied to two fully retained
+ambient face occurrences, the result uses the same fixed opened rotation
+system on both sides.  Consequently the remaining incidence transport is no
+longer an abstract claim that opening ``preserves local geometry'': it is the
+specific source-side membership statement that the common vertex selected by
+the closed bounded-interaction theorem lies in the Cell--3 retained region,
+together with the already named face and edge identifications.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
