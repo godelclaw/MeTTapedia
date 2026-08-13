@@ -434,8 +434,9 @@ The consumer-facing theorem
 then identifies the three canonical pairwise shared primal edges themselves
 and proves that one ambient vertex belongs to all three.  Thus the dual
 triangle is the link of one primal vertex, rather than an arbitrary separating
-triangle.  This is the closed-map bounded-interaction classification needed by
-the source.
+triangle.  This is a closed-map bounded-interaction classification under
+stronger historical minimal-counterexample hypotheses; it is not itself the
+current Fable L1 flag.
 
 The closed classification is now complete in
 \texttt{GoertzelV24MinimalCorridorCommonNeighbors}.  Its theorem
@@ -455,15 +456,18 @@ edges, namely the rung and its immediate flank.  Since the target edge is not
 the rung, it is the flank.  Thus the bounded local classification is no longer
 an assumption on the closed map.
 
-What remains is transport, not another closed classification.  The three
-faces, the outgoing rung, and its two flank edges must be carried through the
-actual source opening and identified with the literal Cell--3 objects.  Only
-then does this theorem discharge \texttt{CommonNeighborsExact} on the open
-carrier.  The latter has degree-one boundary stubs and is provably incompatible
-with the closed cubic minimal-counterexample structure, so adding minimality
-as a field of the open instance would be inconsistent, not a shortcut.  The
-remaining statement must construct the explicit closed-map-to-open-annulus
-formation and preserve the relevant interior faces and shared boundary edges.
+The possible transport problem is now precise, but it is not currently a
+source-critical construction.  Addendum~XXV's Seed Lemma first reduces a
+minimal annular-frontier counterexample only to girth at least five and no
+2-cuts; its L1 is then a finite classification producing a bulk all-hexagonal
+ladder.  It does not supply cyclic five-edge-connectivity, a closed
+graph-backed minimal map, or a cap opening.  Consequently this closed theorem
+cannot yet discharge \texttt{CommonNeighborsExact} on the open carrier.  Such
+a use would first need a source-faithful finite L1 collar classification that
+handles the separating-three-edge-cut case explicitly, rather than silently
+excluding it through stronger closed-map minimality.  The degree-one boundary
+stubs also make adding that minimality directly to the open instance
+inconsistent, not a shortcut.
 
 The strictly local open-carrier implication is now machine-checked as well.
 The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
