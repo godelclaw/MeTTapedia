@@ -397,6 +397,25 @@ as a field of the open instance would be inconsistent, not a shortcut.  The
 remaining statement must construct the explicit closed-map-to-open-annulus
 formation and preserve the relevant interior faces and shared boundary edges.
 
+The strictly local open-carrier implication is now machine-checked as well.
+The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
+opening, the outgoing rung and the canonical edge from the centre to each
+common neighbour still share one primal endpoint.  The theorem
+
+\begin{center}
+\texttt{commonNeighborEdgesExact\_of\_commonNeighborVertexIncidence}
+\end{center}
+
+uses cubicity at that retained endpoint, edge-simplicity and local
+two-sidedness of the displayed interior face, and parity of face-boundary
+incidence to force the second edge to be one of the two immediate flanks.  A
+second theorem then derives \texttt{CommonNeighborsExact}.  Thus the open
+classification no longer needs the entire closed minimality package: it needs
+one concrete incidence fact preserved by the source opening.  This is a
+reduction of the formation gap, not its solution.  The incidence predicate is
+not assumed by the source instance and the new module does not construct the
+Cell--3 opening that must establish it.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
