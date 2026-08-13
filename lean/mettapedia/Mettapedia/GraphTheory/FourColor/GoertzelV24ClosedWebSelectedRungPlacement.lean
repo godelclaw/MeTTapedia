@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalRungPlacement
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebInteriorFaceGeometry
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabSideAdjacency
 
 /-!
@@ -23,6 +24,7 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebBoundaryData.AnnularBoundaryData
+open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
@@ -198,6 +200,125 @@ theorem card_selectedPlacementSidePositions_eq_four
     simp
   rw [selectedPlacementSidePositions, Finset.card_sdiff_of_subset hsubset]
   simp [placement.positions_ne, placement.orbit_card]
+
+/-- The literal face across one selected non-rung slot.  This definition uses
+the opposite ambient dart directly; no global uniqueness of face intersections
+is part of the data. -/
+noncomputable def selectedPlacementSideFace
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)) :=
+  ⟨dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha
+        (faceCycleDart web.annular.RS placement.root position.1)),
+    Finset.mem_univ _⟩
+
+/-- The dart at every selected side slot remains on the certified interior
+Cell-3 hexagon. -/
+theorem selectedPlacementSideDart_internal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    dartOrbitFace web.annular.RS
+        (faceCycleDart web.annular.RS placement.root position.1) ∈
+      web.annular.cellulation.interiorFaces := by
+  rw [dartOrbitFace_faceCycleDart, placement.root_face]
+  exact corridor.face_internal interior.center
+
+/-- The face across a selected side slot is not the corridor centre itself. -/
+theorem selectedPlacementSideFace_val_ne_center
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    (selectedPlacementSideFace placement position).1 ≠
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center).1 := by
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  intro hsame
+  change dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha sideDart) =
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center).1 at hsame
+  apply InteriorFace.dartOrbitFace_ne_alpha web sideDart
+    (selectedPlacementSideDart_internal (corridor := corridor) placement position)
+  calc
+    dartOrbitFace web.annular.RS sideDart =
+        dartOrbitFace web.annular.RS placement.root := by
+          exact dartOrbitFace_faceCycleDart web.annular.RS placement.root position.1
+    _ = ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center).1 := placement.root_face
+    _ = dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha sideDart) := hsame.symm
+
+/-- A selected side face is genuinely facial-dual adjacent to the Cell-3
+corridor centre, witnessed by its own literal primal edge. -/
+theorem selectedPlacementSideFace_adjacent_center
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center)
+        (selectedPlacementSideFace placement position) := by
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  refine interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+    (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))
+    (orbitFace_incidence_le_two web.annular.RS)
+    (e := web.annular.RS.edgeOf sideDart) ?_ ?_ ?_
+  · intro hsame
+    apply selectedPlacementSideFace_val_ne_center (corridor := corridor) placement position
+    exact hsame.symm
+  · change web.annular.RS.edgeOf sideDart ∈ orbitFaceBoundary web.annular.RS
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center).1
+    have hside := edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS sideDart
+    rw [dartOrbitFace_faceCycleDart, placement.root_face] at hside
+    exact hside
+  · change web.annular.RS.edgeOf sideDart ∈ orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart))
+    rw [← web.annular.RS.edge_alpha sideDart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha sideDart)
+
+/-- Boundary cleanliness keeps every selected side face away from the two
+annular holes. -/
+theorem selectedPlacementSideFace_internal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    (selectedPlacementSideFace placement position).1 ∈
+      web.annular.cellulation.interiorFaces := by
+  exact corridor.neighbor_internal interior.center
+    (selectedPlacementSideFace placement position)
+    (selectedPlacementSideFace_adjacent_center (corridor := corridor) placement position)
 
 namespace Instance
 
