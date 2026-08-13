@@ -345,11 +345,14 @@ The first generic piece of this formation is now constructed in
 be wholly based at vertices retained by the literal open-region construction.
 Lean proves that following the ambient face permutation never enters a fresh
 boundary stub, that the old-dart embedding commutes with every face step, and
-that the complete ambient and open dart cycles are equivalent.  Thus an
-untouched face is transported as an actual finite orbit, not merely identified
-by a matching cardinality or assumed through a wrapper.  What remains is
-source-specific: prove that the Cell--3 flank faces satisfy the retention
-criterion, transport their shared primal boundary edges, and use the resulting
+that the complete ambient and open dart cycles are equivalent.  It also proves
+an exact edge-incidence statement: two transported face darts name the same
+computed open edge if and only if they named the same ambient edge.  Thus an
+untouched face is transported as an actual finite orbit without splitting or
+identifying its old boundary edges, not merely identified by a matching
+cardinality or assumed through a wrapper.  What remains is source-specific:
+prove that the Cell--3 flank faces satisfy the retention criterion, apply the
+edge transport simultaneously to their shared boundary, and use the resulting
 ribbon boundary to turn the existing primal radial witness into the two
 separated facial-dual crosscuts.  The new theorem removes one formation gap;
 it does not itself construct the crosscut pair.

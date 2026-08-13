@@ -225,6 +225,102 @@ def openFaceCycleEquiv
     ((Fintype.bijective_iff_injective_and_card map).2
       ⟨hinjective, hcardTypes⟩)
 
+/-- The literal-open edge met by one dart of a fully retained ambient face. -/
+def openFaceEdge
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : RS.D) (hface : FaceFullyRetained RS keep root)
+    (point : {point // RS.phi.SameCycle root point}) :
+    (rewiredDartSystem RS keep
+      (openFaceRoot RS keep root hface)).Edge :=
+  (rewiredDartSystem RS keep
+    (openFaceRoot RS keep root hface)).edgeOf
+      (openFaceDart RS keep root hface point)
+
+/-- Equal ambient edges on a fully retained face remain the same computed
+edge after literally opening the retained region. -/
+theorem openFaceEdge_eq_of_ambient_edge_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : RS.D) (hface : FaceFullyRetained RS keep root)
+    (left right : {point // RS.phi.SameCycle root point})
+    (hedge : RS.edgeOf left.1 = RS.edgeOf right.1) :
+    openFaceEdge RS keep root hface left =
+      openFaceEdge RS keep root hface right := by
+  rcases RS.edge_fiber_two_cases (e := RS.edgeOf left.1)
+      (d := left.1) (y := right.1) rfl hedge.symm with hsame | hopposite
+  · apply congrArg (openFaceEdge RS keep root hface)
+    exact Subtype.ext hsame.symm
+  · have hdarts : openFaceDart RS keep root hface right =
+        (rotationSystem RS keep
+          (openFaceRoot RS keep root hface)).alpha
+          (openFaceDart RS keep root hface left) := by
+      change (Sum.inl ⟨right.1, hface right.1 right.2⟩ : Dart RS keep) =
+        alpha RS keep (Sum.inl ⟨left.1, hface left.1 left.2⟩)
+      rw [alpha_old_of_internal RS keep _
+        (alpha_endpoint_keep_of_faceFullyRetained RS keep root hface left)]
+      apply congrArg Sum.inl
+      apply Subtype.ext
+      exact hopposite
+    change (rewiredDartSystem RS keep
+        (openFaceRoot RS keep root hface)).edgeOf
+          (openFaceDart RS keep root hface left) =
+      (rewiredDartSystem RS keep
+        (openFaceRoot RS keep root hface)).edgeOf
+          (openFaceDart RS keep root hface right)
+    rw [hdarts]
+    change (rewiredDartSystem RS keep
+        (openFaceRoot RS keep root hface)).edgeOf
+          (openFaceDart RS keep root hface left) =
+      (rewiredDartSystem RS keep
+        (openFaceRoot RS keep root hface)).edgeOf
+          ((rewiredDartSystem RS keep
+            (openFaceRoot RS keep root hface)).alpha
+              (openFaceDart RS keep root hface left))
+    exact ((rewiredDartSystem RS keep
+      (openFaceRoot RS keep root hface)).edgeOf_alpha _).symm
+
+/-- The literal opening does not identify two distinct old ambient edges on
+a fully retained face. -/
+theorem ambient_edge_eq_of_openFaceEdge_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : RS.D) (hface : FaceFullyRetained RS keep root)
+    (left right : {point // RS.phi.SameCycle root point})
+    (hedge : openFaceEdge RS keep root hface left =
+      openFaceEdge RS keep root hface right) :
+    RS.edgeOf left.1 = RS.edgeOf right.1 := by
+  have hcases := ((rewiredDartSystem RS keep
+    (openFaceRoot RS keep root hface)).edgeOf_eq_edgeOf_iff
+      (openFaceDart RS keep root hface left)
+      (openFaceDart RS keep root hface right)).1 hedge
+  rcases hcases with hsame | hopposite
+  · change (Sum.inl ⟨left.1, hface left.1 left.2⟩ : Dart RS keep) =
+      Sum.inl ⟨right.1, hface right.1 right.2⟩ at hsame
+    have hretained :
+        (⟨left.1, hface left.1 left.2⟩ : RetainedDart RS keep) =
+          ⟨right.1, hface right.1 right.2⟩ :=
+      Sum.inl.inj hsame
+    have hvalues : left.1 = right.1 :=
+      congrArg (fun dart : RetainedDart RS keep => dart.1) hretained
+    rw [hvalues]
+  · change (Sum.inl ⟨left.1, hface left.1 left.2⟩ : Dart RS keep) =
+      alpha RS keep (Sum.inl ⟨right.1, hface right.1 right.2⟩) at hopposite
+    rw [alpha_old_of_internal RS keep _
+      (alpha_endpoint_keep_of_faceFullyRetained
+        RS keep root hface right)] at hopposite
+    have hvalues : left.1 = RS.alpha right.1 := by
+      exact congrArg Subtype.val (Sum.inl.inj hopposite)
+    rw [hvalues, RS.edge_alpha]
+
+/-- Exact edge-incidence preservation for a fully retained face. -/
+theorem openFaceEdge_eq_iff_ambient_edge_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (root : RS.D) (hface : FaceFullyRetained RS keep root)
+    (left right : {point // RS.phi.SameCycle root point}) :
+    openFaceEdge RS keep root hface left =
+        openFaceEdge RS keep root hface right ↔
+      RS.edgeOf left.1 = RS.edgeOf right.1 :=
+  ⟨ambient_edge_eq_of_openFaceEdge_eq RS keep root hface left right,
+    openFaceEdge_eq_of_ambient_edge_eq RS keep root hface left right⟩
+
 end
 
 end GoertzelV24OpenRegionFaceTransport
