@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalRailSeparation
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathTransversalAppend
 
 /-!
 # Appending consecutive literal Cell-3 rail steps
@@ -46,17 +47,6 @@ attribute [-instance]
 namespace Instance
 
 namespace LocalLayerFormation
-
-private theorem walk_append_isPath_of_support_disjoint
-    {F : Type*} {H : SimpleGraph F}
-    {start middle finish : F}
-    (left : H.Walk start middle) (right : H.Walk middle finish)
-    (hleft : left.IsPath) (hright : right.IsPath)
-    (hdisjoint : left.support.Disjoint right.support.tail) :
-    (left.append right).IsPath := by
-  rw [SimpleGraph.Walk.isPath_def, SimpleGraph.Walk.support_append,
-    List.nodup_append']
-  exact ⟨hleft.support_nodup, hright.support_nodup.tail, hdisjoint⟩
 
 namespace SourceLocalRailSuccessor
 
@@ -412,7 +402,7 @@ theorem firstRail_append_isPath
       leftAfter hleftBefore hleftAfter rightPlacement)
     (hexact : successor.CommonNeighborsExact) :
     (left.firstRail.append successor.firstContinuation).IsPath :=
-  walk_append_isPath_of_support_disjoint left.firstRail
+  GoertzelV24DualPathTransversal.walk_append_isPath_of_support_disjoint left.firstRail
     successor.firstContinuation left.firstRail_isPath
     successor.firstContinuation_isPath
     (successor.firstRail_support_disjoint_firstContinuation_tail left hexact)
@@ -424,7 +414,7 @@ theorem secondRail_append_isPath
       leftAfter hleftBefore hleftAfter rightPlacement)
     (hexact : successor.CommonNeighborsExact) :
     (left.secondRail.append successor.secondContinuation).IsPath :=
-  walk_append_isPath_of_support_disjoint left.secondRail
+  GoertzelV24DualPathTransversal.walk_append_isPath_of_support_disjoint left.secondRail
     successor.secondContinuation left.secondRail_isPath
     successor.secondContinuation_isPath
     (successor.secondRail_support_disjoint_secondContinuation_tail left hexact)

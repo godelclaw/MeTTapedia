@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailPair
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathTransversalAppend
 
 /-!
 # Composing concrete rails along a source corridor
@@ -45,20 +46,6 @@ local instance corridorRailChainGraphEdgeSetDecidableEq : DecidableEq G.edgeSet 
 namespace SourceTrail
 
 namespace AnnularEmbedding
-
-/-- Appending two simple walks is simple when the second walk has no new
-intersection with the first one.  The common joining face is omitted from the
-second support tail, exactly as it is in the definition of walk append. -/
-private theorem walk_append_isPath_of_support_disjoint
-    {F : Type*} {H : SimpleGraph F}
-    {start middle finish : F}
-    (left : H.Walk start middle) (right : H.Walk middle finish)
-    (hleft : left.IsPath) (hright : right.IsPath)
-    (hdisjoint : left.support.Disjoint right.support.tail) :
-    (left.append right).IsPath := by
-  rw [SimpleGraph.Walk.isPath_def, SimpleGraph.Walk.support_append,
-    List.nodup_append']
-  exact ⟨hleft.support_nodup, hright.support_nodup.tail, hdisjoint⟩
 
 /-- The source anchor of a face is preserved when two local rail walks are
 appended: it comes from the first cell, the shared cell, or the last cell.
@@ -188,10 +175,12 @@ def sourceCornerAlignedRailChain_of_pairs
   firstRail := leftPair.firstRail.append rightPair.firstRail
   secondRail := leftPair.secondRail.append rightPair.secondRail
   firstRail_isPath :=
-    walk_append_isPath_of_support_disjoint leftPair.firstRail rightPair.firstRail
+    GoertzelV24DualPathTransversal.walk_append_isPath_of_support_disjoint
+      leftPair.firstRail rightPair.firstRail
       leftPair.firstRail_isPath rightPair.firstRail_isPath hfirst
   secondRail_isPath :=
-    walk_append_isPath_of_support_disjoint leftPair.secondRail rightPair.secondRail
+    GoertzelV24DualPathTransversal.walk_append_isPath_of_support_disjoint
+      leftPair.secondRail rightPair.secondRail
       leftPair.secondRail_isPath rightPair.secondRail_isPath hsecond
   firstRail_length_le_four := by
     simp only [SimpleGraph.Walk.length_append]

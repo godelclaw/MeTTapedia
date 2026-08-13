@@ -23,6 +23,22 @@ variable {F E : Type*} [Fintype F] [DecidableEq F]
 
 noncomputable section
 
+/-- Appending simple walks remains simple when the second walk introduces no
+new vertex after their common joining point.  This is the path-composition
+fact needed by any concrete construction of a long facial-dual transversal;
+the geometric work is precisely to establish the displayed support
+disjointness premise. -/
+theorem walk_append_isPath_of_support_disjoint
+    {X : Type*} {H : SimpleGraph X}
+    {start middle finish : X}
+    (left : H.Walk start middle) (right : H.Walk middle finish)
+    (hleft : left.IsPath) (hright : right.IsPath)
+    (hdisjoint : left.support.Disjoint right.support.tail) :
+    (left.append right).IsPath := by
+  rw [SimpleGraph.Walk.isPath_def, SimpleGraph.Walk.support_append,
+    List.nodup_append']
+  exact ⟨hleft.support_nodup, hright.support_nodup.tail, hdisjoint⟩
+
 /-- A step in the left summand of an appended facial-dual walk crosses the
 same primal edge after the append. -/
 theorem dualWalkCrossingEdge_append_left
