@@ -418,6 +418,63 @@ theorem selectedPlacementSideFace_eq_implies_two_distinct_sharedInteriorEdges
   change web.annular.RS.edgeOf leftDart = web.annular.RS.edgeOf rightDart
   exact hedges
 
+/-- One directed step through the four surviving side slots of a selected
+Cell-3 hexagon has exactly the finite local alternatives needed by flag L1.
+Either its two opposite-dart faces coincide, in which case the preceding
+theorem exposes the resulting two-shared-edge collision, or the local
+three-dart rotation supplies the literal exterior facial-dual rail edge.
+
+This deliberately does not discard the coincidence branch by importing the
+closed minimal-counterexample intersection theorem into the open tangle. -/
+theorem selectedPlacementSideFaces_eq_or_adjacent_of_forwardStep
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (left right : {position // position ∈ selectedPlacementSidePositions placement})
+    (hsuccessor : right.1.val ≡ left.1.val + 1 [MOD 6]) :
+    selectedPlacementSideFace placement left =
+        selectedPlacementSideFace placement right ∨
+      (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (selectedPlacementSideFace placement left)
+          (selectedPlacementSideFace placement right) := by
+  let leftDart := faceCycleDart web.annular.RS placement.root left.1
+  let rightDart := faceCycleDart web.annular.RS placement.root right.1
+  have hdarts : rightDart = web.annular.RS.phi leftDart := by
+    exact faceCycleDart_successor_of_modEq web.annular.RS placement.root
+      placement.orbit_card left.1 right.1 hsuccessor
+  by_cases hfaces : selectedPlacementSideFace placement left =
+      selectedPlacementSideFace placement right
+  · exact Or.inl hfaces
+  · right
+    have hfacesNe : dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha leftDart) ≠
+        dartOrbitFace web.annular.RS
+          (web.annular.RS.alpha (web.annular.RS.phi leftDart)) := by
+      intro heq
+      apply hfaces
+      apply Subtype.ext
+      change dartOrbitFace web.annular.RS
+          (web.annular.RS.alpha leftDart) =
+        dartOrbitFace web.annular.RS
+          (web.annular.RS.alpha rightDart)
+      rw [hdarts]
+      exact heq
+    have hcornerCard : (web.annular.RS.dartsAt
+        (web.annular.RS.vertOf (web.annular.RS.alpha leftDart))).card = 3 := by
+      apply Instance.InteriorFace.dartsAt_card_eq_three web
+      change (selectedPlacementSideFace placement left).1 ∈
+        web.annular.cellulation.interiorFaces
+      exact selectedPlacementSideFace_internal (corridor := corridor)
+        placement left
+    have hadj := oppositeFaces_adjacent_at_locally_cubic_corner web.annular.RS
+      (Instance.InteriorFace.vertexRotationCyclic web) leftDart hcornerCard hfacesNe
+    simpa only [selectedPlacementSideFace, leftDart, rightDart, hdarts] using hadj
+
 namespace Instance
 
 /-- A boundary-clean Cell-3 corridor needs no global pairwise face-incidence
