@@ -431,6 +431,25 @@ def normalizedPhysicalRelationOperator
       ExactOrientedLocalSpace :=
   normalizeExactContextual.comp (physicalRelationOperator policy)
 
+/-- Field-strength antisymmetry has already been imposed by the exact
+contextual quotient.  Thus every such physical-generator column is zero
+before field relabeling or signed orbit averaging. -/
+theorem normalizedPhysicalRelationOperator_antisymmetry_zero
+    (policy : PhysicalRelationPolicy)
+    (carrier : RelationCarrier) (slot : Fin carrier.1.1)
+    (coefficient : ℚ) :
+    normalizedPhysicalRelationOperator policy
+      (Finsupp.single (.antisymmetry carrier slot) coefficient) = 0 := by
+  have hrow :
+      normalizeExactContextual (fieldAntisymmetryRow carrier slot) = 0 := by
+    simpa [exactContextualRelationRow] using
+      (normalizeExactContextual_exactContextualRelationRow
+        (Sum.inl
+          ({ carrier := carrier, slot := slot } :
+            ExactContextualFieldAntisymmetrySite)))
+  simp [normalizedPhysicalRelationOperator, physicalRelationOperator_single,
+    physicalRelationRow, hrow]
+
 theorem normalizedPhysicalRelationOperator_equivariant
     (policy : PhysicalRelationPolicy) (h : Hypercubic4)
     (value : PhysicalRelationGeneratorSpace policy) :

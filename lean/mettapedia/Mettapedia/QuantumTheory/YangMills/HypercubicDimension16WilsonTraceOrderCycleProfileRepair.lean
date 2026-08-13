@@ -193,6 +193,30 @@ def ourCycleProfileInvariantTraceOrderCorrection :
   ourThreeCoordinateInvariantTraceOrderCorrection +
     ourTraceCycleProfileInvariantTraceContribution
 
+/-- OUR profile correction has only two possible carrier channels: the
+Reynolds-averaged seven-field projection and the field-eight trace
+projection.  If both channels vanish, so does the correction. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_zero_of_projections_zero
+    (value : ExactFieldRelabelOrbitSpace)
+    (hseven : exactFieldSevenProjection (exactFieldOrbitReynolds value) = 0)
+    (height : exactFieldEightTraceProjection value = 0) :
+    ourCycleProfileInvariantTraceOrderCorrection value = 0 := by
+  unfold ourCycleProfileInvariantTraceOrderCorrection
+    ourTraceCycleProfileInvariantTraceContribution
+    ourThreeCoordinateInvariantTraceOrderCorrection
+    ourThirdInvariantTraceContribution
+    ourTwoCoordinateInvariantTraceOrderCorrection
+    ourTwoCoordinateInvariantSevenTraceCompensator
+    ourTwoCoordinateInvariantSevenAxisCoordinate
+    ourInvariantSevenAxisCoordinate
+    ourInvariantIBPAxisCoordinate
+    ourInvariantThirdIBPAxisCoordinate
+    ourInvariantTraceCycleProfileCoordinate
+  simp only [LinearMap.add_apply, LinearMap.sub_apply,
+    LinearMap.smulRight_apply, LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [hseven, height]
+  simp
+
 /-- OUR full profile correction is unchanged by exact-field Reynolds
 averaging. -/
 theorem ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds
@@ -204,6 +228,33 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds
   simp only [LinearMap.add_apply, LinearMap.smulRight_apply]
   rw [ourThreeCoordinateInvariantTraceOrderCorrection_exactFieldOrbitReynolds,
     ourInvariantTraceCycleProfileCoordinate_exactFieldOrbitReynolds]
+
+/-- Field-strength antisymmetry is already zero after exact contextual
+normalization.  Consequently OUR profile correction is compatible uniformly
+with every physical antisymmetry site, not just with a selected finite
+carrier. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_antisymmetry_zero
+    (policy : PhysicalRelationPolicy)
+    (carrier : RelationCarrier) (slot : Fin carrier.1.1)
+    (coefficient : ℚ) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (.antisymmetry carrier slot) coefficient)) = 0 := by
+  rw [orbitPhysicalRelationOperator_antisymmetry_zero]
+  simp
+
+/-- The signed-Reynolds invariant representative of every field-strength
+antisymmetry site is likewise retained by OUR profile correction. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_invariantAntisymmetry_zero
+    (policy : PhysicalRelationPolicy)
+    (carrier : RelationCarrier) (slot : Fin carrier.1.1)
+    (coefficient : ℚ) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (exactFieldOrbitReynolds
+        (orbitPhysicalRelationOperator policy
+          (Finsupp.single (.antisymmetry carrier slot) coefficient))) = 0 := by
+  rw [ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds,
+    ourCycleProfileInvariantTraceOrderCorrection_antisymmetry_zero]
 
 /-! ## Bounded replay on the canonical fundamental three-cut row -/
 
@@ -591,6 +642,8 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_invariantTraceAnticommutato
 #print axioms ourInvariantTraceCycleProfileCoordinate_ourFundamentalThreeCut_zero
 #print axioms ourInvariantTraceCycleProfileCoordinate_ourTraceAnticommutator
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_exactFieldOrbitReynolds
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_antisymmetry_zero
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_invariantAntisymmetry_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_ourFundamentalThreeCut_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_ourTraceAnticommutator_zero
 #print axioms ourInvariantTraceCycleProfileCoordinate_fieldEightExactEmbed_zero
