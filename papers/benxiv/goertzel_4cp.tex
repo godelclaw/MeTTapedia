@@ -451,10 +451,21 @@ avoids both orientations of the missing edge.  Under exactly that condition,
 dart cycle and the whole computed face cycle of \texttt{deletedEdgeData}.
 Surjectivity is derived from the commuting face step and finite cycle
 cardinality; it is not assumed.  This proves exact orbit and face-length
-preservation for untouched faces.  It does not yet prove that two distinct
-ambient faces remain distinct after deletion, transport a shared primal edge
-between two faces, or establish the source-specific avoidance condition for
-the three Cell--3 faces.  Those are the next local bridge statements.
+preservation for untouched faces.  The same module now proves that two distinct
+untouched ambient faces remain distinct, transports equality of their shared
+primal edge in both directions, and packages the result as
+
+\begin{center}
+\texttt{deletedFaceOrbit\_adj\_iff\_ambientFaceOrbit\_adj}.
+\end{center}
+
+Thus deletion induces exactly the old facial-dual adjacency relation on the
+family of untouched face orbits: it neither loses a shared edge nor invents
+one between their images.  This is enough to transport any closed-map dual
+triangle once its three faces are proved untouched.  It does not establish
+that source-specific avoidance condition, nor show that every possible common
+neighbour in the open Cell--3 map belongs to the untouched family.  Those are
+the next local bridge statements.
 
 \subsection{The closure chain}
 

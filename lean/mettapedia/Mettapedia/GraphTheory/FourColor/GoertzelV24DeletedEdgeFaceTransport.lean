@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeRotation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutFaceOrbit
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitIncidence
 
 /-!
 # Untouched faces after deleting one graph edge
@@ -23,6 +24,7 @@ open SimpleGraphDartRotation
 open GoertzelV24DeletedEdgeTrail
 open GoertzelV24DeletedEdgeRotation
 open GoertzelV24OrderedCutFaceOrbit
+open GoertzelV24FaceOrbitIncidence
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
@@ -202,6 +204,304 @@ def deletedFaceCycleEquiv
   exact Equiv.ofBijective map
     ((Fintype.bijective_iff_injective_and_card map).2
       ⟨hinjective, hcardTypes⟩)
+
+/-- The face class occupied by one untouched ambient face after edge
+deletion. -/
+def deletedFaceOrbit
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (root : G.Dart) (hface : FaceAvoidsDeletedEdge data huv root) :
+    OrbitFace (deletedEdgeData data huv outer).toRotationSystem :=
+  dartOrbitFace (deletedEdgeData data huv outer).toRotationSystem
+    (deletedFaceRoot data huv root hface)
+
+@[simp]
+theorem deletedGraphDartEquiv_deletedFaceRoot
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (root : G.Dart) (hface : FaceAvoidsDeletedEdge data huv root) :
+    (deletedGraphDartEquiv huv
+      (deletedFaceRoot data huv root hface)).1 = root :=
+  rfl
+
+/-- Distinct untouched ambient faces remain distinct after deleting the edge.
+The result is derived from the complete cycle equivalence, not from a count of
+face classes. -/
+theorem deletedFaceOrbit_ne_of_ambient_ne
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (hne : dartOrbitFace data.toRotationSystem leftRoot ≠
+      dartOrbitFace data.toRotationSystem rightRoot) :
+    deletedFaceOrbit data huv outer leftRoot hleft ≠
+      deletedFaceOrbit data huv outer rightRoot hright := by
+  intro hdeletedFaces
+  have hdeletedCycle :
+      (deletedEdgeData data huv outer).toRotationSystem.phi.SameCycle
+        (deletedFaceRoot data huv leftRoot hleft)
+        (deletedFaceRoot data huv rightRoot hright) :=
+    Quotient.exact hdeletedFaces
+  let target : {point //
+      (deletedEdgeData data huv outer).toRotationSystem.phi.SameCycle
+        (deletedFaceRoot data huv leftRoot hleft) point} :=
+    ⟨deletedFaceRoot data huv rightRoot hright, hdeletedCycle⟩
+  rcases (deletedFaceCycleEquiv data huv outer leftRoot hleft).surjective target with
+    ⟨source, hsource⟩
+  have hambientRoot : (source.1 : G.Dart) = rightRoot := by
+    have hdeletedDart :
+        deletedFaceDart data huv leftRoot hleft source =
+          deletedFaceRoot data huv rightRoot hright :=
+      congrArg Subtype.val hsource
+    have hambient := congrArg
+      (fun dart => (deletedGraphDartEquiv huv dart).1)
+      hdeletedDart
+    calc
+      (source.1 : G.Dart) =
+          (deletedGraphDartEquiv huv
+            (deletedFaceDart data huv leftRoot hleft source)).1 := by rfl
+      _ = (deletedGraphDartEquiv huv
+          (deletedFaceRoot data huv rightRoot hright)).1 := hambient
+      _ = rightRoot := by rfl
+  apply hne
+  apply Quotient.sound
+  change data.toRotationSystem.phi.SameCycle leftRoot rightRoot
+  simpa only [hambientRoot] using source.2
+
+/-- The deleted-graph edge met by one dart of an untouched ambient face. -/
+def deletedFaceEdge
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (root : G.Dart) (hface : FaceAvoidsDeletedEdge data huv root)
+    (point : {point // data.toRotationSystem.phi.SameCycle root point}) :
+    (DeletedEdgeGraph G u v).edgeSet :=
+  (deletedEdgeData data huv outer).toRotationSystem.edgeOf
+    (deletedFaceDart data huv root hface point)
+
+/-- A shared ambient edge occurrence on two untouched faces remains one shared
+edge occurrence in the deleted graph. -/
+theorem deletedFaceEdge_eq_of_ambient_edge_eq_two_faces
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (left : {point // data.toRotationSystem.phi.SameCycle leftRoot point})
+    (right : {point // data.toRotationSystem.phi.SameCycle rightRoot point})
+    (hedge : data.toRotationSystem.edgeOf left.1 =
+      data.toRotationSystem.edgeOf right.1) :
+    deletedFaceEdge data huv outer leftRoot hleft left =
+      deletedFaceEdge data huv outer rightRoot hright right := by
+  apply Subtype.ext
+  change left.1.edge = right.1.edge
+  exact congrArg (fun edge : G.edgeSet => edge.1) hedge
+
+/-- Conversely, deleting an edge does not identify two distinct surviving
+ambient edge occurrences. -/
+theorem ambient_edge_eq_of_deletedFaceEdge_eq_two_faces
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (left : {point // data.toRotationSystem.phi.SameCycle leftRoot point})
+    (right : {point // data.toRotationSystem.phi.SameCycle rightRoot point})
+    (hedge : deletedFaceEdge data huv outer leftRoot hleft left =
+      deletedFaceEdge data huv outer rightRoot hright right) :
+    data.toRotationSystem.edgeOf left.1 =
+      data.toRotationSystem.edgeOf right.1 := by
+  apply Subtype.ext
+  change left.1.edge = right.1.edge
+  exact congrArg
+    (fun edge : (DeletedEdgeGraph G u v).edgeSet => edge.1) hedge
+
+/-- A shared surviving ambient edge makes the two transported untouched faces
+adjacent in the facial dual of the deleted graph. -/
+theorem deletedFaceOrbit_adj_of_shared_ambient_edge
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (hne : dartOrbitFace data.toRotationSystem leftRoot ≠
+      dartOrbitFace data.toRotationSystem rightRoot)
+    (left : {point // data.toRotationSystem.phi.SameCycle leftRoot point})
+    (right : {point // data.toRotationSystem.phi.SameCycle rightRoot point})
+    (hedge : data.toRotationSystem.edgeOf left.1 =
+      data.toRotationSystem.edgeOf right.1) :
+    (interiorDualGraph
+      (orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace (deletedEdgeData data huv outer).toRotationSystem))).Adj
+        ⟨deletedFaceOrbit data huv outer leftRoot hleft, Finset.mem_univ _⟩
+        ⟨deletedFaceOrbit data huv outer rightRoot hright, Finset.mem_univ _⟩ := by
+  apply interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+    (orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem)
+    (Finset.univ : Finset
+      (OrbitFace (deletedEdgeData data huv outer).toRotationSystem))
+    (orbitFace_incidence_le_two
+      (deletedEdgeData data huv outer).toRotationSystem)
+    (deletedFaceOrbit_ne_of_ambient_ne data huv outer
+      leftRoot rightRoot hleft hright hne)
+  · change deletedFaceEdge data huv outer leftRoot hleft left ∈
+      orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem
+        (deletedFaceOrbit data huv outer leftRoot hleft)
+    rw [mem_orbitFaceBoundary_iff]
+    refine ⟨deletedFaceDart data huv leftRoot hleft left, ?_, rfl⟩
+    rw [mem_orbitFaceDarts_iff]
+    apply Quotient.sound
+    exact (deletedFaceCycleMap data huv outer leftRoot hleft left).2.symm
+  · change deletedFaceEdge data huv outer leftRoot hleft left ∈
+      orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem
+        (deletedFaceOrbit data huv outer rightRoot hright)
+    rw [deletedFaceEdge_eq_of_ambient_edge_eq_two_faces data huv outer
+      leftRoot rightRoot hleft hright left right hedge]
+    rw [mem_orbitFaceBoundary_iff]
+    refine ⟨deletedFaceDart data huv rightRoot hright right, ?_, rfl⟩
+    rw [mem_orbitFaceDarts_iff]
+    apply Quotient.sound
+    exact (deletedFaceCycleMap data huv outer rightRoot hright right).2.symm
+
+/-- Conversely, every facial-dual adjacency between two transported untouched
+faces comes from a shared ambient edge occurrence. -/
+theorem exists_shared_ambient_edge_of_deletedFaceOrbit_adj
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (hadj :
+      (interiorDualGraph
+        (orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem)
+        (Finset.univ : Finset
+          (OrbitFace (deletedEdgeData data huv outer).toRotationSystem))).Adj
+          ⟨deletedFaceOrbit data huv outer leftRoot hleft, Finset.mem_univ _⟩
+          ⟨deletedFaceOrbit data huv outer rightRoot hright, Finset.mem_univ _⟩) :
+    ∃ left : {point // data.toRotationSystem.phi.SameCycle leftRoot point},
+      ∃ right : {point // data.toRotationSystem.phi.SameCycle rightRoot point},
+        data.toRotationSystem.edgeOf left.1 =
+          data.toRotationSystem.edgeOf right.1 := by
+  rcases (interiorDualGraph_adj_iff
+      (orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace (deletedEdgeData data huv outer).toRotationSystem))).1 hadj with
+    ⟨_, edge, _, hedgeLeft, hedgeRight⟩
+  rw [mem_orbitFaceBoundary_iff] at hedgeLeft hedgeRight
+  rcases hedgeLeft with ⟨leftDart, hleftDartFace, hleftEdge⟩
+  rcases hedgeRight with ⟨rightDart, hrightDartFace, hrightEdge⟩
+  have hleftCycle :
+      (deletedEdgeData data huv outer).toRotationSystem.phi.SameCycle
+        (deletedFaceRoot data huv leftRoot hleft) leftDart := by
+    rw [mem_orbitFaceDarts_iff] at hleftDartFace
+    exact (Quotient.exact hleftDartFace).symm
+  have hrightCycle :
+      (deletedEdgeData data huv outer).toRotationSystem.phi.SameCycle
+        (deletedFaceRoot data huv rightRoot hright) rightDart := by
+    rw [mem_orbitFaceDarts_iff] at hrightDartFace
+    exact (Quotient.exact hrightDartFace).symm
+  rcases (deletedFaceCycleEquiv data huv outer leftRoot hleft).surjective
+      ⟨leftDart, hleftCycle⟩ with ⟨left, hleftImage⟩
+  rcases (deletedFaceCycleEquiv data huv outer rightRoot hright).surjective
+      ⟨rightDart, hrightCycle⟩ with ⟨right, hrightImage⟩
+  have hleftImageDart :
+      deletedFaceDart data huv leftRoot hleft left = leftDart :=
+    congrArg Subtype.val hleftImage
+  have hrightImageDart :
+      deletedFaceDart data huv rightRoot hright right = rightDart :=
+    congrArg Subtype.val hrightImage
+  refine ⟨left, right, ?_⟩
+  apply ambient_edge_eq_of_deletedFaceEdge_eq_two_faces data huv outer
+    leftRoot rightRoot hleft hright left right
+  calc
+    deletedFaceEdge data huv outer leftRoot hleft left = edge := by
+      unfold deletedFaceEdge
+      rw [hleftImageDart]
+      exact hleftEdge
+    _ = deletedFaceEdge data huv outer rightRoot hright right := by
+      unfold deletedFaceEdge
+      rw [hrightImageDart]
+      exact hrightEdge.symm
+
+/-- Exact facial-dual adjacency transport for two distinct untouched faces. -/
+theorem deletedFaceOrbit_adj_iff_exists_shared_ambient_edge
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (hne : dartOrbitFace data.toRotationSystem leftRoot ≠
+      dartOrbitFace data.toRotationSystem rightRoot) :
+    (interiorDualGraph
+      (orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace (deletedEdgeData data huv outer).toRotationSystem))).Adj
+        ⟨deletedFaceOrbit data huv outer leftRoot hleft, Finset.mem_univ _⟩
+        ⟨deletedFaceOrbit data huv outer rightRoot hright, Finset.mem_univ _⟩ ↔
+      ∃ left : {point // data.toRotationSystem.phi.SameCycle leftRoot point},
+        ∃ right : {point // data.toRotationSystem.phi.SameCycle rightRoot point},
+          data.toRotationSystem.edgeOf left.1 =
+            data.toRotationSystem.edgeOf right.1 := by
+  constructor
+  · exact exists_shared_ambient_edge_of_deletedFaceOrbit_adj data huv outer
+      leftRoot rightRoot hleft hright
+  · rintro ⟨left, right, hedge⟩
+    exact deletedFaceOrbit_adj_of_shared_ambient_edge data huv outer
+      leftRoot rightRoot hleft hright hne left right hedge
+
+/-- On the family of untouched faces, deleting one edge preserves the
+facial-dual adjacency graph exactly. -/
+theorem deletedFaceOrbit_adj_iff_ambientFaceOrbit_adj
+    (data : Data G) {u v : V} (huv : G.Adj u v)
+    (outer : (DeletedEdgeGraph G u v).Dart)
+    (leftRoot rightRoot : G.Dart)
+    (hleft : FaceAvoidsDeletedEdge data huv leftRoot)
+    (hright : FaceAvoidsDeletedEdge data huv rightRoot)
+    (hne : dartOrbitFace data.toRotationSystem leftRoot ≠
+      dartOrbitFace data.toRotationSystem rightRoot) :
+    (interiorDualGraph
+      (orbitFaceBoundary (deletedEdgeData data huv outer).toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace (deletedEdgeData data huv outer).toRotationSystem))).Adj
+        ⟨deletedFaceOrbit data huv outer leftRoot hleft, Finset.mem_univ _⟩
+        ⟨deletedFaceOrbit data huv outer rightRoot hright, Finset.mem_univ _⟩ ↔
+      (interiorDualGraph (orbitFaceBoundary data.toRotationSystem)
+        (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Adj
+          ⟨dartOrbitFace data.toRotationSystem leftRoot, Finset.mem_univ _⟩
+          ⟨dartOrbitFace data.toRotationSystem rightRoot, Finset.mem_univ _⟩ := by
+  rw [deletedFaceOrbit_adj_iff_exists_shared_ambient_edge data huv outer
+    leftRoot rightRoot hleft hright hne]
+  constructor
+  · rintro ⟨left, right, hedge⟩
+    apply interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      (orbitFace_incidence_le_two data.toRotationSystem) hne
+    · rw [mem_orbitFaceBoundary_iff]
+      exact ⟨left.1, by
+        rw [mem_orbitFaceDarts_iff]
+        exact Quotient.sound left.2.symm, rfl⟩
+    · rw [mem_orbitFaceBoundary_iff]
+      exact ⟨right.1, by
+        rw [mem_orbitFaceDarts_iff]
+        exact Quotient.sound right.2.symm, hedge.symm⟩
+  · intro hadj
+    rcases (interiorDualGraph_adj_iff
+        (orbitFaceBoundary data.toRotationSystem)
+        (Finset.univ : Finset (OrbitFace data.toRotationSystem))).1 hadj with
+      ⟨_, edge, _, hedgeLeft, hedgeRight⟩
+    rw [mem_orbitFaceBoundary_iff] at hedgeLeft hedgeRight
+    rcases hedgeLeft with ⟨leftDart, hleftDart, hleftEdge⟩
+    rcases hedgeRight with ⟨rightDart, hrightDart, hrightEdge⟩
+    have hleftCycle : data.toRotationSystem.phi.SameCycle
+        leftRoot leftDart := by
+      rw [mem_orbitFaceDarts_iff] at hleftDart
+      exact Quotient.exact hleftDart.symm
+    have hrightCycle : data.toRotationSystem.phi.SameCycle
+        rightRoot rightDart := by
+      rw [mem_orbitFaceDarts_iff] at hrightDart
+      exact Quotient.exact hrightDart.symm
+    exact ⟨⟨leftDart, hleftCycle⟩, ⟨rightDart, hrightCycle⟩,
+      hleftEdge.trans hrightEdge.symm⟩
 
 end
 
