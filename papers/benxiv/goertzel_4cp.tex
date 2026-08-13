@@ -819,6 +819,22 @@ Cell--3 bridge must instead specialize the generic open-region transport to
 the actual closed-map annulus and prove that every open common neighbour under
 consideration is the image of an eligible ambient face.
 
+\paragraph{Selected local rungs.}  The direct Cell--3 L1 handoff no longer
+assumes that every pair of interior faces shares at most one primal edge.
+That global uniqueness premise belongs to a closed minimal-counterexample
+carrier and is incompatible with silently reusing it for the source's open
+annular tangle.  The new module
+\texttt{GoertzelV24ClosedWebSelectedRungPlacement} instead selects one actual
+shared edge for every consecutive pair of faces in a boundary-clean source
+corridor.  At each internal hexagon it proves, from local face incidence and
+the displayed Cell--3 separation, that the selected incoming and outgoing
+rungs occupy distinct positions and cannot be adjacent.  Consequently their
+cyclic type is one of the two nonadjacent cases,
+\texttt{oneEdgeBetween} or \texttt{opposite}.  This is a genuine finite local
+fragment of flag L1, and it removes a false global hypothesis from the local
+construction.  It is not the whole local classification, a construction of
+simple rails, or the required long separated crosscut pair.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
