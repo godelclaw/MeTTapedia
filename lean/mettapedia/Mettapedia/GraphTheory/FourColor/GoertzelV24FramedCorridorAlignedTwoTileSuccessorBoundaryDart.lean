@@ -300,6 +300,44 @@ theorem sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_alpha_successorInput
       realization hcubic hrotation htwoSided hunique offset step
   · exact hnotKeep
 
+/-- Disjoint enclosed vertex carriers force the common transverse edge to be
+exposed by opposite darts.  This is the exact local orientation consequence
+of the global geometry still needed for a literal serial composite; it does
+not assert that the source's sliding two-tile carriers are disjoint. -/
+theorem sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_alpha_successorInput_of_disjoint
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 5)) (step : Fin 2)
+    (hdisjoint : Disjoint
+      {vertex | deletedRegionKeep
+        (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+          htwoSided hunique (sourceTwoTileSuccessorStartOffset offset)).componentSide
+        vertex}
+      {vertex | deletedRegionKeep
+        (sourceTwoTileAlignedLayerBoundaryAt realization hcubic hrotation
+          htwoSided hunique (sourceTwoTileSuccessorNextOffset offset)).componentSide
+        vertex}) :
+    embedded.cellulation.rotation.toRotationSystem.alpha
+        (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+          hrotation htwoSided hunique offset step).1.1 =
+      (sourceTwoTileAlignedEnclosedSuccessorInputBoundaryDartAt realization
+        hcubic hrotation htwoSided hunique offset step).1.1 := by
+  apply sourceTwoTileAlignedEnclosedOutputBoundaryDartAt_eq_alpha_successorInput_of_not_keep
+    realization hcubic hrotation htwoSided hunique offset step
+  exact Set.disjoint_left.mp hdisjoint
+    (sourceTwoTileAlignedEnclosedOutputBoundaryDartAt realization hcubic
+      hrotation htwoSided hunique offset step).1.2
+
 /-- The remaining source-side orientation fact is not merely sufficient: on
 the already matched transverse edge it is exactly equivalent to alpha-opposite
 boundary darts.  Thus physical serial gluing has one concrete endpoint-side
