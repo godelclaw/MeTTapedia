@@ -340,6 +340,8 @@ structure SourceLocalRailWalkPair
         (localPlacementSideFace placement outgoingAfter)
   firstRail_isPath : firstRail.IsPath
   secondRail_isPath : secondRail.IsPath
+  firstRail_support_disjoint_secondRail :
+    firstRail.support.Disjoint secondRail.support
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
   firstRail_length_add_secondRail_length_eq_two :
@@ -386,6 +388,26 @@ private theorem localPlacementSideFace_ne_of_position_ne
   exact hne (localPlacementSideFace_injective (corridor := corridor)
     placement hfaces)
 
+private theorem localPlacementSideFace_ne_of_value_ne
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    {left right : {position // position ∈ placementSidePositions placement}}
+    (hne : left.1.val ≠ right.1.val) :
+    localPlacementSideFace placement left ≠
+      localPlacementSideFace placement right := by
+  apply localPlacementSideFace_ne_of_position_ne (corridor := corridor)
+    placement
+  intro hpositions
+  exact hne (congrArg (fun position => position.1.val) hpositions)
+
 /-- Read the finite cyclic rail shape as two actual simple facial-dual walks.
 No path or length property is postulated: all three cases are built from the
 source-local adjacency theorem above. -/
@@ -402,6 +424,14 @@ noncomputable def sourceLocalRailWalkPairOfShape
       hunique interior)
     (incomingBefore incomingAfter outgoingBefore outgoingAfter :
       {position // position ∈ placementSidePositions placement})
+    (hincomingBefore : incomingBefore.1.val ≡
+      placement.incomingPosition.val + 1 [MOD 6])
+    (hincomingAfter : placement.incomingPosition.val ≡
+      incomingAfter.1.val + 1 [MOD 6])
+    (houtgoingBefore : placement.outgoingPosition.val ≡
+      outgoingBefore.1.val + 1 [MOD 6])
+    (houtgoingAfter : outgoingAfter.1.val ≡
+      placement.outgoingPosition.val + 1 [MOD 6])
     (shape : SourceLocalRailShape placement incomingBefore incomingAfter
       outgoingBefore outgoingAfter) :
     SourceLocalRailWalkPair placement incomingBefore incomingAfter
@@ -421,6 +451,28 @@ noncomputable def sourceLocalRailWalkPairOfShape
           (congrArg (localPlacementSideFace placement) first_eq)
       let secondRail := SimpleGraph.Walk.cons hinAdj.symm
         (SimpleGraph.Walk.cons houtAdj.symm SimpleGraph.Walk.nil)
+      have hfirstEqValues : incomingBefore.1.val = outgoingBefore.1.val :=
+        congrArg (fun position => position.1.val) first_eq
+      have hcrossValues :
+          incomingBefore.1.val ≠ incomingAfter.1.val ∧
+          incomingBefore.1.val ≠ middle.1.val ∧
+          incomingBefore.1.val ≠ outgoingAfter.1.val := by
+        simp only [Nat.ModEq] at hincomingBefore hincomingAfter houtgoingBefore houtgoingAfter houtMiddle hmiddleIn
+        constructor
+        · intro heq
+          omega
+        constructor
+        · intro heq
+          omega
+        · intro heq
+          omega
+      rcases hcrossValues with ⟨hABValue, hAMValue, hADValue⟩
+      have hAB := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hABValue
+      have hAM := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hAMValue
+      have hAD := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hADValue
       have houterNe : localPlacementSideFace placement incomingAfter ≠
           localPlacementSideFace placement outgoingAfter := by
         apply localPlacementSideFace_ne_of_position_ne (corridor := corridor)
@@ -432,6 +484,17 @@ noncomputable def sourceLocalRailWalkPairOfShape
         secondRail := secondRail
         firstRail_isPath := by simp [firstRail]
         secondRail_isPath := ?_
+        firstRail_support_disjoint_secondRail := by
+          apply List.disjoint_left.mpr
+          intro face hfirst hsecond
+          simp only [firstRail, secondRail, SimpleGraph.Walk.support_copy,
+            SimpleGraph.Walk.support_nil, SimpleGraph.Walk.support_cons,
+            List.mem_cons, List.not_mem_nil, or_false] at hfirst hsecond
+          rcases hfirst with rfl
+          rcases hsecond with hsecond | hsecond | hsecond
+          · exact hAB hsecond
+          · exact hAM hsecond
+          · exact hAD hsecond
         firstRail_length_le_two := by simp [firstRail]
         secondRail_length_le_two := by simp [secondRail]
         firstRail_length_add_secondRail_length_eq_two := by
@@ -450,11 +513,50 @@ noncomputable def sourceLocalRailWalkPairOfShape
         (corridor := corridor) placement incomingBefore outgoingBefore hfirst
       have hsecondAdj := localPlacementSideFaces_adjacent_of_forwardStep
         (corridor := corridor) placement outgoingAfter incomingAfter hsecond
+      have hcrossValues :
+          incomingBefore.1.val ≠ incomingAfter.1.val ∧
+          incomingBefore.1.val ≠ outgoingAfter.1.val ∧
+          outgoingBefore.1.val ≠ incomingAfter.1.val ∧
+          outgoingBefore.1.val ≠ outgoingAfter.1.val := by
+        simp only [Nat.ModEq] at hincomingBefore hincomingAfter houtgoingBefore houtgoingAfter hfirst hsecond
+        constructor
+        · intro heq
+          omega
+        constructor
+        · intro heq
+          omega
+        constructor
+        · intro heq
+          omega
+        · intro heq
+          omega
+      rcases hcrossValues with ⟨hABValue, hADValue, hCBValue, hCDValue⟩
+      have hAB := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hABValue
+      have hAD := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hADValue
+      have hCB := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hCBValue
+      have hCD := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hCDValue
       refine {
         firstRail := hfirstAdj.toWalk
         secondRail := hsecondAdj.symm.toWalk
         firstRail_isPath := SimpleGraph.Walk.IsPath.of_adj hfirstAdj
         secondRail_isPath := SimpleGraph.Walk.IsPath.of_adj hsecondAdj.symm
+        firstRail_support_disjoint_secondRail := by
+          apply List.disjoint_left.mpr
+          intro face hfirstMem hsecondMem
+          simp only [SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+            or_false] at hfirstMem hsecondMem
+          rcases hfirstMem with rfl | rfl
+          · rcases hsecondMem with hsecondMem | hsecondMem
+            · exact hAB hsecondMem
+            · exact hAD hsecondMem
+          · rcases hsecondMem with hsecondMem | hsecondMem
+            · exact hCB hsecondMem
+            · exact hCD hsecondMem
         firstRail_length_le_two := by simp
         secondRail_length_le_two := by simp
         firstRail_length_add_secondRail_length_eq_two := by simp }
@@ -472,6 +574,28 @@ noncomputable def sourceLocalRailWalkPairOfShape
               (localPlacementSideFace placement outgoingAfter) :=
         SimpleGraph.Walk.nil.copy rfl
           (congrArg (localPlacementSideFace placement) second_eq)
+      have hsecondEqValues : incomingAfter.1.val = outgoingAfter.1.val :=
+        congrArg (fun position => position.1.val) second_eq
+      have hcrossValues :
+          incomingBefore.1.val ≠ incomingAfter.1.val ∧
+          middle.1.val ≠ incomingAfter.1.val ∧
+          outgoingBefore.1.val ≠ incomingAfter.1.val := by
+        simp only [Nat.ModEq] at hincomingBefore hincomingAfter houtgoingBefore houtgoingAfter hinMiddle hmiddleOut
+        constructor
+        · intro heq
+          omega
+        constructor
+        · intro heq
+          omega
+        · intro heq
+          omega
+      rcases hcrossValues with ⟨hABValue, hMBValue, hCBValue⟩
+      have hAB := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hABValue
+      have hMB := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hMBValue
+      have hCB := localPlacementSideFace_ne_of_value_ne
+        (corridor := corridor) placement hCBValue
       have houterNe : localPlacementSideFace placement incomingBefore ≠
           localPlacementSideFace placement outgoingBefore := by
         apply localPlacementSideFace_ne_of_position_ne (corridor := corridor)
@@ -483,6 +607,16 @@ noncomputable def sourceLocalRailWalkPairOfShape
         secondRail := secondRail
         firstRail_isPath := ?_
         secondRail_isPath := by simp [secondRail]
+        firstRail_support_disjoint_secondRail := by
+          apply List.disjoint_left.mpr
+          intro face hfirst hsecond
+          simp only [firstRail, secondRail, SimpleGraph.Walk.support_copy,
+            SimpleGraph.Walk.support_nil, SimpleGraph.Walk.support_cons,
+            List.mem_cons, List.not_mem_nil, or_false] at hfirst hsecond
+          rcases hfirst with rfl | rfl | rfl
+          · exact hAB hsecond
+          · exact hMB hsecond
+          · exact hCB hsecond
         firstRail_length_le_two := by simp [firstRail]
         secondRail_length_le_two := by simp [secondRail]
         firstRail_length_add_secondRail_length_eq_two := by
@@ -529,7 +663,8 @@ theorem exists_sourceLocalRailWalkPair_of_nonadjacent
       incomingAfter outgoingBefore outgoingAfter hincomingBefore hincomingAfter
       houtgoingBefore houtgoingAfter hnonadjacent with ⟨shape⟩
   exact ⟨sourceLocalRailWalkPairOfShape placement incomingBefore incomingAfter
-    outgoingBefore outgoingAfter shape⟩
+    outgoingBefore outgoingAfter hincomingBefore hincomingAfter
+    houtgoingBefore houtgoingAfter shape⟩
 
 end LocalLayerFormation
 
