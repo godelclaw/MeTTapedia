@@ -23,6 +23,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderI
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderTraceAnticommutatorObstruction
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderTraceTopologyRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
@@ -68,6 +69,8 @@ open HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
 open HypercubicDimension16WilsonTraceOrderTraceAnticommutatorObstruction
 open HypercubicDimension16WilsonTraceOrderTraceTopologyRepair
 open HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair
+open HypercubicDimension16FundamentalTraceCycleProfile
+open HypercubicDimension16WilsonTraceOrderCycleProfileRepair
 open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -624,8 +627,8 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR WilsonCartanJointMismatch and WilsonCartanTraceOrderFaithfulnessNoGo prove that the trace-order-blind raw Cartan eighth jet cannot supply the required faithful coordinate. OUR WilsonTraceOrderCoordinateCompletion supplies a local 98-coordinate trace packet with a certified synthesis left inverse, while the two- and three-coordinate invariant repairs remove two successive explicit IBP obstructions. OUR WilsonTraceOrderTraceAnticommutatorObstruction then isolates a genuinely trace-topological failure: the three-coordinate correction has exact nonzero value (1/2) times the incoming trace class on a canonical polarized SU(2) row and on its Reynolds member. OUR WilsonTraceOrderTraceTopologyRepair repairs that particular failure by gating the derivative-axis character with the relabel-invariant two-cycle count of the trace permutation. Its kernel-checked signed weights are 0, 0, and 32 on the source, swap, and split terms; the normalized fourth scalar is -1, so adding one half of its trace contribution annihilates the physical and Reynolds-averaged canonical row. OUR WilsonTraceOrderFundamentalThreeCutRepair then tests the six-term fundamental trace row. The four-coordinate functional has its exact nonzero value (-1/2) times the incoming trace class; a six-cycle-gated derivative-axis scalar has signed weights 0, 32, 0, 32, 0, 0 and normalized value -2, so a coefficient -1/4 cancels that residual. The new scalar vanishes on the displayed trace-anticommutator row, retaining both physical and Reynolds-averaged cancellations. This remains a finite known-family repair, not annihilation of the complete joint relation submodule, a complete rank or conditioning computation, or a noncommutative Wilson-functional coordinate construction."
-  nextObligation := "The five-coordinate functional is certified only on the displayed finite families. Its values on further canonical join/split and fundamental placements, its descent through the complete coordinate-free relation submodule, the policy-indexed census, sparse dual conditioning, and noncommutative Wilson-functional analytic jets remain unproved."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR WilsonCartanJointMismatch and WilsonCartanTraceOrderFaithfulnessNoGo prove that the trace-order-blind raw Cartan eighth jet cannot supply the required faithful coordinate. OUR WilsonTraceOrderCoordinateCompletion supplies a local 98-coordinate trace packet with a certified synthesis left inverse, while the two- and three-coordinate invariant repairs remove two successive explicit IBP obstructions. OUR WilsonTraceOrderTraceAnticommutatorObstruction then isolates a genuinely trace-topological failure: the three-coordinate correction has exact nonzero value (1/2) times the incoming trace class on a canonical polarized SU(2) row and on its Reynolds member. OUR WilsonTraceOrderTraceTopologyRepair repairs that particular failure by gating the derivative-axis character with the relabel-invariant two-cycle count of the trace permutation. Its kernel-checked signed weights are 0, 0, and 32 on the source, swap, and split terms; the normalized fourth scalar is -1, so adding one half of its trace contribution annihilates the physical and Reynolds-averaged canonical row. OUR WilsonTraceOrderFundamentalThreeCutRepair then tests the six-term fundamental trace row. The four-coordinate functional has its exact nonzero value (-1/2) times the incoming trace class; a six-cycle-gated derivative-axis scalar has signed weights 0, 32, 0, 32, 0, 0 and normalized value -2, so a coefficient -1/4 cancels that residual. OUR complete three-cut cycle-profile calculation enumerates all 210 ordered distinct labels on the same seven-cycle. Its four topology equations together with the polarized trace-anticommutator equation force coefficients (6/5, 13/10, -1, -7/10, -3/5) for the two-through-six-cycle gates, and its kernel replay gives zero for every enumerated alternating six-term cycle profile. The resulting signed-H(4) coordinate kills the two displayed canonical physical rows and their Reynolds members. This remains a finite known-family repair: it neither identifies every enumerated topology with a physical relation row nor proves annihilation of the complete joint relation submodule, a complete rank or conditioning computation, or a noncommutative Wilson-functional coordinate construction."
+  nextObligation := "Identify the 210 finite cycle placements with the actual policy-indexed physical relation generators, test the forced profile on every remaining canonical join/split and fundamental family, then prove or refute descent through the complete coordinate-free relation submodule. The policy-indexed census, sparse dual conditioning, and noncommutative Wilson-functional analytic jets remain unproved."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -844,6 +847,36 @@ theorem currentYangMillsFiveCoordinateTraceRepair_fundamentalThreeCut
     ourInvariantFundamentalThreeCutRow_mem policy⟩
 
 #print axioms currentYangMillsFiveCoordinateTraceRepair_fundamentalThreeCut
+
+/-- OUR trace-cycle profile is forced by the four finite topology types and
+the polarized trace-anticommutator equation.  Its numerator vanishes on all
+`210` ordered distinct three-cut labels.  The signed-`H(4)` coordinate lift
+is presently certified on the two displayed canonical physical rows and their
+Reynolds members only; this does not assert identification of all `210`
+abstract placements with physical relation rows or descent through all of the
+joint relation submodule. -/
+theorem currentYangMillsCycleProfileTraceRepair_twoCanonicalRows
+    (policy : PhysicalRelationPolicy) :
+    ourDistinctThreeCutLabels.length = 210 ∧
+    (∀ numerator ∈ ourDistinctThreeCutProfileNumerators, numerator = 0) ∧
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenFundamentalTraceGenerator policy) 1)) = 0 ∧
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenTraceAnticommutatorGenerator policy) 1)) = 0 ∧
+    ourCycleProfileInvariantTraceOrderCorrection
+      (ourInvariantFundamentalThreeCutRow policy).1 = 0 ∧
+    ourCycleProfileInvariantTraceOrderCorrection
+      (ourInvariantTraceAnticommutatorRow policy).1 = 0 := by
+  exact ⟨ourDistinctThreeCutLabels_card,
+    ourDistinctThreeCutProfileNumerators_all_zero,
+    ourCycleProfileInvariantTraceOrderCorrection_ourFundamentalThreeCut_zero policy,
+    ourCycleProfileInvariantTraceOrderCorrection_ourTraceAnticommutator_zero policy,
+    ourCycleProfileInvariantTraceOrderCorrection_invariantFundamentalThreeCut_zero policy,
+    ourCycleProfileInvariantTraceOrderCorrection_invariantTraceAnticommutator_zero policy⟩
+
+#print axioms currentYangMillsCycleProfileTraceRepair_twoCanonicalRows
 
 /-- The existing actual Cartan Wilson eighth jet cannot itself be a
 trace-order-faithful quotient coordinate.  This leaves open, but makes
