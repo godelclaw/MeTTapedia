@@ -73,6 +73,28 @@ theorem interior_vertex_mem_ambientRadialPath_union
       (mem_ambientRadialPath_verts_of_mem_componentPath_verts
         pair.secondPath hsecond)
 
+/-- Any proposed sector lying off both radial paths is free of interior
+vertices.  A later rotation-system separation theorem need only establish the
+displayed disjointness to inherit the source's ``empty sector interior''
+conclusion. -/
+theorem disjoint_interiorVertices_of_disjoint_ambientRadialPaths
+    {data : AnnularBoundaryData G outerCount}
+    (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    {first second : Color} (hpair : ValidColorPair first second)
+    (pair : RadialPathPair data C first second)
+    (side : Set V)
+    (hside : Disjoint side
+      ((ambientRadialPath pair.firstPath).toSubgraph.verts ∪
+        (ambientRadialPath pair.secondPath).toSubgraph.verts)) :
+    Disjoint side ↑data.interiorVertices := by
+  rw [Set.disjoint_left]
+  intro vertex hvertexSide hvertexInterior
+  rcases interior_vertex_mem_ambientRadialPath_union
+      hdata C hC hpair pair hvertexInterior with hfirst | hsecond
+  · exact (Set.disjoint_left.1 hside) hvertexSide (Or.inl hfirst)
+  · exact (Set.disjoint_left.1 hside) hvertexSide (Or.inr hsecond)
+
 end
 
 end GoertzelV24ClosedWebRadialSectorCoverage
