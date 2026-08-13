@@ -583,10 +583,11 @@ theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
   intro offset
   rfl
 
-/-- The weighted Cell-3 L1 estimate directly supplies a source-realized
-boundary-clean corridor.  This packages the quantitative extraction and its
-literal geodesic witness together; it does not yet construct transverse
-crosscuts or a splice. -/
+/-- The weighted Cell-3 clean-block estimate directly supplies a
+source-realized boundary-clean dual geodesic.  This packages the quantitative
+extraction and its literal witness together; it does not yet certify the
+source's full ladder incidence, construct transverse crosscuts, or form a
+splice. -/
 theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedAnnularExcess
     (embedded : ClosedWebAnnularEmbedding data) (hdata : data.WellFormed)
     (geometry : AnnularFrontierGeometry embedded)

@@ -78,10 +78,11 @@ theorem weight_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
       web.annular web.boundary_wellFormed web.geometry
       weightBound blockLength hpositive hlarge
 
-/-- The source Cell-3 instance directly realizes the boundary-clean L1
-corridor once the weighted size premise is available.  The remaining physical
-work is to construct the required separated crosscuts from this corridor, not
-to reopen the Cell-3 annulus through a second carrier. -/
+/-- The source Cell-3 instance directly realizes the current boundary-clean
+dual-geodesic extraction once the weighted size premise is available.  The
+source's full ladder incidence and the required separated crosscuts remain
+additional physical work; this theorem does not reopen the Cell-3 annulus
+through a second carrier. -/
 theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedL1
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     (web : Instance data coloring)
