@@ -401,6 +401,90 @@ theorem graphData_hasCyclicVertexRotations
         congrArg (primalDartEquiv data keep outer) hpower
       _ = right := (primalDartEquiv data keep outer).apply_symm_apply right
 
+/-- Retained ambient adjacency is retained by the literal opening.  This is
+the graph-level inclusion used to transport paths inside the chosen region. -/
+theorem primalGraph_adj_retained
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    {left right : GoertzelV24OpenRegionRotation.RetainedVertex keep}
+    (hadj : ((rotationPrimalGraph RS).induce {vertex | keep vertex}).Adj
+      left right) :
+    (PrimalGraph RS keep outer).Adj (Sum.inl left) (Sum.inl right) := by
+  change (rotationPrimalGraph RS).Adj left.1 right.1 at hadj
+  rw [rotationPrimalGraph_adj_iff] at hadj
+  rw [rotationPrimalGraph_adj_iff]
+  rcases hadj with ⟨dart, hleft, hright⟩
+  have hkeepLeft : keep (RS.vertOf dart) := by
+    simpa [hleft] using left.2
+  have hkeepRight : keep (RS.vertOf (RS.alpha dart)) := by
+    simpa [hright] using right.2
+  refine ⟨Sum.inl ⟨dart, hkeepLeft⟩, ?_, ?_⟩
+  · exact congrArg Sum.inl (Subtype.ext hleft)
+  · rw [GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_internal
+      RS keep outer ⟨dart, hkeepLeft⟩ hkeepRight]
+    exact congrArg Sum.inl (Subtype.ext hright)
+
+/-- The transparent inclusion of the retained induced graph into the literal
+open primal graph. -/
+def retainedPrimalHom
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep) :
+    ((rotationPrimalGraph RS).induce {vertex | keep vertex}) →g
+      PrimalGraph RS keep outer where
+  toFun := Sum.inl
+  map_rel' := fun {_ _} hadj => primalGraph_adj_retained RS keep outer hadj
+
+@[simp] theorem retainedPrimalHom_apply
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (vertex : GoertzelV24OpenRegionRotation.RetainedVertex keep) :
+    retainedPrimalHom RS keep outer vertex = Sum.inl vertex :=
+  rfl
+
+/-- Every fresh boundary vertex is joined to the retained endpoint of the
+ambient half-dart that created it. -/
+theorem primalGraph_adj_boundary_retained
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (boundary : GoertzelV24RotationCutDartDecomposition.BoundaryDart RS keep) :
+    (PrimalGraph RS keep outer).Adj (Sum.inr boundary)
+      (Sum.inl
+        (⟨RS.vertOf boundary.1.1, boundary.1.2⟩ :
+          GoertzelV24OpenRegionRotation.RetainedVertex keep)) := by
+  rw [rotationPrimalGraph_adj_iff]
+  refine ⟨Sum.inr boundary, rfl, ?_⟩
+  rw [GoertzelV24OpenRegionRotation.rotationSystem_alpha_stub]
+  rfl
+
+/-- Opening a connected retained region by attaching one fresh leaf at each
+exposed half-edge preserves connectedness.  This supplies the connectedness
+field needed by a later concrete annular-cellulation constructor; choosing the
+Cell--3 region and proving that its two hole faces are the intended ones remain
+source-specific obligations. -/
+theorem primalGraph_connected_of_retained
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (hconnected :
+      ((rotationPrimalGraph RS).induce {vertex | keep vertex}).Connected) :
+    (PrimalGraph RS keep outer).Connected := by
+  letI : Nonempty (GoertzelV24OpenRegionRotation.RetainedVertex keep) :=
+    hconnected.nonempty
+  let root : GoertzelV24OpenRegionRotation.RetainedVertex keep :=
+    Classical.choice (inferInstance :
+      Nonempty (GoertzelV24OpenRegionRotation.RetainedVertex keep))
+  rw [SimpleGraph.connected_iff_exists_forall_reachable]
+  refine ⟨Sum.inl root, ?_⟩
+  intro vertex
+  rcases vertex with retained | boundary
+  · exact (hconnected root retained).map (retainedPrimalHom RS keep outer)
+  · let anchor : GoertzelV24OpenRegionRotation.RetainedVertex keep :=
+      ⟨RS.vertOf boundary.1.1, boundary.1.2⟩
+    have hanchor :
+        (PrimalGraph RS keep outer).Reachable (Sum.inl root) (Sum.inl anchor) :=
+      (hconnected root anchor).map (retainedPrimalHom RS keep outer)
+    exact hanchor.trans
+      (primalGraph_adj_boundary_retained RS keep outer boundary).symm.reachable
+
 end
 
 end GoertzelV24OpenRegionGraphBacking

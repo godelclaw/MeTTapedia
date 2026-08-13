@@ -422,11 +422,17 @@ carrier without silently changing face or edge semantics.  Moreover, if the
 ambient rotation is genuinely cyclic at every vertex, the opened rotation and
 its graph-backed presentation inherit that property: retained vertices keep
 their complete cyclic dart fibre, while every fresh boundary vertex has a
-singleton fibre.  This discharges the cyclic-rotation field of a future
-annular cellulation.  This remains
-generic carrier plumbing: it neither selects the Cell--3 retained region nor
-constructs its two hole faces, planar cellulation, L1 corridor, or separated
-crosscuts.
+singleton fibre.  The same module now constructs the transparent graph
+homomorphism from the ambient graph induced on the retained vertices into the
+opened graph.  Every fresh boundary vertex is proved adjacent to the retained
+endpoint of the exposed ambient half-dart that created it.  It follows that a
+connected retained induced region remains connected after opening: the new
+vertices are leaves, not unaccounted-for components.  These results discharge
+the cyclic-rotation and connectedness fields of a future annular cellulation,
+once source-specific formation supplies the corresponding ambient cyclicity
+and retained-region connectedness proofs.  This remains generic carrier
+plumbing: it neither selects the Cell--3 retained region nor constructs its two
+hole faces, planar cellulation, L1 corridor, or separated crosscuts.
 
 There is a second, deliberately separate formation result in the tree.  The
 first carrier-changing part of the \emph{single-edge deletion} model is now
