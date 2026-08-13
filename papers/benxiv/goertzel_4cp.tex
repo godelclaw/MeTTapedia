@@ -972,11 +972,14 @@ the two distinct anchor positions select two complementary arcs on each named
 hole boundary, and Lean proves that the two arcs cover the complete inner
 face-dart boundary and likewise the complete outer one
 (\texttt{innerHoleArcDarts\_true\_union\_false} and
-\texttt{outerHoleArcDarts\_true\_union\_false}).  This is useful fixed
-boundary data for a future sector construction.  It is not an assertion that
-the caps have been joined by facial-dual side paths, that the resulting walls
-are simple, or that the two Boolean choices are the complementary annular
-sectors.
+\texttt{outerHoleArcDarts\_true\_union\_false}).  Their intersections are
+now proved to be exactly the two anchor darts
+(\texttt{innerHoleArcDarts\_true\_inter\_false} and
+\texttt{outerHoleArcDarts\_true\_inter\_false}), so no unrecorded overlap
+of the two cap choices remains.  This is useful fixed boundary data for a
+future sector construction.  It is not an assertion that the caps have been
+joined by facial-dual side paths, that the resulting walls are simple, or that
+the two Boolean choices are the complementary annular sectors.
 
 \paragraph{L8 wall audit (14 August 2026).}  The tempting next construction
 is not to promote the four-piece walk

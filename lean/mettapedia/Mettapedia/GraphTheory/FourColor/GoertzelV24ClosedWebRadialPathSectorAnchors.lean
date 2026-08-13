@@ -196,6 +196,64 @@ theorem holeArcDarts_true_union_false
       refine ⟨position, ?_, hdartEq⟩
       simpa [holeArcDarts, selectedCyclicArc] using hreverse
 
+/-- The complementary closed hole-face arcs have no hidden overlap: they
+meet precisely at the two selected endpoint darts.  This is the end-cap
+disjointness datum needed before a later sector-wall construction can prove
+that its only intended contacts occur at the radial anchors. -/
+theorem holeArcDarts_true_inter_false
+    (cell : FramedAnnularCellulation G)
+    (face : OrbitFace cell.rotation.toRotationSystem)
+    (first second :
+      Fin (orbitFaceDarts cell.rotation.toRotationSystem face).card)
+    (hne : first ≠ second) :
+    holeArcDarts cell face first second true ∩
+        holeArcDarts cell face first second false =
+      {(holeFaceDartEquiv cell face first).1,
+        (holeFaceDartEquiv cell face second).1} := by
+  classical
+  let positions := holeFaceDartEquiv cell face
+  ext dart
+  constructor
+  · intro hdart
+    rcases Finset.mem_inter.mp hdart with ⟨htrue, hfalse⟩
+    rcases Finset.mem_image.mp htrue with ⟨truePosition, htruePosition,
+      htrueDart⟩
+    rcases Finset.mem_image.mp hfalse with ⟨falsePosition, hfalsePosition,
+      hfalseDart⟩
+    have hpositions : truePosition = falsePosition := by
+      apply positions.injective
+      apply Subtype.ext
+      exact htrueDart.trans hfalseDart.symm
+    subst falsePosition
+    have hforward : truePosition ∈ cyclicForwardArc first second := by
+      simpa [holeArcDarts, selectedCyclicArc] using htruePosition
+    have hreverse : truePosition ∈ cyclicForwardArc second first := by
+      simpa [holeArcDarts, selectedCyclicArc] using hfalsePosition
+    have hendpoint : truePosition ∈
+        ({first, second} : Finset (Fin
+          (orbitFaceDarts cell.rotation.toRotationSystem face).card)) := by
+      rw [← cyclicForwardArc_inter_reverse hne]
+      exact Finset.mem_inter.mpr ⟨hforward, hreverse⟩
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hendpoint ⊢
+    rcases hendpoint with hfirst | hsecond
+    · left
+      subst truePosition
+      exact htrueDart.symm
+    · right
+      subst truePosition
+      exact htrueDart.symm
+  · intro hdart
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hdart
+    rcases hdart with hfirst | hsecond
+    · subst dart
+      exact Finset.mem_inter.mpr
+        ⟨firstDart_mem_holeArcDarts cell face first second true,
+          firstDart_mem_holeArcDarts cell face first second false⟩
+    · subst dart
+      exact Finset.mem_inter.mpr
+        ⟨secondDart_mem_holeArcDarts cell face first second true,
+          secondDart_mem_holeArcDarts cell face first second false⟩
+
 /-- The underlying graph edges of a selected cyclic hole-face arc. -/
 noncomputable def holeArcEdges (cell : FramedAnnularCellulation G)
     (face : OrbitFace cell.rotation.toRotationSystem)
@@ -425,6 +483,23 @@ theorem innerHoleArcDarts_true_union_false
     (innerBoundaryPosition embedded hdata pair.secondPath.inner)
     (pair.innerBoundaryPositions_ne embedded hdata)
 
+/-- The two chosen inner end caps meet only at the two radial anchors. -/
+theorem innerHoleArcDarts_true_inter_false
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) :
+    pair.innerHoleArcDarts embedded hdata true ∩
+        pair.innerHoleArcDarts embedded hdata false =
+      {(holeFaceDartEquiv embedded.cellulation embedded.cellulation.innerHole
+          (innerBoundaryPosition embedded hdata pair.firstPath.inner)).1,
+        (holeFaceDartEquiv embedded.cellulation embedded.cellulation.innerHole
+          (innerBoundaryPosition embedded hdata pair.secondPath.inner)).1} := by
+  exact holeArcDarts_true_inter_false embedded.cellulation
+    embedded.cellulation.innerHole
+    (innerBoundaryPosition embedded hdata pair.firstPath.inner)
+    (innerBoundaryPosition embedded hdata pair.secondPath.inner)
+    (pair.innerBoundaryPositions_ne embedded hdata)
+
 /-- The two source-selected outer-hole end caps cover the complete outer
 boundary, with the same scope as the inner-cap theorem. -/
 theorem outerHoleArcDarts_true_union_false
@@ -435,6 +510,23 @@ theorem outerHoleArcDarts_true_union_false
         pair.outerHoleArcDarts embedded hdata false =
       orbitFaceDarts embedded.RS embedded.cellulation.outerHole := by
   exact holeArcDarts_true_union_false embedded.cellulation
+    embedded.cellulation.outerHole
+    (outerBoundaryPosition embedded hdata pair.firstPath.outer)
+    (outerBoundaryPosition embedded hdata pair.secondPath.outer)
+    (pair.outerBoundaryPositions_ne embedded hdata)
+
+/-- The two chosen outer end caps meet only at the two radial anchors. -/
+theorem outerHoleArcDarts_true_inter_false
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) :
+    pair.outerHoleArcDarts embedded hdata true ∩
+        pair.outerHoleArcDarts embedded hdata false =
+      {(holeFaceDartEquiv embedded.cellulation embedded.cellulation.outerHole
+          (outerBoundaryPosition embedded hdata pair.firstPath.outer)).1,
+        (holeFaceDartEquiv embedded.cellulation embedded.cellulation.outerHole
+          (outerBoundaryPosition embedded hdata pair.secondPath.outer)).1} := by
+  exact holeArcDarts_true_inter_false embedded.cellulation
     embedded.cellulation.outerHole
     (outerBoundaryPosition embedded hdata pair.firstPath.outer)
     (outerBoundaryPosition embedded hdata pair.secondPath.outer)
