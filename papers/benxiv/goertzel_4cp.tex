@@ -418,7 +418,12 @@ this equivalence produces a \texttt{SimpleGraphDartRotation.Data} package on
 the computed graph.  The equivalence is proved to commute with edge reversal,
 vertex rotation, and hence the facial step.  Thus later Cell--3 formation may
 move between the literal-open rotation carrier and an ordinary graph-backed
-carrier without silently changing face or edge semantics.  This remains
+carrier without silently changing face or edge semantics.  Moreover, if the
+ambient rotation is genuinely cyclic at every vertex, the opened rotation and
+its graph-backed presentation inherit that property: retained vertices keep
+their complete cyclic dart fibre, while every fresh boundary vertex has a
+singleton fibre.  This discharges the cyclic-rotation field of a future
+annular cellulation.  This remains
 generic carrier plumbing: it neither selects the Cell--3 retained region nor
 constructs its two hole faces, planar cellulation, L1 corridor, or separated
 crosscuts.

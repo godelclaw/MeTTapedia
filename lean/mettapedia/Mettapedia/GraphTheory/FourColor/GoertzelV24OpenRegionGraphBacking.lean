@@ -301,6 +301,106 @@ crosscuts onto the computed simple graph. -/
   rw [← primalDartEquiv_alpha data keep outer,
     ← primalDartEquiv_rho data keep outer]
 
+/-- Opening a vertex region preserves the fact that every vertex rotation is
+one cycle.  Retained vertices inherit their complete ambient dart fiber;
+fresh boundary vertices have a singleton fiber. -/
+theorem openRotation_vertexRotationCyclic
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (hcyclic : VertexRotationCyclic RS) :
+    VertexRotationCyclic
+      (GoertzelV24OpenRegionRotation.rotationSystem RS keep outer) := by
+  intro left right hvertex
+  rcases left with left | left <;> rcases right with right | right
+  · have hambient : RS.rho.SameCycle left.1 right.1 := by
+      apply hcyclic left.1 right.1
+      exact congrArg Subtype.val (Sum.inl.inj hvertex)
+    have hretained :
+        (GoertzelV24RotationCutDartDecomposition.retainedRho RS keep).SameCycle
+          left right :=
+      Equiv.Perm.SameCycle.subtypePerm hambient
+    rcases hretained with ⟨power, hpower⟩
+    refine ⟨power, ?_⟩
+    change
+      ((Equiv.sumCongr
+        (GoertzelV24RotationCutDartDecomposition.retainedRho RS keep)
+        (Equiv.refl _)) ^ power) (Sum.inl left) = Sum.inl right
+    have hmap := MonoidHom.map_zpow (Equiv.Perm.sumCongrHom _ _)
+      (GoertzelV24RotationCutDartDecomposition.retainedRho RS keep,
+        (1 : Equiv.Perm
+          (GoertzelV24RotationCutDartDecomposition.BoundaryDart RS keep)))
+      power
+    calc
+      _ = ((Equiv.Perm.sumCongrHom _ _)
+          ((GoertzelV24RotationCutDartDecomposition.retainedRho RS keep,
+            (1 : Equiv.Perm
+              (GoertzelV24RotationCutDartDecomposition.BoundaryDart RS keep))) ^
+            power)) (Sum.inl left) :=
+        congrArg (fun permutation => permutation (Sum.inl left)) hmap.symm
+      _ = Sum.inl
+          (((GoertzelV24RotationCutDartDecomposition.retainedRho RS keep) ^
+            power) left) := by simp
+      _ = Sum.inl right := congrArg Sum.inl hpower
+  · change Sum.inl _ = Sum.inr _ at hvertex
+    exact (Sum.inl_ne_inr hvertex).elim
+  · change Sum.inr _ = Sum.inl _ at hvertex
+    exact (Sum.inr_ne_inl hvertex).elim
+  · have hboundary : left = right := Sum.inr.inj hvertex
+    subst right
+    exact Equiv.Perm.SameCycle.rfl
+
+/-- The graph-backed presentation inherits the same cyclic order at every
+computed primal vertex.  This is the cyclic-rotation field required by the
+later annular-cellulation package; connectedness and the two distinguished
+hole faces remain source-specific formation obligations. -/
+theorem graphData_hasCyclicVertexRotations
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep)
+    (hcyclic : VertexRotationCyclic data.toRotationSystem) :
+    ∀ vertex,
+      (graphData data keep outer).vertexRotation.IsCycleOn
+        {dart : (PrimalGraph data.toRotationSystem keep outer).Dart |
+          dart.fst = vertex} := by
+  intro vertex
+  constructor
+  · exact (graphData data keep outer).vertexRotation.bijOn fun dart => by
+      change
+        ((graphData data keep outer).vertexRotation dart).fst = vertex ↔
+          dart.fst = vertex
+      rw [(graphData data keep outer).vertexRotation_fst]
+  · intro left hleft right hright
+    have hopen := openRotation_vertexRotationCyclic
+      data.toRotationSystem keep outer hcyclic
+      ((primalDartEquiv data keep outer).symm left)
+      ((primalDartEquiv data keep outer).symm right) (by
+        rw [primalDartEquiv_symm_fst, primalDartEquiv_symm_fst]
+        exact hleft.trans hright.symm)
+    rcases hopen with ⟨power, hpower⟩
+    refine ⟨power, ?_⟩
+    change
+      (((primalDartEquiv data keep outer).permCongr
+        (GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).rho) ^ power) left = right
+    have hmap := MonoidHom.map_zpow
+      (primalDartEquiv data keep outer).permCongrHom.toMonoidHom
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).rho power
+    calc
+      _ = ((primalDartEquiv data keep outer).permCongr
+          ((GoertzelV24OpenRegionRotation.rotationSystem
+            data.toRotationSystem keep outer).rho ^ power)) left :=
+        congrArg (fun permutation => permutation left) hmap.symm
+      _ = primalDartEquiv data keep outer
+          (((GoertzelV24OpenRegionRotation.rotationSystem
+            data.toRotationSystem keep outer).rho ^ power)
+            ((primalDartEquiv data keep outer).symm left)) := rfl
+      _ = primalDartEquiv data keep outer
+          ((primalDartEquiv data keep outer).symm right) :=
+        congrArg (primalDartEquiv data keep outer) hpower
+      _ = right := (primalDartEquiv data keep outer).apply_symm_apply right
+
 end
 
 end GoertzelV24OpenRegionGraphBacking
