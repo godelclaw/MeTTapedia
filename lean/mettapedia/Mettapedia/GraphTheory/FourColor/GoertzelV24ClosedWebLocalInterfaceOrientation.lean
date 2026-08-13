@@ -244,6 +244,111 @@ theorem exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge
       hrightShared hcornerShared
   exact ⟨rightPosition, hedgeEq, hrightFace.symm⟩
 
+/-- **L9 (local rail identification).** The second third-edge rail at an
+outgoing Cell-3 corner is also a literal side edge of the next source face.
+Together with `exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge`,
+this identifies both rail tracks on the actual closed-web carrier; it still
+makes no global simplicity or annular-transversal claim. -/
+theorem exists_nextLocalPlacementSideEdge_eq_afterOutgoingCornerEdge
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    (hnext : leftInterior.center.val + 2 < blockLength)
+    (leftPlacement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique leftInterior)
+    (leftPosition : {position // position ∈ placementSidePositions leftPlacement})
+    (hsuccessor : leftPosition.1.val ≡
+      leftPlacement.outgoingPosition.val + 1 [MOD 6])
+    (rightPlacement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique (nextCorridorInterior leftInterior hnext)) :
+    ∃ rightPosition : {position // position ∈ placementSidePositions rightPlacement},
+      web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root rightPosition.1) =
+        web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS leftPlacement.root
+              leftPlacement.outgoingPosition))) ∧
+      localPlacementSideFace leftPlacement leftPosition =
+        localPlacementSideFace rightPlacement rightPosition := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let rightInterior := nextCorridorInterior leftInterior hnext
+  let leftFace := localPlacementSideFace leftPlacement leftPosition
+  let rightCenter := skeleton.faceAt rightInterior.center
+  have hadjRaw := localPlacementSideFace_adjacent_next_of_after_outgoing
+    (corridor := corridor) hnext leftPlacement leftPosition hsuccessor
+  have hadj : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        rightCenter leftFace := by
+    simpa [rightCenter, rightInterior, leftFace, skeleton,
+      nextCorridorInterior] using hadjRaw.symm
+  have hleftExternal : ∀ index : Fin blockLength,
+      leftFace ≠ skeleton.faceAt index := by
+    intro index
+    simpa [leftFace, skeleton] using
+      localPlacementSideFace_ne_faceAt (corridor := corridor)
+        leftPlacement leftPosition index
+  rcases exists_localPlacementSideFace_eq_of_adjacent_external
+      (corridor := corridor) rightPlacement leftFace hadj hleftExternal with
+    ⟨rightPosition, hrightFace⟩
+  let rightDart :=
+    faceCycleDart web.annular.RS rightPlacement.root rightPosition.1
+  have hrightBoundary : web.annular.RS.edgeOf rightDart ∈
+      orbitFaceBoundary web.annular.RS rightCenter.1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace
+      web.annular.RS rightDart
+    rw [dartOrbitFace_faceCycleDart, rightPlacement.root_face] at hraw
+    simpa [rightDart, rightCenter, rightInterior, skeleton] using hraw
+  have hrightAcross : web.annular.RS.edgeOf rightDart ∈
+      orbitFaceBoundary web.annular.RS leftFace.1 := by
+    rw [← hrightFace]
+    change web.annular.RS.edgeOf rightDart ∈ orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS (web.annular.RS.alpha rightDart))
+    rw [← web.annular.RS.edge_alpha rightDart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha rightDart)
+  have hrightInterior : web.annular.RS.edgeOf rightDart ∈ interiorEdgeSupport
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) := by
+    apply InteriorFace.edge_mem_interiorEdgeSupport web rightDart
+    exact localPlacementSideDart_internal (corridor := corridor)
+      rightPlacement rightPosition
+  have hrightShared : web.annular.RS.edgeOf rightDart ∈
+      sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        rightCenter.1 leftFace.1 := by
+    apply (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+    exact ⟨hrightInterior, hrightBoundary, hrightAcross⟩
+  have hcornerShared : web.annular.RS.edgeOf
+      (web.annular.RS.rho (web.annular.RS.phi
+        (faceCycleDart web.annular.RS leftPlacement.root
+          leftPlacement.outgoingPosition))) ∈
+      sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        rightCenter.1 leftFace.1 := by
+    simpa [leftFace, rightCenter, rightInterior, skeleton,
+      nextCorridorInterior] using
+      localPlacementThirdEdge_mem_sharedInteriorEdges_of_after_outgoing
+        (corridor := corridor) hnext leftPlacement leftPosition hsuccessor
+  have hfaceNe : rightCenter.1 ≠ leftFace.1 := by
+    intro hfaces
+    exact hadj.ne (Subtype.ext hfaces)
+  have hedgeEq : web.annular.RS.edgeOf rightDart =
+      web.annular.RS.edgeOf
+        (web.annular.RS.rho (web.annular.RS.phi
+          (faceCycleDart web.annular.RS leftPlacement.root
+            leftPlacement.outgoingPosition))) :=
+    (Finset.card_le_one_iff.1
+      (hunique rightCenter.1 rightCenter.2 leftFace.1 leftFace.2 hfaceNe))
+      hrightShared hcornerShared
+  exact ⟨rightPosition, hedgeEq, hrightFace.symm⟩
+
 end LocalLayerFormation
 
 end Instance
