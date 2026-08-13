@@ -246,7 +246,14 @@ disjoint.  Every face in either walk is additionally certified adjacent to
 the Cell--3 center that generated it.  Combining this provenance with the
 boundary-clean geodesic exclusion now proves all four track combinations
 disjoint whenever their centers are at least three positions apart.  The two
-bounded neighboring gaps remain a finite local obligation.  A literal
+bounded neighboring gaps remain a finite local obligation.  For two
+consecutive cells, that obligation is now isolated as the proposition
+\texttt{CommonNeighborsExact}: the only common full-dual neighbours of the two
+centres are the two named flank faces of their shared rung.  Assuming exactly
+this proposition, the literal successor rails rebase at the preceding exits,
+append to two simple facial-dual paths, and retain mutual support
+disjointness.  This is a complete conditional two-cell append theorem, not
+yet a derivation of the condition from the source annulus.  A literal
 successor theorem carries each outgoing flank to an
 incoming flank of the next cell on the same ambient edge and exterior face,
 then returns one dependent successor package containing the next outgoing
@@ -286,14 +293,30 @@ Three nearby results delimit the gap.
   \item Consecutive six-edge aligned slab-boundary walks are proved
         non-disjoint: they share their intervening dual interface.  They are
         useful local windows, not the two radial cuts of the splice.
+  \item The source-facing \texttt{LongRadialSectorWitness} already supplies
+        two vertex-disjoint \emph{primal} radial paths, distinct anchors on
+        both boundary components, sector alternation, and a quantitative
+        length witness.  It does not itself supply facial-dual crosscuts, and
+        no module presently relates this witness type to
+        \texttt{SeparatedAlignedSimpleDualCrosscuts}.
 \end{itemize}
 
 The last item is a scoped refutation of a tempting Lean construction, not a
 refutation of Goertzel's proof.  It says that the separated cuts must be
 assembled at the correct global scale rather than identified with adjacent
-local windows.  Existing remote rail-support disjointness results and the
-source's length coordinate provide ingredients; the formation-to-graph theorem
-joining them is the live obligation.
+local windows.  Nor is the live problem the general existence of two disjoint
+graph paths: the required primal pair is already constructed.  The missing
+bridge is the source-faithful ribbon-boundary dualization of that primal
+witness.  The literal Cell--3 rail construction is the local candidate for
+this bridge.  Its remote noncollision is proved, and its adjacent append has
+been reduced to \texttt{CommonNeighborsExact}.  An extra common neighbour
+would form precisely the small separating/nonfacial dual triangle that closed
+minimal-counterexample theory is designed to exclude.  Those exclusion
+theorems exist for a closed graph-backed minimal counterexample, but the
+present open-annular \texttt{Instance} does not retain that provenance.
+Connecting the closed minimal-counterexample hypotheses to the open annular
+corridor---rather than adding the classification as a new assumption---is the
+live formation-to-graph obligation.
 
 \subsection{The closure chain}
 
