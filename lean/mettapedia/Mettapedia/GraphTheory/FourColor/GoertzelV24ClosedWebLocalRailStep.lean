@@ -666,6 +666,139 @@ theorem exists_sourceLocalRailWalkPair_of_nonadjacent
     outgoingBefore outgoingAfter hincomingBefore hincomingAfter
     houtgoingBefore houtgoingAfter shape⟩
 
+/-- Complete two already oriented incoming flank slots by choosing the two
+literal slots flanking the outgoing rung of the same Cell-3 face.  This is a
+local existence theorem: the returned paths are separated, but no claim is
+made about appending different cells. -/
+theorem exists_sourceLocalRailWalkPair_of_incoming
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (incomingBefore incomingAfter :
+      {position // position ∈ placementSidePositions placement})
+    (hincomingBefore : incomingBefore.1.val ≡
+      placement.incomingPosition.val + 1 [MOD 6])
+    (hincomingAfter : placement.incomingPosition.val ≡
+      incomingAfter.1.val + 1 [MOD 6])
+    (hnonadjacent : placement.rungType ≠ HexRungType.adjacent) :
+    ∃ outgoingBefore outgoingAfter :
+        {position // position ∈ placementSidePositions placement},
+      placement.outgoingPosition.val ≡
+          outgoingBefore.1.val + 1 [MOD 6] ∧
+        outgoingAfter.1.val ≡
+          placement.outgoingPosition.val + 1 [MOD 6] ∧
+        Nonempty (SourceLocalRailWalkPair placement incomingBefore incomingAfter
+          outgoingBefore outgoingAfter) := by
+  rcases exists_two_hexSidePositions_flanking_outgoing
+      placement.incomingPosition6 placement.outgoingPosition6
+      placement.positions6_ne hnonadjacent with
+    ⟨outgoingBefore6, outgoingAfter6, _, houtgoingBefore6,
+      houtgoingAfter6⟩
+  let outgoingBefore := placementSidePositionOfSix placement outgoingBefore6
+  let outgoingAfter := placementSidePositionOfSix placement outgoingAfter6
+  have houtgoingBefore : placement.outgoingPosition.val ≡
+      outgoingBefore.1.val + 1 [MOD 6] := by
+    simpa [outgoingBefore, placementSidePositionOfSix, placementPositionOfSix,
+      InternalHexRungPlacement.outgoingPosition6] using houtgoingBefore6
+  have houtgoingAfter : outgoingAfter.1.val ≡
+      placement.outgoingPosition.val + 1 [MOD 6] := by
+    simpa [outgoingAfter, placementSidePositionOfSix, placementPositionOfSix,
+      InternalHexRungPlacement.outgoingPosition6] using houtgoingAfter6
+  refine ⟨outgoingBefore, outgoingAfter, houtgoingBefore, houtgoingAfter, ?_⟩
+  exact exists_sourceLocalRailWalkPair_of_nonadjacent placement incomingBefore
+    incomingAfter outgoingBefore outgoingAfter hincomingBefore hincomingAfter
+    houtgoingBefore houtgoingAfter hnonadjacent
+
+/-- **L9 (literal successor rail cell).** Given the two outgoing flank slots
+of one source Cell-3 placement, construct the next placement's two incoming
+slots on the same ambient rail edges, choose its two outgoing flank slots,
+and build the separated local rail walks between them.  The conclusion keeps
+both ambient-edge and exterior-face identifications, so a later recursive
+assembly cannot silently connect merely isomorphic local windows. -/
+theorem exists_nextSourceLocalRailWalkPair
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    (hnext : leftInterior.center.val + 2 < blockLength)
+    (leftPlacement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique leftInterior)
+    (leftBefore leftAfter :
+      {position // position ∈ placementSidePositions leftPlacement})
+    (hleftBefore : leftPlacement.outgoingPosition.val ≡
+      leftBefore.1.val + 1 [MOD 6])
+    (hleftAfter : leftAfter.1.val ≡
+      leftPlacement.outgoingPosition.val + 1 [MOD 6])
+    (rightPlacement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique (nextCorridorInterior leftInterior hnext)) :
+    ∃ rightBefore rightAfter rightOutgoingBefore rightOutgoingAfter :
+        {position // position ∈ placementSidePositions rightPlacement},
+      web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root rightBefore.1) =
+          web.annular.RS.edgeOf
+            (web.annular.RS.rho (web.annular.RS.phi
+              (faceCycleDart web.annular.RS leftPlacement.root leftBefore.1))) ∧
+        localPlacementSideFace leftPlacement leftBefore =
+          localPlacementSideFace rightPlacement rightBefore ∧
+        web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root rightAfter.1) =
+          web.annular.RS.edgeOf
+            (web.annular.RS.rho (web.annular.RS.phi
+              (faceCycleDart web.annular.RS leftPlacement.root
+                leftPlacement.outgoingPosition))) ∧
+        localPlacementSideFace leftPlacement leftAfter =
+          localPlacementSideFace rightPlacement rightAfter ∧
+        rightPlacement.outgoingPosition.val ≡
+          rightOutgoingBefore.1.val + 1 [MOD 6] ∧
+        rightOutgoingAfter.1.val ≡
+          rightPlacement.outgoingPosition.val + 1 [MOD 6] ∧
+        Nonempty (SourceLocalRailWalkPair rightPlacement rightBefore rightAfter
+          rightOutgoingBefore rightOutgoingAfter) := by
+  rcases exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge
+      (corridor := corridor) hnext leftPlacement leftBefore hleftBefore
+      rightPlacement with ⟨rightBefore, hbeforeEdge, hbeforeFace⟩
+  rcases exists_nextLocalPlacementSideEdge_eq_afterOutgoingCornerEdge
+      (corridor := corridor) hnext leftPlacement leftAfter hleftAfter
+      rightPlacement with ⟨rightAfter, hafterEdge, hafterFace⟩
+  have hrightBefore :=
+    nextLocalPlacement_sidePosition_after_incoming_of_edge_eq leftInterior hnext
+      leftPlacement rightPlacement rightBefore (by
+        have hleftDart :
+            faceCycleDart web.annular.RS leftPlacement.root
+                leftPlacement.outgoingPosition =
+              web.annular.RS.phi
+                (faceCycleDart web.annular.RS leftPlacement.root leftBefore.1) :=
+          faceCycleDart_successor_of_modEq web.annular.RS leftPlacement.root
+            leftPlacement.orbit_card leftBefore.1
+              leftPlacement.outgoingPosition hleftBefore
+        rw [hleftDart]
+        exact hbeforeEdge)
+  have hrightAfter :=
+    nextLocalPlacement_incoming_after_sidePosition_of_edge_eq leftInterior hnext
+      leftPlacement rightPlacement rightAfter hafterEdge
+  have hnonadjacent : rightPlacement.rungType ≠ HexRungType.adjacent :=
+    InternalHexRungPlacement.rungType_ne_adjacent_of_cell3 corridor hunique
+      (nextCorridorInterior leftInterior hnext) rightPlacement
+  rcases exists_sourceLocalRailWalkPair_of_incoming rightPlacement rightBefore
+      rightAfter hrightBefore hrightAfter hnonadjacent with
+    ⟨rightOutgoingBefore, rightOutgoingAfter, houtgoingBefore,
+      houtgoingAfter, rails⟩
+  exact ⟨rightBefore, rightAfter, rightOutgoingBefore, rightOutgoingAfter,
+    hbeforeEdge, hbeforeFace, hafterEdge, hafterFace, houtgoingBefore,
+    houtgoingAfter, rails⟩
+
 end LocalLayerFormation
 
 end Instance
