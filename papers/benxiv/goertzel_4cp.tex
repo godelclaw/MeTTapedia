@@ -370,9 +370,11 @@ The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
 the minimal-counterexample theorem concerns the original closed cubic map.
 One may not assume both structures on that same carrier and call the resulting
-conditional theorem a formation result.  The missing bridge must construct
-the deleted-edge/open rotation data from the closed map and prove that faces
-remote from the deleted edge retain their orbits and shared edges.
+conditional theorem a formation result.  For Cell--3, the missing bridge must
+construct the actual annular subregion obtained from the closed map (including
+its cap or region deletion), identify the displayed L1 corridor inside that
+opening, and prove that the relevant interior faces and their shared edges are
+the transported closed-map objects.
 
 The first generic piece of this formation is now constructed in
 \texttt{GoertzelV24OpenRegionFaceTransport}.  Let a closed ambient face orbit
@@ -406,8 +408,26 @@ theorems remove one formation gap; they do not themselves construct the
 crosscut pair, prove the L1 corridor comes from that opening, or assert that a
 flank face cut by the opening is wholly retained.
 
-The first carrier-changing part of the \emph{single-edge deletion} model is
-also now constructed, rather than postulated.  The generic permutation lemma
+The opened rotation is now also backed by an actual computed simple graph in
+\texttt{GoertzelV24OpenRegionGraphBacking}.  Its primal adjacency is defined
+from the opened dart endpoints.  Lean proves that mapping an opened dart to
+its ordered pair of endpoints is bijective: internal darts are recovered from
+the two retained endpoints, while a fresh boundary vertex remembers the exact
+exposed ambient half-dart.  Transporting the opened vertex rotation across
+this equivalence produces a \texttt{SimpleGraphDartRotation.Data} package on
+the computed graph.  The equivalence is proved to commute with edge reversal,
+vertex rotation, and hence the facial step.  Thus later Cell--3 formation may
+move between the literal-open rotation carrier and an ordinary graph-backed
+carrier without silently changing face or edge semantics.  This remains
+generic carrier plumbing: it neither selects the Cell--3 retained region nor
+constructs its two hole faces, planar cellulation, L1 corridor, or separated
+crosscuts.
+
+There is a second, deliberately separate formation result in the tree.  The
+first carrier-changing part of the \emph{single-edge deletion} model is now
+constructed, rather than postulated.  This is the formation geometry used by
+the missing-edge framed trail of Addendum~XXVIII (Cell--4); it is not the
+annular Cell--3 opening of Addendum~XXVII.  The generic permutation lemma
 
 \begin{center}
 \texttt{eraseTwoPointsSubtype}
@@ -437,13 +457,14 @@ edge, the face step computed in the deleted graph maps back to exactly the old
 ambient face step.  Thus deletion changes face tracing only where the missing
 edge was actually encountered; remote face steps are not reconstructed by an
 unproved picture.  This is still only a bare rotation-system construction and
-a local transport theorem.  It does not yet transport planar-geometry fields,
-choose the source's missing edge, construct its container cycles or two holes,
-prove that the relevant Cell--3 face orbits avoid the deleted darts, or realize
-the long separated crosscut pair.  Those source-specific formation obligations
-remain the live gate.
+a local transport theorem.  It does not transport planar-geometry fields,
+choose the source's missing edge, or finish Cell--4 formation.  More
+importantly for the present closure frontier, it does not construct Cell--3's
+cap-deleted annulus, container cycles, two holes, or long separated crosscut
+pair.  Specializing it to Cell--3 merely because both constructions produce
+open graphs would confuse two different source objects.
 
-The one-step result has now been lifted to complete untouched faces in
+The Cell--4 deletion result has now been lifted to complete untouched faces in
 \texttt{GoertzelV24DeletedEdgeFaceTransport}.  The predicate
 \texttt{FaceAvoidsDeletedEdge} says that every dart in one ambient face orbit
 avoids both orientations of the missing edge.  Under exactly that condition,
@@ -459,13 +480,15 @@ primal edge in both directions, and packages the result as
 \texttt{deletedFaceOrbit\_adj\_iff\_ambientFaceOrbit\_adj}.
 \end{center}
 
-Thus deletion induces exactly the old facial-dual adjacency relation on the
+Thus single-edge deletion induces exactly the old facial-dual adjacency relation on the
 family of untouched face orbits: it neither loses a shared edge nor invents
-one between their images.  This is enough to transport any closed-map dual
-triangle once its three faces are proved untouched.  It does not establish
-that source-specific avoidance condition, nor show that every possible common
-neighbour in the open Cell--3 map belongs to the untouched family.  Those are
-the next local bridge statements.
+one between their images.  This is enough to transport a closed-map dual
+triangle through the Cell--4 missing-edge opening once its three faces are
+proved untouched.  It is not enough to transport the triangle into Cell--3,
+whose annular carrier comes from a different region/cap opening.  The live
+Cell--3 bridge must instead specialize the generic open-region transport to
+the actual closed-map annulus and prove that every open common neighbour under
+consideration is the image of an eligible ambient face.
 
 \subsection{The closure chain}
 

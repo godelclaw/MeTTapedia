@@ -1,0 +1,308 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionRotation
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness
+import Mettapedia.GraphTheory.FourColor.SimpleGraphRotationSystem
+
+/-!
+# Graph backing for a literal open region
+
+`GoertzelV24OpenRegionRotation` constructs the dart permutation of a literal
+opened vertex region.  Cell--3, however, is stated over a `SimpleGraph` with
+degree-one boundary stubs.  This file supplies the carrier bridge: the
+computed primal graph of the opened rotation has exactly the same oriented
+darts as the opened rotation itself.
+
+This is generic rotation-system plumbing.  It does not choose the Cell--3
+region, divide its boundary into the two ordered interfaces, construct its two
+hole faces, or prove Euler/planarity data.
+-/
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace GoertzelV24OpenRegionGraphBacking
+
+open GoertzelV24FaceDualConnectedness
+open GoertzelV24OpenRegionRotation
+open GoertzelV24RotationSpliceConstructor
+open SimpleGraphDartRotation
+
+-- The open-region instance is proposition-generic and would otherwise also
+-- match the ambient edge subtype `G.edgeSet`.  The ordinary subtype instance
+-- is definitionally the one used by `Data.toRotationSystem`.
+attribute [-instance]
+  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
+
+variable {V E : Type*} [Fintype V] [DecidableEq V]
+  [Fintype E] [DecidableEq E]
+
+noncomputable section
+
+/-- The actual simple primal graph computed from a literal open-region
+rotation. -/
+abbrev PrimalGraph (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep) :
+    SimpleGraph (GoertzelV24OpenRegionRotation.Vertex RS keep) :=
+  rotationPrimalGraph
+    (GoertzelV24OpenRegionRotation.rotationSystem RS keep outer)
+
+/-- Read one opened dart as the correspondingly oriented dart of the
+computed primal graph. -/
+def toPrimalDart (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (dart : GoertzelV24OpenRegionRotation.Dart RS keep) :
+    (PrimalGraph RS keep outer).Dart :=
+  ⟨((GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).vertOf dart,
+      (GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).vertOf
+        ((GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).alpha dart)),
+    ⟨dart, rfl, rfl⟩⟩
+
+@[simp] theorem toPrimalDart_fst
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (dart : GoertzelV24OpenRegionRotation.Dart RS keep) :
+    (toPrimalDart RS keep outer dart).fst =
+      (GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).vertOf dart :=
+  rfl
+
+@[simp] theorem toPrimalDart_snd
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep)
+    (dart : GoertzelV24OpenRegionRotation.Dart RS keep) :
+    (toPrimalDart RS keep outer dart).snd =
+      (GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).vertOf
+        ((GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).alpha dart) :=
+  rfl
+
+/-- Distinct literal-open darts have distinct ordered endpoint pairs.  The
+fresh boundary vertex remembers the exact exposed ambient half-dart, while
+two retained endpoints determine the original graph dart because the ambient
+carrier is a simple graph-backed rotation. -/
+theorem toPrimalDart_injective
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    Function.Injective (toPrimalDart data.toRotationSystem keep outer) := by
+  intro left right heq
+  have hfst := congrArg (fun dart => dart.toProd.1) heq
+  have hsnd := congrArg (fun dart => dart.toProd.2) heq
+  change
+    (GoertzelV24OpenRegionRotation.rotationSystem
+      data.toRotationSystem keep outer).vertOf left =
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).vertOf right at hfst
+  change
+    (GoertzelV24OpenRegionRotation.rotationSystem
+      data.toRotationSystem keep outer).vertOf
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).alpha left) =
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).vertOf
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).alpha right) at hsnd
+  rcases left with left | left <;> rcases right with right | right
+  · by_cases hleft : keep (data.toRotationSystem.vertOf
+        (data.toRotationSystem.alpha left.1))
+    · by_cases hright : keep (data.toRotationSystem.vertOf
+          (data.toRotationSystem.alpha right.1))
+      · have hfst : left.1.fst = right.1.fst := by
+          simpa [toPrimalDart_fst] using hfst
+        have hsnd : left.1.snd = right.1.snd := by
+          rw [GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_internal
+              data.toRotationSystem keep outer left hleft,
+            GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_internal
+              data.toRotationSystem keep outer right hright] at hsnd
+          simpa [toPrimalDart_snd] using hsnd
+        apply congrArg Sum.inl
+        apply Subtype.ext
+        exact SimpleGraph.Dart.ext _ _ (Prod.ext hfst hsnd)
+      · exfalso
+        rw [GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_internal
+              data.toRotationSystem keep outer left hleft,
+            GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_boundary
+              data.toRotationSystem keep outer right hright] at hsnd
+        simpa [toPrimalDart_snd] using hsnd
+    · by_cases hright : keep (data.toRotationSystem.vertOf
+          (data.toRotationSystem.alpha right.1))
+      · exfalso
+        rw [GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_boundary
+              data.toRotationSystem keep outer left hleft,
+            GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_internal
+              data.toRotationSystem keep outer right hright] at hsnd
+        simpa [toPrimalDart_snd] using hsnd
+      · rw [GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_boundary
+              data.toRotationSystem keep outer left hleft,
+            GoertzelV24OpenRegionRotation.rotationSystem_alpha_old_of_boundary
+              data.toRotationSystem keep outer right hright] at hsnd
+        change
+          (Sum.inr (⟨left, hleft⟩ :
+              GoertzelV24RotationCutDartDecomposition.BoundaryDart
+                data.toRotationSystem keep) :
+            GoertzelV24OpenRegionRotation.Vertex
+              data.toRotationSystem keep) =
+          Sum.inr ⟨right, hright⟩ at hsnd
+        exact congrArg Sum.inl
+          (congrArg Subtype.val (Sum.inr.inj hsnd))
+  · exfalso
+    simpa [toPrimalDart_fst] using hfst
+  · exfalso
+    simpa [toPrimalDart_fst] using hfst
+  · have hboundary : left = right := by
+      simpa [toPrimalDart_fst] using hfst
+    exact congrArg Sum.inr hboundary
+
+/-- Every oriented dart of the computed primal graph comes from an opened
+dart. -/
+theorem toPrimalDart_surjective
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart RS keep) :
+    Function.Surjective (toPrimalDart RS keep outer) := by
+  intro dart
+  rcases dart.adj with ⟨source, hsource, htarget⟩
+  refine ⟨source, ?_⟩
+  exact SimpleGraph.Dart.ext _ _ (Prod.ext hsource htarget)
+
+/-- Exact dart-carrier equivalence between a graph-backed ambient opening
+and the simple primal graph computed from it. -/
+def primalDartEquiv
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    GoertzelV24OpenRegionRotation.Dart data.toRotationSystem keep ≃
+      (PrimalGraph data.toRotationSystem keep outer).Dart :=
+  Equiv.ofBijective (toPrimalDart data.toRotationSystem keep outer)
+    ⟨toPrimalDart_injective data keep outer,
+      toPrimalDart_surjective data.toRotationSystem keep outer⟩
+
+@[simp] theorem primalDartEquiv_apply
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer dart : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    primalDartEquiv data keep outer dart =
+      toPrimalDart data.toRotationSystem keep outer dart :=
+  rfl
+
+@[simp] theorem primalDartEquiv_fst
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer dart : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    (primalDartEquiv data keep outer dart).fst =
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).vertOf dart :=
+  rfl
+
+@[simp] theorem primalDartEquiv_symm_fst
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep)
+    (dart : (PrimalGraph data.toRotationSystem keep outer).Dart) :
+    (GoertzelV24OpenRegionRotation.rotationSystem
+      data.toRotationSystem keep outer).vertOf
+        ((primalDartEquiv data keep outer).symm dart) = dart.fst := by
+  rw [← primalDartEquiv_fst data keep outer,
+    Equiv.apply_symm_apply]
+
+/-- Reversing a computed graph dart is exactly the transported literal-open
+edge flip. -/
+@[simp] theorem primalDartEquiv_alpha
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer dart : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    primalDartEquiv data keep outer
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).alpha dart) =
+      (primalDartEquiv data keep outer dart).symm := by
+  apply SimpleGraph.Dart.ext
+  apply Prod.ext
+  · rfl
+  · exact congrArg
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).vertOf
+      ((GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).alpha_involutive dart)
+
+/-- Bare graph-backed rotation data on the simple graph computed from a
+literal open region.  The cyclic order is transported, not postulated. -/
+def graphData
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    SimpleGraphDartRotation.Data
+      (PrimalGraph data.toRotationSystem keep outer) where
+  vertexRotation :=
+    (primalDartEquiv data keep outer).permCongr
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).rho
+  vertexRotation_fst := by
+    intro dart
+    change
+      (primalDartEquiv data keep outer
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).rho
+          ((primalDartEquiv data keep outer).symm dart))).fst = dart.fst
+    rw [primalDartEquiv_fst,
+      (GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).vert_rho,
+      primalDartEquiv_symm_fst]
+  outer := primalDartEquiv data keep outer outer
+
+@[simp] theorem graphData_vertexRotation
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep)
+    (dart : (PrimalGraph data.toRotationSystem keep outer).Dart) :
+    (graphData data keep outer).vertexRotation dart =
+      primalDartEquiv data keep outer
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).rho
+          ((primalDartEquiv data keep outer).symm dart)) :=
+  rfl
+
+/-- The dart equivalence commutes with the literal and graph-backed vertex
+rotations. -/
+@[simp] theorem primalDartEquiv_rho
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer dart : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    primalDartEquiv data keep outer
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).rho dart) =
+      (graphData data keep outer).vertexRotation
+        (primalDartEquiv data keep outer dart) := by
+  rw [graphData_vertexRotation, Equiv.symm_apply_apply]
+
+/-- Consequently the equivalence preserves facial steps, which is the
+load-bearing compatibility for transporting quotient faces and facial-dual
+crosscuts onto the computed simple graph. -/
+@[simp] theorem primalDartEquiv_phi
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (keep : V → Prop)
+    (outer dart : GoertzelV24OpenRegionRotation.Dart
+      data.toRotationSystem keep) :
+    primalDartEquiv data keep outer
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).phi dart) =
+      (graphData data keep outer).vertexRotation
+        (primalDartEquiv data keep outer dart).symm := by
+  change primalDartEquiv data keep outer
+      ((GoertzelV24OpenRegionRotation.rotationSystem
+        data.toRotationSystem keep outer).rho
+        ((GoertzelV24OpenRegionRotation.rotationSystem
+          data.toRotationSystem keep outer).alpha dart)) =
+    (graphData data keep outer).vertexRotation
+      (primalDartEquiv data keep outer dart).symm
+  rw [← primalDartEquiv_alpha data keep outer,
+    ← primalDartEquiv_rho data keep outer]
+
+end
+
+end GoertzelV24OpenRegionGraphBacking
+
+end Mettapedia.GraphTheory.FourColor
