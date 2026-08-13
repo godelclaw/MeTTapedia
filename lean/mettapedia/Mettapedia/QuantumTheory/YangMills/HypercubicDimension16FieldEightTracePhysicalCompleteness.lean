@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileBandReduction
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSix
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldEightTracePhysicalLift
 
 /-!
@@ -607,6 +608,24 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_so
       policy generator coefficient
     simp [hsource, ourEightFieldCount]
 
+/-- OUR full profile correction now annihilates every physical relation column
+outside the seven-field source band.  The low bands are eliminated by support,
+the six-field cross-sector commutator cancels through the conjugate curvature
+pair, and the eight-field band is the derivative-free trace classification.
+This still does not assert a seven-field relation census. -/
+theorem ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_ne_seven
+    (policy : PhysicalRelationPolicy)
+    (generator : PhysicalRelationGenerator policy) (coefficient : ℚ)
+    (hseven : physicalRelationGeneratorSourceFieldCount generator ≠ ourSevenFieldCount) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single generator coefficient)) = 0 := by
+  by_cases hsix : physicalRelationGeneratorSourceFieldCount generator = (6 : Fin 9)
+  · exact _root_.Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSix.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_six
+      policy generator coefficient hsix
+  · exact ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_not_six_or_seven
+      policy generator coefficient hsix hseven
+
 #print axioms ourEightFieldCount_eq_literal
 #print axioms ourFieldEightTracelessSiteOfPhysical
 #print axioms ourFieldEightAnticommutatorSiteOfPhysical
@@ -619,5 +638,6 @@ theorem ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_so
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_fieldEightFundamental_zero
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_eight
 #print axioms ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_not_six_or_seven
+#print axioms ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_ne_seven
 
 end Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldEightTracePhysicalCompleteness

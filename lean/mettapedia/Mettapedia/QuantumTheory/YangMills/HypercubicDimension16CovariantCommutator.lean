@@ -101,6 +101,51 @@ theorem insertTraceBefore_apply_predecessor {count : ℕ}
         (permutation.symm before).castSucc = Fin.last count := by
   exact insertTraceAfter_apply_after permutation (permutation.symm before)
 
+/-! ## OUR trace-order topology of the two insertions -/
+
+/-- OUR before/after trace insertions are conjugate by the extension of the
+old trace permutation.  Thus their distinction is a choice of marked place
+inside one trace cycle, rather than a change of its unmarked cycle topology. -/
+theorem our_insertTraceAfter_conjugate_insertTraceBefore {count : ℕ}
+    (permutation : Equiv.Perm (Fin count)) (field : Fin count) :
+    insertTraceAfter permutation field =
+      extendFinPermutation permutation *
+        insertTraceBefore permutation field *
+          (extendFinPermutation permutation)⁻¹ := by
+  simp only [insertTraceBefore, insertTraceAfter, Equiv.apply_symm_apply]
+  change Equiv.swap (Fin.castSucc (permutation field)) (Fin.last count) *
+      extendFinPermutation permutation =
+    extendFinPermutation permutation *
+      (Equiv.swap (Fin.castSucc field) (Fin.last count) *
+        extendFinPermutation permutation) *
+          (extendFinPermutation permutation)⁻¹
+  symm
+  calc
+    extendFinPermutation permutation *
+        (Equiv.swap (Fin.castSucc field) (Fin.last count) *
+          extendFinPermutation permutation) *
+            (extendFinPermutation permutation)⁻¹ =
+        (extendFinPermutation permutation *
+          Equiv.swap (Fin.castSucc field) (Fin.last count)) := by
+            group
+    _ = Equiv.swap
+        (extendFinPermutation permutation (Fin.castSucc field))
+        (extendFinPermutation permutation (Fin.last count)) *
+          extendFinPermutation permutation := by
+          exact Equiv.mul_swap_eq_swap_mul _ _ _
+    _ = Equiv.swap (Fin.castSucc (permutation field)) (Fin.last count) *
+          extendFinPermutation permutation := by simp
+
+/-- OUR two curvature insertion sides have exactly the same trace-cycle
+profile.  This is a generic finite permutation fact, independent of a
+chosen carrier or coordinate. -/
+theorem our_insertTraceAfter_cycleType {count : ℕ}
+    (permutation : Equiv.Perm (Fin count)) (field : Fin count) :
+    (insertTraceAfter permutation field).cycleType =
+      (insertTraceBefore permutation field).cycleType := by
+  rw [our_insertTraceAfter_conjugate_insertTraceBefore]
+  exact Equiv.Perm.cycleType_conj
+
 /-! ## A valid adjacent same-owner derivative pair -/
 
 structure CovariantCommutatorSite (carrier : RelationCarrier) where

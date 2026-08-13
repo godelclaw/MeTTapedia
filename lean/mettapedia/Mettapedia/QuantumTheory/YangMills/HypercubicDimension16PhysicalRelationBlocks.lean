@@ -167,6 +167,93 @@ theorem physicalRelationRow_apply_eq_zero_of_outside_field_band
           (rewireTraceCarrier carrier rewire) target hout rfl
       simp [physicalRelationRow, fundamentalTraceRow, hcarrier, hrewire]
 
+/-- Away from covariant-derivative commutators, every standard physical row
+stays in its source field sector.  This sharper support statement is useful
+when the successor sector itself is observable. -/
+theorem physicalRelationRow_apply_eq_zero_of_outside_source_field_of_not_covariantCommutator
+    {policy : PhysicalRelationPolicy}
+    (generator : PhysicalRelationGenerator policy)
+    (noncovariant : ∀ (carrier : RelationCarrier)
+      (site : CovariantCommutatorSite carrier),
+      generator ≠ .covariantCommutator carrier site)
+    (target : RelationCarrier)
+    (outside : target.1 ≠ physicalRelationGeneratorSourceFieldCount generator) :
+    physicalRelationRow generator target = 0 := by
+  cases generator with
+  | antisymmetry carrier slot =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hcarrier : carrier ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier carrier target hout rfl
+      have hswap : swapExactFieldAxes carrier slot ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier
+          (swapExactFieldAxes carrier slot) target hout rfl
+      simp [physicalRelationRow, fieldAntisymmetryRow, hcarrier, hswap]
+  | bianchi carrier field position innermost =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hcarrier : carrier ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier carrier target hout rfl
+      have hone : bianchiRotateOne carrier field position ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier
+          (bianchiRotateOne carrier field position) target hout rfl
+      have htwo : bianchiRotateTwo carrier field position ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier
+          (bianchiRotateTwo carrier field position) target hout rfl
+      simp [physicalRelationRow, bianchiRow, hcarrier, hone, htwo]
+  | eom enabled carrier field position innermost =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hterm : ∀ axis, eomTerm carrier field position axis ≠ target :=
+        fun axis => relationCarrier_ne_target_of_same_field carrier
+          (eomTerm carrier field position axis) target hout rfl
+      simp [physicalRelationRow, eomRow, hterm]
+  | integrationByParts carrier position outermost =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hterm : ∀ owner, setDerivativeOwner carrier position owner ≠ target :=
+        fun owner => relationCarrier_ne_target_of_same_field carrier
+          (setDerivativeOwner carrier position owner) target hout rfl
+      simp [physicalRelationRow, integrationByPartsRow, hterm]
+  | traceless carrier field singleton =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hcarrier : carrier ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier carrier target hout rfl
+      simp [physicalRelationRow, tracelessLetterRow, hcarrier]
+  | covariantCommutator carrier site =>
+      exact (noncovariant carrier site rfl).elim
+  | traceAnticommutator carrier site =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hcarrier : carrier ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier carrier target hout rfl
+      have hswap : swapAdjacentTraceCarrier site ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier
+          (swapAdjacentTraceCarrier site) target hout rfl
+      have hsplit : splitAdjacentTraceCarrier site ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier
+          (splitAdjacentTraceCarrier site) target hout rfl
+      simp [physicalRelationRow, traceAnticommutatorRow,
+        hcarrier, hswap, hsplit]
+  | fundamentalTrace carrier site =>
+      have hout : target.1 ≠ carrier.1 := by
+        simpa [physicalRelationGeneratorSourceFieldCount,
+          physicalRelationGeneratorSourceCarrier] using outside
+      have hcarrier : carrier ≠ target :=
+        relationCarrier_ne_target_of_same_field carrier carrier target hout rfl
+      have hrewire : ∀ rewire : Equiv.Perm (Fin carrier.1.1),
+          rewireTraceCarrier carrier rewire ≠ target :=
+        fun rewire => relationCarrier_ne_target_of_same_field carrier
+          (rewireTraceCarrier carrier rewire) target hout rfl
+      simp [physicalRelationRow, fundamentalTraceRow, hcarrier, hrewire]
+
 /-! ## Exact field-sector filters -/
 
 def relationFieldFilter (predicate : Fin 9 → Prop)
@@ -251,6 +338,31 @@ theorem relationFieldFilter_physicalRelationRow
       physicalRelationRow_apply_eq_zero_of_outside_field_band
         generator target membership]
 
+/-- The noncommutator part of a physical row is supported exactly on its
+source field sector. -/
+theorem relationFieldFilter_physicalRelationRow_source_of_not_covariantCommutator
+    {policy : PhysicalRelationPolicy}
+    (generator : PhysicalRelationGenerator policy)
+    (noncovariant : ∀ (carrier : RelationCarrier)
+      (site : CovariantCommutatorSite carrier),
+      generator ≠ .covariantCommutator carrier site) :
+    relationFieldFilter
+        (fun target => target = physicalRelationGeneratorSourceFieldCount generator)
+        (physicalRelationRow generator) =
+      physicalRelationRow generator := by
+  classical
+  apply Finsupp.ext
+  intro target
+  by_cases membership : target.1 = physicalRelationGeneratorSourceFieldCount generator
+  · change (if target.1 = physicalRelationGeneratorSourceFieldCount generator
+      then physicalRelationRow generator target else 0) = _
+    rw [if_pos membership]
+  · change (if target.1 = physicalRelationGeneratorSourceFieldCount generator
+      then physicalRelationRow generator target else 0) = _
+    rw [if_neg membership,
+      physicalRelationRow_apply_eq_zero_of_outside_source_field_of_not_covariantCommutator
+        generator noncovariant target membership]
+
 /-- Each column of the physical operator on the genuine field-label orbit
 carrier lies in its source field sector plus, only when applicable, the
 successor field sector. -/
@@ -273,6 +385,51 @@ theorem orbitPhysicalRelationOperator_single_field_band
     ← normalizeExactContextual_fieldFilter,
     LinearMap.map_smul,
     relationFieldFilter_physicalRelationRow]
+
+/-- A noncommutator column of the physical operator remains in its source
+field sector after contextual normalization and field relabeling. -/
+theorem orbitPhysicalRelationOperator_single_source_field_of_not_covariantCommutator
+    {policy : PhysicalRelationPolicy}
+    (generator : PhysicalRelationGenerator policy) (coefficient : ℚ)
+    (noncovariant : ∀ (carrier : RelationCarrier)
+      (site : CovariantCommutatorSite carrier),
+      generator ≠ .covariantCommutator carrier site) :
+    orbitFieldFilter
+        (fun target => target = physicalRelationGeneratorSourceFieldCount generator)
+        (orbitPhysicalRelationOperator policy
+          (Finsupp.single generator coefficient)) =
+      orbitPhysicalRelationOperator policy
+        (Finsupp.single generator coefficient) := by
+  classical
+  simp only [orbitPhysicalRelationOperator,
+    normalizedPhysicalRelationOperator, LinearMap.comp_apply,
+    physicalRelationOperator_single]
+  rw [← normalizeExactFieldRelabel_fieldFilter,
+    ← normalizeExactContextual_fieldFilter,
+    LinearMap.map_smul,
+    relationFieldFilter_physicalRelationRow_source_of_not_covariantCommutator
+      generator noncovariant]
+
+/-- Evaluation of a noncommutator column vanishes outside its exact source
+field sector. -/
+theorem orbitPhysicalRelationOperator_single_apply_eq_zero_of_outside_source_field_of_not_covariantCommutator
+    {policy : PhysicalRelationPolicy}
+    (generator : PhysicalRelationGenerator policy) (coefficient : ℚ)
+    (noncovariant : ∀ (carrier : RelationCarrier)
+      (site : CovariantCommutatorSite carrier),
+      generator ≠ .covariantCommutator carrier site)
+    (target : ExactFieldRelabelOrbitCarrier)
+    (outside : target.1 ≠ physicalRelationGeneratorSourceFieldCount generator) :
+    orbitPhysicalRelationOperator policy
+        (Finsupp.single generator coefficient) target = 0 := by
+  classical
+  have hfiltered :=
+    orbitPhysicalRelationOperator_single_source_field_of_not_covariantCommutator
+      generator coefficient noncovariant
+  rw [← hfiltered]
+  change (if target.1 = physicalRelationGeneratorSourceFieldCount generator
+    then _ else 0) = 0
+  rw [if_neg outside]
 
 theorem orbitPhysicalRelationOperator_single_apply_eq_zero_of_outside_field_band
     {policy : PhysicalRelationPolicy}

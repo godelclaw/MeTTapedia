@@ -103,6 +103,15 @@ example (policy : PhysicalRelationPolicy)
   ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_not_six_or_seven
     policy generator coefficient hsix hseven
 
+example (policy : PhysicalRelationPolicy)
+    (generator : PhysicalRelationGenerator policy) (coefficient : ℚ)
+    (hseven : physicalRelationGeneratorSourceFieldCount generator ≠ ourSevenFieldCount) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single generator coefficient)) = 0 :=
+  ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_ne_seven
+    policy generator coefficient hseven
+
 #print axioms HypercubicDimension16FundamentalTraceCycleProfile.ourDistinctThreeCutProfileNumerators_all_zero
 #print axioms HypercubicDimension16FundamentalTraceCycleProfile.ourTraceCycleProfile_forced
 #print axioms HypercubicDimension16WilsonTraceOrderCycleProfileRepair.ourInvariantTraceCycleProfileCoordinate_signed_action
@@ -114,6 +123,7 @@ example (policy : PhysicalRelationPolicy)
 #print axioms HypercubicDimension16WilsonTraceOrderCycleProfileRepair.ourCycleProfileInvariantTraceOrderCorrection_invariantAntisymmetry_zero
 #print axioms HypercubicDimension16FieldEightTracePhysicalCompleteness.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_eight
 #print axioms HypercubicDimension16FieldEightTracePhysicalCompleteness.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_not_six_or_seven
+#print axioms HypercubicDimension16FieldEightTracePhysicalCompleteness.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_ne_seven
 
 end YangMills
 end QuantumTheory
