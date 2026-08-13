@@ -427,6 +427,29 @@ abstract claim that opening ``preserves local geometry'': it is the concrete
 source formation, the full-retention proof for the displayed Cell--3 faces,
 and their already named edge identifications.
 
+The closed classification and the generic opening calculation have now also
+been joined in one constructive theorem.  In
+\texttt{GoertzelV24OpenRegionMinimalDualTriangleIncidence}, the theorem
+
+\begin{center}
+\texttt{exists\_common\_open\_endpoint\_of\_retained\_dual\_triangle}
+\end{center}
+
+starts from a facial-dual triangle in the closed graph-backed
+vertex-minimal counterexample and assumes that its first ambient face is
+wholly retained by a literal opening.  It does not accept two arbitrary open
+edge coordinates.  Instead, it extracts the two canonical closed shared
+edges, constructs their actual positions on the first face cycle, computes
+the corresponding open edges, and returns a retained open vertex incident
+with both.  Hence the generic cap-deletion question at this corner is settled:
+under full-face retention, the common primal corner survives as literal open
+incidence.  The remaining burden is source-specific and deliberately visible:
+construct the Cell--3 opening from the closed map, prove the selected L1 face
+is fully retained, and identify its named rung/flank coordinates with these
+constructed positions.  The theorem neither assumes nor constructs that
+formation, and it does not by itself prove
+\texttt{CommonNeighborsExact} or the separated crosscut pair.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
