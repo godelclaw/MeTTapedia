@@ -572,6 +572,59 @@ theorem openFaceOrbit_adj_iff_exists_shared_ambient_edge
     exact openFaceOrbit_adj_of_shared_ambient_edge
       RS keep outer leftRoot rightRoot hleft hright hne left right hedge
 
+/-- On the induced family of fully retained faces, literal opening preserves
+the facial-dual graph exactly.  This packages the edge-occurrence statement
+above in the graph language used by the source crosscuts: neither an ambient
+adjacency is lost nor a new one is created between retained face images. -/
+theorem openFaceOrbit_adj_iff_ambientFaceOrbit_adj
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (hne : dartOrbitFace RS leftRoot ≠ dartOrbitFace RS rightRoot) :
+    (interiorDualGraph
+      (orbitFaceBoundary (rotationSystem RS keep outer))
+      (Finset.univ : Finset (OrbitFace (rotationSystem RS keep outer)))).Adj
+        ⟨openFaceOrbit RS keep outer leftRoot hleft, Finset.mem_univ _⟩
+        ⟨openFaceOrbit RS keep outer rightRoot hright, Finset.mem_univ _⟩ ↔
+      (interiorDualGraph (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).Adj
+          ⟨dartOrbitFace RS leftRoot, Finset.mem_univ _⟩
+          ⟨dartOrbitFace RS rightRoot, Finset.mem_univ _⟩ := by
+  rw [openFaceOrbit_adj_iff_exists_shared_ambient_edge
+    RS keep outer leftRoot rightRoot hleft hright hne]
+  constructor
+  · rintro ⟨left, right, hedge⟩
+    apply interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (orbitFace_incidence_le_two RS) hne
+    · rw [mem_orbitFaceBoundary_iff]
+      exact ⟨left.1, by
+        rw [mem_orbitFaceDarts_iff]
+        exact Quotient.sound left.2.symm, rfl⟩
+    · rw [mem_orbitFaceBoundary_iff]
+      exact ⟨right.1, by
+        rw [mem_orbitFaceDarts_iff]
+        exact Quotient.sound right.2.symm, hedge.symm⟩
+  · intro hadj
+    rcases (interiorDualGraph_adj_iff
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).1 hadj with
+      ⟨_, edge, _, hedgeLeft, hedgeRight⟩
+    rw [mem_orbitFaceBoundary_iff] at hedgeLeft hedgeRight
+    rcases hedgeLeft with ⟨leftDart, hleftDart, hleftEdge⟩
+    rcases hedgeRight with ⟨rightDart, hrightDart, hrightEdge⟩
+    have hleftCycle : RS.phi.SameCycle leftRoot leftDart := by
+      rw [mem_orbitFaceDarts_iff] at hleftDart
+      exact Quotient.exact hleftDart.symm
+    have hrightCycle : RS.phi.SameCycle rightRoot rightDart := by
+      rw [mem_orbitFaceDarts_iff] at hrightDart
+      exact Quotient.exact hrightDart.symm
+    exact ⟨⟨leftDart, hleftCycle⟩, ⟨rightDart, hrightCycle⟩,
+      hleftEdge.trans hrightEdge.symm⟩
+
 end
 
 end GoertzelV24OpenRegionFaceTransport
