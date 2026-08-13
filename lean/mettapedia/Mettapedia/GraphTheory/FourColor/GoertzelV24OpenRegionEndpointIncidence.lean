@@ -69,6 +69,46 @@ theorem retainedVertex_mem_openFaceEdge_endpoints
       apply Subtype.ext
       exact hopposite.symm
 
+/-- Every ambient endpoint of an edge occurrence on a fully retained face
+has a canonical retained representative, and that representative lies on the
+computed open edge.  Retention is derived from the face hypothesis rather
+than supplied separately. -/
+theorem exists_retainedVertex_mem_openFaceEdge_endpoints
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (root : RS.D) (hface : FaceFullyRetained RS keep root)
+    (point : {point // RS.phi.SameCycle root point})
+    (vertex : V)
+    (hvertex : vertex ∈ RS.endpoints (RS.edgeOf point.1)) :
+    ∃ retained : RetainedVertex keep,
+      retained.1 = vertex ∧
+        (Sum.inl retained : Vertex RS keep) ∈
+          (rotationSystem RS keep outer).endpoints
+            (openFaceEdge RS keep outer root hface point) := by
+  have hpointOn : point.1 ∈ RS.dartsOn (RS.edgeOf point.1) :=
+    (RS.mem_dartsOn).2 rfl
+  rw [RS.endpoints_eq_pair_of_mem hpointOn] at hvertex
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hvertex
+  rcases hvertex with hbase | hopposite
+  · have hkeep : keep vertex := by
+      rw [hbase]
+      exact hface point.1 point.2
+    let retained : RetainedVertex keep := ⟨vertex, hkeep⟩
+    refine ⟨retained, rfl, ?_⟩
+    exact retainedVertex_mem_openFaceEdge_endpoints
+      RS keep outer root hface point vertex hkeep
+        ((RS.endpoints_eq_pair_of_mem hpointOn).symm ▸ by simp [hbase])
+  · have halphaKeep : keep (RS.vertOf (RS.alpha point.1)) :=
+      alpha_endpoint_keep_of_faceFullyRetained RS keep root hface point
+    have hkeep : keep vertex := by
+      rw [hopposite]
+      exact halphaKeep
+    let retained : RetainedVertex keep := ⟨vertex, hkeep⟩
+    refine ⟨retained, rfl, ?_⟩
+    exact retainedVertex_mem_openFaceEdge_endpoints
+      RS keep outer root hface point vertex hkeep
+        ((RS.endpoints_eq_pair_of_mem hpointOn).symm ▸ by simp [hopposite])
+
 /-- A common retained endpoint of two ambient face edges remains one common
 endpoint of their two computed open edges.  The faces and edge occurrences
 may be different; only the retained vertex is shared. -/
@@ -93,6 +133,33 @@ theorem exists_common_retainedVertex_of_ambient
       RS keep outer leftRoot hleft left vertex hkeep hvertexLeft
   · exact retainedVertex_mem_openFaceEdge_endpoints
       RS keep outer rightRoot hright right vertex hkeep hvertexRight
+
+/-- Fully retained ambient face occurrences preserve common endpoint
+incidence without any separately supplied vertex-retention premise. -/
+theorem exists_common_retainedVertex_of_ambient_endpoints
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep)
+    (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (left : {point // RS.phi.SameCycle leftRoot point})
+    (right : {point // RS.phi.SameCycle rightRoot point})
+    (vertex : V)
+    (hvertexLeft : vertex ∈ RS.endpoints (RS.edgeOf left.1))
+    (hvertexRight : vertex ∈ RS.endpoints (RS.edgeOf right.1)) :
+    ∃ openVertex : Vertex RS keep,
+      openVertex ∈ (rotationSystem RS keep outer).endpoints
+        (openFaceEdge RS keep outer leftRoot hleft left) ∧
+      openVertex ∈ (rotationSystem RS keep outer).endpoints
+        (openFaceEdge RS keep outer rightRoot hright right) := by
+  rcases exists_retainedVertex_mem_openFaceEdge_endpoints
+      RS keep outer leftRoot hleft left vertex hvertexLeft with
+    ⟨retained, hretained, hopenLeft⟩
+  have hrightEndpoint : retained.1 ∈ RS.endpoints (RS.edgeOf right.1) := by
+    simpa only [hretained] using hvertexRight
+  have hopenRight := retainedVertex_mem_openFaceEdge_endpoints
+    RS keep outer rightRoot hright right retained.1 retained.2 hrightEndpoint
+  exact ⟨Sum.inl retained, hopenLeft, hopenRight⟩
 
 end
 

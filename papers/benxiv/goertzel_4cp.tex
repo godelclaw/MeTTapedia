@@ -418,14 +418,14 @@ Cell--3 opening that must establish it.
 
 The generic opening calculation needed by that construction is now available
 in \texttt{GoertzelV24OpenRegionEndpointIncidence}.  If two ambient edges meet
-at a vertex and that vertex is retained, their computed literal-open edges
-meet at the corresponding retained vertex.  Applied to two fully retained
-ambient face occurrences, the result uses the same fixed opened rotation
-system on both sides.  Consequently the remaining incidence transport is no
-longer an abstract claim that opening ``preserves local geometry'': it is the
-specific source-side membership statement that the common vertex selected by
-the closed bounded-interaction theorem lies in the Cell--3 retained region,
-together with the already named face and edge identifications.
+at a vertex and both edge occurrences lie on fully retained faces, their
+computed literal-open edges meet at the corresponding retained vertex.  The
+vertex-retention fact is derived from full face retention rather than supplied
+as an extra premise, and both open edges live in the same fixed opened rotation
+system.  Consequently the remaining incidence transport is no longer an
+abstract claim that opening ``preserves local geometry'': it is the concrete
+source formation, the full-retention proof for the displayed Cell--3 faces,
+and their already named edge identifications.
 
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
