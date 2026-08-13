@@ -349,6 +349,64 @@ theorem exists_nextLocalPlacementSideEdge_eq_afterOutgoingCornerEdge
       hrightShared hcornerShared
   exact ⟨rightPosition, hedgeEq, hrightFace.symm⟩
 
+/-- **L9 (canonical local rail cell).** The canonical Cell-3 placement and
+its successor carry two distinct matched rail slots, and both matches retain
+the literal ambient edge as well as the intervening side face.  This is the
+one-step cell needed by a later lengthwise assembly; it does not assert that
+iterating the cells gives simple paths or reaches the annular end caps. -/
+theorem exists_canonicalNextLocalPlacementRailEdges
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    let witness := localLayerPairWitnessOfCorridor
+      corridor hunique leftInterior hnext
+    let rightPlacement := localInternalHexRungPlacement corridor hunique
+      (nextCorridorInterior leftInterior hnext)
+    ∃ rightBefore rightAfter :
+        {position // position ∈ placementSidePositions rightPlacement},
+      rightBefore ≠ rightAfter ∧
+      web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root rightBefore.1) =
+        web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.before.1))) ∧
+      localPlacementSideFace witness.placement witness.before =
+        localPlacementSideFace rightPlacement rightBefore ∧
+      web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root rightAfter.1) =
+        web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi
+            (faceCycleDart web.annular.RS witness.placement.root
+              witness.placement.outgoingPosition))) ∧
+      localPlacementSideFace witness.placement witness.after =
+        localPlacementSideFace rightPlacement rightAfter := by
+  let witness := localLayerPairWitnessOfCorridor
+    corridor hunique leftInterior hnext
+  let rightPlacement := localInternalHexRungPlacement corridor hunique
+    (nextCorridorInterior leftInterior hnext)
+  rcases exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge
+      (corridor := corridor) hnext witness.placement witness.before
+      witness.outgoing_after_before rightPlacement with
+    ⟨rightBefore, hbeforeEdge, hbeforeFace⟩
+  rcases exists_nextLocalPlacementSideEdge_eq_afterOutgoingCornerEdge
+      (corridor := corridor) hnext witness.placement witness.after
+      witness.after_after_outgoing rightPlacement with
+    ⟨rightAfter, hafterEdge, hafterFace⟩
+  have hrightNe : rightBefore ≠ rightAfter := by
+    intro heq
+    apply witness.before_ne_after
+    apply localPlacementSideFace_injective (corridor := corridor)
+      witness.placement
+    rw [hbeforeFace, hafterFace, heq]
+  exact ⟨rightBefore, rightAfter, hrightNe, hbeforeEdge, hbeforeFace,
+    hafterEdge, hafterFace⟩
+
 end LocalLayerFormation
 
 end Instance
