@@ -151,6 +151,51 @@ noncomputable def holeArcDarts (cell : FramedAnnularCellulation G)
   apply Finset.mem_image.mpr
   exact ⟨second, second_mem_selectedCyclicArc first second side, rfl⟩
 
+/-- The two complementary closed arcs selected by distinct positions cover the
+whole dart boundary of the face.  This is the end-cap part of the radial-sector
+construction: it records exactly which boundary data remain to be joined by
+the still-missing facial-dual side transversals. -/
+theorem holeArcDarts_true_union_false
+    (cell : FramedAnnularCellulation G)
+    (face : OrbitFace cell.rotation.toRotationSystem)
+    (first second :
+      Fin (orbitFaceDarts cell.rotation.toRotationSystem face).card)
+    (hne : first ≠ second) :
+    holeArcDarts cell face first second true ∪
+        holeArcDarts cell face first second false =
+      orbitFaceDarts cell.rotation.toRotationSystem face := by
+  classical
+  let positions := holeFaceDartEquiv cell face
+  ext dart
+  constructor
+  · intro hdart
+    rcases Finset.mem_union.mp hdart with htrue | hfalse
+    · rcases Finset.mem_image.mp htrue with ⟨position, _hposition, hposition⟩
+      rw [← hposition]
+      exact positions position |>.2
+    · rcases Finset.mem_image.mp hfalse with ⟨position, _hposition, hposition⟩
+      rw [← hposition]
+      exact positions position |>.2
+  · intro hdart
+    let positioned : {candidate // candidate ∈
+        orbitFaceDarts cell.rotation.toRotationSystem face} := ⟨dart, hdart⟩
+    let position := positions.symm positioned
+    have hposition : position ∈ cyclicForwardArc first second ∪
+        cyclicForwardArc second first := by
+      rw [cyclicForwardArc_union_reverse hne]
+      simp
+    have hdartEq : (positions position).1 = dart := by
+      exact congrArg Subtype.val (positions.apply_symm_apply positioned)
+    rcases Finset.mem_union.mp hposition with hforward | hreverse
+    · apply Finset.mem_union_left
+      apply Finset.mem_image.mpr
+      refine ⟨position, ?_, hdartEq⟩
+      simpa [holeArcDarts, selectedCyclicArc] using hforward
+    · apply Finset.mem_union_right
+      apply Finset.mem_image.mpr
+      refine ⟨position, ?_, hdartEq⟩
+      simpa [holeArcDarts, selectedCyclicArc] using hreverse
+
 /-- The underlying graph edges of a selected cyclic hole-face arc. -/
 noncomputable def holeArcEdges (cell : FramedAnnularCellulation G)
     (face : OrbitFace cell.rotation.toRotationSystem)
@@ -362,6 +407,38 @@ noncomputable def outerHoleArcDarts
   holeArcDarts embedded.cellulation embedded.cellulation.outerHole
     (outerBoundaryPosition embedded hdata pair.firstPath.outer)
     (outerBoundaryPosition embedded hdata pair.secondPath.outer) side
+
+/-- The two source-selected inner-hole end caps cover the complete inner
+boundary.  They are boundary data for the two candidate sectors; this theorem
+does not assert that either cap has yet been joined to a facial-dual
+transversal. -/
+theorem innerHoleArcDarts_true_union_false
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) :
+    pair.innerHoleArcDarts embedded hdata true ∪
+        pair.innerHoleArcDarts embedded hdata false =
+      orbitFaceDarts embedded.RS embedded.cellulation.innerHole := by
+  exact holeArcDarts_true_union_false embedded.cellulation
+    embedded.cellulation.innerHole
+    (innerBoundaryPosition embedded hdata pair.firstPath.inner)
+    (innerBoundaryPosition embedded hdata pair.secondPath.inner)
+    (pair.innerBoundaryPositions_ne embedded hdata)
+
+/-- The two source-selected outer-hole end caps cover the complete outer
+boundary, with the same scope as the inner-cap theorem. -/
+theorem outerHoleArcDarts_true_union_false
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed) :
+    pair.outerHoleArcDarts embedded hdata true ∪
+        pair.outerHoleArcDarts embedded hdata false =
+      orbitFaceDarts embedded.RS embedded.cellulation.outerHole := by
+  exact holeArcDarts_true_union_false embedded.cellulation
+    embedded.cellulation.outerHole
+    (outerBoundaryPosition embedded hdata pair.firstPath.outer)
+    (outerBoundaryPosition embedded hdata pair.secondPath.outer)
+    (pair.outerBoundaryPositions_ne embedded hdata)
 
 /-- The two ambient radial paths, as the primal edge wall common to every
 sector candidate. -/

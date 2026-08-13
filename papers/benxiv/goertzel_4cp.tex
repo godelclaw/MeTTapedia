@@ -967,6 +967,16 @@ condition and the crosscut alignment hypotheses.  No theorem currently
 relates these types.  Thus the radial witness is a proved neighbouring asset,
 not yet a constructor for a splice pair; treating it as one by renaming or
 duality intuition would hide precisely the missing primal--dual construction.
+The radial package nevertheless now supplies its exact end-cap contribution:
+the two distinct anchor positions select two complementary arcs on each named
+hole boundary, and Lean proves that the two arcs cover the complete inner
+face-dart boundary and likewise the complete outer one
+(\texttt{innerHoleArcDarts\_true\_union\_false} and
+\texttt{outerHoleArcDarts\_true\_union\_false}).  This is useful fixed
+boundary data for a future sector construction.  It is not an assertion that
+the caps have been joined by facial-dual side paths, that the resulting walls
+are simple, or that the two Boolean choices are the complementary annular
+sectors.
 There is a useful but narrower interaction already formalized: a counting
 argument finds one radial component that avoids the four primal edges of a
 chosen local Cell--3 layer wall.  That path certifies retention of the inner
