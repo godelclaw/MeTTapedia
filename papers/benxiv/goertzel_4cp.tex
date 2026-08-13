@@ -304,19 +304,28 @@ Three nearby results delimit the gap.
 The last item is a scoped refutation of a tempting Lean construction, not a
 refutation of Goertzel's proof.  It says that the separated cuts must be
 assembled at the correct global scale rather than identified with adjacent
-local windows.  Nor is the live problem the general existence of two disjoint
-graph paths: the required primal pair is already constructed.  The missing
-bridge is the source-faithful ribbon-boundary dualization of that primal
-witness.  The literal Cell--3 rail construction is the local candidate for
-this bridge.  Its remote noncollision is proved, and its adjacent append has
-been reduced to \texttt{CommonNeighborsExact}.  An extra common neighbour
-would form precisely the small separating/nonfacial dual triangle that closed
-minimal-counterexample theory is designed to exclude.  Those exclusion
-theorems exist for a closed graph-backed minimal counterexample, but the
-present open-annular \texttt{Instance} does not retain that provenance.
-Connecting the closed minimal-counterexample hypotheses to the open annular
-corridor---rather than adding the classification as a new assumption---is the
-live formation-to-graph obligation.
+local windows.  Nor is the live problem a general Menger-type existence
+theorem.
+
+There is an important source-level separation here.  In Addendum XXVII and
+the formalization playbook, the radial-path witness is the L8 input to the L6
+length/depth dichotomy, whereas the boundary-clean hex corridor is the
+independent L1 output.  The manuscripts do not instruct us to dualize the L8
+witness into the L1 corridor crosscuts.  The absence of a Lean module relating
+the two types is therefore not by itself a missing source theorem, and we do
+not silently identify them.
+
+The literal Cell--3 rail construction belongs to the L1 corridor realization.
+Its remote noncollision is proved, and its adjacent append has been reduced to
+\texttt{CommonNeighborsExact}.  An extra common neighbour would form precisely
+the small separating/nonfacial dual triangle excluded by v23's
+minimal-counterexample radius--one collar normal form.  The present open-annular
+\texttt{Instance}, however, records well-formed boundary stubs, coloring,
+closure, and the good word, but not the closed minimal-counterexample
+provenance from which that bounded-interaction fact is derived.  Connecting
+the closed source normal form to the open L1 corridor---rather than adding the
+classification as a new assumption---is the live formation-to-graph
+obligation.
 
 The closed half of that argument is now machine-checked.  Given three
 pairwise adjacent faces in a graph-backed vertex-minimal Tait counterexample,
@@ -330,8 +339,17 @@ pairwise adjacent faces in a graph-backed vertex-minimal Tait counterexample,
 constructs their literal length-three facial-dual cycle and proves that its
 three crossed primal edges separate a component containing exactly one
 vertex; moreover, the crossing-edge set of that singleton component is
-exactly the three edges read from the dual cycle.  This is the closed-map
-bounded-interaction classification needed by the source.  It does
+exactly the three edges read from the dual cycle.  Lean now also extracts the
+local consequence used by the radius--one collar description:
+
+\begin{center}
+\texttt{exists\_vertex\_mem\_all\_crossed\_edges\_of\_dual\_triangle}.
+\end{center}
+
+Thus all three crossed primal edges are incident with the same ambient vertex;
+the dual triangle is the link of one primal vertex, rather than an arbitrary
+separating triangle.  This is the closed-map bounded-interaction classification
+needed by the source.  It does
 \emph{not} by itself prove \texttt{CommonNeighborsExact} for the Cell--3
 carrier: that carrier has degree-one boundary stubs and is provably
 incompatible with the closed cubic minimal-counterexample structure.  The
@@ -365,11 +383,12 @@ creates a spurious one.  Thus an untouched face is transported as an actual fini
 without splitting or identifying its old boundary edges, not merely identified
 by a matching cardinality or assumed through a wrapper.  What remains is
 source-specific: prove that the relevant Cell--3 interior faces satisfy the
-retention criterion under the actual closed-map-to-annulus formation, then use
-the transported ribbon boundary to turn the existing primal radial witness into
-the two separated facial-dual crosscuts.  These generic theorems remove one
-formation gap; they do not themselves construct the crosscut pair or assert
-that a flank face cut by the opening is wholly retained.
+retention criterion under the actual closed-map-to-annulus formation, then
+transport the closed bounded-interaction classification to the literal L1
+corridor and assemble its separated facial-dual crosscuts.  These generic
+theorems remove one formation gap; they do not themselves construct the
+crosscut pair, prove the L1 corridor comes from that opening, or assert that a
+flank face cut by the opening is wholly retained.
 
 \subsection{The closure chain}
 

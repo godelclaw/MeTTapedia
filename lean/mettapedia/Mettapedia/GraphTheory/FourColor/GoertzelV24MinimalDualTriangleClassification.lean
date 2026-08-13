@@ -183,6 +183,61 @@ theorem exists_singleton_primalCut_of_dual_triangle
       hwalkCycle (dualTriangleWalk_length graphData
         hfirstSecond hsecondThird hthirdFirst) hdelete
 
+/-- The three primal edges crossed by a dual triangle in a graph-backed
+vertex-minimal counterexample are all incident with one ambient vertex.
+
+This is the exact local consequence of the singleton separator used by the
+source's radius-one collar description: the dual triangle is the link of a
+single primal vertex, rather than an arbitrary separating triangle.  The
+statement remains on the closed ambient map; transporting it to a literal
+open annulus is a separate formation theorem. -/
+theorem exists_vertex_mem_all_crossed_edges_of_dual_triangle
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second third : AmbientFace
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))}
+    (hfirstSecond : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Adj first second)
+    (hsecondThird : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Adj second third)
+    (hthirdFirst : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Adj third first) :
+    let walk := dualTriangleWalk graphData hfirstSecond hsecondThird hthirdFirst
+    let removed := dualWalkCrossingEdges
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))
+      (pairwiseUniqueSharedInteriorEdges graphData minimal) walk
+    ∃ vertex : V, ∀ edge ∈ removed, vertex ∈ edge.1 := by
+  dsimp only
+  rcases exists_singleton_primalCut_of_dual_triangle graphData minimal
+      hfirstSecond hsecondThird hthirdFirst with
+    ⟨component, hcard, hboundary⟩
+  let vertex : V := component.nonempty_supp.choose
+  have hvertex : vertex ∈ component.supp :=
+    component.nonempty_supp.choose_spec
+  have hsubsingleton :
+      Subsingleton {candidate : V // candidate ∈ component.supp} :=
+    (Nat.card_eq_one_iff_unique.mp hcard).1
+  refine ⟨vertex, ?_⟩
+  intro edge hedge
+  have hcrossing : edge ∈
+      crossingEdgeFinset G (fun candidate => candidate ∈ component.supp) := by
+    rw [hboundary]
+    exact hedge
+  rcases (mem_crossingEdgeFinset_iff
+      (fun candidate => candidate ∈ component.supp) edge).1 hcrossing with
+    ⟨inside, outside, hinsideEdge, _houtsideEdge, hinside, _houtside⟩
+  have heq : inside = vertex :=
+    congrArg Subtype.val
+      (hsubsingleton.elim ⟨inside, hinside⟩ ⟨vertex, hvertex⟩)
+  simpa only [heq] using hinsideEdge
+
 end
 
 end GoertzelV24MinimalDualTriangleClassification
