@@ -847,6 +847,17 @@ two-shared-edge local case, precisely the kind of case Fable assigns to L1;
 it is not a license to import the closed minimal-counterexample theorem that
 would rule the collision out globally.
 
+The next finite case is now explicit as well.  For two consecutive surviving
+side slots around a selected Cell--3 hexagon,
+\texttt{selectedPlacementSideFaces\_eq\_or\_adjacent\_of\_forwardStep}
+proves exactly one of two alternatives: the opposite-dart faces coincide, or
+they are joined by the literal exterior facial-dual edge at their common
+locally cubic corner.  The first alternative is deliberately retained and is
+fed to the two-shared-edge collision theorem above; the second is the actual
+one-step rail edge.  This is the intended finite local classification, carried
+out on the source annulus, rather than an unproved assertion that every local
+rail step is automatically simple.
+
 \paragraph{Do not confuse L8 radial paths with L1 crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
