@@ -61,6 +61,27 @@ structure AnnularEmbedding (source : SourceTrail G) where
 
 namespace AnnularEmbedding
 
+/-- A well-formed framed source trail is not a closed cubic graph: its two
+missing-edge endpoints have degree two.  Consequently, a theorem requiring
+global rotation-system cubicity cannot be instantiated directly on this
+open source carrier.  This is a carrier guard for the L8--L10 assembly; it
+does not deny the separately proved local cubicity of annular-interior faces.
+-/
+theorem rotationSystem_not_isCubic_of_wellFormed
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding) :
+    ¬ embedded.cellulation.rotation.toRotationSystem.IsCubic := by
+  intro hcubic
+  have hregular : G.IsRegularOfDegree 3 :=
+    embedded.cellulation.rotation.toRotationSystem_isCubic_iff.mp hcubic
+  have htwo : G.degree (source.defectVertex 0) = 2 := by
+    rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+      (G := G)]
+    exact hsource.defect_degree_two 0
+  have hthree : G.degree (source.defectVertex 0) = 3 :=
+    hregular (source.defectVertex 0)
+  omega
+
 /-- A dart over one of the source's frozen interface edges. -/
 abbrev FrozenEdgeDart {source : SourceTrail G}
     (embedded : source.AnnularEmbedding) :=
