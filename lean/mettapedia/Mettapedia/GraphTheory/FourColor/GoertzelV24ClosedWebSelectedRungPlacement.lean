@@ -12,8 +12,11 @@ ladder needs less: one actual shared edge selected for each consecutive pair.
 For an internal hexagon, the selected incoming and outgoing rungs are still
 forced to occupy distinct positions by local face incidence alone.
 
-This is the local rung part of Fable flag L1.  It neither classifies all
-hexagon adjacencies nor constructs the eventual separated crosscuts.
+This is source-local Cell-3 geometry supporting a possible literal
+transversal construction.  It is not Fable flag L1: the current Fable
+playbook assigns L1 to the Cell-1 bulk hexagonal-patch/corridor existence
+classification.  This file neither identifies its local carrier with that
+corridor nor constructs the eventual separated crosscuts.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -419,7 +422,8 @@ theorem selectedPlacementSideFace_eq_implies_two_distinct_sharedInteriorEdges
   exact hedges
 
 /-- One directed step through the four surviving side slots of a selected
-Cell-3 hexagon has exactly the finite local alternatives needed by flag L1.
+Cell-3 hexagon has exactly the finite local alternatives needed by a literal
+Cell-3 transversal candidate.
 Either its two opposite-dart faces coincide, in which case the preceding
 theorem exposes the resulting two-shared-edge collision, or the local
 three-dart rotation supplies the literal exterior facial-dual rail edge.

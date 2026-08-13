@@ -314,9 +314,10 @@ therefore turns the manuscript's explicit weighted size premise into a
 boundary-clean corridor together with the literal source geodesic and selected
 block.  It does not reopen the source through a cap-deletion model.  This is a
 real conclusion of the current Lean extraction, conditional only on the stated
-quantitative bound.  It is not yet Fable's full L1 ladder corridor: the latter
-also needs the local rung-incidence classification used to produce simple
-transversals.  One initially apparent part of that gap has now been removed
+quantitative bound.  It is not yet Fable's full L1 ladder corridor.  The
+separate local rung work below is an exploratory Cell--3 transversal candidate,
+not a source-identified construction of that L1 corridor.  One initially
+apparent obstacle to such local work has now been removed
 without imposing a closed-minimal hypothesis.  The new
 \texttt{SelectedCorridorRungs} object chooses one genuine shared primal edge
 for each consecutive dual step, rather than requiring all pairs of faces to
@@ -364,7 +365,7 @@ There is an important source-level separation here.  In Addendum XXVII and
 the formalization playbook, the radial-path witness is the L8 input to the L6
 length/depth dichotomy, whereas the boundary-clean hex corridor is the
 independent L1 output.  The manuscripts do not instruct us to dualize the L8
-witness into the L1 corridor crosscuts.  The absence of a Lean module relating
+witness into splice crosscuts.  The absence of a Lean module relating
 the two types is therefore not by itself a missing source theorem, and we do
 not silently identify them.
 
@@ -500,7 +501,8 @@ the corresponding open edges, and returns a retained open vertex incident
 with both.  Hence the generic cap-deletion question at this corner is settled:
 under full-face retention, the common primal corner survives as literal open
 incidence.  The remaining burden is source-specific and deliberately visible:
-construct the Cell--3 opening from the closed map, prove the selected L1 face
+construct the Cell--3 opening from the closed map, prove the selected source
+face
 is fully retained, and identify its named rung/flank coordinates with these
 constructed positions.  The theorem neither assumes nor constructs that
 formation, and it does not by itself prove
@@ -594,8 +596,8 @@ The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
 the minimal-counterexample theorem concerns the original closed cubic map.
 One may not assume both structures on that same carrier and call the resulting
-conditional theorem a formation result.  This does not leave the Cell--3 L1
-corridor unformed: its source instance already stores a
+conditional theorem a formation result.  This does not form a Cell--3 source
+transversal: its source instance already stores a
 \texttt{ClosedWebAnnularEmbedding} and the required annular geometry, and the
 weighted clean-block theorem now returns a source-realized dual geodesic from
 those fields.  The missing bridge includes the source's ladder/rung-incidence
@@ -630,7 +632,7 @@ creates a spurious one.  Thus an untouched face is transported as an actual fini
 without splitting or identifying its old boundary edges, not merely identified
 by a matching cardinality or assumed through a wrapper.  This is generic
 carrier plumbing for any future cap-deletion formation.  It neither supersedes
-the direct Cell--3 L1 handoff nor constructs the separated facial-dual
+the direct Cell--3 local handoff nor constructs the separated facial-dual
 crosscut pair from its source-realized corridor.
 
 The next formation step is now explicit in
@@ -750,7 +752,8 @@ the cyclic-rotation and connectedness fields of a future annular cellulation,
 once source-specific formation supplies the corresponding ambient cyclicity
 and retained-region connectedness proofs.  This remains generic carrier
 plumbing: it neither selects the Cell--3 retained region nor constructs its two
-hole faces, planar cellulation, L1 corridor, or separated crosscuts.
+hole faces, planar cellulation, a Cell--3 source transversal, or separated
+crosscuts.
 
 There is a second, deliberately separate formation result in the tree.  The
 first carrier-changing part of the \emph{single-edge deletion} model is now
@@ -819,7 +822,7 @@ Cell--3 bridge must instead specialize the generic open-region transport to
 the actual closed-map annulus and prove that every open common neighbour under
 consideration is the image of an eligible ambient face.
 
-\paragraph{Selected local rungs.}  The direct Cell--3 L1 handoff no longer
+\paragraph{Selected local rungs.}  The direct Cell--3 local handoff no longer
 assumes that every pair of interior faces shares at most one primal edge.
 That global uniqueness premise belongs to a closed minimal-counterexample
 carrier and is incompatible with silently reusing it for the source's open
@@ -834,7 +837,7 @@ cyclic type is one of the two nonadjacent cases,
 rung positions leaves four side slots and exactly two directed cyclic side
 steps.  Each selected slot now determines its literal opposite-dart face,
 which Lean proves is facial-dual adjacent to the corridor centre and an
-annular interior face.  This is a genuine finite local fragment of flag L1,
+annular interior face.  This is a genuine finite local Cell--3 classification,
 and it removes a false global hypothesis from the local construction.  It
 does not establish that distinct slots give distinct side faces, construct
 simple rails, or produce the required long separated crosscut pair.
@@ -843,8 +846,8 @@ The first remaining collision has now been reduced without pretending it is
 impossible.  If two distinct selected side slots lead to the same opposite
 face, Lean exhibits two distinct interior primal edges shared by that face
 and the central hexagon.  Thus the open-carrier question is a finite
-two-shared-edge local case, precisely the kind of case Fable assigns to L1;
-it is not a license to import the closed minimal-counterexample theorem that
+two-shared-edge local case.  It is not a license to import the closed
+minimal-counterexample theorem that
 would rule the collision out globally.
 
 The next finite case is now explicit as well.  For two consecutive surviving
@@ -858,7 +861,7 @@ one-step rail edge.  This is the intended finite local classification, carried
 out on the source annulus, rather than an unproved assertion that every local
 rail step is automatically simple.
 
-\paragraph{Do not confuse L8 radial paths with L1 crosscuts.}  Lean already
+\paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
 paths, distinct anchors on both boundary components, sector-alternation data,
