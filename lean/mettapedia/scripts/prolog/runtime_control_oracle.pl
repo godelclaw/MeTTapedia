@@ -9,6 +9,9 @@ mark(b).
 pick(a).
 pick(b).
 cut_closure(a) :- !.
+copy(a, a).
+copy(b, b).
+cut_copy(a, a) :- !.
 
 dcg_pair(X) --> [X, X].
 dcg_guarded(X) --> { X = a }, [X].
@@ -106,6 +109,13 @@ main(_) :-
     emit_count(maplist_two_failure, maplist(mark, [a,missing])),
     emit(maplist_closure_cut_retains_caller,
         (pick(MaplistCut), maplist(cut_closure, [a]) ; MaplistCut = c), MaplistCut),
+    emit_count(maplist_three_builds_output,
+        (maplist(copy, [a,b], MaplistOut), MaplistOut = [a,b])),
+    emit_count(maplist_three_known_output, maplist(copy, [a,b], [a,b])),
+    emit_count(maplist_three_wrong_length, maplist(copy, [a,b], [a])),
+    emit(maplist_three_closure_cut_retains_caller,
+        (pick(Maplist3Cut), maplist(cut_copy, [a], Maplist3Out),
+         Maplist3Out = [a] ; Maplist3Cut = c), Maplist3Cut),
     emit_count(neg_rejects_success, \+ true),
     emit_count(neg_accepts_failure, \+ fail),
     emit(neg_restores_trial_bindings,

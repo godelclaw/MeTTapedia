@@ -279,11 +279,16 @@ def runStringsFor (program : SourceSignature.Program)
     | _ => none
   pure (strings, heapSize, trailSize)
 
-def runAtoms (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
+def runAtomsWithFuel (fuel : Nat) (program : SourceSignature.Program)
+    (goal : SourceSignature.Goal) :
     Option (List String × Nat × Nat) :=
   match SourceRuntime.openEmpty program goal with
   | .error _ => none
-  | .ok session => collectAtoms 8 session
+  | .ok session => collectAtoms fuel session
+
+def runAtoms (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
+    Option (List String × Nat × Nat) :=
+  runAtomsWithFuel 8 program goal
 
 def runCount (program : SourceSignature.Program) (goal : SourceSignature.Goal) :
     Option (Nat × Nat × Nat) :=
@@ -375,6 +380,67 @@ def maplistClosureCutRetainsCaller : SourceSignature.Goal :=
       (SourceSignature.call "maplist" [
         atom "cut_closure", SourceSignature.list [atom "a"]
       ]))
+    (.unify x (atom "c"))
+
+/-! ## Finite relational `maplist/3` with an engine-owned result spine -/
+
+def maplist3Program : SourceSignature.Program := [
+  fact "copy" [atom "a", atom "a"],
+  fact "copy" [atom "b", atom "b"]
+]
+
+/-- The result list begins unbound.  The shared engine allocates its spine,
+binds it through the canonical unifier, and only then schedules the two
+ordinary closure calls. -/
+def maplist3BuildsOutput : SourceSignature.Goal :=
+  .conj
+    (SourceSignature.call "maplist" [
+      atom "copy", SourceSignature.list [atom "a", atom "b"], x
+    ])
+    (.unify x (SourceSignature.list [atom "a", atom "b"]))
+
+/-- A supplied finite output list reuses its existing roots rather than
+constructing replacement values. -/
+def maplist3UsesKnownOutput : SourceSignature.Goal :=
+  SourceSignature.call "maplist" [
+    atom "copy", SourceSignature.list [atom "a", atom "b"],
+    SourceSignature.list [atom "a", atom "b"]
+  ]
+
+/-- An output list of the wrong length fails visibly instead of truncating a
+closure sequence. -/
+def maplist3RejectsWrongLength : SourceSignature.Goal :=
+  SourceSignature.call "maplist" [
+    atom "copy", SourceSignature.list [atom "a", atom "b"],
+    SourceSignature.list [atom "a"]
+  ]
+
+/-- Open output spines are intentionally not yet enumerated.  This must stay
+a structured error, never a false success, until relational list generation
+lands in the shared engine. -/
+def maplist3PartialOutput : SourceSignature.Goal :=
+  SourceSignature.call "maplist" [
+    atom "copy", SourceSignature.list [atom "a", atom "b"],
+    SourceSignature.list [atom "a"] y
+  ]
+
+/-- The allocating `/3` entry retains the same nested closure barrier as
+`/2`: a closure cut cannot escape through the fresh-output unification frame
+to prune caller alternatives. -/
+def maplist3CutClosureProgram : SourceSignature.Program := [
+  fact "pick" [atom "a"],
+  fact "pick" [atom "b"],
+  { head := predicate "cut_copy" [atom "a", atom "a"], body := .cut }
+]
+
+def maplist3ClosureCutRetainsCaller : SourceSignature.Goal :=
+  .disj
+    (.conj (SourceSignature.call "pick" [x])
+      (.conj
+        (SourceSignature.call "maplist" [
+          atom "cut_copy", SourceSignature.list [atom "a"], y
+        ])
+        (.unify y (SourceSignature.list [atom "a"]))))
     (.unify x (atom "c"))
 
 /-! ## Derived negation and non-unifiability on shared hard-if checkpoints -/
@@ -2014,6 +2080,14 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
 #guard runCount maplistProgram maplistFailsAfterPrefix == some (0, 0, 0)
 #guard runAtoms maplistCutClosureProgram maplistClosureCutRetainsCaller ==
   some (["a", "b", "c"], 0, 0)
+#guard runCount maplist3Program maplist3BuildsOutput == some (1, 0, 0)
+#guard runCount maplist3Program maplist3UsesKnownOutput == some (1, 0, 0)
+#guard runCount maplist3Program maplist3RejectsWrongLength == some (0, 0, 0)
+#guard match runQueryError? maplist3Program maplist3PartialOutput with
+  | some .univListUnbound => true
+  | _ => false
+#guard runAtomsFor maplist3CutClosureProgram maplist3ClosureCutRetainsCaller
+  { spelling := "X", occurrence := 0 } == some (["a", "b", "c"], 0, 0)
 #guard runCountWithServices (servicesWithTextFiles fixtureTextResources) []
   textFileRead == some (1, 0, 0)
 #guard runCount [] textFileRead == some (0, 0, 0)

@@ -166,6 +166,27 @@ neither an answer nor a continuation. -/
 inductive MetaCallRequest where
   | call (callable : Addr) (extraArgs : List Addr)
   | maplist (closure list : Addr)
+  | maplist3 (closure input output : Addr)
+
+/-- Source-language symbols used when the shared engine constructs the
+result spine for finite `maplist/3`.  The language supplies names only; the
+engine supplies the activation scope, allocation, unification, and control
+entry. -/
+structure MaplistEncoding (σ : LPSignature) where
+  list : CollectionEncoding σ
+  freshVariable : Nat → σ.vars
+  freshVariable_injective : Function.Injective freshVariable
+
+/-- Read-only dynamic-call plans.  Ordinary decoded goals are unchanged.
+The `maplist3` plan keeps the relation's source-specific closure spelling in
+the decoder, while the shared engine owns fresh result cells, the list spine,
+the output unification, and the predicate-like entry frame. -/
+inductive MetaCallPlan (σ : LPSignature) (Instruction : Type*) where
+  | fail
+  | goals (instructions : List Instruction)
+  | maplist3 (encoding : MaplistEncoding σ) (output : Addr)
+      (inputs : List Addr) (knownOutputs : Option (List Addr))
+      (calls : List Addr → List Instruction)
 
 /-- Read-only interpretation of dynamic callable and DCG heap roots.  The
 shared engine owns when either decoder is invoked, every allocation, and the
@@ -173,7 +194,7 @@ predicate-like cut boundary installed around decoded goals.  A decoder sees
 only the heap, so it cannot mutate the trail or restore checkpoints. -/
 structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
   decode : Heap σ.scoped → MetaCallRequest →
-    Except QueryError (List Instruction)
+    Except QueryError (MetaCallPlan σ Instruction)
   decodeDcg : Heap σ.scoped → Addr → Addr → Addr →
     Except QueryError (DcgPlan σ Instruction) :=
       fun _ _ _ _ => .error .unsupportedInstruction
@@ -381,6 +402,20 @@ theorem allocateAddressList_size_trail {σ : LPSignature}
           · rw [Memory.allocate_heap_size_succ h, hIH.1]
             simp [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
           · rw [Memory.allocate_trailMark h, hIH.2]
+
+/-- Allocate distinct unbound result cells for one finite `maplist/3`
+expansion.  Fresh source names are supplied by the language encoding, while
+the shared engine fixes their one activation scope and owns every heap write. -/
+def allocateMaplistVariables {σ : LPSignature}
+    (encoding : MaplistEncoding σ) (scope : Nat) :
+    Memory σ.scoped → List Nat →
+      Except MemoryError (List Addr × Memory σ.scoped)
+  | memory, [] => .ok ([], memory)
+  | memory, index :: indices => do
+      let (root, memory) ← memory.allocate
+        (.var (ScopedVar.at scope (encoding.freshVariable index)) none)
+      let (roots, memory) ← allocateMaplistVariables encoding scope memory indices
+      pure (root :: roots, memory)
 
 /-- Allocate a list segment whose final tail is an existing heap root.  Only
 the spine is new; element and tail identities are reused exactly. -/
@@ -3107,6 +3142,60 @@ def enterDecodedGoalsStep {σ : LPSignature}
     }
   } none
 
+/-- Enter a decoded action whose engine-owned preparation must unify one
+freshly constructed root before the decoded continuation begins.  This is the
+same meta-call frame as `enterDecodedGoalsStep`; only the canonical unifier
+may bind the caller's output root. -/
+def enterDecodedUnifyStep {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (left right : Addr) (goals rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  let entered := {
+    state with
+    control := {
+      current := goals
+      cutDepth := state.choices.length
+      frames := {
+        continuation := rest
+        callerCutDepth := state.control.cutDepth
+        commit := .ordinary
+      } :: state.control.frames
+    }
+  }
+  let attempt : AttemptCore σ Instruction := {
+    body := goals
+    cutDepth := entered.control.cutDepth
+    frames := entered.control.frames
+  }
+  .next { entered with
+    phase := .unifying attempt (RuntimeUnification.startMany entered.memory [(left, right)])
+  } none
+
+/-- Execute the engine-owned allocating half of a finite `maplist/3` plan.
+Known proper output lists are reused exactly.  An unbound output root instead
+receives a fresh same-length spine, then one canonical unification before the
+ordinary closure calls run.  Open output spines never masquerade as success:
+the read-only decoder rejects them before this transition. -/
+def maplist3Step {σ : LPSignature}
+    (state : StateCore σ Instruction SourceClause)
+    (encoding : MaplistEncoding σ) (output : Addr)
+    (inputs : List Addr) (knownOutputs : Option (List Addr))
+    (calls : List Addr → List Instruction) (rest : List Instruction) :
+    StepResultCore σ Instruction SourceClause :=
+  match knownOutputs with
+  | some outputs => enterDecodedGoalsStep state (calls outputs) rest
+  | none =>
+      match allocateMaplistVariables encoding state.nextScope state.memory
+          (List.range inputs.length) with
+      | .error error => failWith state (.memory error)
+      | .ok (outputs, memory) =>
+          match allocateAddressList encoding.list memory outputs with
+          | .error error => failWith state (.memory error)
+          | .ok (listRoot, memory) =>
+              enterDecodedUnifyStep {
+                state with memory, nextScope := state.nextScope + 1
+              } output listRoot (calls outputs) rest
+
 /-- Enter one dynamically decoded goal.  Decoding is read-only and occurs
 exactly once; all scheduling remains in `enterDecodedGoalsStep`. -/
 @[simp]
@@ -3117,7 +3206,10 @@ def metaCallStep {σ : LPSignature}
     StepResultCore σ Instruction SourceClause :=
   match decoder.decode state.memory.heap request with
   | .error reason => failWith state reason
-  | .ok goals => enterDecodedGoalsStep state goals rest
+  | .ok .fail => .next { state with phase := .backtrack } none
+  | .ok (.goals goals) => enterDecodedGoalsStep state goals rest
+  | .ok (.maplist3 encoding output inputs knownOutputs calls) =>
+      maplist3Step state encoding output inputs knownOutputs calls rest
 
 /-- Allocate one terminal segment above the live heap and unify the DCG input
 with its new spine through the canonical graph unifier.  The final tail is the
@@ -4693,7 +4785,7 @@ theorem metaCallStep_exact {σ : LPSignature}
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
     (request : MetaCallRequest) (rest goals : List Instruction)
-    (hDecode : decoder.decode state.memory.heap request = .ok goals) :
+    (hDecode : decoder.decode state.memory.heap request = .ok (.goals goals)) :
     metaCallStep decoder state request rest =
       .next {
         state with
@@ -4718,6 +4810,18 @@ theorem metaCallStep_error {σ : LPSignature}
     (reason : QueryError)
     (hDecode : decoder.decode state.memory.heap request = .error reason) :
     metaCallStep decoder state request rest = failWith state reason := by
+  simp [metaCallStep, hDecode]
+
+/-- A decoded relational mismatch is ordinary search failure, not a malformed
+operation.  In particular finite `maplist/3` uses this arm when two closed
+lists have unequal lengths. -/
+theorem metaCallStep_fail {σ : LPSignature}
+    (decoder : MetaCallDecoder σ Instruction)
+    (state : StateCore σ Instruction SourceClause)
+    (request : MetaCallRequest) (rest : List Instruction)
+    (hDecode : decoder.decode state.memory.heap request = .ok .fail) :
+    metaCallStep decoder state request rest =
+      .next { state with phase := .backtrack } none := by
   simp [metaCallStep, hDecode]
 
 /-- Dynamic DCG decoding cannot schedule around the shared entry transition:

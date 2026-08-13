@@ -107,6 +107,27 @@ theorem functorVariable_injective : Function.Injective functorVariable := by
   have := congrArg SourceSignature.Variable.occurrence equal
   simpa [functorVariable] using this
 
+/-- Deterministic source identities for unbound result cells introduced by a
+finite `maplist/3` expansion.  The shared engine supplies the enclosing
+activation scope, so these names cannot collide with a source clause or a
+different maplist activation. -/
+def maplistVariable (index : Nat) : SourceSignature.Variable := {
+  spelling := "_Maplist"
+  occurrence := index
+}
+
+theorem maplistVariable_injective : Function.Injective maplistVariable := by
+  intro left right equal
+  have := congrArg SourceSignature.Variable.occurrence equal
+  simpa [maplistVariable] using this
+
+/-- Concrete list symbols and fresh source-variable identities for the
+engine-owned result-spine construction in finite `maplist/3`. -/
+def maplistEncoding : LP.RuntimeQuery.MaplistEncoding Sigma where
+  list := collectionEncoding
+  freshVariable := maplistVariable
+  freshVariable_injective := maplistVariable_injective
+
 /-- Concrete atom/arity representation for the shared `functor/3` action. -/
 def functorEncoding : LP.RuntimeQuery.FunctorEncoding Sigma where
   nameConstant symbol := .atom symbol.name
@@ -359,13 +380,54 @@ private def decodeMaplist (heap : Heap Sigma.scoped) (closure list : Addr) :
   let elements ← LP.RuntimeQuery.decodeAddressList collectionEncoding heap list
   pure <| elements.map fun element => ordinaryCall "call" [closure, element]
 
+/-- Read a `maplist/3` output root without allocating or binding it.  Only a
+wholly unbound root requests a new result spine; a partial spine remains a
+visible unsupported open-list case instead of being silently treated as
+complete.  SWI-Prolog can extend such a partial spine; that relational
+generation is deliberately outside this finite native fragment. -/
+private def decodeMaplistOutput (heap : Heap Sigma.scoped) (output : Addr) :
+    Except LP.RuntimeQuery.QueryError (Option (List Addr)) :=
+  match LP.RuntimeQuery.decodeAddressList collectionEncoding heap output with
+  | .ok elements => .ok (some elements)
+  | .error .univListUnbound =>
+      match LP.RuntimeQuery.dereferencedRootCell heap output with
+      | .ok (_, .var _ none) => .ok none
+      | .ok _ => .error .univListUnbound
+      | .error error => .error error
+  | .error error => .error error
+
+/-- Decode finite `maplist/3` without allocating.  The returned plan contains
+only input roots and ordinary `call/3` instructions; the shared engine owns
+the optional fresh output spine and its one canonical output unification. -/
+private def decodeMaplist3 (heap : Heap Sigma.scoped)
+    (closure input output : Addr) :
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.MetaCallPlan Sigma (RuntimeGoal Sigma.scoped)) := do
+  let inputs ← LP.RuntimeQuery.decodeAddressList collectionEncoding heap input
+  let knownOutputs ← decodeMaplistOutput heap output
+  match knownOutputs with
+  | some outputs =>
+      if inputs.length = outputs.length then
+        pure (.maplist3 maplistEncoding output inputs knownOutputs
+          fun resultElements =>
+            (List.zip inputs resultElements).map fun (input, result) =>
+              ordinaryCall "call" [closure, input, result])
+      else pure .fail
+  | none =>
+      pure (.maplist3 maplistEncoding output inputs none
+        fun resultElements =>
+          (List.zip inputs resultElements).map fun (input, result) =>
+            ordinaryCall "call" [closure, input, result])
+
 /-- Decode one dynamic-call request after the shared engine has selected it.
 `maplist/2` is intentionally finite and proper-list only at this boundary;
 unbound-list enumeration remains a visible unsupported extension. -/
 def decodeMetaCall (heap : Heap Sigma.scoped) : LP.RuntimeQuery.MetaCallRequest →
-    Except LP.RuntimeQuery.QueryError (List (RuntimeGoal Sigma.scoped))
-  | .call callable extraArgs => decodeCallable heap callable extraArgs
-  | .maplist closure list => decodeMaplist heap closure list
+    Except LP.RuntimeQuery.QueryError
+      (LP.RuntimeQuery.MetaCallPlan Sigma (RuntimeGoal Sigma.scoped))
+  | .call callable extraArgs => .goals <$> decodeCallable heap callable extraArgs
+  | .maplist closure list => .goals <$> decodeMaplist heap closure list
+  | .maplist3 closure input output => decodeMaplist3 heap closure input output
 
 /-- Recognize `call/N` and the finite `maplist/2` entry without inspecting the
 heap.  The classifier exposes only existing roots; the shared engine invokes
@@ -379,6 +441,9 @@ def metaCall? (goal : RuntimeAtom Sigma.scoped) :
       else none
   | "maplist", [closure, list] | "apply:maplist", [closure, list] =>
       if goal.symbol.arity = 2 then some (.maplist closure list) else none
+  | "maplist", [closure, input, output] |
+      "apply:maplist", [closure, input, output] =>
+      if goal.symbol.arity = 3 then some (.maplist3 closure input output) else none
   | _, _ => none
 
 /-- Recognize the ISO `phrase/3` entry without inspecting its arguments.

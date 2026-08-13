@@ -164,6 +164,23 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistCutClosureProgram
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistClosureCutRetainsCaller)
+  renderCount "maplist_three_builds_output"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3Program
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3BuildsOutput)
+  renderCount "maplist_three_known_output"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3Program
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3UsesKnownOutput)
+  renderCount "maplist_three_wrong_length"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3Program
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3RejectsWrongLength)
+  renderStringAnswers "maplist_three_closure_cut_retains_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtomsFor
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3CutClosureProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplist3ClosureCutRetainsCaller
+      { spelling := "X", occurrence := 0 })
   renderCount "neg_rejects_success"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.negationRejectsSuccess)
