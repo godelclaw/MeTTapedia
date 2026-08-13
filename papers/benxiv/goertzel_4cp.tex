@@ -603,6 +603,23 @@ L1 to a source-visible premise---the displayed dual non-adjacencies---rather
 than a vague claim that opening should preserve the picture.  It still does
 not select the source cap or prove those non-adjacencies.
 
+Retaining only the selected corridor faces is not sufficient for the clean
+L1 interface.  A neighbouring open face could otherwise be a cut fragment
+whose facial cycle was closed through a fresh boundary stub.  The module
+\texttt{GoertzelV24OpenRegionCleanHexCorridorTransport} closes this loophole.
+Its one-sided neighbour-pullback theorem starts from an actual edge shared by
+a retained face and an arbitrary open neighbour, recovers the opposite
+ambient dart, and uses the two-face incidence bound to prove that the open
+neighbour is exactly the image of that ambient face.  Consequently
+\texttt{openCleanOrbitHexCorridorSkeleton} transports an entire clean
+corridor whenever its radius-one ambient neighbourhood is fully retained.
+The cap specialization packages the geometric premise as
+\texttt{CorridorOneRingAvoidsFace}: every centre and every adjacent face is
+distinct and dual-nonadjacent from the cap.  Cubic face separation then
+constructs all retention proofs automatically.  Thus boundary cleanliness is
+preserved as a theorem about actual face orbits, rather than inferred from a
+picture or from center-face retention alone.
+
 The opened rotation is now also backed by an actual computed simple graph in
 \texttt{GoertzelV24OpenRegionGraphBacking}.  Its primal adjacency is defined
 from the opened dart endpoints.  Lean proves that mapping an opened dart to
