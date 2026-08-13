@@ -416,6 +416,26 @@ theorem SelectedInternalHexRungPlacement.rungType_ne_adjacent_of_cell3
     convert hadj.symm using 1 <;> apply Subtype.ext <;>
       simp only [houtgoingOpposite, ← hreverse, hincomingOpposite]
 
+/-- The selected local Cell-3 rung is one of the two nonadjacent hexagon
+types.  This is the finite branch point that remains for the literal ladder
+classification. -/
+theorem SelectedInternalHexRungPlacement.rungType_eq_oneEdgeBetween_or_opposite_of_cell3
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (interior : CorridorInterior blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior) :
+    placement.rungType = HexRungType.oneEdgeBetween ∨
+      placement.rungType = HexRungType.opposite := by
+  cases htype : placement.rungType with
+  | adjacent =>
+      exact (SelectedInternalHexRungPlacement.rungType_ne_adjacent_of_cell3
+        corridor rungs interior placement htype).elim
+  | oneEdgeBetween => exact Or.inl rfl
+  | opposite => exact Or.inr rfl
+
 /-- Source-facing existence form: a boundary-clean Cell-3 corridor itself
 supplies a choice of actual rungs and a nonadjacent two-rung placement at each
 internal hexagon. -/
