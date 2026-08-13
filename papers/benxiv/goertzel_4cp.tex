@@ -443,6 +443,19 @@ prove that the relevant Cell--3 face orbits avoid the deleted darts, or realize
 the long separated crosscut pair.  Those source-specific formation obligations
 remain the live gate.
 
+The one-step result has now been lifted to complete untouched faces in
+\texttt{GoertzelV24DeletedEdgeFaceTransport}.  The predicate
+\texttt{FaceAvoidsDeletedEdge} says that every dart in one ambient face orbit
+avoids both orientations of the missing edge.  Under exactly that condition,
+\texttt{deletedFaceCycleEquiv} gives a bijection between the whole ambient
+dart cycle and the whole computed face cycle of \texttt{deletedEdgeData}.
+Surjectivity is derived from the commuting face step and finite cycle
+cardinality; it is not assumed.  This proves exact orbit and face-length
+preservation for untouched faces.  It does not yet prove that two distinct
+ambient faces remain distinct after deletion, transport a shared primal edge
+between two faces, or establish the source-specific avoidance condition for
+the three Cell--3 faces.  Those are the next local bridge statements.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
