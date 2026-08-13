@@ -6,8 +6,10 @@ import ProtectedPlasticity
 An executable model of the sequential core of the OpenAI Codex coding-agent
 loop.  The source correspondence is pinned to `openai/codex` main commit
 `1da59ad257115cc5734e6781d5ac0b4f08a6e064` (2026-08-14); stable release
-`rust-v0.147.0` at commit `3ed6f04f6bf8b7c46299d1cb1ff99c74ce21a51d`
-is the reproducible release baseline.
+`rust-v0.147.0` has annotated tag object
+`3ed6f04f6bf8b7c46299d1cb1ff99c74ce21a51d`, resolving to commit
+`be6e8eac029b183056b7e4402879f15d2c85f61b`; it is the reproducible release
+baseline.
 
 The model retains five implementation facts:
 
