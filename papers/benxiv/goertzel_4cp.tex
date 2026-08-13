@@ -592,6 +592,17 @@ prove that the selected Cell--3 corridor faces are wholly retained (and identify
 the resulting opening with the source instance).  The constructor deliberately
 does not assume that source-specific fact.
 
+There is also a cap-specific constructor,
+\texttt{openOrbitHexCorridorSkeleton\_compl\_cap}.  In a cubic, cyclic,
+two-sided closed map, suppose every selected corridor face is distinct and
+dual-nonadjacent from a chosen cap face.  The previously proved cubic
+face-separation theorem then shows that deleting precisely the cap-face
+vertices fully retains every corridor face, and the generic transport
+constructor produces the open corridor.  This reduces the cap-opening part of
+L1 to a source-visible premise---the displayed dual non-adjacencies---rather
+than a vague claim that opening should preserve the picture.  It still does
+not select the source cap or prove those non-adjacencies.
+
 The opened rotation is now also backed by an actual computed simple graph in
 \texttt{GoertzelV24OpenRegionGraphBacking}.  Its primal adjacency is defined
 from the opened dart endpoints.  Lean proves that mapping an opened dart to

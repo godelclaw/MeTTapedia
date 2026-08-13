@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSkeleton
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CubicFaceVertexSeparation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionFaceTransport
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceTwoSided
 
@@ -24,6 +25,7 @@ namespace GoertzelV24OpenRegionHexCorridorTransport
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24CubicFaceVertexSeparation
 open GoertzelV24OpenRegionFaceTransport
 open GoertzelV24OpenRegionRotation
 open GoertzelV24OrbitFaceTwoSided
@@ -195,6 +197,46 @@ noncomputable def openOrbitHexCorridorSkeleton
       (orbitFaceRoot RS (corridor.faceAt right).1)
       (hretained left) (hretained right) hambientNe).1 hopen
 }
+
+/-- **L1 (cap-opening corridor formation).** If every face of a closed hex
+corridor is distinct and dual-nonadjacent from a chosen cap face, then deleting
+exactly the cap-face vertices constructs the same corridor in the literal open
+rotation system.
+
+This theorem is the usable cap specialization of
+`openOrbitHexCorridorSkeleton`: cubic face separation supplies full retention
+of every selected corridor face.  The source-specific remaining task is to
+select the cap and corridor and prove the displayed nonadjacencies; they are
+premises here, not hidden in the construction. -/
+noncomputable def openOrbitHexCorridorSkeleton_compl_cap
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : VertexRotationCyclic RS)
+    (htwoSided : OrbitFacesTwoSided RS)
+    {corridorLength : Nat}
+    (corridor : OrbitHexCorridorSkeleton RS corridorLength)
+    (capRoot : RS.D)
+    (outer : Dart RS (fun vertex =>
+      vertex ∉ orbitFaceVertices RS (dartOrbitFace RS capRoot)))
+    (hfaces : ∀ offset,
+      (corridor.faceAt offset).1 ≠ dartOrbitFace RS capRoot)
+    (hnotAdj : ∀ offset,
+      ¬ (interiorDualGraph (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).Adj
+          ⟨(corridor.faceAt offset).1, Finset.mem_univ _⟩
+          ⟨dartOrbitFace RS capRoot, Finset.mem_univ _⟩) :
+    OrbitHexCorridorSkeleton
+      (rotationSystem RS
+        (fun vertex => vertex ∉
+          orbitFaceVertices RS (dartOrbitFace RS capRoot)) outer)
+      corridorLength :=
+  openOrbitHexCorridorSkeleton RS htwoSided corridor
+    (fun vertex => vertex ∉
+      orbitFaceVertices RS (dartOrbitFace RS capRoot)) outer fun offset =>
+        faceFullyRetained_compl_orbitFaceVertices_of_not_adj
+          RS hcubic hrotation htwoSided capRoot
+          (orbitFaceRoot RS (corridor.faceAt offset).1)
+          (by simpa using hfaces offset)
+          (by simpa using hnotAdj offset)
 
 end
 
