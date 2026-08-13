@@ -345,17 +345,21 @@ The first generic piece of this formation is now constructed in
 be wholly based at vertices retained by the literal open-region construction.
 Lean proves that following the ambient face permutation never enters a fresh
 boundary stub, that the old-dart embedding commutes with every face step, and
-that the complete ambient and open dart cycles are equivalent.  It also proves
-an exact edge-incidence statement: two transported face darts name the same
-computed open edge if and only if they named the same ambient edge.  Thus an
-untouched face is transported as an actual finite orbit without splitting or
-identifying its old boundary edges, not merely identified by a matching
-cardinality or assumed through a wrapper.  What remains is source-specific:
-prove that the Cell--3 flank faces satisfy the retention criterion, apply the
-edge transport simultaneously to their shared boundary, and use the resulting
-ribbon boundary to turn the existing primal radial witness into the two
-separated facial-dual crosscuts.  The new theorem removes one formation gap;
-it does not itself construct the crosscut pair.
+that the complete ambient and open dart cycles are equivalent.  All transported
+faces now live in one fixed literal-open rotation system, rather than in
+separately rooted copies.  In that common map Lean proves that distinct retained
+ambient faces remain distinct, that equal ambient edge occurrences compute the
+same open edge even when they belong to different faces, and hence that a
+shared ambient boundary edge remains a genuine facial-dual adjacency after
+opening.  Thus an untouched face is transported as an actual finite orbit
+without splitting or identifying its old boundary edges, not merely identified
+by a matching cardinality or assumed through a wrapper.  What remains is
+source-specific: prove that the relevant Cell--3 interior faces satisfy the
+retention criterion under the actual closed-map-to-annulus formation, then use
+the transported ribbon boundary to turn the existing primal radial witness into
+the two separated facial-dual crosscuts.  These generic theorems remove one
+formation gap; they do not themselves construct the crosscut pair or assert
+that a flank face cut by the opening is wholly retained.
 
 \subsection{The closure chain}
 
