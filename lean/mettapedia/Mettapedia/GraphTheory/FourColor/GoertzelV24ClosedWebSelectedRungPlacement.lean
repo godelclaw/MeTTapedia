@@ -479,6 +479,37 @@ theorem selectedPlacementSideFaces_eq_or_adjacent_of_forwardStep
       (Instance.InteriorFace.vertexRotationCyclic web) leftDart hcornerCard hfacesNe
     simpa only [selectedPlacementSideFace, leftDart, rightDart, hdarts] using hadj
 
+/-- **L1 (selected local rail segment).** A forward step between two surviving
+side slots of a source-selected Cell-3 hexagon gives a literal facial-dual
+walk of length at most one.  The zero-length branch is intentional: distinct
+side slots can meet the same exterior face, and the finite local
+classification must account for that collision rather than silently assuming
+global face-intersection uniqueness.
+
+This is one local segment only.  It neither proves that separate segments are
+disjoint nor assembles a long annular crosscut. -/
+theorem exists_selectedPlacementSideWalk_of_forwardStep
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (left right : {position // position ∈ selectedPlacementSidePositions placement})
+    (hsuccessor : right.1.val ≡ left.1.val + 1 [MOD 6]) :
+    ∃ walk : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+        (selectedPlacementSideFace placement left)
+        (selectedPlacementSideFace placement right),
+      walk.IsPath ∧ walk.length ≤ 1 := by
+  rcases selectedPlacementSideFaces_eq_or_adjacent_of_forwardStep
+      (corridor := corridor) placement left right hsuccessor with hsame | hadj
+  · refine ⟨SimpleGraph.Walk.nil.copy rfl hsame, ?_, ?_⟩
+    · simp
+    · simp
+  · exact ⟨hadj.toWalk, SimpleGraph.Walk.IsPath.of_adj hadj, by simp⟩
+
 namespace Instance
 
 /-- A boundary-clean Cell-3 corridor needs no global pairwise face-incidence

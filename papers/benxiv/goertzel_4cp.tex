@@ -955,6 +955,20 @@ one-step rail edge.  This is the intended finite local classification, carried
 out on the source annulus, rather than an unproved assertion that every local
 rail step is automatically simple.
 
+The dichotomy now has an intentionally modest walk-level form as well:
+
+\begin{center}
+\texttt{exists\_selectedPlacementSideWalk\_of\_forwardStep}.
+\end{center}
+
+For a forward side step it constructs a literal facial-dual simple walk of
+length at most one.  The adjacent-face branch has length one; the coincident
+face branch has length zero.  Recording the latter rather than coercing it
+into a one-edge rail is important: it preserves the finite collision case for
+the source's L1 classification.  This is one local segment, not a simple
+crosscut, a disjoint rail family, or a construction of the long end-capped
+pair required by the splice.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
