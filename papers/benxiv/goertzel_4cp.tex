@@ -471,6 +471,29 @@ pentagon, prove that the displayed Cell--3 faces are nonadjacent to it, build
 the two-hole annulus, or realize the long separated crosscuts.  Those are the
 remaining source-specific L1 formation statements.
 
+The next bounded L1 collision has now been classified on the closed map as
+well.  Geodesicity rules out any dual edge between corridor faces two steps
+apart, but by itself it does not say that their displayed middle face is their
+only common neighbour.  If an additional common neighbour exists, the two
+length--two routes form a simple dual four-cycle.  In
+\texttt{GoertzelV24MinimalDualFourCycleClassification}, cyclic five-edge
+connectivity converts this cycle into the already established adjacent-pair
+primal collar and supplies a chord joining opposite cycle positions.  The
+endpoint chord is impossible by geodesicity, so Lean proves
+
+\begin{center}
+\texttt{middle\_adj\_other\_of\_two\_common\_neighbors}.
+\end{center}
+
+Its corridor specialization says that every such extra common neighbour must
+also be adjacent to the displayed middle face.  Thus the residual two-step
+collision is not an arbitrary global interaction: it is forced into the
+finite adjacent-pair collar geometry named by L1.  This is a genuine
+classification theorem, not a conditional rail-assembly wrapper.  It does
+not yet prove that the extra face is impossible, discharge
+\texttt{CommonNeighborsExact} in the cut-open Cell--3 carrier, or construct
+the source opening; those are the next finite local and formation steps.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
