@@ -526,10 +526,12 @@ from the pentagonal cap---is automatically wholly retained by cap deletion;
 no separate vertex-by-vertex retention assumption is needed.  This settles
 the generic closed-map side of that premise.  It does not select the source
 pentagon, prove that the displayed Cell--3 faces are nonadjacent to it, build
-the two-hole annulus, or realize the long separated crosscuts.  Those are the
-remaining source-specific L1 formation statements.
+the two-hole annulus, or realize the long separated crosscuts.  Those are
+remaining source-specific formation statements.  They are useful generic
+preparation for the source's bulk Cell--1 ladder theorem, but they must not
+be relabelled as a construction of the separate Cell--3 geometry.
 
-The next bounded L1 collision has now been classified on the closed map as
+The next bounded local collision has now been classified on the closed map as
 well.  Geodesicity rules out any dual edge between corridor faces two steps
 apart, but by itself it does not say that their displayed middle face is their
 only common neighbour.  If an additional common neighbour exists, the two
@@ -600,9 +602,10 @@ conditional theorem a formation result.  This does not form a Cell--3 source
 transversal: its source instance already stores a
 \texttt{ClosedWebAnnularEmbedding} and the required annular geometry, and the
 weighted clean-block theorem now returns a source-realized dual geodesic from
-those fields.  The missing bridge includes the source's ladder/rung-incidence
-classification and then the construction of long separated transverse
-crosscuts needed by the splice.  The generic
+those fields.  The missing bridge includes a genuine simple-transversal or
+layer-boundary construction at the selected radial positions; the local rail
+calculations are exploratory Cell--3 geometry, not the source's Cell--1
+ladder construction.  The generic
 cap-deletion construction remains relevant only if a later source theorem
 identifies that particular opening with the Cell--3 carrier; it is not silently
 inserted as the current L1 construction.
@@ -865,21 +868,41 @@ rail step is automatically simple.
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
 paths, distinct anchors on both boundary components, sector-alternation data,
-and a quantitative length alternative.  This is the L8-to-L6 package.  The
+and a quantitative length alternative.  This is an L8 input to the L6
+analysis.  The
 splice instead requires \texttt{SeparatedAlignedSimpleDualCrosscuts}, a pair
 of simple \emph{facial-dual} transversals satisfying a dual-walk disjointness
 condition and the crosscut alignment hypotheses.  No theorem currently
 relates these types.  Thus the radial witness is a proved neighbouring asset,
-not yet a constructor for the L1 pair; treating it as one by renaming or
+not yet a constructor for a splice pair; treating it as one by renaming or
 duality intuition would hide precisely the missing primal--dual construction.
+
+\paragraph{The actual L6 geometric handoff.}  The finite pigeonhole itself is
+already source-realized: \texttt{GoertzelV24ClosedWebLengthDepthDichotomy}
+proves that a sufficiently long actual radial path has either a clean shallow
+block or a \texttt{HasDeepChordTransversal}.  The latter is deliberately not
+called a layer stack.  Sector alternation and chord noncrossing organize its
+many spanning chords, but the profile layer correctly refuses to treat a
+facial chord wall as a primal cut.  The precise missing construction is
+\texttt{ChordTransversalDeletionAssignment}.  For each selected sector chord
+it asks for a separate finite deleted-edge transversal, a connected component
+whose crossing boundary is exactly that deleted set, cycles on both sides, and
+a uniform width bound.  Its conversion to the cyclic-cut/profile machinery is
+already proved; only this physical construction is absent.  In particular,
+the wall itself is not a shortcut: Lean proves that if a chord wall were an
+exact primal cut, its closed walk would have even length.  This records a
+necessary parity condition rather than inventing the source's separate simple
+transversal.
 
 \subsection{The closure chain}
 
 The remaining dependency order is:
 
 \begin{enumerate}
-  \item construct the long, end-capped separated crosscut pair from the actual
-        annular Cell--3 corridor;
+  \item construct the source's genuine simple transversals/layer boundaries
+        at the L6 radial positions (the explicit
+        \texttt{ChordTransversalDeletionAssignment} package), then identify
+        the resulting physical cut data needed by the splice;
   \item use it to discharge the literal source
         \texttt{SemanticProfileBridge} or the weaker sufficient
         \texttt{ColorabilityReflection};
