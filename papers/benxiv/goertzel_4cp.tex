@@ -316,10 +316,17 @@ block.  It does not reopen the source through a cap-deletion model.  This is a
 real conclusion of the current Lean extraction, conditional only on the stated
 quantitative bound.  It is not yet Fable's full L1 ladder corridor: the latter
 also needs the local rung-incidence classification used to produce simple
-transversals.  In particular, the downstream rail API assumes
-\texttt{PairwiseUniqueSharedInteriorEdges}, while this source instance does
-not yet derive it.  Nor is the result a pair of separated transverse crosscuts
-or a splice.
+transversals.  One initially apparent part of that gap has now been removed
+without imposing a closed-minimal hypothesis.  The new
+\texttt{SelectedCorridorRungs} object chooses one genuine shared primal edge
+for each consecutive dual step, rather than requiring all pairs of faces to
+share at most one edge.  Lean then proves that the selected incoming and
+outgoing rungs of every internal Cell--3 hexagon occupy distinct,
+non-adjacent positions on its six-dart boundary.  The proof uses only the
+source carrier's interior-face simplicity, local cubicity, and geodesic
+separation.  This is a local rung-placement result, not a proof of the
+remaining finite adjacency classification, a long separated pair of
+crosscuts, or a splice.
 
 Three nearby results delimit the gap.
 
