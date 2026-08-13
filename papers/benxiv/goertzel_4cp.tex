@@ -1025,6 +1025,24 @@ proves that if a chord wall were an exact primal cut, its closed walk would
 have even length.  This records a necessary parity condition rather than
 inventing the source's separate simple transversal.
 
+\paragraph{The annular-separation implementation boundary.}  This is not a
+place to import a large unrelated planarity library.  The pinned Lean
+dependencies contain neither a Jordan-curve theorem nor a rotation-system or
+combinatorial-map separation development, and a foreign representation would
+first require an equivalence with the rotation-system carrier already used by
+the closed-web construction.  More importantly, the present development has
+already isolated the exact narrow interface required here:
+\texttt{CycleSideCertificate} assigns a vertex side to a specified chord
+cycle, proves alternation on the cycle and preservation off it, and retains a
+cycle witness on each side.  From that interface the exact finite edge cut is
+mechanical.  Thus the live construction problem is a source-specific annular
+lemma which produces that data (or directly produces the equivalent deleted
+edge set and component) for the actual radial/chord geometry.  It is neither
+an appeal to Menger's theorem nor an assertion that the facial dual labels
+alone select a primal side.  This boundary keeps the eventual theorem at the
+strength used by the corridor, while making every genuinely topological input
+visible to kernel checking.
+
 \subsection{The closure chain}
 
 The remaining dependency order is:
