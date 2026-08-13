@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierWeightedCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebBoundaryCleanCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebRadialLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebComputedDepthProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SpliceUnification
@@ -27,6 +28,7 @@ open SimpleGraph
 open GoertzelV24AnnularFrontierWeightedCorridor
 open GoertzelV24AnnularFrontierWeightedCurvature.AnnularFrontier
 open GoertzelV24ClosedWebAnnularEmbedding
+open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebComputedDepthProfile
 open GoertzelV24ClosedWebRadialLength
@@ -75,6 +77,21 @@ theorem weight_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
   exact _root_.Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierWeightedCorridor.weight_exceeds_bound_or_hasCleanHexagonalGeodesicBlock
       web.annular web.boundary_wellFormed web.geometry
       weightBound blockLength hpositive hlarge
+
+/-- The source Cell-3 instance directly realizes the boundary-clean L1
+corridor once the weighted size premise is available.  The remaining physical
+work is to construct the required separated crosscuts from this corridor, not
+to reopen the Cell-3 annulus through a second carrier. -/
+theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedL1
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    (blockLength : Nat) (hpositive : 0 < blockLength)
+    (hlarge : web.annular.boundaryCleanHexBlockThreshold blockLength <
+      web.annular.cellulation.interiorFaces.card) :
+    ∃ corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength,
+      web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor blockLength corridor := by
+  exact web.annular.exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedAnnularExcess
+    web.boundary_wellFormed web.geometry blockLength hpositive hlarge
 
 /-- The constructed L8 package for a large closed web at a good word.  This
 is the source's two radial paths, their disjoint facial anchors, and the

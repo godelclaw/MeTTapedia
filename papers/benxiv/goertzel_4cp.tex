@@ -304,6 +304,17 @@ and does it entail the rail premise at all?  Until that formation is identified
 and proved, neither the L8 radial witness nor the closed-map opening transport
 is silently treated as the missing crosscut construction.
 
+There is, however, now a direct L1 handoff which narrows this question further.
+A \texttt{ClosedWebAtGoodWord.Instance} already contains the actual
+\texttt{ClosedWebAnnularEmbedding} and its \texttt{AnnularFrontierGeometry}.
+The theorem
+\texttt{exists\_sourceRealizedBoundaryCleanOrbitHexCorridor\_of\_weightedL1}
+therefore turns the manuscript's explicit weighted size premise into a
+boundary-clean corridor together with the literal source geodesic and selected
+block.  It does not reopen the source through a cap-deletion model.  This is a
+real L1 conclusion, conditional only on the stated quantitative bound; it is
+not yet either a pair of separated transverse crosscuts or a splice.
+
 Three nearby results delimit the gap.
 
 \begin{itemize}
@@ -570,11 +581,15 @@ The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
 the minimal-counterexample theorem concerns the original closed cubic map.
 One may not assume both structures on that same carrier and call the resulting
-conditional theorem a formation result.  For Cell--3, the missing bridge must
-construct the actual annular subregion obtained from the closed map (including
-its cap or region deletion), identify the displayed L1 corridor inside that
-opening, and prove that the relevant interior faces and their shared edges are
-the transported closed-map objects.
+conditional theorem a formation result.  This does not leave the Cell--3 L1
+corridor unformed: its source instance already stores a
+\texttt{ClosedWebAnnularEmbedding} and the required annular geometry, and the
+weighted L1 theorem now returns a source-realized boundary-clean corridor from
+those fields.  The missing bridge is instead from that literal corridor to the
+long separated transverse crosscuts needed by the splice.  The generic
+cap-deletion construction remains relevant only if a later source theorem
+identifies that particular opening with the Cell--3 carrier; it is not silently
+inserted as the current L1 construction.
 
 The first generic piece of this formation is now constructed in
 \texttt{GoertzelV24OpenRegionFaceTransport}.  Let a closed ambient face orbit
@@ -599,14 +614,10 @@ so the literal opening induces exactly the same adjacency relation on this
 family of retained face orbits: it neither loses an ambient dual edge nor
 creates a spurious one.  Thus an untouched face is transported as an actual finite orbit
 without splitting or identifying its old boundary edges, not merely identified
-by a matching cardinality or assumed through a wrapper.  What remains is
-source-specific: prove that the relevant Cell--3 interior faces satisfy the
-retention criterion under the actual closed-map-to-annulus formation, then
-transport the closed bounded-interaction classification to the literal L1
-corridor and assemble its separated facial-dual crosscuts.  These generic
-theorems remove one formation gap; they do not themselves construct the
-crosscut pair, prove the L1 corridor comes from that opening, or assert that a
-flank face cut by the opening is wholly retained.
+by a matching cardinality or assumed through a wrapper.  This is generic
+carrier plumbing for any future cap-deletion formation.  It neither supersedes
+the direct Cell--3 L1 handoff nor constructs the separated facial-dual
+crosscut pair from its source-realized corridor.
 
 The next formation step is now explicit in
 \texttt{GoertzelV24OpenRegionHexCorridorTransport}.  First, Lean proves that a
@@ -618,11 +629,11 @@ reflects equality of opened edges back to the ambient face.  It then constructs
 selected faces are fully retained becomes an actual hex corridor in the one
 computed open rotation system, with the same length, injective face indexing,
 hexagonal boundaries, consecutive adjacencies, and separated non-adjacencies.
-Thus the generic transport of the L1 corridor is complete.  The remaining
-source theorem is narrower and geometric: under the actual cap/collar deletion,
-prove that the selected Cell--3 corridor faces are wholly retained (and identify
-the resulting opening with the source instance).  The constructor deliberately
-does not assume that source-specific fact.
+Thus the generic transport of an L1 corridor is complete.  It remains
+conditional on a cap/collar opening being the relevant source carrier; the
+current Cell--3 L1 path already has its own direct annular realization.  Neither
+route supplies the long, end-capped crosscut pair, which remains the live
+geometric obligation.
 
 There is also a cap-specific constructor,
 \texttt{openOrbitHexCorridorSkeleton\_compl\_cap}.  In a cubic, cyclic,

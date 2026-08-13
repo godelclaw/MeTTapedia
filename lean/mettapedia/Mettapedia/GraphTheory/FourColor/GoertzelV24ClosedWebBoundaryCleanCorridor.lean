@@ -583,6 +583,23 @@ theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
   intro offset
   rfl
 
+/-- The weighted Cell-3 L1 estimate directly supplies a source-realized
+boundary-clean corridor.  This packages the quantitative extraction and its
+literal geodesic witness together; it does not yet construct transverse
+crosscuts or a splice. -/
+theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedAnnularExcess
+    (embedded : ClosedWebAnnularEmbedding data) (hdata : data.WellFormed)
+    (geometry : AnnularFrontierGeometry embedded)
+    (blockLength : Nat) (hpositive : 0 < blockLength)
+    (hlarge : embedded.boundaryCleanHexBlockThreshold blockLength <
+      embedded.cellulation.interiorFaces.card) :
+    ∃ corridor : BoundaryCleanOrbitHexCorridor embedded blockLength,
+      embedded.SourceRealizesBoundaryCleanOrbitHexCorridor blockLength corridor := by
+  exact embedded.exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
+    blockLength
+    (embedded.exists_boundaryCleanHexagonalGeodesicBlock_of_weightedAnnularExcess
+      hdata geometry blockLength hpositive hlarge)
+
 /-- Forgetting the retained source-geodesic witness recovers the earlier
 nonempty finite-interface corridor result. -/
 theorem nonempty_boundaryCleanOrbitHexCorridor_of_boundaryCleanBlock
