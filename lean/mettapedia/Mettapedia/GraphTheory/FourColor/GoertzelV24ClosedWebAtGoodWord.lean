@@ -83,7 +83,7 @@ dual-geodesic extraction once the weighted size premise is available.  The
 source's full ladder incidence and the required separated crosscuts remain
 additional physical work; this theorem does not reopen the Cell-3 annulus
 through a second carrier. -/
-theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedL1
+theorem exists_sourceRealizedBoundaryCleanOrbitHexCorridor_of_weightedCleanBlock
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     (web : Instance data coloring)
     (blockLength : Nat) (hpositive : 0 < blockLength)
