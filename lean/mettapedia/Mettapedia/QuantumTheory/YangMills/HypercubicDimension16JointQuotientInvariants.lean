@@ -118,6 +118,69 @@ theorem exactFieldOrbitReynolds_invariant
           signedExactFieldRelabelOrbitAction h) value)
   rw [mul_smul_comm, hsum]
 
+/-- Averaging is unchanged after a signed hypercubic translate. -/
+theorem exactFieldOrbitReynolds_action
+    (right : Hypercubic4) (value : ExactFieldRelabelOrbitSpace) :
+    exactFieldOrbitReynolds
+        (signedExactFieldRelabelOrbitAction right value) =
+      exactFieldOrbitReynolds value := by
+  have hsum :
+      (∑ left : Hypercubic4,
+          signedExactFieldRelabelOrbitAction left) *
+          signedExactFieldRelabelOrbitAction right =
+        ∑ left : Hypercubic4,
+          signedExactFieldRelabelOrbitAction left := by
+    rw [Finset.sum_mul]
+    have hmul (left : Hypercubic4) :
+        signedExactFieldRelabelOrbitAction left *
+            signedExactFieldRelabelOrbitAction right =
+          signedExactFieldRelabelOrbitAction (left * right) := by
+      apply LinearMap.ext
+      intro input
+      exact (signedExactFieldRelabelOrbitAction_mul left right input).symm
+    simp_rw [hmul]
+    exact Equiv.sum_comp (Equiv.mulRight right)
+      signedExactFieldRelabelOrbitRepresentation
+  unfold exactFieldOrbitReynolds
+  change
+    (((1 / 384 : ℚ) •
+        ∑ left : Hypercubic4,
+          signedExactFieldRelabelOrbitAction left) *
+        signedExactFieldRelabelOrbitAction right) value =
+      ((1 / 384 : ℚ) •
+        ∑ left : Hypercubic4,
+          signedExactFieldRelabelOrbitAction left) value
+  rw [smul_mul_assoc, hsum]
+
+set_option maxRecDepth 10000 in
+theorem exactFieldOrbitReynolds_fixes_invariant
+    (value : ExactFieldRelabelOrbitSpace)
+    (hinvariant : value ∈ exactFieldOrbitInvariantSubmodule) :
+    exactFieldOrbitReynolds value = value := by
+  unfold exactFieldOrbitReynolds
+  change (1 / 384 : ℚ) •
+      (∑ h : Hypercubic4,
+        signedExactFieldRelabelOrbitAction h value) =
+    value
+  have hsum :
+      (∑ h : Hypercubic4,
+        signedExactFieldRelabelOrbitAction h value) =
+      ∑ _h : Hypercubic4, value := by
+    apply Finset.sum_congr rfl
+    intro h _
+    exact hinvariant h
+  rw [hsum, Finset.sum_const, Finset.card_univ,
+    Hypercubic4.card_hypercubic4]
+  ext target
+  change (1 / 384 : ℚ) * (384 * value target) = value target
+  ring
+
+theorem exactFieldOrbitReynolds_isProj :
+    LinearMap.IsProj exactFieldOrbitInvariantSubmodule
+      exactFieldOrbitReynolds :=
+  ⟨exactFieldOrbitReynolds_invariant,
+    exactFieldOrbitReynolds_fixes_invariant⟩
+
 /-! ## Exact comparison map -/
 
 def jointInvariantToQuotientInvariant
@@ -217,6 +280,9 @@ theorem jointScalarPhysicalQuotient_finrank_eq_quotientInvariants
 
 #print axioms jointScalarPhysicalQuotientEquivQuotientInvariants
 #print axioms jointScalarPhysicalQuotient_finrank_eq_quotientInvariants
+#print axioms exactFieldOrbitReynolds_action
+#print axioms exactFieldOrbitReynolds_fixes_invariant
+#print axioms exactFieldOrbitReynolds_isProj
 
 end HypercubicDimension16JointQuotientInvariants
 end YangMills
