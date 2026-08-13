@@ -312,6 +312,225 @@ theorem sourceLocalRailShape_of_nonadjacent
     exact ⟨SourceLocalRailShape.forwardFour middle hincomingBeforeMiddle
       hmiddleOutgoingBefore hsecondEq⟩
 
+/-- Two literal exterior rail walks through one source Cell-3 placement.
+Their endpoints are the incoming and outgoing flank slots retained by the
+finite shape witness above. -/
+structure SourceLocalRailWalkPair
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (incomingBefore incomingAfter outgoingBefore outgoingAfter :
+      {position // position ∈ placementSidePositions placement}) where
+  firstRail :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+        (localPlacementSideFace placement incomingBefore)
+        (localPlacementSideFace placement outgoingBefore)
+  secondRail :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+        (localPlacementSideFace placement incomingAfter)
+        (localPlacementSideFace placement outgoingAfter)
+  firstRail_isPath : firstRail.IsPath
+  secondRail_isPath : secondRail.IsPath
+  firstRail_length_le_two : firstRail.length ≤ 2
+  secondRail_length_le_two : secondRail.length ≤ 2
+  firstRail_length_add_secondRail_length_eq_two :
+    firstRail.length + secondRail.length = 2
+
+private theorem placementSidePosition_ne_of_two_forwardSteps
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    {placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior}
+    (left middle right :
+      {position // position ∈ placementSidePositions placement})
+    (hfirst : middle.1.val ≡ left.1.val + 1 [MOD 6])
+    (hsecond : right.1.val ≡ middle.1.val + 1 [MOD 6]) :
+    left ≠ right := by
+  intro heq
+  have hvalEq : left.1.val = right.1.val :=
+    congrArg (fun position => position.1.val) heq
+  simp only [Nat.ModEq] at hfirst hsecond
+  omega
+
+private theorem localPlacementSideFace_ne_of_position_ne
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    {left right : {position // position ∈ placementSidePositions placement}}
+    (hne : left ≠ right) :
+    localPlacementSideFace placement left ≠
+      localPlacementSideFace placement right := by
+  intro hfaces
+  exact hne (localPlacementSideFace_injective (corridor := corridor)
+    placement hfaces)
+
+/-- Read the finite cyclic rail shape as two actual simple facial-dual walks.
+No path or length property is postulated: all three cases are built from the
+source-local adjacency theorem above. -/
+noncomputable def sourceLocalRailWalkPairOfShape
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (incomingBefore incomingAfter outgoingBefore outgoingAfter :
+      {position // position ∈ placementSidePositions placement})
+    (shape : SourceLocalRailShape placement incomingBefore incomingAfter
+      outgoingBefore outgoingAfter) :
+    SourceLocalRailWalkPair placement incomingBefore incomingAfter
+      outgoingBefore outgoingAfter := by
+  cases shape with
+  | forwardTwo first_eq middle houtMiddle hmiddleIn =>
+      have houtAdj := localPlacementSideFaces_adjacent_of_forwardStep
+        (corridor := corridor) placement outgoingAfter middle houtMiddle
+      have hinAdj := localPlacementSideFaces_adjacent_of_forwardStep
+        (corridor := corridor) placement middle incomingAfter hmiddleIn
+      let firstRail :
+          (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+              (localPlacementSideFace placement incomingBefore)
+              (localPlacementSideFace placement outgoingBefore) :=
+        SimpleGraph.Walk.nil.copy rfl
+          (congrArg (localPlacementSideFace placement) first_eq)
+      let secondRail := SimpleGraph.Walk.cons hinAdj.symm
+        (SimpleGraph.Walk.cons houtAdj.symm SimpleGraph.Walk.nil)
+      have houterNe : localPlacementSideFace placement incomingAfter ≠
+          localPlacementSideFace placement outgoingAfter := by
+        apply localPlacementSideFace_ne_of_position_ne (corridor := corridor)
+          placement
+        exact (placementSidePosition_ne_of_two_forwardSteps outgoingAfter middle
+          incomingAfter houtMiddle hmiddleIn).symm
+      refine {
+        firstRail := firstRail
+        secondRail := secondRail
+        firstRail_isPath := by simp [firstRail]
+        secondRail_isPath := ?_
+        firstRail_length_le_two := by simp [firstRail]
+        secondRail_length_le_two := by simp [secondRail]
+        firstRail_length_add_secondRail_length_eq_two := by
+          simp [firstRail, secondRail] }
+      simp only [secondRail]
+      apply SimpleGraph.Walk.IsPath.cons
+      · apply SimpleGraph.Walk.IsPath.cons
+        · exact SimpleGraph.Walk.IsPath.nil
+        · simpa using houtAdj.ne.symm
+      · simp only [SimpleGraph.Walk.support_cons,
+          SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+          or_false, not_or]
+        exact ⟨hinAdj.ne.symm, houterNe⟩
+  | forwardThree hfirst hsecond =>
+      have hfirstAdj := localPlacementSideFaces_adjacent_of_forwardStep
+        (corridor := corridor) placement incomingBefore outgoingBefore hfirst
+      have hsecondAdj := localPlacementSideFaces_adjacent_of_forwardStep
+        (corridor := corridor) placement outgoingAfter incomingAfter hsecond
+      refine {
+        firstRail := hfirstAdj.toWalk
+        secondRail := hsecondAdj.symm.toWalk
+        firstRail_isPath := SimpleGraph.Walk.IsPath.of_adj hfirstAdj
+        secondRail_isPath := SimpleGraph.Walk.IsPath.of_adj hsecondAdj.symm
+        firstRail_length_le_two := by simp
+        secondRail_length_le_two := by simp
+        firstRail_length_add_secondRail_length_eq_two := by simp }
+  | forwardFour middle hinMiddle hmiddleOut second_eq =>
+      have hinAdj := localPlacementSideFaces_adjacent_of_forwardStep
+        (corridor := corridor) placement incomingBefore middle hinMiddle
+      have houtAdj := localPlacementSideFaces_adjacent_of_forwardStep
+        (corridor := corridor) placement middle outgoingBefore hmiddleOut
+      let firstRail := SimpleGraph.Walk.cons hinAdj
+        (SimpleGraph.Walk.cons houtAdj SimpleGraph.Walk.nil)
+      let secondRail :
+          (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+              (localPlacementSideFace placement incomingAfter)
+              (localPlacementSideFace placement outgoingAfter) :=
+        SimpleGraph.Walk.nil.copy rfl
+          (congrArg (localPlacementSideFace placement) second_eq)
+      have houterNe : localPlacementSideFace placement incomingBefore ≠
+          localPlacementSideFace placement outgoingBefore := by
+        apply localPlacementSideFace_ne_of_position_ne (corridor := corridor)
+          placement
+        exact placementSidePosition_ne_of_two_forwardSteps incomingBefore middle
+          outgoingBefore hinMiddle hmiddleOut
+      refine {
+        firstRail := firstRail
+        secondRail := secondRail
+        firstRail_isPath := ?_
+        secondRail_isPath := by simp [secondRail]
+        firstRail_length_le_two := by simp [firstRail]
+        secondRail_length_le_two := by simp [secondRail]
+        firstRail_length_add_secondRail_length_eq_two := by
+          simp [firstRail, secondRail] }
+      simp only [firstRail]
+      apply SimpleGraph.Walk.IsPath.cons
+      · apply SimpleGraph.Walk.IsPath.cons
+        · exact SimpleGraph.Walk.IsPath.nil
+        · simpa using houtAdj.ne
+      · simp only [SimpleGraph.Walk.support_cons,
+          SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+          or_false, not_or]
+        exact ⟨hinAdj.ne, houterNe⟩
+
+/-- **L9 (literal local rail walks).** Every nonadjacent source Cell-3 flank
+quadruple constructs two simple exterior rail walks of total length two.  This
+is still one cell only; mutual support separation and lengthwise/end-cap
+assembly are stated and proved separately. -/
+theorem exists_sourceLocalRailWalkPair_of_nonadjacent
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {interior : CorridorInterior blockLength}
+    (placement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique interior)
+    (incomingBefore incomingAfter outgoingBefore outgoingAfter :
+      {position // position ∈ placementSidePositions placement})
+    (hincomingBefore : incomingBefore.1.val ≡
+      placement.incomingPosition.val + 1 [MOD 6])
+    (hincomingAfter : placement.incomingPosition.val ≡
+      incomingAfter.1.val + 1 [MOD 6])
+    (houtgoingBefore : placement.outgoingPosition.val ≡
+      outgoingBefore.1.val + 1 [MOD 6])
+    (houtgoingAfter : outgoingAfter.1.val ≡
+      placement.outgoingPosition.val + 1 [MOD 6])
+    (hnonadjacent : placement.rungType ≠ HexRungType.adjacent) :
+    Nonempty (SourceLocalRailWalkPair placement incomingBefore incomingAfter
+      outgoingBefore outgoingAfter) := by
+  rcases sourceLocalRailShape_of_nonadjacent placement incomingBefore
+      incomingAfter outgoingBefore outgoingAfter hincomingBefore hincomingAfter
+      houtgoingBefore houtgoingAfter hnonadjacent with ⟨shape⟩
+  exact ⟨sourceLocalRailWalkPairOfShape placement incomingBefore incomingAfter
+    outgoingBefore outgoingAfter shape⟩
+
 end LocalLayerFormation
 
 end Instance
