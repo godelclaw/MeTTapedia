@@ -69,7 +69,7 @@
 RG Contraction in the Wilson-Lattice / OS Route\\
 to a 4D Yang--Mills Mass Gap}
 \author{The MeTTapedia formalization effort}
-\date{July 2026}
+\date{August 2026}
 
 \begin{document}
 \maketitle
@@ -204,6 +204,26 @@ three still-conditional analytic factors gives budget $5544/5$, whose
 two-source arithmetic closes first at depth $15$. This is a quantitative
 tree-level constant-Cartan restoration theorem, not an interacting
 Symanzik theorem or a constructive continuum limit.
+
+A sixth machine-checked round makes the repaired finite relation target
+coordinate-free. For either relation policy, the invariant physical relation
+submodule $\mathcal J_p$ is defined as the preimage of the full physical
+relation range inside the signed $H(4)$-invariant orbit space. The exact
+off-shell-to-on-shell inclusion is proved. A family of $11{,}556$ transferred
+field-eight trace relations, an independent seven-to-eight commutator row, and
+an explicit four-to-five-field commutator row with Reynolds coordinate
+$-1/24$ give the certified bound
+\[
+  11558 \leq \dim_{\mathbb Q}\mathcal J_p.
+\]
+This is a lower bound, not a complete joint rank, quotient dimension, or
+conditioning certificate.
+
+\textsc{Ours:} the boundary-cochain, hypercubic, and joint-quotient
+constructions repair precise broken steps within the same Wilson lattice
+$\to$ extended-extraction RG $\to$ KP $\to$ glue $\to$ OS proof programme.
+They are not an alternative endpoint theorem, and they are not attributed to
+v14 where v14 does not contain them.
 
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
@@ -1666,9 +1686,15 @@ claim that the manuscript already contains the needed census.
     physical-quotient dimension is claimed from this evaluator here; a
     bounded certificate replay and a proof that Cartan specialization
     descends through the full joint relation quotient are still absent.  The
-    remaining finite problem is the
-    joint rank and conditioning after Bianchi, EOM, IBP, commutator, and trace
-    rows are assembled across all sectors.  The
+    coordinate-free joint physical relation submodule is now defined before
+    any row ordering, and its off-shell-to-on-shell inclusion is exact. The
+    $11{,}556$ transferred trace rows, one seven-to-eight commutator row, and
+    one four-to-five-field commutator row give a certified joint
+    relation-rank lower bound of $11{,}558$ for either policy; the last is
+    separated by an exact field-five Reynolds coordinate $-1/24$. The
+    remaining finite problem is the complete joint rank and conditioning after
+    Bianchi, EOM, IBP, commutator, and trace rows are assembled across all
+    sectors. The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
@@ -1677,8 +1703,8 @@ claim that the manuscript already contains the needed census.
 
 \subsection*{The remaining inputs}
 
-With the arithmetic and structural skeleton closed, the route now rests on the
-following inputs --- listed with their exact status in v14, since these are
+With the checked finite structural components in hand, the route now rests on
+the following inputs --- listed with their exact status in v14, since these are
 three different situations.
 
 \begin{enumerate}
@@ -1846,6 +1872,14 @@ field-count block-diagonal obstruction), together with
 \texttt{HypercubicDimension16JointPhysicalQuotient} (the canonical joint
 invariant relation preimage, coordinate-free scalar quotient, and exact
 off-shell/on-shell inclusion),
+\texttt{HypercubicDimension16FieldEightTracePhysicalLift} and
+\texttt{HypercubicDimension16JointTraceRankTransfer} (the actual
+field-eight lift and its $11{,}556$ independent invariant relation rows),
+\texttt{HypercubicDimension16JointTraceCommutatorRank} (the independent
+seven-to-eight commutator extension), and
+\texttt{HypercubicDimension16FieldFiveCommutatorSeparator} (the explicit
+four-to-five-field separator and the joint relation-rank lower bound
+$11{,}558$), together with
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),
@@ -1889,7 +1923,7 @@ to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
 no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
 Reconstruction} (v14); constructions explicitly labeled ours are independent
-formal repairs or tests, not claims about content already present in that
-manuscript.
+formal repairs within the same proof programme, not claims about content
+already present in that manuscript.
 
 \end{document}

@@ -27,6 +27,10 @@ Scope:
   load-bearing analytic theorem: it is exactly the bridge from the checked
   arithmetic recursion to the lattice mass-gap/clustering inputs needed by
   OS reconstruction.
+* OUR hypercubic and boundary-cochain constructions are repairs within the
+  same Wilson-lattice/RG/KP/OS proof programme. They replace false finite
+  bridges, are not attributed to v14, and still require a complete joint
+  relation census, conditioning, and analytic estimates.
 -/
 
 set_option autoImplicit false
@@ -254,9 +258,9 @@ def recombinationConstantSteelmanRow : CompletionSteelmanRow where
   label := "Extraction/recombination constant"
   verdict := .refutedOrInconsistent
   evidence :=
-    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. The later SU(2) lattice census audit refutes identifying the actual hypercubic Wilson sector with O.9's Lorentz-only census already at canonical dimension eight. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; the fluctuation big-O and raw cumulant-count pins show the other Appendix-O numerals require quantitative analytic estimates."
+    "WilsonBlockMajorant proves norm-one coordinate truncation on actual gauge-invariant finite Wilson observables. The later SU(2) lattice census audit refutes identifying the actual hypercubic Wilson sector with O.9's Lorentz-only census already at canonical dimension eight. projectionRangeSpecification_does_not_imply_bound_two refutes transfer from a range-only projection; the fluctuation big-O and raw cumulant-count pins show the other Appendix-O numerals require quantitative analytic estimates. OUR coordinate-free joint invariant relation target now has certified rank at least 11558, but not a complete rank or conditioning result."
   nextObligation :=
-    "Choose a replacement target: a hypercubic-complete lattice basis, or a separately proved continuum/Symanzik projection with a controlled Lorentz-breaking remainder. Then construct its dual jets, certify conditioning, and re-prove the rooted cumulant-generation/tree-graph bound in the same actual-map norm before rerunning the depth theorem."
+    "Complete the hypercubic joint relation census and its sparse conditioning certificate, construct Wilson-functional-to-cochain dual jets, and re-prove the rooted cumulant-generation/tree-graph bound in the same actual-map norm before rerunning the depth theorem."
 
 def supportRecurrenceSteelmanRow : CompletionSteelmanRow where
   item := 2
@@ -265,7 +269,7 @@ def supportRecurrenceSteelmanRow : CompletionSteelmanRow where
   evidence :=
     "benGlueSupport_safeBranch_uniform gives uniform support for coarsen-then-thicken; benGlueSupport_badBranch_unbounded shows thicken-only grows past every bound."
   nextObligation :=
-    "Manuscript must assert BenGlueUsesCoarsenThenThicken at the glue-support decision point."
+    "Prove that the actual glue follows coarsen-then-thicken, or replace the support step by a bounded recurrence theorem for the actual glue."
 
 def twoMarkedIdentitySteelmanRow : CompletionSteelmanRow where
   item := 3
@@ -274,7 +278,7 @@ def twoMarkedIdentitySteelmanRow : CompletionSteelmanRow where
   evidence :=
     "BenTwoMarkedCorrelationIdentityAPI states the needed centered/truncated identity; oneMarkedPushforward_does_not_imply_twoMarked_canary refutes deriving it from one-marked pushforward alone."
   nextObligation :=
-    "Prove the two-marked identity or carry it as an explicit named assumption."
+    "Derive the two-marked identity for the actual RG/glue maps, or retain it as an explicit mathematical premise of the conditional theorem."
 
 def kpWilsonSteelmanRow : CompletionSteelmanRow where
   item := 4
