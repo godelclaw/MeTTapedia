@@ -495,7 +495,7 @@
       ]
     },
     {
-      "id": "runtime.format-codes",
+      "id": "runtime.format",
       "project": "swi-prolog",
       "sources": ["src/os/pl-fmt.c"],
       "anchors": [
@@ -518,7 +518,11 @@
       "swi_conformance_status": "partial",
       "swi_conformance_evidence": [
         "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh",
         "scripts/prolog/pinned_parser_source_runtime.lean",
+        "scripts/prolog/pinned_petta_registration_oracle.pl",
         "scripts/prolog/run_pinned_parser_source_runtime.sh"
       ]
     },

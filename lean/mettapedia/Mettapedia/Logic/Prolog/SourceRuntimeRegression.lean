@@ -48,6 +48,85 @@ def fact (name : String) (arguments : List SourceSignature.Term) :
   body := .succeed
 }
 
+/-! ## Explicit `format/2` observations -/
+
+def format2AtomicOutput : SourceSignature.Goal :=
+  SourceSignature.call "format" [
+    SourceSignature.string "~w~n",
+    SourceSignature.list [SourceSignature.atom "a"]
+  ]
+
+def format2StringOutput : SourceSignature.Goal :=
+  SourceSignature.call "format" [
+    SourceSignature.string "~w~n",
+    SourceSignature.list [SourceSignature.string "rendered"]
+  ]
+
+def format2UnsupportedDirective : SourceSignature.Goal :=
+  SourceSignature.call "format" [
+    SourceSignature.string "~q",
+    SourceSignature.list [SourceSignature.atom "a"]
+  ]
+
+/-- Advance the one shared session until its first exact output observation.
+Answers, failure, and terminal results cannot be mistaken for text. -/
+def firstOutput : Nat → Session → Option (String × Session)
+  | 0, _ => none
+  | fuel + 1, session =>
+      match RuntimeControl.stepSession session with
+      | .terminal _ _ => none
+      | .next resumed none => firstOutput fuel resumed
+      | .next resumed (some (.output text)) => some (text, resumed)
+      | .next resumed (some (.answer _)) => firstOutput fuel resumed
+
+/-- `format/2` emits before the ordinary answer and leaves no heap or trail
+debris after the answer stream completes. -/
+def format2OutputTrace : Option (String × Nat × Nat) :=
+  match SourceRuntime.openEmpty [] format2AtomicOutput with
+  | .error _ => none
+  | .ok session =>
+      match firstOutput 128 session with
+      | some ("a\n", afterOutput) =>
+          match SourceRuntime.pullSession 128 afterOutput with
+          | .answer _ afterAnswer =>
+              match SourceRuntime.pullSession 128 afterAnswer with
+              | .terminal (.completed memory) _ =>
+                  some ("a\n", memory.heap.size, memory.trail.size)
+              | _ => none
+          | _ => none
+      | _ => none
+
+def format2EmitsExactOutput : Bool :=
+  format2OutputTrace == some ("a\n", 0, 0)
+
+def format2StringOutputTrace : Option (String × Nat × Nat) :=
+  match SourceRuntime.openEmpty [] format2StringOutput with
+  | .error _ => none
+  | .ok session =>
+      match firstOutput 128 session with
+      | some ("rendered\n", afterOutput) =>
+          match SourceRuntime.pullSession 128 afterOutput with
+          | .answer _ afterAnswer =>
+              match SourceRuntime.pullSession 128 afterAnswer with
+              | .terminal (.completed memory) _ =>
+                  some ("rendered\n", memory.heap.size, memory.trail.size)
+              | _ => none
+          | _ => none
+      | _ => none
+
+def format2WritesStringPayload : Bool :=
+  format2StringOutputTrace == some ("rendered\n", 0, 0)
+
+/-- Unknown format directives are visible runtime errors, never omitted text
+or ordinary Prolog failure. -/
+def format2RejectsUnsupportedDirective : Bool :=
+  match SourceRuntime.openEmpty [] format2UnsupportedDirective with
+  | .error _ => false
+  | .ok session =>
+      match SourceRuntime.pullSession 128 session with
+      | .terminal (.runtimeError .unsupportedFormatDirective _) _ => true
+      | _ => false
+
 private def answerAtom? (answer : LP.RuntimeQuery.Answer Sigma) :
     Option String :=
   match answer.queryVarMap with
@@ -2347,5 +2426,8 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
   | some .predicateIndicatorUnbound => true
   | _ => false
 #guard runCount [] assertedPredicateBecomesCurrent == some (1, 0, 0)
+#guard format2EmitsExactOutput
+#guard format2WritesStringPayload
+#guard format2RejectsUnsupportedDirective
 
 end Mettapedia.Logic.Prolog.SourceRuntimeRegression

@@ -32,6 +32,7 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.termTestStep_properList_rejects
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_termTest
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.formatStep_codes_of_decode
+#print axioms Mettapedia.Logic.LP.RuntimeQuery.formatStep_output_of_decode
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.formatStep_error_of_decode
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.dispatchActionWith_format
 #print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_format

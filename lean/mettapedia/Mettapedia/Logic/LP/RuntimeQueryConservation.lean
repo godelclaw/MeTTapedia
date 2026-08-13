@@ -334,8 +334,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
       .findall template (generator.map instruction) bag encoding
   | .metaCall callable extraArgs => .metaCall callable extraArgs
   | .dcgCall body input rest => .dcgCall body input rest
-  | .format destination format arguments decoder =>
-      .format destination format arguments decoder
+  | .format request decoder => .format request decoder
   | .textConversion text codes decoder =>
       .textConversion text codes decoder
   | .binaryTest left right decoder =>
@@ -1056,9 +1055,8 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,
                   mapReturnFrame, mapStepResult, failWith, closeMemory,
                   hCleanup]
-          | format destination format arguments decoder =>
-              cases hDecode : decoder.decode memory.heap destination format
-                  arguments with
+          | format request decoder =>
+              cases hDecode : decoder.decode memory.heap request with
               | error reason =>
                   cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                     simp [mapDispatchAction, dispatchActionStep, formatStep,
@@ -1095,6 +1093,10 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                                 dcgAddressTerminalsStep, mapState, mapControl,
                                 mapAttempt, mapPhase, mapReturnFrame,
                                 mapStepResult, hDecode, hAllocate, hSegment]
+                  | output text =>
+                      simp [mapDispatchAction, dispatchActionStep, formatStep,
+                        mapState, mapControl, mapPhase, mapReturnFrame,
+                        mapStepResult, hDecode]
           | textConversion text codes decoder =>
               cases hDecode : decoder.decode memory.heap text codes with
               | error reason =>
@@ -1787,7 +1789,10 @@ theorem pullCore_conserves [DecidableEq sigma.scoped.vars]
       | next next observation =>
           cases observation with
           | none => exact inductionHypothesis next
-          | some observation => cases observation; rfl
+          | some observation =>
+              cases observation with
+              | answer _ => rfl
+              | output _ => exact inductionHypothesis next
 
 end Conservation
 end Mettapedia.Logic.LP.RuntimeQuery

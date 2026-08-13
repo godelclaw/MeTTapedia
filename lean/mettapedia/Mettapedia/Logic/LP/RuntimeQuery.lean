@@ -177,24 +177,32 @@ def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
   decode _ _ _ := .error .unsupportedInstruction
   decodeDcg _ _ _ _ := .error .unsupportedInstruction
 
-/-- A pure formatted-output plan.  The decoder may name language-owned list
-symbols, constants, and existing heap roots, but it carries no continuation,
-checkpoint, choice, or answer authority.  The shared engine performs every
-allocation and the final unification. -/
+/-- The two SWI-style formatting call shapes.  A realization classifies only
+the call's existing roots; it cannot inspect the heap, choose the text, or
+perform the observation. -/
+inductive FormatRequest where
+  | codes (destination format arguments : Addr)
+  | output (format arguments : Addr)
+
+/-- A pure formatting plan.  The decoder may name language-owned list symbols,
+constants, existing heap roots, or one text observation, but it carries no
+continuation, checkpoint, choice, or answer authority.  The shared engine
+performs every allocation, unification, and observable transition. -/
 inductive FormatPlan (σ : LPSignature) where
   | codes (encoding : CollectionEncoding σ) (head tail : Addr)
       (values : List σ.constants)
+  | output (text : String)
 
 /-- Read-only interpretation of `format/3` roots.  This follows the same
 capability boundary as meta-call and DCG decoding: the language may interpret
 its own atomic payloads, while the engine retains all mutation and control. -/
 structure FormatDecoder (σ : LPSignature) where
-  decode : Heap σ.scoped → Addr → Addr → Addr →
+  decode : Heap σ.scoped → FormatRequest →
     Except QueryError (FormatPlan σ)
 
 /-- Runtimes without formatted output fail closed. -/
 def rejectingFormatDecoder (σ : LPSignature) : FormatDecoder σ where
-  decode _ _ _ _ := .error .unsupportedInstruction
+  decode _ _ := .error .unsupportedInstruction
 
 /-- A read-only host text capability sees only the immutable heap roots that
 name a path and an options list.  Its result is one atomic language value;
@@ -1613,6 +1621,9 @@ structure Answer (σ : LPSignature) where
 
 inductive Observation (σ : LPSignature) where
   | answer (value : Answer σ)
+  /-- One exact text payload emitted by a shared runtime transition.  Output
+  is not an answer and is never elided by the step-level interface. -/
+  | output (text : String)
 
 /-- Persistent session operations recognized by a language realization.
 The shared engine owns instruction consumption and continuation order, while a
@@ -3159,13 +3170,16 @@ root is shared, and only the canonical graph unifier may bind the output. -/
 def formatStep {σ : LPSignature}
     (decoder : FormatDecoder σ)
     (state : StateCore σ Instruction SourceClause)
-    (destination format arguments : Addr)
+    (request : FormatRequest)
     (continuation : List Instruction) :
     StepResultCore σ Instruction SourceClause :=
-  match decoder.decode state.memory.heap destination format arguments with
+  match decoder.decode state.memory.heap request with
   | .error reason => failWith state reason
   | .ok (.codes encoding head tail values) =>
       dcgConstantTerminalsStep state encoding values head tail continuation
+  | .ok (.output text) =>
+      .next { state with control := { state.control with current := continuation } }
+        (some (.output text))
 
 /-- Enter body unification through the same canonical graph unifier used for
 clause heads.  SWI-Prolog V10.1.9 likewise routes `=/2` through `PL_unify`
@@ -4059,7 +4073,7 @@ inductive DispatchAction (σ : LPSignature)
       (encoding : CollectionEncoding σ)
   | metaCall (callable : Addr) (extraArgs : List Addr)
   | dcgCall (body input rest : Addr)
-  | format (destination format arguments : Addr) (decoder : FormatDecoder σ)
+  | format (request : FormatRequest) (decoder : FormatDecoder σ)
   | textConversion (text codes : Addr) (decoder : TextConversionDecoder σ)
   | binaryTest (left right : Addr) (decoder : BinaryTestDecoder σ)
   | termCompare (result left right : Addr) (decoder : TermCompareDecoder σ)
@@ -4212,8 +4226,8 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
       metaCallStep decoder state callable extraArgs rest
   | .dcgCall body input restRoot =>
       dcgCallStep decoder state body input restRoot rest
-  | .format destination format arguments formatDecoder =>
-      formatStep formatDecoder state destination format arguments rest
+  | .format request formatDecoder =>
+      formatStep formatDecoder state request rest
   | .textConversion text codes textDecoder =>
       textConversionStep textDecoder state text codes rest
   | .binaryTest left right testDecoder =>
@@ -4760,13 +4774,25 @@ continuation. -/
 theorem formatStep_codes_of_decode {σ : LPSignature}
     (decoder : FormatDecoder σ)
     (state : StateCore σ Instruction SourceClause)
-    (destination format arguments head tail : Addr)
+    (request : FormatRequest) (head tail : Addr)
     (continuation : List Instruction) (encoding : CollectionEncoding σ)
     (values : List σ.constants)
-    (hDecode : decoder.decode state.memory.heap destination format arguments =
+    (hDecode : decoder.decode state.memory.heap request =
       .ok (.codes encoding head tail values)) :
-    formatStep decoder state destination format arguments continuation =
+    formatStep decoder state request continuation =
       dcgConstantTerminalsStep state encoding values head tail continuation := by
+  simp [formatStep, hDecode]
+
+/-- A decoded default-stream format emits exactly one text observation while
+continuing at the supplied shared-engine continuation. -/
+theorem formatStep_output_of_decode {σ : LPSignature}
+    (decoder : FormatDecoder σ)
+    (state : StateCore σ Instruction SourceClause)
+    (request : FormatRequest) (continuation : List Instruction) (text : String)
+    (hDecode : decoder.decode state.memory.heap request = .ok (.output text)) :
+    formatStep decoder state request continuation =
+      .next { state with control := { state.control with current := continuation } }
+        (some (.output text)) := by
   simp [formatStep, hDecode]
 
 /-- Formatter rejection remains a typed runtime error and cannot become
@@ -4774,11 +4800,11 @@ ordinary Prolog failure. -/
 theorem formatStep_error_of_decode {σ : LPSignature}
     (decoder : FormatDecoder σ)
     (state : StateCore σ Instruction SourceClause)
-    (destination format arguments : Addr)
+    (request : FormatRequest)
     (continuation : List Instruction) (reason : QueryError)
-    (hDecode : decoder.decode state.memory.heap destination format arguments =
+    (hDecode : decoder.decode state.memory.heap request =
       .error reason) :
-    formatStep decoder state destination format arguments continuation =
+    formatStep decoder state request continuation =
       failWith state reason := by
   simp [formatStep, hDecode]
 
@@ -5204,6 +5230,10 @@ def pullCoreWithMeta {σ : LPSignature} [DecidableEq σ.scoped.vars]
       | .next next none =>
           pullCoreWithMeta materializer decoder classify fuel next
       | .next next (some (.answer answer)) => .answer answer next
+      /- `pull` is the answer-only convenience interface. Step consumers see
+      output observations directly; answer iteration advances past them. -/
+      | .next next (some (.output _)) =>
+          pullCoreWithMeta materializer decoder classify fuel next
       | .databaseRequest _ next =>
           failPullWith next .unhandledDatabaseRequest
 
@@ -5258,6 +5288,7 @@ theorem pullCore_succ {σ : LPSignature} [DecidableEq σ.constants]
       | .terminal result => .terminal result
       | .next next none => pullCore materializer classify fuel next
       | .next next (some (.answer answer)) => .answer answer next
+      | .next next (some (.output _)) => pullCore materializer classify fuel next
       | .databaseRequest _ next =>
           failPullWith next .unhandledDatabaseRequest := by
   change
@@ -5271,7 +5302,7 @@ theorem pullCore_succ {σ : LPSignature} [DecidableEq σ.constants]
       cases observation with
       | none =>
           exact pullCoreWithMeta_rejecting materializer classify fuel next
-      | some observation => cases observation; rfl
+      | some observation => cases observation <;> rfl
 
 /-- The established LP demand-driven specialization. -/
 def pull {σ : LPSignature} [DecidableEq σ.vars]

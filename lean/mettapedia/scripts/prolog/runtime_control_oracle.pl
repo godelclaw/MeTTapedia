@@ -31,6 +31,14 @@ emit_count(Label, Goal) :-
     length(Answers, Count),
     format('~w=~w~n', [Label, Count]).
 
+emit_output_codes(Label, Goal) :-
+    with_output_to(string(Output), findall(1, Goal, Answers)),
+    string_codes(Output, Codes),
+    maplist(number_string, Codes, Rendered),
+    atomic_list_concat(Rendered, ',', Joined),
+    Answers = [1],
+    format('~w=~w~n', [Label, Joined]).
+
 emit_compare_error(Label, Goal) :-
     catch((Goal -> Outcome = success ; Outcome = failure),
           Error, Outcome = error(Error)),
@@ -49,6 +57,8 @@ emit_bags(Label, Goal, Bag) :-
     format('~w=~w~n', [Label, Joined]).
 
 main(_) :-
+    emit_output_codes(format2_atomic_output, format('~w~n', [a])),
+    emit_output_codes(format2_string_output, format('~w~n', ["rendered"])),
     emit(source_order, (X = a ; X = b), X),
     emit(restore_before_right, (Y = a, fail ; var(Y), Y = b), Y),
     emit(cut_prunes_right, (Z = a, ! ; Z = b), Z),

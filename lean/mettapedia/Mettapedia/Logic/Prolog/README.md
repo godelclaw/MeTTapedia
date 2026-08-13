@@ -89,6 +89,25 @@ The four runtime-error boundary cases (`\+ 3`, `\+ G`, `findall(_, G, _)`,
 as theorem-level error-class declarations in [RuntimeErrorSpec.lean](RuntimeErrorSpec.lean)
 rather than executed in `PrologEval`.
 
+## SWI design provenance and self-contained boundary
+
+The canonical runtime is Lean-native and is **not** a clean-room project:
+individual mechanisms were designed while consulting pinned SWI-Prolog source
+and are checked against SWI's observable behavior.  The per-mechanism source
+anchors, implementation evidence, proof status, and differential evidence are
+hash-pinned in [SWI_PROVENANCE.json](SWI/SWI_PROVENANCE.json).  The accompanying
+[BSD-2-Clause notice](SWI/THIRD_PARTY_NOTICES) is retained for this
+source-informed work; it does not turn the Lean implementation into a second
+SWI codebase.
+
+PeTTa's own Prolog files are application inputs: parsing and executing them is
+the compatibility goal.  In contrast, a pinned-source integration canary may
+temporarily load SWI library source to expose a missing Lean-Prolog capability.
+Such a canary is evidence of the gap, not a self-contained runtime claim.
+The self-contained boundary advances only when the required library behavior is
+implemented in the canonical Lean runtime and the integration canary no longer
+needs that borrowed source.
+
 ## Related
 
 - [LP kernel](../LP) — unification, SLD resolution, Herbrand semantics
@@ -116,4 +135,4 @@ engine); it is evidence of conformance, not part of the Lean kernel guarantee.
 - Paulo Moura, [Logtalk Prolog conformance test suite](https://github.com/LogtalkDotOrg/logtalk3/tree/master/tests/prolog) — the upstream source of the 63 ISO test IDs.
 
 ---
-*Status updated 2026-08-12; the module table above is the maintained scope record.*
+*Status updated 2026-08-13; the module table above is the maintained scope record.*

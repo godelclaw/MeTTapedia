@@ -590,6 +590,51 @@ def requireWorldTermWith
   | .terminal (.raised packet _) _ =>
       throw <| IO.userError s!"{label}: raised: {renderTerm packet.term}"
 
+/-- Collect every output observation before the next answer.  Unlike
+`pullSession`, this is a trace-facing helper: an extra or reordered diagnostic
+cannot be hidden by answer-oriented iteration. -/
+def outputsUntilAnswer : Nat → SourceRuntime.Session → List String →
+    Option (List String × LP.RuntimeQuery.Answer SourceRuntime.Sigma × SourceRuntime.Session)
+  | 0, _, _ => none
+  | fuel + 1, session, reversed =>
+      match RuntimeControl.stepSession session with
+      | .terminal _ _ => none
+      | .next resumed none => outputsUntilAnswer fuel resumed reversed
+      | .next resumed (some (.output text)) =>
+          outputsUntilAnswer fuel resumed (text :: reversed)
+      | .next resumed (some (.answer answer)) =>
+          some (reversed.reverse, answer, resumed)
+
+/-- Require one exact output trace before one exact answer from an actual
+source goal.  This uses the session-step interface deliberately: `pullSession`
+is answer-oriented and therefore passes output observations through. -/
+def requireWorldOutputTermWith
+    (services : RuntimeControl.Services SourceRuntime.Sigma)
+    (world : ReaderLoadRuntime.World) (label : String)
+    (goal : SourceSignature.Goal) (expectedOutput : String)
+    (expected : SourceSignature.Term) : IO ReaderLoadRuntime.World := do
+  let session ← match RuntimeControl.openSessionWorldWith services world goal with
+    | .ok session => pure session
+    | .error error =>
+        throw <| IO.userError s!"{label}: failed to open: {repr error}"
+  let (outputs, answer, resumed) ← match outputsUntilAnswer 131072 session [] with
+    | some result => pure result
+    | none => throw <| IO.userError s!"{label}: no output followed by an answer"
+  if outputs != [expectedOutput] then
+    throw <| IO.userError s!"{label}: expected output trace {repr [expectedOutput]}, \
+      got {repr outputs}"
+  let actual ← match answerTermInWorld? answer with
+    | some term => pure term
+    | none => throw <| IO.userError s!"{label}: answer readback failed"
+  let actualShape := SourceRuntimeRegression.runtimeTermShape actual
+  let expectedShape :=
+    SourceRuntimeRegression.runtimeTermShape (LP.Term.atScope 0 expected)
+  if actualShape != expectedShape then
+    throw <| IO.userError s!"{label}: expected {repr expectedShape}, \
+      got {repr actualShape}"
+  IO.println s!"{label}=exact"
+  pure resumed.commitWorld
+
 def checkRead (program : SourceSignature.Program) (label : String)
     (codes : List Int) (expected : SourceSignature.Term) : IO Unit :=
   checkGoal program label (readQuery codes) expected
@@ -807,21 +852,19 @@ def main (arguments : List String) : IO Unit := do
     (SourceSignature.call "file-id" [
       SourceSignature.atom "a", .var termIdentity])
     (SourceSignature.atom "a")
-  /- `identity.metta` calls PeTTa's diagnostic `test/3`. Variant equality
-  `=@=/2` now succeeds through the canonical read-only graph relation, leaving
-  observable `format/2` as the unimplemented dependency. Pin the current empty
-  first result separately from SWI's `[true]` so the output-effect gap cannot
-  borrow this file PASS. -/
-  let identityGapWorld ← requireWorldTermWith fileServices silentWorld
-    "metta_identity_output_gap_lean_empty"
+  /- `identity.metta` calls PeTTa's diagnostic `test/3`.  The loader must
+  retain its true result after the diagnostic's observable `format/2` step. -/
+  let identityWorld ← requireWorldOutputTermWith fileServices silentWorld
+    "metta_identity_format_output_and_result"
       (SourceSignature.call "load_metta_file" [
         SourceSignature.string identityInputPath,
         .var termIdentity,
         SourceSignature.atom "&self"
       ])
-      (SourceSignature.list [])
-  checkDatabaseGoal identityGapWorld.database
-    "metta_identity_definition_despite_output_gap"
+      "is 1, should 1. ✅ \n"
+      (SourceSignature.list [SourceSignature.atom "true"])
+  checkDatabaseGoal identityWorld.database
+    "metta_identity_definition_after_format"
     (SourceSignature.call "f" [
       SourceSignature.integer 3, .var termIdentity])
     (SourceSignature.integer 9)

@@ -373,12 +373,15 @@ def dcgCall? (goal : RuntimeAtom Sigma.scoped) :
       if goal.symbol.arity = 3 then some (body, input, rest) else none
   | _, _ => none
 
-/-- Recognize only `format/3`; the classifier exposes roots but does not read
-the destination, format text, or argument list. -/
-def format? (goal : RuntimeAtom Sigma.scoped) : Option (Addr × Addr × Addr) :=
+/-- Recognize `format/2` and `format/3`; the classifier exposes only existing
+roots and does not read the destination, format text, or argument list. -/
+def format? (goal : RuntimeAtom Sigma.scoped) : Option LP.RuntimeQuery.FormatRequest :=
   match goal.symbol.name, goal.args.toList with
+  | "format", [format, arguments] =>
+      if goal.symbol.arity = 2 then .some (.output format arguments)
+      else none
   | "format", [destination, format, arguments] =>
-      if goal.symbol.arity = 3 then some (destination, format, arguments)
+      if goal.symbol.arity = 3 then .some (.codes destination format arguments)
       else none
   | _, _ => none
 
@@ -411,7 +414,7 @@ private def formatText (heap : Heap Sigma.scoped) (address : Addr) :
   | _ => .error .invalidFormatString
 
 /-- The first source-execution fragment needs SWI's default `~w` rendering of
-one atom or integer.  Compound, floating-point, and string writing and the
+one atom, integer, or string.  Compound and floating-point writing and the
 other format directives remain typed unsupported cases rather than being
 approximated. -/
 private def renderWriteAtomic (heap : Heap Sigma.scoped) (address : Addr) :
@@ -420,32 +423,69 @@ private def renderWriteAtomic (heap : Heap Sigma.scoped) (address : Addr) :
   match cell with
   | .const (.atom value) => pure value
   | .const (.integer value) => pure (toString value)
+  /- PeTTa's `swrite/2` produces a Prolog string and SWI's `~w` writes its
+  payload without the source-level string quotes. -/
+  | .const (.string value) => pure value
   | .var _ none => .error .invalidFormatArguments
   | _ => .error .unsupportedFormatDirective
 
-/-- Decode the pure `format(codes(Head,Tail), '~w', [Atomic])` fragment used
-by SWI's real `dcg/basics:atom//1`.  It produces only a codes plan; allocation,
-difference-list sharing, unification, and continuation remain engine-owned. -/
-def decodeFormat (heap : Heap Sigma.scoped) (destination format arguments : Addr) :
-    Except LP.RuntimeQuery.QueryError (LP.RuntimeQuery.FormatPlan Sigma) := do
-  let destinationCell ← dereferencedCell heap destination
-  let (head, tail) ←
-    match destinationCell with
-    | .app symbol roots =>
-        match symbol.name, symbol.arity, roots.toList with
-        | "codes", 2, [head, tail] => pure (head, tail)
-        | _, _, _ => .error .invalidFormatDestination
-    | _ => .error .invalidFormatDestination
-  let text ← formatText heap format
-  if text != "~w" then .error .unsupportedFormatDirective else
-  let argumentRoots ←
-    LP.RuntimeQuery.decodeAddressList collectionEncoding heap arguments
-  let argument ←
-    match argumentRoots with
-    | [argument] => pure argument
-    | _ => .error .invalidFormatArguments
-  let rendered ← renderWriteAtomic heap argument
-  pure (.codes collectionEncoding head tail (stringCodeConstants rendered))
+/-- Render the deliberately small, exact `format/2` fragment needed by the
+currently supported source path.  It owns no heap mutation: every `~w` reads
+one existing atomic root, while `~n` and `~~` consume no argument.  Other
+directives remain structured errors rather than guessed output. -/
+private def renderFormatAux (heap : Heap Sigma.scoped) :
+    List Char → List Addr → Except LP.RuntimeQuery.QueryError (List Char)
+  | [], [] => .ok []
+  | [], _ => .error .invalidFormatArguments
+  | '~' :: 'w' :: formatTail, argument :: argumentTail => do
+      let rendered ← renderWriteAtomic heap argument
+      let tail ← renderFormatAux heap formatTail argumentTail
+      pure (rendered.toList ++ tail)
+  | '~' :: 'n' :: formatTail, arguments => do
+      let tail ← renderFormatAux heap formatTail arguments
+      pure ('\n' :: tail)
+  | '~' :: '~' :: formatTail, arguments => do
+      let tail ← renderFormatAux heap formatTail arguments
+      pure ('~' :: tail)
+  | '~' :: _, _ => .error .unsupportedFormatDirective
+  | character :: formatTail, arguments => do
+      let tail ← renderFormatAux heap formatTail arguments
+      pure (character :: tail)
+
+private def renderFormat (heap : Heap Sigma.scoped) (format : String)
+    (arguments : List Addr) : Except LP.RuntimeQuery.QueryError String := do
+  String.ofList <$> renderFormatAux heap format.toList arguments
+
+/-- Decode the two currently supported formatting shapes. `format/3` remains
+the pure codes-difference-list fragment used by `dcg/basics:atom//1`; `format/2`
+returns one explicit text observation. Allocation, difference-list sharing,
+unification, continuation, and event delivery remain engine-owned. -/
+def decodeFormat (heap : Heap Sigma.scoped) : LP.RuntimeQuery.FormatRequest →
+    Except LP.RuntimeQuery.QueryError (LP.RuntimeQuery.FormatPlan Sigma)
+  | .codes destination format arguments => do
+      let destinationCell ← dereferencedCell heap destination
+      let (head, tail) ←
+        match destinationCell with
+        | .app symbol roots =>
+            match symbol.name, symbol.arity, roots.toList with
+            | "codes", 2, [head, tail] => pure (head, tail)
+            | _, _, _ => .error .invalidFormatDestination
+        | _ => .error .invalidFormatDestination
+      let text ← formatText heap format
+      if text != "~w" then .error .unsupportedFormatDirective else
+      let argumentRoots ←
+        LP.RuntimeQuery.decodeAddressList collectionEncoding heap arguments
+      let argument ←
+        match argumentRoots with
+        | [argument] => pure argument
+        | _ => .error .invalidFormatArguments
+      let rendered ← renderWriteAtomic heap argument
+      pure (.codes collectionEncoding head tail (stringCodeConstants rendered))
+  | .output format arguments => do
+      let text ← formatText heap format
+      let argumentRoots ←
+        LP.RuntimeQuery.decodeAddressList collectionEncoding heap arguments
+      pure (.output (← renderFormat heap text argumentRoots))
 
 private inductive TextConversionKind where
   | atom

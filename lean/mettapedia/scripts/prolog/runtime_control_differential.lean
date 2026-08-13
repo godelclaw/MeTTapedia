@@ -36,6 +36,14 @@ def renderStringAnswers (label : String) :
       throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
   | none => throw <| IO.userError s!"{label}: runtime did not close"
 
+def renderOutputCodes (label : String) : Option (String × Nat × Nat) → IO Unit
+  | some (text, 0, 0) =>
+      let codes := text.toList.map fun character => toString character.toNat
+      IO.println s!"{label}={String.intercalate "," codes}"
+  | some (_, heapSize, trailSize) =>
+      throw <| IO.userError s!"{label}: cleanup left heap={heapSize}, trail={trailSize}"
+  | none => throw <| IO.userError s!"{label}: no exact output-and-answer trace"
+
 def renderCount (label : String) : Option (Nat × Nat × Nat) -> IO Unit
   | some (count, 0, 0) => IO.println s!"{label}={count}"
   | some (_, heapSize, trailSize) =>
@@ -81,6 +89,10 @@ def renderBool (label : String) (value : Bool) : IO Unit :=
   IO.println s!"{label}={if value then 1 else 0}"
 
 def main : IO Unit := do
+  renderOutputCodes "format2_atomic_output"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.format2OutputTrace
+  renderOutputCodes "format2_string_output"
+    Mettapedia.Logic.Prolog.SourceRuntimeRegression.format2StringOutputTrace
   renderAnswers "source_order" (runTyped [] disjSourceOrder)
   renderAnswers "restore_before_right" (runTyped [] disjRestoresBeforeRight)
   renderAnswers "cut_prunes_right" (runTyped [] disjCutPrunesRight)

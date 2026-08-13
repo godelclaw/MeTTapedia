@@ -94,8 +94,8 @@ metta_silent_setup=exact
 metta_read_file_capability=exact
 metta_load_file=exact
 metta_loaded_file_definition=exact
-metta_identity_output_gap_lean_empty=exact
-metta_identity_definition_despite_output_gap=exact
+metta_identity_format_output_and_result=exact
+metta_identity_definition_after_format=exact
 metta_fun_id_registered=exact
 metta_id_direct=exact
 metta_copy_term_direct=exact
@@ -143,8 +143,8 @@ swipl -q -f scripts/prolog/pinned_petta_registration_oracle.pl -- \
   > "$TMP/swi-registration.out"
 printf '%s\n' 'metta_silent_setup=exact' \
   'metta_load_file=exact' 'metta_loaded_file_definition=exact' \
-  'metta_identity_output_gap_swi_true=exact' \
-  'metta_identity_definition_swi=exact' \
+  'metta_identity_format_output_and_result=exact' \
+  'metta_identity_definition_after_format=exact' \
   'metta_fun_id_registered=exact' 'metta_id_direct=exact' \
   'metta_term_variables_direct=exact' \
   'metta_numbervars_direct=exact' \
@@ -176,4 +176,4 @@ printf '%s\n' 'metta_silent_setup=exact' \
   > "$TMP/swi-registration.expected"
 diff -u "$TMP/swi-registration.expected" "$TMP/swi-registration.out"
 
-echo "Pinned PeTTa source runtime: PASS (actual .metta file, parser wrappers, atomic/compound eval, and source registration exact; format/2 output gap pinned separately)"
+echo "Pinned PeTTa source runtime: PASS (actual .metta file, parser wrappers, atomic/compound eval, source registration, and exact format/2 output trace)"

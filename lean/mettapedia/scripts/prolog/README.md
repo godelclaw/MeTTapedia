@@ -253,14 +253,13 @@ The same file is passed to SWI and must produce the exact `[a]` result and a
 persistently callable `file-id/2` definition.  The capability is disabled in
 ordinary source services, accepts only the `read_file_to_string(Path,Text,[])`
 fragment, and cannot construct goals, clauses, continuations, or answers.
-`library(pcre)` remains an external obligation.  A separate expected-
-divergence canary pins `identity.metta`: SWI obtains `[true]`, while the Lean
-runtime currently obtains `[]` because PeTTa's diagnostic `test/3` depends on
-observable `format/2`, whose output-effect transition is not implemented yet.
-Variant equality `=@=/2`, previously the first failing goal in `test/3`, is
-now covered by the shared read-only graph relation and exact SWI differential.
-The test deliberately does not replace the remaining effect with silent
-success.
+`library(pcre)` remains an external obligation.  The `identity.metta` canary
+now requires the same singleton output trace `is 1, should 1. ✅ \n` and
+the same `[true]` result on Lean and SWI.  PeTTa's diagnostic `test/3` emits
+that text through the shared runtime's explicit `format/2` observation, rather
+than treating the effect as silent success.  Variant equality `=@=/2`, the
+other prerequisite of `test/3`, is covered by the same read-only graph
+relation and exact SWI differential.
 The world returned by `process_metta_string/2` is then reused as a persistent
 database, and a fresh query executes `fresh-id(a, Out)` again with exact
 `Out = a` and empty query-local heap/trail cleanup.  This distinguishes an

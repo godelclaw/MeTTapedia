@@ -463,10 +463,10 @@ structure Services (sigma : LP.LPSignature) where
   integerComparison? : RuntimeAtom sigma.scoped →
     Option (Addr × Addr × LP.RuntimeQuery.IntegerComparison ×
       LP.RuntimeQuery.IntegerArithmeticEncoding sigma) := fun _ => none
-  /-- Recognize `format/3` without inspecting its roots.  Read-only payload
-  decoding is a separate capability; allocation and unification remain in the
-  shared engine. -/
-  format? : RuntimeAtom sigma.scoped → Option (Addr × Addr × Addr) :=
+  /-- Recognize one `format/2` or `format/3` call without inspecting its
+  roots. Read-only payload decoding is a separate capability; allocation,
+  unification, and output observation remain in the shared engine. -/
+  format? : RuntimeAtom sigma.scoped → Option LP.RuntimeQuery.FormatRequest :=
     fun _ => none
   formatter : LP.RuntimeQuery.FormatDecoder sigma :=
     LP.RuntimeQuery.rejectingFormatDecoder sigma
@@ -696,9 +696,7 @@ def dispatchActionWith {sigma : LP.LPSignature}
                                     encoding
                               | none =>
                                   match services.format? goal with
-                                  | some (destination, format, arguments) =>
-                                      .format destination format arguments
-                                        services.formatter
+                                  | some request => .format request services.formatter
                                   | none =>
                                       match services.textConversion? goal with
                                       | some (text, codes, decoder) =>
@@ -879,12 +877,12 @@ theorem dispatchActionWith_integerComparison {sigma : LP.LPSignature}
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison]
 
-/-- `format/3` classification exposes only its three existing roots and one
-read-only decoder.  No heap result is computed by the classifier. -/
+/-- A formatting call exposes only its existing roots and one read-only
+decoder. No heap result or output is computed by the classifier. -/
 theorem dispatchActionWith_format {sigma : LP.LPSignature}
     [DecidableEq sigma.relationSymbols]
     (services : Services sigma) (program : Program sigma)
-    (goal : RuntimeAtom sigma.scoped) (destination format arguments : Addr)
+    (goal : RuntimeAtom sigma.scoped) (request : LP.RuntimeQuery.FormatRequest)
     (hDatabase : services.databaseRequest? goal = none)
     (hMeta : services.metaCall? goal = none)
     (hTest : services.termTest? goal = none)
@@ -892,10 +890,9 @@ theorem dispatchActionWith_format {sigma : LP.LPSignature}
     (hUniv : services.univ? goal = none)
     (hIs : services.integerIs? goal = none)
     (hComparison : services.integerComparison? goal = none)
-    (hFormat : services.format? goal =
-      some (destination, format, arguments)) :
+    (hFormat : services.format? goal = some request) :
     dispatchActionWith services program (.call goal) =
-      .format destination format arguments services.formatter := by
+      .format request services.formatter := by
   simp [dispatchActionWith, hDatabase, hMeta, hTest, hRelation, hUniv, hIs,
     hComparison, hFormat]
 
@@ -1878,5 +1875,6 @@ def pullSession {sigma : LP.LPSignature} [DecidableEq sigma.scoped.vars]
       | .terminal result world => .terminal result world
       | .next next none => pullSession fuel next
       | .next next (some (.answer answer)) => .answer answer next
+      | .next next (some (.output _)) => pullSession fuel next
 
 end Mettapedia.Logic.Prolog.RuntimeControl
