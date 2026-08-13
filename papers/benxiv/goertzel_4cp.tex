@@ -507,6 +507,32 @@ the two adjacent flank pairs.  The remaining closed local task is the finite
 compatibility of those two flank classifications, not an unbounded path
 existence theorem.
 
+The corresponding generic opening step is now proved in
+\texttt{GoertzelV24OpenRegionMinimalDualFourCycleClassification}.  Its theorem
+
+\begin{center}
+\texttt{open\_middle\_adj\_open\_other\_of\_retained\_two\_common\_neighbors}
+\end{center}
+
+starts with the closed graph-backed minimal-counterexample four-cycle and a
+literal vertex-region opening.  If the middle and extra facial orbits are
+fully retained, the forced middle--extra dual edge remains an edge of the
+opened facial dual.  The proof uses the exact retained-face adjacency
+equivalence, so it cannot manufacture an adjacency at a boundary stub or lose
+one by comparing only cardinalities.  This is the four-cycle analogue of the
+retained dual-triangle corner theorem.  It is still a generic transport
+theorem: the source-specific Cell--3 formation must identify its literal faces
+with these open images and establish their full retention.
+
+One tempting strengthening is false and is excluded from the assembly design.
+A middle Cell may have a zero-length rail on one track (the
+\texttt{forwardTwo} or \texttt{forwardFour} shape), so an incoming flank can
+equal the same-track outgoing flank.  Such a repetition is the legitimate
+connector removed by the tail convention in walk append, not a self-
+intersection.  The remaining finite theorem must therefore show that every
+distance-two overlap is this same-track connector; it must not claim that all
+distance-two overlaps are impossible.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas
