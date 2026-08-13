@@ -87,6 +87,16 @@ def ourFundamentalThreeCutCycleProfileValue
 def ourDistinctThreeCutProfileNumerators : List Int :=
   ourDistinctThreeCutLabels.map ourFundamentalThreeCutCycleProfileNumerator
 
+/-- Membership in OUR finite certificate is exactly pairwise distinctness of
+the three cut labels. -/
+theorem ourDistinctThreeCutLabels_mem_iff
+    (labels : OurThreeCutLabels) :
+    labels ∈ ourDistinctThreeCutLabels ↔
+      labels.1 ≠ labels.2.1 ∧ labels.1 ≠ labels.2.2 ∧
+        labels.2.1 ≠ labels.2.2 := by
+  rcases labels with ⟨first, second, third⟩
+  simp [ourDistinctThreeCutLabels]
+
 set_option maxRecDepth 100000 in
 /-- There are exactly `210` ordered injective three-cut label choices. -/
 theorem ourDistinctThreeCutLabels_card :
@@ -134,6 +144,7 @@ theorem ourTraceCycleProfile_forced
   · linarith
 
 #print axioms ourDistinctThreeCutLabels_card
+#print axioms ourDistinctThreeCutLabels_mem_iff
 #print axioms ourDistinctThreeCutProfileNumerators_all_zero
 #print axioms ourFundamentalThreeCutCycleProfileValue_zero
 #print axioms ourTraceCycleProfile_forced
