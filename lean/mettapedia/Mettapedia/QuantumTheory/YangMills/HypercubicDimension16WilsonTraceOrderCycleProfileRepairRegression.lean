@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldEightTracePhysicalCompleteness
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenCorrectionRefutation
 
 /-! Regression checks for OUR universal three-cut trace-cycle profile repair. -/
 
@@ -24,6 +25,8 @@ open HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair
 open HypercubicDimension16FundamentalTraceCycleProfile
 open HypercubicDimension16WilsonTraceOrderCycleProfileRepair
 open HypercubicDimension16FieldEightTracePhysicalCompleteness
+open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenMismatch
+open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenCorrectionRefutation
 
 example : ourDistinctThreeCutLabels.length = 210 :=
   ourDistinctThreeCutLabels_card
@@ -112,6 +115,20 @@ example (policy : PhysicalRelationPolicy)
   ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_ne_seven
     policy generator coefficient hseven
 
+example (policy : PhysicalRelationPolicy) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourSecondaryFieldSevenCommutatorGenerator policy) 1)) ≠ 0 :=
+  ourCycleProfileInvariantTraceOrderCorrection_ourSecondaryCommutator_ne_zero policy
+
+example (policy : PhysicalRelationPolicy) :
+    incomingQuotientTraceEvaluation ⟨2, by decide⟩
+      (ourCycleProfileInvariantTraceOrderCorrection
+        (orbitPhysicalRelationOperator policy
+          (Finsupp.single (ourSecondaryFieldSevenCommutatorGenerator policy) 1))) =
+      (4 : ℚ) / 3 :=
+  incomingQuotientTraceEvaluation_cycleProfileCorrection_ourSecondaryCommutator policy
+
 #print axioms HypercubicDimension16FundamentalTraceCycleProfile.ourDistinctThreeCutProfileNumerators_all_zero
 #print axioms HypercubicDimension16FundamentalTraceCycleProfile.ourTraceCycleProfile_forced
 #print axioms HypercubicDimension16WilsonTraceOrderCycleProfileRepair.ourInvariantTraceCycleProfileCoordinate_signed_action
@@ -124,6 +141,9 @@ example (policy : PhysicalRelationPolicy)
 #print axioms HypercubicDimension16FieldEightTracePhysicalCompleteness.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_eq_eight
 #print axioms HypercubicDimension16FieldEightTracePhysicalCompleteness.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_not_six_or_seven
 #print axioms HypercubicDimension16FieldEightTracePhysicalCompleteness.ourCycleProfileInvariantTraceOrderCorrection_physicalRelation_zero_of_source_ne_seven
+#print axioms HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenMismatch.rawReynoldsTraceEvaluation_ourSecondaryCommutatorVector
+#print axioms HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenCorrectionRefutation.incomingQuotientTraceEvaluation_cycleProfileCorrection_ourSecondaryCommutator
+#print axioms HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenCorrectionRefutation.ourCycleProfileInvariantTraceOrderCorrection_ourSecondaryCommutator_ne_zero
 
 end YangMills
 end QuantumTheory

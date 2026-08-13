@@ -31,6 +31,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTraceP
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FundamentalTracePhysicalThreeCoordinate
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceAnticommutatorPhysicalFamily
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldEightTracePhysicalCompleteness
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenCorrectionRefutation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
@@ -86,6 +87,8 @@ open HypercubicDimension16FundamentalTracePhysicalCycleProfile
 open HypercubicDimension16FundamentalTracePhysicalThreeCoordinate
 open HypercubicDimension16TraceAnticommutatorPhysicalFamily
 open HypercubicDimension16FieldEightTracePhysicalCompleteness
+open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenMismatch
+open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenCorrectionRefutation
 open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -650,6 +653,18 @@ theorem currentYangMillsCycleProfileCorrection_physicalRelation_zero_of_source_n
 
 #print axioms currentYangMillsCycleProfileCorrection_physicalRelation_zero_of_source_ne_seven
 
+/-- OUR present one-class cycle-profile correction is exactly refuted on a
+second concrete physical source-seven covariant-commutator row.  The theorem
+does not rule out a revised multi-class correction. -/
+theorem currentYangMillsCycleProfileCorrection_secondarySourceSeven_ne_zero
+    (policy : PhysicalRelationPolicy) :
+    ourCycleProfileInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourSecondaryFieldSevenCommutatorGenerator policy) 1)) ≠ 0 :=
+  ourCycleProfileInvariantTraceOrderCorrection_ourSecondaryCommutator_ne_zero policy
+
+#print axioms currentYangMillsCycleProfileCorrection_secondarySourceSeven_ne_zero
+
 /-- OUR repaired finite relation interface continues the Wilson-lattice proof
 programme on an unpadded hypercubic carrier. It is coordinate-free before a
 row ordering and records only the certified lower bound, not a complete
@@ -658,8 +673,8 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. Its field-eight, profile, and three-coordinate bridges prove that the full current correction annihilates that 210-label physical family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle: each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction annihilates its complete finite cochain family under either policy. OUR profile compatibility packet now also proves exact vanishing on the actual covariant-commutator, first-IBP, second-IBP, Bianchi, and on-shell EOM rows, and on the corresponding Reynolds-invariant relation members. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves that the sole cross-sector covariant-commutator branch cancels exactly in all four correction coordinates. Together with support below six, the full correction now annihilates every arbitrary physical relation column outside the source-seven band. This is not a source-seven census, descent through the complete relation submodule, rank, conditioning, or a noncommutative Wilson-functional coordinate construction."
-  nextObligation := "Classify or refute the complete source-seven arbitrary-carrier relation census, prove or refute a uniform descent theorem through the complete coordinate-free relation submodule, then certify sparse joint rank and dual conditioning. The noncommutative Wilson-functional analytic jets remain unproved."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. Its field-eight, profile, and three-coordinate bridges prove that the full current correction annihilates that 210-label physical family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle: each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction annihilates its complete finite cochain family under either policy. OUR profile compatibility packet proves exact vanishing on the named covariant-commutator, first-IBP, second-IBP, Bianchi, and on-shell EOM rows and their invariant members. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves exact cancellation of the only cross-sector covariant-commutator branch there. Together with support below six, the full correction annihilates every arbitrary physical relation column outside source seven. In the remaining source-seven band, a second explicit physical covariant-commutator row has a quotient value -4/3 under a functional that kills the one fixed incoming class used by every current compensator. Thus the current one-class profile correction is refuted under either policy. This does not refute a revised multi-class correction, a source-seven census, descent through the complete relation submodule, rank, conditioning, or a noncommutative Wilson-functional coordinate construction."
+  nextObligation := "A multi-class source-seven correction or a machine-checked impossibility theorem for that enlarged family; uniform descent through the complete coordinate-free relation submodule; sparse joint rank and dual conditioning; and noncommutative Wilson-functional analytic jets."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
