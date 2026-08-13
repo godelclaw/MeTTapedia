@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalRungPlacement
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabSideAdjacency
 
 /-!
 # Choice-based local rung placements for Cell 3
@@ -26,6 +27,7 @@ open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexCorridorInterfaceMatching
+open GoertzelV24HexSlabSideAdjacency
 open GoertzelV24InducedHexCorridorTypes
 open GoertzelV24OrientedHexSlab
 open SimpleGraphDartRotation
@@ -151,6 +153,51 @@ theorem rungType_distance_eq
   hexRungType_distance_eq _ _ placement.positions6_ne
 
 end SelectedInternalHexRungPlacement
+
+/-- The four cyclic side positions remaining after the selected incoming and
+outgoing rungs of one Cell-3 hexagon are removed.  This is only a local
+coordinate interface; it does not yet construct rail walks or crosscuts. -/
+def selectedPlacementSidePositions
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior) :
+    Finset (Fin (web.annular.RS.faceOrbit placement.root).card) :=
+  Finset.univ \ {placement.incomingPosition, placement.outgoingPosition}
+
+@[simp]
+theorem mem_selectedPlacementSidePositions_iff
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : Fin (web.annular.RS.faceOrbit placement.root).card) :
+    position ∈ selectedPlacementSidePositions placement ↔
+      position ≠ placement.incomingPosition ∧ position ≠ placement.outgoingPosition := by
+  simp [selectedPlacementSidePositions]
+
+/-- A selected Cell-3 placement has exactly four non-rung side slots. -/
+theorem card_selectedPlacementSidePositions_eq_four
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior) :
+    (selectedPlacementSidePositions placement).card = 4 := by
+  have hsubset :
+      ({placement.incomingPosition, placement.outgoingPosition} :
+        Finset (Fin (web.annular.RS.faceOrbit placement.root).card)) ⊆ Finset.univ := by
+    simp
+  rw [selectedPlacementSidePositions, Finset.card_sdiff_of_subset hsubset]
+  simp [placement.positions_ne, placement.orbit_card]
 
 namespace Instance
 
@@ -435,6 +482,24 @@ theorem SelectedInternalHexRungPlacement.rungType_eq_oneEdgeBetween_or_opposite_
         corridor rungs interior placement htype).elim
   | oneEdgeBetween => exact Or.inl rfl
   | opposite => exact Or.inr rfl
+
+/-- The finite coordinate interface of a source-selected Cell-3 hexagon has
+exactly two directed side steps.  This is the combinatorial input for a later
+literal rail construction, not a proof that those steps assemble globally. -/
+theorem selectedHexSideForwardSteps_card_eq_two_of_cell3
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (interior : CorridorInterior blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior) :
+    (hexSideForwardSteps placement.incomingPosition6 placement.outgoingPosition6).card = 2 := by
+  apply card_hexSideForwardSteps_eq_two
+  · exact placement.positions6_ne
+  · intro hadjacent
+    exact SelectedInternalHexRungPlacement.rungType_ne_adjacent_of_cell3
+      corridor rungs interior placement hadjacent
 
 /-- Source-facing existence form: a boundary-clean Cell-3 corridor itself
 supplies a choice of actual rungs and a nonadjacent two-rung placement at each
