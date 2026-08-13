@@ -788,8 +788,9 @@ theorem exists_sourceLocalRailWalkPair_of_incoming
 of one source Cell-3 placement, construct the next placement's two incoming
 slots on the same ambient rail edges, choose its two outgoing flank slots,
 and build the separated local rail walks between them.  The conclusion keeps
-both ambient-edge and exterior-face identifications, so a later recursive
-assembly cannot silently connect merely isomorphic local windows. -/
+both ambient-edge and exterior-face identifications and the exhaustive finite
+shape witness, so a later recursive assembly cannot silently connect merely
+isomorphic local windows or forget which local case produced its paths. -/
 theorem exists_nextSourceLocalRailWalkPair
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
@@ -831,7 +832,9 @@ theorem exists_nextSourceLocalRailWalkPair
         rightPlacement.outgoingPosition.val ≡
           rightOutgoingBefore.1.val + 1 [MOD 6] ∧
         rightOutgoingAfter.1.val ≡
-          rightPlacement.outgoingPosition.val + 1 [MOD 6] ∧
+        rightPlacement.outgoingPosition.val + 1 [MOD 6] ∧
+        Nonempty (SourceLocalRailShape rightPlacement rightBefore rightAfter
+          rightOutgoingBefore rightOutgoingAfter) ∧
         Nonempty (SourceLocalRailWalkPair rightPlacement rightBefore rightAfter
           rightOutgoingBefore rightOutgoingAfter) := by
   rcases exists_nextLocalPlacementSideEdge_eq_beforeOutgoingCornerEdge
@@ -863,9 +866,12 @@ theorem exists_nextSourceLocalRailWalkPair
       rightAfter hrightBefore hrightAfter hnonadjacent with
     ⟨rightOutgoingBefore, rightOutgoingAfter, houtgoingBefore,
       houtgoingAfter, rails⟩
+  have shape := sourceLocalRailShape_of_nonadjacent rightPlacement rightBefore
+    rightAfter rightOutgoingBefore rightOutgoingAfter hrightBefore hrightAfter
+    houtgoingBefore houtgoingAfter hnonadjacent
   exact ⟨rightBefore, rightAfter, rightOutgoingBefore, rightOutgoingAfter,
     hbeforeEdge, hbeforeFace, hafterEdge, hafterFace, houtgoingBefore,
-    houtgoingAfter, rails⟩
+    houtgoingAfter, shape, rails⟩
 
 end LocalLayerFormation
 

@@ -249,7 +249,9 @@ disjoint whenever their centers are at least three positions apart.  The two
 bounded neighboring gaps remain a finite local obligation.  A literal
 successor theorem carries each outgoing flank to an
 incoming flank of the next cell on the same ambient edge and exterior face,
-then returns the next outgoing flanks.  Lengthwise simplicity and end-cap
+then returns the next outgoing flanks together with the exhaustive local
+shape certificate.  Thus a later induction cannot forget which of the three
+literal cases generated its paths.  Lengthwise simplicity and end-cap
 attachment remain open.  These are local formation facts, not yet a global
 annular crosscut pair. \\
 \bottomrule
