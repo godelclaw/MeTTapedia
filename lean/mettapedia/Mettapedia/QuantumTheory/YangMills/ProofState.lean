@@ -18,6 +18,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderR
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantBianchi
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantEOM
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
 
 /-!
 # Yang-Mills proof state
@@ -49,6 +50,7 @@ open HypercubicDimension16FieldFiveCommutatorSeparator
 open HypercubicDimension16FDIBPCochainJointBridge
 open HypercubicDimension16IncomingCommutatorTraceCoupledQuotient
 open HypercubicDimension16IncomingCommutatorTraceMismatch
+open HypercubicDimension16IncomingCommutatorTraceInvariantWitness
 open HypercubicDimension16PhysicalOrbitOperator
 open HypercubicDimension16FieldEightPhysicalTrace
 open HypercubicDimension16FieldEightTracePhysicalLift
@@ -56,6 +58,7 @@ open HypercubicDimension16WilsonTraceOrderRepair
 open HypercubicDimension16WilsonTraceOrderInvariantRepair
 open HypercubicDimension16WilsonTraceOrderInvariantBianchi
 open HypercubicDimension16WilsonTraceOrderInvariantEOM
+open HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -611,8 +614,8 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell. OUR HypercubicDimension16WilsonCartanJointMismatch proves that the trace-order-blind raw Cartan restriction of the existing eighth jet kills the explicit incoming commutator pair although its ordinary trace class is nonzero, and that no 17-coordinate chart can inject the 98-dimensional ordinary trace quotient. OUR HypercubicDimension16WilsonTraceOrderRepair proves that the canonical eight-field trace coordinate cannot descend through the concrete seven/eight commutator quotient alone; every descended correction has a forced nonzero seven-field value. OUR HypercubicDimension16WilsonTraceOrderInvariantRepair then constructs a signed-H(4)-invariant two-coordinate revision: its first coordinate alone fails on an explicit physical IBP row, while the added field-relabel-invariant split-derivative/plane coordinate cancels that exact obstruction without changing the commutator normalization. The revised correction annihilates the explicit commutator for either policy, that explicit IBP row, and every lifted derivative-free field-eight trace generator. OUR HypercubicDimension16WilsonTraceOrderInvariantBianchi further tests a genuine three-distinct-axis innermost Bianchi row: both scalar coordinates have exact zero signed weights on all three normalized summands, so the revised correction kills the physical row for either policy and its actual Reynolds-averaged coordinate-free relation member. OUR HypercubicDimension16WilsonTraceOrderInvariantEOM tests a genuinely on-shell EOM row: all four contracted-axis terms have zero signed weights for both scalar coordinates; exact normalization removes its diagonal term and leaves orientations 1, 1, and -1, so the revised correction kills the physical row and its actual Reynolds-averaged on-shell relation member. This is a checked finite repair family, not a proof that it annihilates the complete relation submodule or a completed Wilson-functional coordinate construction."
-  nextObligation := "Test and extend the repaired trace-order coordinates across remaining Bianchi, EOM, IBP, and trace relation families until an actual full-relation descent or a precise next mismatch is certified; then complete the policy-indexed census, sparse dual conditioning certificate, and noncommutative Wilson-functional analytic jets."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell. OUR HypercubicDimension16WilsonCartanJointMismatch proves that the trace-order-blind raw Cartan restriction of the existing eighth jet kills the explicit incoming commutator pair although its ordinary trace class is nonzero, and that no 17-coordinate chart can inject the 98-dimensional ordinary trace quotient. OUR HypercubicDimension16WilsonTraceOrderRepair proves that the canonical eight-field trace coordinate cannot descend through the concrete seven/eight commutator quotient alone; every descended correction has a forced nonzero seven-field value. OUR HypercubicDimension16WilsonTraceOrderInvariantRepair constructs a signed-H(4)-invariant two-coordinate revision that repairs one explicit IBP row while preserving the commutator and derivative-free trace checks. OUR HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair then constructs a structurally distinct second IBP row with exact two-coordinate value (1/2) times the incoming trace class. A third field-relabel-invariant split-derivative/plane coordinate has calibrated value one on that row and zero signed weights on the previously checked commutator, first-IBP, Bianchi, and EOM rows; subtracting one half of its trace contribution annihilates the new row and preserves those checks. The physical rows and their actual Reynolds-averaged coordinate-free relation members are both certified. This is a checked finite repair family, not a proof that it annihilates the complete relation submodule or a completed Wilson-functional coordinate construction."
+  nextObligation := "Enumerate and test the remaining Bianchi, EOM, IBP, commutator, and trace relation families against the three-coordinate repair, extending the coordinate family only when an exact new mismatch demands it; then prove full-relation descent or certify a decisive finite obstruction, and complete the policy-indexed census, sparse dual conditioning certificate, and noncommutative Wilson-functional analytic jets."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -814,6 +817,44 @@ theorem currentYangMillsTraceOrderInvariantRepair_packet
     ourTwoCoordinateInvariantTraceOrderCorrection_ourEOM_zero⟩
 
 #print axioms currentYangMillsTraceOrderInvariantRepair_packet
+
+/-- OUR three-coordinate invariant trace-order repair packet.  The second
+explicit IBP row is a certified obstruction to the two-coordinate functional;
+the third coordinate repairs that row while retaining all earlier displayed
+physical and Reynolds-averaged relation checks.  It does not assert full
+relation-range descent. -/
+theorem currentYangMillsTraceOrderThreeCoordinateRepair_packet
+    (policy : PhysicalRelationPolicy) (generator : FieldEightTraceGenerator) :
+    ourTwoCoordinateInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) ≠ 0 ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) = 0 ∧
+    ourInvariantSecondIBPRow policy ∈ jointInvariantRelationSubmodule policy ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (ourInvariantSecondIBPRow policy).1 = 0 ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (ourInvariantCommutatorRow policy).1 = 0 ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection ourInvariantIBPRow.1 = 0 ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourLiftFieldEightTraceGenerator policy generator) 1)) = 0 ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (ourInvariantBianchiRow policy).1 = 0 ∧
+    ourThreeCoordinateInvariantTraceOrderCorrection ourInvariantEOMRow.1 = 0 := by
+  exact ⟨ourTwoCoordinateInvariantTraceOrderCorrection_ourSecondIBP_ne_zero policy,
+    ourThreeCoordinateInvariantTraceOrderCorrection_ourSecondIBP_zero policy,
+    ourInvariantSecondIBPRow_mem policy,
+    ourThreeCoordinateInvariantTraceOrderCorrection_invariantSecondIBP_zero policy,
+    ourThreeCoordinateInvariantTraceOrderCorrection_invariantCommutator_zero policy,
+    ourThreeCoordinateInvariantTraceOrderCorrection_invariantIBP_zero,
+    ourThreeCoordinateInvariantTraceOrderCorrection_liftedTraceGenerator_zero
+      policy generator,
+    ourThreeCoordinateInvariantTraceOrderCorrection_invariantBianchi_zero policy,
+    ourThreeCoordinateInvariantTraceOrderCorrection_invariantEOM_zero⟩
+
+#print axioms currentYangMillsTraceOrderThreeCoordinateRepair_packet
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by
