@@ -27,6 +27,10 @@ are derived from the models, deployed, and re-observed live.
   invariant constitution, freely transformable development, lawfully evolving
   life, and conservative projection of every mixed trace back to both source
   architectures.
+- `CodingAgent.lean` — the Codex coding-agent core: request-snapshot coherence,
+  broker-mediated workspace effects, the action/evidence barrier, explicit
+  cancellation and termination, an unverified-answer counterexample, and
+  essential composition with Iter preparation and PettaClaw life.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -39,6 +43,7 @@ lean -o ClawArchitectures.olean ClawArchitectures.lean
 lean -o PresentMoment.olean PresentMoment.lean
 LEAN_PATH=. lean -o IterArchitecture.olean IterArchitecture.lean
 LEAN_PATH=. lean ProtectedPlasticity.lean
+LEAN_PATH=. lean CodingAgent.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
