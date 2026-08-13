@@ -15,10 +15,12 @@ import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldFiveCommutatorSeparator
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantBianchi
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantEOM
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
 # Yang-Mills proof state
@@ -55,10 +57,12 @@ open HypercubicDimension16PhysicalOrbitOperator
 open HypercubicDimension16FieldEightPhysicalTrace
 open HypercubicDimension16FieldEightTracePhysicalLift
 open HypercubicDimension16WilsonTraceOrderRepair
+open HypercubicDimension16WilsonTraceOrderCoordinateCompletion
 open HypercubicDimension16WilsonTraceOrderInvariantRepair
 open HypercubicDimension16WilsonTraceOrderInvariantBianchi
 open HypercubicDimension16WilsonTraceOrderInvariantEOM
 open HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
+open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -614,7 +618,7 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell. OUR HypercubicDimension16WilsonCartanJointMismatch proves that the trace-order-blind raw Cartan restriction of the existing eighth jet kills the explicit incoming commutator pair although its ordinary trace class is nonzero, and that no 17-coordinate chart can inject the 98-dimensional ordinary trace quotient. OUR HypercubicDimension16WilsonTraceOrderRepair proves that the canonical eight-field trace coordinate cannot descend through the concrete seven/eight commutator quotient alone; every descended correction has a forced nonzero seven-field value. OUR HypercubicDimension16WilsonTraceOrderInvariantRepair constructs a signed-H(4)-invariant two-coordinate revision that repairs one explicit IBP row while preserving the commutator and derivative-free trace checks. OUR HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair then constructs a structurally distinct second IBP row with exact two-coordinate value (1/2) times the incoming trace class. A third field-relabel-invariant split-derivative/plane coordinate has calibrated value one on that row and zero signed weights on the previously checked commutator, first-IBP, Bianchi, and EOM rows; subtracting one half of its trace contribution annihilates the new row and preserves those checks. The physical rows and their actual Reynolds-averaged coordinate-free relation members are both certified. This is a checked finite repair family, not a proof that it annihilates the complete relation submodule or a completed Wilson-functional coordinate construction."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell. OUR HypercubicDimension16WilsonCartanJointMismatch proves that the trace-order-blind raw Cartan restriction of the existing eighth jet kills the explicit incoming commutator pair although its ordinary trace class is nonzero, and that no 17-coordinate chart can inject the 98-dimensional ordinary trace quotient. OUR HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo strengthens this to a semantic certificate: no ordinary-trace-quotient coordinate can both reproduce the actual Cartan eighth jet on every raw labelled input and detect the certified incoming trace-order class; therefore no injective realization of that Cartan coordinate exists, even before demanding H(4) equivariance. OUR HypercubicDimension16WilsonTraceOrderRepair proves that the canonical eight-field trace coordinate cannot descend through the concrete seven/eight commutator quotient alone; every descended correction has a forced nonzero seven-field value. OUR HypercubicDimension16WilsonTraceOrderCoordinateCompletion turns the existing 98 exact trace duals into an injective packet with a certified synthesis left inverse, and composes it with that correction: the resulting local packet kills the full projected physical commutator for either policy while retaining the exact nonzero two-pivot eight-field signal. OUR HypercubicDimension16WilsonTraceOrderInvariantRepair constructs a signed-H(4)-invariant two-coordinate revision that repairs one explicit IBP row while preserving the commutator and derivative-free trace checks. OUR HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair then constructs a structurally distinct second IBP row with exact two-coordinate value (1/2) times the incoming trace class. A third field-relabel-invariant split-derivative/plane coordinate has calibrated value one on that row and zero signed weights on the previously checked commutator, first-IBP, Bianchi, and EOM rows; subtracting one half of its trace contribution annihilates the new row and preserves those checks. The physical rows and their actual Reynolds-averaged coordinate-free relation members are both certified. This is a checked finite repair family, not a proof that it annihilates the complete relation submodule or a completed Wilson-functional coordinate construction."
   nextObligation := "Enumerate and test the remaining Bianchi, EOM, IBP, commutator, and trace relation families against the three-coordinate repair, extending the coordinate family only when an exact new mismatch demands it; then prove full-relation descent or certify a decisive finite obstruction, and complete the policy-indexed census, sparse dual conditioning certificate, and noncommutative Wilson-functional analytic jets."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
@@ -764,6 +768,18 @@ theorem currentYangMillsFDIBPCochainJointBridge_surjective
 
 #print axioms currentYangMillsFDIBPCochainJointBridge_surjective
 
+/-- The existing actual Cartan Wilson eighth jet cannot itself be a
+trace-order-faithful quotient coordinate.  This leaves open, but makes
+necessary, a larger noncommutative Wilson-coordinate system. -/
+theorem currentYangMillsCartanWilsonTraceOrderFaithfulnessNoGo
+    (a : ℝ) :
+    ¬ Nonempty (OurIncomingTraceOrderFaithfulCartanWilsonCoordinate a) ∧
+    ¬ Nonempty (OurTraceOrderFaithfulCartanWilsonCoordinate a) := by
+  exact ⟨no_ourIncomingTraceOrderFaithfulCartanWilsonCoordinate a,
+    no_ourTraceOrderFaithfulCartanWilsonCoordinate a⟩
+
+#print axioms currentYangMillsCartanWilsonTraceOrderFaithfulnessNoGo
+
 /-- OUR local trace-order repair packet: its quotient coordinate kills the
 complete coupled physical commutator for either policy, retains the isolated
 eight-field trace signal, and cannot be replaced by the eight-field trace
@@ -787,6 +803,26 @@ theorem currentYangMillsTraceOrderLocalRepair_packet
     no_ourFieldEightTraceOnlyCoordinate_descent⟩
 
 #print axioms currentYangMillsTraceOrderLocalRepair_packet
+
+/-- OUR finite trace-order completion supplies all `98` exact ordinary trace
+coordinates after the forced local compensation.  It remains a local coupled
+quotient construction, not full-relation descent or an analytic Wilson jet. -/
+theorem currentYangMillsTraceOrderCoordinateCompletion_packet
+    (policy : PhysicalRelationPolicy) :
+    Function.Injective ourPhysicalTraceCoordinatePacket ∧
+    ourCoupledTraceOrderCoordinatePacket
+      (coupledIncomingQuotientMap
+        (exactFieldSevenEightProjection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourFieldSevenCommutatorGenerator policy) 1)))) = 0 ∧
+    ourCoupledTraceOrderCoordinatePacket
+      (coupledIncomingQuotientMap
+        (0, coupledIncomingCommutatorVector.2)) ≠ 0 := by
+  exact ⟨ourPhysicalTraceCoordinatePacket_injective,
+    ourCoupledTraceOrderCoordinatePacket_physicalCommutator_zero policy,
+    ourCoupledTraceOrderCoordinatePacket_eightComponent_ne_zero⟩
+
+#print axioms currentYangMillsTraceOrderCoordinateCompletion_packet
 
 /-- OUR two-coordinate invariant trace-order repair packet.  It repairs the
 explicit IBP failure of the first invariant coordinate and records concrete
