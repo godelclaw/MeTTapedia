@@ -70,8 +70,42 @@ structure SourceCornerAlignedRailChain.BoundarySeparation
     first.toInterface.centerLayerFace ∉ chain.secondRail.support
   secondRail_avoids_lastCenter :
     last.toInterface.centerLayerFace ∉ chain.secondRail.support
-  endpointCenters_ne :
-    first.toInterface.centerLayerFace ≠ last.toInterface.centerLayerFace
+
+/-- The endpoint centres of a three-interface rail chain are distinct because
+their source-corridor indices differ by two. -/
+theorem sourceCornerAlignedRailChain_endpointCenters_ne
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {hnextThird :
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {last : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird} :
+    first.toInterface.centerLayerFace ≠ last.toInterface.centerLayerFace := by
+  have hcenterIndex : leftInterior.center ≠
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center := by
+    intro h
+    have hvalues := congrArg Fin.val h
+    change leftInterior.center.val = leftInterior.center.val + 1 + 1 at hvalues
+    omega
+  intro hcenters
+  apply realization.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt_ne
+    hcenterIndex
+  simpa [SourceConsecutiveSlabInterface.centerLayerFace] using hcenters
 
 /-- Close the endpoint transverse layers by the two concrete rails retained
 by a source chain. -/
@@ -218,7 +252,7 @@ theorem SourceCornerAlignedRailChain.alignedBoundaryWalk_isCycle
       List.mem_of_mem_tail hface
     rcases hfirstFace with hfirstCenter | hfirstOuter | hsecondRail
     · rcases hsecondFace with hlastCenter | hlastOuter | hfirstRail
-      · exact hseparation.endpointCenters_ne
+      · exact sourceCornerAlignedRailChain_endpointCenters_ne
           (hfirstCenter.symm.trans hlastCenter)
       · apply hseparation.firstRail_avoids_firstCenter
         simpa [hfirstCenter] using hfirstRail_of_rightEndpoint hlastOuter
