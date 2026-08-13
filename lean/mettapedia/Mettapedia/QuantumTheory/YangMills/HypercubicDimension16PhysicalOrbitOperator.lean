@@ -27,6 +27,7 @@ open HypercubicRawFDCharacterCensus
 open HypercubicRawFDDimension16Census
 open HypercubicDimension16AlphaReduction
 open HypercubicDimension16LocalWordCarrier
+open HypercubicDimension16RelationEquivariance
 open HypercubicDimension16ContextualQuotient
 open HypercubicDimension16OrbitCarrierBridge
 open HypercubicDimension16PhysicalRelationOperator
@@ -516,6 +517,18 @@ def orbitPhysicalRelationOperator
       ExactFieldRelabelOrbitSpace :=
   normalizeExactFieldRelabel.comp
     (normalizedPhysicalRelationOperator policy)
+
+/-- Since exact contextual normalization has already imposed field-strength
+antisymmetry, every antisymmetry generator has zero image on the genuine
+field-label orbit carrier. -/
+theorem orbitPhysicalRelationOperator_antisymmetry_zero
+    (policy : PhysicalRelationPolicy)
+    (carrier : RelationCarrier) (slot : Fin carrier.1.1)
+    (coefficient : ℚ) :
+    orbitPhysicalRelationOperator policy
+      (Finsupp.single (.antisymmetry carrier slot) coefficient) = 0 := by
+  simp [orbitPhysicalRelationOperator,
+    normalizedPhysicalRelationOperator_antisymmetry_zero]
 
 theorem orbitPhysicalRelationOperator_equivariant
     (policy : PhysicalRelationPolicy) (h : Hypercubic4)
