@@ -429,6 +429,22 @@ second, independent classification of faces; it is the transport of one
 closed-map primal-edge classification into the literal open Cell--3 carrier.
 This equivalence is a reduction of the obligation, not its discharge.
 
+There is also a type-level boundary on what the current rail package can
+mean.  A
+\texttt{SourceCornerAlignedRailPair} contains one path from the first
+incoming flank to the first outgoing flank and another from the second
+incoming flank to the second outgoing flank.  Its proved numerical invariant
+is only that their lengths add to two: the three literal cyclic shapes are
+$(0,2)$, $(1,1)$, and $(2,0)$.  In contrast,
+\texttt{SeparatedAlignedSimpleDualCrosscuts} asks for two paths with the
+same start and finish and with equal lengths.  Thus the two raw rails cannot
+be retyped as that crosscut pair merely because they bound the same local
+strip; the unbalanced cases rule out even the equal-width part.  An eventual
+annular construction must attach and verify genuine end caps (or introduce a
+different, source-justified boundary object), rather than hiding this work in
+a coercion.  This is a check on the Lean representation, not a new claim
+about Fable's L1 classification.
+
 An extra common neighbour would form precisely
 the small separating/nonfacial dual triangle excluded by v23's
 historical minimal-counterexample radius--one collar normal form.  The present open-annular
