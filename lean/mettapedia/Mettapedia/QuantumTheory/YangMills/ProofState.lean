@@ -12,6 +12,7 @@ import Mettapedia.QuantumTheory.YangMills.SU2LatticeFDCensusNoGo
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticBasis
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticWilsonBridge
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldFiveCommutatorSeparator
 
 /-!
 # Yang-Mills proof state
@@ -37,6 +38,9 @@ open SU2LatticeFDCensusNoGo
 open V14HypercubicQuarticCensus
 open V14HypercubicQuarticWilsonBridge
 open V14HypercubicFDCensusPaddingNoGo
+open HypercubicDimension16PhysicalRelationOperator
+open HypercubicDimension16JointPhysicalQuotient
+open HypercubicDimension16FieldFiveCommutatorSeparator
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -545,7 +549,7 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   status := .refuted
   truthValue := ⟨0, 99⟩
   evidence := "ExtractionMajorant refutes the displayed bound-two calculation. V14FDQuotientTransferNoGo proves that both MOVE-4 survivor extractors retain an explicit canonical-dimension-18 scalar derivative operator, and that the integration-by-parts quotient common to the on-shell and off-shell policies has a nonzero block-boundary descendant, so neither policy admits the ordinary block-functional or RG-compatible transfer socket. The range-only and polymer-contact countermodels remain independent obstructions."
-  nextObligation := "The unpadded quartic carrier now has a complete four-coordinate hypercubic basis, but the fixed-width dimension-sixteen carrier is refuted by inactive padding. Replace it with an unpadded/dependent syntax or an explicit padding quotient, then construct the full relation quotient and conditioning; alternatively prove a quantitative continuum/Symanzik projection."
+  nextObligation := "The fixed-width carrier no-go applies only to that encoding. OUR unpadded exact carrier and coordinate-free joint relation submodule now exist; complete the policy-indexed relation census, sparse joint rank and conditioning certificates, and Wilson-functional-to-cochain coordinates in the repaired norm."
 
 /-- Constructed algebraic/mechanical part of the postponed-IBP repair.  The
 full Wilson analytic and RG transfer remains open. -/
@@ -554,7 +558,7 @@ def yangMillsPostponedIBPRepairNode : YangMillsProofNode where
   status := .checked
   truthValue := ⟨100, 98⟩
   evidence := "V14BoundaryCochainComplex constructs an exact two-block boundary complex and an interface-compatible SU(2) witness with nonzero values +1 and -1 cancelling in global H0. V14BoundaryCochainExtraction supplies a derivative-aware coordinate cutoff with constant one in coefficient-l1 and in F.3's coefficient-sup branch after coordinatization. YM MOVE 7 then proves that the requested actual-lattice O.9 coordinate completion is impossible already at canonical dimension eight: an exact SU(2) Wilson observable has a hypercubic quartic jet outside every Lorentz-scalar span."
-  nextObligation := "Preserve the boundary-cochain repair and the certified unpadded quartic basis. Before dimension-sixteen dual jets, replace the padded raw carrier by faithful unpadded syntax or an explicit padding quotient, then supply the H(4)-stable relation rows and exact quotient basis."
+  nextObligation := "Use the boundary-cochain repair with the existing unpadded exact carrier and coordinate-free joint relation submodule. Supply the remaining H(4)-stable relation rows, complete sparse rank and conditioning certificates, and actual Wilson analytic coordinates."
 
 /-- Terminal decision for the requested O.9/F.4.3 actual-lattice coordinate
 campaign.  The no-go is SU(2)-scoped and occurs at canonical dimension eight,
@@ -564,7 +568,7 @@ def yangMillsDimension16O9WilsonCensusNode : YangMillsProofNode where
   status := .refuted
   truthValue := ⟨0, 99⟩
   evidence := "ymMove7_dimension16WilsonCoordinate_terminalNoGo constructs the exact SU(2) Cartan link chart, proves that the actual normalized Wilson observable has fourth jet 6 times the hypercubic quartic, exhibits an orthogonal rotation changing that jet from 1 to 337/625, and refutes every finite O.9 Lorentz-scalar spanning census under both off-shell and on-shell relation policies and all enumerated same-target variants."
-  nextObligation := "Treat a hypercubic-complete lattice census or a controlled continuum/Symanzik projection as a new route. Neither may inherit the old dual-jet conditioning or bootstrap constants without a fresh same-object proof."
+  nextObligation := "Continue the same Wilson route through a hypercubic-complete lattice census or a controlled continuum/Symanzik projection. Neither may inherit the old dual-jet conditioning or bootstrap constants without a fresh same-object proof."
 
 /-- Complete derivative-free Cartan quartic census on an unpadded carrier. -/
 def yangMillsHypercubicQuarticCensusNode : YangMillsProofNode where
@@ -582,7 +586,18 @@ def yangMillsHypercubicDimension16PaddedCensusNode : YangMillsProofNode where
   status := .refuted
   truthValue := ⟨0, 99⟩
   evidence := "faithful_dimension16_exactCensus_uninhabited gives two distinct padded encodings with zero active fields and derivatives but identical active syntax, then proves that no invertible ExactCensusCertificate can make every basis column padding-invariant: equal basis rows contradict the right-inverse identity matrix."
-  nextObligation := "Replace PaddedRawFDMonomial by an unpadded/dependent syntax or quotient inactive padding explicitly. Only on that repaired carrier should one enumerate H(4) signed orbits, construct Bianchi/EOM/IBP/trace/Cayley--Hamilton rows, and derive dual-jet conditioning through dimension sixteen."
+  nextObligation := "The unpadded/dependent syntax is now available. Complete the Bianchi/EOM/IBP/trace/Cayley--Hamilton relation census, its joint sparse rank and dual conditioning, and the Wilson-functional analytic bridge on that repaired carrier."
+
+/-- OUR repaired finite relation interface continues the Wilson-lattice proof
+programme on an unpadded hypercubic carrier. It is coordinate-free before a
+row ordering and records only the certified lower bound, not a complete
+physical quotient calculation. -/
+def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
+  id := "yang-mills.rg.joint-physical-relation-interface"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy."
+  nextObligation := "Construct a complete policy-indexed relation census and sparse dual conditioning certificate for the joint quotient, then build Wilson-functional-to-cochain coordinates and analytic dual jets in the same repaired norm."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -598,7 +613,7 @@ def yangMillsCompletionSteelmanNode : YangMillsProofNode where
   status := .checked
   truthValue := ⟨100, 94⟩
   evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The v14 extraction/recombination constant is refuted as written, the July blueprint is audited guidance, and support, two-marked identity, KP/RP, and the actual Wilson RG recursion remain explicit construction obligations."
-  nextObligation := "The unpadded quartic H(4) basis is checked, while the padded dimension-sixteen extension is refuted. Repair the full raw carrier and relation quotient, or prove a continuum/Symanzik projection; then derive same-object dual conditioning and the rooted cumulant estimate before instantiating the remaining completion inputs."
+  nextObligation := "OUR unpadded carrier and coordinate-free joint relation quotient continue the repaired route. Complete its full relation census, sparse dual conditioning, Wilson-functional analytic coordinates, and rooted cumulant estimate before instantiating the remaining completion inputs."
 
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
@@ -666,6 +681,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsDimension16O9WilsonCensusNode
   , yangMillsHypercubicQuarticCensusNode
   , yangMillsHypercubicDimension16PaddedCensusNode
+  , yangMillsJointPhysicalRelationNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -707,6 +723,19 @@ theorem yangMillsHypercubicQuarticCensusNode_checked :
 theorem yangMillsHypercubicDimension16PaddedCensusNode_refuted :
     yangMillsHypercubicDimension16PaddedCensusNode.status = .refuted := by
   rfl
+
+theorem yangMillsJointPhysicalRelationNode_checked :
+    yangMillsJointPhysicalRelationNode.status = .checked := by
+  rfl
+
+/-- OUR repaired finite relation packet is a lower bound inside the genuine
+joint invariant relation submodule for either relation policy. -/
+theorem currentYangMillsJointPhysicalRelation_packet
+    (policy : PhysicalRelationPolicy) :
+    11558 ≤ Module.finrank ℚ (jointInvariantRelationSubmodule policy) := by
+  exact jointInvariantRelationSubmodule_rank_lower_bound_fieldFiveCommutator policy
+
+#print axioms currentYangMillsJointPhysicalRelation_packet
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by

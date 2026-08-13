@@ -1,7 +1,7 @@
 # Yang-Mills Lean Lane
 
-This directory records the current formal audit surface for the Yang-Mills route.
-It is not a claimed Millennium solution.
+This directory records the current formal proof surface for Ben's Yang-Mills
+route. It is not a claimed Millennium solution.
 
 Manuscript route (v14): start from finite Wilson lattice gauge theory; run an
 extended-extraction RG bootstrap intended to contract irrelevant activities;
@@ -10,6 +10,12 @@ transport clustering back to fine scales; and use Osterwalder–Schrader
 reconstruction to construct the continuum Hilbert space, Hamiltonian, and mass
 gap. The formalization keeps those layers separate so that finite arithmetic or
 a toy spectral gap cannot silently stand for the continuum construction.
+
+OUR finite-coordinate repairs continue this same proof programme. They retain
+the Wilson-lattice, extended-extraction, KP, glue, and OS architecture while
+replacing false finite-coordinate bridges by quotient-compatible hypercubic and
+boundary-cochain constructions. They are not claims about content already
+present in v14.
 
 Current status:
 
@@ -33,6 +39,13 @@ Current status:
   is the least unrestricted two-source depth and `16` the least even depth.
   This is not an actual Wilson RG constant until the remaining analytic factor
   bounds are proved in the same norm.
+- OUR repaired finite relation target is now the coordinate-free
+  `jointInvariantRelationSubmodule` inside the signed hypercubic invariant
+  orbit space. Its off-shell relation submodule embeds in the on-shell one.
+  The exact field-eight trace family, a seven-to-eight commutator relation,
+  and a field-five commutator separator certify rank at least `11558` for
+  either policy. This is a lower bound only: it neither supplies the complete
+  relation census nor the joint quotient dimension or conditioning.
 - The support recurrence is reduced to a manuscript branch choice:
   coarsen-then-thicken is uniformly bounded, while thicken-only is unbounded.
 - The two-marked centered correlation identity is a named API; a canary proves
@@ -59,9 +72,9 @@ recursion, support branch, two-marked identity, KP convergence, Wilson
 reflection positivity, and OS/subsequential-limit machinery are all instantiated
 for the same route.
 
-The extraction-side route now needs a source clarification or an explicitly
-labeled repair selecting one relation quotient and exact block convention.
-Only after that choice is fixed can actual lattice Wilson representatives, a
-finite quotient basis, dual jets, and their column-sum conditioning certificate
-be constructed. The recombination-side target remains the weighted connected-
-cumulant/tree/KP estimate for the actual Wilson activities in that same norm.
+The next extraction-side proof step is to complete the policy-indexed relation
+census and sparse rank/conditioning certificates on this repaired joint
+quotient, then construct Wilson-functional-to-cochain coordinates and analytic
+dual jets in the same norm. The recombination-side target remains the weighted
+connected-cumulant/tree/KP estimate for the actual Wilson activities in that
+same norm.

@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.ProofStateZ2StrongCoupling
 import Mettapedia.QuantumTheory.YangMills.ProofStateZ3StrongCoupling
+import Mettapedia.QuantumTheory.YangMills.ProofState
 
 /-!
 # Yang-Mills roadmap
@@ -23,6 +24,8 @@ open SU2LatticeFDCensusNoGo
 open V14HypercubicQuarticCensus
 open V14HypercubicQuarticWilsonBridge
 open V14HypercubicFDCensusPaddingNoGo
+open HypercubicDimension16PhysicalRelationOperator
+open HypercubicDimension16JointPhysicalQuotient
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -30,6 +33,7 @@ inductive YangMillsRoadmapStage where
   | continuumScalingDiagnostic
   | extractionConstantErratum
   | hypercubicCensusDecision
+  | jointPhysicalRelationInterface
   | continuumOSReconstructionConditional
   | fiveInputCompletionSteelman
   | continuumMassGapEndpoint
@@ -122,7 +126,20 @@ def yangMillsHypercubicCensusDecisionRoadmapEntry : YangMillsRoadmapEntry where
   itvUpperPercent := 1
   progressPercent := 100
   evidence := "The unpadded dimension-eight quartic carrier has four certified H(4)-covariant basis functions and identity conditioning. Its actual Wilson coordinate vector is (6,0,0,0), and the pure-fourth polynomial is a nonzero class modulo the proper O(4)-invariant subspace. For the full fixed-width carrier, faithful_dimension16_exactCensus_uninhabited proves that active-syntax fidelity is incompatible with the ExactCensusCertificate right inverse because inactive padding creates distinct duplicate encodings."
-  nextObligation := "Construct a finite unpadded/dependent F,D syntax (or a checked padding quotient), prove the H(4) action and relation rows descend, and only then rerun the signed-orbit census and exact conditioning through dimension sixteen."
+  nextObligation := "The unpadded/dependent syntax and coordinate-free joint relation target now exist. Complete the remaining relation census, sparse joint rank and conditioning certificate, and Wilson-functional analytic coordinates through dimension sixteen."
+
+/-- OUR repaired finite interface continues Ben's Wilson-lattice proof
+programme with a coordinate-free hypercubic joint relation target. -/
+def yangMillsJointPhysicalRelationRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .jointPhysicalRelationInterface
+  nodeId := yangMillsJointPhysicalRelationNode.id
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  itvLowerPercent := 99
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "currentYangMillsJointPhysicalRelation_packet gives the lower bound 11558 for the coordinate-free joint invariant relation submodule under either policy. It combines 11556 field-eight trace rows, a seven-to-eight commutator relation, and a field-five separator; it is not a complete relation rank, quotient dimension, or conditioning result."
+  nextObligation := "Complete the policy-indexed relation census and sparse dual conditioning certificate for the joint quotient, then derive Wilson-functional-to-cochain coordinates and analytic estimates in the same repaired norm."
 
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
@@ -148,7 +165,7 @@ def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
   itvUpperPercent := 100
   progressPercent := 100
   evidence := "currentYangMillsCompletionSteelman_packet records the refuted as-written constant, the audited blueprint, the norm-one Wilson realization, and the remaining support, two-marked, KP/RP, and actual Wilson RG obligations."
-  nextObligation := "Repair the refuted padded dimension-sixteen H(4) carrier or prove a continuum/Symanzik projection. Derive the actual Wilson constant on that replacement, then instantiate support, two-marked, KP, and reflection-positivity inputs."
+  nextObligation := "Complete OUR unpadded joint H(4) relation census and its conditioning certificate. Derive the actual Wilson constant on that repaired finite target, then instantiate support, two-marked, KP, and reflection-positivity inputs."
 
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
@@ -170,6 +187,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z3HalfScaleLinearRGStepRoadmapEntry
   , yangMillsExtractionConstantErratumRoadmapEntry
   , yangMillsHypercubicCensusDecisionRoadmapEntry
+  , yangMillsJointPhysicalRelationRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsCompletionSteelmanRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
@@ -277,6 +295,15 @@ theorem currentYangMillsRoadmap_records_hypercubic_census_decision :
     o4InvariantQuarticSubspace_strict,
     pureFourthArtifactClass_nonzero,
     faithful_dimension16_exactCensus_uninhabited⟩
+
+theorem currentYangMillsRoadmap_records_joint_physical_relation_interface :
+    yangMillsJointPhysicalRelationRoadmapEntry.status = .checked ∧
+      yangMillsJointPhysicalRelationRoadmapEntry.progressPercent = 100 ∧
+      (∀ policy : PhysicalRelationPolicy,
+        11558 ≤ Module.finrank ℚ (jointInvariantRelationSubmodule policy)) := by
+  exact ⟨rfl, rfl, currentYangMillsJointPhysicalRelation_packet⟩
+
+#print axioms currentYangMillsRoadmap_records_joint_physical_relation_interface
 
 theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ∃ entry : YangMillsRoadmapEntry,
