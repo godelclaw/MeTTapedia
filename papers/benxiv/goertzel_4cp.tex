@@ -977,6 +977,22 @@ boundary data for a future sector construction.  It is not an assertion that
 the caps have been joined by facial-dual side paths, that the resulting walls
 are simple, or that the two Boolean choices are the complementary annular
 sectors.
+
+\paragraph{L8 wall audit (14 August 2026).}  The tempting next construction
+is not to promote the four-piece walk
+\texttt{RadialSectorWallWalk} into the splice.  Its useful local facts are
+genuine: the two radial cores are disjoint, and, given five further
+cross-piece disjointness facts, the assembled walk is a trail containing a
+simple cycle.  But the module is an isolated conditional endpoint: no other
+Lean module imports it, and its five disjointness facts remain inputs rather
+than consequences of the Cell--3 carrier.  In contrast, the exact-cut,
+hole-free-side and drainage results on which Sector Alternation depends are
+already consumed by \texttt{ClosedWebSectorAlternation}.  Thus the L8
+sector argument is not being reopened under a new name.  The live task stays
+the source-specific construction of the L1/L6 simple transversals or layer
+boundaries, whose deletion components are exactly the input required by
+\texttt{ChordTransversalDeletionAssignment}.  This is a dependency audit,
+not a negative result about the manuscript's sector argument.
 There is a useful but narrower interaction already formalized: a counting
 argument finds one radial component that avoids the four primal edges of a
 chosen local Cell--3 layer wall.  That path certifies retention of the inner
