@@ -14,6 +14,7 @@ import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticWilsonBridge
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldFiveCommutatorSeparator
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 
 /-!
 # Yang-Mills proof state
@@ -43,6 +44,11 @@ open HypercubicDimension16PhysicalRelationOperator
 open HypercubicDimension16JointPhysicalQuotient
 open HypercubicDimension16FieldFiveCommutatorSeparator
 open HypercubicDimension16FDIBPCochainJointBridge
+open HypercubicDimension16IncomingCommutatorTraceCoupledQuotient
+open HypercubicDimension16IncomingCommutatorTraceMismatch
+open HypercubicDimension16PhysicalOrbitOperator
+open HypercubicDimension16FieldEightPhysicalTrace
+open HypercubicDimension16WilsonTraceOrderRepair
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
 inductive YangMillsProofStatus where
@@ -598,8 +604,8 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell. OUR HypercubicDimension16WilsonCartanJointMismatch proves that the trace-order-blind raw Cartan restriction of the existing eighth jet kills the explicit incoming commutator pair although its ordinary trace class is nonzero, and that no 17-coordinate chart can inject the 98-dimensional ordinary trace quotient."
-  nextObligation := "Construct trace-order-aware, cross-sector Wilson-functional coordinates on the identified joint object, then complete its policy-indexed relation census, sparse dual conditioning certificate, and analytic dual jets in the same repaired norm."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator combines 11556 independent field-eight trace relations, an independent seven-to-eight commutator row, and a field-five separator to prove joint invariant relation rank at least 11558 for either policy. OUR HypercubicDimension16FDIBPCochainJointBridge applies the physical operator and signed H(4) Reynolds average to the finite F,D/IBP cochains, proves an equivariant surjection whose range is the whole same submodule, and shows that common off-shell cochains retain their ambient invariant value on shell. OUR HypercubicDimension16WilsonCartanJointMismatch proves that the trace-order-blind raw Cartan restriction of the existing eighth jet kills the explicit incoming commutator pair although its ordinary trace class is nonzero, and that no 17-coordinate chart can inject the 98-dimensional ordinary trace quotient. OUR HypercubicDimension16WilsonTraceOrderRepair proves that the canonical eight-field trace coordinate cannot descend through the concrete seven/eight commutator quotient alone; every descended correction has a forced nonzero seven-field value. Its explicit compensator annihilates the complete projected physical commutator for either policy while detecting its isolated eight-field trace component, and is kept distinct from the exact Cartan Wilson coefficient packet."
+  nextObligation := "Extend the certified local trace-order repair to full noncommutative Wilson-functional coordinates on the identified joint object, then complete its policy-indexed relation census, sparse dual conditioning certificate, and analytic dual jets in the same repaired norm."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -747,6 +753,30 @@ theorem currentYangMillsFDIBPCochainJointBridge_surjective
   ourFDIBPCochainToJointRelation_surjective policy
 
 #print axioms currentYangMillsFDIBPCochainJointBridge_surjective
+
+/-- OUR local trace-order repair packet: its quotient coordinate kills the
+complete coupled physical commutator for either policy, retains the isolated
+eight-field trace signal, and cannot be replaced by the eight-field trace
+coordinate alone. -/
+theorem currentYangMillsTraceOrderLocalRepair_packet
+    (policy : PhysicalRelationPolicy) :
+    ourTraceOrderAwareLocalQuotientCoordinate
+      (coupledIncomingQuotientMap
+        (exactFieldSevenEightProjection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourFieldSevenCommutatorGenerator policy) 1)))) = 0 ∧
+      ourTraceOrderAwareLocalQuotientCoordinate
+        (coupledIncomingQuotientMap
+          (0, coupledIncomingCommutatorVector.2)) ≠ 0 ∧
+      ¬ ∃ descended : CoupledIncomingQuotient →ₗ[ℚ]
+          FieldEightPhysicalTraceQuotient,
+        descended.comp coupledIncomingQuotientMap =
+          ourFieldEightTraceOnlyCoordinate := by
+  exact ⟨ourTraceOrderAwareLocalQuotientCoordinate_physicalCommutator_zero policy,
+    ourTraceOrderAwareLocalQuotientCoordinate_detects_eightComponent_ne_zero,
+    no_ourFieldEightTraceOnlyCoordinate_descent⟩
+
+#print axioms currentYangMillsTraceOrderLocalRepair_packet
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by
