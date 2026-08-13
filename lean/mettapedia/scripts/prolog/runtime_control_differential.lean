@@ -148,6 +148,22 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.binaryFactProgram
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.heapBuiltCallable)
+  renderCount "maplist_two"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistSucceeds)
+  renderCount "maplist_two_qualified"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.qualifiedMaplistSucceeds)
+  renderCount "maplist_two_failure"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistFailsAfterPrefix)
+  renderStringAnswers "maplist_closure_cut_retains_caller"
+    (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistCutClosureProgram
+      Mettapedia.Logic.Prolog.SourceRuntimeRegression.maplistClosureCutRetainsCaller)
   renderCount "neg_rejects_success"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runCount []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.negationRejectsSuccess)

@@ -350,19 +350,36 @@ def decodeCallable (heap : Heap Sigma.scoped) (address : Addr)
     Except LP.RuntimeQuery.QueryError (List (RuntimeGoal Sigma.scoped)) :=
   decodeCallableAux (heap.size + 1) heap address extraArgs
 
-/-- Recognize `call/N` without inspecting the heap.  The classifier exposes
-only the first argument and ordered extra arguments; the shared engine invokes
-`decodeCallable` afterwards. -/
+/-- Expand the finite proper-list `maplist/2` fragment into ordinary `call/2`
+instructions.  Each element remains a distinct dynamic call, so each receives
+the shared engine's usual predicate-like cut boundary.  The decoder reads only
+the live heap; it cannot execute a closure or select its clauses. -/
+private def decodeMaplist (heap : Heap Sigma.scoped) (closure list : Addr) :
+    Except LP.RuntimeQuery.QueryError (List (RuntimeGoal Sigma.scoped)) := do
+  let elements ← LP.RuntimeQuery.decodeAddressList collectionEncoding heap list
+  pure <| elements.map fun element => ordinaryCall "call" [closure, element]
+
+/-- Decode one dynamic-call request after the shared engine has selected it.
+`maplist/2` is intentionally finite and proper-list only at this boundary;
+unbound-list enumeration remains a visible unsupported extension. -/
+def decodeMetaCall (heap : Heap Sigma.scoped) : LP.RuntimeQuery.MetaCallRequest →
+    Except LP.RuntimeQuery.QueryError (List (RuntimeGoal Sigma.scoped))
+  | .call callable extraArgs => decodeCallable heap callable extraArgs
+  | .maplist closure list => decodeMaplist heap closure list
+
+/-- Recognize `call/N` and the finite `maplist/2` entry without inspecting the
+heap.  The classifier exposes only existing roots; the shared engine invokes
+the read-only decoder afterwards. -/
 def metaCall? (goal : RuntimeAtom Sigma.scoped) :
-    Option (Addr × List Addr) :=
-  if goal.symbol.name = "call" then
-    match goal.args.toList with
-    | callable :: extraArgs =>
-        if goal.symbol.arity = extraArgs.length + 1 then
-          some (callable, extraArgs)
-        else none
-    | [] => none
-  else none
+    Option LP.RuntimeQuery.MetaCallRequest :=
+  match goal.symbol.name, goal.args.toList with
+  | "call", callable :: extraArgs =>
+      if goal.symbol.arity = extraArgs.length + 1 then
+        some (.call callable extraArgs)
+      else none
+  | "maplist", [closure, list] | "apply:maplist", [closure, list] =>
+      if goal.symbol.arity = 2 then some (.maplist closure list) else none
+  | _, _ => none
 
 /-- Recognize the ISO `phrase/3` entry without inspecting its arguments.
 `phrase/2` is elaborated to this form by the source goal classifier. -/
@@ -1416,7 +1433,7 @@ def decodeClause (heap : Heap Sigma.scoped) (root : Addr) :
 
 def services : RuntimeControl.Services Sigma where
   metaCall? := metaCall?
-  decoder := { decode := decodeCallable, decodeDcg := decodeDcg }
+  decoder := { decode := decodeMetaCall, decodeDcg := decodeDcg }
   dcgCall? := dcgCall?
   termTest? := termTest?
   termRelation? := termRelation?
@@ -1663,6 +1680,9 @@ theorem services_currentPredicate :
 @[simp]
 theorem services_predicateIndicatorEncoding :
     services.predicateIndicatorEncoding = some predicateIndicatorEncoding := rfl
+
+@[simp]
+theorem services_decodeMetaCall : services.decoder.decode = decodeMetaCall := rfl
 
 @[simp]
 theorem services_decodeDcg : services.decoder.decodeDcg = decodeDcg := rfl

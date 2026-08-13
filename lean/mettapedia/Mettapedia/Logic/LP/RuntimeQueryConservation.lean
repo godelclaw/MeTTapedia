@@ -332,7 +332,7 @@ def mapDispatchAction (instruction : Instruction₁ → Instruction₂)
   | .transaction goals => .transaction (goals.map instruction)
   | .findall template generator bag encoding =>
       .findall template (generator.map instruction) bag encoding
-  | .metaCall callable extraArgs => .metaCall callable extraArgs
+  | .metaCall request => .metaCall request
   | .dcgCall body input rest => .dcgCall body input rest
   | .format request decoder => .format request decoder
   | .textConversion text codes decoder =>
@@ -1043,7 +1043,7 @@ theorem stepCore_conserves [DecidableEq sigma.scoped.vars]
                 mapState, mapControl, mapPhase, mapReturnFrame,
                 mapCollectionChoice, mapChoicePoint, mapStepResult,
                 List.map_append]
-          | metaCall callable extraArgs =>
+          | metaCall request =>
               cases hCleanup : memory.restorePreserving heapFloor checkpoint <;>
                 simp [mapDispatchAction, dispatchActionStep, metaCallStep,
                   rejectingMetaCallDecoder, mapState, mapControl, mapPhase,

@@ -1354,6 +1354,29 @@
       ]
     },
     {
+      "id": "runtime.maplist2_finite",
+      "project": "swi-prolog",
+      "sources": ["library/apply.pl"],
+      "anchors": ["maplist", "maplist_"],
+      "implementation_status": "adapted",
+      "implementation_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/Prolog/SourceRuntime.lean"
+      ],
+      "proof_status": "partial",
+      "proof_evidence": [
+        "Mettapedia/Logic/LP/RuntimeQuery.lean",
+        "Mettapedia/Logic/LP/RuntimeQueryConservation.lean"
+      ],
+      "swi_conformance_status": "partial",
+      "swi_conformance_evidence": [
+        "Mettapedia/Logic/Prolog/SourceRuntimeRegression.lean",
+        "scripts/prolog/runtime_control_differential.lean",
+        "scripts/prolog/runtime_control_oracle.pl",
+        "scripts/prolog/run_runtime_control_differential.sh"
+      ]
+    },
+    {
       "id": "library.pairs",
       "project": "swi-prolog",
       "sources": ["library/pairs.pl"],

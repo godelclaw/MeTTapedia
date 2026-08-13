@@ -121,6 +121,7 @@ least-model endpoint visible in ordinary Lean build output.
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_exact
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.metaCallStep_error
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.stepCoreWithMeta_metaCall_of_dispatch
+#print axioms Mettapedia.Logic.Prolog.SourceRuntime.services_decodeMetaCall
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.allocateAddressSegment_size_trail
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.allocateConstants_size_trail
 #print axioms Mettapedia.Logic.LP.RuntimeQuery.dcgCallStep_goals_of_decode

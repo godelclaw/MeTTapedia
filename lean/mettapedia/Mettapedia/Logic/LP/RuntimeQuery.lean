@@ -160,12 +160,19 @@ inductive DcgPlan (σ : LPSignature) (Instruction : Type*) where
   | constantTerminals (encoding : CollectionEncoding σ)
       (heads : List σ.constants)
 
+/-- The dynamic-call shapes whose roots a language realization may expose.
+The shared engine chooses when to decode and schedule them; this value contains
+neither an answer nor a continuation. -/
+inductive MetaCallRequest where
+  | call (callable : Addr) (extraArgs : List Addr)
+  | maplist (closure list : Addr)
+
 /-- Read-only interpretation of dynamic callable and DCG heap roots.  The
 shared engine owns when either decoder is invoked, every allocation, and the
 predicate-like cut boundary installed around decoded goals.  A decoder sees
 only the heap, so it cannot mutate the trail or restore checkpoints. -/
 structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
-  decode : Heap σ.scoped → Addr → List Addr →
+  decode : Heap σ.scoped → MetaCallRequest →
     Except QueryError (List Instruction)
   decodeDcg : Heap σ.scoped → Addr → Addr → Addr →
     Except QueryError (DcgPlan σ Instruction) :=
@@ -174,7 +181,7 @@ structure MetaCallDecoder (σ : LPSignature) (Instruction : Type*) where
 /-- Pure LP and typed runtimes without dynamic-call support fail closed. -/
 def rejectingMetaCallDecoder (σ : LPSignature) (Instruction : Type*) :
     MetaCallDecoder σ Instruction where
-  decode _ _ _ := .error .unsupportedInstruction
+  decode _ _ := .error .unsupportedInstruction
   decodeDcg _ _ _ _ := .error .unsupportedInstruction
 
 /-- The two SWI-style formatting call shapes.  A realization classifies only
@@ -3106,9 +3113,9 @@ exactly once; all scheduling remains in `enterDecodedGoalsStep`. -/
 def metaCallStep {σ : LPSignature}
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
-    (callable : Addr) (extraArgs : List Addr) (rest : List Instruction) :
+    (request : MetaCallRequest) (rest : List Instruction) :
     StepResultCore σ Instruction SourceClause :=
-  match decoder.decode state.memory.heap callable extraArgs with
+  match decoder.decode state.memory.heap request with
   | .error reason => failWith state reason
   | .ok goals => enterDecodedGoalsStep state goals rest
 
@@ -4071,7 +4078,7 @@ inductive DispatchAction (σ : LPSignature)
   | transaction (goals : List Instruction)
   | findall (template : Addr) (generator : List Instruction) (bag : Addr)
       (encoding : CollectionEncoding σ)
-  | metaCall (callable : Addr) (extraArgs : List Addr)
+  | metaCall (request : MetaCallRequest)
   | dcgCall (body input rest : Addr)
   | format (request : FormatRequest) (decoder : FormatDecoder σ)
   | textConversion (text codes : Addr) (decoder : TextConversionDecoder σ)
@@ -4222,8 +4229,7 @@ def dispatchActionStep {σ : LPSignature} [DecidableEq σ.scoped.vars]
   | .transaction goals => transactionStep state goals rest
   | .findall template generator bag encoding =>
       findallStep state template generator bag encoding rest
-  | .metaCall callable extraArgs =>
-      metaCallStep decoder state callable extraArgs rest
+  | .metaCall request => metaCallStep decoder state request rest
   | .dcgCall body input restRoot =>
       dcgCallStep decoder state body input restRoot rest
   | .format request formatDecoder =>
@@ -4686,9 +4692,9 @@ frame and captures the current choice depth as its local cut boundary. -/
 theorem metaCallStep_exact {σ : LPSignature}
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
-    (callable : Addr) (extraArgs : List Addr) (rest goals : List Instruction)
-    (hDecode : decoder.decode state.memory.heap callable extraArgs = .ok goals) :
-    metaCallStep decoder state callable extraArgs rest =
+    (request : MetaCallRequest) (rest goals : List Instruction)
+    (hDecode : decoder.decode state.memory.heap request = .ok goals) :
+    metaCallStep decoder state request rest =
       .next {
         state with
         control := {
@@ -4708,11 +4714,10 @@ query cleanup; it is never reinterpreted as ordinary Prolog failure. -/
 theorem metaCallStep_error {σ : LPSignature}
     (decoder : MetaCallDecoder σ Instruction)
     (state : StateCore σ Instruction SourceClause)
-    (callable : Addr) (extraArgs : List Addr) (rest : List Instruction)
+    (request : MetaCallRequest) (rest : List Instruction)
     (reason : QueryError)
-    (hDecode : decoder.decode state.memory.heap callable extraArgs =
-      .error reason) :
-    metaCallStep decoder state callable extraArgs rest = failWith state reason := by
+    (hDecode : decoder.decode state.memory.heap request = .error reason) :
+    metaCallStep decoder state request rest = failWith state reason := by
   simp [metaCallStep, hDecode]
 
 /-- Dynamic DCG decoding cannot schedule around the shared entry transition:
@@ -4970,13 +4975,12 @@ theorem stepCoreWithMeta_metaCall_of_dispatch {σ : LPSignature}
     (decoder : MetaCallDecoder σ Instruction)
     (classify : Instruction → DispatchAction σ Instruction SourceClause)
     (state : StateCore σ Instruction SourceClause)
-    (instruction : Instruction) (rest : List Instruction)
-    (callable : Addr) (extraArgs : List Addr)
+    (instruction : Instruction) (rest : List Instruction) (request : MetaCallRequest)
     (hPhase : state.phase = .dispatch)
     (hCurrent : state.control.current = instruction :: rest)
-    (hClassify : classify instruction = .metaCall callable extraArgs) :
+    (hClassify : classify instruction = .metaCall request) :
     stepCoreWithMeta materializer decoder classify state =
-      metaCallStep decoder state callable extraArgs rest := by
+      metaCallStep decoder state request rest := by
   simp [stepCoreWithMeta, hPhase, hCurrent, hClassify]
 
 /-- Dynamic grammar decoding is reached through the same canonical dispatch

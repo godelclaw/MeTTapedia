@@ -434,7 +434,7 @@ its heap roots; decoding remains a read-only capability invoked by the engine
 itself.  Optional exception content carries no heap, trail, or control
 authority. -/
 structure Services (sigma : LP.LPSignature) where
-  metaCall? : RuntimeAtom sigma.scoped → Option (Addr × List Addr)
+  metaCall? : RuntimeAtom sigma.scoped → Option LP.RuntimeQuery.MetaCallRequest
   decoder : LP.RuntimeQuery.MetaCallDecoder sigma (RuntimeGoal sigma.scoped)
   /-- Recognize `phrase/3` without inspecting the heap.  Dynamic grammar
   interpretation remains a distinct read-only decoder mode so ordinary
@@ -673,7 +673,7 @@ def dispatchActionWith {sigma : LP.LPSignature}
       | some request => .database request
       | none =>
           match services.metaCall? goal with
-          | some (callable, extraArgs) => .metaCall callable extraArgs
+          | some request => .metaCall request
           | none =>
               match services.termTest? goal with
               | some (address, test) => .termTest address test

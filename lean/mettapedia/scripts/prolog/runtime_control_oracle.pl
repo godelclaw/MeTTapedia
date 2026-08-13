@@ -4,6 +4,11 @@ choose(a) :- !.
 choose(b).
 
 p(a, b).
+mark(a).
+mark(b).
+pick(a).
+pick(b).
+cut_closure(a) :- !.
 
 dcg_pair(X) --> [X, X].
 dcg_guarded(X) --> { X = a }, [X].
@@ -96,6 +101,11 @@ main(_) :-
         (call((Y = a, !, fail ; Y = b)) ; Y = c), Y),
     emit(call_three, call(p, a, b), 1),
     emit(heap_built_callable, (G = p(a, b), call(G)), 1),
+    emit_count(maplist_two, maplist(mark, [a,b])),
+    emit_count(maplist_two_qualified, apply:maplist(user:mark, [a,b])),
+    emit_count(maplist_two_failure, maplist(mark, [a,missing])),
+    emit(maplist_closure_cut_retains_caller,
+        (pick(MaplistCut), maplist(cut_closure, [a]) ; MaplistCut = c), MaplistCut),
     emit_count(neg_rejects_success, \+ true),
     emit_count(neg_accepts_failure, \+ fail),
     emit(neg_restores_trial_bindings,

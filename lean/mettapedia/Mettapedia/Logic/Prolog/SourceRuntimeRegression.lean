@@ -329,6 +329,54 @@ the decoder observes the current heap graph rather than source syntax. -/
 def heapBuiltCallable : SourceSignature.Goal :=
   .conj (.unify g (compound "p" [atom "a", atom "b"])) (metaGoal g)
 
+/-! ## Finite `maplist/2` through the ordinary dynamic-call path -/
+
+/-- The source fragment used by `maplist/2` never gets a private evaluator:
+each list element becomes an ordinary `call/2` instruction on the shared
+engine. -/
+def maplistProgram : SourceSignature.Program := [
+  fact "mark" [atom "a"],
+  fact "mark" [atom "b"],
+  fact "user:mark" [atom "a"],
+  fact "user:mark" [atom "b"]
+]
+
+def maplistSucceeds : SourceSignature.Goal :=
+  SourceSignature.call "maplist" [
+    atom "mark", SourceSignature.list [atom "a", atom "b"]
+  ]
+
+/-- Pinned PeTTa's load directive uses the qualified spelling supplied by
+`library(apply)`.  It is deliberately an alias for the same native fragment,
+not a reason to load that library as executable source. -/
+def qualifiedMaplistSucceeds : SourceSignature.Goal :=
+  SourceSignature.call "apply:maplist" [
+    atom "user:mark", SourceSignature.list [atom "a", atom "b"]
+  ]
+
+/-- A later list element still runs through ordinary call failure, so a finite
+`maplist/2` cannot report a prefix as success. -/
+def maplistFailsAfterPrefix : SourceSignature.Goal :=
+  SourceSignature.call "maplist" [
+    atom "mark", SourceSignature.list [atom "a", atom "missing"]
+  ]
+
+/-- A cut belonging to a closure call remains below that call's own barrier:
+it cannot prune the caller's predicate alternatives or its outer disjunction. -/
+def maplistCutClosureProgram : SourceSignature.Program := [
+  fact "pick" [atom "a"],
+  fact "pick" [atom "b"],
+  { head := predicate "cut_closure" [atom "a"], body := .cut }
+]
+
+def maplistClosureCutRetainsCaller : SourceSignature.Goal :=
+  .disj
+    (.conj (SourceSignature.call "pick" [x])
+      (SourceSignature.call "maplist" [
+        atom "cut_closure", SourceSignature.list [atom "a"]
+      ]))
+    (.unify x (atom "c"))
+
 /-! ## Derived negation and non-unifiability on shared hard-if checkpoints -/
 
 def negationRejectsSuccess : SourceSignature.Goal := .neg .succeed
@@ -1961,6 +2009,11 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
       | _ => none
 
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
+#guard runCount maplistProgram maplistSucceeds == some (1, 0, 0)
+#guard runCount maplistProgram qualifiedMaplistSucceeds == some (1, 0, 0)
+#guard runCount maplistProgram maplistFailsAfterPrefix == some (0, 0, 0)
+#guard runAtoms maplistCutClosureProgram maplistClosureCutRetainsCaller ==
+  some (["a", "b", "c"], 0, 0)
 #guard runCountWithServices (servicesWithTextFiles fixtureTextResources) []
   textFileRead == some (1, 0, 0)
 #guard runCount [] textFileRead == some (0, 0, 0)
