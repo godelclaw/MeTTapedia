@@ -1,0 +1,70 @@
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
+
+/-! Regression checks for OUR three-coordinate invariant trace-order repair. -/
+
+namespace Mettapedia
+namespace QuantumTheory
+namespace YangMills
+
+open HypercubicDimension16PhysicalOrbitOperator
+open HypercubicDimension16PhysicalRelationOperator
+open HypercubicDimension16JointPhysicalQuotient
+open HypercubicDimension16IncomingCommutatorTraceInvariantWitness
+open HypercubicDimension16WilsonTraceOrderInvariantRepair
+open HypercubicDimension16WilsonTraceOrderInvariantBianchi
+open HypercubicDimension16WilsonTraceOrderInvariantEOM
+open HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
+
+example (policy : PhysicalRelationPolicy) :
+    ourTwoCoordinateInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) ≠ 0 :=
+  ourTwoCoordinateInvariantTraceOrderCorrection_ourSecondIBP_ne_zero policy
+
+example (policy : PhysicalRelationPolicy) :
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) = 0 :=
+  ourThreeCoordinateInvariantTraceOrderCorrection_ourSecondIBP_zero policy
+
+example (policy : PhysicalRelationPolicy) :
+    ourInvariantSecondIBPRow policy ∈ jointInvariantRelationSubmodule policy :=
+  ourInvariantSecondIBPRow_mem policy
+
+example (policy : PhysicalRelationPolicy) :
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (ourInvariantSecondIBPRow policy).1 = 0 :=
+  ourThreeCoordinateInvariantTraceOrderCorrection_invariantSecondIBP_zero policy
+
+example (policy : PhysicalRelationPolicy) :
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (ourInvariantCommutatorRow policy).1 = 0 :=
+  ourThreeCoordinateInvariantTraceOrderCorrection_invariantCommutator_zero policy
+
+example :
+    ourThreeCoordinateInvariantTraceOrderCorrection ourInvariantIBPRow.1 = 0 :=
+  ourThreeCoordinateInvariantTraceOrderCorrection_invariantIBP_zero
+
+example (policy : PhysicalRelationPolicy) :
+    ourThreeCoordinateInvariantTraceOrderCorrection
+      (ourInvariantBianchiRow policy).1 = 0 :=
+  ourThreeCoordinateInvariantTraceOrderCorrection_invariantBianchi_zero policy
+
+example :
+    ourThreeCoordinateInvariantTraceOrderCorrection ourInvariantEOMRow.1 = 0 :=
+  ourThreeCoordinateInvariantTraceOrderCorrection_invariantEOM_zero
+
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourSecondIBPSignedAxisWeight
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourSecondIBPThirdPlanePairSignedWeight
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourTwoCoordinateInvariantTraceOrderCorrection_ourSecondIBP_ne_zero
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourThreeCoordinateInvariantTraceOrderCorrection_ourSecondIBP_zero
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourInvariantSecondIBPRow_mem
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourThreeCoordinateInvariantTraceOrderCorrection_invariantSecondIBP_zero
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourThreeCoordinateInvariantTraceOrderCorrection_invariantCommutator_zero
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourThreeCoordinateInvariantTraceOrderCorrection_invariantIBP_zero
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourThreeCoordinateInvariantTraceOrderCorrection_invariantBianchi_zero
+#print axioms HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair.ourThreeCoordinateInvariantTraceOrderCorrection_invariantEOM_zero
+
+end YangMills
+end QuantumTheory
+end Mettapedia
