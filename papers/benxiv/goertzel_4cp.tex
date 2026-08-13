@@ -346,10 +346,17 @@ local consequence used by the radius--one collar description:
 \texttt{exists\_vertex\_mem\_all\_crossed\_edges\_of\_dual\_triangle}.
 \end{center}
 
-Thus all three crossed primal edges are incident with the same ambient vertex;
-the dual triangle is the link of one primal vertex, rather than an arbitrary
-separating triangle.  This is the closed-map bounded-interaction classification
-needed by the source.  It does
+The consumer-facing theorem
+
+\begin{center}
+\texttt{exists\_vertex\_mem\_three\_shared\_edges\_of\_dual\_triangle}
+\end{center}
+
+then identifies the three canonical pairwise shared primal edges themselves
+and proves that one ambient vertex belongs to all three.  Thus the dual
+triangle is the link of one primal vertex, rather than an arbitrary separating
+triangle.  This is the closed-map bounded-interaction classification needed by
+the source.  It does
 \emph{not} by itself prove \texttt{CommonNeighborsExact} for the Cell--3
 carrier: that carrier has degree-one boundary stubs and is provably
 incompatible with the closed cubic minimal-counterexample structure.  The
@@ -357,6 +364,15 @@ remaining statement must therefore transport the classified face triangle
 through an explicit closed-map-to-open-annulus formation, preserving the
 relevant interior faces and their shared boundary edges.  Adding minimality
 as a field of the open instance would be inconsistent, not a shortcut.
+
+This carrier distinction also rules out a superficially convenient adapter.
+The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
+already the cut-open framed graph and is proved not globally cubic, whereas
+the minimal-counterexample theorem concerns the original closed cubic map.
+One may not assume both structures on that same carrier and call the resulting
+conditional theorem a formation result.  The missing bridge must construct
+the deleted-edge/open rotation data from the closed map and prove that faces
+remote from the deleted edge retain their orbits and shared edges.
 
 The first generic piece of this formation is now constructed in
 \texttt{GoertzelV24OpenRegionFaceTransport}.  Let a closed ambient face orbit

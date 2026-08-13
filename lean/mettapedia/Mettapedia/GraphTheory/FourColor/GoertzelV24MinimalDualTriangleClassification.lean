@@ -238,6 +238,68 @@ theorem exists_vertex_mem_all_crossed_edges_of_dual_triangle
       (hsubsingleton.elim ⟨inside, hinside⟩ ⟨vertex, hvertex⟩)
   simpa only [heq] using hinsideEdge
 
+/-- The three canonical primal edges shared by a facial-dual triangle meet at
+one ambient vertex.
+
+This is the consumer-facing form of the singleton-separator theorem.  In
+particular, if `third` is a common full-dual neighbour of the adjacent faces
+`first` and `second`, then the two edges witnessing that common-neighbour
+relation meet at an endpoint of the canonical `first`--`second` edge.  This is
+the closed-map bounded-interaction fact used by the source's radius-one collar
+normal form; no open-annulus identification is assumed here. -/
+theorem exists_vertex_mem_three_shared_edges_of_dual_triangle
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {first second third : AmbientFace
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))}
+    (hfirstSecond : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Adj first second)
+    (hsecondThird : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Adj second third)
+    (hthirdFirst : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace graphData.toRotationSystem))).Adj third first) :
+    let allFaces : Finset (OrbitFace graphData.toRotationSystem) := Finset.univ
+    let hunique := pairwiseUniqueSharedInteriorEdges graphData minimal
+    let firstSecondEdge := sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary graphData.toRotationSystem) allFaces hunique hfirstSecond
+    let secondThirdEdge := sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary graphData.toRotationSystem) allFaces hunique hsecondThird
+    let thirdFirstEdge := sharedInteriorEdgeOfAdjOfPairwiseUnique
+      (orbitFaceBoundary graphData.toRotationSystem) allFaces hunique hthirdFirst
+    ∃ vertex : V,
+      vertex ∈ firstSecondEdge.1 ∧
+        vertex ∈ secondThirdEdge.1 ∧ vertex ∈ thirdFirstEdge.1 := by
+  dsimp only
+  let allFaces : Finset (OrbitFace graphData.toRotationSystem) := Finset.univ
+  let hunique := pairwiseUniqueSharedInteriorEdges graphData minimal
+  let walk := dualTriangleWalk graphData hfirstSecond hsecondThird hthirdFirst
+  let removed := dualWalkCrossingEdges
+    (orbitFaceBoundary graphData.toRotationSystem) allFaces hunique walk
+  rcases exists_vertex_mem_all_crossed_edges_of_dual_triangle graphData minimal
+      hfirstSecond hsecondThird hthirdFirst with ⟨vertex, hvertex⟩
+  have hcrossing (step : Fin walk.length) :
+      dualWalkCrossingEdge (orbitFaceBoundary graphData.toRotationSystem)
+        allFaces hunique walk step ∈ removed := by
+    exact (mem_dualWalkCrossingEdges_iff
+      (orbitFaceBoundary graphData.toRotationSystem) allFaces hunique walk _).2
+        ⟨step, rfl⟩
+  have hzero := hvertex _ (hcrossing ⟨0, by simp [walk]⟩)
+  have hone := hvertex _ (hcrossing ⟨1, by simp [walk]⟩)
+  have htwo := hvertex _ (hcrossing ⟨2, by simp [walk]⟩)
+  refine ⟨vertex, ?_, ?_, ?_⟩
+  · simpa [walk, allFaces, hunique, dualTriangleWalk,
+      dualWalkCrossingEdge] using hzero
+  · simpa [walk, allFaces, hunique, dualTriangleWalk,
+      dualWalkCrossingEdge] using hone
+  · simpa [walk, allFaces, hunique, dualTriangleWalk,
+      dualWalkCrossingEdge] using htwo
+
 end
 
 end GoertzelV24MinimalDualTriangleClassification
