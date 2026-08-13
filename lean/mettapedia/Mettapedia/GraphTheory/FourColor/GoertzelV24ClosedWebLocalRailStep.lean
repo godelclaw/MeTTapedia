@@ -342,6 +342,16 @@ structure SourceLocalRailWalkPair
   secondRail_isPath : secondRail.IsPath
   firstRail_support_disjoint_secondRail :
     firstRail.support.Disjoint secondRail.support
+  firstRail_support_adjacent_center : ∀ face ∈ firstRail.support,
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt interior.center) face
+  secondRail_support_adjacent_center : ∀ face ∈ secondRail.support,
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt interior.center) face
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
   firstRail_length_add_secondRail_length_eq_two :
@@ -495,6 +505,25 @@ noncomputable def sourceLocalRailWalkPairOfShape
           · exact hAB hsecond
           · exact hAM hsecond
           · exact hAD hsecond
+        firstRail_support_adjacent_center := by
+          intro face hface
+          simp only [firstRail, SimpleGraph.Walk.support_copy,
+            SimpleGraph.Walk.support_nil, List.mem_singleton] at hface
+          subst face
+          exact localPlacementSideFace_adjacent_center (corridor := corridor)
+            placement incomingBefore
+        secondRail_support_adjacent_center := by
+          intro face hface
+          simp only [secondRail, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+            or_false] at hface
+          rcases hface with rfl | rfl | rfl
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement incomingAfter
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement middle
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement outgoingAfter
         firstRail_length_le_two := by simp [firstRail]
         secondRail_length_le_two := by simp [secondRail]
         firstRail_length_add_secondRail_length_eq_two := by
@@ -557,6 +586,26 @@ noncomputable def sourceLocalRailWalkPairOfShape
           · rcases hsecondMem with hsecondMem | hsecondMem
             · exact hCB hsecondMem
             · exact hCD hsecondMem
+        firstRail_support_adjacent_center := by
+          intro face hface
+          simp only [SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+            or_false] at hface
+          rcases hface with rfl | rfl
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement incomingBefore
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement outgoingBefore
+        secondRail_support_adjacent_center := by
+          intro face hface
+          simp only [SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+            or_false] at hface
+          rcases hface with rfl | rfl
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement incomingAfter
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement outgoingAfter
         firstRail_length_le_two := by simp
         secondRail_length_le_two := by simp
         firstRail_length_add_secondRail_length_eq_two := by simp }
@@ -617,6 +666,25 @@ noncomputable def sourceLocalRailWalkPairOfShape
           · exact hAB hsecond
           · exact hMB hsecond
           · exact hCB hsecond
+        firstRail_support_adjacent_center := by
+          intro face hface
+          simp only [firstRail, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+            or_false] at hface
+          rcases hface with rfl | rfl | rfl
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement incomingBefore
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement middle
+          · exact localPlacementSideFace_adjacent_center (corridor := corridor)
+              placement outgoingBefore
+        secondRail_support_adjacent_center := by
+          intro face hface
+          simp only [secondRail, SimpleGraph.Walk.support_copy,
+            SimpleGraph.Walk.support_nil, List.mem_singleton] at hface
+          subst face
+          exact localPlacementSideFace_adjacent_center (corridor := corridor)
+            placement incomingAfter
         firstRail_length_le_two := by simp [firstRail]
         secondRail_length_le_two := by simp [secondRail]
         firstRail_length_add_secondRail_length_eq_two := by
