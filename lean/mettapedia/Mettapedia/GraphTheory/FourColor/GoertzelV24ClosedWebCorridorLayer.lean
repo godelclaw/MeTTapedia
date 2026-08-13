@@ -9,8 +9,8 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorInterfaceMatching
 # Source-local layer boundaries in a closed-web corridor
 
 Addendum XXVII(iii) takes profiles on *simple layer boundaries*, not on a
-chord wall.  The Cell-3 L1 extraction now gives a boundary-clean hexagonal
-corridor with canonical rungs.  This file turns two consecutive rungs into
+chord wall.  The Cell-3 length/depth extraction now gives a boundary-clean
+hexagonal corridor with canonical rungs.  This file turns two consecutive rungs into
 the first concrete piece of such a boundary: two simple facial-dual paths
 through consecutive corridor hexagons with the same two exterior faces.
 

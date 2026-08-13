@@ -1,9 +1,9 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierWeightedCorridor
 
 /-!
-# Boundary-clean L1 corridors for the Cell-3 closed-web carrier
+# Boundary-clean Cell-3 corridors for the closed-web carrier
 
-The ordinary Cell-3 L1 extraction finds a hexagonal block in the induced
+The Cell-3 length/depth extraction finds a hexagonal block in the induced
 annular facial dual.  That alone does not say that a selected cell avoids the
 two named holes in the full facial dual.  Addendum XXVII(iii) needs exactly
 that stronger fact: both holes and the defect zone must lie outside the
@@ -410,7 +410,7 @@ structure BoundaryCleanOrbitHexCorridor
         neighbor.1 ∈ embedded.cellulation.interiorFaces
 
 /-- The bare finite corridor skeleton is actually the literal clean interval
-selected by Cell-3 L1.  Keeping this as a proposition rather than duplicating
+selected by the Cell-3 length/depth extraction.  Keeping this as a proposition rather than duplicating
 the full dependent path witness in the finite carrier keeps the compiled
 interface small while still exposing the geodesic when remote separation is
 proved. -/
