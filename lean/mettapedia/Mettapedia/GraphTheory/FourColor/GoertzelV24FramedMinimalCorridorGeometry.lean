@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedInteriorDual
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceSize
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicFiveFaceIntersections
 
 /-!
 # Minimal-normal-form input to framed corridor geometry
@@ -22,6 +23,8 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24FramedTrail
 
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24CyclicFiveFaceIntersections
+open GoertzelV24FourEdgeCutGluing
 open GoertzelV24MinimalFaceSize
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24TwoEdgeCutMinimality
@@ -37,6 +40,29 @@ local instance : DecidableEq G.edgeSet := Subtype.instDecidableEq
 namespace SourceTrail
 
 namespace AnnularEmbedding
+
+/-- In the vertex-minimal normal form, two distinct quotient faces of the
+ambient spherical map share at most one primal edge.  This is the exact
+incidence hypothesis used by the framed-corridor coordinates; it follows from
+the already-proved cyclic five-edge-connectivity of a minimal counterexample,
+rather than being an additional corridor assumption. -/
+theorem pairwiseUniqueSharedInteriorEdges_of_vertexMinimalTaitCounterexample
+    {source : SourceTrail G} (embedded : source.AnnularEmbedding)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      embedded.cellulation.rotation) :
+    PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)) := by
+  have hconnected : G.Connected := by
+    rw [← GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
+      G embedded.cellulation.rotation]
+    exact minimal.primalConnected
+  apply pairwiseUniqueSharedInteriorEdges_of_cyclicallyFiveEdgeConnected
+    embedded.cellulation.rotation minimal.facesTwoSided hconnected
+      minimal.spherical minimal.vertexRotationCyclic
+  exact cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample
+    embedded.cellulation.rotation minimal
 
 /-- In the vertex-minimal normal form, internal-dual connectedness is the
 only additional geometric input needed by the weighted corridor extractor.
