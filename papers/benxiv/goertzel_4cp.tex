@@ -494,6 +494,19 @@ not yet prove that the extra face is impossible, discharge
 \texttt{CommonNeighborsExact} in the cut-open Cell--3 carrier, or construct
 the source opening; those are the next finite local and formation steps.
 
+The theorem is already consumed by the closed corridor API rather than left
+as an isolated candidate.  The derived result
+\texttt{twoStepCommonNeighbor\_eq\_middle\_or\_outgoing\_flanks} combines it
+with the two adjacent dual-triangle classifications: a common neighbour at
+index distance two is either the middle corridor face itself, or its shared
+edge from each adjacent centre belongs to that centre's named flank pair.
+Consequently all rail-collision distances now have a distinct proved status:
+remote collisions are impossible by geodesicity, consecutive collisions are
+classified by one flank pair, and distance-two collisions are trapped between
+the two adjacent flank pairs.  The remaining closed local task is the finite
+compatibility of those two flank classifications, not an unbounded path
+existence theorem.
+
 This carrier distinction also rules out a superficially convenient adapter.
 The rotation system in a well-formed \texttt{SourceTrail.AnnularEmbedding} is
 already the cut-open framed graph and is proved not globally cubic, whereas

@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalDualTriangleClassification
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalDualFourCycleClassification
 import Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabSideAdjacency
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpace
 
@@ -24,9 +25,11 @@ namespace GoertzelV24MinimalCorridorCommonNeighbors
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexSlabSideAdjacency
 open GoertzelV24MinimalDualTriangleClassification
+open GoertzelV24MinimalDualFourCycleClassification
 open GoertzelV24MinimalFaceIntersections
 open GoertzelV24OrbitFaceCycleSpace
 open GoertzelV24OrbitFaceTwoSided
@@ -287,6 +290,107 @@ theorem commonNeighborEdge_eq_outgoing_flank
     rw [hpairs] at htargetMem
     simp only [Finset.mem_insert, Finset.mem_singleton] at htargetMem
     exact htargetMem.resolve_left htargetNeOutgoing
+
+/-- **L1 (closed two-step rail collision).** A common neighbour of corridor
+faces two steps apart is either their displayed middle face, or its canonical
+edges from both adjacent centres are among the corresponding outgoing flank
+pairs.
+
+This combines the four-cycle classification with the two adjacent
+dual-triangle classifications.  It is the exact closed-map invariant needed
+to handle distance-two intersections in a recursive rail assembly; remote
+intersections are already excluded by geodesicity. -/
+theorem twoStepCommonNeighbor_eq_middle_or_outgoing_flanks
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    {corridorLength : Nat}
+    (corridor : OrbitHexCorridorSkeleton graphData.toRotationSystem
+      corridorLength)
+    {leftInterior : CorridorInterior corridorLength}
+    (hnext : leftInterior.center.val + 2 < corridorLength)
+    (leftPlacement : InternalHexRungPlacement corridor
+      (pairwiseUniqueSharedInteriorEdges graphData minimal) leftInterior)
+    (middlePlacement : InternalHexRungPlacement corridor
+      (pairwiseUniqueSharedInteriorEdges graphData minimal)
+      (nextCorridorInterior leftInterior hnext))
+    (leftBefore leftAfter :
+      {position // position ∈ placementSidePositions leftPlacement})
+    (middleBefore middleAfter :
+      {position // position ∈ placementSidePositions middlePlacement})
+    (hleftBefore : leftPlacement.outgoingPosition.val ≡
+      leftBefore.1.val + 1 [MOD 6])
+    (hleftAfter : leftAfter.1.val ≡
+      leftPlacement.outgoingPosition.val + 1 [MOD 6])
+    (hmiddleBefore : middlePlacement.outgoingPosition.val ≡
+      middleBefore.1.val + 1 [MOD 6])
+    (hmiddleAfter : middleAfter.1.val ≡
+      middlePlacement.outgoingPosition.val + 1 [MOD 6])
+    (face : AmbientFace
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem)))
+    (hleft : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Adj
+        (corridor.faceAt leftInterior.center) face)
+    (hright : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Adj
+        (corridor.faceAt
+          (nextCorridorInterior leftInterior hnext).outgoing.right) face) :
+    face = corridor.faceAt (nextCorridorInterior leftInterior hnext).center ∨
+      ((sharedInteriorEdgeOfAdjOfPairwiseUnique
+          (orbitFaceBoundary graphData.toRotationSystem)
+          (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))
+          (pairwiseUniqueSharedInteriorEdges graphData minimal) hleft =
+            graphData.toRotationSystem.edgeOf
+              (faceCycleDart graphData.toRotationSystem leftPlacement.root
+                leftBefore.1) ∨
+        sharedInteriorEdgeOfAdjOfPairwiseUnique
+          (orbitFaceBoundary graphData.toRotationSystem)
+          (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))
+          (pairwiseUniqueSharedInteriorEdges graphData minimal) hleft =
+            graphData.toRotationSystem.edgeOf
+              (faceCycleDart graphData.toRotationSystem leftPlacement.root
+                leftAfter.1)) ∧
+       ∃ hmiddle : (interiorDualGraph
+          (orbitFaceBoundary graphData.toRotationSystem)
+          (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Adj
+            (corridor.faceAt
+              (nextCorridorInterior leftInterior hnext).center) face,
+        sharedInteriorEdgeOfAdjOfPairwiseUnique
+            (orbitFaceBoundary graphData.toRotationSystem)
+            (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))
+            (pairwiseUniqueSharedInteriorEdges graphData minimal) hmiddle =
+              graphData.toRotationSystem.edgeOf
+                (faceCycleDart graphData.toRotationSystem
+                  middlePlacement.root middleBefore.1) ∨
+          sharedInteriorEdgeOfAdjOfPairwiseUnique
+            (orbitFaceBoundary graphData.toRotationSystem)
+            (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))
+            (pairwiseUniqueSharedInteriorEdges graphData minimal) hmiddle =
+              graphData.toRotationSystem.edgeOf
+                (faceCycleDart graphData.toRotationSystem
+                  middlePlacement.root middleAfter.1)) := by
+  let middleInterior := nextCorridorInterior leftInterior hnext
+  by_cases hmiddleEq : face = corridor.faceAt middleInterior.center
+  · exact Or.inl hmiddleEq
+  · right
+    have hmiddle : (interiorDualGraph
+        (orbitFaceBoundary graphData.toRotationSystem)
+        (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Adj
+          (corridor.faceAt middleInterior.center) face := by
+      exact
+        GoertzelV24MinimalDualFourCycleClassification.OrbitHexCorridorSkeleton.middle_adj_commonNeighbor_of_two_step
+          graphData minimal corridor
+        (first := leftInterior.center) (middle := middleInterior.center)
+        (last := middleInterior.outgoing.right) rfl rfl face hleft
+        hright.symm hmiddleEq
+    refine ⟨commonNeighborEdge_eq_outgoing_flank graphData minimal corridor
+      leftPlacement leftBefore leftAfter hleftBefore hleftAfter face hleft
+      hmiddle, ?_⟩
+    exact ⟨hmiddle,
+      commonNeighborEdge_eq_outgoing_flank graphData minimal corridor
+        middlePlacement middleBefore middleAfter hmiddleBefore hmiddleAfter
+        face hmiddle hright⟩
 
 end
 
