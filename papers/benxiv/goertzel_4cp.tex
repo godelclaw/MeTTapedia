@@ -539,6 +539,16 @@ It consequently computes the five-stub inner interface of
 \texttt{AnnularBoundaryData}, with no invented outer boundary.  The two
 presentations are not being called definitionally identical; a later consumer
 that needs to interchange them must prove the relevant graph isomorphism.
+The manuscript-side carrier is now present separately as
+\texttt{GoertzelV24DeletedRegionSlitGraph}: it deletes a chosen vertex region,
+keeps precisely the exterior vertices, and creates one fresh degree-one stub
+for every directed edge from that exterior into the deleted region.  Thus the
+two presentations have been retained rather than silently choosing one.  The
+next comparison is necessarily an isomorphism of \emph{ordered} boundary
+data: it must identify the toolchain's stub at each element of \texttt{Fin 5}
+with the corresponding fresh manuscript-side port in that same cyclic order.
+A bare graph isomorphism that permutes those five stubs would not preserve the
+boundary word or the selected-component data, and has not been asserted.
 This is a real graph construction, not a claim that a selected pentagon or the
 annular Cell--3 carrier has already been obtained.  Selecting the cap in the
 closed normal-form map, proving the required corridor is retained, and
