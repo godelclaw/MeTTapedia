@@ -1364,6 +1364,31 @@ It neither eliminates the collision cases nor concatenates the successful
 local pairs into long, end-capped, hole-to-hole crosscuts; those remain the
 formation geometry required by the splice.
 
+The finite connector shape itself no longer depends on the older closed-map
+uniqueness premise.  The theorem
+\texttt{selectedSourceLocalRailShape\_of\_cell3} classifies the four flank
+slots of every literal selected Cell--3 placement into exactly the three
+source cases
+\[
+                 0+2,\qquad 1+1,\qquad 2+0.
+\]
+This is a six-cycle coordinate calculation plus the proved Cell--3
+nonadjacency.  The zero is meaningful: one rail may be a stationary identity
+connector while the other traverses two local pieces.  Treating that case as
+an automatic failure would exclude valid source geometry.  The theorem is a
+finite shape certificate only; appendwise simplicity, mutual rail separation,
+and the two literal end caps remain to be constructed.
+
+The same module realizes every classified shape as two literal simple
+facial-dual paths whose combined length is at most two.  Each one-step piece
+comes from the selected opposite-dart adjacency theorem; if the bounded local
+geometry repeats a face, standard walk loop erasure removes the repetition
+without changing either endpoint.  Thus the path constructor covers all
+three shapes without smuggling closed-map uniqueness into the annulus.  It
+deliberately does not yet assert that the two rails are mutually disjoint:
+that is the next finite collision classification, followed by remote append
+separation and the end caps.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
