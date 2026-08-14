@@ -2,6 +2,15 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderSecondaryAxisData
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderSecondaryIBPData
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderSecondaryProfileData
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingIBPData
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock00
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock01
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock02
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock03
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock00
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock01
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock00
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock01
 
 /-!
 # OUR existing-scalar parameter repair of the singleton trace row
@@ -54,15 +63,27 @@ open SU2LatticeFDCensusNoGo
 open V14HypercubicQuarticCensus
 open HypercubicDimension16WilsonTraceOrderInvariantRepair
 open HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
+open HypercubicDimension16WilsonTraceOrderInvariantBianchi
+open HypercubicDimension16WilsonTraceOrderInvariantEOM
 open HypercubicDimension16WilsonTraceOrderCycleProfileRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileDifferential
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassRepair
+open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassCompatibility
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenMismatch
 open HypercubicDimension16WilsonTraceOrderSecondaryAxisData
 open HypercubicDimension16WilsonTraceOrderSecondaryIBPData
 open HypercubicDimension16WilsonTraceOrderSecondaryProfileData
+open HypercubicDimension16WilsonTraceOrderIncomingIBPData
+open HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock00
+open HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock01
+open HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock02
+open HypercubicDimension16WilsonTraceOrderIncomingSecondIBPDataBlock03
+open HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock00
+open HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock01
+open HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock00
+open HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock01
 
 /-- OUR scalar null-direction candidate over the six already constructed
 coordinates.  Its signs are chosen so that a unit evaluation on the original
@@ -342,6 +363,303 @@ theorem ourExistingScalarNullDirection_ourSecondaryCommutator_zero
     ourSecondaryPlaneProfileInvariantCoordinate_ourSecondaryCommutator]
   norm_num
 
+/-! ## First-IBP replay -/
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourIBP
+    (field : Fin 7) :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single (ourIBPOrbit field) (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ (ourIBPLabeledTerm field) : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) (ourIBPLabeledTerm field) 0
+    (ourIBP_incomingPlaneProfileSignedWeight field)]
+  norm_num
+
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourIBPRow :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (∑ field : Fin 7, Finsupp.single (ourIBPOrbit field) (1 : ℚ))) = 0 := by
+  rw [map_sum, map_sum]
+  apply Finset.sum_eq_zero
+  intro field _
+  exact ourIncomingPlaneProfileCoordinate_reynolds_ourIBP field
+
+theorem ourIncomingPlaneProfileInvariantCoordinate_ourIBP_zero :
+    ourIncomingPlaneProfileInvariantCoordinate
+      (orbitPhysicalRelationOperator .offShell
+        (Finsupp.single (ourFieldSevenIBPGenerator .offShell) 1)) = 0 := by
+  unfold ourIncomingPlaneProfileInvariantCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_ourIBP,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourIBPRow]
+  norm_num
+
+theorem ourExistingScalarNullDirection_ourIBP_zero :
+    ourExistingScalarNullDirection
+      (orbitPhysicalRelationOperator .offShell
+        (Finsupp.single (ourFieldSevenIBPGenerator .offShell) 1)) = 0 := by
+  unfold ourExistingScalarNullDirection
+  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.neg_apply,
+    LinearMap.smul_apply]
+  rw [ourInvariantSevenAxisCoordinate_ourIBP,
+    ourInvariantIBPAxisCoordinate_ourIBP,
+    ourInvariantThirdIBPAxisCoordinate_ourIBP,
+    ourInvariantTraceCycleProfileCoordinate_ourIBP_zero,
+    ourIncomingPlaneProfileInvariantCoordinate_ourIBP_zero,
+    ourSecondaryPlaneProfileInvariantCoordinate_ourIBP_zero]
+  norm_num
+
+/-! ## Second-IBP replay -/
+
+theorem ourSecondIBP_incomingPlaneProfileSignedWeight
+    (field : Fin 7) :
+    (∑ h : Hypercubic4,
+      (ourSecondIBPLabeledTerm field).tensorSign h *
+        (ourDerivativeWordPlanePairMultiplicity (planeLookup 0 1) [0, 2]
+          (planeLookup 1 3)
+          ((ourSecondIBPLabeledTerm field).hypercubicAct h) : ℚ)) = 0 := by
+  fin_cases field
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_zero
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_one
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_two
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_three
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_four
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_five
+  · exact ourSecondIBP_incomingPlaneProfileSignedWeight_six
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourSecondIBP
+    (field : Fin 7) :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single (ourSecondIBPOrbit field) (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ (ourSecondIBPLabeledTerm field) : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) (ourSecondIBPLabeledTerm field) 0
+    (ourSecondIBP_incomingPlaneProfileSignedWeight field)]
+  norm_num
+
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourSecondIBPRow :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (∑ field : Fin 7, Finsupp.single (ourSecondIBPOrbit field) (1 : ℚ))) =
+        0 := by
+  rw [map_sum, map_sum]
+  apply Finset.sum_eq_zero
+  intro field _
+  exact ourIncomingPlaneProfileCoordinate_reynolds_ourSecondIBP field
+
+theorem ourIncomingPlaneProfileInvariantCoordinate_ourSecondIBP_zero
+    (policy : PhysicalRelationPolicy) :
+    ourIncomingPlaneProfileInvariantCoordinate
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) = 0 := by
+  unfold ourIncomingPlaneProfileInvariantCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_ourSecondIBP,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourSecondIBPRow]
+  norm_num
+
+theorem ourExistingScalarNullDirection_ourSecondIBP_zero
+    (policy : PhysicalRelationPolicy) :
+    ourExistingScalarNullDirection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) = 0 := by
+  unfold ourExistingScalarNullDirection
+  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.neg_apply,
+    LinearMap.smul_apply]
+  rw [ourInvariantSevenAxisCoordinate_ourSecondIBP,
+    ourInvariantIBPAxisCoordinate_ourSecondIBP,
+    ourInvariantThirdIBPAxisCoordinate_ourSecondIBP,
+    ourInvariantTraceCycleProfileCoordinate_ourSecondIBP_zero,
+    ourIncomingPlaneProfileInvariantCoordinate_ourSecondIBP_zero,
+    ourSecondaryPlaneProfileInvariantCoordinate_ourSecondIBP]
+  norm_num
+
+/-! ## Bianchi replay -/
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiBase :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourBianchiBaseOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourBianchiBaseLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourBianchiBaseLabeled 0
+    ourBianchiBase_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiRotateOne :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourBianchiRotateOneOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourBianchiRotateOneLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourBianchiRotateOneLabeled 0
+    ourBianchiRotateOne_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiRotateTwo :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourBianchiRotateTwoOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourBianchiRotateTwoLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourBianchiRotateTwoLabeled 0
+    ourBianchiRotateTwo_incomingPlaneProfileSignedWeight]
+  norm_num
+
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiRotateOne_neg :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourBianchiRotateOneOrbit (-1 : ℚ))) = 0 := by
+  rw [show Finsupp.single ourBianchiRotateOneOrbit (-1 : ℚ) =
+      -Finsupp.single ourBianchiRotateOneOrbit (1 : ℚ) by simp,
+    map_neg, map_neg, ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiRotateOne]
+  simp
+
+theorem ourIncomingPlaneProfileInvariantCoordinate_ourBianchi_zero
+    (policy : PhysicalRelationPolicy) :
+    ourIncomingPlaneProfileInvariantCoordinate
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenBianchiGenerator policy) 1)) = 0 := by
+  unfold ourIncomingPlaneProfileInvariantCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_ourBianchi]
+  simp only [LinearMap.map_add,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiBase,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiRotateOne_neg,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourBianchiRotateTwo]
+  norm_num
+
+theorem ourExistingScalarNullDirection_ourBianchi_zero
+    (policy : PhysicalRelationPolicy) :
+    ourExistingScalarNullDirection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenBianchiGenerator policy) 1)) = 0 := by
+  unfold ourExistingScalarNullDirection
+  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.neg_apply,
+    LinearMap.smul_apply]
+  rw [ourInvariantSevenAxisCoordinate_ourBianchi_zero,
+    ourInvariantIBPAxisCoordinate_ourBianchi_zero,
+    ourInvariantThirdIBPAxisCoordinate_ourBianchi_zero,
+    ourInvariantTraceCycleProfileCoordinate_ourBianchi_zero,
+    ourIncomingPlaneProfileInvariantCoordinate_ourBianchi_zero,
+    ourSecondaryPlaneProfileInvariantCoordinate_ourBianchi_zero]
+  norm_num
+
+/-! ## On-shell EOM replay -/
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourEOMZero :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourEOMZeroOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourEOMZeroLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourEOMZeroLabeled 0
+    ourEOMZero_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourEOMOne :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourEOMOneOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourEOMOneLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourEOMOneLabeled 0
+    ourEOMOne_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourEOMThree :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourEOMThreeOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourEOMThreeLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourEOMThreeLabeled 0
+    ourEOMThree_incomingPlaneProfileSignedWeight]
+  norm_num
+
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourEOMThree_neg :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourEOMThreeOrbit (-1 : ℚ))) = 0 := by
+  rw [show Finsupp.single ourEOMThreeOrbit (-1 : ℚ) =
+      -Finsupp.single ourEOMThreeOrbit (1 : ℚ) by simp,
+    map_neg, map_neg, ourIncomingPlaneProfileCoordinate_reynolds_ourEOMThree]
+  simp
+
+theorem ourIncomingPlaneProfileInvariantCoordinate_ourEOM_zero :
+    ourIncomingPlaneProfileInvariantCoordinate
+      (orbitPhysicalRelationOperator .onShell
+        (Finsupp.single ourFieldSevenEOMGenerator 1)) = 0 := by
+  unfold ourIncomingPlaneProfileInvariantCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_ourEOM]
+  simp only [LinearMap.map_add,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourEOMZero,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourEOMOne,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourEOMThree_neg]
+  norm_num
+
+theorem ourExistingScalarNullDirection_ourEOM_zero :
+    ourExistingScalarNullDirection
+      (orbitPhysicalRelationOperator .onShell
+        (Finsupp.single ourFieldSevenEOMGenerator 1)) = 0 := by
+  unfold ourExistingScalarNullDirection
+  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.neg_apply,
+    LinearMap.smul_apply]
+  rw [ourInvariantSevenAxisCoordinate_ourEOM_zero,
+    ourInvariantIBPAxisCoordinate_ourEOM_zero,
+    ourInvariantThirdIBPAxisCoordinate_ourEOM_zero,
+    ourInvariantTraceCycleProfileCoordinate_ourEOM_zero,
+    ourIncomingPlaneProfileInvariantCoordinate_ourEOM_zero,
+    ourSecondaryPlaneProfileInvariantCoordinate_ourEOM_zero]
+  norm_num
+
 /-- The existing scalar null direction contributes exactly `1 / 10` of the
 incoming trace class on the singleton-trace row. -/
 theorem ourExistingScalarNullDirection_ourSingletonTrace
@@ -418,13 +736,71 @@ theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSecondaryCommu
     ourExistingScalarNullDirection_ourSecondaryCommutator_zero, zero_smul]
   simp
 
+/-- OUR reparameterized correction retains the explicitly checked first-IBP
+row under the off-shell physical policy. -/
+theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourIBP_zero :
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection
+      (orbitPhysicalRelationOperator .offShell
+        (Finsupp.single (ourFieldSevenIBPGenerator .offShell) 1)) = 0 := by
+  unfold ourParameterSynthesizedSourceSevenTraceOrderCorrection
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    ourThreeClassSourceSevenTraceOrderCorrection_ourIBP_zero,
+    ourExistingScalarNullDirection_ourIBP_zero, zero_smul]
+  simp
+
+/-- OUR reparameterized correction retains the explicitly checked second-IBP
+row under either physical relation policy. -/
+theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSecondIBP_zero
+    (policy : PhysicalRelationPolicy) :
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) = 0 := by
+  unfold ourParameterSynthesizedSourceSevenTraceOrderCorrection
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    ourThreeClassSourceSevenTraceOrderCorrection_ourSecondIBP_zero,
+    ourExistingScalarNullDirection_ourSecondIBP_zero, zero_smul]
+  simp
+
+/-- OUR reparameterized correction retains the explicitly checked Bianchi row
+under either physical relation policy. -/
+theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourBianchi_zero
+    (policy : PhysicalRelationPolicy) :
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenBianchiGenerator policy) 1)) = 0 := by
+  unfold ourParameterSynthesizedSourceSevenTraceOrderCorrection
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    ourThreeClassSourceSevenTraceOrderCorrection_ourBianchi_zero,
+    ourExistingScalarNullDirection_ourBianchi_zero, zero_smul]
+  simp
+
+/-- OUR reparameterized correction retains the explicitly checked on-shell
+EOM row. -/
+theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourEOM_zero :
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection
+      (orbitPhysicalRelationOperator .onShell
+        (Finsupp.single ourFieldSevenEOMGenerator 1)) = 0 := by
+  unfold ourParameterSynthesizedSourceSevenTraceOrderCorrection
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    ourThreeClassSourceSevenTraceOrderCorrection_ourEOM_zero,
+    ourExistingScalarNullDirection_ourEOM_zero, zero_smul]
+  simp
+
 #print axioms ourExistingScalarNullDirection_ourSingletonTrace
 #print axioms ourExistingScalarNullDirection_ourCommutator_zero
 #print axioms ourExistingScalarNullDirection_ourSecondaryCommutator_zero
+#print axioms ourExistingScalarNullDirection_ourIBP_zero
+#print axioms ourExistingScalarNullDirection_ourSecondIBP_zero
+#print axioms ourExistingScalarNullDirection_ourBianchi_zero
+#print axioms ourExistingScalarNullDirection_ourEOM_zero
 #print axioms ourExistingScalarNullDirection_signed_action
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_signed_action
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSingletonTrace_zero
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourCommutator_zero
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSecondaryCommutator_zero
+#print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourIBP_zero
+#print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSecondIBP_zero
+#print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourBianchi_zero
+#print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourEOM_zero
 
 end Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
