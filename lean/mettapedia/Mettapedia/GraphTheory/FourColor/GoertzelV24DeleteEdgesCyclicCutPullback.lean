@@ -10,6 +10,11 @@ the cut.  The proof transports the two cycle witnesses along the subgraph
 inclusion and maps the finite cut support injectively into the ambient edge
 set.
 
+The one-sided variant handles the actual cap-closing use: the deleted graph
+supplies only the enclosed cycle, while the restored ambient graph supplies
+the complementary cycle.  Thus it does not require the stub-bearing opened
+carrier itself to be cyclic on both sides.
+
 The theorem does **not** claim that an abstract frontier tangle comes from a
 closed minimal counterexample, and it does not establish the noncrossing
 premise for a particular cap opening.  Those are source-formation facts to be
@@ -74,6 +79,64 @@ theorem hasCycleOnSide_of_deleteEdges
       rw [SimpleGraph.Walk.support_mapLe_eq_support
         (G.deleteEdges_le removed) cycle] at hvertex
       exact hvertex⟩
+
+/-- Pull a one-sided cut realization through pure edge deletion when the
+missing complementary cycle is supplied only after the deleted edges are
+restored.  This is strictly weaker input than a cyclic cut of the deleted
+graph: the opened carrier need not contain a cycle on the complementary
+side. -/
+def pullbackDeleteEdgesOfAmbientOutsideCycle
+    (edgeCut : Finset (G.deleteEdges removed).edgeSet)
+    (side : V → Prop)
+    (hcut_eq : ∀ edge : (G.deleteEdges removed).edgeSet,
+      edge ∈ edgeCut ↔ EdgeCrossesVertexSide (G.deleteEdges removed) side edge)
+    (hcard_le_four : edgeCut.card ≤ 4)
+    (hinside_cycle : HasCycleOnSide (G.deleteEdges removed) side)
+    (houtside_cycle : HasCycleOnSide G (fun vertex => ¬ side vertex))
+    (hremovedNoncrossing : ∀ edge : G.edgeSet, edge.1 ∈ removed →
+      ¬ EdgeCrossesVertexSide G side edge) :
+    SmallCyclicEdgeCut G where
+  edgeCut := edgeCut.map (deletedEdgeEmbedding removed)
+  side := side
+  hcut_eq := by
+    intro edge
+    constructor
+    · intro hedge
+      rcases Finset.mem_map.mp hedge with ⟨deletedEdge, hdeleted, heq⟩
+      have hcrossDeleted := (hcut_eq deletedEdge).1 hdeleted
+      subst edge
+      exact hcrossDeleted
+    · intro hcross
+      have hnotRemoved : edge.1 ∉ removed := by
+        intro hremoved
+        exact hremovedNoncrossing edge hremoved hcross
+      let deletedEdge := ambientEdgeToDeletedEdge removed edge hnotRemoved
+      apply Finset.mem_map.mpr
+      refine ⟨deletedEdge, (hcut_eq deletedEdge).2 ?_, ?_⟩
+      · exact hcross
+      · apply Subtype.ext
+        rfl
+  hcard_le_four := by
+    rw [Finset.card_map]
+    exact hcard_le_four
+  hinside_cycle := hasCycleOnSide_of_deleteEdges removed side hinside_cycle
+  houtside_cycle := houtside_cycle
+
+@[simp]
+theorem pullbackDeleteEdgesOfAmbientOutsideCycle_edgeCut_card
+    (edgeCut : Finset (G.deleteEdges removed).edgeSet)
+    (side : V → Prop)
+    (hcut_eq : ∀ edge : (G.deleteEdges removed).edgeSet,
+      edge ∈ edgeCut ↔ EdgeCrossesVertexSide (G.deleteEdges removed) side edge)
+    (hcard_le_four : edgeCut.card ≤ 4)
+    (hinside_cycle : HasCycleOnSide (G.deleteEdges removed) side)
+    (houtside_cycle : HasCycleOnSide G (fun vertex => ¬ side vertex))
+    (hremovedNoncrossing : ∀ edge : G.edgeSet, edge.1 ∈ removed →
+      ¬ EdgeCrossesVertexSide G side edge) :
+    (pullbackDeleteEdgesOfAmbientOutsideCycle removed edgeCut side hcut_eq
+      hcard_le_four hinside_cycle houtside_cycle
+      hremovedNoncrossing).edgeCut.card = edgeCut.card := by
+  simp [pullbackDeleteEdgesOfAmbientOutsideCycle]
 
 /-- Pull a bundled cyclic cut back through pure edge deletion.  The
 noncrossing premise says precisely that adding the deleted edges back does

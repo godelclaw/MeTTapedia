@@ -1630,6 +1630,16 @@ extract a cycle from the backtracking outer-hole walk when a deleted cap is
 restored.  It does not construct a closed antecedent for an abstract
 Addendum--V frontier; that source-formation comparison remains separate.
 
+The deletion transport now also has the deliberately asymmetric form needed
+by that observation.  The theorem
+\texttt{pullbackDeleteEdgesOfAmbientOutsideCycle} assumes only an inside
+cycle in the edge-deleted graph, an outside cycle in the restored ambient
+graph, exact crossing support of size at most four, and that the restored
+edges do not cross the chosen side.  It then constructs the ambient small
+cyclic cut with unchanged support cardinality.  In particular, it does not
+pretend that the degree-one-stub presentation already has cycles on both
+sides.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
