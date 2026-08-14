@@ -45,6 +45,44 @@ structure SelectedDualPathTransversal
 
 namespace SelectedDualPathTransversal
 
+/-- Select one actual shared interior primal edge at each step of a supplied
+simple dual crosscut.  Adjacency in `interiorDualGraph` already contains the
+required nonempty finite shared-edge witness; no global uniqueness assumption
+is needed. -/
+noncomputable def selectedCrossingEdge
+    {faceBoundary : F → Finset E} {allFaces : Finset F}
+    {start finish : AmbientFace allFaces}
+    (crosscut : SimpleDualCrosscut faceBoundary allFaces start finish)
+    (step : Fin crosscut.walk.length) : E :=
+  Classical.choose (exists_mem_sharedInteriorEdges_of_adj
+    faceBoundary allFaces (crosscut.walk.adj_getVert_succ step.isLt))
+
+/-- The chosen crossing is one of the literal shared interior edges certified
+by the corresponding facial-dual adjacency. -/
+theorem selectedCrossingEdge_mem_shared
+    {faceBoundary : F → Finset E} {allFaces : Finset F}
+    {start finish : AmbientFace allFaces}
+    (crosscut : SimpleDualCrosscut faceBoundary allFaces start finish)
+    (step : Fin crosscut.walk.length) :
+    selectedCrossingEdge crosscut step ∈
+      sharedInteriorEdges faceBoundary allFaces
+        (crosscut.walk.getVert step.val).1
+        (crosscut.walk.getVert (step.val + 1)).1 :=
+  Classical.choose_spec (exists_mem_sharedInteriorEdges_of_adj
+    faceBoundary allFaces (crosscut.walk.adj_getVert_succ step.isLt))
+
+/-- Every already-constructed simple facial-dual crosscut has a selected-edge
+presentation.  This chooses from its actual local adjacency witnesses; it does
+not claim uniqueness or choose a pair of disjoint crosscuts. -/
+noncomputable def ofCrosscut
+    {faceBoundary : F → Finset E} {allFaces : Finset F}
+    {start finish : AmbientFace allFaces}
+    (crosscut : SimpleDualCrosscut faceBoundary allFaces start finish) :
+    SelectedDualPathTransversal faceBoundary allFaces start finish where
+  crosscut := crosscut
+  crossingEdge := selectedCrossingEdge crosscut
+  crossing_mem_shared := selectedCrossingEdge_mem_shared crosscut
+
 /-- The finite support of the actual primal edges crossed by a selected
 transversal. -/
 def crossingEdges

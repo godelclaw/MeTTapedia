@@ -2358,6 +2358,23 @@ new one in one direction.  This is a representation repair, not the missing
 construction: the L1 Cell--3 rail steps still have to be assembled and
 end-capped to inhabit it.
 
+The successful local branch now inhabits that repaired carrier literally.
+For any source-derived \texttt{LocalLayerPair}, Lean selects one actual shared
+primal edge at each of the four dual steps and proves that the two selected
+crossing supports are disjoint.  The proof uses only the local incidence law:
+if the same primal edge occurred on both two-step paths, it would lie on the
+boundaries of three distinct faces, whereas an embedded edge has at most two
+incident face orbits.  No global unique-shared-edge premise is restored.  This
+closes one Cell--3 tile, not the formation gate: the alternative
+\texttt{SelectedLocalLayerCollision} still has to be eliminated or resolved,
+and the surviving local tiles still require append-safe assembly and literal
+end caps before they form the source's long transverse pair.
+The corresponding source-facing theorem preserves that boundary as an
+explicit disjunction: a selected rung placement yields either such a paired
+selected tile or the already classified local collision witness.  Thus the
+representation repair exposes, rather than conceals, the one remaining finite
+Cell--3 branch.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
