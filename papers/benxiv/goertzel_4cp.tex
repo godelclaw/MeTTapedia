@@ -1338,7 +1338,13 @@ finds the same boundary: Addendum~XXVII names transversal positions and layer
 boundaries, and uses their simplicity in the splice checklist, but supplies no
 deleted-edge construction or graph-side component for either coordinate.
 This is therefore a source gap now made explicit in Lean, not a claim that
-the manuscript's pumping argument has been refuted.  The shallow branch remains separately honest: each
+the manuscript's pumping argument has been refuted.  On 14 August the interface
+was tightened: L6 first selects one large laminar sector, so the new
+\texttt{ChordSectorSideAssignment} only requests graph-derived sides for the
+chords in that selected sector.  Its nested-equal-profile theorem is
+kernel-checked.  This removes an accidental requirement to construct
+transversals at every unrelated cut, but it is not itself a transversal
+construction.  The shallow branch remains separately honest: each
 chosen \texttt{radialBlockCut} still needs its own simple transversal.  Thus
 the assignment is one explicit half of the L6 geometry, not a substitute for
 the whole dichotomy.  In particular, the wall itself is not a shortcut: Lean

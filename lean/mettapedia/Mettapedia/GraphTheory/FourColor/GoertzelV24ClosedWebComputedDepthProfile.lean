@@ -896,6 +896,90 @@ theorem closedWebDepthProfile_faceLengthCap_eq_of_eq
   cases hprofiles
   simp
 
+/-!
+## Selected-sector depth profiles
+
+The deep branch first selects one cut and one laminar sector with more chords
+than the finite profile carrier.  The earlier `ChordSideAssignment` is useful
+for a uniform construction, but it asks for geometry at every cut and sector.
+The source only needs the selected large sector.  The following local carrier
+records exactly that smaller construction obligation; it is not a construction
+of the required transversals.
+-/
+
+/-- Graph-derived profile sides for the one large laminar sector selected by
+the depth pigeonhole. -/
+structure ChordSectorSideAssignment
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    (htriple : IsTaitColorTriple majority first second)
+    (widthBound : Nat)
+    (cut : Fin pair.firstPath.path.length) (side : Bool) where
+  inside : SectorChord pair embedded hdata htriple cut side → Finset V
+  crossingWidth : ∀ chord,
+    Fintype.card (VertexSetCrossingEdge embedded.RS (inside chord)) ≤ widthBound
+
+/-- Compute the finite occurrence-sensitive L7 profile for one selected
+sector chord from its actual vertex side. -/
+def ChordSectorSideAssignment.profile
+    {data : AnnularBoundaryData G outerCount}
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {pair : RadialPathPair data C first second}
+    {embedded : ClosedWebAnnularEmbedding data}
+    {hdata : data.WellFormed}
+    {htriple : IsTaitColorTriple majority first second}
+    {widthBound : Nat} {cut : Fin pair.firstPath.path.length} {side : Bool}
+    (assignment : ChordSectorSideAssignment pair embedded hdata htriple
+      widthBound cut side)
+    (hC : IsTaitEdgeColoring G C)
+    (chord : SectorChord pair embedded hdata htriple cut side) :
+    ClosedWebDepthProfile widthBound :=
+  vertexSetClosedWebCutProfileOfDartOccurrences widthBound embedded.RS
+    (assignment.inside chord)
+    (rotationColoringOfGraph embedded C)
+    (rotationColoringOfGraph_isTait embedded C hC)
+    (assignment.crossingWidth chord)
+
+/-- Once one selected sector is both laminar and larger than the finite L7
+carrier, graph-derived profiles on that sector repeat on a nested pair.  This
+is the local form of the depth handoff: it avoids demanding transversal data
+for unrelated cuts. -/
+theorem exists_nested_equal_computed_depthProfile_of_largeLaminarSector
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hdata : data.WellFormed)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    (pair : RadialPathPair data C first second)
+    (htriple : IsTaitColorTriple majority first second)
+    (hC : IsTaitEdgeColoring G C)
+    (widthBound : Nat)
+    (cut : Fin pair.firstPath.path.length) (side : Bool)
+    (hlarge : closedWebCutProfileCount widthBound <
+      (sectorSpanningChords C majority first second pair.firstPath
+        (positionRotationSector embedded hdata pair.firstPath htriple)
+        side cut).card)
+    (hlaminar : PairwiseLaminar
+      (sectorSpanningChords C majority first second pair.firstPath
+        (positionRotationSector embedded hdata pair.firstPath htriple)
+        side cut))
+    (assignment : ChordSectorSideAssignment pair embedded hdata htriple
+      widthBound cut side) :
+    ∃ (inner outer : SectorChord pair embedded hdata htriple cut side),
+      inner ≠ outer ∧ inner.1.NestedIn outer.1 ∧
+        assignment.profile hC inner = assignment.profile hC outer := by
+  let chords := sectorSpanningChords C majority first second pair.firstPath
+    (positionRotationSector embedded hdata pair.firstPath htriple) side cut
+  have hstateCard : Fintype.card (ClosedWebDepthProfile widthBound) < chords.card := by
+    rw [card_closedWebDepthProfile]
+    exact hlarge
+  obtain ⟨inner, outer, hne, hnested, hequal⟩ :=
+    exists_nested_equal_state_of_pairwiseLaminar chords hlaminar
+      (fun chord => assignment.profile hC chord) hstateCard
+  exact ⟨inner, outer, hne, hnested, hequal⟩
+
 end
 
 end GoertzelV24ClosedWebComputedDepthProfile
