@@ -525,6 +525,25 @@ cannot discharge \texttt{CommonNeighborsExact} on the open carrier.  The
 degree-one boundary stubs make adding closed minimality directly to that open
 instance inconsistent, not a shortcut.
 
+The source convention for that opening is now stated literally, rather than
+as a vague ``deleted cap.''  The manuscript says to delete the five cap
+vertices while retaining their spokes as stubs.  The accompanying Fable
+toolchain realizes the intended tangle by removing the five \emph{cycle
+edges} of the cap and keeping its five original vertices; each retained cap
+vertex is then a degree-one endpoint of its outward spoke.  The new Lean
+module \texttt{GoertzelV24PentagonCapOpening} computes this concrete toolchain
+operation from a finite pentagon-cap presentation.  It constructs the
+edge-deleted graph, transports the ordered five spokes into its edge type,
+and proves that each named cap vertex has precisely its one surviving spoke.
+It consequently computes the five-stub inner interface of
+\texttt{AnnularBoundaryData}, with no invented outer boundary.  The two
+presentations are not being called definitionally identical; a later consumer
+that needs to interchange them must prove the relevant graph isomorphism.
+This is a real graph construction, not a claim that a selected pentagon or the
+annular Cell--3 carrier has already been obtained.  Selecting the cap in the
+closed normal-form map, proving the required corridor is retained, and
+constructing the outer hole remain the source-specific formation theorem.
+
 The strictly local open-carrier implication is now machine-checked as well.
 The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
 opening, the outgoing rung and the canonical edge from the centre to each
