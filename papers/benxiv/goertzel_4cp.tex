@@ -666,6 +666,18 @@ open-region graph has a different vertex type.  This is deliberately below
 the annular claim: a graph isomorphism transports no distinguished hole faces,
 their cyclic order, or Euler proof.
 
+There is a sharp division inside that remaining face work.  The existing
+generic \texttt{GoertzelV24OpenRegionFaceTransport} already transports every
+ambient face whose complete dart orbit stays on the retained side.  In a cubic
+two-sided rotation, \texttt{GoertzelV24CubicFaceVertexSeparation} discharges
+that condition for a face dual-nonadjacent to a specified deleted face.  The
+present \texttt{PentagonCapPair}, however, is graph-side data: it is not yet
+identified with two ambient facial orbits, nor is the needed dual separation
+proved.  Hence those results carry the genuine interior facial geometry once
+the source formation supplies its hypotheses; the faces incident to either
+cap remain the new collar geometry.  This is a useful reduction of the
+formation theorem, not a proof of it.
+
 There is already a precise serial open-tangle adapter, but its quantifiers are
 important.  Given an actual equivalence from the literal exposed boundary
 darts to a displayed left/right port sum, it transports Tait colourings in
