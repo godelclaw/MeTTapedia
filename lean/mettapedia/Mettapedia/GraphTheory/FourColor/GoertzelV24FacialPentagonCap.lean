@@ -71,6 +71,17 @@ theorem spokeEdge_not_mem_faceEdges (cap : FacialPentagonCap data)
 
 end FacialPentagonCap
 
+/-- A facial pentagon cap whose `Fin 5` coordinates follow its actual cyclic
+boundary order.  `FacialPentagonCap` identifies the face-edge *set*; this
+strengthening records the ordered boundary walk needed to compare the source's
+five named stubs with a rotation-level collar calculation. -/
+structure OrientedFacialPentagonCap (data : Data G)
+    extends FacialPentagonCap data where
+  cycleEdge_eq_vertices : ∀ step : Fin 5,
+    (toFacialPentagonCap.toPentagonCap.cycleEdge step).1 =
+      s(toFacialPentagonCap.toPentagonCap.vertex step,
+        toFacialPentagonCap.toPentagonCap.vertex (step + 1))
+
 /-- Two separated pentagon caps, both facial.  This is the exact input datum
 of the Cell-3 formation: from it, surface surgery must construct the two hole
 orbits of the opened rotation and compare the Euler presentations.  The
@@ -145,6 +156,39 @@ theorem inner_faceEdges_ne_outer_faceEdges
     hinnerSupport houterSupport
 
 end FacialPentagonCapPair
+
+/-- A separated facial cap pair with the source's two cyclic five-stub
+coordinate systems tied to the literal facial boundary order.  This is an
+input interface for the cap-collar calculation, not a conclusion from the
+unordered graph-level cap pair. -/
+structure OrientedFacialPentagonCapPair (data : Data G)
+    extends FacialPentagonCapPair data where
+  inner_cycleEdge_eq_vertices : ∀ step : Fin 5,
+    (toFacialPentagonCapPair.toPentagonCapPair.inner.cycleEdge step).1 =
+      s(toFacialPentagonCapPair.toPentagonCapPair.inner.vertex step,
+        toFacialPentagonCapPair.toPentagonCapPair.inner.vertex (step + 1))
+  outer_cycleEdge_eq_vertices : ∀ step : Fin 5,
+    (toFacialPentagonCapPair.toPentagonCapPair.outer.cycleEdge step).1 =
+      s(toFacialPentagonCapPair.toPentagonCapPair.outer.vertex step,
+        toFacialPentagonCapPair.toPentagonCapPair.outer.vertex (step + 1))
+
+namespace OrientedFacialPentagonCapPair
+
+variable {data : Data G}
+
+/-- The inner member of an oriented facial pair. -/
+def innerOriented (caps : OrientedFacialPentagonCapPair data) :
+    OrientedFacialPentagonCap data where
+  toFacialPentagonCap := caps.toFacialPentagonCapPair.innerFacial
+  cycleEdge_eq_vertices := caps.inner_cycleEdge_eq_vertices
+
+/-- The outer member of an oriented facial pair. -/
+def outerOriented (caps : OrientedFacialPentagonCapPair data) :
+    OrientedFacialPentagonCap data where
+  toFacialPentagonCap := caps.toFacialPentagonCapPair.outerFacial
+  cycleEdge_eq_vertices := caps.outer_cycleEdge_eq_vertices
+
+end OrientedFacialPentagonCapPair
 
 end
 

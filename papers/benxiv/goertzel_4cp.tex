@@ -910,15 +910,20 @@ input: each cap carries a closed-rotation face dart whose face-edge support is
 exactly its five cycle edges, and a separated pair carries this datum on both
 sides.  It proves the facial support has five edges, contains exactly the
 named cycle edges, excludes every outward spoke, and distinguishes the two
-cap faces.  This completes the \emph{facial-cap datum}, not the surgery:
-the next theorem must calculate the two degree-one-stub collar orbits and
-their cyclic spoke orders.  Treating the graph-level opening as an annulus
-before that calculation would still be precisely the unproved picture
-argument this formalisation is avoiding.  This is a constraint on that
-laboratory, not a claim that the Cell--3 source corridor is obtained by
-selecting two such caps: Addendum~V supplies the laboratory tangle, whereas
-Addendum~XXVII requires its own simple transversal or layer-boundary
-construction.
+cap faces.  Its oriented refinement records the further fact the old cap
+record omitted: the named \texttt{Fin 5} cycle edges really follow the facial
+order, rather than merely forming the same edge set in some unspecified
+order.  This completes the \emph{facial-cap datum}, not the surgery.  The
+next theorem must construct the two opened collar orbits and prove that all
+five boundary-spoke darts on each side share the appropriate orbit.  That is
+weaker, and more accurate, than saying the face contains only five edges: a
+degree-one-stub graph may have further darts around the same boundary face.
+Treating the graph-level opening as an annulus before this surface calculation
+would still be precisely the unproved picture argument this formalisation is
+avoiding.  This is a constraint on that laboratory, not a claim that the
+Cell--3 source corridor is obtained by selecting two such caps: Addendum~V
+supplies the laboratory tangle, whereas Addendum~XXVII requires its own
+simple transversal or layer-boundary construction.
 
 That non-vacuity boundary is now a kernel theorem rather than only a warning:
 \texttt{graphBackedVertexMinimalTaitCounterexample\_elim\_of\_wellFormed}
@@ -2102,7 +2107,7 @@ The collar calculation has now begun at the right level of generality.
 face-permutation equation at one fresh degree-one stub: a \(\phi\)-step crosses
 the stub edge and then applies the retained rotation at its old endpoint.
 This is the mechanical first move of the cap-collar orbit calculation, not a
-five-step orbit theorem or an assertion that the stubs already form either
+complete surface surgery or an assertion that the stubs already form either
 named hole face.
 
 \paragraph{Pumping.} The corridor acceptance language is proved periodic and
