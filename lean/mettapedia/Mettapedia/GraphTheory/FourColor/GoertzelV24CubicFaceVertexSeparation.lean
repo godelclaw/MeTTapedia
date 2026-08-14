@@ -136,6 +136,38 @@ theorem faceFullyRetained_compl_orbitFaceVertices_of_not_adj
     exact (mem_orbitFaceVertices_iff RS _ _).2 ⟨point, hpointFace, rfl⟩
   exact Finset.disjoint_left.mp hdisjoint hpointVertex
 
+/-- Deleting two displayed facial vertex supports still fully retains a face
+that is distinct and dual-nonadjacent to each of them.  This is the exact
+two-boundary retention premise needed by a future literal two-cap formation:
+it is only a local consequence of the two supplied separation facts, and does
+not select cap faces or construct an annular opening. -/
+theorem faceFullyRetained_compl_union_orbitFaceVertices_of_not_adj
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : VertexRotationCyclic RS)
+    (htwoSided : OrbitFacesTwoSided RS)
+    (firstCapRoot secondCapRoot faceRoot : RS.D)
+    (hfirstFaces : dartOrbitFace RS faceRoot ≠ dartOrbitFace RS firstCapRoot)
+    (hfirstNotAdj : ¬ (interiorDualGraph (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Adj
+        ⟨dartOrbitFace RS faceRoot, Finset.mem_univ _⟩
+        ⟨dartOrbitFace RS firstCapRoot, Finset.mem_univ _⟩)
+    (hsecondFaces : dartOrbitFace RS faceRoot ≠ dartOrbitFace RS secondCapRoot)
+    (hsecondNotAdj : ¬ (interiorDualGraph (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Adj
+        ⟨dartOrbitFace RS faceRoot, Finset.mem_univ _⟩
+        ⟨dartOrbitFace RS secondCapRoot, Finset.mem_univ _⟩) :
+    FaceFullyRetained RS
+      (fun vertex => vertex ∉ orbitFaceVertices RS (dartOrbitFace RS firstCapRoot) ∪
+        orbitFaceVertices RS (dartOrbitFace RS secondCapRoot))
+      faceRoot := by
+  intro point hpoint
+  have hfirst := faceFullyRetained_compl_orbitFaceVertices_of_not_adj
+    RS hcubic hrotation htwoSided firstCapRoot faceRoot hfirstFaces hfirstNotAdj
+  have hsecond := faceFullyRetained_compl_orbitFaceVertices_of_not_adj
+    RS hcubic hrotation htwoSided secondCapRoot faceRoot hsecondFaces hsecondNotAdj
+  simp only [Finset.mem_union, not_or]
+  exact ⟨hfirst point hpoint, hsecond point hpoint⟩
+
 end
 
 end GoertzelV24CubicFaceVertexSeparation

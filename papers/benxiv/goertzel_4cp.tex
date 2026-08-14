@@ -678,6 +678,15 @@ the source formation supplies its hypotheses; the faces incident to either
 cap remain the new collar geometry.  This is a useful reduction of the
 formation theorem, not a proof of it.
 
+The retention component is now also available for two deleted faces.  The
+generic theorem
+\texttt{faceFullyRetained\_compl\_union\_orbitFaceVertices\_of\_not\_adj}
+turns explicit distinctness and dual-nonadjacency of an interior face from
+each cap face into full retention after deleting the union of their vertex
+supports.  It does not select the two cap faces or establish those separation
+facts; it removes only the avoidable duplication once the source formation
+has supplied them.
+
 There is already a precise serial open-tangle adapter, but its quantifiers are
 important.  Given an actual equivalence from the literal exposed boundary
 darts to a displayed left/right port sum, it transports Tait colourings in
