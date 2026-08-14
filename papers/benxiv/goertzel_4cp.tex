@@ -1420,6 +1420,20 @@ local rails or returns its exact finite collision certificate.  What remains
 is the append invariant across arbitrarily many successful cells and the two
 hole end caps; a one-seam successor package is not yet a long crosscut.
 
+The algebraic append invariant is now explicit as well.  A
+	exttt{SelectedSourceLocalRailAssembly} stores two accumulated simple rails
+and their mutual support disjointness; a single separated Cell--3 connector
+is its base case.  The theorem 	exttt{appendSuccessor} extends the assembly
+by one literal successor and preserves both path simplicity and mutual rail
+separation.  It exposes exactly four geometric premises: each old rail must
+avoid the tail of its own continuation and the tail of the other
+continuation.  The new local pair's internal separation is already certified.
+This cleanly separates composition from geometry: remote segments discharge
+the relevant premises by the proved gap-separation theorems, but the bounded
+neighbouring interactions and end caps still require construction.  Thus the
+new theorem is an iteration-safe carrier, not yet an existence proof for an
+arbitrary long source crosscut.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
