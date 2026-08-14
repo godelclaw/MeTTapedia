@@ -2142,6 +2142,17 @@ behind a choice or a cardinality count.  What remains is genuinely inter-spoke g
 individual stub-side orbits coalesce into the required cap collar, and then
 doing this compatibly for two caps.
 
+The deleted-side half of that inter-spoke calculation is now literal.  The
+oriented facial walk, together with cubic cyclic rotation at each cap vertex,
+forces two capped deleted-side face steps from spoke (i) to spoke (i-1).
+The resulting finite five-position calculation proves that all five cap-side
+boundary darts occupy one capped face cycle, and transports that fact through
+the deleted-to-retained boundary equivalence to the complementary first-return
+order.  This still is not an opened-hole theorem: the remaining transfer to
+the retained first-return order requires the planar-bond hypotheses, notably
+connectedness of both induced sides.  Those are now the exact global
+formation obligations rather than a missing local collar calculation.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
