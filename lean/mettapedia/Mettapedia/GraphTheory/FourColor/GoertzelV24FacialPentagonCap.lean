@@ -71,16 +71,33 @@ theorem spokeEdge_not_mem_faceEdges (cap : FacialPentagonCap data)
 
 end FacialPentagonCap
 
-/-- A facial pentagon cap whose `Fin 5` coordinates follow its actual cyclic
-boundary order.  `FacialPentagonCap` identifies the face-edge *set*; this
-strengthening records the ordered boundary walk needed to compare the source's
-five named stubs with a rotation-level collar calculation. -/
+/-- A facial pentagon cap whose `Fin 5` coordinates follow the cap cycle's
+vertex order.  `FacialPentagonCap` identifies the face-edge *set*; this
+strengthening records the source coordinates on that cycle.  It deliberately
+does not yet assert that the closed face permutation visits those coordinates
+in this order: the next structure records that actual boundary walk. -/
 structure OrientedFacialPentagonCap (data : Data G)
     extends FacialPentagonCap data where
   cycleEdge_eq_vertices : ∀ step : Fin 5,
     (toFacialPentagonCap.toPentagonCap.cycleEdge step).1 =
       s(toFacialPentagonCap.toPentagonCap.vertex step,
         toFacialPentagonCap.toPentagonCap.vertex (step + 1))
+
+/-- A facial pentagon cap with its literal five-step closed face walk.  The
+face-edge set alone is insufficient for the cap-opening calculation: C-2 must
+know which oriented dart follows which.  These fields are the exact
+rotation-level version of the source's five stubs in cyclic order.  They are
+still input data, not a construction of a cap from a minimal counterexample. -/
+structure FacialPentagonCapBoundaryWalk (data : Data G)
+    extends OrientedFacialPentagonCap data where
+  boundaryDart : Fin 5 → G.Dart
+  faceDart_eq_boundaryDart_zero :
+    toOrientedFacialPentagonCap.toFacialPentagonCap.faceDart = boundaryDart 0
+  boundaryDart_edge : ∀ step : Fin 5,
+    data.toRotationSystem.edgeOf (boundaryDart step) =
+      toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.cycleEdge step
+  boundaryDart_phi : ∀ step : Fin 5,
+    data.toRotationSystem.phi (boundaryDart step) = boundaryDart (step + 1)
 
 /-- Two separated pentagon caps, both facial.  This is the exact input datum
 of the Cell-3 formation: from it, surface surgery must construct the two hole

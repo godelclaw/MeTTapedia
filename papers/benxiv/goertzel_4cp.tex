@@ -910,11 +910,15 @@ input: each cap carries a closed-rotation face dart whose face-edge support is
 exactly its five cycle edges, and a separated pair carries this datum on both
 sides.  It proves the facial support has five edges, contains exactly the
 named cycle edges, excludes every outward spoke, and distinguishes the two
-cap faces.  Its oriented refinement records the further fact the old cap
-record omitted: the named \texttt{Fin 5} cycle edges really follow the facial
-order, rather than merely forming the same edge set in some unspecified
-order.  This completes the \emph{facial-cap datum}, not the surgery.  The
-next theorem must construct the two opened collar orbits and prove that all
+cap faces.  Its first oriented refinement records only the source coordinate
+order \texttt{cycleEdge i = \{vertex i, vertex (i+1)\}}; that alone does not
+say which direction the face permutation takes around the cycle.  The stronger
+\texttt{FacialPentagonCapBoundaryWalk} therefore now records the literal
+five-dart face walk: its root is the designated facial dart, its successive
+darts carry the five named edges, and the rotation-system face permutation
+advances the sequence modulo five.  This completes the \emph{facial-cap
+datum}, not the surgery.  The next theorem must construct the two opened
+collar orbits and prove that all
 five boundary-spoke darts on each side share the appropriate orbit.  That is
 weaker, and more accurate, than saying the face contains only five edges: a
 degree-one-stub graph may have further darts around the same boundary face.
