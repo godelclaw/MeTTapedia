@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionRotation
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitIncidence
 
 /-!
 # Face steps at open-region boundary stubs
@@ -19,6 +20,7 @@ namespace GoertzelV24OpenRegionBoundaryStubFaceStep
 
 open GoertzelV24OpenRegionRotation
 open GoertzelV24RotationCutDartDecomposition
+open GoertzelV24FaceOrbitIncidence
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
@@ -36,6 +38,31 @@ theorem rotationSystem_phi_stub
       Sum.inl (retainedRho RS keep boundary.1) := by
   rw [RotationSystem.phi_apply, rotationSystem_alpha_stub,
     rotationSystem_rho_old]
+
+/-- The old retained dart and fresh stub dart of one exposed edge already lie
+on the same opened facial orbit.  The remaining collar calculation is only
+about joining the orbits of *different* exposed edges. -/
+theorem dartOrbitFace_oldBoundary_eq_stub
+    (RS : RotationSystem V E) (keep : V → Prop)
+    [Fintype (RetainedVertex keep)] [DecidableEq (RetainedVertex keep)]
+    (outer : Dart RS keep) (boundary : BoundaryDart RS keep) :
+    dartOrbitFace (rotationSystem RS keep outer) (Sum.inl boundary.1) =
+      dartOrbitFace (rotationSystem RS keep outer) (Sum.inr boundary) := by
+  have hstep :
+      (rotationSystem RS keep outer).phi (Sum.inl boundary.1) =
+        Sum.inr boundary := by
+    rw [RotationSystem.phi_apply,
+      rotationSystem_alpha_old_of_boundary,
+      rotationSystem_rho_stub]
+    rfl
+  calc
+    dartOrbitFace (rotationSystem RS keep outer) (Sum.inl boundary.1) =
+        dartOrbitFace (rotationSystem RS keep outer)
+          ((rotationSystem RS keep outer).phi (Sum.inl boundary.1)) :=
+      (dartOrbitFace_phi_eq (rotationSystem RS keep outer)
+        (Sum.inl boundary.1)).symm
+    _ = dartOrbitFace (rotationSystem RS keep outer) (Sum.inr boundary) :=
+      congrArg (dartOrbitFace (rotationSystem RS keep outer)) hstep
 
 end
 
