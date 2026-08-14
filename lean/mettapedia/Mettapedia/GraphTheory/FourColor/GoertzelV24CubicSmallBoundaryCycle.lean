@@ -12,6 +12,16 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+/-- Graph degree does not depend on which finite presentation of the same
+neighbor set is in scope. -/
+theorem degree_instance_independent (vertex : V)
+    (first second : Fintype (G.neighborSet vertex)) :
+    @SimpleGraph.degree V G vertex first =
+      @SimpleGraph.degree V G vertex second := by
+  apply congrArg Finset.card
+  ext neighbor
+  simp
+
 /-- Oriented graph edges whose initial vertex lies on a chosen side. -/
 def SideDart (G : SimpleGraph V) (side : V → Prop) :=
   {dart : G.Dart // side dart.fst}
@@ -117,6 +127,30 @@ theorem card_sideDart_eq_three_mul
   simp_rw [G.card_neighborSet_eq_degree, hregular.degree_eq]
   simp [mul_comm]
 
+/-- The same dart count needs cubicity only on the chosen side.  This is the
+form appropriate for an open annular carrier whose boundary stubs have degree
+one but whose selected interior component avoids them. -/
+theorem card_sideDart_eq_three_mul_of_local
+    (side : V → Prop)
+    (hdegree : ∀ vertex, side vertex → G.degree vertex = 3)
+    [Fintype {vertex : V // side vertex}] :
+    Fintype.card (SideDart G side) =
+      3 * Fintype.card {vertex : V // side vertex} := by
+  letI : (vertex : {vertex : V // side vertex}) →
+      Fintype (G.neighborSet vertex.1) := fun vertex =>
+    (inferInstance : LocallyFinite G) vertex.1
+  rw [Fintype.card_congr (sideDartEquivSigmaNeighbor G side),
+    Fintype.card_sigma]
+  simp_rw [G.card_neighborSet_eq_degree]
+  calc
+    ∑ vertex : {vertex : V // side vertex}, G.degree vertex.1 =
+        ∑ _vertex : {vertex : V // side vertex}, 3 := by
+      apply Finset.sum_congr rfl
+      intro vertex _
+      exact hdegree vertex.1 vertex.2
+    _ = 3 * Fintype.card {vertex : V // side vertex} := by
+      simp [mul_comm]
+
 /-- The internal side-dart count is twice the number of induced side edges. -/
 theorem card_internalSideDart_eq_twice_card_edges (side : V → Prop)
     [Fintype ↑({vertex | side vertex} : Set V)] :
@@ -212,6 +246,59 @@ theorem hasCycleOnSide_of_cubic_of_connected_induce_of_crossing_le_two
         Fintype.card {vertex : V // side vertex} := by
     rfl
   omega
+
+/-- A nonempty connected locally cubic side with at most three outgoing
+listed edges either contains a cycle or consists of exactly one vertex.  This
+is the sharp degree-count form for a three-edge separator in an open carrier:
+boundary stubs may exist globally, but none may lie on the selected side. -/
+theorem hasCycleOnSide_or_card_eq_one_of_local_cubic_of_connected_induce_of_crossing_le_three
+    (side : V → Prop) [Fintype {vertex : V // side vertex}]
+    (hdegree : ∀ vertex, side vertex → G.degree vertex = 3)
+    (hsideNonempty : ∃ vertex, side vertex)
+    (hsideConnected : (G.induce {vertex | side vertex}).Connected)
+    (removed : Finset G.edgeSet) (hremovedCard : removed.card ≤ 3)
+    (hcrossingRemoved : ∀ dart : CrossingSideDart G side,
+      (⟨dart.1.edge, dart.1.edge_mem⟩ : G.edgeSet) ∈ removed) :
+    HasCycleOnSide G side ∨
+      Fintype.card {vertex : V // side vertex} = 1 := by
+  letI sideSetFintype : Fintype ↑({vertex | side vertex} : Set V) :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  by_cases hcycle : HasCycleOnSide G side
+  · exact Or.inl hcycle
+  · right
+    have hsideAcyclic : (G.induce {vertex | side vertex}).IsAcyclic := by
+      intro vertex cycle hcycleWalk
+      apply hcycle
+      let inclusion :=
+        (SimpleGraph.Embedding.induce (G := G) {vertex | side vertex}).toHom
+      refine ⟨vertex.1, vertex.2, cycle.map inclusion, ?_, ?_⟩
+      · exact hcycleWalk.map (fun _ _ heq => Subtype.ext heq)
+      · intro other hother
+        have hother' : other ∈ cycle.support.map inclusion := by
+          exact Walk.support_map inclusion cycle ▸ hother
+        rcases List.mem_map.mp hother' with ⟨source, _hsource, hsource⟩
+        rw [← hsource]
+        exact source.2
+    have htree : (G.induce {vertex | side vertex}).IsTree :=
+      ⟨hsideConnected, hsideAcyclic⟩
+    have htreeCard := htree.card_edgeFinset
+    have hpartition := Fintype.card_congr
+      (sideDartEquivInternalSumCrossing G side)
+    rw [Fintype.card_sum] at hpartition
+    have hsideCard := card_sideDart_eq_three_mul_of_local side hdegree
+    have hinternalCard := card_internalSideDart_eq_twice_card_edges
+      (G := G) side
+    have hcrossingCard := card_crossingSideDart_le_card_removed
+      side removed hcrossingRemoved
+    have hsidePositive :
+        0 < Fintype.card {vertex : V // side vertex} :=
+      Fintype.card_pos_iff.mpr ⟨⟨hsideNonempty.choose,
+        hsideNonempty.choose_spec⟩⟩
+    have hsameSideCard :
+        Fintype.card ↑({vertex | side vertex} : Set V) =
+          Fintype.card {vertex : V // side vertex} := by
+      exact Fintype.card_congr (Equiv.refl _)
+    omega
 
 end
 

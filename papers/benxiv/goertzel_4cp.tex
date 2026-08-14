@@ -1507,6 +1507,20 @@ ten named boundary stubs.  Boundary saturation and the subsequent
 singleton-star-versus-cyclic degree classification are the next graph-level
 obligations; they are not bundled into this counting theorem.
 
+The cubic degree classification is now proved without imposing global
+cubicity on the opened carrier.  A new local form of the side-dart count in
+\texttt{GoertzelV24CubicSmallBoundaryCycle} assumes degree three only on the
+chosen side.  Applied to the actual selected deletion component---whose ten
+degree-one boundary stubs have just been excluded---it shows that the induced
+side either contains a cycle or has exactly one vertex.  This is the sharp
+three-edge degree sum: an acyclic connected cubic side with at most three
+outgoing edges can only be a singleton star.  It is not yet an unconditional
+append or a cyclic three-edge-cut contradiction.  The cyclic branch still
+needs a cycle on the complementary side before closed minimality can be used,
+and the singleton branch must turn the three-to-three boundary injection into
+saturation and anchor the selected crossing at the literal outgoing rung,
+rather than an arbitrary shared edge of the same dual step.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional

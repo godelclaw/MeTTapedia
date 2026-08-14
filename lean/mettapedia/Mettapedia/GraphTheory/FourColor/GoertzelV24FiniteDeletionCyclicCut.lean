@@ -122,6 +122,17 @@ theorem card_componentCrossingEdges_le_removed
     (componentCrossingEdges removed component).card ≤ removed.card :=
   Finset.card_le_card (componentCrossingEdges_subset_removed removed component)
 
+/-- A connected component of a finite edge deletion remains connected when
+viewed as an induced subgraph of the original graph. -/
+theorem connected_induce_component
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent) :
+    (G.induce component.supp).Connected := by
+  exact component.connected_toSimpleGraph.mono (by
+    intro left right hadj
+    exact (G.deleteEdges_le (edgeFinsetValueSet removed)) hadj)
+
 omit [DecidableEq V] in
 /-- If two deletion components are distinct, connectedness of the original
 graph forces the computed boundary of either one to contain an edge.  This is

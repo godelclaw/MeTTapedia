@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebHoleBoundaryOrder
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebFiniteCutRadialEscape
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAppendSeparator
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CubicSmallBoundaryCycle
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceWalk
 
 /-!
@@ -30,6 +31,7 @@ open GoertzelV24ClosedWebHoleBoundaryOrder
 open GoertzelV24ClosedWebInnerTouching
 open GoertzelV24ClosedWebRadialPathChords
 open GoertzelV24ClosedWebTotalClosure
+open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FiniteDeletionCyclicCut
 open GoertzelV24HexCorridorInterfaceMatching
@@ -256,6 +258,55 @@ theorem innerStub_not_mem_component
   simpa using triangle.innerHole_vertex_not_mem_component component hroot
     (innerBoundaryDart data web.boundary_wellFormed inner)
     (innerBoundaryDart_on_innerHole web.annular web.boundary_wellFormed inner)
+
+/-- The exact local degree count on a boundary-free deletion component.  The
+selected component is connected in the ambient graph, all of its vertices are
+cubic because all ten degree-one stubs are excluded, and every outgoing dart
+uses one of the three deleted edges.  Hence the component either contains a
+cycle or consists of exactly one vertex. -/
+theorem hasCycleOnSide_or_component_card_eq_one
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+      Fintype.card {vertex : V // vertex ∈ component.supp} = 1 := by
+  classical
+  letI componentFintype : Fintype {vertex : V // vertex ∈ component.supp} :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  apply
+    hasCycleOnSide_or_card_eq_one_of_local_cubic_of_connected_induce_of_crossing_le_three
+      (fun vertex => vertex ∈ component.supp)
+  · intro vertex hvertex
+    have hcubic := web.boundary_wellFormed.cubic_elsewhere vertex
+      (by
+        intro inner heq
+        subst vertex
+        exact (triangle.innerStub_not_mem_component component hroot inner) hvertex)
+      (by
+        intro outer heq
+        subst vertex
+        exact (triangle.outerStub_not_mem_component component hroot outer) hvertex)
+    convert
+      (GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+        (G := G) vertex).symm.trans hcubic using 1
+    apply GoertzelV24CubicSmallBoundaryCycle.degree_instance_independent
+  · exact component.nonempty_supp
+  · exact connected_induce_component
+      triangle.selectedCycle.crossingEdges component
+  · rw [triangle.crossingEdges_card_eq_three]
+  · intro dart
+    apply edge_mem_removed_of_crosses_component
+      triangle.selectedCycle.crossingEdges component
+    exact ⟨dart.1.fst, dart.1.snd,
+      (by
+        change dart.1.fst ∈ s(dart.1.fst, dart.1.snd)
+        simp),
+      (by
+        change dart.1.snd ∈ s(dart.1.fst, dart.1.snd)
+        simp),
+      dart.2.1, dart.2.2⟩
 
 end SeparatedSelectedSourceLocalRailSuccessor.AdjacentDualTriangle
 
