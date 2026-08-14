@@ -811,6 +811,104 @@ theorem selectedSideFace_eq_nextCenter_implies_two_distinct_sharedInteriorEdges
     exact ((mem_selectedPlacementSidePositions_iff placement position.1).1 position.2).2
       hposition
 
+/-- The exact local replacement for the closed-map global shared-edge
+uniqueness premise.  If this displayed pair of consecutive Cell--3 centres
+has at most one shared interior edge, a surviving side face cannot collapse
+onto the next centre: such a collapse would have produced the two distinct
+edges isolated above.
+
+This is deliberately a local hypothesis.  It does not assert that arbitrary
+faces of the open annulus have unique intersections, and it is not a
+construction of the eventual long crosscut. -/
+theorem selectedSideFace_ne_nextCenter_of_successorSharedInteriorEdges_card_le_one
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (hcard : (sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center).1
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1).card ≤ 1) :
+    selectedPlacementSideFace placement position ≠
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center := by
+  intro hface
+  rcases selectedSideFace_eq_nextCenter_implies_two_distinct_sharedInteriorEdges
+      (corridor := corridor) hnext placement position hface with
+    ⟨first, second, hfirst, hsecond, hne⟩
+  exact hne ((Finset.card_le_one.mp hcard) first hfirst second hsecond)
+
+/-- With the exact local no-double-intersection condition, the side slot just
+before the outgoing selected rung takes a genuine one-edge facial-dual rail
+step to the next Cell--3 centre.  Without that condition the equality branch
+above remains a real finite collision, rather than an implicit assumption. -/
+theorem selectedPlacementSideFace_adjacent_next_of_beforeOutgoing_of_successorSharedInteriorEdges_card_le_one
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (hsuccessor : placement.outgoingPosition.val ≡ position.1.val + 1 [MOD 6])
+    (hcard : (sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center).1
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1).card ≤ 1) :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        (selectedPlacementSideFace placement position)
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center) := by
+  rcases selectedPlacementSideFace_eq_or_adjacent_next_of_beforeOutgoing
+      (corridor := corridor) hnext placement position hsuccessor with hface | hadj
+  · exact False.elim
+      (selectedSideFace_ne_nextCenter_of_successorSharedInteriorEdges_card_le_one
+        (corridor := corridor) hnext placement position hcard hface)
+  · exact hadj
+
+/-- The analogous local no-double-intersection result for the side slot just
+after the outgoing selected rung. -/
+theorem selectedPlacementSideFace_adjacent_next_of_afterOutgoing_of_successorSharedInteriorEdges_card_le_one
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (hsuccessor : position.1.val ≡ placement.outgoingPosition.val + 1 [MOD 6])
+    (hcard : (sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center).1
+      ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center).1).card ≤ 1) :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        (selectedPlacementSideFace placement position)
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center) := by
+  rcases selectedPlacementSideFace_eq_or_adjacent_next_of_afterOutgoing
+      (corridor := corridor) hnext placement position hsuccessor with hface | hadj
+  · exact False.elim
+      (selectedSideFace_ne_nextCenter_of_successorSharedInteriorEdges_card_le_one
+        (corridor := corridor) hnext placement position hcard hface)
+  · exact hadj
+
 /-- A collision between two distinct selected side slots has a concrete finite
 local meaning: the centre hexagon and the repeated neighbouring face share two
 different interior primal edges.  This is the residual case for the L1 local

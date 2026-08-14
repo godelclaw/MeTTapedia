@@ -87,7 +87,7 @@
 Reductive--Compositional Route to the Four-Color Theorem:\\
 \large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
 \author{The MeTTapedia formalization effort}
-\date{Living revision: 13 August 2026}
+\date{Living revision: 14 August 2026}
 
 \begin{document}
 \maketitle
@@ -358,6 +358,20 @@ source carrier's interior-face simplicity, local cubicity, and geodesic
 separation.  This is a local rung-placement result, not a proof of the
 remaining finite adjacency classification, a long separated pair of
 crosscuts, or a splice.
+
+The next finite condition is now stated at exactly the scale on which it is
+used.  If one displayed pair of consecutive Cell--3 corridor faces has at
+most one shared interior primal edge, then each selected side slot adjacent
+to the outgoing rung is provably emph{different} from the next corridor
+centre and hence has a genuine one-edge facial-dual rail step to it
+(\texttt{selectedPlacementSideFace\_adjacent\_next\_of\_*\
+Outgoing\_of\_successorSharedInteriorEdges\_card\_le\_one}).  The proof is
+the contrapositive of a literal collision theorem: equality would exhibit two
+distinct shared edges, namely the selected rung and the side edge.  This
+replaces neither the source formation map nor the global closed-map
+uniqueness theorem.  It reduces the relevant transport obligation to one
+successor-pair cardinality fact and keeps the alternative explicit until that
+fact is actually supplied.
 
 Three nearby results delimit the gap.
 
