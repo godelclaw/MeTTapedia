@@ -2160,6 +2160,18 @@ for one cap opening.  The remaining C--2 work is to transport the two selected
 cap calculations to the simultaneous two-cap carrier and prove that the two
 ordered collar orbits remain distinct there.
 
+There is a real typing constraint on that last transport.  The one-cap
+planar-bond theorem cannot simply be reapplied to the union of the two cap
+supports: the deleted side then has two components, whereas that theorem is a
+one-bond result with connected induced sides.  Moreover the current
+graph-level \texttt{PentagonCapPair} excludes shared cap vertices and direct
+spoke-to-cap contact, but does not by itself exclude an ambient face that
+meets both cap neighbourhoods.  Thus simultaneous opening needs the stronger
+remote facial separation supplied by the source corridor selection, together
+with connectivity of each retained complement.  This is a local sequential
+transport obligation, not permission to postulate a two-component bond
+theorem or to identify the two collar faces from graph-level separation alone.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
