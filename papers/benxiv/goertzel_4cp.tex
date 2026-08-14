@@ -1583,6 +1583,16 @@ construct the Addendum-V frontier from the closed minimal counterexample and
 prove that its restored cap/frontier edges are noncrossing for the selected
 remote component.
 
+For the literal pentagon opening, the cap half of that last premise is now
+discharged in \texttt{GoertzelV24PentagonCapCyclicCutPullback}.  Avoiding the
+five named inner stubs forces every deleted cap-cycle edge to lie entirely
+on the complementary side, because both endpoints of every such edge are
+cap vertices.  The selected-component theorem already proves this stub
+avoidance abstractly.  Accordingly a cyclic cut on the annulus closes back
+to a same-cardinality cyclic cut of the pre-opening frontier tangle.  The
+remaining transport is the outer frontier's relation to the induction or
+minimal-counterexample carrier; it is not hidden in this one-cap theorem.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
