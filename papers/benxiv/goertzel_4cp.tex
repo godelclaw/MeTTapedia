@@ -1474,6 +1474,18 @@ refinement of the fail-closed fork, not its elimination: an actual support
 collision still produces the same separator branch, whose cyclic case remains
 to be discharged on the source-faithful frontier.
 
+The append itself admits one further normalization.  A revisit of a rail by
+its own continuation need not be excluded: loop erasure of the concatenated
+walk preserves its endpoints and produces a simple path.  In
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendBypass}, both concatenated
+rails are therefore normalized by \texttt{Walk.bypass}.  The mutual
+separation proof then needs only the two crossed conditions---old first rail
+against new second tail, and old second rail against new first tail.  The
+resulting exact alternative returns either two simple support-disjoint rails
+or a face in one of those two genuine cross-track intersections.  Same-track
+revisits are now constructions rather than obstructions.  Cross-track
+collisions remain positive dual-triangle data and are not claimed impossible.
+
 The separator candidate has now been promoted to an actual graph separator
 without restoring global uniqueness of shared face edges.  The generic module
 \texttt{GoertzelV24SelectedDualCycleSeparator} lets a simple facial-dual cycle
