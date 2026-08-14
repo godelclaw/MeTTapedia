@@ -138,6 +138,95 @@ noncomputable def appendAssembly
       hsecondFirst).secondRail =
       prefixAssembly.secondRail.append suffixAssembly.secondRail := rfl
 
+/-- Append two rail assemblies when the middle endpoint order is exchanged.
+
+The first prefix rail continues along the second suffix rail and conversely;
+the returned endpoint order is therefore exchanged as well. -/
+noncomputable def appendAssemblyCrossed
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (suffixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish)
+    (hfirstPath : prefixAssembly.firstRail.support.Disjoint
+      suffixAssembly.secondRail.support.tail)
+    (hsecondPath : prefixAssembly.secondRail.support.Disjoint
+      suffixAssembly.firstRail.support.tail)
+    (hfirstSecond : prefixAssembly.firstRail.support.Disjoint
+      suffixAssembly.firstRail.support.tail)
+    (hsecondFirst : prefixAssembly.secondRail.support.Disjoint
+      suffixAssembly.secondRail.support.tail) :
+    SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart secondFinish firstFinish where
+  firstRail := prefixAssembly.firstRail.append suffixAssembly.secondRail
+  secondRail := prefixAssembly.secondRail.append suffixAssembly.firstRail
+  firstRail_isPath :=
+    GoertzelV24DualPathTransversal.walk_append_isPath_of_support_disjoint
+      prefixAssembly.firstRail suffixAssembly.secondRail
+      prefixAssembly.firstRail_isPath suffixAssembly.secondRail_isPath hfirstPath
+  secondRail_isPath :=
+    GoertzelV24DualPathTransversal.walk_append_isPath_of_support_disjoint
+      prefixAssembly.secondRail suffixAssembly.firstRail
+      prefixAssembly.secondRail_isPath suffixAssembly.firstRail_isPath hsecondPath
+  firstRail_support_disjoint_secondRail := by
+    rw [SimpleGraph.Walk.support_append, SimpleGraph.Walk.support_append,
+      List.disjoint_left]
+    intro face hfirst hsecond
+    rcases List.mem_append.mp hfirst with hfirstPrefix | hsecondSuffix
+    · rcases List.mem_append.mp hsecond with hsecondPrefix | hfirstSuffix
+      · exact (List.disjoint_left.mp
+          prefixAssembly.firstRail_support_disjoint_secondRail hfirstPrefix)
+            hsecondPrefix
+      · exact (List.disjoint_left.mp hfirstSecond hfirstPrefix) hfirstSuffix
+    · rcases List.mem_append.mp hsecond with hsecondPrefix | hfirstSuffix
+      · exact (List.disjoint_left.mp hsecondFirst hsecondPrefix) hsecondSuffix
+      · have hfirstFull : face ∈ suffixAssembly.firstRail.support :=
+          List.mem_of_mem_tail hfirstSuffix
+        have hsecondFull : face ∈ suffixAssembly.secondRail.support :=
+          List.mem_of_mem_tail hsecondSuffix
+        exact (List.disjoint_left.mp
+          suffixAssembly.firstRail_support_disjoint_secondRail hfirstFull)
+            hsecondFull
+
+@[simp] theorem appendAssemblyCrossed_firstRail
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (suffixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish)
+    (hfirstPath : prefixAssembly.firstRail.support.Disjoint
+      suffixAssembly.secondRail.support.tail)
+    (hsecondPath : prefixAssembly.secondRail.support.Disjoint
+      suffixAssembly.firstRail.support.tail)
+    (hfirstSecond : prefixAssembly.firstRail.support.Disjoint
+      suffixAssembly.firstRail.support.tail)
+    (hsecondFirst : prefixAssembly.secondRail.support.Disjoint
+      suffixAssembly.secondRail.support.tail) :
+    (appendAssemblyCrossed prefixAssembly suffixAssembly hfirstPath hsecondPath
+      hfirstSecond hsecondFirst).firstRail =
+      prefixAssembly.firstRail.append suffixAssembly.secondRail := rfl
+
+@[simp] theorem appendAssemblyCrossed_secondRail
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (suffixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish)
+    (hfirstPath : prefixAssembly.firstRail.support.Disjoint
+      suffixAssembly.secondRail.support.tail)
+    (hsecondPath : prefixAssembly.secondRail.support.Disjoint
+      suffixAssembly.firstRail.support.tail)
+    (hfirstSecond : prefixAssembly.firstRail.support.Disjoint
+      suffixAssembly.firstRail.support.tail)
+    (hsecondFirst : prefixAssembly.secondRail.support.Disjoint
+      suffixAssembly.secondRail.support.tail) :
+    (appendAssemblyCrossed prefixAssembly suffixAssembly hfirstPath hsecondPath
+      hfirstSecond hsecondFirst).secondRail =
+      prefixAssembly.secondRail.append suffixAssembly.firstRail := rfl
+
 variable
     {blockLength : Nat}
     {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}

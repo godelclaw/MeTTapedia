@@ -1809,6 +1809,11 @@ prefix after the local geometry has certified compatibility; it does not
 pretend that compatibility follows from the types alone.  Thus the remaining
 formation step is now specifically the finite mutable-suffix transition which
 must discharge those four premises.
+The companion operation \texttt{appendAssemblyCrossed} handles the exchanged
+middle order: it continues the first prefix rail along the second suffix rail
+and conversely, and records the resulting exchanged final order in the type.
+Thus a swapped local window is composition data, not a failed state or a
+reason to choose a noncanonical next connector.
 
 The coordinate hand-off between consecutive seams is now proved separately.
 Although successor frames are constructed independently,
