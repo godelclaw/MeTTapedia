@@ -2445,6 +2445,24 @@ selected tile or the already classified local collision witness.  Thus the
 representation repair exposes, rather than conceals, the one remaining finite
 Cell--3 branch.
 
+The source-level carrier mismatch has now been removed without promoting the
+two-cap laboratory into the general proof.  Addendum~V begins with a frontier
+tangle $X$ whose ordered outer stubs already exist and opens one interior
+pentagon.  The module
+\texttt{GoertzelV24FrontierPentagonCapOpening} represents exactly this input by
+an outer-only \texttt{FrontierBoundaryData}, together with a well-formedness
+predicate saying that the outer stubs have degree one and every other vertex
+is cubic.  Its \texttt{InteriorPentagonCap} relation states that the selected
+cap is separated from the old outer interface.  Deleting the cap cycle then
+computes an \texttt{AnnularBoundaryData}: the cap vertices are the five new
+inner stubs, while the old outer stubs and their ordered boundary edges are
+retained literally.  Lean proves that no outer edge is deleted, both interfaces
+remain degree one and disjoint, and all other vertices remain cubic.  Thus this
+is the graph-carrier part of $X'=X-\operatorname{cap}(f)$, not a diagrammatic
+identification.  It deliberately does not yet construct $X$ from the minimal
+counterexample, identify the two hole face orbits on the common opened
+rotation, or supply the long separated L1 crosscuts.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
