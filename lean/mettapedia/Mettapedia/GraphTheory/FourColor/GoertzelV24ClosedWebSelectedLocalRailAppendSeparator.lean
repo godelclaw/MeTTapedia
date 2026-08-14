@@ -62,14 +62,34 @@ variable
     {successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
       rightPlacement}
 
+/-- The first step of the literal three-step obstruction walk, from the left
+corridor centre to its successor centre. -/
+abbrev firstStep (triangle : AdjacentDualTriangle successor) :
+    Fin triangle.walk.length :=
+  ⟨0, by rw [triangle.walk_length]; decide⟩
+
 /-- The obstruction triangle equipped with one actual shared primal edge at
-each of its three dual steps. -/
+each of its three dual steps.  Its first crossing is definitionally the
+selected outgoing rung between the two consecutive corridor centres; only the
+other two crossings are choice-selected. -/
 noncomputable def selectedCycle
     (triangle : AdjacentDualTriangle successor) :
     SelectedDualCycle web.annular.RS
       ((corridor.toCleanOrbitHexCorridorSkeleton
         |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) :=
-  SelectedDualCycle.ofWalk web.annular.RS triangle.walk triangle.walk_isCycle
+  SelectedDualCycle.ofWalkWithCrossingAt web.annular.RS triangle.walk
+    triangle.walk_isCycle triangle.firstStep
+    (rungs.edge leftInterior.outgoing) (by
+      simpa [AdjacentDualTriangle.walk, nextCorridorInterior] using
+        rungs.mem_shared leftInterior.outgoing)
+
+/-- The distinguished first selected crossing retains the literal source rung
+rather than an arbitrary shared-edge choice. -/
+@[simp] theorem selectedCycle_crossingEdge_zero
+    (triangle : AdjacentDualTriangle successor) :
+    triangle.selectedCycle.crossingEdge triangle.firstStep =
+      rungs.edge leftInterior.outgoing := by
+  simp [selectedCycle]
 
 /-- The obstruction triangle crosses exactly three distinct primal edges. -/
 theorem crossingEdges_card_eq_three

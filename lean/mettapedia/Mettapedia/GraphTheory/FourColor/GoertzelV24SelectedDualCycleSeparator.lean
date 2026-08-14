@@ -75,6 +75,58 @@ noncomputable def ofWalk (RS : RotationSystem V E)
       (Finset.univ : Finset (OrbitFace RS))
       (walk.adj_getVert_succ step.isLt))
 
+/-- Choose literal shared primal crossings for a simple dual cycle while
+pinning one specified crossing at one specified step.  This preserves the
+source provenance of a distinguished corridor rung without requiring choices
+at the other steps to be canonical. -/
+noncomputable def ofWalkWithCrossingAt (RS : RotationSystem V E)
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Walk start start)
+    (hcycle : walk.IsCycle)
+    (anchor : Fin walk.length) (edge : E)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert anchor.val).1
+      (walk.getVert (anchor.val + 1)).1) : SelectedDualCycle RS start where
+  walk := walk
+  isCycle := hcycle
+  crossingEdge := fun step => if step = anchor then edge else Classical.choose
+    (exists_mem_sharedInteriorEdges_of_adj
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.adj_getVert_succ step.isLt))
+  crossing_mem_shared := by
+    intro step
+    by_cases hstep : step = anchor
+    · simpa [hstep] using hedge
+    · simp only [hstep, ↓reduceIte]
+      exact Classical.choose_spec
+        (exists_mem_sharedInteriorEdges_of_adj
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS))
+          (walk.adj_getVert_succ step.isLt))
+
+@[simp] theorem ofWalkWithCrossingAt_crossingEdge
+    (RS : RotationSystem V E)
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Walk start start)
+    (hcycle : walk.IsCycle)
+    (anchor : Fin walk.length) (edge : E)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert anchor.val).1
+      (walk.getVert (anchor.val + 1)).1) :
+    (ofWalkWithCrossingAt RS walk hcycle anchor edge hedge).crossingEdge anchor = edge := by
+  simp [ofWalkWithCrossingAt]
+
 /-- The finite carrier of the selected primal crossings. -/
 def crossingEdges {RS : RotationSystem V E}
     {start : AmbientFace

@@ -1516,10 +1516,31 @@ side either contains a cycle or has exactly one vertex.  This is the sharp
 three-edge degree sum: an acyclic connected cubic side with at most three
 outgoing edges can only be a singleton star.  It is not yet an unconditional
 append or a cyclic three-edge-cut contradiction.  The cyclic branch still
-needs a cycle on the complementary side before closed minimality can be used,
-and the singleton branch must turn the three-to-three boundary injection into
-saturation and anchor the selected crossing at the literal outgoing rung,
-rather than an arbitrary shared edge of the same dual step.
+needs a cycle on the complementary side before closed minimality can be used.
+The rooted outer-face walk does not supply that cycle: its construction
+deliberately proves a closed facial walk rather than \texttt{Walk.IsCycle}, as
+boundary faces may revisit underlying edges.  A direct degree count measures
+the opened-carrier cost precisely.  If the complement is acyclic, with its ten
+degree-one boundary stubs internal to that side and at most three crossing
+darts, then
+
+\[
+  3n-2\cdot 10 = 2(n-1)+c,\qquad c\leq 3,
+\]
+
+so \(n\leq21\).  Thus the cyclic branch requires either a genuine size input
+or the source formation transport from the closed cubic carrier; no outer
+cycle is inferred from the displayed hole walk.
+
+The singleton branch has nevertheless advanced independently.  The generic
+selected-cycle constructor can now pin one specified primal crossing at one
+specified dual step while retaining choice at the other steps.  Its
+specialization to the obstruction triangle pins the first crossing
+definitionally to the literal selected outgoing corridor rung.  This removes
+the provenance ambiguity without a global unique-shared-edge premise.
+Three-to-three boundary saturation and the resulting pointwise vertex/face
+incidence remain to be proved before the singleton obstruction becomes the
+successful append; L1 is not reported closed.
 
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
