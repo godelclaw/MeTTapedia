@@ -2154,8 +2154,17 @@ the five-cycle to the retained first-return permutation, and the literal
 open-region calculation proves that all five fresh stubs lie in one actual
 opened face orbit.  This is not a collar hypothesis: it is equality of the
 computed \texttt{dartOrbitFace}s.  The retained complement's connectedness is
-still an explicit formation premise, together with the closed spherical,
-two-sided, connected, cubic rotation data.  Moreover the theorem is currently
+no longer an extra formation premise in the intended minimal-counterexample
+setting.  The module
+\texttt{GoertzelV24FacialPentagonCapRetainedConnectivity} proves it by a finite
+five-spoke argument.  Every retained connected component must own at least
+three cap spokes: if it owned at most two, deleting a pair covering its spokes
+would disconnect the closed graph, contrary to the already proved two-edge-cut
+normalization from vertex minimality.  Two distinct components would then need
+at least six disjoint indices among the five spokes.  Thus the retained
+complement is connected, and the five-stub face-orbit equality follows directly
+for a graph-backed vertex-minimal Tait counterexample.  This closes the one-cap
+C--2 bridge without a picture assumption.  The theorem is nevertheless still
 for one cap opening.  The remaining C--2 work is to transport the two selected
 cap calculations to the simultaneous two-cap carrier and prove that the two
 ordered collar orbits remain distinct there.
