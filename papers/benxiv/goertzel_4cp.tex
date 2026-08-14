@@ -1717,6 +1717,19 @@ at the outgoing endpoint.  Four of the six finite residues are therefore
 discharged without a cyclic-cut or embedding premise; only the two cases in
 which a successor continuation revisits the previous centre remain open.
 
+Those last two centre-revisit cases are now constructive as well, in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendResidueCenterReroute}.
+For a length-two successor rail, the cross face and the previous centre are
+the two tail positions.  If the cross face is the outgoing endpoint, Lean
+truncates the old crossed rail at that face and sends the other rail through
+the complete two-edge centre bridge.  If the centre is the outgoing endpoint,
+the offending middle face is omitted and the unmatched flank takes its
+literal one-edge adjacency directly to the centre.  The rail-exchanged case
+is proved separately.  Thus all six finite residual shapes now produce a
+straight or swapped separated assembly.  They still await one exhaustive
+wrapper and a permutation-aware arbitrary-length iteration; neither end cap
+nor L1 is closed by the local result alone.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
