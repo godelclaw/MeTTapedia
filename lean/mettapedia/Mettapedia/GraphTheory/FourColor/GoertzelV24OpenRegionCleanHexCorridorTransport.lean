@@ -277,6 +277,61 @@ noncomputable def openCleanOrbitHexCorridorSkeleton_compl_cap
         (by simpa using (havoid offset neighbor (Or.inr hadj)).1)
         (by simpa using (havoid offset neighbor (Or.inr hadj)).2))
 
+/-- **L1 (two-cap boundary-clean transport).** A closed clean corridor whose
+complete radius-one neighbourhood avoids each displayed cap face survives the
+literal opening obtained by deleting both cap vertex supports.
+
+This is a transport theorem, not a cap-selection or annulus-construction
+claim: its two avoidance premises are exactly the geometric facts that a
+source-specific formation theorem must later establish.  Keeping them visible
+prevents a corridor near either new boundary from being silently treated as an
+unchanged open face. -/
+noncomputable def openCleanOrbitHexCorridorSkeleton_compl_union_twoCaps
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic)
+    (hrotation : VertexRotationCyclic RS)
+    (htwoSided : OrbitFacesTwoSided RS)
+    {corridorLength : Nat}
+    (clean : CleanOrbitHexCorridorSkeleton RS corridorLength)
+    (firstCapRoot secondCapRoot : RS.D)
+    (outer : Dart RS (fun vertex =>
+      vertex ∉ orbitFaceVertices RS (dartOrbitFace RS firstCapRoot) ∪
+        orbitFaceVertices RS (dartOrbitFace RS secondCapRoot)))
+    (hfirstAvoid : CorridorOneRingAvoidsFace RS
+      clean.toOrbitHexCorridorSkeleton (dartOrbitFace RS firstCapRoot))
+    (hsecondAvoid : CorridorOneRingAvoidsFace RS
+      clean.toOrbitHexCorridorSkeleton (dartOrbitFace RS secondCapRoot)) :
+    CleanOrbitHexCorridorSkeleton
+      (rotationSystem RS
+        (fun vertex => vertex ∉
+          orbitFaceVertices RS (dartOrbitFace RS firstCapRoot) ∪
+            orbitFaceVertices RS (dartOrbitFace RS secondCapRoot)) outer)
+      corridorLength :=
+  openCleanOrbitHexCorridorSkeleton RS htwoSided clean
+    (fun vertex => vertex ∉
+      orbitFaceVertices RS (dartOrbitFace RS firstCapRoot) ∪
+        orbitFaceVertices RS (dartOrbitFace RS secondCapRoot)) outer
+    (fun offset =>
+      faceFullyRetained_compl_union_orbitFaceVertices_of_not_adj
+        RS hcubic hrotation htwoSided firstCapRoot secondCapRoot
+        (orbitFaceRoot RS
+          (clean.toOrbitHexCorridorSkeleton.faceAt offset).1)
+        (by simpa using (hfirstAvoid offset
+          (clean.toOrbitHexCorridorSkeleton.faceAt offset) (Or.inl rfl)).1)
+        (by simpa using (hfirstAvoid offset
+          (clean.toOrbitHexCorridorSkeleton.faceAt offset) (Or.inl rfl)).2)
+        (by simpa using (hsecondAvoid offset
+          (clean.toOrbitHexCorridorSkeleton.faceAt offset) (Or.inl rfl)).1)
+        (by simpa using (hsecondAvoid offset
+          (clean.toOrbitHexCorridorSkeleton.faceAt offset) (Or.inl rfl)).2))
+    (fun offset neighbor hadj =>
+      faceFullyRetained_compl_union_orbitFaceVertices_of_not_adj
+        RS hcubic hrotation htwoSided firstCapRoot secondCapRoot
+        (orbitFaceRoot RS neighbor.1)
+        (by simpa using (hfirstAvoid offset neighbor (Or.inr hadj)).1)
+        (by simpa using (hfirstAvoid offset neighbor (Or.inr hadj)).2)
+        (by simpa using (hsecondAvoid offset neighbor (Or.inr hadj)).1)
+        (by simpa using (hsecondAvoid offset neighbor (Or.inr hadj)).2))
+
 end
 
 end GoertzelV24OpenRegionCleanHexCorridorTransport

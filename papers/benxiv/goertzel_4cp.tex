@@ -687,6 +687,18 @@ supports.  It does not select the two cap faces or establish those separation
 facts; it removes only the avoidable duplication once the source formation
 has supplied them.
 
+The same distinction now reaches the whole clean corridor rather than only
+one selected face.  The theorem
+\texttt{openCleanOrbitHexCorridorSkeleton\_compl\_union\_twoCaps} transports
+a closed clean hex corridor through the literal opening that deletes two
+displayed cap-face vertex supports, provided the corridor and every one of its
+facial-dual neighbours avoid \emph{each} cap.  This one-ring premise is
+essential: retaining the centres alone would still allow an open neighbour to
+be a boundary-cut face fragment.  The theorem therefore gives the future
+formation map exactly the two-cap corridor transport it needs, but deliberately
+does not select caps, prove the avoidance facts, or construct the opened
+annulus and its transverse crosscuts.
+
 There is already a precise serial open-tangle adapter, but its quantifiers are
 important.  Given an actual equivalence from the literal exposed boundary
 darts to a displayed left/right port sum, it transports Tait colourings in
