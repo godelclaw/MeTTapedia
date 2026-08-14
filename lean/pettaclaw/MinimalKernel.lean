@@ -27,6 +27,7 @@ distinction is erased.
 namespace MinimalKernel
 
 abbrev Frontier := Nat
+abbrev Conversation := Nat
 abbrev ContextDigest := Nat
 abbrev ControllerRevision := Nat
 abbrev ProposalDigest := Nat
@@ -39,7 +40,8 @@ abbrev EvidenceDigest := Nat
 
 /-- The exact request projection supplied to one controller invocation. -/
 structure RequestView where
-  frontier : Frontier
+  /-- Canonically ordered frontiers actually consumed into the context. -/
+  consumedFrontiers : List (Conversation × Frontier)
   contextDigest : ContextDigest
   controllerRevision : ControllerRevision
 deriving Repr, DecidableEq
@@ -177,6 +179,21 @@ theorem changed_context_invalidates_old_receipt
   simp [current] at digestEqual
   exact changed digestEqual.symm
 
+theorem changed_consumed_frontier_invalidates_old_receipt
+    (state : DecisionState) (decision : Decision)
+    (current : decision.receipt.request = state.request)
+    (newFrontiers : List (Conversation × Frontier))
+    (changed : newFrontiers ≠ state.request.consumedFrontiers) :
+    let next : DecisionState :=
+      { state with
+        request := { state.request with consumedFrontiers := newFrontiers } }
+    ¬ ReceiptCurrent next decision := by
+  dsimp [ReceiptCurrent]
+  intro equal
+  have frontierEqual := congrArg RequestView.consumedFrontiers equal
+  simp [current] at frontierEqual
+  exact changed frontierEqual.symm
+
 theorem semantic_effect_key_is_exactly_once
     (state : DecisionState) (decision : Decision)
     (certificate : CanonicalGate state decision) :
@@ -204,7 +221,7 @@ theorem decision_commit_is_append_only
   simp [commitDecision, List.IsPrefix]
 
 theorem unissued_receipt_cannot_commit :
-    let request : RequestView := ⟨7, 11, 3⟩
+    let request : RequestView := ⟨[(0, 7)], 11, 3⟩
     let plan : EffectPlan := ⟨5, 19⟩
     let decision : Decision :=
       { plan := plan
@@ -218,7 +235,7 @@ def IssuanceBlindGate (state : DecisionState) (decision : Decision) : Prop :=
     EffectFresh state decision
 
 theorem issuance_erasure_accepts_fabricated_receipt :
-    let request : RequestView := ⟨7, 11, 3⟩
+    let request : RequestView := ⟨[(0, 7)], 11, 3⟩
     let plan : EffectPlan := ⟨5, 19⟩
     let decision : Decision :=
       { plan := plan
@@ -281,14 +298,14 @@ erased, a proposal can be relabelled with the current frontier even though its
 content was produced from different request bytes. -/
 
 structure FrontierOnlyReceipt where
-  frontier : Frontier
+  consumedFrontiers : List (Conversation × Frontier)
   effectKey : EffectKey
   proposalDigest : ProposalDigest
 deriving Repr, DecidableEq
 
 def FrontierOnlyAccepts (state : DecisionState) (plan : EffectPlan)
     (receipt : FrontierOnlyReceipt) : Prop :=
-  receipt.frontier = state.request.frontier ∧
+  receipt.consumedFrontiers = state.request.consumedFrontiers ∧
     receipt.effectKey = plan.key ∧ receipt.proposalDigest = plan.digest
 
 instance (state : DecisionState) (plan : EffectPlan)
@@ -298,11 +315,11 @@ instance (state : DecisionState) (plan : EffectPlan)
   infer_instance
 
 theorem frontier_only_receipt_allows_context_relabel :
-    let oldRequest : RequestView := ⟨7, 11, 3⟩
-    let newRequest : RequestView := ⟨7, 12, 3⟩
+    let oldRequest : RequestView := ⟨[(0, 7)], 11, 3⟩
+    let newRequest : RequestView := ⟨[(0, 7)], 12, 3⟩
     let state : DecisionState := ⟨newRequest, []⟩
     let stalePlan : EffectPlan := ⟨5, 19⟩
-    let relabelled : FrontierOnlyReceipt := ⟨7, 5, 19⟩
+    let relabelled : FrontierOnlyReceipt := ⟨[(0, 7)], 5, 19⟩
     oldRequest.contextDigest ≠ newRequest.contextDigest ∧
       FrontierOnlyAccepts state stalePlan relabelled := by
   decide
@@ -397,6 +414,174 @@ theorem naive_infrastructure_failure_can_kill_kernel :
         installedDigest := fun _ => 7
         running := true }
     (naiveResolve runtime .infraError).running = false := by
+  rfl
+
+/-! ## External authority and probationary protected plasticity -/
+
+abbrev Authority := Nat
+
+/-- Promotion authority is carried separately from the developmental proposer.
+The trusted authority denotes an external supervisor selected by the host. -/
+structure PromotionRequest where
+  proposal : MutationProposal
+  checkedDigest : ProposalDigest
+  proposer : Authority
+  promoter : Authority
+  trustedPromoter : Authority
+deriving Repr, DecidableEq
+
+def PromotionSafe (runtime : Runtime) (request : PromotionRequest) : Prop :=
+  PromoteSafe runtime request.proposal request.checkedDigest ∧
+    request.promoter = request.trustedPromoter ∧
+    request.proposer ≠ request.promoter
+
+abbrev PromotionGate := Runtime → PromotionRequest → Prop
+
+def CanonicalPromotionGate : PromotionGate := PromotionSafe
+
+def PromotionSound (gate : PromotionGate) : Prop :=
+  ∀ runtime request, gate runtime request → PromotionSafe runtime request
+
+def PromotionComplete (gate : PromotionGate) : Prop :=
+  ∀ runtime request, PromotionSafe runtime request → gate runtime request
+
+def PromotionWeakerThan (left right : PromotionGate) : Prop :=
+  ∀ runtime request, right runtime request → left runtime request
+
+theorem canonical_promotion_gate_is_weakest_sound
+    (gate : PromotionGate) (sound : PromotionSound gate) :
+    PromotionWeakerThan CanonicalPromotionGate gate := by
+  intro runtime request accepted
+  exact sound runtime request accepted
+
+theorem sound_complete_promotion_gate_is_extensionally_canonical
+    (gate : PromotionGate) (sound : PromotionSound gate)
+    (complete : PromotionComplete gate) :
+    ∀ runtime request,
+      gate runtime request ↔ CanonicalPromotionGate runtime request := by
+  intro runtime request
+  exact ⟨sound runtime request, complete runtime request⟩
+
+def AuthorityBlindPromotionSafe (runtime : Runtime)
+    (request : PromotionRequest) : Prop :=
+  PromoteSafe runtime request.proposal request.checkedDigest
+
+/-- Digest and base-revision checks alone do not prevent the developmental
+process from authorizing its own replacement. -/
+theorem authority_erasure_accepts_self_promotion :
+    let runtime : Runtime :=
+      { revision := fun _ => 4
+        installedDigest := fun _ => 8
+        running := true }
+    let proposal : MutationProposal := ⟨2, 4, 9⟩
+    let request : PromotionRequest := ⟨proposal, 9, 7, 7, 7⟩
+    AuthorityBlindPromotionSafe runtime request ∧
+      ¬ CanonicalPromotionGate runtime request := by
+  simp [AuthorityBlindPromotionSafe, PromoteSafe, CanonicalPromotionGate,
+    PromotionSafe]
+
+structure Generation where
+  revision : Nat
+  digest : ProposalDigest
+deriving Repr, DecidableEq
+
+/-- A candidate may run under probation, but the prior accepted generation
+remains explicit until an external health observation accepts the candidate. -/
+structure ProbationRuntime where
+  lastKnownGood : Generation
+  candidate : Option Generation
+  active : Generation
+  consecutiveFailures : Nat
+  running : Bool
+deriving Repr, DecidableEq
+
+def stageCandidate (runtime : ProbationRuntime)
+    (candidate : Generation) : ProbationRuntime :=
+  { runtime with
+    candidate := some candidate
+    active := candidate
+    consecutiveFailures := 0 }
+
+inductive CandidateObservation
+  | healthy
+  | unhealthy
+  | infraError
+deriving Repr, DecidableEq
+
+def observeCandidate (failureBound : Nat) (runtime : ProbationRuntime) :
+    CandidateObservation → ProbationRuntime
+  | .infraError => runtime
+  | .healthy =>
+      match runtime.candidate with
+      | none => runtime
+      | some candidate =>
+          { runtime with
+            lastKnownGood := candidate
+            candidate := none
+            active := candidate
+            consecutiveFailures := 0 }
+  | .unhealthy =>
+      match runtime.candidate with
+      | none => runtime
+      | some _ =>
+          if failureBound ≤ runtime.consecutiveFailures + 1 then
+            { runtime with
+              candidate := none
+              active := runtime.lastKnownGood
+              consecutiveFailures := 0 }
+          else
+            { runtime with
+              consecutiveFailures := runtime.consecutiveFailures + 1 }
+
+theorem arbitrary_candidate_can_be_staged
+    (runtime : ProbationRuntime) (candidate : Generation) :
+    (stageCandidate runtime candidate).candidate = some candidate ∧
+      (stageCandidate runtime candidate).active = candidate := by
+  simp [stageCandidate]
+
+theorem staging_preserves_last_known_good_and_liveness
+    (runtime : ProbationRuntime) (candidate : Generation) :
+    (stageCandidate runtime candidate).lastKnownGood = runtime.lastKnownGood ∧
+      (stageCandidate runtime candidate).running = runtime.running := by
+  simp [stageCandidate]
+
+theorem probation_infrastructure_failure_is_not_a_verdict
+    (bound : Nat) (runtime : ProbationRuntime) :
+    observeCandidate bound runtime .infraError = runtime := by
+  rfl
+
+theorem healthy_candidate_becomes_last_known_good
+    (bound : Nat) (runtime : ProbationRuntime) (candidate : Generation)
+    (present : runtime.candidate = some candidate) :
+    let next := observeCandidate bound runtime .healthy
+    next.lastKnownGood = candidate ∧ next.candidate = none ∧
+      next.active = candidate ∧ next.running = runtime.running := by
+  simp [observeCandidate, present]
+
+theorem bounded_unhealthy_probation_rolls_back
+    (bound : Nat) (runtime : ProbationRuntime) (candidate : Generation)
+    (present : runtime.candidate = some candidate)
+    (reached : bound ≤ runtime.consecutiveFailures + 1) :
+    let next := observeCandidate bound runtime .unhealthy
+    next.lastKnownGood = runtime.lastKnownGood ∧ next.candidate = none ∧
+      next.active = runtime.lastKnownGood ∧
+      next.running = runtime.running := by
+  simp [observeCandidate, present, reached]
+
+/-- A design that replaces the only generation coordinate before probation
+has no internal generation to which rejection can return. -/
+structure CandidateOnlyRuntime where
+  active : Generation
+  running : Bool
+deriving Repr, DecidableEq
+
+def naiveCandidateFailure (runtime : CandidateOnlyRuntime) :
+    CandidateOnlyRuntime :=
+  { runtime with running := false }
+
+theorem last_known_good_erasure_can_turn_rejection_into_death :
+    let runtime : CandidateOnlyRuntime := ⟨⟨3, 8⟩, true⟩
+    (naiveCandidateFailure runtime).running = false := by
   rfl
 
 /-! ## Finite autonomous work and human preemption -/
@@ -650,6 +835,7 @@ end MinimalKernel
 #print axioms MinimalKernel.recorded_invocation_has_issued_exact_current_receipt
 #print axioms MinimalKernel.recorded_invocation_is_committable_when_effect_is_fresh
 #print axioms MinimalKernel.changed_context_invalidates_old_receipt
+#print axioms MinimalKernel.changed_consumed_frontier_invalidates_old_receipt
 #print axioms MinimalKernel.semantic_effect_key_is_exactly_once
 #print axioms MinimalKernel.unissued_receipt_cannot_commit
 #print axioms MinimalKernel.issuance_erasure_accepts_fabricated_receipt
@@ -659,6 +845,13 @@ end MinimalKernel
 #print axioms MinimalKernel.frontier_only_receipt_allows_context_relabel
 #print axioms MinimalKernel.infrastructure_failure_preserves_last_known_good
 #print axioms MinimalKernel.validation_failure_cannot_kill_running_kernel
+#print axioms MinimalKernel.canonical_promotion_gate_is_weakest_sound
+#print axioms MinimalKernel.authority_erasure_accepts_self_promotion
+#print axioms MinimalKernel.staging_preserves_last_known_good_and_liveness
+#print axioms MinimalKernel.probation_infrastructure_failure_is_not_a_verdict
+#print axioms MinimalKernel.healthy_candidate_becomes_last_known_good
+#print axioms MinimalKernel.bounded_unhealthy_probation_rolls_back
+#print axioms MinimalKernel.last_known_good_erasure_can_turn_rejection_into_death
 #print axioms MinimalKernel.finite_budget_reaches_quiet_point
 #print axioms MinimalKernel.evidence_admission_preserves_closure
 #print axioms MinimalKernel.evidence_admission_is_append_only
