@@ -2316,6 +2316,18 @@ the connectivity of the simultaneously retained complement and the final
 cellulation packaging.  No conditional connectivity wrapper is being counted
 as that construction.
 
+The packaging itself is now literal and machine-checked in
+\texttt{GoertzelV24FacialPentagonCapPairAnnularCellulation}.  Given the two
+formation properties of the selected pair---remote separation of its two
+boundary-face families and connectivity of the simultaneously retained
+complement---Lean constructs a \texttt{FramedAnnularCellulation} on the actual
+graph-backed opening.  Its two holes are the computed face orbits, their
+inequality is transported rather than asserted, and its Euler field follows
+from the exact vertex, edge, and face equations above.  Thus no annular
+cellulation is postulated at C--3.  Equally importantly, this theorem does not
+promote its two hypotheses into source geometry: C--4 must derive both from
+the corridor-selected facial cap pair before the formation pillar is closed.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
