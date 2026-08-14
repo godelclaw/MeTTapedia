@@ -576,6 +576,24 @@ it neither selects a pentagon in the closed normal-form map nor proves that a
 Cell--3 corridor is retained, constructs the outer hole, or identifies the
 dependent face-fragment carriers of the two openings.
 
+paragraph{The first literal two-boundary opening.}
+The source's annular laboratory removes two separated pentagon caps, and this
+has now been made into a separate graph construction rather than being
+silently inferred from a one-cap opening.  In
+\texttt{GoertzelV24TwoPentagonCapOpening}, a pair of cap presentations carries
+three explicit separation conditions: disjoint cap-vertex supports and no
+spoke from either cap into the other cap support.  The latter two conditions
+are necessary: vertex disjointness alone still permits one edge to be both an
+inner and an outer boundary edge.  From a cubic closed graph, simultaneous
+deletion of the two cap cycles produces a well-formed
+\texttt{AnnularBoundaryData} with five ordered inner and five ordered outer
+stubs.  The proof checks the degree-one and edge-disjoint boundary facts and
+that every other vertex stays cubic.  This closes the graph/interface half of
+the two-cap model.  It still does not select such a separated pair in a
+minimal counterexample, give the opened graph its annular rotation embedding,
+or construct the Cell--3 corridor and its crosscuts; those are the remaining
+formation geometry.
+
 There is no parallel open-region graph tower behind this comparison.  The
 generic theorem
 \texttt{slitGraphIsoOpenPrimalGraph} in
