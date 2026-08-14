@@ -2609,6 +2609,25 @@ construct the ambient frontier's Euler/cellulation presentation and discharge
 the already isolated collar-uniqueness invariant before the graph-backed
 annulus can be packaged.
 
+The carrier arithmetic has now been closed as well.  In
+\texttt{GoertzelV24FrontierPentagonCapOpeningCounts}, complement counting
+proves that the toolchain opening deletes exactly the five cap-cycle edges,
+while the ordered opening isomorphism proves that the manuscript carrier has
+the same number of vertices as the frontier: the five removed cap vertices
+are replaced by five fresh stubs.  Combining these two equalities with the
+face-surgery equation above,
+\texttt{GoertzelV24FrontierPentagonCapAnnularEuler} proves the conditional
+transport
+\[
+  \chi(X')=2 \qquad\text{from the explicit premise}\qquad \chi(X)=2.
+\]
+This is not yet the formation theorem.  Its name,
+\texttt{graphBacked\_euler\_of\_ambient\_euler}, records the remaining
+direction of dependence: the source-local construction must still produce
+the Addendum--V frontier $X$ with its own Euler/cellulation datum and prove
+the five-spoke collar-uniqueness invariant.  No closed two-cap sphere has
+been substituted for that task.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
