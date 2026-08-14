@@ -555,6 +555,19 @@ it neither selects a pentagon in the closed normal-form map nor proves that a
 Cell--3 corridor is retained, constructs the outer hole, or identifies the
 dependent face-fragment carriers of the two openings.
 
+There is no parallel open-region graph tower behind this comparison.  The
+generic theorem
+\texttt{slitGraphIsoOpenPrimalGraph} in
+\texttt{GoertzelV24DeletedRegionSlitOpenRegionComparison} identifies the
+manuscript slit graph for any deleted vertex region with the simple primal
+graph computed by the existing literal open-region rotation.  It preserves
+retained--retained edges, each fresh stub and its unique retained neighbour,
+and the absence of stub--stub edges.  Thus subsequent formation work may use
+the rotation and face-transport theorems through this one isomorphism rather
+than re-proving them for a second graph presentation.  It does not turn a
+graph isomorphism into equality of dependent face-fragment data or construct
+the source-specific annular region.
+
 The strictly local open-carrier implication is now machine-checked as well.
 The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
 opening, the outgoing rung and the canonical edge from the centre to each

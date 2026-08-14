@@ -10,10 +10,13 @@ the five cap-cycle edges.  The two descriptions therefore have the same five
 ordered boundary positions, but that fact must be made explicit before a graph
 isomorphism can transport boundary words or selected-component data.
 
-This file establishes the ordered port map on the manuscript side.  The next
-theorem must prove that these are *all* boundary ports and then construct the
-graph isomorphism.  It deliberately does not identify dependent face-fragment
-carriers merely from agreement of the five boundary edges.
+This file establishes the ordered port map, proves that its five outward
+spokes exhaust all manuscript-side boundary ports, and constructs the graph
+isomorphism between the two openings.  Its canonical isomorphism sends port
+`i` to cap vertex `i` by `rfl`; this definitional compatibility is deliberate,
+so replacing it with a merely propositional transport would be a regression.
+It deliberately does not identify dependent face-fragment carriers merely
+from agreement of the five boundary edges.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
