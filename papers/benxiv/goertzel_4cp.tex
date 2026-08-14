@@ -2289,9 +2289,32 @@ retained boundary dart is literally one of the five inner or five outer source
 coordinates.  Each family is one cycle of the computed first-return
 permutation, and the two cycles are distinct.  Hence that boundary permutation
 has exactly two quotient cycles: precisely the two opened faces that meet
-fresh stubs.  The remaining face-count bridge is now sharply isolated as an
-equivalence between stub-free opened faces and fully retained ambient faces;
-until that is proved, the Euler equation and annular cellulation remain open.
+fresh stubs.
+
+The remaining face-count bridge is now proved generically in
+\texttt{GoertzelV24OpenRegionFaceCount}.  A face of the literal opening which
+avoids every fresh stub consists entirely of retained old darts; forgetting
+the subtype witnesses identifies its whole cycle with one ambient face lying
+wholly on the retained side.  Conversely every such ambient face lifts to a
+stub-free opened face, and the two maps are inverse.  Boundary-successor cycles
+classify the complementary opened faces.  Thus the opened face count is the
+number of wholly retained ambient faces plus the number of boundary-successor
+cycles; this is an equivalence of quotient carriers, not a diagrammatic
+assertion.
+
+Specializing in
+\texttt{GoertzelV24FacialPentagonCapPairOpenEuler} completes the numerical
+C--3 Euler comparison.  Under the still-explicit C--4 remote facial-separation
+premise, the ambient faces split as ten touched faces, the wholly retained
+faces, and two pure deleted cap faces, while the opening contains the same
+retained faces and two boundary faces.  Consequently the opening has exactly
+ten fewer faces, matching its already-proved ten-edge loss and unchanged
+vertex count.  The opened rotation remains a spherical map with two
+distinguished faces; deleting the interiors of those two named faces gives
+the annular Euler characteristic zero.  The remaining C--3 obligation is now
+the connectivity of the simultaneously retained complement and the final
+cellulation packaging.  No conditional connectivity wrapper is being counted
+as that construction.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
