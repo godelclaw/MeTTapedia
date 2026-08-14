@@ -5,6 +5,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassCompatibility
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 
 /-!
 # Yang-Mills roadmap
@@ -35,11 +36,13 @@ open HypercubicDimension16JointPhysicalQuotient
 open HypercubicDimension16FDIBPCochainJointBridge
 open HypercubicDimension16WilsonTraceOrderInvariantBianchi
 open HypercubicDimension16WilsonTraceOrderInvariantThreeCoordinateRepair
+open HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenMismatch
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassCompatibility
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
+open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -193,6 +196,19 @@ def yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry : YangMillsRoa
   evidence := "HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassRepair constructs two field-relabel-invariant signed-H(4) plane-profile selectors whose exact values on two source-seven covariant-commutator rows form the identity matrix. The two-class augmentation has a certified nonzero second-IBP mismatch, and HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair adds an independent third coordinate that cancels that mismatch on the named rows. HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation then constructs an actual source-seven singleton-trace generator. Its exact signed weights are 32, 0, 0, and -96/5 for the original derivative, IBP, third, and profile coordinates; both plane-profile selectors vanish. With the cycle-profile base held fixed, every choice of the three added selector values has exact value (-1/10) times literalIncomingCommutatorClass there, and this is nonzero under both policies."
   nextObligation := "Do not use the fixed-base three-class candidate for descent, joint rank, conditioning, or Wilson-functional coordinates. First solve or refute the exact compatibility system obtained by allowing the full existing scalar-coordinate family to vary; only then synthesize a new coordinate family if required."
 
+/-- OUR fixed-trace-point screening calculation for a possible next
+trace-topology coordinate. -/
+def yangMillsFixedPointTopologyScreenRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .jointPhysicalRelationInterface
+  nodeId := "yang-mills.rg.fixed-point-topology-screen"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  itvLowerPercent := 99
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen retains genuine trace fixed points rather than relying on cycleType. Its fixed-point-gated derivative character has singleton-trace numerator 32 but complete fundamental-three-cut numerator -64, hence singleton-normalized value -2 on that presently zero row. A lone added contribution in this direction cannot repair the singleton row while retaining the fundamental row."
+  nextObligation := "Solve or refute the full existing scalar-parameter system first. If it is incompatible, any fixed-point topology extension needs an independently certified companion cancellation direction before descent is attempted."
+
 /-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
 after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
 def yangMillsContinuumOSConditionalRoadmapEntry : YangMillsRoadmapEntry where
@@ -243,6 +259,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , yangMillsSourceSevenTwoClassRepairRoadmapEntry
   , yangMillsSourceSevenTwoClassCompatibilityRoadmapEntry
   , yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry
+  , yangMillsFixedPointTopologyScreenRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsCompletionSteelmanRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
@@ -443,6 +460,27 @@ theorem currentYangMillsRoadmap_records_sourceSeven_threeClass_traceless_refutat
     ourThreeClassSourceSevenTraceOrderCorrection_ourSingletonTrace_ne_zero⟩
 
 #print axioms currentYangMillsRoadmap_records_sourceSeven_threeClass_traceless_refutation
+
+theorem currentYangMillsRoadmap_records_fixedPointTopology_screen :
+    (yangMillsFixedPointTopologyScreenRoadmapEntry.status = .checked) ∧
+      (yangMillsFixedPointTopologyScreenRoadmapEntry.progressPercent = 100) ∧
+      (ourFixedPointTraceAxisSignedWeight ourSingletonTraceLabeled = 32) ∧
+      (ourFixedPointTraceAxisSignedWeight ourFundamentalThreeCutBaseLabeled -
+          ourFixedPointTraceAxisSignedWeight
+            ourFundamentalThreeCutSwapFirstSecondLabeled -
+            ourFixedPointTraceAxisSignedWeight
+              ourFundamentalThreeCutSwapFirstThirdLabeled -
+              ourFixedPointTraceAxisSignedWeight
+                ourFundamentalThreeCutSwapSecondThirdLabeled +
+                ourFixedPointTraceAxisSignedWeight
+                  ourFundamentalThreeCutForwardLabeled +
+                  ourFixedPointTraceAxisSignedWeight
+                    ourFundamentalThreeCutBackwardLabeled = -64) := by
+  exact ⟨rfl, rfl,
+    ourSingletonTrace_fixedPointTraceAxisSignedWeight,
+    ourFundamentalThreeCut_fixedPointTraceAxisSignedWeight⟩
+
+#print axioms currentYangMillsRoadmap_records_fixedPointTopology_screen
 
 theorem currentYangMillsRoadmap_records_continuum_os_conditional :
     ∃ entry : YangMillsRoadmapEntry,
