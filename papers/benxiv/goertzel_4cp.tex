@@ -1407,6 +1407,19 @@ by the source-local formation layer.  This completes the finite same-cell
 alternative; it does not yet refute that exceptional branch or settle either
 neighbouring-cell gap.
 
+The first neighbouring seam is now literal as well.  The selected successor
+module packages the four flank coordinates around two consecutive Cell--3
+faces together with the proved fact that the common rung is represented by
+opposite ambient darts.  Cubicity at the two endpoints then gives two exact
+face identities: the exterior face immediately before the outgoing rung is
+the exterior face immediately after the successor's incoming rung, and the
+other two flanks agree analogously.  This is a direct three-dart rotation
+calculation, not an appeal to global uniqueness of shared face edges.  With
+those identities in hand, the next cell constructs its two mutually disjoint
+local rails or returns its exact finite collision certificate.  What remains
+is the append invariant across arbitrarily many successful cells and the two
+hole end caps; a one-seam successor package is not yet a long crosscut.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
