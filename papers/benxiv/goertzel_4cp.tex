@@ -2478,6 +2478,20 @@ The remaining geometric step is therefore precisely to retain the supplied
 outer boundary orbit of $X$ while computing the new inner orbit created by
 the cap opening.
 
+That first half is now explicit.  The module
+\texttt{GoertzelV24FrontierPentagonCapOuterFace} records the source-level
+statement that both darts over every named old outer-interface edge lie on
+one ambient outer face.  Provided that complete ambient face orbit avoids the
+deleted cap, Lean transports it through the literal one-cap opening and then
+through the computed simple-graph backing.  Every named outer-interface dart
+is proved to remain on the transported orbit, while that orbit is proved
+distinct from the face rooted at each fresh cap stub.  Thus the old rim and
+the newly cut boundary cannot be identified by a convenient drawing.  This
+still does not compute the common inner orbit of the five fresh stubs on the
+frontier carrier, derive the old outer-face premise from source selection, or
+package the resulting pair as the source annulus; those are the remaining
+formation obligations before the L1 crosscuts can be realized.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
