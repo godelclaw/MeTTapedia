@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebHoleBoundaryOrder
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebFiniteCutRadialEscape
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAppendSeparator
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalCommonNeighborIncidence
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CubicSmallBoundaryCycle
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceWalk
 
@@ -13,10 +14,14 @@ the distinguished outer-hole dart and proves that every outer interface stub
 is also outside that component.  The proof follows the literal outer face
 orbit and uses the selected crossing-edge hole-safety theorem.
 
-This is an L1 component classification, not yet the cubic degree count.  It
-does not put the five inner stubs on the outer side, prove boundary saturation,
-or promote the separator to a cyclic three-edge cut.  Those are separate
-source-local obligations and are not assumed here.
+This is an L1 component classification, not the completed crosscut
+construction.  It excludes all ten boundary stubs, proves the local
+cyclic-or-singleton degree dichotomy, saturates the boundary in the singleton
+case, and then eliminates that case using the literal outgoing-rung anchor and
+the pointwise local incidence theorem.  The surviving component therefore
+contains a cycle.  The module does not manufacture a complementary-side cycle
+or transport closed minimality to the opened carrier; those remain the honest
+cyclic-branch formation obligation.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -307,6 +312,198 @@ theorem hasCycleOnSide_or_component_card_eq_one
         change dart.1.snd ∈ s(dart.1.fst, dart.1.snd)
         simp),
       dart.2.1, dart.2.2⟩
+
+/-- A singleton selected deletion component sees all three selected
+crossings.  Its unique vertex is locally cubic because the component avoids
+the ten boundary stubs.  Thus its three outgoing darts inject into the
+computed component boundary; that boundary is already a subset of the three
+selected crossings, so both finite sets have cardinality three and coincide.
+-/
+theorem componentCrossingEdges_eq_crossingEdges_of_component_card_eq_one
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcard : Fintype.card {vertex : V // vertex ∈ component.supp} = 1) :
+    componentCrossingEdges triangle.selectedCycle.crossingEdges component =
+      triangle.selectedCycle.crossingEdges := by
+  classical
+  let side : V → Prop := fun vertex => vertex ∈ component.supp
+  letI componentFintype : Fintype {vertex : V // side vertex} :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  have hunique : ∀ first second : {vertex : V // side vertex}, first = second := by
+    rcases Fintype.card_eq_one_iff.mp hcard with ⟨witness, hall⟩
+    intro first second
+    exact (hall first).trans (hall second).symm
+  have hdegree : ∀ vertex, side vertex → G.degree vertex = 3 := by
+    intro vertex hvertex
+    have hcubic := web.boundary_wellFormed.cubic_elsewhere vertex
+      (by
+        intro inner heq
+        subst vertex
+        exact (triangle.innerStub_not_mem_component component hroot inner) hvertex)
+      (by
+        intro outer heq
+        subst vertex
+        exact (triangle.outerStub_not_mem_component component hroot outer) hvertex)
+    convert
+      (GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+        (G := G) vertex).symm.trans hcubic using 1
+    apply GoertzelV24CubicSmallBoundaryCycle.degree_instance_independent
+  letI internalEmpty : IsEmpty (InternalSideDart G side) :=
+    ⟨fun dart => dart.1.adj.ne (congrArg Subtype.val
+      (hunique ⟨dart.1.fst, dart.2.1⟩ ⟨dart.1.snd, dart.2.2⟩))⟩
+  have hsideCard := card_sideDart_eq_three_mul_of_local side hdegree
+  have hpartition := Fintype.card_congr
+    (sideDartEquivInternalSumCrossing G side)
+  have hinternalCard : Fintype.card (InternalSideDart G side) = 0 :=
+    Fintype.card_eq_zero
+  rw [Fintype.card_sum, hinternalCard] at hpartition
+  have hsideOne : Fintype.card {vertex : V // side vertex} = 1 := hcard
+  have hcrossingCard : Fintype.card (CrossingSideDart G side) = 3 := by
+    omega
+  let toBoundary : CrossingSideDart G side →
+      {edge // edge ∈ componentCrossingEdges
+        triangle.selectedCycle.crossingEdges component} := fun dart =>
+    ⟨⟨dart.1.edge, dart.1.edge_mem⟩,
+      (mem_componentCrossingEdges_iff
+        triangle.selectedCycle.crossingEdges component _).2
+        ⟨dart.1.fst, dart.1.snd,
+          (by change dart.1.fst ∈ s(dart.1.fst, dart.1.snd); simp),
+          (by change dart.1.snd ∈ s(dart.1.fst, dart.1.snd); simp),
+          dart.2.1, dart.2.2⟩⟩
+  have htoBoundaryInjective : Function.Injective toBoundary := by
+    intro first second heq
+    apply crossingSideDart_edge_injective side
+    exact congrArg Subtype.val heq
+  have hboundaryLower : 3 ≤
+      (componentCrossingEdges
+        triangle.selectedCycle.crossingEdges component).card := by
+    rw [← hcrossingCard]
+    simpa only [Fintype.card_coe] using
+      Fintype.card_le_of_injective toBoundary htoBoundaryInjective
+  have hboundaryUpper :
+      (componentCrossingEdges
+        triangle.selectedCycle.crossingEdges component).card ≤ 3 := by
+    calc
+      _ ≤ triangle.selectedCycle.crossingEdges.card :=
+        card_componentCrossingEdges_le_removed
+          triangle.selectedCycle.crossingEdges component
+      _ = 3 := triangle.crossingEdges_card_eq_three
+  apply Finset.eq_of_subset_of_card_le
+    (componentCrossingEdges_subset_removed
+      triangle.selectedCycle.crossingEdges component)
+  rw [triangle.crossingEdges_card_eq_three]
+  exact hboundaryLower
+
+/-- The singleton component has one ambient vertex incident to every selected
+triangle crossing.  This is the incidence form consumed by the local rail
+append repair. -/
+theorem exists_vertex_mem_all_crossingEdges_of_component_card_eq_one
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcard : Fintype.card {vertex : V // vertex ∈ component.supp} = 1) :
+    ∃ vertex : V, ∀ edge ∈ triangle.selectedCycle.crossingEdges,
+      vertex ∈ edge.1 := by
+  classical
+  let vertex : V := component.nonempty_supp.choose
+  have hvertex : vertex ∈ component.supp := component.nonempty_supp.choose_spec
+  have hunique : ∀ first second : {candidate : V // candidate ∈ component.supp},
+      first = second := by
+    rcases Fintype.card_eq_one_iff.mp hcard with ⟨witness, hall⟩
+    intro first second
+    exact (hall first).trans (hall second).symm
+  refine ⟨vertex, ?_⟩
+  intro edge hedge
+  have hboundary : edge ∈ componentCrossingEdges
+      triangle.selectedCycle.crossingEdges component := by
+    rw [triangle.componentCrossingEdges_eq_crossingEdges_of_component_card_eq_one
+      component hroot hcard]
+    exact hedge
+  rcases (mem_componentCrossingEdges_iff
+      triangle.selectedCycle.crossingEdges component edge).1 hboundary with
+    ⟨inside, outside, hinsideEdge, _houtsideEdge, hinside, _houtside⟩
+  have heq : inside = vertex := congrArg Subtype.val
+    (hunique ⟨inside, hinside⟩ ⟨vertex, hvertex⟩)
+  simpa only [heq] using hinsideEdge
+
+/-- The selected obstruction component cannot be a singleton.  Boundary
+saturation gives one vertex incident to both the literal outgoing rung and
+the selected crossing from the third face back to the left centre.  The
+pointwise local cubic incidence theorem then classifies the third face as one
+of the two named flanks, contradicting the obstruction witness. -/
+theorem component_card_ne_one
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    Fintype.card {vertex : V // vertex ∈ component.supp} ≠ 1 := by
+  intro hcard
+  obtain ⟨vertex, hvertex⟩ :=
+    triangle.exists_vertex_mem_all_crossingEdges_of_component_card_eq_one
+      component hroot hcard
+  let targetEdge := triangle.selectedCycle.crossingEdge triangle.lastStep
+  have htargetSelected : targetEdge ∈
+      triangle.selectedCycle.crossingEdges := by
+    exact (SelectedDualCycle.mem_crossingEdges_iff
+      triangle.selectedCycle targetEdge).2 ⟨triangle.lastStep, rfl⟩
+  have houtgoingSelected : rungs.edge leftInterior.outgoing ∈
+      triangle.selectedCycle.crossingEdges := by
+    exact (SelectedDualCycle.mem_crossingEdges_iff
+      triangle.selectedCycle (rungs.edge leftInterior.outgoing)).2
+        ⟨triangle.firstStep, triangle.selectedCycle_crossingEdge_zero⟩
+  have htargetCenter : targetEdge ∈ orbitFaceBoundary web.annular.RS
+      ((corridor.toCleanOrbitHexCorridorSkeleton
+        |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center).1 := by
+    simpa [targetEdge] using
+      triangle.selectedCycle.crossingEdge_mem_rightFace triangle.lastStep
+  have htargetThird : targetEdge ∈
+      orbitFaceBoundary web.annular.RS triangle.third.1 := by
+    simpa [targetEdge] using
+      triangle.selectedCycle.crossingEdge_mem_leftFace triangle.lastStep
+  have hvertexOutgoing : vertex ∈ web.annular.RS.endpoints
+      (web.annular.RS.edgeOf (faceCycleDart web.annular.RS
+        leftPlacement.root leftPlacement.outgoingPosition)) := by
+    apply (GoertzelV24RotationVertexCutProfile.mem_simpleGraphRotationSystem_endpoints_iff
+      web.annular.cellulation.rotation _ vertex).2
+    change vertex ∈ (faceCycleEdge web.annular.RS leftPlacement.root
+      leftPlacement.outgoingPosition : G.edgeSet).1
+    rw [leftPlacement.outgoing_edge]
+    exact hvertex _ houtgoingSelected
+  have hvertexTarget : vertex ∈ web.annular.RS.endpoints targetEdge := by
+    apply (GoertzelV24RotationVertexCutProfile.mem_simpleGraphRotationSystem_endpoints_iff
+      web.annular.cellulation.rotation targetEdge vertex).2
+    exact hvertex _ htargetSelected
+  have hincidence : successor.CommonNeighborVertexIncidenceAt triangle.third
+      triangle.leftCenter_adj_third triangle.rightCenter_adj_third :=
+    ⟨targetEdge, htargetCenter, htargetThird, vertex,
+      hvertexOutgoing, hvertexTarget⟩
+  rcases successor.face_eq_before_or_after_of_commonNeighborVertexIncidenceAt
+      triangle.third triangle.leftCenter_adj_third
+        triangle.rightCenter_adj_third hincidence with hbefore | hafter
+  · exact triangle.third_ne_before hbefore
+  · exact triangle.third_ne_after hafter
+
+/-- Therefore the selected outer-remote component of every obstruction
+triangle lies on the cyclic branch of the local degree classification.  This
+does not yet provide a complementary-side cycle or transport closed
+minimality to the opened carrier. -/
+theorem hasCycleOnSide
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) := by
+  rcases triangle.hasCycleOnSide_or_component_card_eq_one component hroot with
+    hcycle | hcard
+  · exact hcycle
+  · exact False.elim (triangle.component_card_ne_one component hroot hcard)
 
 end SeparatedSelectedSourceLocalRailSuccessor.AdjacentDualTriangle
 

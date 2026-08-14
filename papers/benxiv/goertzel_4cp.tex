@@ -1532,15 +1532,23 @@ so \(n\leq21\).  Thus the cyclic branch requires either a genuine size input
 or the source formation transport from the closed cubic carrier; no outer
 cycle is inferred from the displayed hole walk.
 
-The singleton branch has nevertheless advanced independently.  The generic
+The singleton branch has now closed independently.  The generic
 selected-cycle constructor can now pin one specified primal crossing at one
 specified dual step while retaining choice at the other steps.  Its
 specialization to the obstruction triangle pins the first crossing
 definitionally to the literal selected outgoing corridor rung.  This removes
 the provenance ambiguity without a global unique-shared-edge premise.
-Three-to-three boundary saturation and the resulting pointwise vertex/face
-incidence remain to be proved before the singleton obstruction becomes the
-successful append; L1 is not reported closed.
+For a one-vertex deletion component, the three outgoing darts inject into its
+computed crossing boundary; that boundary is already contained in the three
+selected crossings.  Equality of cardinalities therefore proves exact
+boundary saturation and yields one ambient vertex incident to every selected
+crossing.  The existing local cubic incidence proof has been factored through
+a pointwise interface.  Applied to the selected crossing from the third face
+back to the left centre, it forces that third face to be one of the two named
+flanks, contradicting the obstruction witness.  Consequently the chosen
+outer-remote component of every obstruction triangle contains a cycle.  The
+complementary-side cycle/closed-carrier transport remains open, so L1 is not
+reported closed.
 
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,

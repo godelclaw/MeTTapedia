@@ -478,26 +478,23 @@ variable
     {rightPlacement : SelectedInternalHexRungPlacement corridor rungs
       (nextCorridorInterior leftInterior hnext)}
 
-/-- The selected-carrier form of the closed dual-triangle incidence datum.
-For each common neighbour, one literal edge shared with the left corridor
-face retains a common endpoint with the selected outgoing rung.
-
-No uniqueness of the shared edge is asserted.  This is the weakest
-source-formation output needed by the local cubic argument below. -/
-def CommonNeighborVertexIncidence
+/-- Pointwise selected-carrier incidence at one common dual neighbour.  One
+literal edge shared with the left corridor face retains a common endpoint
+with the selected outgoing rung. -/
+def CommonNeighborVertexIncidenceAt
     (_successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
-      rightPlacement) : Prop :=
-  ∀ (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
-      (_hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      rightPlacement)
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (_hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
         (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
           ((corridor.toCleanOrbitHexCorridorSkeleton
             |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
-      (_hright : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+    (_hright : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
         (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
           ((corridor.toCleanOrbitHexCorridorSkeleton
             |>.toOrbitHexCorridorSkeleton).faceAt
-              (nextCorridorInterior leftInterior hnext).center) face),
-    ∃ targetEdge : G.edgeSet,
+              (nextCorridorInterior leftInterior hnext).center) face) : Prop :=
+  ∃ targetEdge : G.edgeSet,
       targetEdge ∈ orbitFaceBoundary web.annular.RS
         ((corridor.toCleanOrbitHexCorridorSkeleton
           |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center).1 ∧
@@ -507,6 +504,23 @@ def CommonNeighborVertexIncidence
           (web.annular.RS.edgeOf (faceCycleDart web.annular.RS
             leftPlacement.root leftPlacement.outgoingPosition)) ∧
         vertex ∈ web.annular.RS.endpoints targetEdge
+
+/-- The selected-carrier form of the closed dual-triangle incidence datum at
+every common neighbour.  No uniqueness of the shared edge is asserted. -/
+def CommonNeighborVertexIncidence
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement) : Prop :=
+  ∀ (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+      (hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          ((corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
+      (hright : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          ((corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton).faceAt
+              (nextCorridorInterior leftInterior hnext).center) face),
+    successor.CommonNeighborVertexIncidenceAt face hleft hright
 
 private theorem face_eq_selectedPlacementSideFace_of_edge_eq
     (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
@@ -559,19 +573,29 @@ private theorem face_eq_selectedPlacementSideFace_of_edge_eq
         leftPlacement position) hsideCenter)
   · exact Subtype.ext hsideFace.symm
 
-/-- **Selected incidence-to-flank bridge.** The literal common-endpoint
-incidence transported from the closed minimal map implies the exact
-common-neighbour classification consumed by selected rail append.
+/-- **Pointwise selected incidence-to-flank bridge.** Literal common-endpoint
+incidence at one common neighbour puts that face on one of the two named
+flanks of the outgoing rung.
 
 The proof uses only local cubicity and local two-sidedness of the displayed
 interior face.  In particular it does not restore the false global
 pairwise-unique shared-edge premise on the opened annulus. -/
-theorem commonNeighborsExact_of_commonNeighborVertexIncidence
+theorem face_eq_before_or_after_of_commonNeighborVertexIncidenceAt
     (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
       rightPlacement)
-    (hincidence : successor.CommonNeighborVertexIncidence) :
-    successor.CommonNeighborsExact := by
-  intro face hleft hright
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
+    (hright : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt
+            (nextCorridorInterior leftInterior hnext).center) face)
+    (hincidence : successor.CommonNeighborVertexIncidenceAt face hleft hright) :
+    face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+      face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter := by
   let RS := web.annular.RS
   let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
   let center := skeleton.faceAt leftInterior.center
@@ -586,7 +610,7 @@ theorem commonNeighborsExact_of_commonNeighborVertexIncidence
   let outgoingEdge := RS.edgeOf outgoingDart
   let beforeEdge := RS.edgeOf beforeDart
   let afterEdge := RS.edgeOf afterDart
-  rcases hincidence face hleft hright with
+  rcases hincidence with
     ⟨targetEdge, htargetCenter, htargetFace, vertex,
       hvertexOutgoing, hvertexTarget⟩
   have houtgoingFace : dartOrbitFace RS outgoingDart = center.1 := by
@@ -751,6 +775,17 @@ theorem commonNeighborsExact_of_commonNeighborVertexIncidence
       (corridor := corridor) face hleft targetEdge htargetCenter htargetFace
       successor.frame.leftAfter
       (htargetMem.resolve_left htargetNeOutgoing)
+
+/-- The pointwise bridge applied at every common neighbour supplies the exact
+classification consumed by selected rail append. -/
+theorem commonNeighborsExact_of_commonNeighborVertexIncidence
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (hincidence : successor.CommonNeighborVertexIncidence) :
+    successor.CommonNeighborsExact := by
+  intro face hleft hright
+  exact successor.face_eq_before_or_after_of_commonNeighborVertexIncidenceAt
+    face hleft hright (hincidence face hleft hright)
 
 end SeparatedSelectedSourceLocalRailSuccessor
 

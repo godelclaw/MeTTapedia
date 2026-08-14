@@ -68,6 +68,12 @@ abbrev firstStep (triangle : AdjacentDualTriangle successor) :
     Fin triangle.walk.length :=
   ⟨0, by rw [triangle.walk_length]; decide⟩
 
+/-- The final step of the obstruction walk, from its third common face back
+to the left corridor centre. -/
+abbrev lastStep (triangle : AdjacentDualTriangle successor) :
+    Fin triangle.walk.length :=
+  ⟨2, by rw [triangle.walk_length]; decide⟩
+
 /-- The obstruction triangle equipped with one actual shared primal edge at
 each of its three dual steps.  Its first crossing is definitionally the
 selected outgoing rung between the two consecutive corridor centres; only the
@@ -82,6 +88,24 @@ noncomputable def selectedCycle
     (rungs.edge leftInterior.outgoing) (by
       simpa [AdjacentDualTriangle.walk, nextCorridorInterior] using
         rungs.mem_shared leftInterior.outgoing)
+
+@[simp] theorem selectedCycle_walk
+    (triangle : AdjacentDualTriangle successor) :
+    triangle.selectedCycle.walk = triangle.walk := rfl
+
+@[simp] theorem walk_getVert_lastStep
+    (triangle : AdjacentDualTriangle successor) :
+    triangle.walk.getVert triangle.lastStep.val = triangle.third := rfl
+
+@[simp] theorem walk_getVert_two
+    (triangle : AdjacentDualTriangle successor) :
+    triangle.walk.getVert 2 = triangle.third := rfl
+
+@[simp] theorem walk_getVert_lastStep_succ
+    (triangle : AdjacentDualTriangle successor) :
+    triangle.walk.getVert (triangle.lastStep.val + 1) =
+      ((corridor.toCleanOrbitHexCorridorSkeleton
+        |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) := rfl
 
 /-- The distinguished first selected crossing retains the literal source rung
 rather than an arbitrary shared-edge choice. -/
