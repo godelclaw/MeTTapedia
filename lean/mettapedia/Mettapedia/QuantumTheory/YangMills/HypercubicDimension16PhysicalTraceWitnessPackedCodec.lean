@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceWitnessTypes
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PackedFiniteDataCodec
 
 /-!
 # Packed decoder for the selected physical trace witnesses
@@ -18,6 +19,7 @@ namespace YangMills
 namespace HypercubicDimension16PhysicalTraceWitnessPackedCodec
 
 open HypercubicDimension16PhysicalTraceWitnessTypes
+open HypercubicDimension16PackedFiniteDataCodec
 
 /-- Extract a fixed-width little-endian field from a packed witness word. -/
 @[reducible] def packedField (word offset width : Nat) : Nat :=
