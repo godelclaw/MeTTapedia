@@ -1599,6 +1599,13 @@ is one crossed route, not yet a new
 separated pair: simultaneous uncrossing, the endpoint permutation, mutual
 separation, and the two literal end caps remain open.
 
+The repaired path also reaches the source-facing crossing representation.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendRerouteTransversal}
+chooses an actual shared primal edge at every dual step from the step's local
+adjacency witness, without restoring global shared-edge uniqueness.  Its
+endpoints are still corridor side faces rather than the two hole faces, so it
+is a selected local transversal fragment and not the final crosscut.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
