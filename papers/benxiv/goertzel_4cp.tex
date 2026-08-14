@@ -1604,7 +1604,9 @@ The repaired path also reaches the source-facing crossing representation.
 chooses an actual shared primal edge at every dual step from the step's local
 adjacency witness, without restoring global shared-edge uniqueness.  Its
 endpoints are still corridor side faces rather than the two hole faces, so it
-is a selected local transversal fragment and not the final crosscut.
+is a selected local transversal fragment and not the final crosscut.  A single
+consumer theorem now returns the two possible crossed endpoint orientations
+directly from the actual collision witness.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three

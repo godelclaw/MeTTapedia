@@ -101,6 +101,34 @@ noncomputable def toSelectedTransversal
 
 end SeparatedSelectedSourceLocalRailSuccessor.SecondToFirstReroute
 
+namespace SeparatedSelectedSourceLocalRailSuccessor.ActualCrossAppendCollision
+
+/-- **L1 selected-reroute alternative.** An actual cross-track collision
+constructs a selected simple transversal fragment to one of the two opposite
+outgoing endpoints. -/
+noncomputable def toSelectedReroute
+    (collision : ActualCrossAppendCollision successor left) :
+    Nonempty
+        (SelectedDualPathTransversal (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingAfter)) ∨
+      Nonempty
+        (SelectedDualPathTransversal (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingBefore)) := by
+  rcases SeparatedSelectedSourceLocalRailSuccessor.toReroute collision with
+    reroute | reroute
+  · rcases reroute with ⟨reroute⟩
+    exact Or.inl ⟨reroute.toSelectedTransversal⟩
+  · rcases reroute with ⟨reroute⟩
+    exact Or.inr ⟨reroute.toSelectedTransversal⟩
+
+end SeparatedSelectedSourceLocalRailSuccessor.ActualCrossAppendCollision
+
 end Instance.SelectedLocalLayerFormation
 
 end
