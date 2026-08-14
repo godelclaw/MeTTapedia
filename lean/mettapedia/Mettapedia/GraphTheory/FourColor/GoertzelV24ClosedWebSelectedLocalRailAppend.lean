@@ -10,12 +10,16 @@ next cell.  This file packages the algebraic induction step: two accumulated
 simple, mutually disjoint rails remain so after appending that selected local
 pair, provided the four displayed old/new support conditions hold.
 
-Those support conditions are deliberately fields of the theorem rather than
-conclusions hidden in a constructor.  Remote selected cells are handled by
-the existing gap-separation results; the remaining bounded neighbouring
-interactions and the two end caps are geometric obligations of Fable flag L1.
-Thus this module is an append-safe carrier for the construction, not yet the
-global L1 crosscut pair.
+The generic append theorem keeps those support conditions visible.  For one
+literal neighbouring pair this file now names the exact remaining geometric
+statement, `CommonNeighborsExact`, and proves that it discharges all four
+conditions: the only common neighbours of consecutive centres are the two
+shared-rung flank faces.  Remote selected cells are handled by the existing
+gap-separation results; the distance-two interaction, construction of
+`CommonNeighborsExact` on the source carrier, and the two end caps remain
+geometric obligations of Fable flag L1.  Thus this module constructs the
+two-cell append under its exact local premise; it is not yet the global L1
+crosscut pair.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -174,6 +178,178 @@ theorem firstContinuation_support_disjoint_secondContinuation
       successor.secondContinuation.support := by
   simpa using successor.rightRails.firstRail_support_disjoint_secondRail
 
+/-- **L1 selected bounded-neighbour classification.** The only common
+full-dual neighbours of two consecutive selected Cell-3 centres are the two
+literal flank faces of their shared rung.
+
+This is the exact local geometric statement needed below.  It is deliberately
+named as a proposition: the selected-rung representation removes the false
+global shared-edge uniqueness premise, but does not make this adjacent
+classification definitional. -/
+def CommonNeighborsExact
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement) : Prop :=
+  ∀ face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)),
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face →
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt
+            (nextCorridorInterior leftInterior hnext).center) face →
+    face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+      face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter
+
+private theorem start_not_mem_support_tail_of_isPath
+    {F : Type*} {H : SimpleGraph F} {start finish : F}
+    (walk : H.Walk start finish) (hpath : walk.IsPath) :
+    start ∉ walk.support.tail := by
+  have hnodup := hpath.support_nodup
+  rw [← walk.cons_tail_support] at hnodup
+  exact (List.nodup_cons.mp hnodup).1
+
+private theorem end_mem_support
+    {F : Type*} {H : SimpleGraph F} {start finish : F}
+    (walk : H.Walk start finish) : finish ∈ walk.support := by
+  simp
+
+variable
+    {leftIncomingBefore leftIncomingAfter :
+      {position // position ∈ selectedPlacementSidePositions leftPlacement}}
+
+/-- Under the exact adjacent common-neighbour classification, the first local
+rail appends to the selected successor without repeating a face. -/
+theorem firstRail_support_disjoint_firstContinuation_tail
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (hexact : successor.CommonNeighborsExact) :
+    left.paths.firstRail.support.Disjoint
+      successor.firstContinuation.support.tail := by
+  rw [List.disjoint_left]
+  intro face hleft hright
+  have hrightFull : face ∈ successor.rightRails.paths.firstRail.support := by
+    rw [firstContinuation_support] at hright
+    exact List.mem_of_mem_tail hright
+  rcases hexact face
+      (left.paths.firstRail_support_adjacent_center face hleft)
+      (successor.rightRails.paths.firstRail_support_adjacent_center face
+        hrightFull) with hbefore | hafter
+  · rw [hbefore] at hright
+    exact (start_not_mem_support_tail_of_isPath successor.firstContinuation
+      successor.firstContinuation_isPath) hright
+  · rw [hafter] at hleft
+    have hother : selectedPlacementSideFace leftPlacement
+        successor.frame.leftAfter ∈ left.paths.secondRail.support :=
+      end_mem_support left.paths.secondRail
+    exact (List.disjoint_left.mp left.firstRail_support_disjoint_secondRail
+      hleft) hother
+
+/-- The second selected local rail appends simply under the same exact
+adjacent classification. -/
+theorem secondRail_support_disjoint_secondContinuation_tail
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (hexact : successor.CommonNeighborsExact) :
+    left.paths.secondRail.support.Disjoint
+      successor.secondContinuation.support.tail := by
+  rw [List.disjoint_left]
+  intro face hleft hright
+  have hrightFull : face ∈ successor.rightRails.paths.secondRail.support := by
+    rw [secondContinuation_support] at hright
+    exact List.mem_of_mem_tail hright
+  rcases hexact face
+      (left.paths.secondRail_support_adjacent_center face hleft)
+      (successor.rightRails.paths.secondRail_support_adjacent_center face
+        hrightFull) with hbefore | hafter
+  · rw [hbefore] at hleft
+    have hother : selectedPlacementSideFace leftPlacement
+        successor.frame.leftBefore ∈ left.paths.firstRail.support :=
+      end_mem_support left.paths.firstRail
+    exact (List.disjoint_left.mp left.firstRail_support_disjoint_secondRail
+      hother) hleft
+  · rw [hafter] at hright
+    exact (start_not_mem_support_tail_of_isPath successor.secondContinuation
+      successor.secondContinuation_isPath) hright
+
+/-- The old first track does not meet the new second-track tail. -/
+theorem firstRail_support_disjoint_secondContinuation_tail
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (hexact : successor.CommonNeighborsExact) :
+    left.paths.firstRail.support.Disjoint
+      successor.secondContinuation.support.tail := by
+  rw [List.disjoint_left]
+  intro face hleft hright
+  have hrightFull : face ∈ successor.rightRails.paths.secondRail.support := by
+    rw [secondContinuation_support] at hright
+    exact List.mem_of_mem_tail hright
+  rcases hexact face
+      (left.paths.firstRail_support_adjacent_center face hleft)
+      (successor.rightRails.paths.secondRail_support_adjacent_center face
+        hrightFull) with hbefore | hafter
+  · rw [hbefore] at hrightFull
+    have hfirstStart : selectedPlacementSideFace leftPlacement
+        successor.frame.leftBefore ∈
+          successor.rightRails.paths.firstRail.support := by
+      rw [successor.frame.leftBeforeFace_eq_rightAfterFace]
+      exact successor.rightRails.paths.firstRail.start_mem_support
+    exact (List.disjoint_left.mp
+      successor.rightRails.firstRail_support_disjoint_secondRail
+        hfirstStart) hrightFull
+  · rw [hafter] at hleft
+    have hother : selectedPlacementSideFace leftPlacement
+        successor.frame.leftAfter ∈ left.paths.secondRail.support :=
+      end_mem_support left.paths.secondRail
+    exact (List.disjoint_left.mp left.firstRail_support_disjoint_secondRail
+      hleft) hother
+
+/-- Symmetrically, the old second track does not meet the new first-track
+tail. -/
+theorem secondRail_support_disjoint_firstContinuation_tail
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (hexact : successor.CommonNeighborsExact) :
+    left.paths.secondRail.support.Disjoint
+      successor.firstContinuation.support.tail := by
+  rw [List.disjoint_left]
+  intro face hleft hright
+  have hrightFull : face ∈ successor.rightRails.paths.firstRail.support := by
+    rw [firstContinuation_support] at hright
+    exact List.mem_of_mem_tail hright
+  rcases hexact face
+      (left.paths.secondRail_support_adjacent_center face hleft)
+      (successor.rightRails.paths.firstRail_support_adjacent_center face
+        hrightFull) with hbefore | hafter
+  · rw [hbefore] at hleft
+    have hother : selectedPlacementSideFace leftPlacement
+        successor.frame.leftBefore ∈ left.paths.firstRail.support :=
+      end_mem_support left.paths.firstRail
+    exact (List.disjoint_left.mp left.firstRail_support_disjoint_secondRail
+      hother) hleft
+  · rw [hafter] at hrightFull
+    have hsecondStart : selectedPlacementSideFace leftPlacement
+        successor.frame.leftAfter ∈
+          successor.rightRails.paths.secondRail.support := by
+      rw [successor.frame.leftAfterFace_eq_rightBeforeFace]
+      exact successor.rightRails.paths.secondRail.start_mem_support
+    exact (List.disjoint_left.mp
+      successor.rightRails.firstRail_support_disjoint_secondRail
+        hrightFull) hsecondStart
+
 end SeparatedSelectedSourceLocalRailSuccessor
 
 namespace SelectedSourceLocalRailAssembly
@@ -245,6 +421,36 @@ noncomputable def appendSuccessor
         exact (List.disjoint_left.mp
           successor.firstContinuation_support_disjoint_secondContinuation
             hfirstFull) hsecondFull
+
+/-- **L1 selected two-cell connector.** Once the exact adjacent
+common-neighbour classification is supplied, a separated selected rail pair
+and its literal successor construct an append-safe two-cell assembly.
+
+Unlike `appendSuccessor`, this constructor has no four caller-supplied
+support premises: all four follow from `CommonNeighborsExact`.  The latter is
+still a real source-geometry obligation, so this theorem is not the final
+long/end-capped crosscut construction. -/
+noncomputable def appendLocalSuccessor
+    {leftIncomingBefore leftIncomingAfter :
+      {position // position ∈ selectedPlacementSidePositions leftPlacement}}
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (hexact : successor.CommonNeighborsExact) :
+    SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+      (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+      (selectedPlacementSideFace rightPlacement
+        successor.rightOutgoingBefore)
+      (selectedPlacementSideFace rightPlacement
+        successor.rightOutgoingAfter) :=
+  appendSuccessor successor left.toAssembly
+    (successor.firstRail_support_disjoint_firstContinuation_tail left hexact)
+    (successor.secondRail_support_disjoint_secondContinuation_tail left hexact)
+    (successor.firstRail_support_disjoint_secondContinuation_tail left hexact)
+    (successor.secondRail_support_disjoint_firstContinuation_tail left hexact)
 
 @[simp] theorem appendSuccessor_firstRail
     (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement

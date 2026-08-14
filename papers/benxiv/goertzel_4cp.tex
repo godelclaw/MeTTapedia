@@ -1434,6 +1434,18 @@ neighbouring interactions and end caps still require construction.  Thus the
 new theorem is an iteration-safe carrier, not yet an existence proof for an
 arbitrary long source crosscut.
 
+The first bounded neighbouring reduction is now available on this literal
+selected carrier.  The proposition
+\texttt{CommonNeighborsExact} says that every full-dual face adjacent to both
+consecutive Cell--3 centres is one of the two named flank faces of their
+shared rung.  From exactly this proposition Lean derives all four old/new
+tail-disjointness conditions above; \texttt{appendLocalSuccessor} therefore
+constructs the two-cell assembly without accepting four unrelated collision
+hypotheses from its caller.  This is a reduction of the adjacent geometry to
+one quantified local statement, not a proof of that statement.  Its
+source-opening transport, the distance-two interaction needed by an arbitrary
+prefix induction, and both annular end caps remain open.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
