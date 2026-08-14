@@ -16,9 +16,10 @@ centre-neighbour collisions are excluded by the corridor skeleton; a face
 adjacent to both windows is excluded by source boundary-cleanliness.
 
 This is a separation theorem for an explicitly supplied support provenance.
-It does not yet prove that every branch of `appendLocalSuccessorComplete`
-carries that provenance, construct the finite-state induction, attach either
-annular end cap, or close Fable flag L1.
+The ordinary straight append and the double-cross swapped append are proved to
+carry it.  The six finite residue repairs are not yet certified here, and this
+module does not construct the finite-state induction, attach either annular
+end cap, or close Fable flag L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -85,6 +86,186 @@ def SupportNearSelectedCenterPair
     Prop :=
   ∀ face ∈ support,
     FaceNearSelectedCenterPair (corridor := corridor) left right face
+
+/-- Both rails of an assembly retain the closed-neighbourhood provenance of
+one adjacent Cell-3 window. -/
+def SupportedBySelectedCenterPair
+    {firstStart secondStart firstFinish secondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart firstFinish secondFinish)
+    (left right : Fin blockLength) : Prop :=
+  SupportNearSelectedCenterPair (corridor := corridor) left right
+      assembly.firstRail.support ∧
+    SupportNearSelectedCenterPair (corridor := corridor) left right
+      assembly.secondRail.support
+
+variable
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {leftPlacement : SelectedInternalHexRungPlacement corridor rungs leftInterior}
+    {rightPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior leftInterior hnext)}
+    {leftIncomingBefore leftIncomingAfter :
+      {position // position ∈ selectedPlacementSidePositions leftPlacement}}
+    {successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement}
+    {left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter}
+
+/-- The finite source carrier from which every adjacent repair is assembled:
+the previous centre itself, either old local rail, or either successor rail.
+Keeping this as a positive membership predicate lets each reroute expose its
+provenance without committing the global induction to a particular path
+implementation. -/
+def FaceInAdjacentSelectedRailPieces (face : SelectedFace (web := web)) : Prop :=
+  face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      |>.faceAt leftInterior.center) ∨
+    face ∈ left.paths.firstRail.support ∨
+    face ∈ left.paths.secondRail.support ∨
+    face ∈ successor.firstContinuation.support ∨
+    face ∈ successor.secondContinuation.support
+
+/-- Membership in the finite adjacent repair carrier implies the closed
+two-centre provenance consumed by remote separation. -/
+theorem faceNearSelectedCenterPair_of_mem_adjacentSelectedRailPieces
+    {face : SelectedFace (web := web)}
+    (hface : FaceInAdjacentSelectedRailPieces (successor := successor)
+      (left := left) face) :
+    FaceNearSelectedCenterPair (corridor := corridor) leftInterior.center
+      (nextCorridorInterior leftInterior hnext).center face := by
+  rcases hface with hcenter | hleftFirst | hleftSecond | hrightFirst |
+    hrightSecond
+  · exact Or.inl hcenter
+  · exact Or.inr (Or.inr (Or.inl
+      (left.paths.firstRail_support_adjacent_center face hleftFirst)))
+  · exact Or.inr (Or.inr (Or.inl
+      (left.paths.secondRail_support_adjacent_center face hleftSecond)))
+  · have hrightFirst' : face ∈ successor.rightRails.paths.firstRail.support := by
+      rw [← successor.firstContinuation_support]
+      exact hrightFirst
+    exact Or.inr (Or.inr (Or.inr
+      (successor.rightRails.paths.firstRail_support_adjacent_center
+        face hrightFirst')))
+  · have hrightSecond' : face ∈ successor.rightRails.paths.secondRail.support := by
+      rw [← successor.secondContinuation_support]
+      exact hrightSecond
+    exact Or.inr (Or.inr (Or.inr
+      (successor.rightRails.paths.secondRail_support_adjacent_center
+        face hrightSecond')))
+
+/-- To certify a repaired adjacent assembly it suffices to show that both of
+its supports stay inside the five explicitly listed source pieces. -/
+theorem supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+    {firstFinish secondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+      (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+      firstFinish secondFinish)
+    (hfirst : ∀ face ∈ assembly.firstRail.support,
+      FaceInAdjacentSelectedRailPieces (successor := successor)
+        (left := left) face)
+    (hsecond : ∀ face ∈ assembly.secondRail.support,
+      FaceInAdjacentSelectedRailPieces (successor := successor)
+        (left := left) face) :
+    SupportedBySelectedCenterPair (corridor := corridor) assembly
+      leftInterior.center (nextCorridorInterior leftInterior hnext).center := by
+  constructor
+  · intro face hface
+    exact faceNearSelectedCenterPair_of_mem_adjacentSelectedRailPieces
+      (hfirst face hface)
+  · intro face hface
+    exact faceNearSelectedCenterPair_of_mem_adjacentSelectedRailPieces
+      (hsecond face hface)
+
+/-- The ordinary loop-erased straight append carries the new window
+provenance.  Loop erasure can remove support but cannot introduce a face
+outside the old and successor local rails. -/
+theorem appendSuccessorBypass_supportedBySelectedCenterPair
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (hfirstSecond : left.paths.firstRail.support.Disjoint
+      successor.secondContinuation.support.tail)
+    (hsecondFirst : left.paths.secondRail.support.Disjoint
+      successor.firstContinuation.support.tail) :
+    SupportedBySelectedCenterPair (corridor := corridor)
+      (appendSuccessorBypass successor left.toAssembly
+        hfirstSecond hsecondFirst)
+      leftInterior.center (nextCorridorInterior leftInterior hnext).center := by
+  apply supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+    (successor := successor) (left := left)
+  · intro face hface
+    have hraw :=
+      (left.paths.firstRail.append successor.firstContinuation
+        |>.support_bypass_subset_support) hface
+    rw [SimpleGraph.Walk.support_append] at hraw
+    rcases List.mem_append.mp hraw with hold | hnew
+    · exact Or.inr (Or.inl hold)
+    · exact Or.inr (Or.inr (Or.inr (Or.inl (List.mem_of_mem_tail hnew))))
+  · intro face hface
+    have hraw :=
+      (left.paths.secondRail.append successor.secondContinuation
+        |>.support_bypass_subset_support) hface
+    rw [SimpleGraph.Walk.support_append] at hraw
+    rcases List.mem_append.mp hraw with hold | hnew
+    · exact Or.inr (Or.inr (Or.inl hold))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr
+        (List.mem_of_mem_tail hnew))))
+
+/-- The double-cross endpoint swap also stays in the same two-cell source
+window.  Each rerouted support is already proved to lie in one old rail and
+the opposite successor tail. -/
+theorem appendSuccessorSwapBothCrossCollisions_supportedBySelectedCenterPair
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
+      leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
+      successor.frame.leftAfter)
+    (firstSecondFace secondFirstFace : SelectedFace (web := web))
+    (hfirstSecondOld : firstSecondFace ∈ left.paths.firstRail.support)
+    (hfirstSecondNew :
+      firstSecondFace ∈ successor.secondContinuation.support.tail)
+    (hsecondFirstOld : secondFirstFace ∈ left.paths.secondRail.support)
+    (hsecondFirstNew :
+      secondFirstFace ∈ successor.firstContinuation.support.tail)
+    (hfirstFirst : left.paths.firstRail.support.Disjoint
+      successor.firstContinuation.support.tail)
+    (hsecondSecond : left.paths.secondRail.support.Disjoint
+      successor.secondContinuation.support.tail) :
+    SupportedBySelectedCenterPair (corridor := corridor)
+      (appendSuccessorSwapBothCrossCollisions successor left
+        firstSecondFace secondFirstFace hfirstSecondOld hfirstSecondNew
+        hsecondFirstOld hsecondFirstNew hfirstFirst hsecondSecond)
+      leftInterior.center (nextCorridorInterior leftInterior hnext).center := by
+  apply supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+    (successor := successor) (left := left)
+  · intro face hface
+    let reroute :=
+      SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) firstSecondFace
+          hfirstSecondOld hfirstSecondNew
+    have hparts : face ∈ left.paths.firstRail.support ∨
+        face ∈ successor.secondContinuation.support.tail := by
+      exact reroute.route_support_subset face hface
+    rcases hparts with hold | hnew
+    · exact Or.inr (Or.inl hold)
+    · exact Or.inr (Or.inr (Or.inr (Or.inr
+        (List.mem_of_mem_tail hnew))))
+  · intro face hface
+    let reroute :=
+      SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) secondFirstFace
+          hsecondFirstOld hsecondFirstNew
+    have hparts : face ∈ left.paths.secondRail.support ∨
+        face ∈ successor.firstContinuation.support.tail := by
+      exact reroute.route_support_subset face hface
+    rcases hparts with hold | hnew
+    · exact Or.inr (Or.inr (Or.inl hold))
+    · exact Or.inr (Or.inr (Or.inr (Or.inl
+        (List.mem_of_mem_tail hnew))))
 
 /-- **L1 remote two-window separation.** Closed-neighbourhood provenance is
 exactly strong enough to separate arbitrary selected rail supports belonging
