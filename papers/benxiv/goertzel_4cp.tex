@@ -1385,9 +1385,16 @@ comes from the selected opposite-dart adjacency theorem; if the bounded local
 geometry repeats a face, standard walk loop erasure removes the repetition
 without changing either endpoint.  Thus the path constructor covers all
 three shapes without smuggling closed-map uniqueness into the annulus.  It
-deliberately does not yet assert that the two rails are mutually disjoint:
-that is the next finite collision classification, followed by remote append
-separation and the end caps.
+also retains the local provenance erased by a bare path type: every face in
+either support is proved adjacent to the literal Cell--3 centre that generated
+the connector.  Combining this invariant with the boundary-clean geodesic
+condition gives the four remote noncollision theorems in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailSeparation}: for centres more
+than two positions apart, either selected rail at the left has support
+disjoint from either selected rail at the right.  The two rails of one local
+connector are still not asserted mutually disjoint.  The bounded neighbouring
+cases, append induction, and the two end caps remain the finite L1 formation
+obligations before these paths become the long source crosscut pair.
 
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its

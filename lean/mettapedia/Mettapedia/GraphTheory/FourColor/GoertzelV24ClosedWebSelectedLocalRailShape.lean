@@ -284,10 +284,33 @@ structure SelectedSourceLocalRailPaths
         (selectedPlacementSideFace placement outgoingAfter)
   firstRail_isPath : firstRail.IsPath
   secondRail_isPath : secondRail.IsPath
+  firstRail_support_adjacent_center : ∀ face ∈ firstRail.support,
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt interior.center) face
+  secondRail_support_adjacent_center : ∀ face ∈ secondRail.support,
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt interior.center) face
   firstRail_length_le_two : firstRail.length ≤ 2
   secondRail_length_le_two : secondRail.length ≤ 2
   firstRail_length_add_secondRail_length_le_two :
     firstRail.length + secondRail.length ≤ 2
+
+private theorem walk_mem_support_eq_start_or_end_of_length_le_one
+    {Vertex : Type*} {graph : SimpleGraph Vertex} {start finish face : Vertex}
+    (walk : graph.Walk start finish) (hlength : walk.length ≤ 1)
+    (hface : face ∈ walk.support) : face = start ∨ face = finish := by
+  cases walk with
+  | nil => simpa using hface
+  | cons hadj tail =>
+      cases tail with
+      | nil => simpa using hface
+      | cons hnext rest =>
+          simp only [SimpleGraph.Walk.length_cons] at hlength
+          omega
 
 /-- Realize a selected `0+2`, `1+1`, or `2+0` coordinate certificate as two
 literal bounded simple facial-dual paths.  Each one-step constituent is read
@@ -337,6 +360,38 @@ noncomputable def selectedSourceLocalRailPathsOfShape
         secondRail := rawSecond.bypass
         firstRail_isPath := rawFirst.bypass_isPath
         secondRail_isPath := rawSecond.bypass_isPath
+        firstRail_support_adjacent_center := by
+          intro face hface
+          have hraw := rawFirst.support_bypass_subset_support hface
+          simp only [rawFirst, SimpleGraph.Walk.support_copy,
+            SimpleGraph.Walk.support_nil, List.mem_singleton] at hraw
+          subst face
+          exact selectedPlacementSideFace_adjacent_center
+            (corridor := corridor) placement incomingBefore
+        secondRail_support_adjacent_center := by
+          intro face hface
+          have hraw := rawSecond.support_bypass_subset_support hface
+          have hparts : face ∈ middleIn.reverse.support ∨
+              face ∈ outMiddle.reverse.support :=
+            (SimpleGraph.Walk.mem_support_append_iff _ _).1 (by
+              simpa [rawSecond] using hraw)
+          rcases hparts with hpart | hpart
+          · have hpart' : face ∈ middleIn.support := by
+              simpa [SimpleGraph.Walk.support_reverse] using hpart
+            rcases walk_mem_support_eq_start_or_end_of_length_le_one
+                middleIn hmiddleInLength hpart' with rfl | rfl
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement middle
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement incomingAfter
+          · have hpart' : face ∈ outMiddle.support := by
+              simpa [SimpleGraph.Walk.support_reverse] using hpart
+            rcases walk_mem_support_eq_start_or_end_of_length_le_one
+                outMiddle houtMiddleLength hpart' with rfl | rfl
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement outgoingAfter
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement middle
         firstRail_length_le_two := by omega
         secondRail_length_le_two := by omega
         firstRail_length_add_secondRail_length_le_two := by
@@ -364,6 +419,27 @@ noncomputable def selectedSourceLocalRailPathsOfShape
         secondRail := rawSecond.bypass
         firstRail_isPath := rawFirst.bypass_isPath
         secondRail_isPath := rawSecond.bypass_isPath
+        firstRail_support_adjacent_center := by
+          intro face hface
+          have hraw := rawFirst.support_bypass_subset_support hface
+          have hpart : face ∈ firstStep.support := by simpa [rawFirst] using hraw
+          rcases walk_mem_support_eq_start_or_end_of_length_le_one
+              firstStep hfirstLength hpart with rfl | rfl
+          · exact selectedPlacementSideFace_adjacent_center
+              (corridor := corridor) placement incomingBefore
+          · exact selectedPlacementSideFace_adjacent_center
+              (corridor := corridor) placement outgoingBefore
+        secondRail_support_adjacent_center := by
+          intro face hface
+          have hraw := rawSecond.support_bypass_subset_support hface
+          have hpart : face ∈ secondStep.support := by
+            simpa [rawSecond, SimpleGraph.Walk.support_reverse] using hraw
+          rcases walk_mem_support_eq_start_or_end_of_length_le_one
+              secondStep hsecondLength hpart with rfl | rfl
+          · exact selectedPlacementSideFace_adjacent_center
+              (corridor := corridor) placement outgoingAfter
+          · exact selectedPlacementSideFace_adjacent_center
+              (corridor := corridor) placement incomingAfter
         firstRail_length_le_two := by omega
         secondRail_length_le_two := by omega
         firstRail_length_add_secondRail_length_le_two := by omega }
@@ -396,6 +472,33 @@ noncomputable def selectedSourceLocalRailPathsOfShape
         secondRail := rawSecond.bypass
         firstRail_isPath := rawFirst.bypass_isPath
         secondRail_isPath := rawSecond.bypass_isPath
+        firstRail_support_adjacent_center := by
+          intro face hface
+          have hraw := rawFirst.support_bypass_subset_support hface
+          have hparts : face ∈ inMiddle.support ∨ face ∈ middleOut.support :=
+            (SimpleGraph.Walk.mem_support_append_iff _ _).1 (by
+              simpa [rawFirst] using hraw)
+          rcases hparts with hpart | hpart
+          · rcases walk_mem_support_eq_start_or_end_of_length_le_one
+                inMiddle hinMiddleLength hpart with rfl | rfl
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement incomingBefore
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement middle
+          · rcases walk_mem_support_eq_start_or_end_of_length_le_one
+                middleOut hmiddleOutLength hpart with rfl | rfl
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement middle
+            · exact selectedPlacementSideFace_adjacent_center
+                (corridor := corridor) placement outgoingBefore
+        secondRail_support_adjacent_center := by
+          intro face hface
+          have hraw := rawSecond.support_bypass_subset_support hface
+          simp only [rawSecond, SimpleGraph.Walk.support_copy,
+            SimpleGraph.Walk.support_nil, List.mem_singleton] at hraw
+          subst face
+          exact selectedPlacementSideFace_adjacent_center
+            (corridor := corridor) placement incomingAfter
         firstRail_length_le_two := by omega
         secondRail_length_le_two := by omega
         firstRail_length_add_secondRail_length_le_two := by omega }
