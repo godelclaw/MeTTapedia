@@ -1810,6 +1810,19 @@ pretend that compatibility follows from the types alone.  Thus the remaining
 formation step is now specifically the finite mutable-suffix transition which
 must discharge those four premises.
 
+The coordinate hand-off between consecutive seams is now proved separately.
+Although successor frames are constructed independently,
+\texttt{GoertzelV24ClosedWebSelectedLocalRailSuccessorCompatibility} shows
+that they select literally equal before/after outgoing slots on their shared
+Cell--3 placement.  This is a six-cycle coordinate uniqueness calculation,
+not a global uniqueness claim about faces.  Therefore the separated
+right-cell rail pair stored by one successor can be reused, with dependent
+types aligned, as the left-cell rail pair for the next successor.  This opens
+a smaller induction design: construct disjoint two-cell windows and join them
+across the canonical intervening seam, instead of retaining an ever-mutating
+overlapping window.  The global support-separation proof for that tiling and
+the collision alternatives in successor existence remain to be discharged.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
