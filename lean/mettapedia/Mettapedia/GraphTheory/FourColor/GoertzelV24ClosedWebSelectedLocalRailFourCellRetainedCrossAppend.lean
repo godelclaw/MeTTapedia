@@ -128,6 +128,29 @@ private abbrev rebaseLastSwapped
     (firstSuccessor.rightOutgoingBeforeFace_eq_nextRightAfterFace bridge).symm
     (firstSuccessor.rightOutgoingAfterFace_eq_nextRightBeforeFace bridge).symm
 
+/-- Exact finite source geometry carried by a retained four-cell collision. -/
+def ExactSelectedLocalRailFourCellRetainedCollisionData
+    (_firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (_lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) : Prop :=
+  FourCenterCollisionGeometry (corridor := corridor)
+      firstInterior.center
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center face ∧
+    FaceInAdjacentSelectedRailPieces (successor := firstSuccessor)
+      (left := firstLeft) face ∧
+    FaceInAdjacentSelectedRailPieces (successor := lastSuccessor)
+      (left := LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))
+      face
+
 /-- Four-cell result after testing the supports which actually survive bypass.
 The four collision constructors retain the exact endpoint-parity branch. -/
 inductive ExactSelectedLocalRailFourCellRetainedOutcome
@@ -226,6 +249,258 @@ noncomputable def classifyExactSelectedLocalRailFourCellRetained
           | .collision collision => .swappedSwappedCollision
               firstAssembly lastAssembly hfirst hlast collision
 
+/-- A retained collision in the straight/straight parity branch carries the
+five-case geometry and both exact source-piece envelopes. -/
+theorem straightStraightRetainedCollision_data
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (firstAssembly : FirstStraightAssembly (firstSuccessor := firstSuccessor))
+    (lastAssembly : LastStraightAssembly (bridge := bridge)
+      (lastSuccessor := lastSuccessor))
+    (hfirst : firstWindow.outcome = .straight firstAssembly)
+    (hlast : lastWindow.outcome = .straight lastAssembly)
+    (collision : RetainedBypassCrossCollision firstAssembly
+      (rebaseLastStraight (firstSuccessor := firstSuccessor) (bridge := bridge)
+        lastAssembly)) :
+    ExactSelectedLocalRailFourCellRetainedCollisionData
+      firstWindow lastWindow collision.face := by
+  rcases collision with ⟨face, memFirst, memSecond, origin⟩
+  cases origin with
+  | firstSecond hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport
+          lastWindow.toCertified.secondSupport :=
+        .firstSecond
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hlast] using hnew }
+      have h := orderedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+  | secondFirst hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport
+          lastWindow.toCertified.secondSupport :=
+        .secondFirst
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hlast] using hnew }
+      have h := orderedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+
+/-- The straight/swapped parity branch has the same exact retained geometry. -/
+theorem straightSwappedRetainedCollision_data
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (firstAssembly : FirstStraightAssembly (firstSuccessor := firstSuccessor))
+    (lastAssembly : LastSwappedAssembly (bridge := bridge)
+      (lastSuccessor := lastSuccessor))
+    (hfirst : firstWindow.outcome = .straight firstAssembly)
+    (hlast : lastWindow.outcome = .swapped lastAssembly)
+    (collision : RetainedBypassCrossCollision firstAssembly
+      (rebaseLastSwapped (firstSuccessor := firstSuccessor) (bridge := bridge)
+        lastAssembly)) :
+    ExactSelectedLocalRailFourCellRetainedCollisionData
+      firstWindow lastWindow collision.face := by
+  rcases collision with ⟨face, memFirst, memSecond, origin⟩
+  cases origin with
+  | firstSecond hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport
+          lastWindow.toCertified.secondSupport :=
+        .firstSecond
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hlast] using hnew }
+      have h := orderedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+  | secondFirst hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport
+          lastWindow.toCertified.secondSupport :=
+        .secondFirst
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hlast] using hnew }
+      have h := orderedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+
+/-- The swapped/straight parity branch carries the crossed-order exact data. -/
+theorem swappedStraightRetainedCollision_data
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (firstAssembly : FirstSwappedAssembly (firstSuccessor := firstSuccessor))
+    (lastAssembly : LastStraightAssembly (bridge := bridge)
+      (lastSuccessor := lastSuccessor))
+    (hfirst : firstWindow.outcome = .swapped firstAssembly)
+    (hlast : lastWindow.outcome = .straight lastAssembly)
+    (collision : CrossedRetainedBypassCrossCollision firstAssembly
+      (rebaseLastStraight (firstSuccessor := firstSuccessor) (bridge := bridge)
+        lastAssembly)) :
+    ExactSelectedLocalRailFourCellRetainedCollisionData
+      firstWindow lastWindow collision.face := by
+  rcases collision with ⟨face, memFirst, memSecond, origin⟩
+  cases origin with
+  | firstFirst hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport :=
+        .firstSecond
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hlast] using hnew }
+      have h := crossedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+  | secondSecond hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport :=
+        .secondFirst
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hlast] using hnew }
+      have h := crossedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+
+/-- The swapped/swapped parity branch carries the crossed-order exact data. -/
+theorem swappedSwappedRetainedCollision_data
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (firstAssembly : FirstSwappedAssembly (firstSuccessor := firstSuccessor))
+    (lastAssembly : LastSwappedAssembly (bridge := bridge)
+      (lastSuccessor := lastSuccessor))
+    (hfirst : firstWindow.outcome = .swapped firstAssembly)
+    (hlast : lastWindow.outcome = .swapped lastAssembly)
+    (collision : CrossedRetainedBypassCrossCollision firstAssembly
+      (rebaseLastSwapped (firstSuccessor := firstSuccessor) (bridge := bridge)
+        lastAssembly)) :
+    ExactSelectedLocalRailFourCellRetainedCollisionData
+      firstWindow lastWindow collision.face := by
+  rcases collision with ⟨face, memFirst, memSecond, origin⟩
+  cases origin with
+  | firstFirst hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport :=
+        .firstSecond
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.firstSupport,
+                hlast] using hnew }
+      have h := crossedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
+  | secondSecond hold hnew =>
+      let raw : SelectedRailPairCrossCollision (web := web)
+          firstWindow.toCertified.firstSupport
+          firstWindow.toCertified.secondSupport
+          lastWindow.toCertified.secondSupport
+          lastWindow.toCertified.firstSupport :=
+        .secondFirst
+          { face := face
+            mem_old := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hfirst] using hold
+            mem_new := by
+              simpa [ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+                CertifiedSelectedLocalRailTerminalWindow.secondSupport,
+                hlast] using hnew }
+      have h := crossedExactCrossCollision_geometry_and_pieces hsource
+        firstWindow lastWindow raw
+      have hface : raw.face = face := rfl
+      rw [hface] at h
+      exact h
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
 end

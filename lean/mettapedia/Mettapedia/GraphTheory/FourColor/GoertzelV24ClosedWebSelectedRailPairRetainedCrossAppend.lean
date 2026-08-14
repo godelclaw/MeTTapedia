@@ -142,6 +142,18 @@ def RetainedBypassCrossCollision.toRawCrossCollision
   | .secondFirst hold hnew =>
       .secondFirst ⟨collision.face, hold, hnew⟩
 
+@[simp] theorem RetainedBypassCrossCollision.toRawCrossCollision_face
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish}
+    (collision : RetainedBypassCrossCollision oldAssembly newAssembly) :
+    collision.toRawCrossCollision.face = collision.face := by
+  cases collision with
+  | mk face memFirst memSecond origin => cases origin <;> rfl
+
 /-- Any actual collision of the two ordered bypass candidates has a
 cross-track raw origin. -/
 noncomputable def retainedCrossOrigin_of_orderedBypassCollision
@@ -275,6 +287,18 @@ def CrossedRetainedBypassCrossCollision.toRawCrossCollision
       .firstSecond ⟨collision.face, hold, hnew⟩
   | .secondSecond hold hnew =>
       .secondFirst ⟨collision.face, hold, hnew⟩
+
+@[simp] theorem CrossedRetainedBypassCrossCollision.toRawCrossCollision_face
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish}
+    (collision : CrossedRetainedBypassCrossCollision oldAssembly newAssembly) :
+    collision.toRawCrossCollision.face = collision.face := by
+  cases collision with
+  | mk face memFirst memSecond origin => cases origin <;> rfl
 
 /-- A retained crossed-order collision has one of the two exact cross raw
 origins. -/
