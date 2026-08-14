@@ -40,8 +40,10 @@ are derived from the models, deployed, and re-observed live.
   and syntactic repetition signals that do not overclaim semantic stuckness.
 - `VerifiedFrontier.lean` — the Codex `StartOrSteer` turn law and its fusion
   with the other models: pending-input steering, quiescent effect commitment,
-  exact-artifact receipts, exact-once room ingestion, digest-bound promotion,
-  derived attention, and conservative coordinate composition.
+  exact-artifact receipts, exact-once input and effect handling, append-only
+  proof-carrying traces, a frontier-blindness separation theorem,
+  digest-bound promotion, outcome-first evaluation, derived attention, and
+  conservative coordinate composition.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems

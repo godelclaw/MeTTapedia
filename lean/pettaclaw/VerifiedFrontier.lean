@@ -136,6 +136,47 @@ theorem submission_appends_input_event (state : State) (input : Input) :
     (startOrSteer state input).2.log = state.log ++ [.input input] := by
   cases active : state.active <;> simp [startOrSteer, active]
 
+/-! Stable event identities make intake idempotent across transport retries.
+This wrapper is architecture-level: every channel can use it instead of
+implementing a different deduplication policy. -/
+
+structure IntakeState where
+  core : State
+  consumed : List EventId
+
+inductive IntakeSubmission
+  | accepted (submission : Submission)
+  | duplicate (event : EventId)
+deriving Repr, DecidableEq
+
+def submitOnce (state : IntakeState) (input : Input) :
+    IntakeSubmission × IntakeState :=
+  if input.id ∈ state.consumed then
+    (.duplicate input.id, state)
+  else
+    let submitted := startOrSteer state.core input
+    (.accepted submitted.1,
+      { core := submitted.2
+        consumed := state.consumed ++ [input.id] })
+
+theorem duplicate_input_is_stutter (state : IntakeState) (input : Input)
+    (seen : input.id ∈ state.consumed) :
+    submitOnce state input = (.duplicate input.id, state) := by
+  simp [submitOnce, seen]
+
+theorem fresh_input_is_accepted (state : IntakeState) (input : Input)
+    (fresh : input.id ∉ state.consumed) :
+    (submitOnce state input).1 = .accepted (startOrSteer state.core input).1 ∧
+      (submitOnce state input).2.core = (startOrSteer state.core input).2 ∧
+      (submitOnce state input).2.consumed = state.consumed ++ [input.id] := by
+  simp [submitOnce, fresh]
+
+theorem replay_after_accept_is_stutter (state : IntakeState) (input : Input)
+    (fresh : input.id ∉ state.consumed) :
+    let accepted := (submitOnce state input).2
+    submitOnce accepted input = (.duplicate input.id, accepted) := by
+  simp [submitOnce, fresh]
+
 def Quiescent (state : State) (conversation : Conversation) : Prop :=
   ∀ input, input ∈ state.pending → input.conversation ≠ conversation
 
@@ -190,13 +231,17 @@ def CurrentEpisode (state : State) (proposal : EffectProposal) : Prop :=
         episode.conversation = proposal.conversation ∧
         episode.seenFrontier = proposal.seenFrontier
 
+def AlreadyCommitted (state : State) (proposal : EffectProposal) : Prop :=
+  ∃ checkedDigest, .committed proposal checkedDigest ∈ state.log
+
 def CanCommit (check : EffectProposal → Digest)
     (state : State) (proposal : EffectProposal) : Prop :=
   CurrentEpisode state proposal ∧
     VerifiedAtFrontier proposal.seenFrontier
       (state.frontier proposal.conversation)
       proposal.digest (check proposal)
-      (Quiescent state proposal.conversation)
+      (Quiescent state proposal.conversation) ∧
+    ¬ AlreadyCommitted state proposal
 
 def propose (state : State) (effect : Effect) (digest : Digest) :
     Option EffectProposal :=
@@ -217,7 +262,7 @@ theorem pending_same_conversation_blocks_commit
     ¬ CanCommit check (startOrSteer state input).2 proposal := by
   intro permitted
   have quiet : Quiescent (startOrSteer state input).2 proposal.conversation :=
-    permitted.2.2.2
+    permitted.2.1.2.2
   have member : input ∈ (startOrSteer state input).2.pending := by
     simp [startOrSteer, active]
   exact (quiet input member) same
@@ -226,7 +271,13 @@ theorem pending_same_conversation_blocks_commit
 valid certificate when the checker observes the proposal's exact digest. -/
 theorem drained_proposal_is_committable (state : State) (episode : Episode)
     (effect : Effect) (digest : Digest)
-    (active : state.active = some episode) :
+    (active : state.active = some episode)
+    (fresh : ¬ AlreadyCommitted state
+      { turn := episode.turn
+        conversation := episode.conversation
+        seenFrontier := state.frontier episode.conversation
+        effect := effect
+        digest := digest }) :
     let drained := drainActive state
     let proposal : EffectProposal :=
       { turn := episode.turn
@@ -241,8 +292,10 @@ theorem drained_proposal_is_committable (state : State) (episode : Episode)
   · simp [propose, drainActive, active]
   · constructor
     · simp [CurrentEpisode, drainActive, active]
-    · exact ⟨by simp [drainActive, active], rfl,
-        drain_active_is_quiescent state episode active⟩
+    · constructor
+      · exact ⟨by simp [drainActive, active], rfl,
+          drain_active_is_quiescent state episode active⟩
+      · simpa [AlreadyCommitted, drainActive, active] using fresh
 
 /-- Observable effects are appended only through a proof-carrying commit. -/
 def commit (check : EffectProposal → Digest) (state : State)
@@ -255,7 +308,7 @@ theorem committed_effect_has_current_frontier_exact_artifact_and_quiescence
     proposal.seenFrontier = state.frontier proposal.conversation ∧
       proposal.digest = check proposal ∧
       Quiescent state proposal.conversation :=
-  certificate.2
+  certificate.2.1
 
 theorem commit_is_append_only (check : EffectProposal → Digest)
     (state : State) (proposal : EffectProposal)
@@ -270,6 +323,13 @@ theorem commit_preserves_active_and_pending (check : EffectProposal → Digest)
       (commit check state proposal certificate).pending = state.pending := by
   exact ⟨rfl, rfl⟩
 
+theorem committed_proposal_cannot_recommit
+    (check : EffectProposal → Digest) (state : State)
+    (proposal : EffectProposal) (certificate : CanCommit check state proposal) :
+    ¬ CanCommit check (commit check state proposal certificate) proposal := by
+  intro replay
+  exact replay.2.2 ⟨check proposal, by simp [commit]⟩
+
 def CanComplete (state : State) : Prop :=
   match state.active with
   | none => False
@@ -277,9 +337,22 @@ def CanComplete (state : State) : Prop :=
       episode.seenFrontier = state.frontier episode.conversation ∧
         Quiescent state episode.conversation
 
+/-- Once the environment reaches a quiet point, one drain step supplies the
+certificate needed to complete the active turn.  This is the local progress
+half of the architecture; reaching a quiet point remains an environment
+assumption. -/
+theorem drain_active_can_complete (state : State) (episode : Episode)
+    (active : state.active = some episode) :
+    CanComplete (drainActive state) := by
+  simpa [CanComplete, drainActive, active] using
+    drain_active_is_quiescent state episode active
+
 def complete (state : State) (certificate : CanComplete state) : State :=
   match active : state.active with
-  | none => False.elim (by simpa [CanComplete, active] using certificate)
+  | none => False.elim (by
+      unfold CanComplete at certificate
+      rw [active] at certificate
+      exact certificate)
   | some episode =>
       { state with
         log := state.log ++ [.completed episode.turn]
@@ -305,6 +378,170 @@ theorem steered_same_conversation_blocks_completion (state : State)
     simpa [CanComplete, startOrSteer, active] using certificate
   exact steered_same_conversation_is_not_quiescent
     state input episode active same facts.2
+
+/-! ## Proof-carrying traces -/
+
+theorem complete_is_append_only (state : State)
+    (certificate : CanComplete state) :
+    state.log.IsPrefix (complete state certificate).log := by
+  cases state with
+  | mk frontier log active pending =>
+      cases active with
+      | none => simp [CanComplete] at certificate
+      | some episode =>
+          change log.IsPrefix (log ++ [.completed episode.turn])
+          exact List.prefix_append log [.completed episode.turn]
+
+/-- Every legal interaction transition either accepts input, drains pending
+input into the active request, commits with a certificate, or completes with a
+quiescence certificate. -/
+inductive Step (check : EffectProposal → Digest) : State → State → Prop
+  | submit (state : State) (input : Input) :
+      Step check state (startOrSteer state input).2
+  | drain (state : State) :
+      Step check state (drainActive state)
+  | commit (state : State) (proposal : EffectProposal)
+      (certificate : CanCommit check state proposal) :
+      Step check state
+        (VerifiedFrontier.commit check state proposal certificate)
+  | complete (state : State) (certificate : CanComplete state) :
+      Step check state (VerifiedFrontier.complete state certificate)
+
+theorem step_log_is_append_only (check : EffectProposal → Digest)
+    {before after : State} (transition : Step check before after) :
+    before.log.IsPrefix after.log := by
+  cases transition with
+  | submit input =>
+      cases active : before.active <;>
+        simp [startOrSteer, active, List.IsPrefix]
+  | drain =>
+      cases active : before.active <;>
+        simp [drainActive, active, List.IsPrefix]
+  | commit proposal certificate =>
+      simp [VerifiedFrontier.commit, List.IsPrefix]
+  | complete certificate =>
+      exact complete_is_append_only before certificate
+
+inductive Reachable (check : EffectProposal → Digest) (start : State) :
+    State → Prop
+  | refl : Reachable check start start
+  | tail {before after : State} :
+      Reachable check start before →
+      Step check before after →
+      Reachable check start after
+
+theorem reachable_log_extends_initial (check : EffectProposal → Digest)
+    (start after : State) (trace : Reachable check start after) :
+    start.log.IsPrefix after.log := by
+  induction trace with
+  | refl => exact List.prefix_rfl
+  | tail prior transition ih =>
+      exact ih.trans (step_log_is_append_only check transition)
+
+/-! ## Why the frontier coordinate is necessary -/
+
+/-- The behavior being excluded: append an observable effect without checking
+the request frontier, quiescence, or artifact identity. -/
+def naiveCommit (state : State) (proposal : EffectProposal)
+    (checkedDigest : Digest) : State :=
+  { state with log := state.log ++ [.committed proposal checkedDigest] }
+
+theorem naive_stale_effect_is_reachable :
+    let first : Input := ⟨1, 7, .operator, 11⟩
+    let second : Input := ⟨2, 7, .operator, 12⟩
+    let started := (startOrSteer initial first).2
+    let proposal : EffectProposal := ⟨1, 7, 1, 9, 13⟩
+    let stale := (startOrSteer started second).2
+    proposal.seenFrontier ≠ stale.frontier proposal.conversation ∧
+      (naiveCommit stale proposal 13).log =
+        stale.log ++ [.committed proposal 13] := by
+  decide
+
+/-- The eligibility coordinates that a frontier-blind gate might still use. -/
+def EligibleIgnoringFrontier (state : State)
+    (proposal : EffectProposal) : Prop :=
+  CurrentEpisode state proposal ∧
+    Quiescent state proposal.conversation ∧
+    ¬ AlreadyCommitted state proposal
+
+/-- A gate is frontier-blind when changing only the frontier cannot change its
+decision. -/
+def FrontierBlind (gate : State → EffectProposal → Prop) : Prop :=
+  ∀ left right proposal,
+    left.active = right.active →
+    left.pending = right.pending →
+    left.log = right.log →
+    (gate left proposal ↔ gate right proposal)
+
+def FrontierComplete (gate : State → EffectProposal → Prop) : Prop :=
+  ∀ state proposal,
+    EligibleIgnoringFrontier state proposal →
+    proposal.seenFrontier = state.frontier proposal.conversation →
+    gate state proposal
+
+def FrontierSound (gate : State → EffectProposal → Prop) : Prop :=
+  ∀ state proposal,
+    EligibleIgnoringFrontier state proposal →
+    proposal.seenFrontier ≠ state.frontier proposal.conversation →
+    ¬ gate state proposal
+
+/-- No gate that ignores the frontier can both admit every otherwise-eligible
+fresh proposal and reject every otherwise-eligible stale proposal. -/
+theorem no_frontier_blind_gate_is_complete_and_sound :
+    ¬ ∃ gate : State → EffectProposal → Prop,
+      FrontierBlind gate ∧ FrontierComplete gate ∧ FrontierSound gate := by
+  rintro ⟨gate, blind, complete, sound⟩
+  let episode : Episode := ⟨1, 7, 1⟩
+  let proposal : EffectProposal := ⟨1, 7, 1, 9, 13⟩
+  let fresh : State :=
+    { frontier := fun conversation => if conversation = 7 then 1 else 0
+      log := []
+      active := some episode
+      pending := [] }
+  let stale : State :=
+    { fresh with
+      frontier := fun conversation => if conversation = 7 then 2 else 0 }
+  have eligibleFresh : EligibleIgnoringFrontier fresh proposal := by
+    simp [EligibleIgnoringFrontier, fresh, proposal, episode,
+      CurrentEpisode, Quiescent, AlreadyCommitted]
+  have eligibleStale : EligibleIgnoringFrontier stale proposal := by
+    simp [EligibleIgnoringFrontier, stale, fresh, proposal, episode,
+      CurrentEpisode, Quiescent, AlreadyCommitted]
+  have currentFresh :
+      proposal.seenFrontier = fresh.frontier proposal.conversation := by
+    simp [fresh, proposal]
+  have staleMismatch :
+      proposal.seenFrontier ≠ stale.frontier proposal.conversation := by
+    simp [stale, proposal]
+  have acceptedFresh : gate fresh proposal :=
+    complete fresh proposal eligibleFresh currentFresh
+  have acceptedStale : gate stale proposal :=
+    (blind fresh stale proposal rfl rfl rfl).mp acceptedFresh
+  exact (sound stale proposal eligibleStale staleMismatch) acceptedStale
+
+/-! ## Outcome-first evaluation -/
+
+structure Evaluation where
+  accepted : Bool
+  evidenceComplete : Bool
+  calls : Nat
+  retries : Nat
+deriving Repr, DecidableEq
+
+def MeetsQualityBar (evaluation : Evaluation) : Prop :=
+  evaluation.accepted = true ∧ evaluation.evidenceComplete = true
+
+/-- Resource use is an improvement only inside the quality-preserving region. -/
+def EfficiencyImprovement (candidate baseline : Evaluation) : Prop :=
+  MeetsQualityBar candidate ∧ MeetsQualityBar baseline ∧
+    candidate.calls + candidate.retries ≤ baseline.calls + baseline.retries
+
+theorem fewer_calls_without_verified_quality_is_not_an_improvement :
+    let baseline : Evaluation := ⟨true, true, 3, 0⟩
+    let candidate : Evaluation := ⟨false, false, 1, 0⟩
+    candidate.calls < baseline.calls ∧
+      ¬ EfficiencyImprovement candidate baseline := by
+  simp [EfficiencyImprovement, MeetsQualityBar]
 
 /-! ## Exact-once room ingestion and non-draining wake energy -/
 
@@ -521,12 +758,21 @@ end VerifiedFrontier
 /-! ## Axiom audit -/
 #print axioms VerifiedFrontier.idle_submission_starts
 #print axioms VerifiedFrontier.active_submission_steers
+#print axioms VerifiedFrontier.duplicate_input_is_stutter
+#print axioms VerifiedFrontier.replay_after_accept_is_stutter
 #print axioms VerifiedFrontier.steered_same_conversation_is_not_quiescent
 #print axioms VerifiedFrontier.drain_active_is_quiescent
+#print axioms VerifiedFrontier.drain_active_can_complete
 #print axioms VerifiedFrontier.pending_same_conversation_blocks_commit
 #print axioms VerifiedFrontier.drained_proposal_is_committable
 #print axioms VerifiedFrontier.committed_effect_has_current_frontier_exact_artifact_and_quiescence
+#print axioms VerifiedFrontier.committed_proposal_cannot_recommit
 #print axioms VerifiedFrontier.steered_same_conversation_blocks_completion
+#print axioms VerifiedFrontier.step_log_is_append_only
+#print axioms VerifiedFrontier.reachable_log_extends_initial
+#print axioms VerifiedFrontier.naive_stale_effect_is_reachable
+#print axioms VerifiedFrontier.no_frontier_blind_gate_is_complete_and_sound
+#print axioms VerifiedFrontier.fewer_calls_without_verified_quality_is_not_an_improvement
 #print axioms VerifiedFrontier.reconnect_cannot_replay_fresh_inbound
 #print axioms VerifiedFrontier.promotion_requires_current_revision_and_exact_digest
 #print axioms VerifiedFrontier.attention_is_a_derived_view
