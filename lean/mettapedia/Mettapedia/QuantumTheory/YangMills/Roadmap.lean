@@ -7,6 +7,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
 
 /-!
 # Yang-Mills roadmap
@@ -45,6 +46,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepai
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
+open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -209,7 +211,21 @@ def yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry : YangMillsRoa
   itvUpperPercent := 100
   progressPercent := 100
   evidence := "HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair constructs a signed-H(4)-invariant deformation from the six scalar coordinates already used by OUR trace-order construction. On the actual singleton-trace row it contributes exactly 1/10 of literalIncomingCommutatorClass, cancelling the previous -1/10 mismatch. Kernel-reduced signed-orbit replays prove that the deformation is zero on both explicit source-seven commutators, the displayed first-IBP row under the off-shell policy, the second-IBP and Bianchi rows under either policy, the displayed on-shell EOM row, the canonical fundamental three-cut row, and the polarized trace-anticommutator row."
-  nextObligation := "Construct a complete finite source-seven relation census and certify or refute this deformation on it. Only a descended map may be used for joint rank, conditioning, or Wilson-functional coordinates."
+  nextObligation := "This named-row repair is refuted as a descended map by the separate second-IBP singleton-trace witness. Any continuation must enlarge the coordinate family or construct the canonical semantic bridge; it may not use this six-scalar map for joint rank, conditioning, or Wilson-functional coordinates."
+
+/-- OUR second actual singleton-trace relation refutes descent of the complete
+six-scalar reparameterization under either physical policy. -/
+def yangMillsSourceSevenExistingScalarParameterRepairTracelessRefutationRoadmapEntry :
+    YangMillsRoadmapEntry where
+  stage := .jointPhysicalRelationInterface
+  nodeId := "yang-mills.rg.source-seven-existing-scalar-traceless-refutation"
+  status := .refuted
+  truthValue := ⟨100, 99⟩
+  itvLowerPercent := 99
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation retains the independent derivative geometry of the second-IBP carrier and makes field zero a genuine singleton trace. Its kernel-reduced third-coordinate and secondary-plane-profile numerators are 0 and 16, respectively, so their normalized values are 0 and 1. The already certified quotient evaluation kills literalIncomingCommutatorClass but sends the stored secondary residual to 4/3. It evaluates the full six-scalar reparameterization on this actual physical relation as -4/3 and proves that the physical relation submodule is not contained in its kernel under either policy."
+  nextObligation := "Do not attempt rank, conditioning, or Wilson-functional coordinates with the refuted six-scalar map. Construct and semantically identify a genuinely enlarged coordinate family, or produce a further exact impossibility theorem for that enlarged family."
 
 /-- OUR fixed-trace-point screening calculation for a possible next
 trace-topology coordinate. -/
@@ -275,6 +291,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , yangMillsSourceSevenTwoClassCompatibilityRoadmapEntry
   , yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry
   , yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry
+  , yangMillsSourceSevenExistingScalarParameterRepairTracelessRefutationRoadmapEntry
   , yangMillsFixedPointTopologyScreenRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsCompletionSteelmanRoadmapEntry
@@ -589,6 +606,22 @@ theorem currentYangMillsRoadmap_records_sourceSeven_existingScalar_nineChecks :
   exact ⟨rfl, rfl, currentYangMillsExistingScalarParameterRepair_nineChecks⟩
 
 #print axioms currentYangMillsRoadmap_records_sourceSeven_existingScalar_nineChecks
+
+/-- The preceding nine-row audit is retained as a record of what the scalar
+map does satisfy; this second actual singleton-trace row proves it cannot
+descend through the physical relation submodule. -/
+theorem currentYangMillsRoadmap_records_sourceSeven_existingScalar_traceless_refutation :
+    yangMillsSourceSevenExistingScalarParameterRepairTracelessRefutationRoadmapEntry.status =
+        .refuted ∧
+      yangMillsSourceSevenExistingScalarParameterRepairTracelessRefutationRoadmapEntry.progressPercent =
+        100 ∧
+      (∀ policy : PhysicalRelationPolicy,
+        ¬ orbitPhysicalRelationSubmodule policy ≤
+          LinearMap.ker ourParameterSynthesizedSourceSevenTraceOrderCorrection) := by
+  exact ⟨rfl, rfl,
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection_not_descends⟩
+
+#print axioms currentYangMillsRoadmap_records_sourceSeven_existingScalar_traceless_refutation
 
 theorem currentYangMillsRoadmap_records_fixedPointTopology_screen :
     (yangMillsFixedPointTopologyScreenRoadmapEntry.status = .checked) ∧
