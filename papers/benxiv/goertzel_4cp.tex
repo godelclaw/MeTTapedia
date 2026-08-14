@@ -1458,8 +1458,9 @@ The forward direction says that literal opening cannot fuse two old complete
 faces; the reverse direction says that the opened face is independent of the
 chosen dart naming its ambient orbit.  Both directions are derived from the
 computed complete face-cycle transport, not from an equal-cardinality
-surrogate.  This removes duplicated transport logic from future adjacent and
-distance-two arguments.  It does not prove that the source-selected faces are
+surrogate.  The literal-opening minimal-corridor consumer now uses this
+generic API instead of carrying its own copies, and the same theorem is
+available for the distance-two argument.  It does not prove that the source-selected faces are
 fully retained, identify the selected carrier with the literal opening, or
 establish \texttt{CommonNeighborsExact}; those remain the formation step.
 

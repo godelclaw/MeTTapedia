@@ -50,60 +50,6 @@ attribute [-instance]
 local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
-/-- Full retention depends only on the ambient face orbit, not on its chosen
-root dart. -/
-theorem faceFullyRetained_of_dartOrbitFace_eq
-    (RS : RotationSystem V G.edgeSet) (keep : V → Prop)
-    {leftRoot rightRoot : RS.D}
-    (hleft : FaceFullyRetained RS keep leftRoot)
-    (hfaces : dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot) :
-    FaceFullyRetained RS keep rightRoot := by
-  intro point hrightPoint
-  apply hleft point
-  exact (Quotient.exact hfaces).trans hrightPoint
-
-/-- Equality of fully retained open-face images reflects equality of their
-ambient face orbits. -/
-theorem dartOrbitFace_eq_of_openFaceOrbit_eq
-    (RS : RotationSystem V G.edgeSet) (keep : V → Prop)
-    (outer : Dart RS keep) (leftRoot rightRoot : RS.D)
-    (hleft : FaceFullyRetained RS keep leftRoot)
-    (hright : FaceFullyRetained RS keep rightRoot)
-    (hopen : openFaceOrbit RS keep outer leftRoot hleft =
-      openFaceOrbit RS keep outer rightRoot hright) :
-    dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot := by
-  by_contra hambient
-  exact (openFaceOrbit_ne_of_ambient_ne RS keep outer leftRoot rightRoot
-    hleft hright hambient) hopen
-
-/-- Fully retained roots of the same ambient face determine the same face in
-one fixed literal opening.  This is the forward companion to
-`dartOrbitFace_eq_of_openFaceOrbit_eq`; together they make the transported
-face depend on the ambient orbit rather than on a chosen representative. -/
-theorem openFaceOrbit_eq_of_dartOrbitFace_eq
-    (RS : RotationSystem V G.edgeSet) (keep : V → Prop)
-    (outer : Dart RS keep) (leftRoot rightRoot : RS.D)
-    (hleft : FaceFullyRetained RS keep leftRoot)
-    (hright : FaceFullyRetained RS keep rightRoot)
-    (hfaces : dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot) :
-    openFaceOrbit RS keep outer leftRoot hleft =
-      openFaceOrbit RS keep outer rightRoot hright := by
-  apply Quotient.sound
-  have hcycle : RS.phi.SameCycle leftRoot rightRoot := Quotient.exact hfaces
-  let rightPoint : {point // RS.phi.SameCycle leftRoot point} :=
-    ⟨rightRoot, hcycle⟩
-  have hmapped : (rotationSystem RS keep outer).phi.SameCycle
-      (openFaceRoot RS keep leftRoot hleft)
-      (openFaceDart RS keep leftRoot hleft rightPoint) :=
-    (openFaceCycleMap RS keep outer leftRoot hleft rightPoint).2
-  have hroot : openFaceDart RS keep leftRoot hleft rightPoint =
-      openFaceRoot RS keep rightRoot hright := by
-    apply congrArg Sum.inl
-    apply Subtype.ext
-    rfl
-  rw [hroot] at hmapped
-  exact hmapped
-
 /-- **L1 (closed classification transported through opening).** Every common
 open neighbour of two consecutive images of a closed minimal corridor has a
 fully retained ambient representative, and that representative is one of the
@@ -217,7 +163,7 @@ theorem exists_ambient_side_rep_of_open_commonNeighbor
     exact hleftImage.symm.trans hrightImage
   have hambientFaces : dartOrbitFace RS leftRoot =
       dartOrbitFace RS rightRoot :=
-    dartOrbitFace_eq_of_openFaceOrbit_eq RS keep outer leftRoot rightRoot
+    ambientFaceOrbit_eq_of_openFaceOrbit_eq RS keep outer leftRoot rightRoot
       hleftRetained hrightRetained hopenImages
   have hleftClosed : (interiorDualGraph (orbitFaceBoundary RS)
       (Finset.univ : Finset (OrbitFace RS))).Adj
@@ -333,7 +279,7 @@ theorem open_commonNeighbor_eq_sideFaceImage
       faceFullyRetained_of_dartOrbitFace_eq graphData.toRotationSystem keep
         hneighborRoot hbeforeFace'
     refine ⟨hbeforeRoot, hneighborImage.trans ?_⟩
-    apply openFaceOrbit_eq_of_dartOrbitFace_eq graphData.toRotationSystem
+    apply openFaceOrbit_eq_of_ambientFaceOrbit_eq graphData.toRotationSystem
       keep outer
       neighborRoot beforeRoot hneighborRoot hbeforeRoot
     exact hbeforeFace'
@@ -354,7 +300,7 @@ theorem open_commonNeighbor_eq_sideFaceImage
       faceFullyRetained_of_dartOrbitFace_eq graphData.toRotationSystem keep
         hneighborRoot hafterFace'
     refine ⟨hafterRoot, hneighborImage.trans ?_⟩
-    apply openFaceOrbit_eq_of_dartOrbitFace_eq graphData.toRotationSystem
+    apply openFaceOrbit_eq_of_ambientFaceOrbit_eq graphData.toRotationSystem
       keep outer
       neighborRoot afterRoot hneighborRoot hafterRoot
     exact hafterFace'
