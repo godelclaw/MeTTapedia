@@ -1833,6 +1833,15 @@ The corresponding face-level seam equalities are now public as well, so the
 next two-cell window can be rebased to the previous window's endpoints before
 the four genuine support-interaction tests are classified.
 
+The pure pair-composition algebra has now been strengthened independently of
+the source geometry.  Before testing mutual separation, Lean loop-erases each
+same-track concatenation.  A same-track revisit is therefore always removed
+constructively and is no longer returned as an obstruction.  The ordered and
+crossed classifiers now return either a composed pair or one of exactly two
+cross-track collisions, still carrying the literal common face.  This reduces
+the finite repair table but does not discharge its two remaining collision
+kinds or construct the arbitrary-length chain.
+
 That classification is now explicit and fail-closed.  The generic
 four-way classifier returns either both same-track and both cross-track
 disjointness proofs, or an actual common face tagged by the interaction that
