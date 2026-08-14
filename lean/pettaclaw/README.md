@@ -38,6 +38,10 @@ are derived from the models, deployed, and re-observed live.
   protected constraints outside lossy compaction, append-only receipts,
   distinct process/cognitive/verified liveness, end-to-end completion evidence,
   and syntactic repetition signals that do not overclaim semantic stuckness.
+- `VerifiedFrontier.lean` — the Codex `StartOrSteer` turn law and its fusion
+  with the other models: pending-input steering, quiescent effect commitment,
+  exact-artifact receipts, exact-once room ingestion, digest-bound promotion,
+  derived attention, and conservative coordinate composition.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -53,6 +57,7 @@ LEAN_PATH=. lean ProtectedPlasticity.lean
 LEAN_PATH=. lean CodingAgent.lean
 LEAN_PATH=. lean ContextAttention.lean
 LEAN_PATH=. lean AgentArchitecture.lean
+LEAN_PATH=. lean VerifiedFrontier.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
