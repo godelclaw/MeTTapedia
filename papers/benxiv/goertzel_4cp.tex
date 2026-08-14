@@ -1256,6 +1256,25 @@ alone select a primal side.  This boundary keeps the eventual theorem at the
 strength used by the corridor, while making every genuinely topological input
 visible to kernel checking.
 
+\paragraph{What the deep chord work already discharges.}  The face-side
+part of this construction is no longer conjectural.  For every eligible
+same-path chord,
+\texttt{exists\_exact\_chordCycle\_faceCut\_with\_holeFreeSide} supplies
+binary labels on the incident faces, proves that their disagreement set is
+exactly the chord-cycle edge support, and selects a side away from both named
+holes.  This is useful, but it is deliberately only facial-dual information:
+it must not be read as a vertex side merely because it has the right cut
+edges.  The existing constructor
+\texttt{cycleSideCertificate\_of\_exactCutLabelSide\_of\_rotated\_external\_ports}
+shows the remaining bridge exactly.  It needs the local wall-to-endpoint port
+orientation and cycle witnesses on the selected vertex side and its
+complement; a reusable transport can provide a selected-side cycle when its
+face-component reachability premise is supplied, but it does not manufacture
+the complementary witness.  Consequently no further profile state or finite
+audit is being hidden here.  The open work is the primal annular-separation
+argument turning the certified facial cut into the two cycle-bearing graph
+sides required by the deletion assignment.
+
 \paragraph{What one dual cycle now yields, and what it does not.}  The
 framed separator has been tightened at exactly this representation boundary.
 For any supplied simple facial-dual cycle it now re-expresses the crossed
