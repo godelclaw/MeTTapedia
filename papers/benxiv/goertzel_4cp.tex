@@ -1681,6 +1681,21 @@ both have length one.  Consequently every surviving branch is a literal
 finite coordinate input for the next rerouting audit, not yet a proof that
 all six oriented residue patterns construct an append.
 
+The endpoint coordinates are now classified as well.  The elementary core
+is that a length-two walk has only one interior support position: two
+distinct support faces which both avoid its finish must include its start,
+and dually two distinct faces in its support tail must include its finish.
+
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendResidueCoordinates}
+applies this fact to all six oriented residues.  In each same-track case,
+either the original cross-collision face or the same-track collision face is
+the forced start or finish of the length-two rail.  In each centre case,
+either the cross-collision face or the previous Cell--3 centre is the forced
+finish.  These are kernel-checked binary coordinate alternatives with no new
+separation, connectivity, or embedding hypotheses.  They are the final
+finite choices for the local reroute; the file does not yet construct the
+six reroutes, iterate them, or attach either annular end cap.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
