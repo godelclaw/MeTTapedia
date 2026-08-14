@@ -1833,6 +1833,18 @@ The corresponding face-level seam equalities are now public as well, so the
 next two-cell window can be rebased to the previous window's endpoints before
 the four genuine support-interaction tests are classified.
 
+That classification is now explicit and fail-closed.  The generic
+four-way classifier returns either both same-track and both cross-track
+disjointness proofs, or an actual common face tagged by the interaction that
+failed.  Its source specialization takes four consecutive selected Cell--3
+placements and two certified non-overlapping two-cell windows, aligns them
+through the canonical intervening seam, and composes the straight/swapped
+endpoint order by parity.  Lean therefore returns either a literal four-cell
+rail assembly or the exact ordered/crossed support collision.  No collision
+has yet been repaired at this new scale, so this is a finite transition
+alternative rather than an arbitrary-length rail construction; the induction,
+both annular end caps, and L1 remain open.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
