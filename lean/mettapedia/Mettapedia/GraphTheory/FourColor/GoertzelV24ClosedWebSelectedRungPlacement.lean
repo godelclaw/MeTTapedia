@@ -375,6 +375,105 @@ theorem selectedOutgoingAlphaFace_eq_nextCenter
   change interior.center.val = interior.center.val + 1 at hvalues
   omega
 
+/-- Advancing a selected internal corridor face makes the next incoming step
+definitionally the preceding outgoing step.  This is index arithmetic only;
+the oriented geometric content is recorded separately below. -/
+theorem nextSelectedCorridorInterior_incoming_eq_outgoing
+    {corridorLength : Nat} (interior : CorridorInterior corridorLength)
+    (hnext : interior.center.val + 2 < corridorLength) :
+    (nextCorridorInterior interior hnext).incoming = interior.outgoing := by
+  have hleft : (nextCorridorInterior interior hnext).incoming.left =
+      interior.outgoing.left := by
+    simp [nextCorridorInterior, CorridorInterior.incoming,
+      CorridorInterior.outgoing]
+  cases hright : (nextCorridorInterior interior hnext).incoming with
+  | mk rightLeft rightProof =>
+      cases hleftStep : interior.outgoing with
+      | mk leftLeft leftProof =>
+          simp only [hright, hleftStep, CorridorStep.mk.injEq] at hleft ⊢
+          exact hleft
+
+/-- **Source-local selected interface orientation.** Consecutive selected
+Cell--3 rung placements represent their common selected primal rung by
+opposite ambient darts.  Equal edge coordinates alone would be too weak for
+a later rail append; this supplies the literal seam orientation using only
+local interior-face simplicity. -/
+theorem selectedNextIncomingDart_eq_alpha_outgoingDart
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {leftInterior : CorridorInterior blockLength}
+    (hnext : leftInterior.center.val + 2 < blockLength)
+    (leftPlacement : SelectedInternalHexRungPlacement corridor rungs leftInterior)
+    (rightPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior leftInterior hnext)) :
+    faceCycleDart web.annular.RS rightPlacement.root rightPlacement.incomingPosition =
+      web.annular.RS.alpha
+        (faceCycleDart web.annular.RS leftPlacement.root
+          leftPlacement.outgoingPosition) := by
+  let rightInterior := nextCorridorInterior leftInterior hnext
+  let leftDart := faceCycleDart web.annular.RS leftPlacement.root
+    leftPlacement.outgoingPosition
+  let rightDart := faceCycleDart web.annular.RS rightPlacement.root
+    rightPlacement.incomingPosition
+  have hsteps : rightInterior.incoming = leftInterior.outgoing := by
+    simpa [rightInterior] using
+      nextSelectedCorridorInterior_incoming_eq_outgoing leftInterior hnext
+  have hedge : web.annular.RS.edgeOf rightDart =
+      web.annular.RS.edgeOf leftDart := by
+    calc
+      web.annular.RS.edgeOf rightDart =
+          rungs.edge rightInterior.incoming := rightPlacement.incoming_edge
+      _ = rungs.edge leftInterior.outgoing := by rw [hsteps]
+      _ = web.annular.RS.edgeOf leftDart := leftPlacement.outgoing_edge.symm
+  have hleftFace : dartOrbitFace web.annular.RS leftDart =
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        leftInterior.center).1 := by
+    calc
+      dartOrbitFace web.annular.RS leftDart =
+          dartOrbitFace web.annular.RS leftPlacement.root :=
+        dartOrbitFace_faceCycleDart web.annular.RS leftPlacement.root
+          leftPlacement.outgoingPosition
+      _ = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        leftInterior.center).1 := leftPlacement.root_face
+  have hleftInternal : dartOrbitFace web.annular.RS leftDart ∈
+      web.annular.cellulation.interiorFaces := by
+    rw [hleftFace]
+    exact corridor.face_internal leftInterior.center
+  have hrightFace : dartOrbitFace web.annular.RS rightDart =
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        rightInterior.center).1 := by
+    calc
+      dartOrbitFace web.annular.RS rightDart =
+          dartOrbitFace web.annular.RS rightPlacement.root :=
+        dartOrbitFace_faceCycleDart web.annular.RS rightPlacement.root
+          rightPlacement.incomingPosition
+      _ = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        rightInterior.center).1 := rightPlacement.root_face
+  have halphaFace : dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha leftDart) =
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        rightInterior.center).1 := by
+    simpa [rightInterior] using
+      selectedOutgoingAlphaFace_eq_nextCenter (corridor := corridor)
+        hnext leftPlacement
+  rcases web.annular.RS.edge_fiber_two_cases
+      (e := web.annular.RS.edgeOf leftDart) (d := leftDart) (y := rightDart)
+      rfl hedge with hsame | hopposite
+  · exfalso
+    apply Instance.InteriorFace.dartOrbitFace_ne_alpha web leftDart hleftInternal
+    calc
+      dartOrbitFace web.annular.RS leftDart =
+          dartOrbitFace web.annular.RS rightDart :=
+        congrArg (dartOrbitFace web.annular.RS) hsame.symm
+      _ = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        rightInterior.center).1 := hrightFace
+      _ = dartOrbitFace web.annular.RS (web.annular.RS.alpha leftDart) :=
+        halphaFace.symm
+  · exact hopposite
+
 /-- **L1 local collision branch.** If a surviving side slot of a selected
 Cell--3 hexagon also faces the next corridor centre, then those two corridor
 faces have two distinct shared interior edges: the selected outgoing rung and
