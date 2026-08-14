@@ -326,6 +326,103 @@ theorem outerOpenSpokeEdge_incident (caps : PentagonCapPair G) (step : Fin 5) :
   rw [caps.openGraph_incidentEdgeFinset_outerVertex_eq_singleton step]
   simp
 
+/-- The named spoke endpoint is the unique neighbour of an inner cap vertex
+after the simultaneous cap opening. -/
+theorem eq_inner_spokeOuter_of_openGraph_adj_vertex
+    (caps : PentagonCapPair G) (step : Fin 5) {outside : V}
+    (hadj : caps.openGraph.Adj outside (caps.inner.vertex step)) :
+    outside = caps.inner.spokeOuter step := by
+  let openEdge : caps.openGraph.edgeSet :=
+    ⟨s(outside, caps.inner.vertex step), by simpa using hadj⟩
+  have hincident : openEdge ∈
+      incidentEdgeFinset caps.openGraph (caps.inner.vertex step) := by
+    simp [openEdge, incidentEdgeFinset, Sym2.mem_iff]
+  rw [caps.openGraph_incidentEdgeFinset_innerVertex_eq_singleton step] at hincident
+  have hedge : openEdge = caps.innerOpenSpokeEdge step :=
+    Finset.mem_singleton.mp hincident
+  have hpairs : s(outside, caps.inner.vertex step) =
+      s(caps.inner.vertex step, caps.inner.spokeOuter step) := by
+    calc
+      s(outside, caps.inner.vertex step) = openEdge.1 := rfl
+      _ = (caps.innerOpenSpokeEdge step).1 := congrArg Subtype.val hedge
+      _ = (caps.inner.spokeEdge step).1 := by simp
+      _ = s(caps.inner.vertex step, caps.inner.spokeOuter step) :=
+        caps.inner.spokeEdge_eq step
+  rcases Sym2.eq_iff.mp hpairs with hstraight | hswapped
+  · exact False.elim (caps.inner.spokeOuter_ne_vertex step step hstraight.2.symm)
+  · exact hswapped.1
+
+/-- The named spoke endpoint is the unique neighbour of an outer cap vertex
+after the simultaneous cap opening. -/
+theorem eq_outer_spokeOuter_of_openGraph_adj_vertex
+    (caps : PentagonCapPair G) (step : Fin 5) {outside : V}
+    (hadj : caps.openGraph.Adj outside (caps.outer.vertex step)) :
+    outside = caps.outer.spokeOuter step := by
+  let openEdge : caps.openGraph.edgeSet :=
+    ⟨s(outside, caps.outer.vertex step), by simpa using hadj⟩
+  have hincident : openEdge ∈
+      incidentEdgeFinset caps.openGraph (caps.outer.vertex step) := by
+    simp [openEdge, incidentEdgeFinset, Sym2.mem_iff]
+  rw [caps.openGraph_incidentEdgeFinset_outerVertex_eq_singleton step] at hincident
+  have hedge : openEdge = caps.outerOpenSpokeEdge step :=
+    Finset.mem_singleton.mp hincident
+  have hpairs : s(outside, caps.outer.vertex step) =
+      s(caps.outer.vertex step, caps.outer.spokeOuter step) := by
+    calc
+      s(outside, caps.outer.vertex step) = openEdge.1 := rfl
+      _ = (caps.outerOpenSpokeEdge step).1 := congrArg Subtype.val hedge
+      _ = (caps.outer.spokeEdge step).1 := by simp
+      _ = s(caps.outer.vertex step, caps.outer.spokeOuter step) :=
+        caps.outer.spokeEdge_eq step
+  rcases Sym2.eq_iff.mp hpairs with hstraight | hswapped
+  · exact False.elim (caps.outer.spokeOuter_ne_vertex step step hstraight.2.symm)
+  · exact hswapped.1
+
+theorem openGraph_adj_spokeOuter_innerVertex (caps : PentagonCapPair G)
+    (step : Fin 5) :
+    caps.openGraph.Adj (caps.inner.spokeOuter step) (caps.inner.vertex step) := by
+  have hmem := (caps.innerOpenSpokeEdge step).2
+  simpa [SimpleGraph.mem_edgeSet, caps.inner.spokeEdge_eq step, Sym2.eq_swap] using hmem
+
+theorem openGraph_adj_spokeOuter_outerVertex (caps : PentagonCapPair G)
+    (step : Fin 5) :
+    caps.openGraph.Adj (caps.outer.spokeOuter step) (caps.outer.vertex step) := by
+  have hmem := (caps.outerOpenSpokeEdge step).2
+  simpa [SimpleGraph.mem_edgeSet, caps.outer.spokeEdge_eq step, Sym2.eq_swap] using hmem
+
+/-- No two inner toolchain stub vertices are adjacent after both cap cycles
+are opened. -/
+theorem not_openGraph_adj_innerVertices (caps : PentagonCapPair G)
+    (first second : Fin 5) :
+    ¬ caps.openGraph.Adj (caps.inner.vertex first) (caps.inner.vertex second) := by
+  intro hadj
+  have hspoke := caps.eq_inner_spokeOuter_of_openGraph_adj_vertex first
+    (caps.openGraph.adj_symm hadj)
+  exact caps.inner.spokeOuter_not_mem_vertexSupport first
+    ((caps.inner.mem_vertexSupport_iff _).mpr ⟨second, hspoke⟩)
+
+/-- No two outer toolchain stub vertices are adjacent after both cap cycles
+are opened. -/
+theorem not_openGraph_adj_outerVertices (caps : PentagonCapPair G)
+    (first second : Fin 5) :
+    ¬ caps.openGraph.Adj (caps.outer.vertex first) (caps.outer.vertex second) := by
+  intro hadj
+  have hspoke := caps.eq_outer_spokeOuter_of_openGraph_adj_vertex first
+    (caps.openGraph.adj_symm hadj)
+  exact caps.outer.spokeOuter_not_mem_vertexSupport first
+    ((caps.outer.mem_vertexSupport_iff _).mpr ⟨second, hspoke⟩)
+
+/-- The two separated cap families remain non-adjacent in the toolchain
+opening.  This is exactly where the no-spoke contact condition is used. -/
+theorem not_openGraph_adj_inner_outerVertices (caps : PentagonCapPair G)
+    (innerStep outerStep : Fin 5) :
+    ¬ caps.openGraph.Adj (caps.inner.vertex innerStep) (caps.outer.vertex outerStep) := by
+  intro hadj
+  have hspoke := caps.eq_inner_spokeOuter_of_openGraph_adj_vertex innerStep
+    (caps.openGraph.adj_symm hadj)
+  exact caps.inner_spokeOuter_not_mem_outerSupport innerStep
+    ((caps.outer.mem_vertexSupport_iff _).mpr ⟨outerStep, hspoke⟩)
+
 /-- Simultaneously deleting the two cap cycles changes no neighbour outside
 either cap support. -/
 theorem openGraph_neighborFinset_eq_of_not_mem_supports

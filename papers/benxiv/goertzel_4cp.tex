@@ -576,7 +576,7 @@ it neither selects a pentagon in the closed normal-form map nor proves that a
 Cell--3 corridor is retained, constructs the outer hole, or identifies the
 dependent face-fragment carriers of the two openings.
 
-paragraph{The first literal two-boundary opening.}
+\paragraph{The first literal two-boundary opening.}
 The source's annular laboratory removes two separated pentagon caps, and this
 has now been made into a separate graph construction rather than being
 silently inferred from a one-cap opening.  In
@@ -606,12 +606,16 @@ are exact, ordered data before any transfer profile is placed on them.  This
 still compares graph boundaries only: it does not establish the ambient
 annulus, its rotation/face carrier, or any profile/count semantics.
 
-The subsequent carrier comparison is canonical rather than merely a matching
-cardinality: old vertices are fixed, and the fresh stub at an outward port is
-sent to the cap vertex at that dart's deleted endpoint.  Its bijectivity uses
-the just-proved exact port classification.  Adjacency and cyclic face order
-remain separate obligations; this equivalence is deliberately not presented
-as an opening graph isomorphism or an annular embedding.
+The subsequent carrier comparison is now a graph isomorphism, not merely a
+matching cardinality.  It fixes old vertices, sends each fresh outward stub to
+the cap vertex at its deleted endpoint, and checks adjacency in all four
+cases: old--old, old--stub, stub--old, and stub--stub.  The inner and outer
+ordered-stub compatibility theorems both hold by 	exttt{rfl}: coordinate
+$i$ cannot silently be transported to a permuted cap vertex.  This is a
+deliberate definitional guarantee, recorded so that a later refactor does not
+weaken it to a merely propositional correspondence.  Dependent face-fragment
+carriers and their cyclic orders remain separate obligations; this is not yet
+an annular rotation embedding.
 
 There is no parallel open-region graph tower behind this comparison.  The
 generic theorem
