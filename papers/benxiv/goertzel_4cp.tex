@@ -1631,6 +1631,19 @@ returns the precise local pattern still to be consumed.  This is a
 classification theorem, not yet a proof that the two residual patterns are
 absent, an arbitrary-length rail induction, or the end-capped crosscut pair.
 
+One of those two residual patterns is now impossible for a purely local
+reason.  If both cross-track tests collide, all four displayed local rails are
+nonstationary.  Each Cell--3 pair has total rail length at most two, so all
+four rails have length one.  Any additional same-track collision would then
+identify one incoming face first with one outgoing face and, through the
+opposite cross collision, with the other outgoing face.  This contradicts the
+right local pair's support disjointness.  The theorem
+\texttt{not\_doubleCrossSameTrack} formalizes this count and endpoint
+argument, and the refined classifier now has only three kinds of result:
+straight assembly, swapped assembly, or exactly one cross-track collision.
+The lone-cross case remains; neither arbitrary-length iteration nor either
+annular end cap follows from this local theorem.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
