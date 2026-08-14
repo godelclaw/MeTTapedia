@@ -904,12 +904,16 @@ say that the five-cycle is the boundary of one facial orbit of the closed
 spherical rotation.  That omission is mathematically material.  Deleting an
 arbitrary five-cycle has no reason to create a named hole face, to give the
 two required cap collars, or to preserve the Euler presentation needed by the
-annular cellulation.  Thus, \emph{if this two-cap laboratory is used as a
-formation adapter}, its next datum is not ``more transport through the
-existing opening'', but two suitably separated \emph{facial} pentagon caps
-with their oriented face cycles.  From those, surface surgery can construct
-the two hole orbits and compare the opened Euler data; without them, treating
-the graph-level opening as an annulus would be precisely the unproved picture
+annular cellulation.  The new
+\texttt{GoertzelV24FacialPentagonCap} records the necessary strengthened
+input: each cap carries a closed-rotation face dart whose face-edge support is
+exactly its five cycle edges, and a separated pair carries this datum on both
+sides.  It proves the facial support has five edges, contains exactly the
+named cycle edges, excludes every outward spoke, and distinguishes the two
+cap faces.  This completes the \emph{facial-cap datum}, not the surgery:
+the next theorem must calculate the two degree-one-stub collar orbits and
+their cyclic spoke orders.  Treating the graph-level opening as an annulus
+before that calculation would still be precisely the unproved picture
 argument this formalisation is avoiding.  This is a constraint on that
 laboratory, not a claim that the Cell--3 source corridor is obtained by
 selecting two such caps: Addendum~V supplies the laboratory tangle, whereas
@@ -2083,10 +2087,13 @@ and identifies the manuscript slit graph, the toolchain opening, and the
 computed open-region primal graph by explicit graph isomorphisms; the two
 ordered families are preserved by construction.  This is useful because it
 eliminates a representation mismatch without pretending that ten boundary
-stubs alone make an annulus.  The unbuilt source-facing part remains selecting
-such caps from the relevant minimal frontier, constructing the two named hole
-faces and their rotation-level embedding, and transporting the chosen clean
-corridor and its local hypotheses.  Addendum~V itself treats the two-cap
+stubs alone make an annulus.  The subsequent
+\texttt{FacialPentagonCapPair} strengthens the supplied laboratory datum by
+identifying both cap cycles with literal closed face orbits.  The unbuilt
+source-facing part remains selecting such a facial pair from the relevant
+minimal frontier, calculating the two named opened hole faces and their
+rotation-level embedding, and transporting the chosen clean corridor and its
+local hypotheses.  Addendum~V itself treats the two-cap
 examples as an annular laboratory, not as a theorem that every minimal
 counterexample canonically supplies this formation.
 
