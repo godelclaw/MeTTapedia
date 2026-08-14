@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalRailAppend
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAppend
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpace
 
 /-!
@@ -112,7 +113,7 @@ def CommonNeighborVertexIncidence
 /-- Face-local replacement for global two-sidedness in the standard toggle
 parity proof.  Injectivity only needs the opposite side of darts on this one
 facial orbit to be different. -/
-private theorem togglesOn_card_eq_incidentEdges_inter_faceEdges_of_localTwoSided
+theorem togglesOn_card_eq_incidentEdges_inter_faceEdges_of_localTwoSided
     {W E : Type*} [Fintype W] [DecidableEq W]
     [Fintype E] [DecidableEq E]
     (RS : RotationSystem W E) (representative : RS.D) (vertex : W)
@@ -210,7 +211,9 @@ private theorem togglesOn_card_eq_incidentEdges_inter_faceEdges_of_localTwoSided
         hfaceEdge⟩
       simp [RotationSystem.phi_apply, hleft, hphiRaw]
 
-private theorem incidentEdges_inter_faceBoundary_eq_pair_of_local
+/-- At a locally cubic vertex, two distinct edges on a locally two-sided face
+exhaust the incident boundary edges. -/
+theorem incidentEdges_inter_faceBoundary_eq_pair_of_local
     (RS : RotationSystem V G.edgeSet) (face : OrbitFace RS) (vertex : V)
     {first second : G.edgeSet}
     (hcardThree : (RS.incidentEdges vertex).card = 3)
@@ -458,6 +461,300 @@ theorem commonNeighborsExact_of_commonNeighborVertexIncidence
 end SourceLocalRailSuccessor
 
 end LocalLayerFormation
+
+namespace SelectedLocalLayerFormation
+
+namespace SeparatedSelectedSourceLocalRailSuccessor
+
+variable
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {leftPlacement : SelectedInternalHexRungPlacement corridor rungs leftInterior}
+    {rightPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior leftInterior hnext)}
+
+/-- The selected-carrier form of the closed dual-triangle incidence datum.
+For each common neighbour, one literal edge shared with the left corridor
+face retains a common endpoint with the selected outgoing rung.
+
+No uniqueness of the shared edge is asserted.  This is the weakest
+source-formation output needed by the local cubic argument below. -/
+def CommonNeighborVertexIncidence
+    (_successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement) : Prop :=
+  ∀ (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+      (_hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          ((corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
+      (_hright : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          ((corridor.toCleanOrbitHexCorridorSkeleton
+            |>.toOrbitHexCorridorSkeleton).faceAt
+              (nextCorridorInterior leftInterior hnext).center) face),
+    ∃ targetEdge : G.edgeSet,
+      targetEdge ∈ orbitFaceBoundary web.annular.RS
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center).1 ∧
+      targetEdge ∈ orbitFaceBoundary web.annular.RS face.1 ∧
+      ∃ vertex : V,
+        vertex ∈ web.annular.RS.endpoints
+          (web.annular.RS.edgeOf (faceCycleDart web.annular.RS
+            leftPlacement.root leftPlacement.outgoingPosition)) ∧
+        vertex ∈ web.annular.RS.endpoints targetEdge
+
+private theorem face_eq_selectedPlacementSideFace_of_edge_eq
+    (face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hleft : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ((corridor.toCleanOrbitHexCorridorSkeleton
+          |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center) face)
+    (targetEdge : G.edgeSet)
+    (htargetCenter : targetEdge ∈ orbitFaceBoundary web.annular.RS
+      ((corridor.toCleanOrbitHexCorridorSkeleton
+        |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center).1)
+    (htargetFace : targetEdge ∈ orbitFaceBoundary web.annular.RS face.1)
+    (position : {position // position ∈
+      selectedPlacementSidePositions leftPlacement})
+    (hedge : targetEdge = web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS leftPlacement.root position.1)) :
+    face = selectedPlacementSideFace leftPlacement position := by
+  let center := (corridor.toCleanOrbitHexCorridorSkeleton
+    |>.toOrbitHexCorridorSkeleton).faceAt leftInterior.center
+  let side := selectedPlacementSideFace leftPlacement position
+  let sideEdge := web.annular.RS.edgeOf
+    (faceCycleDart web.annular.RS leftPlacement.root position.1)
+  have hedgeCenter : sideEdge ∈ orbitFaceBoundary web.annular.RS center.1 := by
+    dsimp only [sideEdge]
+    rw [← hedge]
+    exact htargetCenter
+  have hedgeFace : sideEdge ∈ orbitFaceBoundary web.annular.RS face.1 := by
+    dsimp only [sideEdge]
+    rw [← hedge]
+    exact htargetFace
+  have hedgeSide : sideEdge ∈ orbitFaceBoundary web.annular.RS side.1 := by
+    change web.annular.RS.edgeOf
+      (faceCycleDart web.annular.RS leftPlacement.root position.1) ∈
+        orbitFaceBoundary web.annular.RS
+          (dartOrbitFace web.annular.RS
+            (web.annular.RS.alpha
+              (faceCycleDart web.annular.RS leftPlacement.root position.1)))
+    rw [← web.annular.RS.edge_alpha]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS _
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (orbitFace_incidence_le_two web.annular.RS)
+      center.2 face.2 side.2 (fun h => hleft.ne (Subtype.ext h))
+      hedgeCenter hedgeFace hedgeSide
+  rcases hcases with hsideCenter | hsideFace
+  · exact False.elim
+      ((selectedPlacementSideFace_val_ne_center (corridor := corridor)
+        leftPlacement position) hsideCenter)
+  · exact Subtype.ext hsideFace.symm
+
+/-- **L1 selected incidence-to-flank bridge.** The literal common-endpoint
+incidence transported from the closed minimal map implies the exact
+common-neighbour classification consumed by selected rail append.
+
+The proof uses only local cubicity and local two-sidedness of the displayed
+interior face.  In particular it does not restore the false global
+pairwise-unique shared-edge premise on the opened annulus. -/
+theorem commonNeighborsExact_of_commonNeighborVertexIncidence
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    (hincidence : successor.CommonNeighborVertexIncidence) :
+    successor.CommonNeighborsExact := by
+  intro face hleft hright
+  let RS := web.annular.RS
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let center := skeleton.faceAt leftInterior.center
+  let next := skeleton.faceAt
+    (nextCorridorInterior leftInterior hnext).center
+  let outgoingDart := faceCycleDart RS leftPlacement.root
+    leftPlacement.outgoingPosition
+  let beforeDart := faceCycleDart RS leftPlacement.root
+    successor.frame.leftBefore.1
+  let afterDart := faceCycleDart RS leftPlacement.root
+    successor.frame.leftAfter.1
+  let outgoingEdge := RS.edgeOf outgoingDart
+  let beforeEdge := RS.edgeOf beforeDart
+  let afterEdge := RS.edgeOf afterDart
+  rcases hincidence face hleft hright with
+    ⟨targetEdge, htargetCenter, htargetFace, vertex,
+      hvertexOutgoing, hvertexTarget⟩
+  have houtgoingFace : dartOrbitFace RS outgoingDart = center.1 := by
+    calc
+      dartOrbitFace RS outgoingDart = dartOrbitFace RS leftPlacement.root :=
+        dartOrbitFace_faceCycleDart RS leftPlacement.root
+          leftPlacement.outgoingPosition
+      _ = center.1 := leftPlacement.root_face
+  have hcenterInternal : dartOrbitFace RS outgoingDart ∈
+      web.annular.cellulation.interiorFaces := by
+    rw [houtgoingFace]
+    exact corridor.face_internal leftInterior.center
+  have houtgoingOn : outgoingDart ∈ RS.dartsOn outgoingEdge :=
+    (RS.mem_dartsOn).2 rfl
+  have hvertexCases : vertex = RS.vertOf outgoingDart ∨
+      vertex = RS.vertOf (RS.alpha outgoingDart) := by
+    rw [RS.endpoints_eq_pair_of_mem houtgoingOn] at hvertexOutgoing
+    simpa only [Finset.mem_insert, Finset.mem_singleton] using hvertexOutgoing
+  have htargetIncident : targetEdge ∈ RS.incidentEdges vertex :=
+    (RS.mem_endpoints_iff_mem_incidentEdges).1 hvertexTarget
+  have houtgoingBoundary : outgoingEdge ∈ orbitFaceBoundary RS center.1 := by
+    change faceCycleEdge RS leftPlacement.root
+      leftPlacement.outgoingPosition ∈ orbitFaceBoundary RS center.1
+    rw [← leftPlacement.root_face]
+    exact faceCycleEdge_mem RS leftPlacement.root leftPlacement.outgoingPosition
+  have hnextFace : dartOrbitFace RS (RS.alpha outgoingDart) = next.1 := by
+    simpa [RS, skeleton, outgoingDart, next] using
+      selectedOutgoingAlphaFace_eq_nextCenter (corridor := corridor)
+        hnext leftPlacement
+  have hnextBoundary : outgoingEdge ∈ orbitFaceBoundary RS next.1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace RS
+      (RS.alpha outgoingDart)
+    rw [RS.edge_alpha, hnextFace] at hraw
+    exact hraw
+  have hfirstSecond :
+      (interiorDualGraph (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))).Adj center next := by
+    exact skeleton.consecutive_adjacent leftInterior.center
+      (nextCorridorInterior leftInterior hnext).center rfl
+  have htargetNeOutgoing : targetEdge ≠ outgoingEdge := by
+    intro hedge
+    have houtgoingFaceTarget : outgoingEdge ∈ orbitFaceBoundary RS face.1 := by
+      rw [← hedge]
+      exact htargetFace
+    have hcases :=
+      eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS))
+        (orbitFace_incidence_le_two RS)
+        center.2 next.2 face.2
+        (fun h => hfirstSecond.ne (Subtype.ext h))
+        houtgoingBoundary hnextBoundary houtgoingFaceTarget
+    rcases hcases with hfaceCenter | hfaceNext
+    · exact hleft.ne (Subtype.ext hfaceCenter.symm)
+    · exact hright.ne (Subtype.ext hfaceNext.symm)
+  have hlocalTwoSided : ∀ dart ∈ RS.faceOrbit leftPlacement.root,
+      dartOrbitFace RS dart ≠ dartOrbitFace RS (RS.alpha dart) := by
+    intro dart hdart
+    apply InteriorFace.dartOrbitFace_ne_alpha web dart
+    have hsame : dartOrbitFace RS dart =
+        dartOrbitFace RS leftPlacement.root := by
+      apply Quotient.sound
+      exact ((RS.mem_faceOrbit).1 hdart).symm
+    rw [hsame, leftPlacement.root_face]
+    exact corridor.face_internal leftInterior.center
+  have heven (candidate : V) :
+      Even ((RS.incidentEdges candidate ∩ orbitFaceBoundary RS center.1).card) := by
+    have htoggles :=
+      LocalLayerFormation.SourceLocalRailSuccessor.togglesOn_card_eq_incidentEdges_inter_faceEdges_of_localTwoSided
+        RS leftPlacement.root candidate hlocalTwoSided
+    rw [← leftPlacement.root_face,
+      orbitFaceBoundary_dartOrbitFace_eq_faceEdges]
+    rw [← htoggles]
+    exact RS.togglesOn_card_even leftPlacement.root candidate
+  rcases hvertexCases with hvertexBase | hvertexOpposite
+  · left
+    have hdarts : outgoingDart = RS.phi beforeDart :=
+      faceCycleDart_successor_of_modEq RS leftPlacement.root
+        leftPlacement.orbit_card successor.frame.leftBefore.1
+        leftPlacement.outgoingPosition successor.frame.leftBefore_mod
+    have houtgoingIncident : outgoingEdge ∈ RS.incidentEdges vertex := by
+      exact (RS.mem_incidentEdges_iff).2
+        ⟨outgoingDart, rfl, hvertexBase.symm⟩
+    have hbeforeIncident : beforeEdge ∈ RS.incidentEdges vertex := by
+      apply (RS.mem_incidentEdges_iff).2
+      refine ⟨RS.alpha beforeDart, RS.edge_alpha beforeDart, ?_⟩
+      rw [← RS.vert_phi_eq_vert_alpha beforeDart, ← hdarts, ← hvertexBase]
+    have hbeforeBoundary : beforeEdge ∈ orbitFaceBoundary RS center.1 := by
+      change faceCycleEdge RS leftPlacement.root
+        successor.frame.leftBefore.1 ∈ orbitFaceBoundary RS center.1
+      rw [← leftPlacement.root_face]
+      exact faceCycleEdge_mem RS leftPlacement.root successor.frame.leftBefore.1
+    have hbeforeNe : outgoingEdge ≠ beforeEdge := by
+      intro hedge
+      apply ((mem_selectedPlacementSidePositions_iff leftPlacement
+        successor.frame.leftBefore.1).1 successor.frame.leftBefore.2).2
+      apply InteriorFace.faceCycleEdge_injective web leftPlacement.root
+        (by simpa [leftPlacement.root_face] using
+          corridor.face_internal leftInterior.center)
+      exact hedge.symm
+    have hcardThree : (RS.incidentEdges vertex).card = 3 := by
+      rw [hvertexBase, RS.incidentEdges_card_eq_dartsAt_card]
+      exact InteriorFace.dartsAt_card_eq_three web hcenterInternal
+    have hpairs :=
+      LocalLayerFormation.SourceLocalRailSuccessor.incidentEdges_inter_faceBoundary_eq_pair_of_local
+        RS center.1 vertex hcardThree (heven vertex)
+        (Finset.mem_inter.2 ⟨houtgoingIncident, houtgoingBoundary⟩)
+        (Finset.mem_inter.2 ⟨hbeforeIncident, hbeforeBoundary⟩) hbeforeNe
+    have htargetMem : targetEdge ∈
+        RS.incidentEdges vertex ∩ orbitFaceBoundary RS center.1 :=
+      Finset.mem_inter.2 ⟨htargetIncident, htargetCenter⟩
+    rw [hpairs] at htargetMem
+    simp only [Finset.mem_insert, Finset.mem_singleton] at htargetMem
+    exact face_eq_selectedPlacementSideFace_of_edge_eq
+      (corridor := corridor) face hleft targetEdge htargetCenter htargetFace
+      successor.frame.leftBefore
+      (htargetMem.resolve_left htargetNeOutgoing)
+  · right
+    have hdarts : afterDart = RS.phi outgoingDart :=
+      faceCycleDart_successor_of_modEq RS leftPlacement.root
+        leftPlacement.orbit_card leftPlacement.outgoingPosition
+        successor.frame.leftAfter.1 successor.frame.leftAfter_mod
+    have houtgoingIncident : outgoingEdge ∈ RS.incidentEdges vertex := by
+      exact (RS.mem_incidentEdges_iff).2
+        ⟨RS.alpha outgoingDart, RS.edge_alpha outgoingDart,
+          hvertexOpposite.symm⟩
+    have hafterIncident : afterEdge ∈ RS.incidentEdges vertex := by
+      apply (RS.mem_incidentEdges_iff).2
+      refine ⟨afterDart, rfl, ?_⟩
+      rw [hdarts, RS.vert_phi_eq_vert_alpha, ← hvertexOpposite]
+    have hafterBoundary : afterEdge ∈ orbitFaceBoundary RS center.1 := by
+      change faceCycleEdge RS leftPlacement.root
+        successor.frame.leftAfter.1 ∈ orbitFaceBoundary RS center.1
+      rw [← leftPlacement.root_face]
+      exact faceCycleEdge_mem RS leftPlacement.root successor.frame.leftAfter.1
+    have hafterNe : outgoingEdge ≠ afterEdge := by
+      intro hedge
+      apply ((mem_selectedPlacementSidePositions_iff leftPlacement
+        successor.frame.leftAfter.1).1 successor.frame.leftAfter.2).2
+      apply InteriorFace.faceCycleEdge_injective web leftPlacement.root
+        (by simpa [leftPlacement.root_face] using
+          corridor.face_internal leftInterior.center)
+      exact hedge.symm
+    have hnextInternal : dartOrbitFace RS (RS.alpha outgoingDart) ∈
+        web.annular.cellulation.interiorFaces := by
+      rw [hnextFace]
+      exact corridor.face_internal
+        (nextCorridorInterior leftInterior hnext).center
+    have hcardThree : (RS.incidentEdges vertex).card = 3 := by
+      rw [hvertexOpposite, RS.incidentEdges_card_eq_dartsAt_card]
+      exact InteriorFace.dartsAt_card_eq_three web hnextInternal
+    have hpairs :=
+      LocalLayerFormation.SourceLocalRailSuccessor.incidentEdges_inter_faceBoundary_eq_pair_of_local
+        RS center.1 vertex hcardThree (heven vertex)
+        (Finset.mem_inter.2 ⟨houtgoingIncident, houtgoingBoundary⟩)
+        (Finset.mem_inter.2 ⟨hafterIncident, hafterBoundary⟩) hafterNe
+    have htargetMem : targetEdge ∈
+        RS.incidentEdges vertex ∩ orbitFaceBoundary RS center.1 :=
+      Finset.mem_inter.2 ⟨htargetIncident, htargetCenter⟩
+    rw [hpairs] at htargetMem
+    simp only [Finset.mem_insert, Finset.mem_singleton] at htargetMem
+    exact face_eq_selectedPlacementSideFace_of_edge_eq
+      (corridor := corridor) face hleft targetEdge htargetCenter htargetFace
+      successor.frame.leftAfter
+      (htargetMem.resolve_left htargetNeOutgoing)
+
+end SeparatedSelectedSourceLocalRailSuccessor
+
+end SelectedLocalLayerFormation
 
 end Instance
 
