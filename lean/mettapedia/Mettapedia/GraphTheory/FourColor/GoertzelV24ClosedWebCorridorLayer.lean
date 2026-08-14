@@ -98,6 +98,85 @@ structure LocalLayerPair
 
 namespace LocalLayerPair
 
+/-- An annular-interior face is not the named inner hole. -/
+theorem face_ne_innerHole_of_mem_interiorFaces
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    {face : OrbitFace web.annular.RS}
+    (hface : face ∈ web.annular.cellulation.interiorFaces) :
+    face ≠ web.annular.cellulation.innerHole := by
+  have hnot : face ∉ web.annular.cellulation.holeFaces := by
+    rw [GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.interiorFaces] at hface
+    exact (Finset.mem_sdiff.mp hface).2
+  intro h
+  apply hnot
+  rw [h]
+  simp [GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.holeFaces]
+
+/-- An annular-interior face is not the named outer hole. -/
+theorem face_ne_outerHole_of_mem_interiorFaces
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    {face : OrbitFace web.annular.RS}
+    (hface : face ∈ web.annular.cellulation.interiorFaces) :
+    face ≠ web.annular.cellulation.outerHole := by
+  have hnot : face ∉ web.annular.cellulation.holeFaces := by
+    rw [GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.interiorFaces] at hface
+    exact (Finset.mem_sdiff.mp hface).2
+  intro h
+  apply hnot
+  rw [h]
+  simp [GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.holeFaces]
+
+/-- The first endpoint of a literal Cell-3 layer is internal, hence not the
+inner hole.  This records that a local layer is not yet a hole-to-hole
+crosscut; it does not rule out a later extension to the hole. -/
+theorem firstFace_ne_innerHole
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext) :
+    layers.firstFace.1 ≠ web.annular.cellulation.innerHole :=
+  face_ne_innerHole_of_mem_interiorFaces web layers.first_internal
+
+/-- The first endpoint of a literal Cell-3 layer is internal, hence not the
+outer hole. -/
+theorem firstFace_ne_outerHole
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext) :
+    layers.firstFace.1 ≠ web.annular.cellulation.outerHole :=
+  face_ne_outerHole_of_mem_interiorFaces web layers.first_internal
+
+/-- The second endpoint of a literal Cell-3 layer is internal, hence not the
+inner hole. -/
+theorem secondFace_ne_innerHole
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext) :
+    layers.secondFace.1 ≠ web.annular.cellulation.innerHole :=
+  face_ne_innerHole_of_mem_interiorFaces web layers.second_internal
+
+/-- The second endpoint of a literal Cell-3 layer is internal, hence not the
+outer hole. -/
+theorem secondFace_ne_outerHole
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext) :
+    layers.secondFace.1 ≠ web.annular.cellulation.outerHole :=
+  face_ne_outerHole_of_mem_interiorFaces web layers.second_internal
+
 /-- The source corridor face through which the first local layer passes. -/
 def centerFace
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

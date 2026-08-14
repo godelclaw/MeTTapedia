@@ -285,6 +285,16 @@ annular crosscut pair. \\
 \end{tabular}
 \end{center}
 
+The local/global distinction is now also explicit in the kernel.  The four
+theorems \texttt{firstFace\_ne\_innerHole},
+\texttt{firstFace\_ne\_outerHole}, \texttt{secondFace\_ne\_innerHole},
+and \texttt{secondFace\_ne\_outerHole} derive from the pair's
+\texttt{interiorFaces} certificates that neither local endpoint is either
+named annular hole.  Thus this pair cannot be silently re-presented as the
+hole-to-hole crosscut needed by the splice.  This is deliberately a scoped
+negative fact: it does not say that a longer, source-realized extension to the
+holes cannot be constructed.
+
 This layer also contains a useful discipline theorem: equality of boundary
 color words alone cannot replace equality of full profiles.  A two-state
 machine-checked counterexample admits an off-diagonal transition while having
