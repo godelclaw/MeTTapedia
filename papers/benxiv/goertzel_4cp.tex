@@ -1134,6 +1134,14 @@ global face-intersection-uniqueness premise.  A later rail-extension argument
 therefore has its correct outgoing endpoint, while any collision of side
 faces remains an explicit finite case rather than an implicit identification.
 
+One further local branch is now checked exactly.  If any surviving side slot
+of that Cell--3 hexagon has the next corridor centre as its opposite-dart
+face, \texttt{selectedSideFace\_eq\_nextCenter\_implies\_two\_distinctSharedInteriorEdges}
+exhibits the selected outgoing rung and that side edge as two distinct shared
+interior primal edges.  This does not exclude the branch or construct a
+crosscut; it records the branch as the finite exceptional geometry which the
+source's L1 classification must decide.
+
 The exclusion of that global premise is now itself kernel-checked rather than
 merely recorded in prose.  Every dart over a named inner boundary edge belongs
 to the inner-hole orbit, as does its $\alpha$-opposite; hence

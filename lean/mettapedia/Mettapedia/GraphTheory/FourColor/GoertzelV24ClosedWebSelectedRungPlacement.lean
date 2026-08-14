@@ -375,6 +375,104 @@ theorem selectedOutgoingAlphaFace_eq_nextCenter
   change interior.center.val = interior.center.val + 1 at hvalues
   omega
 
+/-- **L1 local collision branch.** If a surviving side slot of a selected
+Cell--3 hexagon also faces the next corridor centre, then those two corridor
+faces have two distinct shared interior edges: the selected outgoing rung and
+the literal side edge.  This records the finite exceptional geometry instead
+of recovering the false global uniqueness premise. -/
+theorem selectedSideFace_eq_nextCenter_implies_two_distinct_sharedInteriorEdges
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (hface : selectedPlacementSideFace placement position =
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        (nextCorridorInterior interior hnext).center) :
+    ∃ first second,
+      first ∈ sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center).1
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1 ∧
+      second ∈ sharedInteriorEdges (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center).1
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center).1 ∧
+      first ≠ second := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let outgoingDart := faceCycleDart web.annular.RS placement.root
+    placement.outgoingPosition
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  have houtgoingInternal : dartOrbitFace web.annular.RS outgoingDart ∈
+      web.annular.cellulation.interiorFaces := by
+    rw [dartOrbitFace_faceCycleDart, placement.root_face]
+    exact corridor.face_internal interior.center
+  have hsideInternal : dartOrbitFace web.annular.RS sideDart ∈
+      web.annular.cellulation.interiorFaces := by
+    exact selectedPlacementSideDart_internal (corridor := corridor)
+      placement position
+  have houtgoingCenter : web.annular.RS.edgeOf outgoingDart ∈
+      orbitFaceBoundary web.annular.RS (skeleton.faceAt interior.center).1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace
+      web.annular.RS outgoingDart
+    rw [dartOrbitFace_faceCycleDart, placement.root_face] at hraw
+    exact hraw
+  have houtgoingNext : web.annular.RS.edgeOf outgoingDart ∈
+      orbitFaceBoundary web.annular.RS
+        (skeleton.faceAt (nextCorridorInterior interior hnext).center).1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+      (web.annular.RS.alpha outgoingDart)
+    rw [web.annular.RS.edge_alpha,
+      selectedOutgoingAlphaFace_eq_nextCenter (corridor := corridor)
+        hnext placement] at hraw
+    exact hraw
+  have hsideCenter : web.annular.RS.edgeOf sideDart ∈
+      orbitFaceBoundary web.annular.RS (skeleton.faceAt interior.center).1 := by
+    have hraw := edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS sideDart
+    rw [dartOrbitFace_faceCycleDart, placement.root_face] at hraw
+    exact hraw
+  have hsideNext : web.annular.RS.edgeOf sideDart ∈
+      orbitFaceBoundary web.annular.RS
+        (skeleton.faceAt (nextCorridorInterior interior hnext).center).1 := by
+    have hsideAcross : web.annular.RS.edgeOf sideDart ∈
+        orbitFaceBoundary web.annular.RS
+          (selectedPlacementSideFace placement position).1 := by
+      change web.annular.RS.edgeOf sideDart ∈ orbitFaceBoundary web.annular.RS
+        (dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart))
+      rw [← web.annular.RS.edge_alpha sideDart]
+      exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha sideDart)
+    rw [hface] at hsideAcross
+    exact hsideAcross
+  refine ⟨web.annular.RS.edgeOf outgoingDart,
+    web.annular.RS.edgeOf sideDart, ?_, ?_, ?_⟩
+  · exact (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+        ⟨Instance.InteriorFace.edge_mem_interiorEdgeSupport web outgoingDart
+            houtgoingInternal, houtgoingCenter, houtgoingNext⟩
+  · exact (mem_sharedInteriorEdges_iff (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).2
+        ⟨Instance.InteriorFace.edge_mem_interiorEdgeSupport web sideDart
+            hsideInternal, hsideCenter, hsideNext⟩
+  · intro hedges
+    have hposition : position.1 = placement.outgoingPosition := by
+      apply Instance.InteriorFace.faceCycleEdge_injective web placement.root
+        (by
+          rw [placement.root_face]
+          exact corridor.face_internal interior.center)
+      change web.annular.RS.edgeOf sideDart = web.annular.RS.edgeOf outgoingDart
+      exact hedges.symm
+    exact ((mem_selectedPlacementSidePositions_iff placement position.1).1 position.2).2
+      hposition
+
 /-- A collision between two distinct selected side slots has a concrete finite
 local meaning: the centre hexagon and the repeated neighbouring face share two
 different interior primal edges.  This is the residual case for the L1 local
