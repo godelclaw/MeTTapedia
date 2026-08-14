@@ -854,6 +854,14 @@ cap-deletion construction remains relevant only if a later source theorem
 identifies that particular opening with the Cell--3 carrier; it is not silently
 inserted as the current L1 construction.
 
+That non-vacuity boundary is now a kernel theorem rather than only a warning:
+\texttt{graphBackedVertexMinimalTaitCounterexample\_elim\_of\_wellFormed}
+derives 	exttt{False} from a well-formed source trail, its annular embedding,
+and a closed graph-backed minimal-counterexample package on that same rotation.
+The closed-to-open transport layer remains usable; what is ruled out is the
+invalid shortcut of applying it to the already-open source carrier without an
+actual formation map.
+
 The first generic piece of this formation is now constructed in
 \texttt{GoertzelV24OpenRegionFaceTransport}.  Let a closed ambient face orbit
 be wholly based at vertices retained by the literal open-region construction.

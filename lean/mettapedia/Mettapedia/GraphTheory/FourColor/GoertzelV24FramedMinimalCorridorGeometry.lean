@@ -5,10 +5,16 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicFiveFaceIntersections
 /-!
 # Minimal-normal-form input to framed corridor geometry
 
-For an embedded source trail backed by a vertex-minimal Tait counterexample,
+For a closed ambient carrier backed by a vertex-minimal Tait counterexample,
 two of the three geometric hypotheses used by weighted L1 are consequences,
 not assumptions.  Two-sided quotient faces have simple edge boundaries, and
 minimality excludes facial cycles of length below five.
+
+A well-formed `SourceTrail` is already an open framed carrier with two
+degree-two defects, so it cannot itself carry that closed minimality package.
+The guard below makes this distinction explicit: source formation must
+transport closed facts through the opening, rather than applying the closed
+normal form to the open carrier.
 
 The remaining premise below is intentionally only connectedness of the
 internal facial dual after the two container faces are removed.  The bare
@@ -40,6 +46,18 @@ local instance : DecidableEq G.edgeSet := Subtype.instDecidableEq
 namespace SourceTrail
 
 namespace AnnularEmbedding
+
+/-- A well-formed framed source trail cannot itself be a graph-backed
+vertex-minimal Tait counterexample: the latter is globally cubic, while the
+former has its two named degree-two defect vertices.  This rules out using the
+closed-minimality adapters below directly on the opened source carrier. -/
+theorem graphBackedVertexMinimalTaitCounterexample_elim_of_wellFormed
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample
+      embedded.cellulation.rotation) : False :=
+  embedded.rotationSystem_not_isCubic_of_wellFormed hsource
+    minimal.spherical.cubic
 
 /-- In the vertex-minimal normal form, two distinct quotient faces of the
 ambient spherical map share at most one primal edge.  This is the exact
