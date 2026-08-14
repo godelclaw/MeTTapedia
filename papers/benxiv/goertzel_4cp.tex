@@ -883,9 +883,28 @@ cap-deletion construction remains relevant only if a later source theorem
 identifies that particular opening with the Cell--3 carrier; it is not silently
 inserted as the current L1 construction.
 
+There is a further, easy-to-miss boundary on the current two-cap library.
+Its \texttt{PentagonCap} record is deliberately graph-theoretic: it names a
+five-cycle, its five outward spokes, and their incidence.  It does \emph{not}
+say that the five-cycle is the boundary of one facial orbit of the closed
+spherical rotation.  That omission is mathematically material.  Deleting an
+arbitrary five-cycle has no reason to create a named hole face, to give the
+two required cap collars, or to preserve the Euler presentation needed by the
+annular cellulation.  Thus, \emph{if this two-cap laboratory is used as a
+formation adapter}, its next datum is not ``more transport through the
+existing opening'', but two suitably separated \emph{facial} pentagon caps
+with their oriented face cycles.  From those, surface surgery can construct
+the two hole orbits and compare the opened Euler data; without them, treating
+the graph-level opening as an annulus would be precisely the unproved picture
+argument this formalisation is avoiding.  This is a constraint on that
+laboratory, not a claim that the Cell--3 source corridor is obtained by
+selecting two such caps: Addendum~V supplies the laboratory tangle, whereas
+Addendum~XXVII requires its own simple transversal or layer-boundary
+construction.
+
 That non-vacuity boundary is now a kernel theorem rather than only a warning:
 \texttt{graphBackedVertexMinimalTaitCounterexample\_elim\_of\_wellFormed}
-derives 	exttt{False} from a well-formed source trail, its annular embedding,
+derives \texttt{False} from a well-formed source trail, its annular embedding,
 and a closed graph-backed minimal-counterexample package on that same rotation.
 The closed-to-open transport layer remains usable; what is ruled out is the
 invalid shortcut of applying it to the already-open source carrier without an
