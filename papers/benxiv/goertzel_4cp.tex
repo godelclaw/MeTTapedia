@@ -947,6 +947,28 @@ irreducible local facts into this annulus.  This observation does not claim
 that a no-two-cut fact alone resolves the two-shared-edge case; it prevents
 that unproved provenance from being used implicitly.
 
+\paragraph{The unformalized two-cut transport.}  Addendum~XVIII of the
+current Fable manuscript asserts more than the familiar fact that two capped
+halves can be glued to a coloring.  For a pendant two-edge-cut piece it states
+a positive multiplicative identity \emph{at every routing profile}; Addendum
+XXV then uses that identity to make a zero seed count descend to a smaller
+frontier.  Lean has already proved the coloring-level part exactly:
+\texttt{twoEdgeCut\_bicolored\_portals\_reachable} supplies the forced
+matched bichromatic route through either side of an exact two-edge cut, and
+\texttt{TwoEdgeCutPairData.taitColorable\_iff\_caps} proves the cap/gluing
+equivalence for Tait colorings.  It has not proved the stronger source claim.
+In particular, no theorem currently relates a two-edge cap to
+\texttt{AnnularBoundaryData}, preserves its five named inner boundary edges,
+or transports the selected-component table that defines Menu~B.  Thus the
+exact seed predicate
+\texttt{annularFrontierMenuBSeedCount} is available, but its zero count does
+not yet descend through a two-edge cut.  The next construction is therefore a
+boundary-preserving cap transport---with the cut-off component disjoint from
+the named annular interfaces---followed by a literal profile/count
+factorization.  This is an open formalization obligation, not a refutation of
+the manuscript's corollary and not a license to substitute the closed
+vertex-minimal no-two-cut theorem.
+
 The honest next object is consequently smaller and sharper than a general
 Jordan or Menger theorem: a source-specific finite local classification that
 derives the required common-vertex incidence on the actual Cell--3 annular
