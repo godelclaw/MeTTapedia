@@ -114,6 +114,38 @@ theorem SeparatedSelectedSourceLocalRailSuccessor.rightOutgoingAfter_eq_nextLeft
     first.rightOutgoingAfter second.frame.leftAfter
       first.rightOutgoingAfter_mod second.frame.leftAfter_mod
 
+/-- The first outgoing face of one selected successor is the first incoming
+face across the following seam. -/
+theorem SeparatedSelectedSourceLocalRailSuccessor.rightOutgoingBeforeFace_eq_nextRightAfterFace
+    (first : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      middlePlacement)
+    (second : SeparatedSelectedSourceLocalRailSuccessor hnextNext middlePlacement
+      rightPlacement) :
+    selectedPlacementSideFace middlePlacement first.rightOutgoingBefore =
+      selectedPlacementSideFace rightPlacement second.frame.rightAfter := by
+  calc
+    selectedPlacementSideFace middlePlacement first.rightOutgoingBefore =
+        selectedPlacementSideFace middlePlacement second.frame.leftBefore := by
+      rw [first.rightOutgoingBefore_eq_nextLeftBefore second]
+    _ = selectedPlacementSideFace rightPlacement second.frame.rightAfter :=
+      second.frame.leftBeforeFace_eq_rightAfterFace
+
+/-- The second outgoing face of one selected successor is the second incoming
+face across the following seam. -/
+theorem SeparatedSelectedSourceLocalRailSuccessor.rightOutgoingAfterFace_eq_nextRightBeforeFace
+    (first : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      middlePlacement)
+    (second : SeparatedSelectedSourceLocalRailSuccessor hnextNext middlePlacement
+      rightPlacement) :
+    selectedPlacementSideFace middlePlacement first.rightOutgoingAfter =
+      selectedPlacementSideFace rightPlacement second.frame.rightBefore := by
+  calc
+    selectedPlacementSideFace middlePlacement first.rightOutgoingAfter =
+        selectedPlacementSideFace middlePlacement second.frame.leftAfter := by
+      rw [first.rightOutgoingAfter_eq_nextLeftAfter second]
+    _ = selectedPlacementSideFace rightPlacement second.frame.rightBefore :=
+      second.frame.leftAfterFace_eq_rightBeforeFace
+
 /-- The separated rails selected in the right cell of one seam are exactly a
 valid left-cell rail pair for the next seam. -/
 noncomputable def SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft

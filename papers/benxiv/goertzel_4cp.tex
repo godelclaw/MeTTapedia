@@ -1814,6 +1814,8 @@ middle order: it continues the first prefix rail along the second suffix rail
 and conversely, and records the resulting exchanged final order in the type.
 Thus a swapped local window is composition data, not a failed state or a
 reason to choose a noncanonical next connector.
+The helper \texttt{rebaseAssemblyStart} changes only the two named starting
+faces; the facial walks and their support lists remain unchanged.
 
 The coordinate hand-off between consecutive seams is now proved separately.
 Although successor frames are constructed independently,
@@ -1827,6 +1829,9 @@ a smaller induction design: construct disjoint two-cell windows and join them
 across the canonical intervening seam, instead of retaining an ever-mutating
 overlapping window.  The global support-separation proof for that tiling and
 the collision alternatives in successor existence remain to be discharged.
+The corresponding face-level seam equalities are now public as well, so the
+next two-cell window can be rebased to the previous window's endpoints before
+the four genuine support-interaction tests are classified.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
