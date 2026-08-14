@@ -2206,6 +2206,13 @@ facial walks together with exactly the separation fields of the underlying
 \texttt{PentagonCapPair}.  It adds neither an annular embedding nor remote
 facial separation.  This prevents the simultaneous calculation from silently
 replacing ordered collar coordinates by the weaker unordered cap datum.
+The local simultaneous-deletion calculation is also now complete.
+\texttt{GoertzelV24FacialPentagonCapPairDeletedCycle} proves that enlarging a
+deleted carrier preserves the cap's two-step face turn whenever the enlarged
+set still contains the cap and excludes its five spoke endpoints.  Applying
+this once to each member of the pair puts each ordered five-port family in one
+actual cycle of the same two-cap deleted-face permutation.  This is local
+non-interference, not yet the claim that the two cycles are distinct.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
