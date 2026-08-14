@@ -589,6 +589,17 @@ than re-proving them for a second graph presentation.  It does not turn a
 graph isomorphism into equality of dependent face-fragment data or construct
 the source-specific annular region.
 
+There is already a precise serial open-tangle adapter, but its quantifiers are
+important.  Given an actual equivalence from the literal exposed boundary
+darts to a displayed left/right port sum, it transports Tait colourings in
+both directions between the serial presentation and the literal opened
+rotation.  Thus a later construction of the two boundary components will not
+need a second colouring-semantics proof.  The adapter takes that boundary
+equivalence as input: it does not divide an arbitrary opened region into the
+two annular interfaces, prove their order, or construct the source crosscuts.
+It is reusable downstream plumbing, not the missing source formation in a
+different name.
+
 The strictly local open-carrier implication is now machine-checked as well.
 The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
 opening, the outgoing rung and the canonical edge from the centre to each
