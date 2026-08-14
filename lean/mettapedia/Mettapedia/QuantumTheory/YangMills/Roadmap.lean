@@ -6,6 +6,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
 
 /-!
 # Yang-Mills roadmap
@@ -43,6 +44,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassCompati
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
+open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -194,7 +196,20 @@ def yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry : YangMillsRoa
   itvUpperPercent := 1
   progressPercent := 100
   evidence := "HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassRepair constructs two field-relabel-invariant signed-H(4) plane-profile selectors whose exact values on two source-seven covariant-commutator rows form the identity matrix. The two-class augmentation has a certified nonzero second-IBP mismatch, and HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair adds an independent third coordinate that cancels that mismatch on the named rows. HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation then constructs an actual source-seven singleton-trace generator. Its exact signed weights are 32, 0, 0, and -96/5 for the original derivative, IBP, third, and profile coordinates; both plane-profile selectors vanish. With the cycle-profile base held fixed, every choice of the three added selector values has exact value (-1/10) times literalIncomingCommutatorClass there, and this is nonzero under both policies."
-  nextObligation := "Do not use the fixed-base three-class candidate for descent, joint rank, conditioning, or Wilson-functional coordinates. First solve or refute the exact compatibility system obtained by allowing the full existing scalar-coordinate family to vary; only then synthesize a new coordinate family if required."
+  nextObligation := "Do not use the fixed-base three-class candidate for descent, joint rank, conditioning, or Wilson-functional coordinates. A first existing-coordinate deformation now cancels this row; certify or refute it on the remaining named rows before attempting a complete source-seven census."
+
+/-- OUR first existing-coordinate repair check after the fixed-base
+refutation. -/
+def yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .jointPhysicalRelationInterface
+  nodeId := "yang-mills.rg.source-seven-existing-scalar-parameter-repair"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  itvLowerPercent := 99
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair constructs a signed-H(4)-invariant deformation from the six scalar coordinates already used by OUR trace-order construction. On the actual singleton-trace row it contributes exactly 1/10 of literalIncomingCommutatorClass, cancelling the previous -1/10 mismatch. Independent kernel-reduced derivative-axis, first-IBP, and profile replays show that the deformation is zero on both explicit source-seven commutators."
+  nextObligation := "Audit this same deformation on the remaining named source-seven commutator, differential, and trace rows, then solve or refute full descent through the complete source-seven physical relation submodule."
 
 /-- OUR fixed-trace-point screening calculation for a possible next
 trace-topology coordinate. -/
@@ -259,6 +274,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , yangMillsSourceSevenTwoClassRepairRoadmapEntry
   , yangMillsSourceSevenTwoClassCompatibilityRoadmapEntry
   , yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry
+  , yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry
   , yangMillsFixedPointTopologyScreenRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsCompletionSteelmanRoadmapEntry
@@ -460,6 +476,30 @@ theorem currentYangMillsRoadmap_records_sourceSeven_threeClass_traceless_refutat
     ourThreeClassSourceSevenTraceOrderCorrection_ourSingletonTrace_ne_zero⟩
 
 #print axioms currentYangMillsRoadmap_records_sourceSeven_threeClass_traceless_refutation
+
+theorem currentYangMillsRoadmap_records_sourceSeven_existingScalar_firstChecks :
+    yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry.status = .checked ∧
+      yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry.progressPercent =
+        100 ∧
+      (∀ policy : PhysicalRelationPolicy,
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourSingletonTraceGenerator policy) 1)) = 0) ∧
+      (∀ policy : PhysicalRelationPolicy,
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourFieldSevenCommutatorGenerator policy) 1)) = 0) ∧
+      (∀ policy : PhysicalRelationPolicy,
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single
+              (ourSecondaryFieldSevenCommutatorGenerator policy) 1)) = 0) := by
+  exact ⟨rfl, rfl,
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSingletonTrace_zero,
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourCommutator_zero,
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSecondaryCommutator_zero⟩
+
+#print axioms currentYangMillsRoadmap_records_sourceSeven_existingScalar_firstChecks
 
 theorem currentYangMillsRoadmap_records_fixedPointTopology_screen :
     (yangMillsFixedPointTopologyScreenRoadmapEntry.status = .checked) ∧
