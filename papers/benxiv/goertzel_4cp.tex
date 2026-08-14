@@ -1640,6 +1640,16 @@ cyclic cut with unchanged support cardinality.  In particular, it does not
 pretend that the degree-one-stub presentation already has cycles on both
 sides.
 
+That generic theorem is now specialized back to the literal facial-cap
+opening.  The constructor
+\texttt{pullbackOpenGraphOneSided\_of\_vertices\_outside} takes exact
+crossing support and an enclosed cycle in the opened graph; avoidance of the
+five cap vertices simultaneously proves that restored edges do not cross and
+places the restored pentagon cycle on the opposite side.  The output is an
+ambient small cyclic cut with the same cardinality.  This closes the
+one-cap, one-sided transport without a boundary-face cycle extraction and
+without a cyclic-connectivity assertion about the stub-bearing carrier.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
