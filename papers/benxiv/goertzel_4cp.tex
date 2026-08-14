@@ -1576,6 +1576,18 @@ outer-remote component of every obstruction triangle contains a cycle.  The
 complementary-side cycle/closed-carrier transport remains open, so L1 is not
 reported closed.
 
+The complete adjacent-append alternative is now packaged at exactly this
+strength in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendCyclicObstruction}.
+After loop erasure, either both selected rails extend, or an actual
+cross-track collision returns its facial-dual triangle together with a
+deletion component away from the outer root which contains a primal cycle.
+All ten ordered boundary stubs lie outside that component, and the selected
+crossing support has cardinality three.  This is stronger than returning an
+unused common neighbour, but it is not a discharge: Addendum~XVII contracts a
+literal primal triangle, while the component returned here may be the inside
+of a larger cyclic three-cut.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
