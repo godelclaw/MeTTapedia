@@ -1320,6 +1320,22 @@ the source's L1 classification.  This is one local segment, not a simple
 crosscut, a disjoint rail family, or a construction of the long end-capped
 pair required by the splice.
 
+\paragraph{An exhaustive selected local-layer alternative.}  The next
+source-local step is now a theorem rather than an inherited closed-map
+assumption.  For the two selected side slots flanking an outgoing rung,
+\texttt{exists\_selectedLocalLayerPair\_or\_collision} returns exactly one
+of two results.  In the ordinary branch it constructs the existing
+\texttt{LocalLayerPair} directly from literal Cell--3 faces.  In either
+exceptional branch it retains a \texttt{SelectedLocalLayerCollision}: a flank
+is the successor centre, or two distinct selected side slots denote the same
+face.  The collision is informative rather than a dead end: Lean extracts two
+distinct shared interior primal edges between the current centre and a named
+neighbour.  Thus the finite local case analysis has a complete, source-side
+entry point without assuming global pairwise uniqueness of face intersections.
+It neither eliminates the collision cases nor concatenates the successful
+local pairs into long, end-capped, hole-to-hole crosscuts; those remain the
+formation geometry required by the splice.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
