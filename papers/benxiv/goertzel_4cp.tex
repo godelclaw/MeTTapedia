@@ -1737,9 +1737,23 @@ Cell--3 rail pairs, Lean always returns two simple support-disjoint rails.
 The output records whether the two outgoing labels remain straight or are
 exchanged.  There is no residual collision, triangle, connectivity, or
 embedding branch.  This closes the adjacent two-cell append obstruction.  A
-long corridor still needs a fold whose state carries this endpoint
-permutation, followed by the two literal annular end caps; those are the
-remaining formation obligations.
+long corridor still needs a finite-state fold followed by the two literal
+annular end caps; those are the remaining formation obligations.  The state
+cannot consist only of the endpoint permutation and the two finished walks:
+some finite repairs replace part of the preceding Cell--3 window, so the next
+transition must retain the shape and provenance of that mutable window.
+
+The remote half of that stronger invariant is now proved in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailWindowSeparation}.  A repaired
+two-cell rail is allowed to use either Cell--3 centre itself as well as faces
+adjacent to either centre.  If two such closed-neighbourhood windows are
+separated by the established corridor-index gap, then any two supports they
+carry are disjoint.  The proof checks the possible collisions directly:
+distinct centres cannot be equal, separated centres cannot be adjacent, and
+source boundary-cleanliness forbids a face adjacent to both remote centres.
+This proves that a provenance-tracked finite window has exactly the remote
+separation needed for induction.  It does not yet construct that provenance
+for every local repair or the transition table which advances the window.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
