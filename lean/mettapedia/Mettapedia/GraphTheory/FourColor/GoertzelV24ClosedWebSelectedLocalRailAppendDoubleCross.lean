@@ -336,16 +336,16 @@ noncomputable def classifyLocalSuccessorAppendResolved
     (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
       leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
       successor.frame.leftAfter) :
-    SelectedLocalRailAppendResolvedOutcome successor left := by
-  cases classifyLocalSuccessorAppend successor left with
-  | straight assembly => exact .straight assembly
-  | swapped assembly => exact .swapped assembly
-  | singleFirstSecond collision hother =>
-      exact .singleFirstSecond collision hother
-  | singleSecondFirst collision hother =>
-      exact .singleSecondFirst collision hother
-  | doubleCrossSameTrack firstSecond secondFirst sameTrack =>
-      exact False.elim (not_doubleCrossSameTrack firstSecond secondFirst sameTrack)
+    SelectedLocalRailAppendResolvedOutcome successor left :=
+  match classifyLocalSuccessorAppend successor left with
+  | .straight assembly => .straight assembly
+  | .swapped assembly => .swapped assembly
+  | .singleFirstSecond collision hother =>
+      .singleFirstSecond collision hother
+  | .singleSecondFirst collision hother =>
+      .singleSecondFirst collision hother
+  | .doubleCrossSameTrack firstSecond secondFirst sameTrack =>
+      False.elim (not_doubleCrossSameTrack firstSecond secondFirst sameTrack)
 
 end SelectedSourceLocalRailAssembly
 

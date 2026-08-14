@@ -84,34 +84,34 @@ noncomputable def appendLocalSuccessorComplete
     (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
       leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
       successor.frame.leftAfter) :
-    SelectedLocalRailAppendCompleteOutcome successor left := by
-  cases classifyLocalSuccessorAppendLengthResolved successor left with
-  | straight assembly => exact .straight assembly
-  | swapped assembly => exact .swapped assembly
-  | firstSecondSameFirst cross same lengths =>
-      cases appendFirstSecondSameFirst cross same lengths with
-      | inl assembly => exact .straight assembly
-      | inr assembly => exact .swapped assembly
-  | firstSecondSameSecond cross same lengths =>
-      cases appendFirstSecondSameSecond cross same lengths with
-      | inl assembly => exact .straight assembly
-      | inr assembly => exact .swapped assembly
-  | firstSecondCenter cross center lengths =>
-      cases appendFirstSecondCenter cross center lengths with
-      | inl assembly => exact .straight assembly
-      | inr assembly => exact .swapped assembly
-  | secondFirstSameFirst cross same lengths =>
-      cases appendSecondFirstSameFirst cross same lengths with
-      | inl assembly => exact .straight assembly
-      | inr assembly => exact .swapped assembly
-  | secondFirstSameSecond cross same lengths =>
-      cases appendSecondFirstSameSecond cross same lengths with
-      | inl assembly => exact .straight assembly
-      | inr assembly => exact .swapped assembly
-  | secondFirstCenter cross center lengths =>
-      cases appendSecondFirstCenter cross center lengths with
-      | inl assembly => exact .straight assembly
-      | inr assembly => exact .swapped assembly
+    SelectedLocalRailAppendCompleteOutcome successor left :=
+  match classifyLocalSuccessorAppendLengthResolved successor left with
+  | .straight assembly => .straight assembly
+  | .swapped assembly => .swapped assembly
+  | .firstSecondSameFirst cross same lengths =>
+      match appendFirstSecondSameFirst cross same lengths with
+      | .inl assembly => .straight assembly
+      | .inr assembly => .swapped assembly
+  | .firstSecondSameSecond cross same lengths =>
+      match appendFirstSecondSameSecond cross same lengths with
+      | .inl assembly => .straight assembly
+      | .inr assembly => .swapped assembly
+  | .firstSecondCenter cross center lengths =>
+      match appendFirstSecondCenter cross center lengths with
+      | .inl assembly => .straight assembly
+      | .inr assembly => .swapped assembly
+  | .secondFirstSameFirst cross same lengths =>
+      match appendSecondFirstSameFirst cross same lengths with
+      | .inl assembly => .straight assembly
+      | .inr assembly => .swapped assembly
+  | .secondFirstSameSecond cross same lengths =>
+      match appendSecondFirstSameSecond cross same lengths with
+      | .inl assembly => .straight assembly
+      | .inr assembly => .swapped assembly
+  | .secondFirstCenter cross center lengths =>
+      match appendSecondFirstCenter cross center lengths with
+      | .inl assembly => .straight assembly
+      | .inr assembly => .swapped assembly
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

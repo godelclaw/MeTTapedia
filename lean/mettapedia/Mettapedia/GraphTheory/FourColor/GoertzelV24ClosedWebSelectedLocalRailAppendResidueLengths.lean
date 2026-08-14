@@ -438,33 +438,33 @@ noncomputable def classifyLocalSuccessorAppendLengthResolved
     (left : SeparatedSelectedSourceLocalRailPaths leftPlacement
       leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
       successor.frame.leftAfter) :
-    SelectedLocalRailAppendLengthResolvedOutcome successor left := by
-  cases classifyLocalSuccessorAppendResolved successor left with
-  | straight assembly => exact .straight assembly
-  | swapped assembly => exact .swapped assembly
-  | singleFirstSecond cross _ =>
-      cases classifySingleFirstSecondCenterBridge cross with
-      | assembly value => exact .swapped value
-      | meetsOldSecond same =>
-          exact .firstSecondSameSecond cross same
+    SelectedLocalRailAppendLengthResolvedOutcome successor left :=
+  match classifyLocalSuccessorAppendResolved successor left with
+  | .straight assembly => .straight assembly
+  | .swapped assembly => .swapped assembly
+  | .singleFirstSecond cross _ =>
+      match classifySingleFirstSecondCenterBridge cross with
+      | .assembly value => .swapped value
+      | .meetsOldSecond same =>
+          .firstSecondSameSecond cross same
             (firstSecond_sameSecond_lengths cross same)
-      | meetsNewFirst same =>
-          exact .firstSecondSameFirst cross same
+      | .meetsNewFirst same =>
+          .firstSecondSameFirst cross same
             (firstSecond_sameFirst_lengths cross same)
-      | containsLeftCenter center =>
-          exact .firstSecondCenter cross center
+      | .containsLeftCenter center =>
+          .firstSecondCenter cross center
             (firstSecond_center_lengths cross center)
-  | singleSecondFirst cross _ =>
-      cases classifySingleSecondFirstCenterBridge cross with
-      | assembly value => exact .swapped value
-      | meetsOldFirst same =>
-          exact .secondFirstSameFirst cross same
+  | .singleSecondFirst cross _ =>
+      match classifySingleSecondFirstCenterBridge cross with
+      | .assembly value => .swapped value
+      | .meetsOldFirst same =>
+          .secondFirstSameFirst cross same
             (secondFirst_sameFirst_lengths cross same)
-      | meetsNewSecond same =>
-          exact .secondFirstSameSecond cross same
+      | .meetsNewSecond same =>
+          .secondFirstSameSecond cross same
             (secondFirst_sameSecond_lengths cross same)
-      | containsLeftCenter center =>
-          exact .secondFirstCenter cross center
+      | .containsLeftCenter center =>
+          .secondFirstCenter cross center
             (secondFirst_center_lengths cross center)
 
 end SelectedSourceLocalRailAssembly

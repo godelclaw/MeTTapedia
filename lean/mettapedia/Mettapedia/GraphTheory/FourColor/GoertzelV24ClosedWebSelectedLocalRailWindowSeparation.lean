@@ -16,10 +16,11 @@ centre-neighbour collisions are excluded by the corridor skeleton; a face
 adjacent to both windows is excluded by source boundary-cleanliness.
 
 This is a separation theorem for an explicitly supplied support provenance.
-The ordinary straight append, the double-cross swapped append, and all six
-finite residue repairs are proved to carry it.  This module does not yet
-package that fact on the complete-outcome wrapper, construct the finite-state
-induction, attach either annular end cap, or close Fable flag L1.
+The ordinary straight append, the double-cross swapped append, both immediate
+centre-bridge exits, and all six finite residue repairs are proved to carry
+it.  The certificate is packaged on the complete-outcome wrapper.  This module
+does not yet construct the mutable-terminal-window induction, attach either
+annular end cap, or close Fable flag L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -254,6 +255,190 @@ theorem appendSuccessorSwapBothCrossCollisions_supportedBySelectedCenterPair
     · exact Or.inr (Or.inr (Or.inr (Or.inl
         (List.mem_of_mem_tail hnew))))
 
+/-- The immediate first-to-second centre-bridge repair carries the same
+two-centre provenance as the principal adjacent constructors. -/
+theorem appendSingleFirstSecondViaLeftCenter_supportedBySelectedCenterPair
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (holdSecond :
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          left.paths.secondRail.support)
+    (hnewFirst :
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          successor.firstContinuation.support.tail)
+    (hcenter :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∉
+        (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+          (successor := successor) (left := left) collision.face
+          collision.mem_old collision.mem_new).route.support) :
+    SupportedBySelectedCenterPair (corridor := corridor)
+      (appendSingleFirstSecondViaLeftCenter collision holdSecond hnewFirst hcenter)
+      leftInterior.center (nextCorridorInterior leftInterior hnext).center := by
+  apply supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+    (successor := successor) (left := left)
+  · exact (appendSingleFirstSecondViaLeftCenter_supportContained
+      collision holdSecond hnewFirst hcenter).1
+  · exact (appendSingleFirstSecondViaLeftCenter_supportContained
+      collision holdSecond hnewFirst hcenter).2
+
+/-- Symmetric two-centre provenance for the immediate second-to-first
+centre-bridge repair. -/
+theorem appendSingleSecondFirstViaLeftCenter_supportedBySelectedCenterPair
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (holdFirst :
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          left.paths.firstRail.support)
+    (hnewSecond :
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          successor.secondContinuation.support.tail)
+    (hcenter :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∉
+        (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+          (successor := successor) (left := left) collision.face
+          collision.mem_old collision.mem_new).route.support) :
+    SupportedBySelectedCenterPair (corridor := corridor)
+      (appendSingleSecondFirstViaLeftCenter collision holdFirst hnewSecond hcenter)
+      leftInterior.center (nextCorridorInterior leftInterior hnext).center := by
+  apply supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+    (successor := successor) (left := left)
+  · exact (appendSingleSecondFirstViaLeftCenter_supportContained
+      collision holdFirst hnewSecond hcenter).1
+  · exact (appendSingleSecondFirstViaLeftCenter_supportContained
+      collision holdFirst hnewSecond hcenter).2
+
+/-- Provenance predicate on the first exhaustive adjacent classifier.  Only
+its constructive branches contain assemblies; collision branches retain data
+for the later finite repairs. -/
+def SelectedLocalRailAppendOutcome.HasWindowProvenance
+    (result : SelectedLocalRailAppendOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .swapped assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .singleFirstSecond _ _ => True
+  | .singleSecondFirst _ _ => True
+  | .doubleCrossSameTrack _ _ _ => True
+
+/-- Every assembly returned directly by the first exhaustive classifier
+carries the literal adjacent-window provenance. -/
+theorem classifyLocalSuccessorAppend_supportedBySelectedCenterPair :
+    (classifyLocalSuccessorAppend successor left).HasWindowProvenance
+      (corridor := corridor) := by
+  classical
+  unfold classifyLocalSuccessorAppend
+  split
+  · rename_i hfirstSecond
+    split
+    · rename_i hsecondFirst
+      exact appendSuccessorBypass_supportedBySelectedCenterPair
+        successor left hfirstSecond hsecondFirst
+    · trivial
+  · rename_i hfirstSecond
+    dsimp only
+    split
+    · trivial
+    · rename_i hsecondFirst
+      split
+      · rename_i hfirstFirst
+        split
+        · rename_i hsecondSecond
+          exact
+            appendSuccessorSwapBothCrossCollisions_supportedBySelectedCenterPair
+              successor left
+              (SelectedRailSupportCollision.of_not_disjoint hfirstSecond).face
+              (SelectedRailSupportCollision.of_not_disjoint hsecondFirst).face
+              (SelectedRailSupportCollision.of_not_disjoint hfirstSecond).mem_old
+              (SelectedRailSupportCollision.of_not_disjoint hfirstSecond).mem_new
+              (SelectedRailSupportCollision.of_not_disjoint hsecondFirst).mem_old
+              (SelectedRailSupportCollision.of_not_disjoint hsecondFirst).mem_new
+              hfirstFirst hsecondSecond
+        · trivial
+      · trivial
+
+/-- Provenance predicate for the first-to-second centre-bridge classifier. -/
+def SingleFirstSecondCenterBridgeOutcome.HasWindowProvenance
+    {collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail}
+    (result : SingleFirstSecondCenterBridgeOutcome collision) : Prop :=
+  match result with
+  | .assembly value =>
+      SupportedBySelectedCenterPair (corridor := corridor) value
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .meetsOldSecond _ => True
+  | .meetsNewFirst _ => True
+  | .containsLeftCenter _ => True
+
+/-- The first-to-second centre-bridge classifier certifies every assembly it
+returns immediately. -/
+theorem classifySingleFirstSecondCenterBridge_hasWindowProvenance
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail) :
+    (classifySingleFirstSecondCenterBridge collision).HasWindowProvenance
+      (corridor := corridor) := by
+  classical
+  unfold classifySingleFirstSecondCenterBridge
+  dsimp only
+  split
+  · rename_i holdSecond
+    split
+    · rename_i hnewFirst
+      split
+      · trivial
+      · rename_i hcenter
+        exact appendSingleFirstSecondViaLeftCenter_supportedBySelectedCenterPair
+          collision holdSecond hnewFirst hcenter
+    · trivial
+  · trivial
+
+/-- Provenance predicate for the symmetric centre-bridge classifier. -/
+def SingleSecondFirstCenterBridgeOutcome.HasWindowProvenance
+    {collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail}
+    (result : SingleSecondFirstCenterBridgeOutcome collision) : Prop :=
+  match result with
+  | .assembly value =>
+      SupportedBySelectedCenterPair (corridor := corridor) value
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .meetsOldFirst _ => True
+  | .meetsNewSecond _ => True
+  | .containsLeftCenter _ => True
+
+/-- The second-to-first centre-bridge classifier likewise certifies each
+immediate assembly. -/
+theorem classifySingleSecondFirstCenterBridge_hasWindowProvenance
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail) :
+    (classifySingleSecondFirstCenterBridge collision).HasWindowProvenance
+      (corridor := corridor) := by
+  classical
+  unfold classifySingleSecondFirstCenterBridge
+  dsimp only
+  split
+  · rename_i holdFirst
+    split
+    · rename_i hnewSecond
+      split
+      · trivial
+      · rename_i hcenter
+        exact appendSingleSecondFirstViaLeftCenter_supportedBySelectedCenterPair
+          collision holdFirst hnewSecond hcenter
+    · trivial
+  · trivial
+
 /-- Provenance predicate for a finite adjacent repair which may preserve or
 exchange the two outgoing labels. -/
 def AdjacentAssemblySumSupportedBySelectedCenterPair
@@ -402,6 +587,224 @@ theorem appendSecondFirstCenter_supportedBySelectedCenterPair
     (appendSecondFirstCenter cross center lengths)
     (appendSecondFirstCenter_supportContained cross center lengths)
 
+/-- Provenance predicate on the classifier after the impossible mixed
+double-cross branch has been removed. -/
+def SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance
+    (result : SelectedLocalRailAppendResolvedOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .swapped assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .singleFirstSecond _ _ => True
+  | .singleSecondFirst _ _ => True
+
+/-- The refined classifier preserves the provenance certification on every
+constructive branch. -/
+theorem classifyLocalSuccessorAppendResolved_hasWindowProvenance :
+    (classifyLocalSuccessorAppendResolved successor left).HasWindowProvenance
+      (corridor := corridor) := by
+  classical
+  have hbase := classifyLocalSuccessorAppend_supportedBySelectedCenterPair
+    (corridor := corridor) (successor := successor) (left := left)
+  cases hresult : classifyLocalSuccessorAppend successor left with
+  | straight assembly =>
+      simpa [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendOutcome.HasWindowProvenance,
+        SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance] using hbase
+  | swapped assembly =>
+      simpa [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendOutcome.HasWindowProvenance,
+        SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance] using hbase
+  | singleFirstSecond _ _ =>
+      simp [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance]
+  | singleSecondFirst _ _ =>
+      simp [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance]
+  | doubleCrossSameTrack firstSecond secondFirst sameTrack =>
+      exact False.elim
+        (not_doubleCrossSameTrack firstSecond secondFirst sameTrack)
+
+/-- Provenance predicate on the final finite length classifier.  Residual
+branches carry collision data and are certified after their repair is run. -/
+def SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance
+    (result : SelectedLocalRailAppendLengthResolvedOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .swapped assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .firstSecondSameFirst _ _ _ => True
+  | .firstSecondSameSecond _ _ _ => True
+  | .firstSecondCenter _ _ _ => True
+  | .secondFirstSameFirst _ _ _ => True
+  | .secondFirstSameSecond _ _ _ => True
+  | .secondFirstCenter _ _ _ => True
+
+/-- Every assembly returned before the six finite residue repairs already
+carries adjacent-window provenance. -/
+theorem classifyLocalSuccessorAppendLengthResolved_hasWindowProvenance :
+    (classifyLocalSuccessorAppendLengthResolved successor left).HasWindowProvenance
+      (corridor := corridor) := by
+  classical
+  have hresolved := classifyLocalSuccessorAppendResolved_hasWindowProvenance
+    (corridor := corridor) (successor := successor) (left := left)
+  cases hresult : classifyLocalSuccessorAppendResolved successor left with
+  | straight assembly =>
+      simpa [classifyLocalSuccessorAppendLengthResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+        using hresolved
+  | swapped assembly =>
+      simpa [classifyLocalSuccessorAppendLengthResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasWindowProvenance,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+        using hresolved
+  | singleFirstSecond cross _ =>
+      have hs := classifySingleFirstSecondCenterBridge_hasWindowProvenance
+        (corridor := corridor) cross
+      cases hcenter : classifySingleFirstSecondCenterBridge cross with
+      | assembly value =>
+          simpa [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SingleFirstSecondCenterBridgeOutcome.HasWindowProvenance,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+            using hs
+      | meetsOldSecond _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+      | meetsNewFirst _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+      | containsLeftCenter _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+  | singleSecondFirst cross _ =>
+      have hs := classifySingleSecondFirstCenterBridge_hasWindowProvenance
+        (corridor := corridor) cross
+      cases hcenter : classifySingleSecondFirstCenterBridge cross with
+      | assembly value =>
+          simpa [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SingleSecondFirstCenterBridgeOutcome.HasWindowProvenance,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+            using hs
+      | meetsOldFirst _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+      | meetsNewSecond _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+      | containsLeftCenter _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance]
+
+/-- Public provenance predicate on the complete adjacent append outcome. -/
+def SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance
+    (result : SelectedLocalRailAppendCompleteOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .swapped assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+
+/-- **L1 complete adjacent append provenance.** The unconditional local append
+returns two simple support-disjoint rails, and whichever endpoint order it
+chooses, both rails remain in the closed dual neighbourhood of the two literal
+Cell-3 centres. -/
+theorem appendLocalSuccessorComplete_hasWindowProvenance :
+    (appendLocalSuccessorComplete successor left).HasWindowProvenance
+      (corridor := corridor) := by
+  classical
+  have hlength :=
+    classifyLocalSuccessorAppendLengthResolved_hasWindowProvenance
+      (corridor := corridor) (successor := successor) (left := left)
+  cases hresult : classifyLocalSuccessorAppendLengthResolved successor left with
+  | straight assembly =>
+      simpa [appendLocalSuccessorComplete, hresult,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance,
+        SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hlength
+  | swapped assembly =>
+      simpa [appendLocalSuccessorComplete, hresult,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasWindowProvenance,
+        SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hlength
+  | firstSecondSameFirst cross same lengths =>
+      have hs := appendFirstSecondSameFirst_supportedBySelectedCenterPair
+        (corridor := corridor) cross same lengths
+      cases hrepair : appendFirstSecondSameFirst cross same lengths with
+      | inl assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+      | inr assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+  | firstSecondSameSecond cross same lengths =>
+      have hs := appendFirstSecondSameSecond_supportedBySelectedCenterPair
+        (corridor := corridor) cross same lengths
+      cases hrepair : appendFirstSecondSameSecond cross same lengths with
+      | inl assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+      | inr assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+  | firstSecondCenter cross center lengths =>
+      have hs := appendFirstSecondCenter_supportedBySelectedCenterPair
+        (corridor := corridor) cross center lengths
+      cases hrepair : appendFirstSecondCenter cross center lengths with
+      | inl assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+      | inr assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+  | secondFirstSameFirst cross same lengths =>
+      have hs := appendSecondFirstSameFirst_supportedBySelectedCenterPair
+        (corridor := corridor) cross same lengths
+      cases hrepair : appendSecondFirstSameFirst cross same lengths with
+      | inl assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+      | inr assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+  | secondFirstSameSecond cross same lengths =>
+      have hs := appendSecondFirstSameSecond_supportedBySelectedCenterPair
+        (corridor := corridor) cross same lengths
+      cases hrepair : appendSecondFirstSameSecond cross same lengths with
+      | inl assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+      | inr assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+  | secondFirstCenter cross center lengths =>
+      have hs := appendSecondFirstCenter_supportedBySelectedCenterPair
+        (corridor := corridor) cross center lengths
+      cases hrepair : appendSecondFirstCenter cross center lengths with
+      | inl assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
+      | inr assembly =>
+          simpa [appendLocalSuccessorComplete, hresult, hrepair,
+            AdjacentAssemblySumSupportedBySelectedCenterPair,
+            SelectedLocalRailAppendCompleteOutcome.HasWindowProvenance] using hs
 /-- **L1 remote two-window separation.** Closed-neighbourhood provenance is
 exactly strong enough to separate arbitrary selected rail supports belonging
 to sufficiently remote adjacent Cell-3 windows. -/
