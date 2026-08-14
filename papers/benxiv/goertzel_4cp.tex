@@ -2463,6 +2463,21 @@ identification.  It deliberately does not yet construct $X$ from the minimal
 counterexample, identify the two hole face orbits on the common opened
 rotation, or supply the long separated L1 crosscuts.
 
+The corresponding representation bridge is also now literal rather than
+postulated.  The module
+\texttt{GoertzelV24FrontierPentagonCapOpenRegionComparison} composes the
+ordered one-cap slit/toolchain isomorphism with the generic slit/open-region
+isomorphism.  Consequently the toolchain graph carries the dart rotation
+computed by the existing open-region construction, and the complete ordered
+inner/outer boundary datum transports to that same graph-backed carrier with
+well-formedness preserved.  This closes a presentation mismatch only: it does
+not assert that either interface is already a face orbit.  In particular the
+closed-sphere one-cap hole theorem cannot simply be reused here, because the
+pre-existing outer stubs of the frontier tangle make global cubicity false.
+The remaining geometric step is therefore precisely to retain the supplied
+outer boundary orbit of $X$ while computing the new inner orbit created by
+the cap opening.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
