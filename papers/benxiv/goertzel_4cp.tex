@@ -1495,6 +1495,18 @@ comparison walk has yet put the inner hole on the same side as the outer hole.
 Therefore inner-stub exclusion, boundary saturation, cyclicity, and the cubic
 degree count remain open and are not inferred here.
 
+The inner half is now discharged by the source's own radial-escape count,
+rather than by a new Jordan assumption.  The generic finite-cut form counts
+twenty oriented inner Tait incidences against four possible oriented
+color-pair slots per deleted edge.  A three-edge triangle supplies only twelve
+slots, so one literal inner-to-outer radial path avoids the selected cut.
+Starting from the already excluded outer endpoint, this path puts one inner
+stub outside the chosen component; the complete rooted inner-face walk then
+puts all five inner stubs outside it.  Thus the selected component avoids all
+ten named boundary stubs.  Boundary saturation and the subsequent
+singleton-star-versus-cyclic degree classification are the next graph-level
+obligations; they are not bundled into this counting theorem.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
