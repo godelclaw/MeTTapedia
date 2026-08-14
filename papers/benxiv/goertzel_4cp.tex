@@ -718,6 +718,21 @@ supports.  It does not select the two cap faces or establish those separation
 facts; it removes only the avoidable duplication once the source formation
 has supplied them.
 
+\paragraph{The collar calculation has a finite, literal target.}
+The cap-adjacent faces are not covered by that retained-face transport, but
+they no longer require an informal assertion that ``the five stubs make a
+hole.''  The opened rotation has a finite first-return permutation on its
+exposed boundary darts.  \texttt{GoertzelV24OpenRegionBoundaryOrbit} proves
+that one step of this return permutation is followed by an actual orbit of
+the opened face permutation from one fresh stub to the next.  Consequently,
+if the five explicitly enumerated outward darts of a facial cap form one
+return-permutation cycle, then all five lie on one literal opened face orbit.
+This is a reduction of the collar task to a finite source-specific cyclic
+order calculation; it is not that calculation itself.  The still-open fact is
+to derive that five-dart cycle from the closed cap face and the retained-side
+geometry.  The separate one-edge facial-surgery theorem supplies useful local
+splicing plumbing, but does not by itself make the five splices compose.
+
 The same distinction now reaches the whole clean corridor rather than only
 one selected face.  The theorem
 \texttt{openCleanOrbitHexCorridorSkeleton\_compl\_union\_twoCaps} transports
