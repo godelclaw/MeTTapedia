@@ -267,6 +267,32 @@ theorem appendSuccessorSwapBothCrossCollisions_supportedBySelectedCenterPair
     · exact Or.inr (Or.inr (Or.inr (Or.inl
         (List.mem_of_mem_tail hnew))))
 
+/-- Provenance predicate for a finite adjacent repair which may preserve or
+exchange the two outgoing labels. -/
+def AdjacentAssemblySumSupportedBySelectedCenterPair
+    (result :
+      Sum (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingBefore)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingAfter))
+        (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingBefore))) : Prop :=
+  match result with
+  | .inl assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+  | .inr assembly =>
+      SupportedBySelectedCenterPair (corridor := corridor) assembly
+        leftInterior.center (nextCorridorInterior leftInterior hnext).center
+
 /-- **L1 remote two-window separation.** Closed-neighbourhood provenance is
 exactly strong enough to separate arbitrary selected rail supports belonging
 to sufficiently remote adjacent Cell-3 windows. -/
