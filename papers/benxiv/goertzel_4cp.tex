@@ -2181,6 +2181,15 @@ with connectivity of each retained complement.  This is a local sequential
 transport obligation, not permission to postulate a two-component bond
 theorem or to identify the two collar faces from graph-level separation alone.
 
+The planar-bond layer now exposes the precise local invariant needed for that
+assembly.  For a connected deleted side,
+\texttt{cutFacesHaveUniqueRetainedBoundaryDart\_of\_planar\_bond} proves that
+each touched ambient facial cycle has exactly one retained boundary occurrence.
+Accordingly the simultaneous-opening proof need not repeat the Euler/rank
+calculation: it must combine the two one-cap uniqueness results with the
+source-corridor fact that no ambient face meets both selected cap interfaces.
+The generic helper does not assert that last, source-specific separation.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting

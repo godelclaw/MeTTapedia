@@ -1117,6 +1117,65 @@ theorem retained_boundarySuccessor_eq_deleted_inverse_of_sideCycleRankBounds
     data deleted hsphere hretainedRank hdeletedRank
 
 /-- For a connected spherical graph-backed rotation whose two cut sides are
+connected, every touched ambient face has a unique retained boundary
+occurrence.  This is the local planar-bond invariant behind the comparison of
+the two computed boundary orders; exposing it separately allows several
+disjoint deleted components to be assembled once their touched-face families
+are proved disjoint. -/
+theorem cutFacesHaveUniqueRetainedBoundaryDart_of_connected_sides
+    (data : Data G) (deleted : Finset V)
+    (hsphere : OrbitSphericalCubicMapData data.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (hretainedConnected :
+      (G.induce {vertex | deletedRegionKeep deleted vertex}).Connected)
+    (hdeletedConnected :
+      (G.induce {vertex |
+        Not (deletedRegionKeep deleted vertex)}).Connected) :
+    CutFacesHaveUniqueRetainedBoundaryDart data.toRotationSystem deleted := by
+  rcases hretainedConnected.nonempty with ⟨retainedVertex⟩
+  rcases hdeletedConnected.nonempty with ⟨deletedVertex⟩
+  have hretained : ∃ vertex, deletedRegionKeep deleted vertex :=
+    ⟨retainedVertex.1, by
+      simpa only [Set.mem_setOf_eq] using retainedVertex.2⟩
+  have hdeleted : ∃ vertex,
+      Not (deletedRegionKeep deleted vertex) :=
+    ⟨deletedVertex.1, by
+      simpa only [Set.mem_setOf_eq] using deletedVertex.2⟩
+  rcases cutSideTransitionFaces_nonempty_of_connected
+      data deleted hconnected hretained hdeleted with
+    ⟨touchedFace, htouchedFace⟩
+  have hretainedNotPure : ∃ face : OrbitFace data.toRotationSystem,
+      face ∉ orbitFacesAllOnSide data.toRotationSystem
+        (deletedRegionKeep deleted) := by
+    refine ⟨touchedFace, ?_⟩
+    intro hpure
+    exact (Finset.disjoint_left.1
+      (cutSideTransitionFaces_disjoint_allOnSide
+        data.toRotationSystem deleted)) htouchedFace hpure
+  have hdeletedNotPure : ∃ face : OrbitFace data.toRotationSystem,
+      face ∉ orbitFacesAllOnSide data.toRotationSystem
+        (fun vertex => Not (deletedRegionKeep deleted vertex)) := by
+    refine ⟨touchedFace, ?_⟩
+    intro hpure
+    exact (Finset.disjoint_left.1
+      (cutSideTransitionFaces_disjoint_allOffSide
+        data.toRotationSystem deleted)) htouchedFace hpure
+  have hretainedRank := pureSideFace_cycleRankBound_of_connected
+    data htwoSided hdual (deletedRegionKeep deleted)
+      hretainedConnected hretainedNotPure
+  have hdeletedRank := pureSideFace_cycleRankBound_of_connected
+    data htwoSided hdual
+      (fun vertex => Not (deletedRegionKeep deleted vertex))
+      hdeletedConnected hdeletedNotPure
+  apply cutFacesHaveUniqueRetainedBoundaryDart_of_atMostTwoTransitions
+  exact cutFacesHaveAtMostTwoTransitions_of_sideCycleRankBounds
+    data deleted hsphere hretainedRank hdeletedRank
+
+/-- For a connected spherical graph-backed rotation whose two cut sides are
 connected, the computed retained and deleted boundary orders have opposite
 orientation. No cut-face uniqueness or cycle-rank inequality is assumed. -/
 theorem retained_boundarySuccessor_eq_deleted_inverse_of_connected_sides
@@ -1172,6 +1231,30 @@ theorem retained_boundarySuccessor_eq_deleted_inverse_of_connected_sides
       hdeletedConnected hdeletedNotPure
   exact retained_boundarySuccessor_eq_deleted_inverse_of_sideCycleRankBounds
     data deleted hsphere hretainedRank hdeletedRank
+
+/-- Source-facing form of touched-face uniqueness: facial-dual connectedness
+is computed from the connected primal graph and cyclic vertex rotations. -/
+theorem cutFacesHaveUniqueRetainedBoundaryDart_of_planar_bond
+    (data : Data G) (deleted : Finset V)
+    (hsphere : OrbitSphericalCubicMapData data.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hconnected : G.Connected)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    (hretainedConnected :
+      (G.induce {vertex | deletedRegionKeep deleted vertex}).Connected)
+    (hdeletedConnected :
+      (G.induce {vertex |
+        Not (deletedRegionKeep deleted vertex)}).Connected) :
+    CutFacesHaveUniqueRetainedBoundaryDart data.toRotationSystem deleted := by
+  have hprimal :
+      (rotationPrimalGraph data.toRotationSystem).Connected := by
+    rw [rotationPrimalGraph_toRotationSystem_eq]
+    exact hconnected
+  have hdual := orbitFaceInteriorDual_connected
+    data.toRotationSystem hsphere.cubic hprimal hrotation
+  exact cutFacesHaveUniqueRetainedBoundaryDart_of_connected_sides
+    data deleted hsphere htwoSided hdual hconnected
+      hretainedConnected hdeletedConnected
 
 /-- The full facial-dual connectedness premise is itself computed from
 connectedness of the graph and the stored cyclic vertex rotations. -/
