@@ -1126,6 +1126,14 @@ and it removes a false global hypothesis from the local construction.  It
 does not establish that distinct slots give distinct side faces, construct
 simple rails, or produce the required long separated crosscut pair.
 
+The opposite dart of a selected outgoing rung now lands on the next literal
+corridor face, by
+\texttt{selectedOutgoingAlphaFace\_eq\_nextCenter}.  This uses the selected
+source edge and its actual two incident faces; it does not reintroduce a
+global face-intersection-uniqueness premise.  A later rail-extension argument
+therefore has its correct outgoing endpoint, while any collision of side
+faces remains an explicit finite case rather than an implicit identification.
+
 The exclusion of that global premise is now itself kernel-checked rather than
 merely recorded in prose.  Every dart over a named inner boundary edge belongs
 to the inner-hole orbit, as does its $\alpha$-opposite; hence
