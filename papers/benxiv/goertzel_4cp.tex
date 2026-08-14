@@ -1460,6 +1460,20 @@ three-edge-cut theorem has not been transported to the opened stub carrier.
 The module therefore records the dual triangle without silently borrowing
 closed minimality and does not report L1 closed.
 
+The sufficient classification has now been separated from the geometry the
+append actually consumes.  The four premises of
+\texttt{appendSuccessor} mention only intersections between an accumulated
+rail support and the tail of one of the two literal continuations.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendCollision} tests those four
+intersections directly.  It returns either the constructed two-cell assembly
+or a face belonging to one of the four actual old/new support collisions; in
+the latter case Lean proves that this very face is the third vertex of the
+adjacent dual triangle.  Thus failure of \texttt{CommonNeighborsExact} at an
+unused third common face no longer blocks a valid append.  This is a strict
+refinement of the fail-closed fork, not its elimination: an actual support
+collision still produces the same separator branch, whose cyclic case remains
+to be discharged on the source-faithful frontier.
+
 The separator candidate has now been promoted to an actual graph separator
 without restoring global uniqueness of shared face edges.  The generic module
 \texttt{GoertzelV24SelectedDualCycleSeparator} lets a simple facial-dual cycle
