@@ -117,6 +117,61 @@ inductive CertifiedSelectedLocalRailFourCellAppendOutcome
         firstWindow.firstSupport firstWindow.secondSupport
         lastWindow.secondSupport lastWindow.firstSupport)
 
+/-- An ordered four-cell collision is literally confined to both certified
+two-centre windows.  This turns the remaining repair into a bounded local
+intersection problem. -/
+theorem orderedFourCellCollision_face_near_both_windows
+    (firstWindow : CertifiedSelectedLocalRailTerminalWindow firstSuccessor firstLeft)
+    (lastWindow : CertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (collision : SelectedRailPairAppendCollision (web := web)
+      firstWindow.firstSupport firstWindow.secondSupport
+      lastWindow.firstSupport lastWindow.secondSupport) :
+    FaceNearSelectedCenterPair (corridor := corridor)
+        firstInterior.center
+        (nextCorridorInterior firstInterior hfirstNext).center collision.face ∧
+      FaceNearSelectedCenterPair (corridor := corridor)
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center collision.face := by
+  constructor
+  · rcases collision.face_mem_old with hfirst | hsecond
+    · exact firstWindow.firstSupport_near collision.face hfirst
+    · exact firstWindow.secondSupport_near collision.face hsecond
+  · rcases collision.face_mem_new with hfirst | hsecond
+    · exact lastWindow.firstSupport_near collision.face hfirst
+    · exact lastWindow.secondSupport_near collision.face hsecond
+
+/-- The same bounded-location certificate when the second window is followed
+in crossed endpoint order. -/
+theorem crossedFourCellCollision_face_near_both_windows
+    (firstWindow : CertifiedSelectedLocalRailTerminalWindow firstSuccessor firstLeft)
+    (lastWindow : CertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (collision : SelectedRailPairAppendCollision (web := web)
+      firstWindow.firstSupport firstWindow.secondSupport
+      lastWindow.secondSupport lastWindow.firstSupport) :
+    FaceNearSelectedCenterPair (corridor := corridor)
+        firstInterior.center
+        (nextCorridorInterior firstInterior hfirstNext).center collision.face ∧
+      FaceNearSelectedCenterPair (corridor := corridor)
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center collision.face := by
+  constructor
+  · rcases collision.face_mem_old with hfirst | hsecond
+    · exact firstWindow.firstSupport_near collision.face hfirst
+    · exact firstWindow.secondSupport_near collision.face hsecond
+  · rcases collision.face_mem_new with hsecond | hfirst
+    · exact lastWindow.secondSupport_near collision.face hsecond
+    · exact lastWindow.firstSupport_near collision.face hfirst
+
 /-- **L1 four-cell transition alternative.** Rebase and classify two literal
 certified two-cell windows.  Endpoint order composes by parity; every failed
 append returns its actual common face. -/

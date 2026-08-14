@@ -70,6 +70,50 @@ inductive SelectedRailPairAppendCollision
       (collision : SelectedRailSupportCollision (web := web)
         oldSecond newFirst.tail)
 
+/-- The literal common face carried by any of the four collision kinds. -/
+def SelectedRailPairAppendCollision.face
+    {oldFirst oldSecond newFirst newSecond :
+      List (SelectedFace (web := web))}
+    (collision : SelectedRailPairAppendCollision
+      oldFirst oldSecond newFirst newSecond) : SelectedFace (web := web) :=
+  match collision with
+  | .firstPathCollision witness => witness.face
+  | .secondPathCollision witness => witness.face
+  | .firstSecondCollision witness => witness.face
+  | .secondFirstCollision witness => witness.face
+
+/-- The collision face belongs to one of the two old rail supports. -/
+theorem SelectedRailPairAppendCollision.face_mem_old
+    {oldFirst oldSecond newFirst newSecond :
+      List (SelectedFace (web := web))}
+    (collision : SelectedRailPairAppendCollision
+      oldFirst oldSecond newFirst newSecond) :
+    collision.face ∈ oldFirst ∨ collision.face ∈ oldSecond := by
+  cases collision with
+  | firstPathCollision witness => exact Or.inl witness.mem_old
+  | secondPathCollision witness => exact Or.inr witness.mem_old
+  | firstSecondCollision witness => exact Or.inl witness.mem_old
+  | secondFirstCollision witness => exact Or.inr witness.mem_old
+
+/-- The collision face belongs to one of the two complete new rail supports;
+the classifier itself tests their tails because the shared append endpoint is
+allowed. -/
+theorem SelectedRailPairAppendCollision.face_mem_new
+    {oldFirst oldSecond newFirst newSecond :
+      List (SelectedFace (web := web))}
+    (collision : SelectedRailPairAppendCollision
+      oldFirst oldSecond newFirst newSecond) :
+    collision.face ∈ newFirst ∨ collision.face ∈ newSecond := by
+  cases collision with
+  | firstPathCollision witness =>
+      exact Or.inl (List.mem_of_mem_tail witness.mem_new)
+  | secondPathCollision witness =>
+      exact Or.inr (List.mem_of_mem_tail witness.mem_new)
+  | firstSecondCollision witness =>
+      exact Or.inr (List.mem_of_mem_tail witness.mem_new)
+  | secondFirstCollision witness =>
+      exact Or.inl (List.mem_of_mem_tail witness.mem_new)
+
 /-- Exhaustive positive result of testing the four old/new rail interactions. -/
 inductive SelectedRailPairAppendClassification
     (oldFirst oldSecond newFirst newSecond :
