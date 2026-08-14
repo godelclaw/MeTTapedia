@@ -2189,6 +2189,17 @@ Accordingly the simultaneous-opening proof need not repeat the Euler/rank
 calculation: it must combine the two one-cap uniqueness results with the
 source-corridor fact that no ambient face meets both selected cap interfaces.
 The generic helper does not assert that last, source-specific separation.
+The follow-up
+\texttt{GoertzelV24FacialPentagonCapPairBoundaryFaces} makes the boundary
+fully explicit.  Its predicate \texttt{RemoteBoundaryFacesSeparated} says
+exactly that no ambient face cycle contains both a named inner interface dart
+and a named outer one.  Lean classifies all ten simultaneous-cut occurrences
+into the two five-port families and, from minimality plus this predicate,
+proves unique retained occurrence on every touched face.  This is a genuine
+conditional consumer, not the missing construction: the corridor selection in
+C--4 must still prove remote facial separation.  What remains locally is to
+lift each cap's five-step deleted-side cycle into the two-component deleted
+carrier and thereby obtain the two simultaneous opened hole orbits.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes

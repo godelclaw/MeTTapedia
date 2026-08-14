@@ -372,6 +372,44 @@ theorem retainedComplement_connected_of_vertexMinimalTaitCounterexample
   exact retainedGraph_connected_of_vertexMinimalTaitCounterexample
     graphData minimal cap
 
+/-- The one-cap planar bond of a graph-backed vertex-minimal counterexample
+meets each ambient facial cycle in at most one retained boundary occurrence.
+This is the local uniqueness fact used to assemble two remotely separated cap
+interfaces in the simultaneous opening. -/
+theorem cutFacesHaveUniqueRetainedBoundaryDart_of_vertexMinimalTaitCounterexample
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (cap : OrientedFacialPentagonCap graphData) :
+    GoertzelV24ComplementaryRegionBoundaryOrder.CutFacesHaveUniqueRetainedBoundaryDart
+      graphData.toRotationSystem cap.toFacialPentagonCap.toPentagonCap.vertexSupport := by
+  let pentagon := cap.toFacialPentagonCap.toPentagonCap
+  have hconnected : G.Connected := by
+    rw [←
+      GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
+        G graphData]
+    exact minimal.primalConnected
+  have hretained :
+      (G.induce {vertex |
+        deletedRegionKeep pentagon.vertexSupport vertex}).Connected :=
+    retainedComplement_connected_of_vertexMinimalTaitCounterexample
+      graphData minimal pentagon
+  have hdeleted :
+      (G.induce {vertex |
+        Not (deletedRegionKeep pentagon.vertexSupport vertex)}).Connected := by
+    have hdeletedSet :
+        {vertex | Not (deletedRegionKeep pentagon.vertexSupport vertex)} =
+          (pentagon.vertexSupport : Set V) := by
+      ext vertex
+      simp [deletedRegionKeep]
+    rw [hdeletedSet]
+    exact
+      GoertzelV24FacialPentagonCapOpenHoleOrbit.OrientedFacialPentagonCap.induce_vertexSupport_connected
+        cap
+  exact
+    GoertzelV24PlanarBondBoundaryOrder.cutFacesHaveUniqueRetainedBoundaryDart_of_planar_bond
+      graphData pentagon.vertexSupport minimal.spherical minimal.facesTwoSided
+        hconnected minimal.vertexRotationCyclic hretained hdeleted
+
 /-- In a graph-backed vertex-minimal Tait counterexample, all five fresh
 stubs of an oriented facial pentagon cap lie on one literal opened face orbit.
 This discharges the retained-connectivity premise of the one-cap C-2 theorem
