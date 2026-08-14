@@ -2138,9 +2138,7 @@ and the fresh stub dart of each individual exposed spoke as one opened facial
 orbit.  The reverse, cap-facing half-darts have now been enumerated by the same
 five positions and are carried back to the retained boundary by the literal
 edge involution.  Thus neither side of the finite cap boundary is being hidden
-behind a choice or a cardinality count.  What remains is genuinely inter-spoke geometry: proving that the five
-individual stub-side orbits coalesce into the required cap collar, and then
-doing this compatibly for two caps.
+behind a choice or a cardinality count.
 
 The deleted-side half of that inter-spoke calculation is now literal.  The
 oriented facial walk, together with cubic cyclic rotation at each cap vertex,
@@ -2148,10 +2146,19 @@ forces two capped deleted-side face steps from spoke (i) to spoke (i-1).
 The resulting finite five-position calculation proves that all five cap-side
 boundary darts occupy one capped face cycle, and transports that fact through
 the deleted-to-retained boundary equivalence to the complementary first-return
-order.  This still is not an opened-hole theorem: the remaining transfer to
-the retained first-return order requires the planar-bond hypotheses, notably
-connectedness of both induced sides.  Those are now the exact global
-formation obligations rather than a missing local collar calculation.
+order.  The new module
+\texttt{GoertzelV24FacialPentagonCapOpenHoleOrbit} completes the one-cap
+transfer.  The oriented pentagon cycle itself proves connectedness of the
+deleted induced side; the planar-bond boundary-order theorem then transfers
+the five-cycle to the retained first-return permutation, and the literal
+open-region calculation proves that all five fresh stubs lie in one actual
+opened face orbit.  This is not a collar hypothesis: it is equality of the
+computed \texttt{dartOrbitFace}s.  The retained complement's connectedness is
+still an explicit formation premise, together with the closed spherical,
+two-sided, connected, cubic rotation data.  Moreover the theorem is currently
+for one cap opening.  The remaining C--2 work is to transport the two selected
+cap calculations to the simultaneous two-cap carrier and prove that the two
+ordered collar orbits remain distinct there.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
@@ -2161,9 +2168,9 @@ jumps to the old successor on the opposite dart side.  Its orbit-level
 corollary identifies those two surviving positions as one post-deletion face
 orbit.  This is the correct local mechanism by which a removed facial cycle
 can join its neighbouring facial sides.  It does \emph{not} yet say that the
-five consecutive cap-edge surgeries compose to one collar orbit, nor that the
-edge-deletion rotation is the already constructed literal slit rotation; those
-are the remaining C-2 comparison and composition obligations.
+edge-deletion rotation is the already constructed literal slit rotation; it is
+therefore complementary to, rather than a prerequisite for, the now-proved
+one-cap slit-orbit bridge.
 
 \paragraph{Pumping.} The corridor acceptance language is proved periodic and
 corridor pumping congruence-correct; with the recurrent tube-ring transfer
