@@ -151,6 +151,55 @@ theorem card_sideDart_eq_three_mul_of_local
     _ = 3 * Fintype.card {vertex : V // side vertex} := by
       simp [mul_comm]
 
+/-- Exact side-dart accounting with designated degree-one exceptions.  Each
+exception contributes deficiency two relative to a cubic vertex.  This is
+the local form needed on one side of a cut in an opened annular carrier. -/
+theorem card_sideDart_add_two_mul_exception_eq_three_mul
+    (side exception : V → Prop)
+    (hdegreeOne : ∀ vertex, side vertex → exception vertex → G.degree vertex = 1)
+    (hdegreeThree : ∀ vertex, side vertex → ¬ exception vertex → G.degree vertex = 3)
+    [Fintype {vertex : V // side vertex}] [DecidablePred exception] :
+    Fintype.card (SideDart G side) +
+        2 * (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card =
+      3 * Fintype.card {vertex : V // side vertex} := by
+  classical
+  letI : (vertex : {vertex : V // side vertex}) →
+      Fintype (G.neighborSet vertex.1) := fun vertex =>
+    (inferInstance : LocallyFinite G) vertex.1
+  rw [Fintype.card_congr (sideDartEquivSigmaNeighbor G side),
+    Fintype.card_sigma]
+  simp_rw [G.card_neighborSet_eq_degree]
+  have hsum :
+      (∑ vertex : {vertex : V // side vertex}, G.degree vertex.1) =
+        ∑ vertex : {vertex : V // side vertex},
+          if exception vertex.1 then 1 else 3 := by
+    apply Finset.sum_congr rfl
+    intro vertex _
+    by_cases hexception : exception vertex.1
+    · rw [if_pos hexception, hdegreeOne vertex.1 vertex.2 hexception]
+    · rw [if_neg hexception, hdegreeThree vertex.1 vertex.2 hexception]
+  rw [hsum]
+  simp only [Finset.sum_ite, Finset.sum_const, Nat.cast_id, nsmul_eq_mul,
+    mul_one]
+  have hpartition := Finset.card_filter_add_card_filter_not
+    (fun vertex : {vertex : V // side vertex} => exception vertex.1)
+    (s := (Finset.univ : Finset {vertex : V // side vertex}))
+  simp only [Finset.card_univ] at hpartition
+  calc
+    (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card +
+        (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => ¬ exception vertex.1)).card * 3 +
+        2 * (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card =
+      3 * ((Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card +
+        (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => ¬ exception vertex.1)).card) := by
+      omega
+    _ = 3 * Fintype.card {vertex : V // side vertex} := by rw [hpartition]
+
 /-- The internal side-dart count is twice the number of induced side edges. -/
 theorem card_internalSideDart_eq_twice_card_edges (side : V → Prop)
     [Fintype ↑({vertex | side vertex} : Set V)] :
@@ -294,6 +343,61 @@ theorem hasCycleOnSide_or_card_eq_one_of_local_cubic_of_connected_induce_of_cros
         0 < Fintype.card {vertex : V // side vertex} :=
       Fintype.card_pos_iff.mpr ⟨⟨hsideNonempty.choose,
         hsideNonempty.choose_spec⟩⟩
+    have hsameSideCard :
+        Fintype.card ↑({vertex | side vertex} : Set V) =
+          Fintype.card {vertex : V // side vertex} := by
+      exact Fintype.card_congr (Equiv.refl _)
+    omega
+
+/-- A connected side whose only non-cubic vertices are designated degree-one
+exceptions either contains a cycle or has the exact finite tree bound forced
+by those exceptions and its listed crossing edges.  In particular, ten
+degree-one annular stubs and at most three crossings cost at most twenty-one
+vertices on an acyclic side. -/
+theorem hasCycleOnSide_or_card_le_two_mul_exception_add_removed_sub_two
+    (side exception : V → Prop)
+    [Fintype {vertex : V // side vertex}] [DecidablePred exception]
+    (hdegreeOne : ∀ vertex, side vertex → exception vertex → G.degree vertex = 1)
+    (hdegreeThree : ∀ vertex, side vertex → ¬ exception vertex → G.degree vertex = 3)
+    (hsideConnected : (G.induce {vertex | side vertex}).Connected)
+    (removed : Finset G.edgeSet)
+    (hcrossingRemoved : ∀ dart : CrossingSideDart G side,
+      (⟨dart.1.edge, dart.1.edge_mem⟩ : G.edgeSet) ∈ removed) :
+    HasCycleOnSide G side ∨
+      Fintype.card {vertex : V // side vertex} ≤
+        2 * (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card +
+          removed.card - 2 := by
+  letI sideSetFintype : Fintype ↑({vertex | side vertex} : Set V) :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  by_cases hcycle : HasCycleOnSide G side
+  · exact Or.inl hcycle
+  · right
+    have hsideAcyclic : (G.induce {vertex | side vertex}).IsAcyclic := by
+      intro vertex cycle hcycleWalk
+      apply hcycle
+      let inclusion :=
+        (SimpleGraph.Embedding.induce (G := G) {vertex | side vertex}).toHom
+      refine ⟨vertex.1, vertex.2, cycle.map inclusion, ?_, ?_⟩
+      · exact hcycleWalk.map (fun _ _ heq => Subtype.ext heq)
+      · intro other hother
+        have hother' : other ∈ cycle.support.map inclusion := by
+          exact Walk.support_map inclusion cycle ▸ hother
+        rcases List.mem_map.mp hother' with ⟨source, _hsource, hsource⟩
+        rw [← hsource]
+        exact source.2
+    have htree : (G.induce {vertex | side vertex}).IsTree :=
+      ⟨hsideConnected, hsideAcyclic⟩
+    have htreeCard := htree.card_edgeFinset
+    have hpartition := Fintype.card_congr
+      (sideDartEquivInternalSumCrossing G side)
+    rw [Fintype.card_sum] at hpartition
+    have hsideCard := card_sideDart_add_two_mul_exception_eq_three_mul
+      side exception hdegreeOne hdegreeThree
+    have hinternalCard := card_internalSideDart_eq_twice_card_edges
+      (G := G) side
+    have hcrossingCard := card_crossingSideDart_le_card_removed
+      side removed hcrossingRemoved
     have hsameSideCard :
         Fintype.card ↑({vertex | side vertex} : Set V) =
           Fintype.card {vertex : V // side vertex} := by

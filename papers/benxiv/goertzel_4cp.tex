@@ -1550,6 +1550,27 @@ outer-remote component of every obstruction triangle contains a cycle.  The
 complementary-side cycle/closed-carrier transport remains open, so L1 is not
 reported closed.
 
+The opened-carrier cost is now also kernel-checked rather than merely
+counted on paper.  For any connected component after deleting the three
+selected crossings, let \(s\) be the number of its degree-one boundary
+stubs, \(c\leq 3\) its outgoing darts, and \(n\) its vertices.  If that
+component is acyclic, handshaking gives
+\(3n-2s=2(n-1)+c\), hence \(n\leq 2s+c-2\).  Since the annular carrier has
+ten named stubs, every such acyclic component has at most \(21\) vertices.
+This statement is componentwise and does not assume that the whole
+complement is connected.
+
+The cyclic branch has a correspondingly sharp conditional consumer.  A
+complementary-side cycle together with cyclic edge-connectivity at least four
+on the opened carrier contradicts the computed component boundary, whose
+cardinality is at most three.  Boundary saturation is unnecessary: the
+computed boundary itself is the cut.  The theorem is deliberately labelled
+conditional because neither closed minimality nor the missing outside cycle
+has yet been transported to the ten-stub opened carrier.  A generic
+closed-walk-to-cycle extractor exists in the tree, but the proved outer-hole
+walk backtracks at each degree-one stub and no current theorem exhibits an
+interior facial walk disjoint from this selected component.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional

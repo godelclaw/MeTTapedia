@@ -313,6 +313,111 @@ theorem hasCycleOnSide_or_component_card_eq_one
         simp),
       dart.2.1, dart.2.2⟩
 
+/-- Every deletion component of the selected triangle either contains a
+cycle or has at most twenty-one vertices.  The number is exact for the opened
+presentation: at most ten degree-one boundary stubs contribute deficiency
+two each, while the computed component boundary uses at most the three
+selected crossings.  No complementary-side connectedness is assumed. -/
+theorem component_hasCycleOnSide_or_card_le_twenty_one
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+      Fintype.card {vertex : V // vertex ∈ component.supp} ≤ 21 := by
+  classical
+  let side : V → Prop := fun vertex => vertex ∈ component.supp
+  let exception : V → Prop := fun vertex => vertex ∈ data.boundaryStubVertices
+  letI componentFintype : Fintype {vertex : V // side vertex} :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  have hdegreeOne : ∀ vertex, side vertex → exception vertex → G.degree vertex = 1 := by
+    intro vertex _hside hboundary
+    rcases Finset.mem_union.mp hboundary with hinner | houter
+    · rcases (AnnularBoundaryData.mem_innerStubVertices_iff data vertex).1 hinner with
+        ⟨inner, hinner⟩
+      have hone := web.boundary_wellFormed.inner_stub_degree_one inner
+      rw [hinner] at hone
+      convert
+        (GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+          (G := G) vertex).symm.trans hone using 1
+      apply GoertzelV24CubicSmallBoundaryCycle.degree_instance_independent
+    · rcases (AnnularBoundaryData.mem_outerStubVertices_iff data vertex).1 houter with
+        ⟨outer, houter⟩
+      have hone := web.boundary_wellFormed.outer_stub_degree_one outer
+      rw [houter] at hone
+      convert
+        (GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+          (G := G) vertex).symm.trans hone using 1
+      apply GoertzelV24CubicSmallBoundaryCycle.degree_instance_independent
+  have hdegreeThree :
+      ∀ vertex, side vertex → ¬ exception vertex → G.degree vertex = 3 := by
+    intro vertex _hside hnotBoundary
+    have hcubic := web.boundary_wellFormed.cubic_elsewhere vertex
+      (by
+        intro inner heq
+        apply hnotBoundary
+        apply Finset.mem_union_left
+        exact (AnnularBoundaryData.mem_innerStubVertices_iff data vertex).2
+          ⟨inner, heq.symm⟩)
+      (by
+        intro outer heq
+        apply hnotBoundary
+        apply Finset.mem_union_right
+        exact (AnnularBoundaryData.mem_outerStubVertices_iff data vertex).2
+          ⟨outer, heq.symm⟩)
+    convert
+      (GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+        (G := G) vertex).symm.trans hcubic using 1
+    apply GoertzelV24CubicSmallBoundaryCycle.degree_instance_independent
+  have hexceptionCard :
+      (Finset.univ.filter
+        (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card ≤ 10 := by
+    let exceptionVertices := Finset.univ.filter
+      (fun vertex : {vertex : V // side vertex} => exception vertex.1)
+    let toBoundary :
+        {vertex // vertex ∈ exceptionVertices} →
+          {vertex // vertex ∈ data.boundaryStubVertices} :=
+      fun vertex => ⟨vertex.1.1,
+        (Finset.mem_filter.mp vertex.2).2⟩
+    have hinjective : Function.Injective toBoundary := by
+      intro first second heq
+      apply Subtype.ext
+      apply Subtype.ext
+      exact congrArg
+        (fun vertex : {vertex // vertex ∈ data.boundaryStubVertices} => vertex.1) heq
+    calc
+      (Finset.univ.filter
+          (fun vertex : {vertex : V // side vertex} => exception vertex.1)).card =
+          exceptionVertices.card := rfl
+      _ = Fintype.card {vertex // vertex ∈ exceptionVertices} :=
+        (Fintype.card_coe exceptionVertices).symm
+      _ ≤
+          Fintype.card {vertex // vertex ∈ data.boundaryStubVertices} :=
+        Fintype.card_le_of_injective toBoundary hinjective
+      _ = data.boundaryStubVertices.card := Fintype.card_coe _
+      _ = 10 := by simpa using
+        AnnularBoundaryData.boundaryStubVertices_card data web.boundary_wellFormed
+  rcases hasCycleOnSide_or_card_le_two_mul_exception_add_removed_sub_two
+      side exception hdegreeOne hdegreeThree
+      (connected_induce_component triangle.selectedCycle.crossingEdges component)
+      triangle.selectedCycle.crossingEdges
+      (by
+        intro dart
+        apply edge_mem_removed_of_crosses_component
+          triangle.selectedCycle.crossingEdges component
+        exact ⟨dart.1.fst, dart.1.snd,
+          (by change dart.1.fst ∈ s(dart.1.fst, dart.1.snd); simp),
+          (by change dart.1.snd ∈ s(dart.1.fst, dart.1.snd); simp),
+          dart.2.1, dart.2.2⟩) with hcycle | hcard
+  · exact Or.inl hcycle
+  · right
+    rw [triangle.crossingEdges_card_eq_three] at hcard
+    have hsideCardEq :
+        Fintype.card {vertex : V // side vertex} =
+          Fintype.card {vertex : V // vertex ∈ component.supp} :=
+      Fintype.card_congr (Equiv.refl _)
+    omega
+
 /-- A singleton selected deletion component sees all three selected
 crossings.  Its unique vertex is locally cubic because the component avoids
 the ten boundary stubs.  Thus its three outgoing darts inject into the
@@ -504,6 +609,41 @@ theorem hasCycleOnSide
     hcycle | hcard
   · exact hcycle
   · exact False.elim (triangle.component_card_ne_one component hroot hcard)
+
+/-- **Explicitly conditional cyclic-branch discharge.**  Once the formation
+site transports a complementary-side cycle and cyclic edge-connectivity at
+least four to the opened carrier, the selected obstruction is impossible.
+The cut support is the computed component boundary, whose cardinality is at
+most the three selected crossings; no boundary-saturation equality is used.
+
+This theorem is an intermediate consumer of the two named formation facts,
+not an L1 construction and not a claim that closed minimality already holds
+on the stub-bearing opened graph. -/
+theorem false_of_complementCycle_of_cyclicEdgeConnectivityAtLeast_four
+    (triangle : AdjacentDualTriangle successor)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        triangle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (houtsideCycle : HasCycleOnSide G
+      (fun vertex => ¬ vertex ∈ component.supp))
+    (hcyclic : CyclicEdgeConnectivityAtLeast G 4) : False := by
+  let realization := componentCyclicEdgeCutRealization
+    triangle.selectedCycle.crossingEdges component
+    (triangle.hasCycleOnSide component hroot) houtsideCycle
+  have hboundaryCard :
+      (componentCrossingEdges
+        triangle.selectedCycle.crossingEdges component).card ≤ 3 := by
+    calc
+      _ ≤ triangle.selectedCycle.crossingEdges.card :=
+        card_componentCrossingEdges_le_removed
+          triangle.selectedCycle.crossingEdges component
+      _ = 3 := triangle.crossingEdges_card_eq_three
+  let cut := realization.toSmallCyclicEdgeCut (le_trans hboundaryCard (by omega))
+  have hfour : 4 ≤ cut.edgeCut.card := hcyclic cut
+  change 4 ≤ (componentCrossingEdges
+    triangle.selectedCycle.crossingEdges component).card at hfour
+  omega
 
 end SeparatedSelectedSourceLocalRailSuccessor.AdjacentDualTriangle
 
