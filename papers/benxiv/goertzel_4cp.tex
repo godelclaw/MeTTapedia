@@ -670,6 +670,19 @@ vertex type.  This is deliberately below the annular claim: a graph
 isomorphism still selects no distinguished hole faces, their cyclic order, or
 Euler proof.
 
+The comparison now carries the emph{ordered annular boundary datum} as well,
+not just its graph and unlabelled face permutation.  The new generic module
+\texttt{GoertzelV24AnnularBoundaryIsoTransport} maps both ordered stub
+embeddings and both ordered boundary-edge embeddings through a graph
+isomorphism, and proves preservation of every field of
+\texttt{AnnularBoundaryData.WellFormed}.  Its two-cap specialization,
+\texttt{openingBoundaryData}, places the literal five-plus-five interface on
+the very open-region primal graph used by the face-transport layer.  This
+removes a carrier mismatch: future Cell--3 formation need not rebuild its
+boundary data merely to use open-region faces.  It remains exactly a
+graph/interface result---it neither chooses the annular hole faces nor proves
+their order or embedding.
+
 There is a sharp division inside that remaining face work.  The existing
 generic \texttt{GoertzelV24OpenRegionFaceTransport} already transports every
 ambient face whose complete dart orbit stays on the retained side.  In a cubic
