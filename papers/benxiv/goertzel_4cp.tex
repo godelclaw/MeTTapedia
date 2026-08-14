@@ -1619,6 +1619,18 @@ remaining same-track separation facts,
 mutually support-disjoint rails with their outgoing endpoints exchanged.  The
 double-cross pattern is therefore repaired; the lone-cross pattern remains.
 
+The four local support tests have now been assembled into one exhaustive
+classifier.  The constructors of
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendClassification} return,
+respectively, a straight assembly, a swapped assembly, an exactly one-cross
+collision, or two cross collisions together with a same-track collision.  In
+the last two cases the result retains the actual common faces rather than only
+the negations of disjointness.  Thus the finite Cell--3 problem no longer has
+an implicit Boolean branch: every append either constructs the next pair or
+returns the precise local pattern still to be consumed.  This is a
+classification theorem, not yet a proof that the two residual patterns are
+absent, an arbitrary-length rail induction, or the end-capped crosscut pair.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
