@@ -1571,6 +1571,18 @@ closed-walk-to-cycle extractor exists in the tree, but the proved outer-hole
 walk backtracks at each degree-one stub and no current theorem exhibits an
 interior facial walk disjoint from this selected component.
 
+The graph-level part of that transport is now proved separately in
+\texttt{GoertzelV24DeleteEdgesCyclicCutPullback}.  If a cyclic cut is
+present after deleting a set of edges, and every restored edge has both
+endpoints on the same cut side, the two cycle witnesses and the finite cut
+support pull back injectively to the ambient graph with unchanged
+cardinality.  Thus ambient cyclic edge-connectivity bounds this particular
+opened cut directly; one need not assert cyclic edge-connectivity for the
+whole stub-bearing opened carrier.  What remains source-specific is to
+construct the Addendum-V frontier from the closed minimal counterexample and
+prove that its restored cap/frontier edges are noncrossing for the selected
+remote component.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
