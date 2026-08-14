@@ -163,6 +163,49 @@ noncomputable def toReroute
   · exact Or.inr ⟨secondToFirstReroute collision.face
       hsecondFirst.1 hsecondFirst.2⟩
 
+namespace FirstToSecondReroute
+
+/-- Every face used by the crossed first-to-second repair is an annular
+interior face.  This follows from support containment in the two local
+source pieces and the boundary-clean neighbour invariant. -/
+theorem route_support_internal
+    {collisionFace : SelectedFace (web := web)}
+    (reroute : FirstToSecondReroute (successor := successor) (left := left)
+      collisionFace) :
+    ∀ face ∈ reroute.route.support,
+      face.1 ∈ web.annular.cellulation.interiorFaces := by
+  intro face hface
+  rcases reroute.route_support_subset face hface with hold | hnew
+  · exact corridor.neighbor_internal leftInterior.center face
+      (left.paths.firstRail_support_adjacent_center face hold)
+  · rw [successor.secondContinuation_support] at hnew
+    exact corridor.neighbor_internal
+      (nextCorridorInterior leftInterior hnext).center face
+      (successor.rightRails.paths.secondRail_support_adjacent_center face hnew)
+
+end FirstToSecondReroute
+
+namespace SecondToFirstReroute
+
+/-- Every face used by the crossed second-to-first repair is likewise an
+annular interior face. -/
+theorem route_support_internal
+    {collisionFace : SelectedFace (web := web)}
+    (reroute : SecondToFirstReroute (successor := successor) (left := left)
+      collisionFace) :
+    ∀ face ∈ reroute.route.support,
+      face.1 ∈ web.annular.cellulation.interiorFaces := by
+  intro face hface
+  rcases reroute.route_support_subset face hface with hold | hnew
+  · exact corridor.neighbor_internal leftInterior.center face
+      (left.paths.secondRail_support_adjacent_center face hold)
+  · rw [successor.firstContinuation_support] at hnew
+    exact corridor.neighbor_internal
+      (nextCorridorInterior leftInterior hnext).center face
+      (successor.rightRails.paths.firstRail_support_adjacent_center face hnew)
+
+end SecondToFirstReroute
+
 end SeparatedSelectedSourceLocalRailSuccessor
 
 end Instance.SelectedLocalLayerFormation

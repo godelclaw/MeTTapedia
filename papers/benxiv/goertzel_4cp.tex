@@ -1593,7 +1593,9 @@ The collision branch now also carries its first constructive repair.  In
 rail at the exhibited cross-track collision, follows the opposite local
 continuation from that face, and loop-erases the result.  This gives a simple
 route to the opposite outgoing endpoint; its support is proved to remain in
-the two displayed source pieces.  It is one crossed route, not yet a new
+the two displayed source pieces.  Boundary-clean neighbour containment also
+proves that every face of either reroute remains in the annular interior.  It
+is one crossed route, not yet a new
 separated pair: simultaneous uncrossing, the endpoint permutation, mutual
 separation, and the two literal end caps remain open.
 
