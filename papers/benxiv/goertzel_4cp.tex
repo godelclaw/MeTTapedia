@@ -2213,6 +2213,15 @@ set still contains the cap and excludes its five spoke endpoints.  Applying
 this once to each member of the pair puts each ordered five-port family in one
 actual cycle of the same two-cap deleted-face permutation.  This is local
 non-interference, not yet the claim that the two cycles are distinct.
+The next transport is now kernel-checked as well.
+\texttt{GoertzelV24FacialPentagonCapPairOpenHoleOrbit} combines those two
+deleted cycles with touched-face uniqueness under the explicitly named
+\texttt{RemoteBoundaryFacesSeparated} condition.  The complementary boundary
+order is the inverse of the deleted order, and the literal open-region
+rotation therefore places all five inner stubs in one actual face orbit and
+all five outer stubs in another actual face orbit.  The result deliberately
+does not yet assert that those two orbits differ; proving their distinctness
+is the remaining local collar-separation step before the C--3 cellulation.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
