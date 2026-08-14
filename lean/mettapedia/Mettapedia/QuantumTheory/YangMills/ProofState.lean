@@ -38,6 +38,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
@@ -101,6 +102,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepai
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
 open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
+open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
 open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -888,6 +890,17 @@ theorem currentYangMillsExistingScalarParameterRepair_nineChecks
 
 #print axioms currentYangMillsExistingScalarParameterRepair_nineChecks
 
+/-- The nine named checks are not a descent theorem: a second actual
+singleton-trace carrier preserves the independent second-IBP derivative
+geometry and gives an exact quotient-functional mismatch. -/
+theorem currentYangMillsExistingScalarParameterRepair_not_descends
+    (policy : PhysicalRelationPolicy) :
+    ¬ orbitPhysicalRelationSubmodule policy ≤
+      LinearMap.ker ourParameterSynthesizedSourceSevenTraceOrderCorrection :=
+  ourParameterSynthesizedSourceSevenTraceOrderCorrection_not_descends policy
+
+#print axioms currentYangMillsExistingScalarParameterRepair_not_descends
+
 /-- OUR preliminary fixed-trace-point gate detects the singleton row, but its
 same signed character has fundamental three-cut numerator `-64`; this is a
 screening constraint, not yet a descended coordinate. -/
@@ -920,7 +933,7 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   status := .checked
   truthValue := ⟨100, 99⟩
   evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. Its field-eight, profile, and three-coordinate bridges prove that the full current correction annihilates that 210-label physical family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle. Each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction annihilates its complete finite cochain family under either policy. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves exact cancellation of the only cross-sector covariant-commutator branch there. Together with support below six, the full correction annihilates every arbitrary physical relation column outside source seven. In the remaining source-seven band, a genuine singleton-trace row refutes every choice of the three added selector values with the cycle-profile base held fixed. OUR signed-H(4)-invariant reparameterization then uses only the six already constructed scalar coordinates and cancels that singleton row while retaining the two explicit source-seven commutators, the displayed first- and second-IBP rows, Bianchi, the on-shell EOM row, the canonical fundamental three-cut row, and the polarized trace-anticommutator row. This nine-row audit is not a complete source-seven relation census, a descent theorem, rank calculation, conditioning certificate, or Wilson-functional coordinate construction."
-  nextObligation := "Construct a complete finite source-seven relation census and certify or refute the existing scalar deformation on it. Only a map proved to descend through the full physical relation submodule may be used for sparse rank, conditioning, or Wilson-functional coordinates."
+  nextObligation := "The existing six-scalar deformation is now refuted by a second actual singleton-trace relation with the independent second-IBP derivative geometry. Construct and semantically identify an enlarged coordinate family, or machine-check a further impossibility theorem for that larger family. Do not use the refuted map for sparse rank, conditioning, or Wilson-functional coordinates."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
