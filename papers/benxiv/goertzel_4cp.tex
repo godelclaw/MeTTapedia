@@ -1850,6 +1850,14 @@ face simultaneously in the closed dual neighbourhoods of the first and last
 centre pairs.  The remaining repair is therefore a bounded four-cell
 intersection calculation, rather than an unlocalized global separation
 claim.
+That calculation is now kernel-checked.  Boundary cleanliness leaves exactly
+five possibilities: either central corridor face itself, a common neighbour
+across the central seam, or a common neighbour across one of the two adjacent
+two-step spans.  The classification applies to both endpoint orders and is
+the finite local case split prescribed by the playbook.  It does not yet
+construct the corresponding reroutes; in particular, the two-step cases mark
+the exact place where closed-minimal corridor geometry must be transported to
+the opened source carrier or replaced by an equivalent direct argument.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
