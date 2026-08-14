@@ -8,6 +8,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderThreeClassScalarExtensionRefutation
 
 /-!
 # Yang-Mills roadmap
@@ -47,6 +48,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTrace
 open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
 open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
+open HypercubicDimension16WilsonTraceOrderThreeClassScalarExtensionRefutation
 
 /-- Roadmap stages currently visible in the Yang-Mills lane. -/
 inductive YangMillsRoadmapStage where
@@ -227,6 +229,20 @@ def yangMillsSourceSevenExistingScalarParameterRepairTracelessRefutationRoadmapE
   evidence := "HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation retains the independent derivative geometry of the second-IBP carrier and makes field zero a genuine singleton trace. Its kernel-reduced third-coordinate and secondary-plane-profile numerators are 0 and 16, respectively, so their normalized values are 0 and 1. The already certified quotient evaluation kills literalIncomingCommutatorClass but sends the stored secondary residual to 4/3. It evaluates the full six-scalar reparameterization on this actual physical relation as -4/3 and proves that the physical relation submodule is not contained in its kernel under either policy."
   nextObligation := "Do not attempt rank, conditioning, or Wilson-functional coordinates with the refuted six-scalar map. Construct and semantically identify a genuinely enlarged coordinate family, or produce a further exact impossibility theorem for that enlarged family."
 
+/-- The same quotient-functional witness refutes every scalar-valued
+literal-class extension of OUR fixed three-class source-seven map. -/
+def yangMillsSourceSevenScalarLiteralExtensionRefutationRoadmapEntry :
+    YangMillsRoadmapEntry where
+  stage := .jointPhysicalRelationInterface
+  nodeId := "yang-mills.rg.source-seven-scalar-literal-extension-refutation"
+  status := .refuted
+  truthValue := ⟨100, 99⟩
+  itvLowerPercent := 99
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "HypercubicDimension16WilsonTraceOrderThreeClassScalarExtensionRefutation defines the full family obtained by adding an arbitrary scalar-valued functional times literalIncomingCommutatorClass to the fixed three-class correction. The separating quotient functional kills that literal class, so every member takes the same exact value -4/3 on the actual second-IBP singleton-trace relation. Therefore no scalar-literal extension descends through the physical relation submodule under either policy."
+  nextObligation := "A repair must now change a non-literal quotient direction or the three-class base itself. Construct a semantically identified enlarged quotient-valued coordinate family, or prove an exact impossibility theorem for one."
+
 /-- OUR fixed-trace-point screening calculation for a possible next
 trace-topology coordinate. -/
 def yangMillsFixedPointTopologyScreenRoadmapEntry : YangMillsRoadmapEntry where
@@ -292,6 +308,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry
   , yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry
   , yangMillsSourceSevenExistingScalarParameterRepairTracelessRefutationRoadmapEntry
+  , yangMillsSourceSevenScalarLiteralExtensionRefutationRoadmapEntry
   , yangMillsFixedPointTopologyScreenRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsCompletionSteelmanRoadmapEntry
@@ -622,6 +639,17 @@ theorem currentYangMillsRoadmap_records_sourceSeven_existingScalar_traceless_ref
     ourParameterSynthesizedSourceSevenTraceOrderCorrection_not_descends⟩
 
 #print axioms currentYangMillsRoadmap_records_sourceSeven_existingScalar_traceless_refutation
+
+theorem currentYangMillsRoadmap_records_sourceSeven_scalarLiteralExtension_refutation :
+    yangMillsSourceSevenScalarLiteralExtensionRefutationRoadmapEntry.status = .refuted ∧
+      yangMillsSourceSevenScalarLiteralExtensionRefutationRoadmapEntry.progressPercent = 100 ∧
+      (∀ (scalar : ExactFieldRelabelOrbitSpace →ₗ[ℚ] ℚ)
+        (policy : PhysicalRelationPolicy),
+        ¬ orbitPhysicalRelationSubmodule policy ≤
+          LinearMap.ker (ourThreeClassScalarLiteralExtension scalar)) := by
+  exact ⟨rfl, rfl, ourThreeClassScalarLiteralExtension_not_descends⟩
+
+#print axioms currentYangMillsRoadmap_records_sourceSeven_scalarLiteralExtension_refutation
 
 theorem currentYangMillsRoadmap_records_fixedPointTopology_screen :
     (yangMillsFixedPointTopologyScreenRoadmapEntry.status = .checked) ∧
