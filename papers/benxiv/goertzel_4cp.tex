@@ -2200,6 +2200,12 @@ conditional consumer, not the missing construction: the corridor selection in
 C--4 must still prove remote facial separation.  What remains locally is to
 lift each cap's five-step deleted-side cycle into the two-component deleted
 carrier and thereby obtain the two simultaneous opened hole orbits.
+The input type for that lift is now explicit:
+\texttt{FacialPentagonCapBoundaryWalkPair} packages the two literal five-dart
+facial walks together with exactly the separation fields of the underlying
+\texttt{PentagonCapPair}.  It adds neither an annular embedding nor remote
+facial separation.  This prevents the simultaneous calculation from silently
+replacing ordered collar coordinates by the weaker unordered cap datum.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes

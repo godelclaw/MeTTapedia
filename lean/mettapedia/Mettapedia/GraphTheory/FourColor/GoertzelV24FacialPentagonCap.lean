@@ -207,6 +207,61 @@ def outerOriented (caps : OrientedFacialPentagonCapPair data) :
 
 end OrientedFacialPentagonCapPair
 
+/-- A separated pair of facial pentagon caps together with the two literal
+five-dart boundary walks.  The simultaneous collar calculation needs the
+actual `phi` steps on both caps; an oriented edge set alone does not determine
+those steps.  The separation fields are exactly the graph-level fields of
+`PentagonCapPair`, so this structure adds no annular or crosscut hypothesis. -/
+structure FacialPentagonCapBoundaryWalkPair (data : Data G) where
+  inner : FacialPentagonCapBoundaryWalk data
+  outer : FacialPentagonCapBoundaryWalk data
+  vertexSupport_disjoint : Disjoint
+    inner.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertexSupport
+    outer.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertexSupport
+  inner_spokeOuter_not_mem_outerSupport : ∀ step,
+    inner.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.spokeOuter step ∉
+      outer.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertexSupport
+  outer_spokeOuter_not_mem_innerSupport : ∀ step,
+    outer.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.spokeOuter step ∉
+      inner.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertexSupport
+
+namespace FacialPentagonCapBoundaryWalkPair
+
+variable {data : Data G}
+
+/-- Forget the two boundary walks while retaining their oriented facial pair. -/
+def toOrientedFacialPentagonCapPair
+    (caps : FacialPentagonCapBoundaryWalkPair data) :
+    OrientedFacialPentagonCapPair data where
+  toFacialPentagonCapPair := {
+    toPentagonCapPair := {
+      inner := caps.inner.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap
+      outer := caps.outer.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap
+      vertexSupport_disjoint := caps.vertexSupport_disjoint
+      inner_spokeOuter_not_mem_outerSupport :=
+        caps.inner_spokeOuter_not_mem_outerSupport
+      outer_spokeOuter_not_mem_innerSupport :=
+        caps.outer_spokeOuter_not_mem_innerSupport }
+    innerFaceDart :=
+      caps.inner.toOrientedFacialPentagonCap.toFacialPentagonCap.faceDart
+    outerFaceDart :=
+      caps.outer.toOrientedFacialPentagonCap.toFacialPentagonCap.faceDart
+    inner_face_edges_eq :=
+      caps.inner.toOrientedFacialPentagonCap.toFacialPentagonCap.face_edges_eq
+    outer_face_edges_eq :=
+      caps.outer.toOrientedFacialPentagonCap.toFacialPentagonCap.face_edges_eq }
+  inner_cycleEdge_eq_vertices :=
+    caps.inner.toOrientedFacialPentagonCap.cycleEdge_eq_vertices
+  outer_cycleEdge_eq_vertices :=
+    caps.outer.toOrientedFacialPentagonCap.cycleEdge_eq_vertices
+
+/-- The underlying graph-level separated cap pair. -/
+def toPentagonCapPair (caps : FacialPentagonCapBoundaryWalkPair data) :
+    PentagonCapPair G :=
+  caps.toOrientedFacialPentagonCapPair.toFacialPentagonCapPair.toPentagonCapPair
+
+end FacialPentagonCapBoundaryWalkPair
+
 end
 
 end GoertzelV24FacialPentagonCap
