@@ -610,7 +610,7 @@ The subsequent carrier comparison is now a graph isomorphism, not merely a
 matching cardinality.  It fixes old vertices, sends each fresh outward stub to
 the cap vertex at its deleted endpoint, and checks adjacency in all four
 cases: old--old, old--stub, stub--old, and stub--stub.  The inner and outer
-ordered-stub compatibility theorems both hold by 	exttt{rfl}: coordinate
+ordered-stub compatibility theorems both hold by \texttt{rfl}: coordinate
 $i$ cannot silently be transported to a permuted cap vertex.  This is a
 deliberate definitional guarantee, recorded so that a later refactor does not
 weaken it to a merely propositional correspondence.  Dependent face-fragment
@@ -629,6 +629,15 @@ the rotation and face-transport theorems through this one isomorphism rather
 than re-proving them for a second graph presentation.  It does not turn a
 graph isomorphism into equality of dependent face-fragment data or construct
 the source-specific annular region.
+
+The two-cap specialization now composes the two graph isomorphisms in
+\texttt{GoertzelV24TwoPentagonCapOpeningOpenRegionComparison}.  For either
+chosen outer dart of the literal open-region rotation, it identifies the
+toolchain's simultaneous cycle-deletion graph with that rotation's computed
+primal graph.  This eliminates a duplicate two-cap graph tower while keeping
+the necessary outer-dart choice explicit.  It still proves neither an
+annular rotation embedding nor the cyclic face-order comparison that a source
+profile construction will require.
 
 There is already a precise serial open-tangle adapter, but its quantifiers are
 important.  Given an actual equivalence from the literal exposed boundary
