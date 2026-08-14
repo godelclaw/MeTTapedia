@@ -1446,6 +1446,23 @@ one quantified local statement, not a proof of that statement.  Its
 source-opening transport, the distance-two interaction needed by an arbitrary
 prefix induction, and both annular end caps remain open.
 
+One generic part of that source-opening transport is now stated at the layer
+where it belongs.  For fully retained ambient faces,
+\texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
+\[
+  \text{opened face images are equal}
+  \quad\Longleftrightarrow\quad
+  \text{their ambient face orbits are equal}.
+\]
+The forward direction says that literal opening cannot fuse two old complete
+faces; the reverse direction says that the opened face is independent of the
+chosen dart naming its ambient orbit.  Both directions are derived from the
+computed complete face-cycle transport, not from an equal-cardinality
+surrogate.  This removes duplicated transport logic from future adjacent and
+distance-two arguments.  It does not prove that the source-selected faces are
+fully retained, identify the selected carrier with the literal opening, or
+establish \texttt{CommonNeighborsExact}; those remain the formation step.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial

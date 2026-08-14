@@ -38,6 +38,18 @@ def FaceFullyRetained (RS : RotationSystem V E) (keep : V → Prop)
     (root : RS.D) : Prop :=
   ∀ point, RS.phi.SameCycle root point → keep (RS.vertOf point)
 
+/-- Full retention is a property of the ambient face orbit, rather than of
+the dart chosen to name that face. -/
+theorem faceFullyRetained_of_dartOrbitFace_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    {leftRoot rightRoot : RS.D}
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hfaces : dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot) :
+    FaceFullyRetained RS keep rightRoot := by
+  intro point hrightPoint
+  apply hleft point
+  exact (Quotient.exact hfaces).trans hrightPoint
+
 /-- The ambient face permutation restricts to its own complete orbit. -/
 def ambientFacePerm (RS : RotationSystem V E) (root : RS.D) :
     Equiv.Perm {point // RS.phi.SameCycle root point} :=
@@ -270,6 +282,63 @@ theorem openFaceOrbit_ne_of_ambient_ne
   apply Quotient.sound
   change RS.phi.SameCycle leftRoot rightRoot
   simpa only [hambientRoot] using source.2
+
+/-- Equality of fully retained open-face images reflects equality of their
+ambient face orbits.  Literal opening therefore does not identify two old
+complete faces. -/
+theorem ambientFaceOrbit_eq_of_openFaceOrbit_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep) (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (hopen : openFaceOrbit RS keep outer leftRoot hleft =
+      openFaceOrbit RS keep outer rightRoot hright) :
+    dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot := by
+  by_contra hambient
+  exact (openFaceOrbit_ne_of_ambient_ne RS keep outer leftRoot rightRoot
+    hleft hright hambient) hopen
+
+/-- Fully retained roots of the same ambient face determine the same face in
+one fixed literal opening.  The proof uses the computed complete-cycle map;
+it is not a cardinality identification of unrelated face carriers. -/
+theorem openFaceOrbit_eq_of_ambientFaceOrbit_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep) (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot)
+    (hfaces : dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot) :
+    openFaceOrbit RS keep outer leftRoot hleft =
+      openFaceOrbit RS keep outer rightRoot hright := by
+  apply Quotient.sound
+  have hcycle : RS.phi.SameCycle leftRoot rightRoot := Quotient.exact hfaces
+  let rightPoint : {point // RS.phi.SameCycle leftRoot point} :=
+    ⟨rightRoot, hcycle⟩
+  have hmapped : (rotationSystem RS keep outer).phi.SameCycle
+      (openFaceRoot RS keep leftRoot hleft)
+      (openFaceDart RS keep leftRoot hleft rightPoint) :=
+    (openFaceCycleMap RS keep outer leftRoot hleft rightPoint).2
+  have hroot : openFaceDart RS keep leftRoot hleft rightPoint =
+      openFaceRoot RS keep rightRoot hright := by
+    apply congrArg Sum.inl
+    apply Subtype.ext
+    rfl
+  rw [hroot] at hmapped
+  exact hmapped
+
+/-- Exact face-equality reflection for fully retained ambient faces in one
+literal opened rotation system. -/
+theorem openFaceOrbit_eq_iff_ambientFaceOrbit_eq
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (outer : Dart RS keep) (leftRoot rightRoot : RS.D)
+    (hleft : FaceFullyRetained RS keep leftRoot)
+    (hright : FaceFullyRetained RS keep rightRoot) :
+    openFaceOrbit RS keep outer leftRoot hleft =
+        openFaceOrbit RS keep outer rightRoot hright ↔
+      dartOrbitFace RS leftRoot = dartOrbitFace RS rightRoot :=
+  ⟨ambientFaceOrbit_eq_of_openFaceOrbit_eq
+      RS keep outer leftRoot rightRoot hleft hright,
+    openFaceOrbit_eq_of_ambientFaceOrbit_eq
+      RS keep outer leftRoot rightRoot hleft hright⟩
 
 /-- The literal-open edge met by one dart of a fully retained ambient face. -/
 def openFaceEdge
