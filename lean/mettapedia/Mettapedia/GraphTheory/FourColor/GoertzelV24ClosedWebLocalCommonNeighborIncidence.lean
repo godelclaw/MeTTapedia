@@ -559,7 +559,7 @@ private theorem face_eq_selectedPlacementSideFace_of_edge_eq
         leftPlacement position) hsideCenter)
   · exact Subtype.ext hsideFace.symm
 
-/-- **L1 selected incidence-to-flank bridge.** The literal common-endpoint
+/-- **Selected incidence-to-flank bridge.** The literal common-endpoint
 incidence transported from the closed minimal map implies the exact
 common-neighbour classification consumed by selected rail append.
 
