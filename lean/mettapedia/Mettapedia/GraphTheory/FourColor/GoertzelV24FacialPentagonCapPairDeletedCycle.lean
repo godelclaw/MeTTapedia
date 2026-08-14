@@ -125,7 +125,8 @@ theorem deletedFacePerm_extendedBoundary_eq_internal
       (extendedCapDeletedBoundaryDart walk deleted hcap hspoke step).1
       (extendedCapDeletedBoundaryDart walk deleted hcap hspoke step).2]
   exact rho_capDeletedBoundaryDart_eq_alpha_boundaryPred
-    walk hcubic hrotation step
+    walk (fun capStep : Fin 5 => hcubic ((capOf walk).vertex capStep))
+      hrotation step
 
 /-- The second deleted-face step exits through the preceding named spoke also
 in the simultaneous carrier. -/
@@ -149,7 +150,8 @@ theorem deletedFacePerm_extendedInternal_eq_previousBoundary
     extendedCapInternalFaceDart_val,
     capInternalFaceDart_val, data.toRotationSystem.alpha_involutive]
   exact rho_boundaryDart_eq_capDeletedBoundaryDart
-    walk hcubic hrotation (step - 1)
+    walk (fun capStep : Fin 5 => hcubic ((capOf walk).vertex capStep)) hrotation
+      (step - 1)
 
 /-- Two simultaneous deleted-face steps advance once around the cap. -/
 theorem deletedFacePerm_sq_extendedBoundary_eq_previous

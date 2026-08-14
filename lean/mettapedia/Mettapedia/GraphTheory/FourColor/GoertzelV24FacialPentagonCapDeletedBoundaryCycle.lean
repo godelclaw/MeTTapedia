@@ -10,9 +10,11 @@ literal enumeration on the retained side.  Reversing that enumeration gives
 the corresponding deleted-side boundary darts, on which the capped deleted
 face permutation can be calculated from the oriented facial pentagon walk.
 
-The later theorem which transfers this cycle to the retained-side first-return
-permutation still needs the planar-bond hypotheses, notably connectedness of
-the retained side. -/
+There are now two consumers of this calculation.  The closed-map laboratory
+transfers the cycle with its planar-bond hypotheses.  Addendum V's frontier
+carrier instead uses the exact local cut-face occurrence condition proved in
+`GoertzelV24FrontierPentagonCapInnerFace`; neither consumer requires the cap
+calculation itself to assume global cubicity. -/
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -38,6 +40,18 @@ uses the ordinary subtype instances carried by the literal boundary data. -/
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
   GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
+
+/-- The collar calculation uses cubicity only at the five cap vertices.
+Keeping that locality explicit lets the same proof run on Addendum V's
+frontier tangle, whose pre-existing outer stubs make global cubicity false. -/
+def CapVerticesCubic
+    {data : SimpleGraphDartRotation.Data G}
+    (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data) :
+    Prop :=
+  ∀ step : Fin 5,
+    (data.toRotationSystem.dartsAt
+      (walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertex
+        step)).card = 3
 
 /-- The deleted-side orientation of a named cap spoke. -/
 def capDeletedBoundaryDart (data : SimpleGraphDartRotation.Data G)
@@ -295,7 +309,7 @@ to the incoming dart of the preceding cap edge.  This is the non-picture
 local turn required for the deleted-side collar calculation. -/
 theorem rho_capDeletedBoundaryDart_eq_alpha_boundaryPred
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     data.toRotationSystem.rho
@@ -355,7 +369,7 @@ theorem rho_capDeletedBoundaryDart_eq_alpha_boundaryPred
     (first := RS.alpha (walk.boundaryDart (step - 1)))
     (second := walk.boundaryDart step)
     (third := (capDeletedBoundaryDart data cap step).1.1)
-    (by simpa only [hfirstBase] using hcubic (cap.vertex step))
+    (by simpa only [hfirstBase] using hcubic step)
     (hsecondBase.trans hfirstBase.symm) (hthirdBase.trans hfirstBase.symm)
     hfirstSecond hfirstThird hsecondThird hfirst
   exact hcycle.2
@@ -364,7 +378,7 @@ theorem rho_capDeletedBoundaryDart_eq_alpha_boundaryPred
 outgoing spoke. -/
 theorem rho_boundaryDart_eq_capDeletedBoundaryDart
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     data.toRotationSystem.rho (walk.boundaryDart step) =
@@ -374,12 +388,20 @@ theorem rho_boundaryDart_eq_capDeletedBoundaryDart
   let cap := walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap
   let first := RS.alpha (walk.boundaryDart (step - 1))
   let third := (capDeletedBoundaryDart data cap step).1.1
+  have hpredSucc : (step - 1) + 1 = step := fin5_sub_one_add_one step
+  have hfirstBase : RS.vertOf first = cap.vertex step := by
+    change (walk.boundaryDart (step - 1)).snd = cap.vertex step
+    rw [FacialPentagonCapBoundaryWalk.boundaryDart_snd_eq_next_vertex,
+      hpredSucc]
   have hfirst : RS.rho first = walk.boundaryDart step := by
     exact boundaryDart_rho_alpha_pred_eq walk step
   have hthird : RS.rho third = first := by
     exact rho_capDeletedBoundaryDart_eq_alpha_boundaryPred
       walk hcubic hrotation step
-  have hcube := rho_cube_apply_of_isCubic RS hcubic hrotation first
+  have hcard : (RS.dartsAt (RS.vertOf first)).card = 3 := by
+    simpa only [hfirstBase] using hcubic step
+  have hcube := rho_cube_apply_of_dartsAt_card_eq_three
+    RS hrotation first hcard
   rw [hfirst] at hcube
   apply RS.rho.injective
   calc
@@ -390,7 +412,7 @@ theorem rho_boundaryDart_eq_capDeletedBoundaryDart
 the preceding internal cap dart. -/
 theorem deletedFacePerm_capDeletedBoundaryDart_eq_internal
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     deletedFacePerm data.toRotationSystem
@@ -410,7 +432,7 @@ theorem deletedFacePerm_capDeletedBoundaryDart_eq_internal
 through the preceding named spoke. -/
 theorem deletedFacePerm_capInternalFaceDart_eq_previousBoundary
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     deletedFacePerm data.toRotationSystem
@@ -431,7 +453,7 @@ theorem deletedFacePerm_capInternalFaceDart_eq_previousBoundary
 (in the reverse source direction). -/
 theorem deletedFacePerm_sq_capDeletedBoundaryDart_eq_previous
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     (deletedFacePerm data.toRotationSystem
@@ -448,7 +470,7 @@ theorem deletedFacePerm_sq_capDeletedBoundaryDart_eq_previous
 deleted-side face permutation. -/
 theorem capDeletedBoundaryDart_sameCycle_previous
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     (deletedFacePerm data.toRotationSystem
@@ -481,7 +503,7 @@ lies in the same capped face cycle.  The proof is the literal five-position
 calculation, not a cardinality argument. -/
 theorem capDeletedBoundaryDart_zero_sameCycle
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (step : Fin 5) :
     (deletedFacePerm data.toRotationSystem
@@ -502,7 +524,7 @@ theorem capDeletedBoundaryDart_zero_sameCycle
 deleted face permutation. -/
 theorem capDeletedBoundaryDart_sameCycle
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (first second : Fin 5) :
     (deletedFacePerm data.toRotationSystem
@@ -520,7 +542,7 @@ This is the finite cap-side input to the planar-bond transfer; it does not
 yet assert the connected retained-side hypothesis required for that transfer. -/
 theorem deletedRegionBoundarySuccessor_openBoundary_sameCycle
     (walk : GoertzelV24FacialPentagonCap.FacialPentagonCapBoundaryWalk data)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (hcubic : CapVerticesCubic walk)
     (hrotation : VertexRotationCyclic data.toRotationSystem)
     (first second : Fin 5) :
     (deletedRegionBoundarySuccessor data.toRotationSystem

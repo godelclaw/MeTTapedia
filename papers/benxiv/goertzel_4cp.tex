@@ -2492,6 +2492,24 @@ frontier carrier, derive the old outer-face premise from source selection, or
 package the resulting pair as the source annulus; those are the remaining
 formation obligations before the L1 crosscuts can be realized.
 
+The complementary inner-face calculation is now valid on that same frontier
+carrier without restoring false closed-map hypotheses.  The module
+\texttt{GoertzelV24FrontierPentagonCapInnerFace} first localizes cubicity to
+the five cap vertices; frontier well-formedness proves precisely those five
+degree equations even though the old outer stubs have degree one.  It then
+isolates the finite collar condition actually used by the orientation
+comparison: among the five retained-facing cap spokes, no ambient facial orbit
+contains two distinct occurrences.  That condition implies the generic
+cut-face uniqueness predicate, so the retained first-return order is the
+inverse of the already computed deleted-side pentagon order.  Lean therefore
+proves that all five fresh stubs occupy one literal opened face, carries this
+face to the graph-backed rotation, and proves it distinct from the retained
+outer face.  This is a conditional bridge rather than the finished source
+formation: the Addendum--V selection theorem must still derive the five-spoke
+face-occurrence condition, as well as the previously stated retained
+outer-face premise, from the actual frontier tangle.  No global cubicity or
+global two-sidedness assumption has been smuggled back into the annulus.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting

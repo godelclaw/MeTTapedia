@@ -151,7 +151,11 @@ theorem retainedBoundarySuccessor_openBoundary_sameCycle
       hretainedConnected hdeletedConnected
   rw [horder, Equiv.Perm.sameCycle_inv]
   exact deletedRegionBoundarySuccessor_openBoundary_sameCycle
-    walk hcubic hrotation first second
+    walk
+      (fun step : Fin 5 => hcubic
+        (walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertex
+          step))
+      hrotation first second
 
 /-- The five fresh stubs created by opening a facial pentagon cap lie on one
 literal face orbit of the opened rotation.  This is the C-2 hole-orbit
