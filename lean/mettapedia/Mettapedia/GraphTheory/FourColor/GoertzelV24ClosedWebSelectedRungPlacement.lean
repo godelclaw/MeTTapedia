@@ -95,6 +95,81 @@ theorem mem_shared {E : Type*} [Fintype E] [DecidableEq E]
     (Finset.univ : Finset (OrbitFace RS))).2
       ⟨rungs.mem_interior step, rungs.mem_left step, rungs.mem_right step⟩
 
+/-- Selecting one literal shared interior edge per successive corridor pair
+does not repeat a primal crossing.  This uses the corridor's injective face
+order and local two-face incidence, not global pairwise face-intersection
+uniqueness or global face two-sidedness. -/
+theorem edge_injective {E : Type*} [Fintype E] [DecidableEq E]
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    (rungs : SelectedCorridorRungs corridor)
+    (hall : ∀ edge,
+      totalIncidenceCount (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS)) edge ≤ 2) :
+    Function.Injective rungs.edge := by
+  have corridorStep_ext : ∀ first second : CorridorStep corridorLength,
+      first.left = second.left → first = second := by
+    intro first second hleft
+    cases first with
+    | mk firstLeft firstRange =>
+      cases second with
+      | mk secondLeft secondRange =>
+        change firstLeft = secondLeft at hleft
+        subst secondLeft
+        rfl
+  intro first second hedges
+  let firstLeft := corridor.faceAt first.left
+  let firstRight := corridor.faceAt first.right
+  let secondLeft := corridor.faceAt second.left
+  let secondRight := corridor.faceAt second.right
+  have hfirstStep : first.left ≠ first.right := by
+    intro hstep
+    have hvalue := congrArg Fin.val hstep
+    simp only [CorridorStep.right_val] at hvalue
+    omega
+  have hfirstFaces : firstLeft.1 ≠ firstRight.1 := by
+    intro hfaces
+    exact hfirstStep (corridor.faceAt_injective (Subtype.ext hfaces))
+  have hfirstLeft : rungs.edge first ∈ orbitFaceBoundary RS firstLeft.1 :=
+    rungs.mem_left first
+  have hfirstRight : rungs.edge first ∈ orbitFaceBoundary RS firstRight.1 :=
+    rungs.mem_right first
+  have hsecondLeft : rungs.edge first ∈ orbitFaceBoundary RS secondLeft.1 := by
+    rw [hedges]
+    exact rungs.mem_left second
+  have hsecondRight : rungs.edge first ∈ orbitFaceBoundary RS secondRight.1 := by
+    rw [hedges]
+    exact rungs.mem_right second
+  have hsecondLeftCases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS)) hall
+      firstLeft.2 firstRight.2 secondLeft.2 hfirstFaces
+      hfirstLeft hfirstRight hsecondLeft
+  rcases hsecondLeftCases with hsecondFirst | hsecondNext
+  · have hleft : first.left = second.left :=
+      corridor.faceAt_injective (Subtype.ext hsecondFirst.symm)
+    exact corridorStep_ext first second hleft
+  · have hsecondVal : second.left.val = first.left.val + 1 := by
+      have hleft : second.left = first.right :=
+        corridor.faceAt_injective (Subtype.ext hsecondNext)
+      exact congrArg Fin.val hleft
+    have hsecondRightCases :=
+      eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary RS) (Finset.univ : Finset (OrbitFace RS)) hall
+        firstLeft.2 firstRight.2 secondRight.2 hfirstFaces
+        hfirstLeft hfirstRight hsecondRight
+    rcases hsecondRightCases with hrightFirst | hrightNext
+    · have hright : second.right = first.left :=
+        corridor.faceAt_injective (Subtype.ext hrightFirst)
+      have hvalue := congrArg Fin.val hright
+      simp only [CorridorStep.right_val] at hvalue
+      omega
+    · have hright : second.right = first.right :=
+        corridor.faceAt_injective (Subtype.ext hrightNext)
+      have hvalue := congrArg Fin.val hright
+      simp only [CorridorStep.right_val] at hvalue
+      omega
+
 end SelectedCorridorRungs
 
 /-- The two selected corridor rungs, placed on the actual six-dart cycle of
