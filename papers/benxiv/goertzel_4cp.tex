@@ -506,18 +506,24 @@ edges, namely the rung and its immediate flank.  Since the target edge is not
 the rung, it is the flank.  Thus the bounded local classification is no longer
 an assumption on the closed map.
 
-The possible transport problem is now precise, but it is not currently a
-source-critical construction.  Addendum~XXV's Seed Lemma first reduces a
-minimal annular-frontier counterexample only to girth at least five and no
-2-cuts; its L1 is then a finite classification producing a bulk all-hexagonal
-ladder.  It does not supply cyclic five-edge-connectivity, a closed
-graph-backed minimal map, or a cap opening.  Consequently this closed theorem
-cannot yet discharge \texttt{CommonNeighborsExact} on the open carrier.  Such
-a use would first need a source-faithful finite L1 collar classification that
-handles the separating-three-edge-cut case explicitly, rather than silently
-excluding it through stronger closed-map minimality.  The degree-one boundary
-stubs also make adding that minimality directly to the open instance
-inconsistent, not a shortcut.
+The possible transport problem is now precise.  The current Fable theory
+begins in the v23 normal form: a bridgeless cubic plane graph with no cyclic
+edge cut of size at most four (equivalently, no separating triangles or
+four-cycles in the dual).  Its expanded Addendum~XXV Seed-Lemma step spells
+out only the girth and two-cut reductions, so that step must cite the already
+stated normal form rather than be read as deriving cyclic five-edge
+connectivity by itself.  Lean independently derives the same closed property
+from graph-backed vertex-minimality by capping the two sides of each small cut
+and gluing their colorings.
+
+Thus the obstruction is not a new separating-three-edge-cut classification.
+It is the one source-formation morphism still absent from the formalization:
+carry the relevant closed normal-form corridor and its retained local faces
+through the actual cap opening, and identify the computed opening with the
+literal Cell--3 annulus.  Until that construction exists, the closed theorem
+cannot discharge \texttt{CommonNeighborsExact} on the open carrier.  The
+degree-one boundary stubs make adding closed minimality directly to that open
+instance inconsistent, not a shortcut.
 
 The strictly local open-carrier implication is now machine-checked as well.
 The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
