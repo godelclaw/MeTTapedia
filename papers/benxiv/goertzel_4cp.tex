@@ -214,6 +214,19 @@ contains a ladder corridor longer than the profile count.  Any eventual
 crosscut construction must be proved as part of a faithful realization of that
 source geometry, not promoted to an independent source flag by the Lean API.
 
+\paragraph{Opening a cap is not yet opening an annulus.}
+The source's Cell--3 setting starts with a frontier tangle: opening its
+interior pentagon leaves five ordered inner stubs while its already-free outer
+interface remains available for the annular argument.  The formalization now
+checks the local half exactly.  For a cubic closed graph, deleting only the
+five cap-cycle edges makes precisely the five cap vertices degree one; every
+other vertex remains cubic.  Consequently a well-formed boundary datum that
+uses those five vertices as its inner interface has \emph{zero} outer stubs.
+This is a useful negative fact, not a substitute for the missing formation:
+an outer interface cannot be invented by the cap-opening operation.  A
+source-faithful construction must instead retain the outer frontier tangle and
+then identify its annular embedding with the five ordered cap stubs.
+
 \subsection{What is presently machine-checked}
 
 The following items are green Lean developments.  Their scope matters: several

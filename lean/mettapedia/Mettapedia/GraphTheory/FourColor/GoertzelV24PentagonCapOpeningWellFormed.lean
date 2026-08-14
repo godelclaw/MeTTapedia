@@ -119,6 +119,55 @@ theorem openGraph_degree_capVertex_eq_one
   rw [openGraph_neighborFinset_capVertex_eq_singleton cap step]
   simp
 
+/-- In a cubic closed source graph, opening just the cap creates exactly the
+five degree-one vertices of the cap interface.  Thus the outer boundary of a
+Cell--3 annulus cannot be silently manufactured by this local operation: it
+must already be present in the frontier tangle that is opened at the cap. -/
+theorem openGraph_degree_eq_one_iff_mem_vertexSupport
+    (cap : PentagonCap G) (hregular : G.IsRegularOfDegree 3)
+    (vertex : V) :
+    cap.openGraph.degree vertex = 1 ↔ vertex ∈ cap.vertexSupport := by
+  constructor
+  · intro hone
+    by_contra houtside
+    have hthree : cap.openGraph.degree vertex = 3 := by
+      rw [← incidentEdgeFinset_card_eq_degree (G := cap.openGraph) vertex]
+      exact openGraph_incidentEdgeFinset_card_eq_three_of_not_mem_vertexSupport
+        cap hregular houtside
+    omega
+  · intro hmem
+    rcases (cap.mem_vertexSupport_iff vertex).mp hmem with ⟨step, hstep⟩
+    rw [← hstep]
+    exact openGraph_degree_capVertex_eq_one cap step
+
+/-- A well-formed annular boundary datum whose inner interface is the literal
+opened cap has no outer stubs at all.  This rules out the false construction
+that would turn a closed cubic graph into the source annulus merely by opening
+its pentagon; the source's free outer interface is separate input data. -/
+theorem outerCount_eq_zero_of_innerStub_eq_capVertex
+    {outerCount : Nat} (cap : PentagonCap G)
+    (hregular : G.IsRegularOfDegree 3)
+    (data : AnnularBoundaryData cap.openGraph outerCount)
+    (hdata : data.WellFormed)
+    (hinner : ∀ step : Fin 5, data.innerStub step = cap.vertex step) :
+    outerCount = 0 := by
+  by_contra hnonzero
+  have hpositive : 0 < outerCount := Nat.pos_of_ne_zero hnonzero
+  let outer : Fin outerCount := ⟨0, hpositive⟩
+  have hone : cap.openGraph.degree (data.outerStub outer) = 1 := by
+    calc
+      cap.openGraph.degree (data.outerStub outer) =
+          (incidentEdgeFinset cap.openGraph (data.outerStub outer)).card :=
+        (incidentEdgeFinset_card_eq_degree (G := cap.openGraph)
+          (data.outerStub outer)).symm
+      _ = 1 := hdata.outer_stub_degree_one outer
+  have hcap : data.outerStub outer ∈ cap.vertexSupport :=
+    (openGraph_degree_eq_one_iff_mem_vertexSupport cap hregular
+      (data.outerStub outer)).mp hone
+  rcases (cap.mem_vertexSupport_iff _).mp hcap with ⟨step, hstep⟩
+  exact (hdata.inner_outer_stub_disjoint step outer)
+    ((hinner step).trans hstep)
+
 /-- **Source-opening inner boundary.** A cubic closed graph together with a
 literal pentagon cap produces the complete five-stub well-formed boundary
 datum of the opened cap.  The `Fin 0` outer interface records deliberately
