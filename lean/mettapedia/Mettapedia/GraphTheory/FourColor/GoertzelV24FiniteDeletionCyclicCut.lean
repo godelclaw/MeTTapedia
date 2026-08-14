@@ -171,6 +171,32 @@ theorem exists_componentCrossingEdges_nonempty_of_not_connected
   intro heq
   exact hnotReachable (SimpleGraph.ConnectedComponent.exact heq)
 
+omit [DecidableEq V] in
+/-- Relative to any chosen root, a disconnected finite edge deletion has a
+connected component on the opposite side.  This lets annular callers choose
+the component away from a named hole before proving boundary saturation. -/
+theorem exists_component_not_mem_root_of_not_connected
+    (removed : Finset G.edgeSet) (root : V)
+    (hdelete : ¬ (G.deleteEdges (edgeFinsetValueSet removed)).Connected) :
+    ∃ component :
+        (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent,
+      root ∉ component.supp := by
+  let deleted := G.deleteEdges (edgeFinsetValueSet removed)
+  letI : Nonempty V := ⟨root⟩
+  have hnotPreconnected : ¬ deleted.Preconnected := by
+    intro hpreconnected
+    exact hdelete ⟨hpreconnected⟩
+  have hopposite : ∃ vertex, ¬ deleted.Reachable root vertex := by
+    by_contra hall
+    push Not at hall
+    apply hnotPreconnected
+    intro left right
+    exact (hall left).symm.trans (hall right)
+  rcases hopposite with ⟨vertex, hnotReachable⟩
+  refine ⟨deleted.connectedComponentMk vertex, ?_⟩
+  intro hroot
+  exact hnotReachable (SimpleGraph.ConnectedComponent.exact hroot)
+
 /-!
 The saturation equality is often the only set-theoretic line left after a
 Jordan/annulus argument has identified the two sides of the deleted wall.  We
@@ -318,6 +344,26 @@ theorem component_side_iff_of_walk_avoiding_removed
         exact havoid edge' (by
           simp [SimpleGraph.Walk.edges_cons, hedge'])
       exact hstep.trans (ih htailAvoid)
+
+/-- Every vertex occurring on a walk which avoids the deleted support lies in
+the same deletion component as the walk's initial vertex. -/
+theorem component_side_iff_of_mem_walk_support_of_avoiding_removed
+    (removed : Finset G.edgeSet)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet removed)).ConnectedComponent)
+    {start finish vertex : V} (walk : G.Walk start finish)
+    (havoid : ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ walk.edges →
+      edge.1 ∉ edgeFinsetValueSet removed)
+    (hvertex : vertex ∈ walk.support) :
+    (start ∈ component.supp ↔ vertex ∈ component.supp) := by
+  let walkPrefix := walk.takeUntil vertex hvertex
+  have hprefixAvoid : ∀ edge : G.edgeSet,
+      (edge : Sym2 V) ∈ walkPrefix.edges →
+        edge.1 ∉ edgeFinsetValueSet removed := by
+    intro edge hedge
+    exact havoid edge (walk.edges_takeUntil_subset_edges hvertex hedge)
+  exact component_side_iff_of_walk_avoiding_removed
+    removed component walkPrefix hprefixAvoid
 
 /-!
 The exact realization constructor.  Notice that the edge support in the

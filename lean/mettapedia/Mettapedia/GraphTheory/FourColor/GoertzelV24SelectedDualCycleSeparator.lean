@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualCycleCrossingInjective
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteDeletionCyclicCut
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleSeparator
 
 /-!
@@ -228,6 +229,53 @@ theorem card_crossingEdges_eq_length
     Finset.card_image_of_injective _ (cycle.crossingEdge_injective hall),
     Finset.card_univ, Fintype.card_fin]
 
+/-- If every face visited by a literally selected dual cycle belongs to a
+chosen interior family, then none of its selected primal crossings lies on
+the boundary of a face outside that family.  This is the selected-edge form
+of hole-boundary safety and uses only the ordinary at-most-two incidence
+bound. -/
+theorem crossingEdges_disjoint_faceBoundary_of_support
+    {RS : RotationSystem V E}
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (cycle : SelectedDualCycle RS start)
+    (interiorFaces : Finset (OrbitFace RS))
+    (hsupport : ∀ face ∈ cycle.walk.support,
+      face.1 ∈ interiorFaces)
+    (hole : OrbitFace RS)
+    (hhole : hole ∉ interiorFaces) :
+    Disjoint cycle.crossingEdges (orbitFaceBoundary RS hole) := by
+  rw [Finset.disjoint_left]
+  intro edge hcrossing hholeBoundary
+  rcases (cycle.mem_crossingEdges_iff edge).1 hcrossing with ⟨step, hstep⟩
+  let leftFace := cycle.walk.getVert step.val
+  let rightFace := cycle.walk.getVert (step.val + 1)
+  have hleftRight : leftFace.1 ≠ rightFace.1 := by
+    intro hfaces
+    exact (cycle.walk.adj_getVert_succ step.isLt).ne (Subtype.ext hfaces)
+  have hleft : edge ∈ orbitFaceBoundary RS leftFace.1 := by
+    rw [← hstep]
+    exact cycle.crossingEdge_mem_leftFace step
+  have hright : edge ∈ orbitFaceBoundary RS rightFace.1 := by
+    rw [← hstep]
+    exact cycle.crossingEdge_mem_rightFace step
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (orbitFace_incidence_le_two RS)
+      leftFace.2 rightFace.2 (Finset.mem_univ hole)
+      hleftRight hleft hright hholeBoundary
+  rcases hcases with hholeLeft | hholeRight
+  · apply hhole
+    have hint := hsupport leftFace
+      (cycle.walk.getVert_mem_support step.val)
+    simpa [hholeLeft] using hint
+  · apply hhole
+    have hint := hsupport rightFace
+      (cycle.walk.getVert_mem_support (step.val + 1))
+    simpa [hholeRight] using hint
+
 /-- The parity boundary of one selected crossing is the sum of the labels on
 the two consecutive dual faces. -/
 theorem orbitFaceParityBoundaryLinearMap_apply_crossingEdge
@@ -377,6 +425,28 @@ def primalCut
     Set (Sym2 V) :=
   {edge | ∃ step : Fin cycle.walk.length,
     (cycle.crossingEdge step).1 = edge}
+
+/-- The set-valued selected cut is exactly the ambient-value image of its
+finite crossing-edge support.  This is the representation bridge into the
+generic finite-deletion component API; it adds no geometric hypothesis. -/
+theorem primalCut_eq_edgeFinsetValueSet_crossingEdges
+    {data : Data G}
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (cycle : SelectedDualCycle data.toRotationSystem start) :
+    cycle.primalCut =
+      GoertzelV24FiniteDeletionCyclicCut.edgeFinsetValueSet
+        cycle.crossingEdges := by
+  ext edge
+  rw [GoertzelV24FiniteDeletionCyclicCut.mem_edgeFinsetValueSet_iff]
+  constructor
+  · rintro ⟨step, hstep⟩
+    exact ⟨cycle.crossingEdge step,
+      (cycle.mem_crossingEdges_iff _).2 ⟨step, rfl⟩, hstep⟩
+  · rintro ⟨crossing, hcrossing, hvalue⟩
+    rcases (cycle.mem_crossingEdges_iff crossing).1 hcrossing with
+      ⟨step, hstep⟩
+    exact ⟨step, congrArg Subtype.val hstep |>.trans hvalue⟩
 
 /-- Deleting the literally selected crossings of a simple facial-dual cycle
 disconnects the underlying graph of a framed spherical cellulation. -/

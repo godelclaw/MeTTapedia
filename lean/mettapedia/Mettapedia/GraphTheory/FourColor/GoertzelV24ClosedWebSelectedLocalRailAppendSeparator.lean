@@ -26,6 +26,7 @@ open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebBoundaryData.AnnularBoundaryData
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24FramedAnnularExcess
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
@@ -77,6 +78,34 @@ theorem crossingEdges_card_eq_three
   rw [triangle.selectedCycle.card_crossingEdges_eq_length
     (orbitFace_incidence_le_two web.annular.RS)]
   exact triangle.walk_length
+
+/-- The three selected separator edges avoid the designated inner-hole
+boundary.  This follows from the boundary-clean corridor invariant for all
+three dual faces, not from a global face-uniqueness assumption. -/
+theorem crossingEdges_disjoint_innerHoleBoundary
+    (triangle : AdjacentDualTriangle successor) :
+    Disjoint triangle.selectedCycle.crossingEdges
+      (orbitFaceBoundary web.annular.RS
+        web.annular.cellulation.innerHole) := by
+  exact triangle.selectedCycle.crossingEdges_disjoint_faceBoundary_of_support
+    web.annular.cellulation.interiorFaces triangle.walk_support_internal
+    web.annular.cellulation.innerHole
+    (by
+      simp [FramedAnnularCellulation.interiorFaces,
+        FramedAnnularCellulation.holeFaces])
+
+/-- The same selected separator avoids the designated outer-hole boundary. -/
+theorem crossingEdges_disjoint_outerHoleBoundary
+    (triangle : AdjacentDualTriangle successor) :
+    Disjoint triangle.selectedCycle.crossingEdges
+      (orbitFaceBoundary web.annular.RS
+        web.annular.cellulation.outerHole) := by
+  exact triangle.selectedCycle.crossingEdges_disjoint_faceBoundary_of_support
+    web.annular.cellulation.interiorFaces triangle.walk_support_internal
+    web.annular.cellulation.outerHole
+    (by
+      simp [FramedAnnularCellulation.interiorFaces,
+        FramedAnnularCellulation.holeFaces])
 
 /-- Deleting the three selected primal crossings of the obstruction triangle
 disconnects the graph underlying the literal framed annulus. -/

@@ -142,6 +142,30 @@ theorem walk_isCycle (triangle : AdjacentDualTriangle successor) :
     triangle.leftCenter_adj_third.ne,
     triangle.leftCenter_adj_third.ne.symm]
 
+/-- Every face of the obstruction triangle is still an annular-interior
+face.  The two centre faces are corridor faces, while the third face is an
+actual dual neighbour of the left centre and is therefore covered by the
+boundary-clean neighbour invariant. -/
+theorem walk_support_internal (triangle : AdjacentDualTriangle successor) :
+    ∀ face ∈ triangle.walk.support,
+      face.1 ∈ web.annular.cellulation.interiorFaces := by
+  intro face hface
+  simp only [walk, SimpleGraph.Walk.support_cons,
+    SimpleGraph.Walk.support_nil, List.mem_cons] at hface
+  rcases hface with hface | hface | hface | hface
+  · subst face
+    exact corridor.face_internal leftInterior.center
+  · subst face
+    exact corridor.face_internal
+      (nextCorridorInterior leftInterior hnext).center
+  · subst face
+    exact corridor.neighbor_internal leftInterior.center triangle.third
+      triangle.leftCenter_adj_third
+  · rcases hface with hface | hface
+    · subst face
+      exact corridor.face_internal leftInterior.center
+    · simp at hface
+
 end AdjacentDualTriangle
 
 /-- Failure of `CommonNeighborsExact` produces its positive geometric

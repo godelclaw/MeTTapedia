@@ -1481,6 +1481,20 @@ recovers the common-neighbour data needed by the append, while a cyclic side
 gives the three-edge cut to be pulled back to closed minimality.  Until the
 stub classification is proved, neither conclusion is used.
 
+The outer half of that component classification is now literal.  The selected
+crossing support has been identified exactly with the finite edge-deletion
+support used by the component API, and all three faces of the obstruction
+triangle are proved to be annular-interior faces.  Hence none of its three
+selected crossings lies on either named hole boundary.  In
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendComponent}, Lean chooses an
+actual component of the deleted graph opposite a distinguished outer-hole
+dart, follows the complete rooted outer-face walk, and proves that every one
+of the five named outer stubs lies outside that component.  This is stronger
+than boundary-edge disjointness, but it is still only the outer half: no
+comparison walk has yet put the inner hole on the same side as the outer hole.
+Therefore inner-stub exclusion, boundary saturation, cyclicity, and the cubic
+degree count remain open and are not inferred here.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
