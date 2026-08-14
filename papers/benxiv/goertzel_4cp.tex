@@ -1644,6 +1644,30 @@ straight assembly, swapped assembly, or exactly one cross-track collision.
 The lone-cross case remains; neither arbitrary-length iteration nor either
 annular end cap follows from this local theorem.
 
+The lone-cross case has now been reduced one step further by a literal
+centre bridge.  At the exhibited collision Lean follows the crossed reroute
+to the opposite outgoing flank.  It connects the two unmatched seam flanks
+by the two-edge walk through the displayed Cell--3 centre, appends the
+remaining continuation, and loop-erases that walk.  Both orientations are
+implemented in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendCenterBridge}.  If the
+crossed reroute avoids the unmatched old rail, the unmatched continuation
+tail, and the centre, this constructs a simple mutually support-disjoint pair
+with swapped outgoing endpoints.  The endpoint exclusions at the two seam
+flanks are proved from path simplicity and the already established same-cell
+rail separation; they are not extra hypotheses.
+
+The accompanying exhaustive classifier does not assume the three tests.
+After applying the centre bridge, every adjacent append either returns a
+straight or swapped assembly, or exhibits exactly one of four smaller
+residues: a same-track old/new collision on the first rail, the analogous
+collision on the second rail, or the first/second next-cell continuation
+literally revisiting the previous Cell--3 centre.  Thus a cross-track
+collision itself is no longer a terminal branch.  The four displayed
+residues still require the finite length-and-coordinate classification; this
+result is not an arbitrary-length induction, an end-cap construction, or
+closure of L1.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
