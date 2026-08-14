@@ -1838,6 +1838,25 @@ melted state (\texttt{GoertzelV24CleanHexCorridor},
 \texttt{GoertzelV24HexCorridorColorTransfer},
 \texttt{GoertzelV24HexCorridorChiralityBarrier}).
 
+\paragraph{Opening a pentagon is not yet the Cell--3 formation.} Addendum~V
+starts from a supplied frontier tangle $X$ with an interior pentagon and then
+forms its annular $X'$; it does not say that merely opening a pentagon in an
+arbitrary closed cubic graph supplies the free outer interface.  The Lean
+comparison now makes this distinction exact.  Given an explicitly selected
+\texttt{PentagonCap}, the manuscript-side deletion (five fresh ordered spoke
+ports) and the toolchain-side deletion of the five cap-cycle edges are
+isomorphic as graphs; all boundary ports are the five ordered spokes, and the
+isomorphism sends stub $i$ to cap vertex $i$ definitionally
+(\texttt{openingGraphIso},
+\texttt{openingGraphIso\_ordered\_stub}).  But the resulting one-cap opening
+has \emph{no} outer stubs
+(\texttt{outerCount\_eq\_zero\_of\_innerStub\_eq\_capVertex}).  Thus these
+theorems close a representation mismatch, rather than manufacturing the
+annulus required by the source.  The still-open formation theorem must add the
+actual outer interface, its annular embedding, and the transport of the
+selected clean corridor; it cannot be replaced by a cardinality argument or a
+second cap chosen without source geometry.
+
 \paragraph{Pumping.} The corridor acceptance language is proved periodic and
 corridor pumping congruence-correct; with the recurrent tube-ring transfer
 these are the working tools of the Short-Strand replacement search
