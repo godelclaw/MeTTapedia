@@ -2500,13 +2500,17 @@ degree equations even though the old outer stubs have degree one.  It then
 isolates the finite collar condition actually used by the orientation
 comparison: among the five retained-facing cap spokes, no ambient facial orbit
 contains two distinct occurrences.  That condition implies the generic
-cut-face uniqueness predicate, so the retained first-return order is the
+cut-face uniqueness predicate, and Lean now proves the converse as well by
+classifying the cut boundary by the five ordered cap spokes.  Consequently
+these are two presentations of one geometric invariant, not two independent
+premises.  When that invariant holds, the retained first-return order is the
 inverse of the already computed deleted-side pentagon order.  Lean therefore
 proves that all five fresh stubs occupy one literal opened face, carries this
 face to the graph-backed rotation, and proves it distinct from the retained
 outer face.  This is a conditional bridge rather than the finished source
 formation: the Addendum--V selection theorem must still derive the five-spoke
-face-occurrence condition, as well as the previously stated retained
+face-occurrence condition (equivalently, generic cut-face uniqueness), as well
+as the previously stated retained
 outer-face premise, from the actual frontier tangle.  No global cubicity or
 global two-sidedness assumption has been smuggled back into the annulus.
 

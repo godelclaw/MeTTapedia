@@ -101,6 +101,36 @@ theorem cutFacesHaveUniqueRetainedBoundaryDart_of_capBoundaryFacesUnique
       walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap)
     (hunique first second hface)
 
+/-- Conversely, the generic cut-face predicate restricts to the five literal
+cap coordinates.  Together with the preceding theorem, this shows that the
+local condition is only the source-ordered presentation of the generic
+boundary invariant, not an additional geometric assumption.  Neither
+direction constructs that invariant on the source frontier. -/
+theorem capBoundaryFacesUnique_of_cutFacesHaveUniqueRetainedBoundaryDart
+    (walk : FacialPentagonCapBoundaryWalk data)
+    (hunique : CutFacesHaveUniqueRetainedBoundaryDart data.toRotationSystem
+      walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertexSupport) :
+    CapBoundaryFacesUnique walk := by
+  intro first second hface
+  apply PentagonCap.openBoundaryDart_injective data
+    walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap
+  exact hunique
+    (PentagonCap.openBoundaryDart data
+      walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap first)
+    (PentagonCap.openBoundaryDart data
+      walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap second)
+    hface
+
+/-- The source-ordered five-position condition and the generic cut-face
+uniqueness predicate are logically equivalent for a literal pentagon cap. -/
+theorem capBoundaryFacesUnique_iff_cutFacesHaveUniqueRetainedBoundaryDart
+    (walk : FacialPentagonCapBoundaryWalk data) :
+    CapBoundaryFacesUnique walk ↔
+      CutFacesHaveUniqueRetainedBoundaryDart data.toRotationSystem
+        walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.vertexSupport :=
+  ⟨cutFacesHaveUniqueRetainedBoundaryDart_of_capBoundaryFacesUnique walk,
+    capBoundaryFacesUnique_of_cutFacesHaveUniqueRetainedBoundaryDart walk⟩
+
 /-- Well-formed Addendum V frontier data supplies cubicity exactly at the five
 interior cap vertices, while allowing the old outer stubs to remain degree one. -/
 theorem capVerticesCubic_of_frontierWellFormed
