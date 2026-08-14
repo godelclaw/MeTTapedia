@@ -1797,6 +1797,19 @@ the next theorem must retain enough finite branch data to update that mutable
 suffix before freezing the remote prefix.  Arbitrary length, both annular end
 caps, and L1 therefore remain open.
 
+The algebraic splice needed after that finite transition is now isolated in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAssemblyAppend}.  Given two
+ordered simple separated rail pairs with matching middle endpoints,
+\texttt{appendAssembly} returns their pairwise append once the two same-track
+and two cross-track prefix/suffix support conditions are proved.  Its
+terminal-window wrapper handles both certified endpoint orders and returns a
+straight-or-swapped global assembly without forgetting which occurred.  The
+four conditions remain visible by design: this theorem attaches a frozen
+prefix after the local geometry has certified compatibility; it does not
+pretend that compatibility follows from the types alone.  Thus the remaining
+formation step is now specifically the finite mutable-suffix transition which
+must discharge those four premises.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
