@@ -7,7 +7,7 @@ import Mettapedia.GraphTheory.FourColor.SimpleGraphRotationSystem
 A `PentagonCap` is deliberately graph-theoretic: a five-cycle, five outward
 spokes, and their incidence.  The Cell-3 formation needs strictly more: the
 five-cycle must be the literal boundary of one face orbit of the closed
-spherical rotation, so that deleting the cap cycle creates a named hole face
+spherical rotation, so that opening the cap has a specified facial boundary
 and surface surgery can compare Euler data.  This module records that stronger
 datum without changing the graph-level cap library.
 
