@@ -1619,6 +1619,17 @@ to a same-cardinality cyclic cut of the pre-opening frontier tangle.  The
 remaining transport is the outer frontier's relation to the induction or
 minimal-counterexample carrier; it is not hidden in this one-cap theorem.
 
+The complementary cycle created by closing a cap is now explicit rather
+than pictorial.  In
+\texttt{GoertzelV24FacialPentagonCapSideCycle}, the oriented five cap
+coordinates construct a literal five-edge primal walk; coordinate
+injectivity proves that walk is a genuine cycle.  Consequently, if all five
+cap vertices lie on one side of a cut, the restored pentagon supplies a
+\texttt{HasCycleOnSide} witness on that side.  This removes the need to
+extract a cycle from the backtracking outer-hole walk when a deleted cap is
+restored.  It does not construct a closed antecedent for an abstract
+Addendum--V frontier; that source-formation comparison remains separate.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
