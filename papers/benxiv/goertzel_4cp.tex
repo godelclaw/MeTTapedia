@@ -1126,6 +1126,14 @@ and it removes a false global hypothesis from the local construction.  It
 does not establish that distinct slots give distinct side faces, construct
 simple rails, or produce the required long separated crosscut pair.
 
+The exclusion of that global premise is now itself kernel-checked rather than
+merely recorded in prose.  Every dart over a named inner boundary edge belongs
+to the inner-hole orbit, as does its $\alpha$-opposite; hence
+\texttt{ClosedWebAnnularEmbedding.not\_orbitFacesTwoSided} proves that the
+literal Cell--3 annulus cannot satisfy global face two-sidedness.  The correct
+replacement is the already-developed local two-sidedness certificate on the
+interior faces actually traversed by a layer boundary.
+
 The first remaining collision has now been reduced without pretending it is
 impossible.  If two distinct selected side slots lead to the same opposite
 face, Lean exhibits two distinct interior primal edges shared by that face

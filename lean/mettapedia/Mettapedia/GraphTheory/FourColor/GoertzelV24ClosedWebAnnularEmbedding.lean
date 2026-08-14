@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebBoundaryData
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedAnnularExcess
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceTwoSided
 
 /-!
 # Rotation-level embedding of the v24 closed-web interfaces
@@ -23,6 +24,7 @@ namespace GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
+open GoertzelV24OrbitFaceTwoSided
 open SimpleGraphDartRotation
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -85,6 +87,32 @@ variable {data : AnnularBoundaryData G outerCount}
   (embedded : ClosedWebAnnularEmbedding data)
 
 noncomputable abbrev RS := embedded.cellulation.rotation.toRotationSystem
+
+/-- A Cell--3 annulus is deliberately not globally face-two-sided: each named
+inner interface edge has both dart sides on the inner hole.  Source-local
+separator arguments must therefore use the local two-sidedness of their
+interior face support, rather than importing a closed-map theorem whose global
+premise is false on this carrier. -/
+theorem not_orbitFacesTwoSided :
+    ¬ OrbitFacesTwoSided embedded.RS := by
+  intro htwoSided
+  have hcard := embedded.RS.dartsOn_card_two (data.innerBoundaryEdge 0)
+  have hpositive : 0 < (embedded.RS.dartsOn
+      (data.innerBoundaryEdge 0)).card := by
+    omega
+  rcases Finset.card_pos.mp hpositive with ⟨dart, hdart⟩
+  have halpha : embedded.RS.alpha dart ∈ embedded.RS.dartsOn
+      (data.innerBoundaryEdge 0) := by
+    apply (embedded.RS.mem_dartsOn).2
+    rw [embedded.RS.edge_alpha]
+    exact (embedded.RS.mem_dartsOn).1 hdart
+  have hleft : dartOrbitFace embedded.RS dart =
+      embedded.cellulation.innerHole :=
+    embedded.innerBoundaryEdgeDarts_on_innerHole 0 dart hdart
+  have hright : dartOrbitFace embedded.RS (embedded.RS.alpha dart) =
+      embedded.cellulation.innerHole :=
+    embedded.innerBoundaryEdgeDarts_on_innerHole 0 (embedded.RS.alpha dart) halpha
+  exact htwoSided dart (hleft.trans hright.symm)
 
 /-- Every inner interface edge occurs on the named inner hole boundary. -/
 theorem innerBoundaryEdge_mem_innerHoleBoundary (inner : Fin 5) :
