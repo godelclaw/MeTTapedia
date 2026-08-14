@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAssemblyAppend
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedRailPairAppendClassification
 
 /-!
 # L1: loop-erased composition of two selected rail-pair assemblies
@@ -88,6 +89,19 @@ theorem SelectedRailPairCrossCollision.face_mem_new
       exact Or.inr (List.mem_of_mem_tail witness.mem_new)
   | secondFirst witness =>
       exact Or.inl (List.mem_of_mem_tail witness.mem_new)
+
+/-- A two-way cross collision is the corresponding branch of the earlier
+four-way append classifier. -/
+def SelectedRailPairCrossCollision.toAppendCollision
+    {oldFirst oldSecond newFirst newSecond :
+      List (SelectedFace (web := web))}
+    (collision : SelectedRailPairCrossCollision
+      oldFirst oldSecond newFirst newSecond) :
+    SelectedRailPairAppendCollision (web := web)
+      oldFirst oldSecond newFirst newSecond :=
+  match collision with
+  | .firstSecond witness => .firstSecondCollision witness
+  | .secondFirst witness => .secondFirstCollision witness
 
 namespace SelectedSourceLocalRailAssembly
 
