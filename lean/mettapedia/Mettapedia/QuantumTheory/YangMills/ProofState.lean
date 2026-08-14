@@ -36,6 +36,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassCompatibility
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
@@ -97,6 +98,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenTwoClassCompatibility
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassRepair
 open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTracelessRefutation
+open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -768,6 +770,29 @@ theorem currentYangMillsThreeClassSourceSevenRepair_singletonTrace_ne_zero
   ourThreeClassSourceSevenTraceOrderCorrection_ourSingletonTrace_ne_zero policy
 
 #print axioms currentYangMillsThreeClassSourceSevenRepair_singletonTrace_ne_zero
+
+/-- OUR preliminary fixed-trace-point gate detects the singleton row, but its
+same signed character has fundamental three-cut numerator `-64`; this is a
+screening constraint, not yet a descended coordinate. -/
+theorem currentYangMillsFixedPointTopologyScreen_packet :
+    (ourFixedTracePointCount ourSingletonTraceLabeled = 1) ∧
+      (ourFixedPointTraceAxisSignedWeight ourSingletonTraceLabeled = 32) ∧
+      (ourFixedPointTraceAxisSignedWeight ourFundamentalThreeCutBaseLabeled -
+          ourFixedPointTraceAxisSignedWeight
+            ourFundamentalThreeCutSwapFirstSecondLabeled -
+            ourFixedPointTraceAxisSignedWeight
+              ourFundamentalThreeCutSwapFirstThirdLabeled -
+              ourFixedPointTraceAxisSignedWeight
+                ourFundamentalThreeCutSwapSecondThirdLabeled +
+                ourFixedPointTraceAxisSignedWeight
+                  ourFundamentalThreeCutForwardLabeled +
+                  ourFixedPointTraceAxisSignedWeight
+                    ourFundamentalThreeCutBackwardLabeled = -64) := by
+  exact ⟨ourSingletonTrace_fixedTracePointCount,
+    ourSingletonTrace_fixedPointTraceAxisSignedWeight,
+    ourFundamentalThreeCut_fixedPointTraceAxisSignedWeight⟩
+
+#print axioms currentYangMillsFixedPointTopologyScreen_packet
 
 /-- OUR repaired finite relation interface continues the Wilson-lattice proof
 programme on an unpadded hypercubic carrier. It is coordinate-free before a
