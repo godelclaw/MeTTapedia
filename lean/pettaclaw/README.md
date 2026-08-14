@@ -31,6 +31,13 @@ are derived from the models, deployed, and re-observed live.
   broker-mediated workspace effects, the action/evidence barrier, explicit
   cancellation and termination, an unverified-answer counterexample, and
   essential composition with Iter preparation and PettaClaw life.
+- `ContextAttention.lean` — an interruptible task capsule with a separate
+  foreground human-event lane, exact acknowledgement, stop dominance, and
+  bounded semantic retrieval that cannot erase required context.
+- `AgentArchitecture.lean` — an architecture-neutral reliability contract:
+  protected constraints outside lossy compaction, append-only receipts,
+  distinct process/cognitive/verified liveness, end-to-end completion evidence,
+  and syntactic repetition signals that do not overclaim semantic stuckness.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -44,6 +51,8 @@ lean -o PresentMoment.olean PresentMoment.lean
 LEAN_PATH=. lean -o IterArchitecture.olean IterArchitecture.lean
 LEAN_PATH=. lean ProtectedPlasticity.lean
 LEAN_PATH=. lean CodingAgent.lean
+LEAN_PATH=. lean ContextAttention.lean
+LEAN_PATH=. lean AgentArchitecture.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
