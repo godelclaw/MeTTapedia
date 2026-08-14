@@ -1782,6 +1782,21 @@ retains the straight-or-swapped result type for provenance certification,
 rather than forgetting the endpoint permutation while preparing the
 finite-state transition.
 
+That local invariant now has a typed carrier rather than remaining a theorem
+about a bare result.  The structure
+\texttt{CertifiedSelectedLocalRailTerminalWindow} stores the complete
+straight-or-swapped adjacent append together with its two-centre provenance,
+so it preserves the endpoint permutation instead of quotienting the two
+outcomes together.  Lean proves that its two projected rail supports are
+mutually disjoint and that either support is disjoint from every sufficiently
+remote future certified window, using the already established corridor-index
+gap.  This is the canonical seed and the remote half of a length-direction
+induction invariant.  It is deliberately not called a transition system: a
+neighbouring repair may replace part of the current final two-cell window, so
+the next theorem must retain enough finite branch data to update that mutable
+suffix before freezing the remote prefix.  Arbitrary length, both annular end
+caps, and L1 therefore remain open.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
