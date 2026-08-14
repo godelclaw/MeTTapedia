@@ -1909,6 +1909,27 @@ hypothesis prevents a local cubic calculation from being mistaken for a
 Jordan separator.
 -/
 
+/-- The actual local rotated-port datum needed at a chord wall.  For each wall
+edge it chooses one orientation whose two adjacent rotational darts leave the
+wall.  The endpoints of a simple edge are determined by that oriented dart;
+quantifying over arbitrary pairs of members of the edge would incorrectly
+include the same endpoint twice. -/
+def ChordWallRotatedExternalPorts
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    {C : G.EdgeColoring Color} {majority first second : Color}
+    {component : (colorPairSupportGraph C first second).ConnectedComponent}
+    {radial : ComponentRadialPath data C first second component}
+    (chord : MajorityChordOnRadialPath C majority first second radial)
+    (htriple : IsTaitColorTriple majority first second) : Prop :=
+  ∀ (edge : G.edgeSet), edge ∈ (chord.boundary htriple).wall →
+    ∃ wallDart : embedded.RS.D,
+      embedded.RS.edgeOf wallDart = edge ∧
+      embedded.RS.edgeOf (embedded.RS.rho
+        (embedded.RS.alpha wallDart)) ∉ (chord.boundary htriple).wall ∧
+      embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
+        (chord.boundary htriple).wall
+
 theorem wall_port_face_assignment_of_rotated_external_ports
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
@@ -1917,36 +1938,37 @@ theorem wall_port_face_assignment_of_rotated_external_ports
     {radial : ComponentRadialPath data C first second component}
     (chord : MajorityChordOnRadialPath C majority first second radial)
     (htriple : IsTaitColorTriple majority first second)
-    (hrotated : ∀ (edge : G.edgeSet), edge ∈
-      (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
-      ∃ wallDart : embedded.RS.D,
-        embedded.RS.edgeOf wallDart = edge ∧
-        embedded.RS.vertOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) = u ∧
-        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
-        embedded.RS.edgeOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) ∉
-          (chord.boundary htriple).wall ∧
-        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
-          (chord.boundary htriple).wall) :
+    (hrotated : ChordWallRotatedExternalPorts embedded chord htriple) :
     ∀ (edge : G.edgeSet), edge ∈ (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
       ∃ (wallDart portU portV : embedded.RS.D),
         embedded.RS.edgeOf wallDart = edge ∧
-        embedded.RS.vertOf portU = u ∧
-        embedded.RS.vertOf portV = v ∧
+        embedded.RS.vertOf portU ∈ (edge : Sym2 V) ∧
+        embedded.RS.vertOf portV ∈ (edge : Sym2 V) ∧
         embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
         embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
         dartOrbitFace embedded.RS portU =
           dartOrbitFace embedded.RS wallDart ∧
         dartOrbitFace embedded.RS portV =
           dartOrbitFace embedded.RS (embedded.RS.alpha wallDart) := by
-  intro edge hedge u v hu hv
-  rcases hrotated edge hedge hu hv with
-    ⟨wallDart, hwallDart, hportU, hportV, hportUAway, hportVAway⟩
+  intro edge hedge
+  rcases hrotated edge hedge with
+    ⟨wallDart, hwallDart, hportUAway, hportVAway⟩
   let portU := embedded.RS.rho (embedded.RS.alpha wallDart)
   let portV := embedded.RS.rho wallDart
+  have hwallDartMem : wallDart ∈ embedded.RS.dartsOn edge :=
+    embedded.RS.mem_dartsOn.mpr hwallDart
+  have hportUEndpoint : embedded.RS.vertOf portU ∈ (edge : Sym2 V) := by
+    apply (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation edge (embedded.RS.vertOf portU)).1
+    apply (embedded.RS.mem_endpoints_iff).2
+    refine ⟨embedded.RS.alpha wallDart, by simpa using hwallDartMem, ?_⟩
+    simpa [portU] using (embedded.RS.vert_rho (embedded.RS.alpha wallDart)).symm
+  have hportVEndpoint : embedded.RS.vertOf portV ∈ (edge : Sym2 V) := by
+    apply (mem_simpleGraphRotationSystem_endpoints_iff
+      embedded.cellulation.rotation edge (embedded.RS.vertOf portV)).1
+    apply (embedded.RS.mem_endpoints_iff).2
+    refine ⟨wallDart, hwallDartMem, ?_⟩
+    simpa [portV] using (embedded.RS.vert_rho wallDart).symm
   have hportUFace : dartOrbitFace embedded.RS portU =
       dartOrbitFace embedded.RS wallDart := by
     have hface := dartOrbitFace_alpha_eq_dartOrbitFace_rho
@@ -1959,8 +1981,9 @@ theorem wall_port_face_assignment_of_rotated_external_ports
       embedded.RS wallDart
     dsimp [portV]
     exact hface.symm
-  exact ⟨wallDart, portU, portV, hwallDart, hportU, hportV,
-    hportUAway, hportVAway, hportUFace, hportVFace⟩
+  exact ⟨wallDart, portU, portV, hwallDart, hportUEndpoint, hportVEndpoint,
+    hportUAway, hportVAway,
+    hportUFace, hportVFace⟩
 
 /-! The preceding binary-label lemma is the local end of the wall seam.  The
 following adapter gives the geometric caller one named obligation: for each
@@ -1985,11 +2008,10 @@ theorem wall_port_label_packet_of_wall_dart_face_assignment
         (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
     (hfaceAssignment : ∀ (edge : G.edgeSet),
       edge ∈ (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
       ∃ (wallDart portU portV : embedded.RS.D),
         embedded.RS.edgeOf wallDart = edge ∧
-        embedded.RS.vertOf portU = u ∧
-        embedded.RS.vertOf portV = v ∧
+        embedded.RS.vertOf portU ∈ (edge : Sym2 V) ∧
+        embedded.RS.vertOf portV ∈ (edge : Sym2 V) ∧
         embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
         embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
         dartOrbitFace embedded.RS portU =
@@ -1997,19 +2019,21 @@ theorem wall_port_label_packet_of_wall_dart_face_assignment
         dartOrbitFace embedded.RS portV =
           dartOrbitFace embedded.RS (embedded.RS.alpha wallDart)) :
     ∀ (edge : G.edgeSet), edge ∈ (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
-      ∃ (portU portV : embedded.RS.D),
-        embedded.RS.vertOf portU = u ∧
-        embedded.RS.vertOf portV = v ∧
+      ∃ (wallDart portU portV : embedded.RS.D),
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf portU ∈ (edge : Sym2 V) ∧
+        embedded.RS.vertOf portV ∈ (edge : Sym2 V) ∧
         embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
         embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
         labels (dartOrbitFace embedded.RS portU) ≠
           labels (dartOrbitFace embedded.RS portV) := by
-  intro edge hedge u v hu hv
-  rcases hfaceAssignment edge hedge hu hv with
-    ⟨wallDart, portU, portV, hwallDartEdge, hportU, hportV,
-      hportUAway, hportVAway, hportUFace, hportVFace⟩
-  refine ⟨portU, portV, hportU, hportV, hportUAway, hportVAway, ?_⟩
+  intro edge hedge
+  rcases hfaceAssignment edge hedge with
+    ⟨wallDart, portU, portV, hwallDartEdge, hportUEndpoint, hportVEndpoint,
+      hportUAway, hportVAway,
+      hportUFace, hportVFace⟩
+  refine ⟨wallDart, portU, portV, hwallDartEdge, hportUEndpoint, hportVEndpoint,
+    hportUAway, hportVAway, ?_⟩
   apply labels_ne_of_exact_cut_of_wall_dart_face_assignment
     embedded chord labels hexact
       (wallDart := wallDart) (portU := portU) (portV := portV)
@@ -2117,10 +2141,10 @@ noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide_of_wall_port_lab
         (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
     (hports : ∀ (edge : G.edgeSet),
       edge ∈ (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
-      ∃ (portU portV : embedded.RS.D),
-        embedded.RS.vertOf portU = u ∧
-        embedded.RS.vertOf portV = v ∧
+      ∃ (wallDart portU portV : embedded.RS.D),
+        embedded.RS.edgeOf wallDart = edge ∧
+        embedded.RS.vertOf portU ∈ (edge : Sym2 V) ∧
+        embedded.RS.vertOf portV ∈ (edge : Sym2 V) ∧
         embedded.RS.edgeOf portU ∉ (chord.boundary htriple).wall ∧
         embedded.RS.edgeOf portV ∉ (chord.boundary htriple).wall ∧
         labels (dartOrbitFace embedded.RS portU) ≠
@@ -2136,23 +2160,12 @@ noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide_of_wall_port_lab
     embedded hdata hC chord htriple labels selected hexact ?_
       hinside_cycle houtside_cycle
   intro edge hedge
-  obtain ⟨dart, hdart⟩ := embedded.RS.dartsOn_nonempty edge
-  have hu : embedded.RS.vertOf dart ∈ (edge : Sym2 V) := by
-    apply (mem_simpleGraphRotationSystem_endpoints_iff
-      embedded.cellulation.rotation edge (embedded.RS.vertOf dart)).1
-    exact (embedded.RS.mem_endpoints_iff).2 ⟨dart, hdart, rfl⟩
-  have hv : embedded.RS.vertOf (embedded.RS.alpha dart) ∈
-      (edge : Sym2 V) := by
-    apply (mem_simpleGraphRotationSystem_endpoints_iff
-      embedded.cellulation.rotation edge
-        (embedded.RS.vertOf (embedded.RS.alpha dart))).1
-    exact (embedded.RS.mem_endpoints_iff).2
-      ⟨embedded.RS.alpha dart, by simpa using hdart, rfl⟩
-  rcases hports edge hedge hu hv with
-    ⟨portU, portV, hportU, hportV, hportUAway, hportVAway, hlabels⟩
+  rcases hports edge hedge with
+    ⟨_wallDart, portU, portV, _hwallDartEdge, hportU, hportV,
+      hportUAway, hportVAway, hlabels⟩
   exact edgeCrossesVertexSide_of_chord_wall_of_port_label_inequality
-    embedded hdata hC chord htriple labels selected hexact hedge hu hv
-      portU portV hportU hportV hportUAway hportVAway hlabels
+    embedded hdata hC chord htriple labels selected hexact hedge hportU hportV
+      portU portV rfl rfl hportUAway hportVAway hlabels
 
 /-! The local wall packet can now be fed directly from the rotated-port
 orientation.  This is intentionally an interface theorem rather than a
@@ -2177,19 +2190,7 @@ noncomputable def cyclicEdgeCutRealization_of_exactCutLabelSide_of_rotated_exter
           labels (dartOrbitFace embedded.RS
             (embedded.RS.alpha dart)) ↔
         (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
-    (hrotated : ∀ (edge : G.edgeSet), edge ∈
-      (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
-      ∃ wallDart : embedded.RS.D,
-        embedded.RS.edgeOf wallDart = edge ∧
-        embedded.RS.vertOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) = u ∧
-        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
-        embedded.RS.edgeOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) ∉
-          (chord.boundary htriple).wall ∧
-        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
-          (chord.boundary htriple).wall)
+    (hrotated : ChordWallRotatedExternalPorts embedded chord htriple)
     (hinside_cycle : HasCycleOnSide G
       (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
         labels selected))
@@ -2228,19 +2229,7 @@ noncomputable def cycleSideCertificate_of_exactCutLabelSide_of_rotated_external_
           labels (dartOrbitFace embedded.RS
             (embedded.RS.alpha dart)) ↔
         (embedded.RS.edgeOf dart).1 ∈ chord.cycleWalk.edges)
-    (hrotated : ∀ (edge : G.edgeSet), edge ∈
-      (chord.boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
-      ∃ wallDart : embedded.RS.D,
-        embedded.RS.edgeOf wallDart = edge ∧
-        embedded.RS.vertOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) = u ∧
-        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
-        embedded.RS.edgeOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) ∉
-          (chord.boundary htriple).wall ∧
-        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
-          (chord.boundary htriple).wall)
+    (hrotated : ChordWallRotatedExternalPorts embedded chord htriple)
     (hinside_cycle : HasCycleOnSide G
       (exactCutLabelSide embedded.RS (chord.boundary htriple).wall
         labels selected))

@@ -434,19 +434,8 @@ structure ExactCutLabelSideCertificate
     labels (dartOrbitFace embedded.RS dart) ≠
         labels (dartOrbitFace embedded.RS (embedded.RS.alpha dart)) ↔
       (embedded.RS.edgeOf dart).1 ∈ (materializedChord chord).cycleWalk.edges
-  hrotated : ∀ (edge : G.edgeSet), edge ∈
-      ((materializedChord chord).boundary htriple).wall →
-      ∀ {u v : V}, u ∈ (edge : Sym2 V) → v ∈ (edge : Sym2 V) →
-      ∃ wallDart : embedded.RS.D,
-        embedded.RS.edgeOf wallDart = edge ∧
-        embedded.RS.vertOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) = u ∧
-        embedded.RS.vertOf (embedded.RS.rho wallDart) = v ∧
-        embedded.RS.edgeOf (embedded.RS.rho
-          (embedded.RS.alpha wallDart)) ∉
-          ((materializedChord chord).boundary htriple).wall ∧
-        embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
-          ((materializedChord chord).boundary htriple).wall
+  hrotated : ChordWallRotatedExternalPorts embedded (materializedChord chord)
+    htriple
   hinside_cycle : HasCycleOnSide G
     (exactCutLabelSide embedded.RS
       ((materializedChord chord).boundary htriple).wall labels selected)

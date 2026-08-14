@@ -1275,6 +1275,16 @@ audit is being hidden here.  The open work is the primal annular-separation
 argument turning the certified facial cut into the two cycle-bearing graph
 sides required by the deletion assignment.
 
+The rotated-port interface itself has also been corrected.  Its first form
+asked for an orientation for every pair of vertices belonging to a wall edge,
+which inadvertently included the same endpoint twice and was impossible for
+a simple edge.  The repaired
+\texttt{ChordWallRotatedExternalPorts} asks exactly for one oriented wall dart
+per wall edge whose two adjacent rotational darts leave the wall.  Its two
+endpoint memberships are then derived from that dart rather than supplied as
+an over-quantified premise.  This is a type-level repair of the conditional
+bridge, not a construction of those oriented darts from the annular geometry.
+
 \paragraph{What one dual cycle now yields, and what it does not.}  The
 framed separator has been tightened at exactly this representation boundary.
 For any supplied simple facial-dual cycle it now re-expresses the crossed
