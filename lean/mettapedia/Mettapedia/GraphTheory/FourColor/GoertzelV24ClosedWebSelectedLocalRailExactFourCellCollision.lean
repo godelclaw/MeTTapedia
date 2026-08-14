@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailExactTerminalWindow
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailFourCellCollision
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedRailPairBypassAppend
 
 /-!
 # L1: exact source-piece location of a four-cell rail collision
@@ -227,6 +228,65 @@ theorem crossedExactFourCellCollision_geometry_and_pieces
       lastWindow.toCertified collision,
     crossedExactFourCellCollision_face_in_both_piece_envelopes
       firstWindow lastWindow collision⟩
+
+/-- The stronger two-way ordered cross witness carries the same exact finite
+geometry after projection to the four-way append classifier. -/
+theorem orderedExactCrossCollision_geometry_and_pieces
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (collision : SelectedRailPairCrossCollision (web := web)
+      firstWindow.toCertified.firstSupport firstWindow.toCertified.secondSupport
+      lastWindow.toCertified.firstSupport lastWindow.toCertified.secondSupport) :
+    FourCenterCollisionGeometry (corridor := corridor)
+        firstInterior.center
+        (nextCorridorInterior firstInterior hfirstNext).center
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center collision.face ∧
+      FaceInAdjacentSelectedRailPieces (successor := firstSuccessor)
+        (left := firstLeft) collision.face ∧
+      FaceInAdjacentSelectedRailPieces (successor := lastSuccessor)
+        (left := LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))
+        collision.face := by
+  have h := orderedExactFourCellCollision_geometry_and_pieces hsource
+    firstWindow lastWindow collision.toAppendCollision
+  cases collision <;> exact h
+
+/-- Crossed endpoint order has the corresponding exact projection. -/
+theorem crossedExactCrossCollision_geometry_and_pieces
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (collision : SelectedRailPairCrossCollision (web := web)
+      firstWindow.toCertified.firstSupport firstWindow.toCertified.secondSupport
+      lastWindow.toCertified.secondSupport lastWindow.toCertified.firstSupport) :
+    FourCenterCollisionGeometry (corridor := corridor)
+        firstInterior.center
+        (nextCorridorInterior firstInterior hfirstNext).center
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center collision.face ∧
+      FaceInAdjacentSelectedRailPieces (successor := firstSuccessor)
+        (left := firstLeft) collision.face ∧
+      FaceInAdjacentSelectedRailPieces (successor := lastSuccessor)
+        (left := LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))
+        collision.face := by
+  have h := crossedExactFourCellCollision_geometry_and_pieces hsource
+    firstWindow lastWindow collision.toAppendCollision
+  cases collision <;> exact h
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
