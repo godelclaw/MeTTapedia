@@ -1149,6 +1149,15 @@ the opposite ambient dart.  This is the local seam datum required by a future
 rail append.  It neither asserts that appended rail segments avoid one
 another nor turns the local Cell--3 windows into the long transversal pair.
 
+For each of the two side slots flanking that outgoing rung, Lean now gives the
+same explicit alternative at the next centre: the opposite face is either
+already the next centre or is facial-dual adjacent to it through the literal
+third edge at the cubic corner
+(\texttt{selectedPlacementSideFace\_eq\_or\_adjacent\_next\_of\_beforeOutgoing}
+and \texttt{...\_afterOutgoing}).  The equality alternative is a zero-step,
+not a disguised edge.  It remains part of the finite local case analysis
+needed before segments can be appended into simple rails.
+
 The exclusion of that global premise is now itself kernel-checked rather than
 merely recorded in prose.  Every dart over a named inner boundary edge belongs
 to the inner-hole orbit, as does its $\alpha$-opposite; hence

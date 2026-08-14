@@ -474,6 +474,150 @@ theorem selectedNextIncomingDart_eq_alpha_outgoingDart
         halphaFace.symm
   · exact hopposite
 
+/-- A surviving side slot immediately before the selected outgoing rung has
+one finite literal relation to the next Cell--3 centre: it either is that
+face already, or is joined to it by the third edge at the local cubic corner.
+The equality branch is retained explicitly; it is not silently converted to
+a one-edge rail. -/
+theorem selectedPlacementSideFace_eq_or_adjacent_next_of_beforeOutgoing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (hsuccessor : placement.outgoingPosition.val ≡ position.1.val + 1 [MOD 6]) :
+    selectedPlacementSideFace placement position =
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center ∨
+      (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (selectedPlacementSideFace placement position)
+          ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+            (nextCorridorInterior interior hnext).center) := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  let outgoingDart := faceCycleDart web.annular.RS placement.root
+    placement.outgoingPosition
+  have hdarts : outgoingDart = web.annular.RS.phi sideDart :=
+    faceCycleDart_successor_of_modEq web.annular.RS placement.root
+      placement.orbit_card position.1 placement.outgoingPosition hsuccessor
+  by_cases hfaces : selectedPlacementSideFace placement position =
+      skeleton.faceAt (nextCorridorInterior interior hnext).center
+  · exact Or.inl hfaces
+  · right
+    have hcornerNe : dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha sideDart) ≠
+          dartOrbitFace web.annular.RS
+            (web.annular.RS.alpha (web.annular.RS.phi sideDart)) := by
+      intro heq
+      apply hfaces
+      apply Subtype.ext
+      change dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) =
+        (skeleton.faceAt (nextCorridorInterior interior hnext).center).1
+      calc
+        dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) =
+            dartOrbitFace web.annular.RS
+              (web.annular.RS.alpha (web.annular.RS.phi sideDart)) := heq
+        _ = dartOrbitFace web.annular.RS
+            (web.annular.RS.alpha outgoingDart) := by rw [hdarts]
+        _ = (skeleton.faceAt (nextCorridorInterior interior hnext).center).1 := by
+          simpa [skeleton, outgoingDart] using
+            selectedOutgoingAlphaFace_eq_nextCenter (corridor := corridor)
+              hnext placement
+    have hcornerCard : (web.annular.RS.dartsAt
+        (web.annular.RS.vertOf (web.annular.RS.alpha sideDart))).card = 3 := by
+      apply Instance.InteriorFace.dartsAt_card_eq_three web
+      change (selectedPlacementSideFace placement position).1 ∈
+        web.annular.cellulation.interiorFaces
+      exact selectedPlacementSideFace_internal (corridor := corridor)
+        placement position
+    have hadj := oppositeFaces_adjacent_at_locally_cubic_corner web.annular.RS
+      (Instance.InteriorFace.vertexRotationCyclic web) sideDart hcornerCard hcornerNe
+    convert hadj using 1
+    · apply Subtype.ext
+      rfl
+    · apply Subtype.ext
+      rw [← hdarts]
+      simpa [skeleton, outgoingDart] using
+        (selectedOutgoingAlphaFace_eq_nextCenter (corridor := corridor)
+          hnext placement).symm
+
+/-- The analogous forward side slot immediately after a selected outgoing
+rung has the same finite equality-or-adjacency alternative at the next
+Cell--3 centre. -/
+theorem selectedPlacementSideFace_eq_or_adjacent_next_of_afterOutgoing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (hnext : interior.center.val + 2 < blockLength)
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (hsuccessor : position.1.val ≡ placement.outgoingPosition.val + 1 [MOD 6]) :
+    selectedPlacementSideFace placement position =
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          (nextCorridorInterior interior hnext).center ∨
+      (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (selectedPlacementSideFace placement position)
+          ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+            (nextCorridorInterior interior hnext).center) := by
+  let skeleton := corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let outgoingDart := faceCycleDart web.annular.RS placement.root
+    placement.outgoingPosition
+  let sideDart := faceCycleDart web.annular.RS placement.root position.1
+  have hdarts : sideDart = web.annular.RS.phi outgoingDart :=
+    faceCycleDart_successor_of_modEq web.annular.RS placement.root
+      placement.orbit_card placement.outgoingPosition position.1 hsuccessor
+  by_cases hfaces : selectedPlacementSideFace placement position =
+      skeleton.faceAt (nextCorridorInterior interior hnext).center
+  · exact Or.inl hfaces
+  · right
+    have houtgoingFace : dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha outgoingDart) =
+        (skeleton.faceAt (nextCorridorInterior interior hnext).center).1 := by
+      simpa [skeleton, outgoingDart] using
+        selectedOutgoingAlphaFace_eq_nextCenter (corridor := corridor)
+          hnext placement
+    have hcornerNe : dartOrbitFace web.annular.RS
+        (web.annular.RS.alpha outgoingDart) ≠
+          dartOrbitFace web.annular.RS
+            (web.annular.RS.alpha (web.annular.RS.phi outgoingDart)) := by
+      intro heq
+      apply hfaces
+      apply Subtype.ext
+      change dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) =
+        (skeleton.faceAt (nextCorridorInterior interior hnext).center).1
+      rw [hdarts]
+      calc
+        dartOrbitFace web.annular.RS
+            (web.annular.RS.alpha (web.annular.RS.phi outgoingDart)) =
+            dartOrbitFace web.annular.RS (web.annular.RS.alpha outgoingDart) :=
+              heq.symm
+        _ = (skeleton.faceAt (nextCorridorInterior interior hnext).center).1 :=
+          houtgoingFace
+    have hcornerCard : (web.annular.RS.dartsAt
+        (web.annular.RS.vertOf (web.annular.RS.alpha outgoingDart))).card = 3 := by
+      apply Instance.InteriorFace.dartsAt_card_eq_three web
+      rw [houtgoingFace]
+      exact corridor.face_internal (nextCorridorInterior interior hnext).center
+    have hadj := oppositeFaces_adjacent_at_locally_cubic_corner web.annular.RS
+      (Instance.InteriorFace.vertexRotationCyclic web) outgoingDart hcornerCard hcornerNe
+    convert hadj.symm using 1
+    · apply Subtype.ext
+      change dartOrbitFace web.annular.RS (web.annular.RS.alpha sideDart) =
+        dartOrbitFace web.annular.RS
+          (web.annular.RS.alpha (web.annular.RS.phi outgoingDart))
+      rw [hdarts]
+    · apply Subtype.ext
+      exact houtgoingFace.symm
+
 /-- **L1 local collision branch.** If a surviving side slot of a selected
 Cell--3 hexagon also faces the next corridor centre, then those two corridor
 faces have two distinct shared interior edges: the selected outgoing rung and
