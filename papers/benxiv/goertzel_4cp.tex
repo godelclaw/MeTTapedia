@@ -1848,7 +1848,10 @@ orders, a bad result carries a face belonging to both final simple candidate
 paths.  Lean also proves from the internal disjointness of the two input pairs
 that this retained face must have one of the two cross-track raw origins.  A
 raw intersection erased by bypass is therefore no longer reported as a
-geometric obstruction.  The retained bottleneck itself is not yet repaired.
+geometric obstruction.  This origin is retained as proof-relevant data and
+projects canonically to the previous raw cross-collision witness, so the
+source-local geometric classification can be reused without reconstruction.
+The retained bottleneck itself is not yet repaired.
 
 That classification is now explicit and fail-closed.  The generic
 four-way classifier returns either both same-track and both cross-track

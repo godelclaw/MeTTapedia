@@ -102,7 +102,7 @@ inductive RetainedCrossOrigin
       firstStart secondStart middleFirst middleSecond)
     (newAssembly : SelectedSourceLocalRailAssembly (web := web)
       middleFirst middleSecond firstFinish secondFinish)
-    (face : SelectedFace (web := web)) : Prop
+    (face : SelectedFace (web := web)) : Type (u + 1)
   | firstSecond
       (hold : face ∈ oldAssembly.firstRail.support)
       (hnew : face ∈ newAssembly.secondRail.support.tail)
@@ -123,9 +123,28 @@ structure RetainedBypassCrossCollision
   mem_second : face ∈ (orderedBypassedPair oldAssembly newAssembly).secondRail.support
   origin : RetainedCrossOrigin oldAssembly newAssembly face
 
+/-- Forget survival through bypass and retain the exact raw cross-support
+witness consumed by the source-local geometry. -/
+def RetainedBypassCrossCollision.toRawCrossCollision
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish}
+    (collision : RetainedBypassCrossCollision oldAssembly newAssembly) :
+    SelectedRailPairCrossCollision (web := web)
+      oldAssembly.firstRail.support oldAssembly.secondRail.support
+      newAssembly.firstRail.support newAssembly.secondRail.support :=
+  match collision.origin with
+  | .firstSecond hold hnew =>
+      .firstSecond ⟨collision.face, hold, hnew⟩
+  | .secondFirst hold hnew =>
+      .secondFirst ⟨collision.face, hold, hnew⟩
+
 /-- Any actual collision of the two ordered bypass candidates has a
 cross-track raw origin. -/
-theorem retainedCrossOrigin_of_orderedBypassCollision
+noncomputable def retainedCrossOrigin_of_orderedBypassCollision
     {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
       SelectedFace (web := web)}
     (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
@@ -136,6 +155,7 @@ theorem retainedCrossOrigin_of_orderedBypassCollision
     (hfirst : face ∈ (orderedBypassedPair oldAssembly newAssembly).firstRail.support)
     (hsecond : face ∈ (orderedBypassedPair oldAssembly newAssembly).secondRail.support) :
     RetainedCrossOrigin oldAssembly newAssembly face := by
+  classical
   have hfirstRaw :=
     (oldAssembly.firstRail.append newAssembly.firstRail
       |>.support_bypass_subset_support) hfirst
@@ -143,14 +163,19 @@ theorem retainedCrossOrigin_of_orderedBypassCollision
     (oldAssembly.secondRail.append newAssembly.secondRail
       |>.support_bypass_subset_support) hsecond
   rw [SimpleGraph.Walk.support_append] at hfirstRaw hsecondRaw
-  rcases List.mem_append.mp hfirstRaw with hfirstOld | hfirstNew
-  · rcases List.mem_append.mp hsecondRaw with hsecondOld | hsecondNew
+  by_cases hfirstOld : face ∈ oldAssembly.firstRail.support
+  · by_cases hsecondOld : face ∈ oldAssembly.secondRail.support
     · exact False.elim ((List.disjoint_left.mp
         oldAssembly.firstRail_support_disjoint_secondRail hfirstOld) hsecondOld)
-    · exact .firstSecond hfirstOld hsecondNew
-  · rcases List.mem_append.mp hsecondRaw with hsecondOld | hsecondNew
+    · exact .firstSecond hfirstOld
+        ((List.mem_append.mp hsecondRaw).resolve_left hsecondOld)
+  · have hfirstNew : face ∈ newAssembly.firstRail.support.tail :=
+      (List.mem_append.mp hfirstRaw).resolve_left hfirstOld
+    by_cases hsecondOld : face ∈ oldAssembly.secondRail.support
     · exact .secondFirst hsecondOld hfirstNew
-    · have hfirstFull : face ∈ newAssembly.firstRail.support :=
+    · have hsecondNew : face ∈ newAssembly.secondRail.support.tail :=
+        (List.mem_append.mp hsecondRaw).resolve_left hsecondOld
+      have hfirstFull : face ∈ newAssembly.firstRail.support :=
         List.mem_of_mem_tail hfirstNew
       have hsecondFull : face ∈ newAssembly.secondRail.support :=
         List.mem_of_mem_tail hsecondNew
@@ -211,7 +236,7 @@ inductive CrossedRetainedCrossOrigin
       firstStart secondStart middleFirst middleSecond)
     (newAssembly : SelectedSourceLocalRailAssembly (web := web)
       middleSecond middleFirst firstFinish secondFinish)
-    (face : SelectedFace (web := web)) : Prop
+    (face : SelectedFace (web := web)) : Type (u + 1)
   | firstFirst
       (hold : face ∈ oldAssembly.firstRail.support)
       (hnew : face ∈ newAssembly.firstRail.support.tail)
@@ -232,9 +257,28 @@ structure CrossedRetainedBypassCrossCollision
   mem_second : face ∈ (crossedBypassedPair oldAssembly newAssembly).secondRail.support
   origin : CrossedRetainedCrossOrigin oldAssembly newAssembly face
 
+/-- Crossed-order retained collisions likewise project to the generic raw
+cross witness after the suffix pair is viewed in continuation order. -/
+def CrossedRetainedBypassCrossCollision.toRawCrossCollision
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish}
+    (collision : CrossedRetainedBypassCrossCollision oldAssembly newAssembly) :
+    SelectedRailPairCrossCollision (web := web)
+      oldAssembly.firstRail.support oldAssembly.secondRail.support
+      newAssembly.secondRail.support newAssembly.firstRail.support :=
+  match collision.origin with
+  | .firstFirst hold hnew =>
+      .firstSecond ⟨collision.face, hold, hnew⟩
+  | .secondSecond hold hnew =>
+      .secondFirst ⟨collision.face, hold, hnew⟩
+
 /-- A retained crossed-order collision has one of the two exact cross raw
 origins. -/
-theorem crossedRetainedCrossOrigin_of_bypassCollision
+noncomputable def crossedRetainedCrossOrigin_of_bypassCollision
     {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
       SelectedFace (web := web)}
     (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
@@ -245,6 +289,7 @@ theorem crossedRetainedCrossOrigin_of_bypassCollision
     (hfirst : face ∈ (crossedBypassedPair oldAssembly newAssembly).firstRail.support)
     (hsecond : face ∈ (crossedBypassedPair oldAssembly newAssembly).secondRail.support) :
     CrossedRetainedCrossOrigin oldAssembly newAssembly face := by
+  classical
   have hfirstRaw :=
     (oldAssembly.firstRail.append newAssembly.secondRail
       |>.support_bypass_subset_support) hfirst
@@ -252,14 +297,19 @@ theorem crossedRetainedCrossOrigin_of_bypassCollision
     (oldAssembly.secondRail.append newAssembly.firstRail
       |>.support_bypass_subset_support) hsecond
   rw [SimpleGraph.Walk.support_append] at hfirstRaw hsecondRaw
-  rcases List.mem_append.mp hfirstRaw with hfirstOld | hsecondNew
-  · rcases List.mem_append.mp hsecondRaw with hsecondOld | hfirstNew
+  by_cases hfirstOld : face ∈ oldAssembly.firstRail.support
+  · by_cases hsecondOld : face ∈ oldAssembly.secondRail.support
     · exact False.elim ((List.disjoint_left.mp
         oldAssembly.firstRail_support_disjoint_secondRail hfirstOld) hsecondOld)
-    · exact .firstFirst hfirstOld hfirstNew
-  · rcases List.mem_append.mp hsecondRaw with hsecondOld | hfirstNew
+    · exact .firstFirst hfirstOld
+        ((List.mem_append.mp hsecondRaw).resolve_left hsecondOld)
+  · have hsecondNew : face ∈ newAssembly.secondRail.support.tail :=
+      (List.mem_append.mp hfirstRaw).resolve_left hfirstOld
+    by_cases hsecondOld : face ∈ oldAssembly.secondRail.support
     · exact .secondSecond hsecondOld hsecondNew
-    · have hfirstFull : face ∈ newAssembly.firstRail.support :=
+    · have hfirstNew : face ∈ newAssembly.firstRail.support.tail :=
+        (List.mem_append.mp hsecondRaw).resolve_left hsecondOld
+      have hfirstFull : face ∈ newAssembly.firstRail.support :=
         List.mem_of_mem_tail hfirstNew
       have hsecondFull : face ∈ newAssembly.secondRail.support :=
         List.mem_of_mem_tail hsecondNew
