@@ -1396,6 +1396,17 @@ connector are still not asserted mutually disjoint.  The bounded neighbouring
 cases, append induction, and the two end caps remain the finite L1 formation
 obligations before these paths become the long source crosscut pair.
 
+The same-cell ambiguity is now fail-closed rather than assumed away.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailCollision} checks every
+cross-track coordinate pairing in the three finite connector shapes.  It
+returns either two genuinely support-disjoint selected rail paths, or an
+existing \texttt{SelectedLocalLayerCollision.repeatsSide} certificate naming
+the two distinct literal side slots whose opposite-dart faces coincide.  The
+latter is the concrete two-shared-edge exceptional geometry already exposed
+by the source-local formation layer.  This completes the finite same-cell
+alternative; it does not yet refute that exceptional branch or settle either
+neighbouring-cell gap.
+
 \paragraph{Do not confuse L8 radial paths with splice crosscuts.}  Lean already
 proves \texttt{exists\_longRadialSectorWitness\_at\_five}: under its
 closed-web hypotheses it supplies two vertex-disjoint \emph{primal} radial
