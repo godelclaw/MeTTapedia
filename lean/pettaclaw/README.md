@@ -44,6 +44,11 @@ are derived from the models, deployed, and re-observed live.
   proof-carrying traces, a frontier-blindness separation theorem,
   digest-bound promotion, outcome-first evaluation, derived attention, and
   conservative coordinate composition.
+- `MinimalKernel.lean` — a weakness-ordered refinement of the fused core:
+  harness-issued decision receipts, semantic effect idempotency, fail-closed
+  and fail-alive promotion, finite autonomous budgets with human preemption,
+  evidence-closed knowledge, bounded non-progress observation, a
+  weakest-sufficient commit theorem, and coordinate-erasure witnesses.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -60,6 +65,7 @@ LEAN_PATH=. lean CodingAgent.lean
 LEAN_PATH=. lean ContextAttention.lean
 LEAN_PATH=. lean AgentArchitecture.lean
 LEAN_PATH=. lean VerifiedFrontier.lean
+LEAN_PATH=. lean MinimalKernel.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
