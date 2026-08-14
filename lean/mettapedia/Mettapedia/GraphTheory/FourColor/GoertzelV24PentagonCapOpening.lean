@@ -44,14 +44,42 @@ structure PentagonCap (G : SimpleGraph V) where
   vertex : Fin 5 ↪ V
   cycleEdge : Fin 5 ↪ G.edgeSet
   spokeEdge : Fin 5 ↪ G.edgeSet
+  /-- The retained endpoint of each ordered cap spoke.  This is source data,
+  not a choice made by the opening construction. -/
+  spokeOuter : Fin 5 → V
   cycleMate : Equiv.Perm (Fin 5)
   cycleMate_noFixed : ∀ step, cycleMate step ≠ step
   cycle_spoke_ne : ∀ cycle spoke, cycleEdge cycle ≠ spokeEdge spoke
+  /-- Each named spoke joins its cap vertex to its named retained endpoint. -/
+  spokeEdge_eq : ∀ step,
+    (spokeEdge step).1 = s(vertex step, spokeOuter step)
+  /-- The retained endpoint of a spoke is outside the five cap vertices. -/
+  spokeOuter_ne_vertex : ∀ spoke capStep,
+    spokeOuter spoke ≠ vertex capStep
+  /-- Both endpoints of a cycle edge are cap vertices.  This distinguishes
+  deleted cap-cycle edges from the five retained boundary spokes. -/
+  cycleEdge_endpoint_eq_vertex : ∀ cycle endpoint,
+    endpoint ∈ (cycleEdge cycle).1 → ∃ capStep, vertex capStep = endpoint
   incident_eq : ∀ step : Fin 5,
     incidentEdgeFinset G (vertex step) =
       {cycleEdge step, cycleEdge (cycleMate step), spokeEdge step}
 
 namespace PentagonCap
+
+/-- The five vertices deleted in the manuscript-side opening. -/
+def vertexSupport (cap : PentagonCap G) : Finset V :=
+  Finset.univ.map cap.vertex
+
+@[simp] theorem mem_vertexSupport_iff (cap : PentagonCap G) (vertex : V) :
+    vertex ∈ cap.vertexSupport ↔ ∃ step : Fin 5, cap.vertex step = vertex := by
+  simp [vertexSupport]
+
+/-- A named retained spoke endpoint really lies outside the deleted cap. -/
+theorem spokeOuter_not_mem_vertexSupport (cap : PentagonCap G) (step : Fin 5) :
+    cap.spokeOuter step ∉ cap.vertexSupport := by
+  intro hmem
+  rcases (cap.mem_vertexSupport_iff _).mp hmem with ⟨capStep, hcapStep⟩
+  exact cap.spokeOuter_ne_vertex step capStep hcapStep.symm
 
 /-- The five cap-cycle edges to remove. -/
 def cycleSupport (cap : PentagonCap G) : Finset G.edgeSet :=

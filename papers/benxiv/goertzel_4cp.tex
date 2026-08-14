@@ -536,23 +536,24 @@ operation from a finite pentagon-cap presentation.  It constructs the
 edge-deleted graph, transports the ordered five spokes into its edge type,
 and proves that each named cap vertex has precisely its one surviving spoke.
 It consequently computes the five-stub inner interface of
-\texttt{AnnularBoundaryData}, with no invented outer boundary.  The two
-presentations are not being called definitionally identical; a later consumer
-that needs to interchange them must prove the relevant graph isomorphism.
-The manuscript-side carrier is now present separately as
+\texttt{AnnularBoundaryData}, with no invented outer boundary.  The
+manuscript-side carrier is now present separately as
 \texttt{GoertzelV24DeletedRegionSlitGraph}: it deletes a chosen vertex region,
 keeps precisely the exterior vertices, and creates one fresh degree-one stub
 for every directed edge from that exterior into the deleted region.  Thus the
 two presentations have been retained rather than silently choosing one.  The
-next comparison is necessarily an isomorphism of \emph{ordered} boundary
-data: it must identify the toolchain's stub at each element of \texttt{Fin 5}
-with the corresponding fresh manuscript-side port in that same cyclic order.
-A bare graph isomorphism that permutes those five stubs would not preserve the
-boundary word or the selected-component data, and has not been asserted.
-This is a real graph construction, not a claim that a selected pentagon or the
-annular Cell--3 carrier has already been obtained.  Selecting the cap in the
-closed normal-form map, proving the required corridor is retained, and
-constructing the outer hole remain the source-specific formation theorem.
+comparison is now constructed in
+\texttt{GoertzelV24PentagonCapOpeningComparison}.  Its
+\texttt{openingGraphIso} maps the fresh slit port at ordered position $i$ to
+the toolchain's retained cap vertex at that same position $i$.  Exactness is
+not a cardinality argument: the cubic incident-edge list at every deleted cap
+vertex proves that the five outward spokes exhaust all manuscript-side ports.
+Thus the graph isomorphism also preserves the ordered five-stub boundary data,
+which a bare graph isomorphism allowed to permute the stubs would not do.
+This settles a presentation comparison, not the source formation theorem:
+it neither selects a pentagon in the closed normal-form map nor proves that a
+Cell--3 corridor is retained, constructs the outer hole, or identifies the
+dependent face-fragment carriers of the two openings.
 
 The strictly local open-carrier implication is now machine-checked as well.
 The predicate \texttt{CommonNeighborVertexIncidence} asks only that, after the
