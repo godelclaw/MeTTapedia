@@ -1842,6 +1842,14 @@ cross-track collisions, still carrying the literal common face.  This reduces
 the finite repair table but does not discharge its two remaining collision
 kinds or construct the arbitrary-length chain.
 
+The residual test is now made on the paths that actually survive loop
+erasure, rather than conservatively on their raw supports.  In both endpoint
+orders, a bad result carries a face belonging to both final simple candidate
+paths.  Lean also proves from the internal disjointness of the two input pairs
+that this retained face must have one of the two cross-track raw origins.  A
+raw intersection erased by bypass is therefore no longer reported as a
+geometric obstruction.  The retained bottleneck itself is not yet repaired.
+
 That classification is now explicit and fail-closed.  The generic
 four-way classifier returns either both same-track and both cross-track
 disjointness proofs, or an actual common face tagged by the interaction that
