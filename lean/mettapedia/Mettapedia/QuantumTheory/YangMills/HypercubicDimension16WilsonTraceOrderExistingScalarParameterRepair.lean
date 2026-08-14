@@ -11,6 +11,8 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderI
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock01
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock00
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock01
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingFundamentalData
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderIncomingTraceAnticommutatorData
 
 /-!
 # OUR existing-scalar parameter repair of the singleton trace row
@@ -84,6 +86,10 @@ open HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock00
 open HypercubicDimension16WilsonTraceOrderIncomingBianchiDataBlock01
 open HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock00
 open HypercubicDimension16WilsonTraceOrderIncomingEOMDataBlock01
+open HypercubicDimension16WilsonTraceOrderIncomingFundamentalData
+open HypercubicDimension16WilsonTraceOrderIncomingTraceAnticommutatorData
+open HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair
+open HypercubicDimension16WilsonTraceOrderTraceAnticommutatorObstruction
 
 /-- OUR scalar null-direction candidate over the six already constructed
 coordinates.  Its signs are chosen so that a unit evaluation on the original
@@ -660,6 +666,238 @@ theorem ourExistingScalarNullDirection_ourEOM_zero :
     ourSecondaryPlaneProfileInvariantCoordinate_ourEOM_zero]
   norm_num
 
+/-! ## Fundamental three-cut replay -/
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutBase :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutBaseOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourFundamentalThreeCutBaseLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourFundamentalThreeCutBaseLabeled 0
+    ourFundamentalThreeCutBase_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutSwapFirstSecond :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutSwapFirstSecondOrbit (1 : ℚ))) =
+      0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourFundamentalThreeCutSwapFirstSecondLabeled :
+            FieldSevenOrbitCarrier) (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourFundamentalThreeCutSwapFirstSecondLabeled 0
+    ourFundamentalThreeCutSwapFirstSecond_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutSwapFirstThird :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutSwapFirstThirdOrbit (1 : ℚ))) =
+      0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourFundamentalThreeCutSwapFirstThirdLabeled :
+            FieldSevenOrbitCarrier) (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourFundamentalThreeCutSwapFirstThirdLabeled 0
+    ourFundamentalThreeCutSwapFirstThird_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutSwapSecondThird :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutSwapSecondThirdOrbit (1 : ℚ))) =
+      0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourFundamentalThreeCutSwapSecondThirdLabeled :
+            FieldSevenOrbitCarrier) (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourFundamentalThreeCutSwapSecondThirdLabeled 0
+    ourFundamentalThreeCutSwapSecondThird_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutForward :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutForwardOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourFundamentalThreeCutForwardLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourFundamentalThreeCutForwardLabeled 0
+    ourFundamentalThreeCutForward_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutBackward :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutBackwardOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourFundamentalThreeCutBackwardLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourFundamentalThreeCutBackwardLabeled 0
+    ourFundamentalThreeCutBackward_incomingPlaneProfileSignedWeight]
+  norm_num
+
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCut :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourFundamentalThreeCutBaseOrbit 1 -
+          Finsupp.single ourFundamentalThreeCutSwapFirstSecondOrbit 1 -
+            Finsupp.single ourFundamentalThreeCutSwapFirstThirdOrbit 1 -
+              Finsupp.single ourFundamentalThreeCutSwapSecondThirdOrbit 1 +
+                Finsupp.single ourFundamentalThreeCutForwardOrbit 1 +
+                  Finsupp.single ourFundamentalThreeCutBackwardOrbit 1)) = 0 := by
+  simp only [LinearMap.map_sub, LinearMap.map_add,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutBase,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutSwapFirstSecond,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutSwapFirstThird,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutSwapSecondThird,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutForward,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCutBackward]
+  norm_num
+
+theorem ourIncomingPlaneProfileInvariantCoordinate_ourFundamentalThreeCut_zero
+    (policy : PhysicalRelationPolicy) :
+    ourIncomingPlaneProfileInvariantCoordinate
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenFundamentalTraceGenerator policy) 1)) =
+      0 := by
+  unfold ourIncomingPlaneProfileInvariantCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_ourFundamentalThreeCut,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourFundamentalThreeCut]
+  norm_num
+
+theorem ourExistingScalarNullDirection_ourFundamentalThreeCut_zero
+    (policy : PhysicalRelationPolicy) :
+    ourExistingScalarNullDirection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenFundamentalTraceGenerator policy) 1)) =
+      0 := by
+  unfold ourExistingScalarNullDirection
+  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.neg_apply,
+    LinearMap.smul_apply]
+  rw [ourInvariantSevenAxisCoordinate_ourFundamentalThreeCut_zero,
+    ourInvariantIBPAxisCoordinate_ourFundamentalThreeCut_zero,
+    ourInvariantThirdIBPAxisCoordinate_ourFundamentalThreeCut_zero,
+    ourInvariantTraceCycleProfileCoordinate_ourFundamentalThreeCut_zero,
+    ourIncomingPlaneProfileInvariantCoordinate_ourFundamentalThreeCut_zero,
+    ourSecondaryPlaneProfileInvariantCoordinate_ourFundamentalThreeCut_zero]
+  norm_num
+
+/-! ## Polarized trace-anticommutator replay -/
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutatorBase :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourTraceAnticommutatorBaseOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourTraceAnticommutatorBaseLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourTraceAnticommutatorBaseLabeled 0
+    ourTraceAnticommutatorBase_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutatorSwap :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourTraceAnticommutatorSwapOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourTraceAnticommutatorSwapLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourTraceAnticommutatorSwapLabeled 0
+    ourTraceAnticommutatorSwap_incomingPlaneProfileSignedWeight]
+  norm_num
+
+set_option maxRecDepth 100000 in
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutatorSplit :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourTraceAnticommutatorSplitOrbit (1 : ℚ))) = 0 := by
+  change ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single
+          (Quotient.mk _ ourTraceAnticommutatorSplitLabeled : FieldSevenOrbitCarrier)
+          (1 : ℚ))) = 0
+  rw [ourDerivativeWordPlanePairCoordinate_reynolds_single
+    (planeLookup 1 3) ourTraceAnticommutatorSplitLabeled 0
+    ourTraceAnticommutatorSplit_incomingPlaneProfileSignedWeight]
+  norm_num
+
+theorem ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutator :
+    ourDerivativeWordPlanePairCoordinate (planeLookup 1 3)
+      (sectorFieldOrbitReynolds 7 2
+        (Finsupp.single ourTraceAnticommutatorBaseOrbit 1 +
+          Finsupp.single ourTraceAnticommutatorSwapOrbit 1 -
+            Finsupp.single ourTraceAnticommutatorSplitOrbit 1)) = 0 := by
+  simp only [LinearMap.map_sub, LinearMap.map_add,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutatorBase,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutatorSwap,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutatorSplit]
+  norm_num
+
+theorem ourIncomingPlaneProfileInvariantCoordinate_ourTraceAnticommutator_zero
+    (policy : PhysicalRelationPolicy) :
+    ourIncomingPlaneProfileInvariantCoordinate
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenTraceAnticommutatorGenerator policy) 1)) =
+      0 := by
+  unfold ourIncomingPlaneProfileInvariantCoordinate
+  simp only [LinearMap.smul_apply, LinearMap.comp_apply]
+  rw [exactFieldSevenProjection_exactFieldOrbitReynolds,
+    exactFieldSevenProjection_ourTraceAnticommutator,
+    ourIncomingPlaneProfileCoordinate_reynolds_ourTraceAnticommutator]
+  norm_num
+
+theorem ourExistingScalarNullDirection_ourTraceAnticommutator_zero
+    (policy : PhysicalRelationPolicy) :
+    ourExistingScalarNullDirection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenTraceAnticommutatorGenerator policy) 1)) =
+      0 := by
+  unfold ourExistingScalarNullDirection
+  simp only [LinearMap.add_apply, LinearMap.sub_apply, LinearMap.neg_apply,
+    LinearMap.smul_apply]
+  rw [ourInvariantSevenAxisCoordinate_ourTraceAnticommutator,
+    ourInvariantIBPAxisCoordinate_ourTraceAnticommutator_zero,
+    ourInvariantThirdIBPAxisCoordinate_ourTraceAnticommutator_zero,
+    ourInvariantTraceCycleProfileCoordinate_ourTraceAnticommutator,
+    ourIncomingPlaneProfileInvariantCoordinate_ourTraceAnticommutator_zero,
+    ourSecondaryPlaneProfileInvariantCoordinate_ourTraceAnticommutator_zero]
+  norm_num
+
 /-- The existing scalar null direction contributes exactly `1 / 10` of the
 incoming trace class on the singleton-trace row. -/
 theorem ourExistingScalarNullDirection_ourSingletonTrace
@@ -786,6 +1024,34 @@ theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourEOM_zero :
     ourExistingScalarNullDirection_ourEOM_zero, zero_smul]
   simp
 
+/-- OUR reparameterized correction retains the explicitly checked fundamental
+three-cut trace row under either physical relation policy. -/
+theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourFundamentalThreeCut_zero
+    (policy : PhysicalRelationPolicy) :
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenFundamentalTraceGenerator policy) 1)) =
+      0 := by
+  unfold ourParameterSynthesizedSourceSevenTraceOrderCorrection
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    ourThreeClassSourceSevenTraceOrderCorrection_ourFundamentalThreeCut_zero,
+    ourExistingScalarNullDirection_ourFundamentalThreeCut_zero, zero_smul]
+  simp
+
+/-- OUR reparameterized correction retains the explicitly checked polarized
+trace-anticommutator row under either physical relation policy. -/
+theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourTraceAnticommutator_zero
+    (policy : PhysicalRelationPolicy) :
+    ourParameterSynthesizedSourceSevenTraceOrderCorrection
+      (orbitPhysicalRelationOperator policy
+        (Finsupp.single (ourFieldSevenTraceAnticommutatorGenerator policy) 1)) =
+      0 := by
+  unfold ourParameterSynthesizedSourceSevenTraceOrderCorrection
+  simp only [LinearMap.add_apply, LinearMap.smulRight_apply,
+    ourThreeClassSourceSevenTraceOrderCorrection_ourTraceAnticommutator_zero,
+    ourExistingScalarNullDirection_ourTraceAnticommutator_zero, zero_smul]
+  simp
+
 #print axioms ourExistingScalarNullDirection_ourSingletonTrace
 #print axioms ourExistingScalarNullDirection_ourCommutator_zero
 #print axioms ourExistingScalarNullDirection_ourSecondaryCommutator_zero
@@ -793,6 +1059,8 @@ theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourEOM_zero :
 #print axioms ourExistingScalarNullDirection_ourSecondIBP_zero
 #print axioms ourExistingScalarNullDirection_ourBianchi_zero
 #print axioms ourExistingScalarNullDirection_ourEOM_zero
+#print axioms ourExistingScalarNullDirection_ourFundamentalThreeCut_zero
+#print axioms ourExistingScalarNullDirection_ourTraceAnticommutator_zero
 #print axioms ourExistingScalarNullDirection_signed_action
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_signed_action
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSingletonTrace_zero
@@ -802,5 +1070,7 @@ theorem ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourEOM_zero :
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourSecondIBP_zero
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourBianchi_zero
 #print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourEOM_zero
+#print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourFundamentalThreeCut_zero
+#print axioms ourParameterSynthesizedSourceSevenTraceOrderCorrection_ourTraceAnticommutator_zero
 
 end Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair

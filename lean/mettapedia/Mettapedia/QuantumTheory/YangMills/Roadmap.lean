@@ -208,8 +208,8 @@ def yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry : YangMillsRoa
   itvLowerPercent := 99
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair constructs a signed-H(4)-invariant deformation from the six scalar coordinates already used by OUR trace-order construction. On the actual singleton-trace row it contributes exactly 1/10 of literalIncomingCommutatorClass, cancelling the previous -1/10 mismatch. Kernel-reduced signed-orbit replays prove that the deformation is zero on both explicit source-seven commutators, the displayed first-IBP row under the off-shell policy, the second-IBP and Bianchi rows under either policy, and the displayed on-shell EOM row."
-  nextObligation := "Audit this same deformation on the remaining named source-seven fundamental and trace families, then solve or refute full descent through a complete source-seven physical relation census."
+  evidence := "HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair constructs a signed-H(4)-invariant deformation from the six scalar coordinates already used by OUR trace-order construction. On the actual singleton-trace row it contributes exactly 1/10 of literalIncomingCommutatorClass, cancelling the previous -1/10 mismatch. Kernel-reduced signed-orbit replays prove that the deformation is zero on both explicit source-seven commutators, the displayed first-IBP row under the off-shell policy, the second-IBP and Bianchi rows under either policy, the displayed on-shell EOM row, the canonical fundamental three-cut row, and the polarized trace-anticommutator row."
+  nextObligation := "Construct a complete finite source-seven relation census and certify or refute this deformation on it. Only a descended map may be used for joint rank, conditioning, or Wilson-functional coordinates."
 
 /-- OUR fixed-trace-point screening calculation for a possible next
 trace-topology coordinate. -/
@@ -540,6 +540,55 @@ theorem currentYangMillsRoadmap_records_sourceSeven_existingScalar_sevenChecks :
   exact ⟨rfl, rfl, currentYangMillsExistingScalarParameterRepair_sevenChecks⟩
 
 #print axioms currentYangMillsRoadmap_records_sourceSeven_existingScalar_sevenChecks
+
+/- The roadmap's expanded existing-coordinate entry is now backed by the
+complete nine-row named-family packet.  This finite packet does not assert a
+complete source-seven census or descent. -/
+set_option maxRecDepth 100000 in
+theorem currentYangMillsRoadmap_records_sourceSeven_existingScalar_nineChecks :
+    yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry.status = .checked ∧
+      yangMillsSourceSevenExistingScalarParameterRepairRoadmapEntry.progressPercent =
+        100 ∧
+      (∀ policy : PhysicalRelationPolicy,
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourSingletonTraceGenerator policy) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourFieldSevenCommutatorGenerator policy) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single
+              (ourSecondaryFieldSevenCommutatorGenerator policy) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator .offShell
+            (Finsupp.single
+              (HypercubicDimension16WilsonTraceOrderInvariantRepair.ourFieldSevenIBPGenerator
+                .offShell) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourFieldSevenSecondIBPGenerator policy) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single (ourFieldSevenBianchiGenerator policy) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator .onShell
+            (Finsupp.single
+              HypercubicDimension16WilsonTraceOrderInvariantEOM.ourFieldSevenEOMGenerator
+              1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single
+              (HypercubicDimension16WilsonTraceOrderFundamentalThreeCutRepair.ourFieldSevenFundamentalTraceGenerator
+                policy) 1)) = 0 ∧
+        ourParameterSynthesizedSourceSevenTraceOrderCorrection
+          (orbitPhysicalRelationOperator policy
+            (Finsupp.single
+              (HypercubicDimension16WilsonTraceOrderTraceAnticommutatorObstruction.ourFieldSevenTraceAnticommutatorGenerator
+                policy) 1)) = 0) := by
+  exact ⟨rfl, rfl, currentYangMillsExistingScalarParameterRepair_nineChecks⟩
+
+#print axioms currentYangMillsRoadmap_records_sourceSeven_existingScalar_nineChecks
 
 theorem currentYangMillsRoadmap_records_fixedPointTopology_screen :
     (yangMillsFixedPointTopologyScreenRoadmapEntry.status = .checked) ∧
