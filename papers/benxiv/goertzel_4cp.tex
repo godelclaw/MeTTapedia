@@ -1752,14 +1752,19 @@ carry are disjoint.  The proof checks the possible collisions directly:
 distinct centres cannot be equal, separated centres cannot be adjacent, and
 source boundary-cleanliness forbids a face adjacent to both remote centres.
 This proves that a provenance-tracked finite window has exactly the remote
-separation needed for induction.  It does not yet construct that provenance
-for every local repair or the transition table which advances the window.
-The interface is already connected to the two principal local constructors:
+separation needed for induction.  The interface is connected to every local
+constructor.  For the two principal cases,
 both the ordinary loop-erased straight append and the double-cross swapped
 append are proved to stay inside the five-piece source carrier consisting of
-the old centre and the four old/new local rails.  The six finite residue
-repairs remain to receive the same explicit certificate before the complete
-local outcome can export it uniformly.
+the old centre and the four old/new local rails.  Each of the six finite
+residue repairs now proves the same positive support-containment statement
+beside its private bridge construction.  A uniform theorem then lifts that
+membership to the closed neighbourhood of the two selected centres.  Hence
+every finite straight-or-swapped repair carries the remote-separation
+invariant without erasing its endpoint permutation.  What remains is to
+package the certificate over the complete local outcome and define the
+transition table which advances a mutable terminal two-cell window; this is
+not yet an arbitrary-length rail or either annular end cap.
 
 There is an important coordinate distinction here.  The previously proved
 pair of equal-profile, support-disjoint local layer loops belongs to the

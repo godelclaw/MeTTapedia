@@ -16,10 +16,10 @@ centre-neighbour collisions are excluded by the corridor skeleton; a face
 adjacent to both windows is excluded by source boundary-cleanliness.
 
 This is a separation theorem for an explicitly supplied support provenance.
-The ordinary straight append and the double-cross swapped append are proved to
-carry it.  The six finite residue repairs are not yet certified here, and this
-module does not construct the finite-state induction, attach either annular
-end cap, or close Fable flag L1.
+The ordinary straight append, the double-cross swapped append, and all six
+finite residue repairs are proved to carry it.  This module does not yet
+package that fact on the complete-outcome wrapper, construct the finite-state
+induction, attach either annular end cap, or close Fable flag L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -112,19 +112,6 @@ variable
     {left : SeparatedSelectedSourceLocalRailPaths leftPlacement
       leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
       successor.frame.leftAfter}
-
-/-- The finite source carrier from which every adjacent repair is assembled:
-the previous centre itself, either old local rail, or either successor rail.
-Keeping this as a positive membership predicate lets each reroute expose its
-provenance without committing the global induction to a particular path
-implementation. -/
-def FaceInAdjacentSelectedRailPieces (face : SelectedFace (web := web)) : Prop :=
-  face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
-      |>.faceAt leftInterior.center) ∨
-    face ∈ left.paths.firstRail.support ∨
-    face ∈ left.paths.secondRail.support ∨
-    face ∈ successor.firstContinuation.support ∨
-    face ∈ successor.secondContinuation.support
 
 /-- Membership in the finite adjacent repair carrier implies the closed
 two-centre provenance consumed by remote separation. -/
@@ -292,6 +279,128 @@ def AdjacentAssemblySumSupportedBySelectedCenterPair
   | .inr assembly =>
       SupportedBySelectedCenterPair (corridor := corridor) assembly
         leftInterior.center (nextCorridorInterior leftInterior hnext).center
+
+/-- Finite-piece provenance from the constructor layer implies the closed
+two-centre provenance used by remote-window separation. -/
+theorem assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (result :
+      Sum (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingBefore)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingAfter))
+        (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingAfter)
+          (selectedPlacementSideFace rightPlacement
+            successor.rightOutgoingBefore)))
+    (hresult : AssemblySumSupportedByAdjacentSelectedRailPieces
+      (successor := successor) (left := left) result) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair
+      (corridor := corridor) result := by
+  cases result with
+  | inl assembly =>
+      exact supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+        (successor := successor) (left := left) assembly hresult.1 hresult.2
+  | inr assembly =>
+      exact supportedBySelectedCenterPair_of_support_subset_adjacentPieces
+        (successor := successor) (left := left) assembly hresult.1 hresult.2
+
+theorem appendFirstSecondSameFirst_supportedBySelectedCenterPair
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.firstContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 2 ∧
+      left.paths.secondRail.length = 0 ∧
+      successor.firstContinuation.length = 1 ∧
+      successor.secondContinuation.length = 1) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair (corridor := corridor)
+      (appendFirstSecondSameFirst cross same lengths) :=
+  assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (appendFirstSecondSameFirst cross same lengths)
+    (appendFirstSecondSameFirst_supportContained cross same lengths)
+
+theorem appendSecondFirstSameSecond_supportedBySelectedCenterPair
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.secondContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 0 ∧
+      left.paths.secondRail.length = 2 ∧
+      successor.firstContinuation.length = 1 ∧
+      successor.secondContinuation.length = 1) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair (corridor := corridor)
+      (appendSecondFirstSameSecond cross same lengths) :=
+  assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (appendSecondFirstSameSecond cross same lengths)
+    (appendSecondFirstSameSecond_supportContained cross same lengths)
+
+theorem appendFirstSecondSameSecond_supportedBySelectedCenterPair
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.secondContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 1 ∧
+      left.paths.secondRail.length = 1 ∧
+      successor.firstContinuation.length = 0 ∧
+      successor.secondContinuation.length = 2) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair (corridor := corridor)
+      (appendFirstSecondSameSecond cross same lengths) :=
+  assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (appendFirstSecondSameSecond cross same lengths)
+    (appendFirstSecondSameSecond_supportContained cross same lengths)
+
+theorem appendSecondFirstSameFirst_supportedBySelectedCenterPair
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.firstContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 1 ∧
+      left.paths.secondRail.length = 1 ∧
+      successor.firstContinuation.length = 2 ∧
+      successor.secondContinuation.length = 0) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair (corridor := corridor)
+      (appendSecondFirstSameFirst cross same lengths) :=
+  assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (appendSecondFirstSameFirst cross same lengths)
+    (appendSecondFirstSameFirst_supportContained cross same lengths)
+
+theorem appendFirstSecondCenter_supportedBySelectedCenterPair
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (center :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∈
+        successor.secondContinuation.support.tail)
+    (lengths : 0 < left.paths.firstRail.length ∧
+      successor.firstContinuation.length = 0 ∧
+      successor.secondContinuation.length = 2) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair (corridor := corridor)
+      (appendFirstSecondCenter cross center lengths) :=
+  assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (appendFirstSecondCenter cross center lengths)
+    (appendFirstSecondCenter_supportContained cross center lengths)
+
+theorem appendSecondFirstCenter_supportedBySelectedCenterPair
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (center :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∈
+        successor.firstContinuation.support.tail)
+    (lengths : 0 < left.paths.secondRail.length ∧
+      successor.firstContinuation.length = 2 ∧
+      successor.secondContinuation.length = 0) :
+    AdjacentAssemblySumSupportedBySelectedCenterPair (corridor := corridor)
+      (appendSecondFirstCenter cross center lengths) :=
+  assemblySum_supportedBySelectedCenterPair_of_supportContained
+    (appendSecondFirstCenter cross center lengths)
+    (appendSecondFirstCenter_supportContained cross center lengths)
 
 /-- **L1 remote two-window separation.** Closed-neighbourhood provenance is
 exactly strong enough to separate arbitrary selected rail supports belonging
