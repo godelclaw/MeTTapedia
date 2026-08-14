@@ -1145,6 +1145,18 @@ and it removes a false global hypothesis from the local construction.  It
 does not establish that distinct slots give distinct side faces, construct
 simple rails, or produce the required long separated crosscut pair.
 
+At the generic crosscut boundary, Lean now records the corresponding
+representation repair in
+\texttt{GoertzelV24SelectedDualPathTransversal}.  A selected transversal is a
+simple facial-dual path together with one certified, actually crossed primal
+edge at each step.  Its crossing support is proved injective from path
+simplicity and the local at-most-two-face incidence law alone; it does not
+require the stronger claim that every ambient adjacent face-pair shares a
+unique edge.  This makes the literal selected-rung geometry admissible to a
+future transversal construction.  It is deliberately not that construction:
+the module neither produces the long source path nor a separated pair of
+paths.
+
 The opposite dart of a selected outgoing rung now lands on the next literal
 corridor face, by
 \texttt{selectedOutgoingAlphaFace\_eq\_nextCenter}.  This uses the selected
