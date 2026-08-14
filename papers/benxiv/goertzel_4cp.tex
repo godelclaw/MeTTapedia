@@ -1910,6 +1910,17 @@ collision.  Thus no collision has been assumed away, but the remaining local
 repair has exactly two kinds rather than four.  Those two branches, the
 arbitrary-length fold, and both annular end caps remain open.
 
+The source-facing transition now also uses the stronger post-bypass test.
+Both candidate rails are first loop-erased and mutual separation is tested on
+the supports which actually remain.  All four straight/swapped parity cases
+retain their concrete prefix and suffix assemblies, the canonical seam
+rebase, and equations tying those assemblies to the two exact terminal
+windows.  A negative result therefore contains a face surviving in both final
+simple candidates, rather than a raw intersection that the construction later
+erases.  This is a sharper finite obstruction, not its repair: the retained
+face still has to be eliminated or rerouted, and arbitrary iteration, both
+end caps, the separated crosscut pair, and L1 remain open.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
