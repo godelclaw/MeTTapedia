@@ -2589,6 +2589,26 @@ deleted pentagon side supports exactly its one named pure face.  Only after
 that local theorem may one conclude that opening the cap removes five faces
 and derive the one-cap Euler equation.
 
+That local theorem is now proved.  The argument in
+\texttt{GoertzelV24FrontierPentagonCapPureFace} uses only the literal cyclic
+order at the five cap vertices.  A dart following the recorded pentagon
+orientation lies on the named cap face.  A dart in the reverse orientation is
+forced by the degree-three rotation onto the unique spoke, after which its
+face successor is based outside the cap.  It therefore cannot belong to a
+face wholly supported on the cap vertices.  The named pentagon is consequently
+the unique pure deleted face even though the ambient frontier has degree-one
+outer stubs and is not globally two-sided.  The module
+\texttt{GoertzelV24FrontierPentagonCapOpenEuler} combines this fact with the
+five touched faces and the single retained boundary orbit to prove the exact
+one-cap surgery equation
+\[
+  |F_{\mathrm{open}}|+5=|F_{\mathrm{frontier}}|.
+\]
+What remains at this stage is not another cap count: the source selection must
+construct the ambient frontier's Euler/cellulation presentation and discharge
+the already isolated collar-uniqueness invariant before the graph-backed
+annulus can be packaged.
+
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
 its two darts from the vertex rotations; the theorem computes the resulting
