@@ -1730,6 +1730,17 @@ straight or swapped separated assembly.  They still await one exhaustive
 wrapper and a permutation-aware arbitrary-length iteration; neither end cap
 nor L1 is closed by the local result alone.
 
+The six constructors are now assembled into one exhaustive local theorem.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendComplete} defines
+\texttt{appendLocalSuccessorComplete}: for two consecutive literal selected
+Cell--3 rail pairs, Lean always returns two simple support-disjoint rails.
+The output records whether the two outgoing labels remain straight or are
+exchanged.  There is no residual collision, triangle, connectivity, or
+embedding branch.  This closes the adjacent two-cell append obstruction.  A
+long corridor still needs a fold whose state carries this endpoint
+permutation, followed by the two literal annular end caps; those are the
+remaining formation obligations.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
