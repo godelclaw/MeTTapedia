@@ -1698,6 +1698,24 @@ abstract Addendum--V frontier has a closed two-cap antecedent.  Identifying
 the second sequential opening with the simultaneous two-cap graph is the
 remaining comparison at this level.
 
+That graph-level comparison is now exact.  In
+\texttt{GoertzelV24TwoPentagonCapSequentialOpening}, the transported inner
+cap is proved to delete the same five value-level edges as the original inner
+cap, while the simultaneous pair deletes precisely the union of the inner
+and outer cap cycles.  The standard union law for edge deletion then gives
+an equality
+\[
+  \operatorname{open}_{\mathrm{inner}}
+    (\operatorname{open}_{\mathrm{outer}} G)
+  =
+  \operatorname{open}_{\{\mathrm{inner},\mathrm{outer}\}}G.
+\]
+Thus the laboratory's simultaneous carrier is literally the carrier obtained
+in the source order, not merely an abstractly isomorphic graph.  The scope is
+unchanged: this is a comparison for a supplied separated cap pair, not a
+claim that every abstract Addendum--V frontier has such a closed antecedent.
+Transport of the dependent boundary and rotation data is still separate.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
