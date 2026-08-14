@@ -54,6 +54,9 @@ structure SelectedCorridorRungs {E : Type*} [Fintype E] [DecidableEq E]
     {RS : RotationSystem V E} {corridorLength : Nat}
     (corridor : OrbitHexCorridorSkeleton RS corridorLength) where
   edge : CorridorStep corridorLength → E
+  mem_interior : ∀ step,
+    edge step ∈ interiorEdgeSupport (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
   mem_left : ∀ step,
     edge step ∈ orbitFaceBoundary RS (corridor.faceAt step.left).1
   mem_right : ∀ step,
@@ -68,12 +71,29 @@ noncomputable def choose {E : Type*} [Fintype E] [DecidableEq E]
     SelectedCorridorRungs corridor where
   edge step := Classical.choose
     (corridor.exists_consecutive_rungEdge step.right_val)
+  mem_interior step :=
+    (Classical.choose_spec
+      (corridor.exists_consecutive_rungEdge step.right_val)).1
   mem_left step :=
     (Classical.choose_spec
       (corridor.exists_consecutive_rungEdge step.right_val)).2.1
   mem_right step :=
     (Classical.choose_spec
       (corridor.exists_consecutive_rungEdge step.right_val)).2.2
+
+/-- A selected corridor rung is a literal shared interior primal edge of its
+two consecutive corridor faces. -/
+theorem mem_shared {E : Type*} [Fintype E] [DecidableEq E]
+    {RS : RotationSystem V E} {corridorLength : Nat}
+    {corridor : OrbitHexCorridorSkeleton RS corridorLength}
+    (rungs : SelectedCorridorRungs corridor)
+    (step : CorridorStep corridorLength) :
+    rungs.edge step ∈ sharedInteriorEdges (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (corridor.faceAt step.left).1 (corridor.faceAt step.right).1 := by
+  exact (mem_sharedInteriorEdges_iff (orbitFaceBoundary RS)
+    (Finset.univ : Finset (OrbitFace RS))).2
+      ⟨rungs.mem_interior step, rungs.mem_left step, rungs.mem_right step⟩
 
 end SelectedCorridorRungs
 
