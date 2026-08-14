@@ -2124,6 +2124,18 @@ orbit.  What remains is genuinely inter-spoke geometry: proving that the five
 individual stub-side orbits coalesce into the required cap collar, and then
 doing this compatibly for two caps.
 
+The first genuine surgery atom is now kernel-checked in
+\texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
+its two darts from the vertex rotations; the theorem computes the resulting
+face step exactly: the predecessor that formerly entered one deleted dart now
+jumps to the old successor on the opposite dart side.  Its orbit-level
+corollary identifies those two surviving positions as one post-deletion face
+orbit.  This is the correct local mechanism by which a removed facial cycle
+can join its neighbouring facial sides.  It does \emph{not} yet say that the
+five consecutive cap-edge surgeries compose to one collar orbit, nor that the
+edge-deletion rotation is the already constructed literal slit rotation; those
+are the remaining C-2 comparison and composition obligations.
+
 \paragraph{Pumping.} The corridor acceptance language is proved periodic and
 corridor pumping congruence-correct; with the recurrent tube-ring transfer
 these are the working tools of the Short-Strand replacement search
