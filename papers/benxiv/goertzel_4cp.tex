@@ -1588,6 +1588,15 @@ unused common neighbour, but it is not a discharge: Addendum~XVII contracts a
 literal primal triangle, while the component returned here may be the inside
 of a larger cyclic three-cut.
 
+The collision branch now also carries its first constructive repair.  In
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendReroute}, Lean cuts the old
+rail at the exhibited cross-track collision, follows the opposite local
+continuation from that face, and loop-erases the result.  This gives a simple
+route to the opposite outgoing endpoint; its support is proved to remain in
+the two displayed source pieces.  It is one crossed route, not yet a new
+separated pair: simultaneous uncrossing, the endpoint permutation, mutual
+separation, and the two literal end caps remain open.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
