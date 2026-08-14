@@ -21,11 +21,13 @@ namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24FacialPentagonCapPairDeletedCycle
 
+open SimpleGraph
 open SimpleGraphDartRotation
 open GoertzelV24DeletedRegionBoundaryOrder
 open GoertzelV24FacialPentagonCap
 open GoertzelV24FacialPentagonCapDeletedBoundaryCycle
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24FiniteDeletionCyclicCut
 open GoertzelV24InducedHexCorridorTypes
 open GoertzelV24PentagonCapOpening
 open GoertzelV24TwoPentagonCapOpening
@@ -241,6 +243,158 @@ private theorem outerSpoke_not_mem_deleted
   rw [PentagonCapPair.deletedVertexSupport, Finset.mem_union, not_or]
   exact ⟨caps.outer_spokeOuter_not_mem_innerSupport step,
     caps.outer.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap.spokeOuter_not_mem_vertexSupport step⟩
+
+/-- The graph-level separation fields prohibit even an ambient edge directly
+joining an inner cap vertex to an outer cap vertex. -/
+theorem not_adj_inner_outerVertices
+    (caps : FacialPentagonCapBoundaryWalkPair data)
+    (innerStep outerStep : Fin 5) :
+    ¬ G.Adj
+      (caps.toPentagonCapPair.inner.vertex innerStep)
+      (caps.toPentagonCapPair.outer.vertex outerStep) := by
+  intro hadj
+  let edge : G.edgeSet :=
+    ⟨s(caps.toPentagonCapPair.inner.vertex innerStep,
+       caps.toPentagonCapPair.outer.vertex outerStep), by simpa using hadj⟩
+  have hnotRemoved : edge.1 ∉
+      edgeFinsetValueSet caps.toPentagonCapPair.cycleSupport := by
+    intro hremoved
+    rcases (mem_edgeFinsetValueSet_iff
+      caps.toPentagonCapPair.cycleSupport edge.1).mp hremoved with
+      ⟨removed, hsupport, hvalue⟩
+    rw [PentagonCapPair.cycleSupport, Finset.mem_union] at hsupport
+    rcases hsupport with hinner | houter
+    · rcases Finset.mem_map.mp hinner with ⟨step, -, hstep⟩
+      have heq : (caps.toPentagonCapPair.inner.cycleEdge step).1 = edge.1 := by
+        calc
+          _ = removed.1 := congrArg Subtype.val hstep
+          _ = edge.1 := hvalue
+      have hendpoint : caps.toPentagonCapPair.outer.vertex outerStep ∈
+          (caps.toPentagonCapPair.inner.cycleEdge step).1 := by
+        rw [heq]
+        simp [edge]
+      rcases caps.toPentagonCapPair.inner.cycleEdge_endpoint_eq_vertex
+          step _ hendpoint with ⟨capStep, hcapStep⟩
+      exact caps.toPentagonCapPair.outer_vertex_not_mem_innerSupport outerStep
+        ((caps.toPentagonCapPair.inner.mem_vertexSupport_iff _).mpr
+          ⟨capStep, hcapStep⟩)
+    · rcases Finset.mem_map.mp houter with ⟨step, -, hstep⟩
+      have heq : (caps.toPentagonCapPair.outer.cycleEdge step).1 = edge.1 := by
+        calc
+          _ = removed.1 := congrArg Subtype.val hstep
+          _ = edge.1 := hvalue
+      have hendpoint : caps.toPentagonCapPair.inner.vertex innerStep ∈
+          (caps.toPentagonCapPair.outer.cycleEdge step).1 := by
+        rw [heq]
+        simp [edge]
+      rcases caps.toPentagonCapPair.outer.cycleEdge_endpoint_eq_vertex
+          step _ hendpoint with ⟨capStep, hcapStep⟩
+      exact caps.toPentagonCapPair.inner_vertex_not_mem_outerSupport innerStep
+        ((caps.toPentagonCapPair.outer.mem_vertexSupport_iff _).mpr
+          ⟨capStep, hcapStep⟩)
+  have hopen : caps.toPentagonCapPair.openGraph.Adj
+      (caps.toPentagonCapPair.inner.vertex innerStep)
+      (caps.toPentagonCapPair.outer.vertex outerStep) := by
+    change (G.deleteEdges
+      (edgeFinsetValueSet caps.toPentagonCapPair.cycleSupport)).Adj _ _
+    exact (SimpleGraph.deleteEdges_adj).2 ⟨hadj, hnotRemoved⟩
+  exact caps.toPentagonCapPair.not_openGraph_adj_inner_outerVertices
+    innerStep outerStep hopen
+
+/-- The simultaneous capped deleted-face permutation preserves the inner cap
+component. -/
+theorem deletedFacePerm_preserves_innerSupport
+    (caps : FacialPentagonCapBoundaryWalkPair data)
+    (dart : DeletedBasedDart data.toRotationSystem
+      caps.toPentagonCapPair.deletedVertexSupport)
+    (hinner : data.toRotationSystem.vertOf dart.1 ∈
+      caps.toPentagonCapPair.inner.vertexSupport) :
+    data.toRotationSystem.vertOf
+        (deletedFacePerm data.toRotationSystem
+          caps.toPentagonCapPair.deletedVertexSupport dart).1 ∈
+      caps.toPentagonCapPair.inner.vertexSupport := by
+  rw [deletedFacePerm, Equiv.Perm.mul_apply, deletedRho_val,
+    data.toRotationSystem.vert_rho]
+  by_cases hopposite : data.toRotationSystem.vertOf
+      (data.toRotationSystem.alpha dart.1) ∈
+        caps.toPentagonCapPair.deletedVertexSupport
+  · rw [deletedAlpha_apply_internal data.toRotationSystem
+      caps.toPentagonCapPair.deletedVertexSupport dart hopposite]
+    change data.toRotationSystem.vertOf
+      (data.toRotationSystem.alpha dart.1) ∈
+        caps.toPentagonCapPair.inner.vertexSupport ∪
+          caps.toPentagonCapPair.outer.vertexSupport at hopposite
+    rw [Finset.mem_union] at hopposite
+    rcases hopposite with hinnerOpposite | houterOpposite
+    · exact hinnerOpposite
+    · rcases (caps.toPentagonCapPair.inner.mem_vertexSupport_iff _).mp hinner with
+        ⟨innerStep, hinnerStep⟩
+      rcases (caps.toPentagonCapPair.outer.mem_vertexSupport_iff _).mp
+          houterOpposite with ⟨outerStep, houterStep⟩
+      exfalso
+      apply not_adj_inner_outerVertices caps innerStep outerStep
+      have hadj : G.Adj dart.1.fst dart.1.snd := dart.1.edge_mem
+      simpa [SimpleGraphDartRotation.Data.toRotationSystem_vertOf,
+        SimpleGraphDartRotation.Data.toRotationSystem_alpha,
+        hinnerStep, houterStep] using hadj
+  · rw [deletedAlpha_apply_boundary data.toRotationSystem
+      caps.toPentagonCapPair.deletedVertexSupport dart hopposite]
+    exact hinner
+
+/-- Every finite number of simultaneous deleted-face steps preserves the
+inner cap component. -/
+theorem deletedFacePerm_pow_preserves_innerSupport
+    (caps : FacialPentagonCapBoundaryWalkPair data)
+    (dart : DeletedBasedDart data.toRotationSystem
+      caps.toPentagonCapPair.deletedVertexSupport)
+    (hinner : data.toRotationSystem.vertOf dart.1 ∈
+      caps.toPentagonCapPair.inner.vertexSupport)
+    (power : Nat) :
+    data.toRotationSystem.vertOf
+        ((deletedFacePerm data.toRotationSystem
+          caps.toPentagonCapPair.deletedVertexSupport ^ power) dart).1 ∈
+      caps.toPentagonCapPair.inner.vertexSupport := by
+  induction power with
+  | zero => simpa using hinner
+  | succ power ih =>
+      rw [pow_succ', Equiv.Perm.mul_apply]
+      exact deletedFacePerm_preserves_innerSupport caps _ ih
+
+/-- The two named cap boundaries lie in distinct cycles of the simultaneous
+deleted-face permutation.  This is an algebraic consequence of the invariant
+cap components, not an assumed planar picture. -/
+theorem inner_outerDeletedBoundary_not_sameCycle
+    (caps : FacialPentagonCapBoundaryWalkPair data) :
+    ¬ (deletedFacePerm data.toRotationSystem
+      caps.toPentagonCapPair.deletedVertexSupport).SameCycle
+        (FacialPentagonCapBoundaryWalk.extendedCapDeletedBoundaryDart
+          caps.inner caps.toPentagonCapPair.deletedVertexSupport
+          (innerSupport_subset_deleted caps) (innerSpoke_not_mem_deleted caps) 0).1
+        (FacialPentagonCapBoundaryWalk.extendedCapDeletedBoundaryDart
+          caps.outer caps.toPentagonCapPair.deletedVertexSupport
+          (outerSupport_subset_deleted caps) (outerSpoke_not_mem_deleted caps) 0).1 := by
+  intro hsame
+  rcases hsame.exists_nat_pow_eq with ⟨power, hpower⟩
+  have hinner : data.toRotationSystem.vertOf
+      (FacialPentagonCapBoundaryWalk.extendedCapDeletedBoundaryDart
+        caps.inner caps.toPentagonCapPair.deletedVertexSupport
+        (innerSupport_subset_deleted caps) (innerSpoke_not_mem_deleted caps) 0).1.1 ∈
+      caps.toPentagonCapPair.inner.vertexSupport := by
+    apply (caps.toPentagonCapPair.inner.mem_vertexSupport_iff _).2
+    refine ⟨0, ?_⟩
+    rfl
+  have hpreserved := deletedFacePerm_pow_preserves_innerSupport caps _ hinner power
+  rw [hpower] at hpreserved
+  have houter : data.toRotationSystem.vertOf
+      (FacialPentagonCapBoundaryWalk.extendedCapDeletedBoundaryDart
+        caps.outer caps.toPentagonCapPair.deletedVertexSupport
+        (outerSupport_subset_deleted caps) (outerSpoke_not_mem_deleted caps) 0).1.1 ∈
+      caps.toPentagonCapPair.outer.vertexSupport := by
+    apply (caps.toPentagonCapPair.outer.mem_vertexSupport_iff _).2
+    refine ⟨0, ?_⟩
+    rfl
+  exact (Finset.disjoint_left.mp caps.toPentagonCapPair.vertexSupport_disjoint)
+    hpreserved houter
 
 /-- The inner five ports form one deleted-face cycle in the literal two-cap
 carrier. -/

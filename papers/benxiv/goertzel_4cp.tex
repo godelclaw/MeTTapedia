@@ -2212,16 +2212,26 @@ deleted carrier preserves the cap's two-step face turn whenever the enlarged
 set still contains the cap and excludes its five spoke endpoints.  Applying
 this once to each member of the pair puts each ordered five-port family in one
 actual cycle of the same two-cap deleted-face permutation.  This is local
-non-interference, not yet the claim that the two cycles are distinct.
+non-interference.  The same module now proves the stronger separation fact:
+the deleted face permutation preserves the inner cap component, and hence no
+inner boundary dart can share an orbit with an outer boundary dart.
 The next transport is now kernel-checked as well.
 \texttt{GoertzelV24FacialPentagonCapPairOpenHoleOrbit} combines those two
 deleted cycles with touched-face uniqueness under the explicitly named
 \texttt{RemoteBoundaryFacesSeparated} condition.  The complementary boundary
 order is the inverse of the deleted order, and the literal open-region
 rotation therefore places all five inner stubs in one actual face orbit and
-all five outer stubs in another actual face orbit.  The result deliberately
-does not yet assert that those two orbits differ; proving their distinctness
-is the remaining local collar-separation step before the C--3 cellulation.
+all five outer stubs in another actual face orbit.  A new generic converse,
+\texttt{GoertzelV24OpenRegionBoundaryOrbitClassification}, proves that two
+fresh stubs can share an opened face only when their retained boundary
+coordinates share a first-return cycle.  Combining this with the invariant
+cap components proves
+\texttt{openedInnerHoleFace\_ne\_openedOuterHoleFace}: the two computed collars
+are distinct literal face orbits.  Thus the local C--2 collar calculation is
+complete as a consumer of the explicitly named
+\texttt{RemoteBoundaryFacesSeparated} premise.  The source corridor must still
+construct that premise in C--4, and C--3 must still package these two face
+orbits, with the Euler comparison, as the literal annular cellulation.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes

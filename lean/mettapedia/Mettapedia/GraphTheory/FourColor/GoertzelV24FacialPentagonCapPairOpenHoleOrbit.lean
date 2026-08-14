@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FacialPentagonCapPairBoundaryFaces
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FacialPentagonCapPairDeletedCycle
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionBoundaryOrbit
+import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionBoundaryOrbitClassification
 
 /-!
 # Hole orbits of the simultaneous facial-cap opening
@@ -12,9 +13,10 @@ ambient face.  This module combines those facts through the already-proved
 complementary boundary-order theorem and obtains two actual five-stub face
 orbits in the simultaneous open-region rotation.
 
-These theorems prove the orbit equality within each named family.  They do not
-yet prove that the inner and outer orbits are distinct, package an annular
-cellulation, or construct remote facial separation from the source corridor.
+These theorems prove both orbit equality within each named family and orbit
+inequality between the inner and outer families.  They do not yet package an
+annular cellulation or construct remote facial separation from the source
+corridor.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -32,6 +34,7 @@ open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24InducedHexCorridorTypes
 open GoertzelV24OpenRegionBoundaryOrbit
+open GoertzelV24OpenRegionBoundaryOrbitClassification
 open GoertzelV24OpenRegionRotation
 open GoertzelV24PentagonCapOpening
 open GoertzelV24RetainedRegionBoundaryOrder
@@ -174,6 +177,34 @@ theorem retainedBoundarySuccessor_outer_sameCycle
       (FacialPentagonCapBoundaryWalkPair.outerDeletedBoundary_sameCycle
         caps hcubic hrotation first second)
 
+/-- The inner and outer named ports lie in distinct retained first-return
+cycles.  The proof transports the invariant-component separation of the
+simultaneous deleted carrier across the complementary boundary order. -/
+theorem retainedBoundarySuccessor_inner_outer_not_sameCycle
+    (caps : FacialPentagonCapBoundaryWalkPair data)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (hremote : RemoteBoundaryFacesSeparated data
+      caps.toOrientedFacialPentagonCapPair) :
+    ¬ (retainedRegionBoundarySuccessor data.toRotationSystem
+      (deletedRegionKeep caps.toPentagonCapPair.deletedVertexSupport)).SameCycle
+        (innerRetainedBoundary caps 0)
+        (outerRetainedBoundary caps 0) := by
+  have hunique :=
+    OrientedFacialPentagonCapPair.cutFacesHaveUniqueRetainedBoundaryDart_of_remoteBoundaryFacesSeparated
+      caps.toOrientedFacialPentagonCapPair minimal hremote
+  have horder :=
+    retained_boundarySuccessor_eq_deleted_boundarySuccessor_inv_of_cutFacesUnique
+      data.toRotationSystem caps.toPentagonCapPair.deletedVertexSupport hunique
+  rw [horder, Equiv.Perm.sameCycle_inv]
+  change ¬ (deletedRegionBoundarySuccessor data.toRotationSystem
+    caps.toPentagonCapPair.deletedVertexSupport).SameCycle
+      (deletedBoundaryHalfDartEquivBoundaryDart data.toRotationSystem
+        caps.toPentagonCapPair.deletedVertexSupport (innerDeletedBoundary caps 0))
+      (deletedBoundaryHalfDartEquivBoundaryDart data.toRotationSystem
+        caps.toPentagonCapPair.deletedVertexSupport (outerDeletedBoundary caps 0))
+  rw [deletedRegionBoundarySuccessor_sameCycle_iff]
+  exact FacialPentagonCapBoundaryWalkPair.inner_outerDeletedBoundary_not_sameCycle caps
+
 /-- The five inner stubs are one actual face orbit of the simultaneous literal
 open-region rotation. -/
 theorem openedInnerHoleFace_stub_eq
@@ -221,6 +252,32 @@ theorem openedOuterHoleFace_stub_eq
   apply dartOrbitFace_stub_eq_of_boundarySuccessor_sameCycle
   exact retainedBoundarySuccessor_outer_sameCycle caps minimal hremote hcubic
     hrotation first second
+
+/-- The two literal opened collars are distinct face orbits.  Thus simultaneous
+cap opening produces two named boundary components rather than one face seen
+through two coordinate systems. -/
+theorem openedInnerHoleFace_ne_openedOuterHoleFace
+    (caps : FacialPentagonCapBoundaryWalkPair data)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (hremote : RemoteBoundaryFacesSeparated data
+      caps.toOrientedFacialPentagonCapPair)
+    (root : GoertzelV24OpenRegionRotation.Dart data.toRotationSystem
+      (deletedRegionKeep caps.toPentagonCapPair.deletedVertexSupport)) :
+    dartOrbitFace
+        (rotationSystem data.toRotationSystem
+          (deletedRegionKeep caps.toPentagonCapPair.deletedVertexSupport) root)
+        (Sum.inr (innerRetainedBoundary caps 0)) ≠
+      dartOrbitFace
+        (rotationSystem data.toRotationSystem
+          (deletedRegionKeep caps.toPentagonCapPair.deletedVertexSupport) root)
+        (Sum.inr (outerRetainedBoundary caps 0)) := by
+  intro hface
+  have hsame :=
+    (dartOrbitFace_stub_eq_iff_boundarySuccessor_sameCycle
+      data.toRotationSystem
+      (deletedRegionKeep caps.toPentagonCapPair.deletedVertexSupport)
+      root (innerRetainedBoundary caps 0) (outerRetainedBoundary caps 0)).1 hface
+  exact retainedBoundarySuccessor_inner_outer_not_sameCycle caps minimal hremote hsame
 
 end FacialPentagonCapBoundaryWalkPair
 
