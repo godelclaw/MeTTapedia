@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedRegionSlitOpenRegionComparison
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoPentagonCapOpeningComparison
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationIsoTransport
 
 /-!
 # The two-cap opening reaches the existing open-region graph tower
@@ -22,6 +23,7 @@ open SimpleGraphDartRotation
 open GoertzelV24DeletedRegionSlitOpenRegionComparison
 open GoertzelV24OpenRegionGraphBacking
 open GoertzelV24OpenRegionRotation
+open GoertzelV24SimpleGraphRotationIsoTransport
 
 attribute [-instance] GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
@@ -43,6 +45,18 @@ def openingGraphIsoOpenPrimalGraph (data : Data G) (caps : PentagonCapPair G)
       (PrimalGraph data.toRotationSystem (keep caps.deletedVertexSupport) outer) :=
   caps.openingGraphIso.symm.trans
     (slitGraphIsoOpenPrimalGraph data caps.deletedVertexSupport outer)
+
+/-- The literal two-cap toolchain graph now carries the graph-backed rotation
+computed by the open-region construction.  This transports only the dart
+rotation and its root through the proved graph isomorphism.  In particular it
+does not claim that the two cap interfaces already determine the intended
+annular hole faces or their cyclic order. -/
+def openingGraphData (data : Data G) (caps : PentagonCapPair G)
+    (outer : GoertzelV24OpenRegionRotation.Dart data.toRotationSystem
+      (keep caps.deletedVertexSupport)) :
+    Data caps.openGraph :=
+  transportData (caps.openingGraphIsoOpenPrimalGraph data outer).symm
+    (graphData data (keep caps.deletedVertexSupport) outer)
 
 end PentagonCapPair
 

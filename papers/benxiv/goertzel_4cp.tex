@@ -656,6 +656,16 @@ the necessary outer-dart choice explicit.  It still proves neither an
 annular rotation embedding nor the cyclic face-order comparison that a source
 profile construction will require.
 
+The carrier comparison now transports the complete graph-backed rotation as
+well.  The generic module
+\texttt{GoertzelV24SimpleGraphRotationIsoTransport} carries oriented darts,
+their vertex rotation, and the chosen outer dart across any graph isomorphism;
+\texttt{openingGraphData} applies it to the literal two-cap graph.  Thus the
+toolchain graph is no longer missing a rotation merely because the computed
+open-region graph has a different vertex type.  This is deliberately below
+the annular claim: a graph isomorphism transports no distinguished hole faces,
+their cyclic order, or Euler proof.
+
 There is already a precise serial open-tangle adapter, but its quantifiers are
 important.  Given an actual equivalence from the literal exposed boundary
 darts to a displayed left/right port sum, it transports Tait colourings in
