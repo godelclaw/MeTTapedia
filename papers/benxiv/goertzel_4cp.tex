@@ -1421,9 +1421,9 @@ is the append invariant across arbitrarily many successful cells and the two
 hole end caps; a one-seam successor package is not yet a long crosscut.
 
 The algebraic append invariant is now explicit as well.  A
-	exttt{SelectedSourceLocalRailAssembly} stores two accumulated simple rails
+\texttt{SelectedSourceLocalRailAssembly} stores two accumulated simple rails
 and their mutual support disjointness; a single separated Cell--3 connector
-is its base case.  The theorem 	exttt{appendSuccessor} extends the assembly
+is its base case.  The theorem \texttt{appendSuccessor} extends the assembly
 by one literal successor and preserves both path simplicity and mutual rail
 separation.  It exposes exactly four geometric premises: each old rail must
 avoid the tail of its own continuation and the tail of the other
@@ -1459,6 +1459,27 @@ and absence of two-edge cuts, whereas the stronger closed-minimal
 three-edge-cut theorem has not been transported to the opened stub carrier.
 The module therefore records the dual triangle without silently borrowing
 closed minimality and does not report L1 closed.
+
+The separator candidate has now been promoted to an actual graph separator
+without restoring global uniqueness of shared face edges.  The generic module
+\texttt{GoertzelV24SelectedDualCycleSeparator} lets a simple facial-dual cycle
+carry the primal edge selected at each of its steps.  Ordinary at-most-two
+face incidence makes these selected crossings injective, and the exact
+face-boundary/cycle-space calculation proves that deleting their underlying
+graph edges disconnects the framed carrier.  Specializing this result in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendSeparator}, Lean proves that
+the obstruction triangle crosses exactly three distinct primal edges and
+that deleting them disconnects the literal closed-web annulus.
+
+This is not yet a cyclic three-edge cut.  The missing source-local statement
+must classify the deletion components relative to both degree-one boundary
+families.  In particular, the previously proved remote separation of two cap
+boundary-face families does not imply that the triangle-enclosed component
+avoids every inner and outer stub.  Once that avoidance is established, the
+cubic degree sum has a sharp dichotomy: a tree side is a singleton star and
+recovers the common-neighbour data needed by the append, while a cyclic side
+gives the three-edge cut to be pulled back to closed minimality.  Until the
+stub classification is proved, neither conclusion is used.
 
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
