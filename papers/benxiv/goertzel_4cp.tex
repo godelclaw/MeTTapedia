@@ -606,6 +606,13 @@ are exact, ordered data before any transfer profile is placed on them.  This
 still compares graph boundaries only: it does not establish the ambient
 annulus, its rotation/face carrier, or any profile/count semantics.
 
+The subsequent carrier comparison is canonical rather than merely a matching
+cardinality: old vertices are fixed, and the fresh stub at an outward port is
+sent to the cap vertex at that dart's deleted endpoint.  Its bijectivity uses
+the just-proved exact port classification.  Adjacency and cyclic face order
+remain separate obligations; this equivalence is deliberately not presented
+as an opening graph isomorphism or an annular embedding.
+
 There is no parallel open-region graph tower behind this comparison.  The
 generic theorem
 \texttt{slitGraphIsoOpenPrimalGraph} in
