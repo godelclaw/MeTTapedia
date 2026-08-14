@@ -2473,7 +2473,7 @@ the source corridor ends are pentagons.  The genuinely source-facing remainder
 is instead to assemble the L1 boundary-clean corridor's selected Cell--3 rail
 steps into the separated facial-dual crosscuts used by the splice.  Addendum
 XXVII uses the primal radial paths for the L8-to-L6 length/depth dichotomy;
-they are not the L1 transverse cuts and must not be dualized into them merely
+they are not the splice's transverse cuts and must not be dualized into them merely
 because both geometries live in the same annulus.
 
 The paired transversal interface has accordingly been repaired at the type
@@ -2485,7 +2485,7 @@ width.  Unlike the older interface, this carrier does not assume globally
 that every pair of annular faces shares at most one edge---a condition known
 to fail on the literal boundary.  The older stronger carrier maps into the
 new one in one direction.  This is a representation repair, not the missing
-construction: the L1 Cell--3 rail steps still have to be assembled and
+construction: the selected Cell--3 rail steps still have to be assembled and
 end-capped to inhabit it.
 
 The successful local branch now inhabits that repaired carrier literally.
@@ -2521,7 +2521,7 @@ remain degree one and disjoint, and all other vertices remain cubic.  Thus this
 is the graph-carrier part of $X'=X-\operatorname{cap}(f)$, not a diagrammatic
 identification.  It deliberately does not yet construct $X$ from the minimal
 counterexample, identify the two hole face orbits on the common opened
-rotation, or supply the long separated L1 crosscuts.
+rotation, or supply the long separated C--5 crosscuts.
 
 The corresponding representation bridge is also now literal rather than
 postulated.  The module
@@ -2550,7 +2550,7 @@ the newly cut boundary cannot be identified by a convenient drawing.  This
 still does not compute the common inner orbit of the five fresh stubs on the
 frontier carrier, derive the old outer-face premise from source selection, or
 package the resulting pair as the source annulus; those are the remaining
-formation obligations before the L1 crosscuts can be realized.
+formation obligations before the C--5 crosscuts can be realized.
 
 The complementary inner-face calculation is now valid on that same frontier
 carrier without restoring false closed-map hypotheses.  The module
@@ -2638,6 +2638,23 @@ corridor theory.  The inner hole is the computed cap-stub face, the outer
 hole is the transported old outer face, and their inequality is proved.
 This is intentionally a conditional C--3 constructor.  It makes the C--4
 debt readable in one type signature; it does not discharge that debt.
+
+The interface from that cellulation into the pre-existing closed-web tower is
+now exact as well.  The module
+\texttt{GoertzelV24FrontierPentagonCapClosedWebAnnularEmbedding} proves that
+both orientations of every fresh inner boundary edge lie on the computed
+inner hole and both orientations of every retained outer boundary edge lie on
+the transported outer hole.  This is stronger than merely placing each
+unoriented edge in a hole boundary: the proof classifies the two darts over
+each edge and transports their face orbits through the literal opening and
+its graph isomorphisms.  It then constructs the
+\texttt{ClosedWebAnnularEmbedding} consumed by the corridor, radial-path, and
+crosscut developments.  The result is still deliberately conditional.  It
+connects the source carrier to the downstream tower, but it does not select
+the frontier tangle or derive retained connectedness, outer-face retention,
+the ambient Euler equation, cap-collar uniqueness, or the separated
+crosscuts.  Those are the remaining C--4/C--5 formation obligations rather
+than hidden fields of the bridge.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
