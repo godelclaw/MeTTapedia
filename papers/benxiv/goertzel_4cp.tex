@@ -550,6 +550,14 @@ not a cardinality argument: the cubic incident-edge list at every deleted cap
 vertex proves that the five outward spokes exhaust all manuscript-side ports.
 Thus the graph isomorphism also preserves the ordered five-stub boundary data,
 which a bare graph isomorphism allowed to permute the stubs would not do.
+The next local formation fact is now explicit in
+\texttt{GoertzelV24PentagonCapOpeningWellFormed}.  Under closed cubicity,
+every vertex outside the cap retains degree three in the toolchain opening,
+while each ordered cap vertex has degree one on its named outward spoke.  Lean
+therefore constructs the corresponding well-formed five-stub inner boundary
+datum, with an intentionally empty outer interface.  This is useful local
+source plumbing, not an annulus in disguise: it neither chooses the source cap
+nor constructs the outer boundary, annular embedding, or crosscut pair.
 This settles a presentation comparison, not the source formation theorem:
 it neither selects a pentagon in the closed normal-form map nor proves that a
 Cell--3 corridor is retained, constructs the outer hole, or identifies the
