@@ -2316,7 +2316,7 @@ the connectivity of the simultaneously retained complement and the final
 cellulation packaging.  No conditional connectivity wrapper is being counted
 as that construction.
 
-The packaging itself is now literal and machine-checked in
+For the two-cap laboratory, the packaging itself is now literal and machine-checked in
 \texttt{GoertzelV24FacialPentagonCapPairAnnularCellulation}.  Given the two
 formation properties of the selected pair---remote separation of its two
 boundary-face families and connectivity of the simultaneously retained
@@ -2324,21 +2324,39 @@ complement---Lean constructs a \texttt{FramedAnnularCellulation} on the actual
 graph-backed opening.  Its two holes are the computed face orbits, their
 inequality is transported rather than asserted, and its Euler field follows
 from the exact vertex, edge, and face equations above.  Thus no annular
-cellulation is postulated at C--3.  Equally importantly, this theorem does not
-promote its two hypotheses into source geometry: C--4 must derive both from
-the corridor-selected facial cap pair before the formation pillar is closed.
+cellulation is postulated in this special case.  Equally importantly, this
+theorem does not promote its two hypotheses into universal source geometry.
+Addendum~V starts instead with a frontier tangle that already has its outer
+interface and opens one interior pentagon; the general formation pillar must
+construct its crosscuts in that supplied annulus, not select two pentagonal
+corridor ends merely to instantiate the laboratory.
 
-The first of those two hypotheses has now been reduced to a quantitative
-selection condition rather than left as an opaque topological assumption.
-In 	exttt{GoertzelV24FacialPentagonCapPairRemoteSeparation}, the ambient face
+One of the laboratory's two hypotheses has now been reduced to a quantitative
+separation condition rather than left as an opaque topological assumption.
+In \texttt{GoertzelV24FacialPentagonCapPairRemoteSeparation}, the ambient face
 on the retained side of every named spoke is proved adjacent in the full
 facial dual to the corresponding pentagonal cap face.  Therefore two selected
 cap faces with no common dual neighbour---in particular, at dual distance
-greater than two---satisfy 	exttt{RemoteBoundaryFacesSeparated}.  What remains
-is genuinely source-facing: select the two oriented facial cap walks far
-enough apart along the corridor and prove connectivity of their simultaneous
-retained complement.  Neither conclusion is inferred merely from having two
-graph-theoretically disjoint pentagons.
+greater than two---satisfy \texttt{RemoteBoundaryFacesSeparated}.  This is an
+exact reusable theorem for a supplied two-cap pair.  It does not assert that
+the source corridor ends are pentagons.  The genuinely source-facing remainder
+is instead to assemble the L1 boundary-clean corridor's selected Cell--3 rail
+steps into the separated facial-dual crosscuts used by the splice.  Addendum
+XXVII uses the primal radial paths for the L8-to-L6 length/depth dichotomy;
+they are not the L1 transverse cuts and must not be dualized into them merely
+because both geometries live in the same annulus.
+
+The paired transversal interface has accordingly been repaired at the type
+level.  \texttt{GoertzelV24SelectedDualPathTransversalPair} defines two
+equal-width, separated simple facial-dual paths carrying the literal primal
+edge selected at every step.  Their closed composite is proved to be a dual
+cycle, and the union of their selected crossings has exactly twice the common
+width.  Unlike the older interface, this carrier does not assume globally
+that every pair of annular faces shares at most one edge---a condition known
+to fail on the literal boundary.  The older stronger carrier maps into the
+new one in one direction.  This is a representation repair, not the missing
+construction: the L1 Cell--3 rail steps still have to be assembled and
+end-capped to inhabit it.
 
 The first genuine surgery atom is now kernel-checked in
 \texttt{GoertzelV24DeletedEdgeFaceMerge}.  Deleting one graph edge removes
