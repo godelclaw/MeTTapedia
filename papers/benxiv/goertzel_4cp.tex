@@ -1681,6 +1681,23 @@ to rebuild cap combinatorics.  The current theorem does not itself prove
 survival under the outer opening; that is the next separated-pair
 specialization.
 
+That specialization is now proved in
+\texttt{GoertzelV24TwoPentagonCapFrontierFactorization}.  For a separated
+pair, opening the outer cap first constructs a literal five-stub
+\texttt{FrontierBoundaryData}; if the closed carrier is cubic, this frontier
+is well formed.  Separation proves that all five inner cycle edges and all
+five inner spokes survive, so the inner cap restricts to an actual interior
+pentagon cap of the frontier.  Thus the two-cap laboratory now has the
+source-ordered intermediate carrier
+\[
+  \text{closed graph}\longrightarrow\text{frontier with outer stubs}
+  \longrightarrow\text{annulus}.
+\]
+This remains a construction for a supplied pair, not a theorem that every
+abstract Addendum--V frontier has a closed two-cap antecedent.  Identifying
+the second sequential opening with the simultaneous two-cap graph is the
+remaining comparison at this level.
+
 One generic part of that source-opening transport is now stated at the layer
 where it belongs.  For fully retained ambient faces,
 \texttt{GoertzelV24OpenRegionFaceTransport} proves the biconditional
