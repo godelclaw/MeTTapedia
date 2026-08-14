@@ -39,6 +39,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderC
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderThreeClassScalarExtensionRefutation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-!
@@ -103,6 +104,7 @@ open HypercubicDimension16WilsonTraceOrderCycleProfileSourceSevenThreeClassTrace
 open HypercubicDimension16WilsonTraceOrderFixedPointTopologyScreen
 open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepair
 open HypercubicDimension16WilsonTraceOrderExistingScalarParameterRepairTracelessRefutation
+open HypercubicDimension16WilsonTraceOrderThreeClassScalarExtensionRefutation
 open HypercubicDimension16WilsonCartanTraceOrderFaithfulnessNoGo
 
 /-- Coarse status tags for central Yang-Mills route nodes. -/
@@ -900,6 +902,17 @@ theorem currentYangMillsExistingScalarParameterRepair_not_descends
   ourParameterSynthesizedSourceSevenTraceOrderCorrection_not_descends policy
 
 #print axioms currentYangMillsExistingScalarParameterRepair_not_descends
+
+/-- The same witness rules out every scalar-valued extension in the literal
+incoming quotient direction, not only the displayed six-scalar choice. -/
+theorem currentYangMillsThreeClassScalarLiteralExtension_not_descends
+    (scalar : ExactFieldRelabelOrbitSpace →ₗ[ℚ] ℚ)
+    (policy : PhysicalRelationPolicy) :
+    ¬ orbitPhysicalRelationSubmodule policy ≤
+      LinearMap.ker (ourThreeClassScalarLiteralExtension scalar) :=
+  ourThreeClassScalarLiteralExtension_not_descends scalar policy
+
+#print axioms currentYangMillsThreeClassScalarLiteralExtension_not_descends
 
 /-- OUR preliminary fixed-trace-point gate detects the singleton row, but its
 same signed character has fundamental three-cut numerator `-64`; this is a
