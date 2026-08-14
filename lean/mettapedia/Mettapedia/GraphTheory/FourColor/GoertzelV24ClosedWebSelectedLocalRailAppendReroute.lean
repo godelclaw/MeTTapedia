@@ -53,6 +53,25 @@ private abbrev SelectedDualGraph :=
   interiorDualGraph (orbitFaceBoundary web.annular.RS)
     (Finset.univ : Finset (OrbitFace web.annular.RS))
 
+private theorem support_dropUntil_subset_tail_of_mem_tail_of_isPath
+    {F : Type*} [DecidableEq F] {H : SimpleGraph F}
+    {start finish face : F}
+    (walk : H.Walk start finish) (hpath : walk.IsPath)
+    (hface : face ∈ walk.support.tail) :
+    (walk.dropUntil face (List.mem_of_mem_tail hface)).support ⊆
+      walk.support.tail := by
+  cases walk with
+  | nil => simp at hface
+  | @cons next _ _ hadj tail =>
+      have hne : start ≠ face := by
+        intro heq
+        subst face
+        have hnodup := hpath.support_nodup
+        simp only [SimpleGraph.Walk.support_cons] at hnodup
+        exact (List.nodup_cons.mp hnodup).1 hface
+      simpa [SimpleGraph.Walk.dropUntil, hne] using
+        tail.support_dropUntil_subset_support hface
+
 namespace SeparatedSelectedSourceLocalRailSuccessor
 
 variable
@@ -80,7 +99,7 @@ structure FirstToSecondReroute
   route_isPath : route.IsPath
   route_support_subset : ∀ face ∈ route.support,
     face ∈ left.paths.firstRail.support ∨
-      face ∈ successor.secondContinuation.support
+      face ∈ successor.secondContinuation.support.tail
 
 /-- Symmetrically, a collision of the old second rail with the new first
 continuation constructs a simple crossed route to the first outgoing
@@ -93,7 +112,7 @@ structure SecondToFirstReroute
   route_isPath : route.IsPath
   route_support_subset : ∀ face ∈ route.support,
     face ∈ left.paths.secondRail.support ∨
-      face ∈ successor.firstContinuation.support
+      face ∈ successor.firstContinuation.support.tail
 
 /-- Construct the first-to-second reroute at one exhibited collision. -/
 noncomputable def firstToSecondReroute
@@ -119,8 +138,9 @@ noncomputable def firstToSecondReroute
   · exact Or.inl
       (left.paths.firstRail.support_takeUntil_subset_support hold hprefix)
   · exact Or.inr
-      (successor.secondContinuation.support_dropUntil_subset_support hnewFull
-        (List.mem_of_mem_tail hsuffix))
+      (support_dropUntil_subset_tail_of_mem_tail_of_isPath
+        successor.secondContinuation successor.secondContinuation_isPath hnew
+          (List.mem_of_mem_tail hsuffix))
 
 /-- Construct the second-to-first reroute at one exhibited collision. -/
 noncomputable def secondToFirstReroute
@@ -146,8 +166,9 @@ noncomputable def secondToFirstReroute
   · exact Or.inl
       (left.paths.secondRail.support_takeUntil_subset_support hold hprefix)
   · exact Or.inr
-      (successor.firstContinuation.support_dropUntil_subset_support hnewFull
-        (List.mem_of_mem_tail hsuffix))
+      (support_dropUntil_subset_tail_of_mem_tail_of_isPath
+        successor.firstContinuation successor.firstContinuation_isPath hnew
+          (List.mem_of_mem_tail hsuffix))
 
 /-- **L1 constructive collision alternative.** Every actual cross-track
 collision supplies one of the two literal crossed simple routes. -/
@@ -181,7 +202,8 @@ theorem route_support_internal
   · rw [successor.secondContinuation_support] at hnew
     exact corridor.neighbor_internal
       (nextCorridorInterior leftInterior hnext).center face
-      (successor.rightRails.paths.secondRail_support_adjacent_center face hnew)
+      (successor.rightRails.paths.secondRail_support_adjacent_center face
+        (List.mem_of_mem_tail hnew))
 
 end FirstToSecondReroute
 
@@ -202,7 +224,8 @@ theorem route_support_internal
   · rw [successor.firstContinuation_support] at hnew
     exact corridor.neighbor_internal
       (nextCorridorInterior leftInterior hnext).center face
-      (successor.rightRails.paths.firstRail_support_adjacent_center face hnew)
+      (successor.rightRails.paths.firstRail_support_adjacent_center face
+        (List.mem_of_mem_tail hnew))
 
 end SecondToFirstReroute
 

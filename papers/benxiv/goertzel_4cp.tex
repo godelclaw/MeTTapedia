@@ -1593,7 +1593,9 @@ The collision branch now also carries its first constructive repair.  In
 rail at the exhibited cross-track collision, follows the opposite local
 continuation from that face, and loop-erases the result.  This gives a simple
 route to the opposite outgoing endpoint; its support is proved to remain in
-the two displayed source pieces.  Boundary-clean neighbour containment also
+the two displayed source pieces, and on the new side it lies strictly in the
+continuation tail rather than reusing the unmatched seam start.
+Boundary-clean neighbour containment also
 proves that every face of either reroute remains in the annular interior.  It
 is one crossed route, not yet a new
 separated pair: simultaneous uncrossing, the endpoint permutation, mutual
@@ -1607,6 +1609,15 @@ endpoints are still corridor side faces rather than the two hole faces, so it
 is a selected local transversal fragment and not the final crosscut.  A single
 consumer theorem now returns the two possible crossed endpoint orientations
 directly from the actual collision witness.
+
+There is now also a precise endpoint-swap theorem.  A single cross collision
+does not connect the other two unmatched seam faces; Lean rejected that
+tempting construction at the endpoint types.  If both cross-track tests
+exhibit collisions, however, the two reroutes switch together.  Under the two
+remaining same-track separation facts,
+\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendSwap} constructs two simple
+mutually support-disjoint rails with their outgoing endpoints exchanged.  The
+double-cross pattern is therefore repaired; the lone-cross pattern remains.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
