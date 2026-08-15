@@ -140,6 +140,51 @@ theorem named_coordinate_update_preserves_others {Root Name Value : Type}
       state.periphery other := by
   simp [invoke, coordinateProcess, step, setCoordinate, different]
 
+/-- Independent named coordinates commute.  Concurrency therefore belongs to
+the assemblage adapter; the kernel needs neither a scheduler case nor a fixed
+enumeration of policies. -/
+theorem set_distinct_coordinates_commute {Name Value : Type}
+    [DecidableEq Name] (left right : Name) (leftValue rightValue : Value)
+    (before : Assemblage Name Value) (different : left ≠ right) :
+    setCoordinate right rightValue
+        (setCoordinate left leftValue before) =
+      setCoordinate left leftValue
+        (setCoordinate right rightValue before) := by
+  funext name
+  by_cases isLeft : name = left
+  · subst name
+    simp [setCoordinate, different]
+  · by_cases isRight : name = right
+    · subst name
+      simp [setCoordinate, isLeft]
+    · simp [setCoordinate, isLeft, isRight]
+
+theorem distinct_coordinate_processes_commute {Root Name Value : Type}
+    [DecidableEq Name] (state : State Root (Assemblage Name Value))
+    (left right : Name) (leftValue rightValue : Value)
+    (different : left ≠ right) :
+    invoke (invoke state (coordinateProcess left leftValue))
+        (coordinateProcess right rightValue) =
+      invoke (invoke state (coordinateProcess right rightValue))
+        (coordinateProcess left leftValue) := by
+  cases state with
+  | mk root periphery =>
+      simp only [invoke, coordinateProcess, step]
+      exact congrArg (State.mk root)
+        (set_distinct_coordinates_commute left right leftValue rightValue
+          periphery different)
+
+/-- An attention or currently-selected-policy field is ordinary plastic data.
+Changing it does not execute, authorize, or otherwise alter another field. -/
+theorem selection_is_only_a_coordinate_update {Root Name Value : Type}
+    [DecidableEq Name] (state : State Root (Assemblage Name Value))
+    (selection other : Name) (selectedValue : Value)
+    (different : other ≠ selection) :
+    (invoke state (coordinateProcess selection selectedValue)).periphery other =
+      state.periphery other := by
+  exact named_coordinate_update_preserves_others state selection other
+    selectedValue different
+
 /-! ## 3. An append-only observer is conservative -/
 
 structure Observed (Root Periphery Event : Type) where
@@ -347,6 +392,8 @@ end OpenEndedProcessCore
 
 #print axioms OpenEndedProcessCore.step_is_unique_contract_runner
 #print axioms OpenEndedProcessCore.arbitrary_named_coordinate_is_installable
+#print axioms OpenEndedProcessCore.set_distinct_coordinates_commute
+#print axioms OpenEndedProcessCore.distinct_coordinate_processes_commute
 #print axioms OpenEndedProcessCore.observe_run_erases_exactly
 #print axioms OpenEndedProcessCore.observe_run_history
 #print axioms OpenEndedProcessCore.no_universal_authority_relabeling
