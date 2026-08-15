@@ -49,6 +49,16 @@ are derived from the models, deployed, and re-observed live.
   and fail-alive promotion, finite autonomous budgets with human preemption,
   evidence-closed knowledge, bounded non-progress observation, a
   weakest-sufficient commit theorem, and coordinate-erasure witnesses.
+- `WeakSelfHostingCore.lean` — the smaller protected-plasticity root:
+  arbitrary failure-transactional extensions, unrestricted candidate staging,
+  a weakest sound root-promotion gate, atomic recovery, and erasure witnesses
+  only for last-known-good separation, external selection, and atomic
+  promotion.
+- `FeatureExpressibility.lean` — adequacy witnesses showing that Agent, Iter,
+  Coding, human-attention, timing, receipts, evidence, stuck observation, and
+  metadata-aware no-replay policies can be hosted above the unchanged weak
+  core.  It also proves that metadata cannot force an arbitrary opaque
+  controller to behave well.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -66,6 +76,8 @@ LEAN_PATH=. lean ContextAttention.lean
 LEAN_PATH=. lean AgentArchitecture.lean
 LEAN_PATH=. lean VerifiedFrontier.lean
 LEAN_PATH=. lean MinimalKernel.lean
+LEAN_PATH=. lean WeakSelfHostingCore.lean
+LEAN_PATH=. lean FeatureExpressibility.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
