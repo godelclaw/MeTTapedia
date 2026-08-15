@@ -59,6 +59,10 @@ are derived from the models, deployed, and re-observed live.
   metadata-aware no-replay policies can be hosted above the unchanged weak
   core.  It also proves that metadata cannot force an arbitrary opaque
   controller to behave well.
+- `ThreePolicyFusion.lean` — one product-state runner with Agent, Iter, and
+  Coding policy views; arbitrary mixed traces project exactly to all three
+  source semantics, policy selection is an operational stutter, independent
+  actions commute, and every fused action is hosted by the weak core.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -78,6 +82,7 @@ LEAN_PATH=. lean VerifiedFrontier.lean
 LEAN_PATH=. lean MinimalKernel.lean
 LEAN_PATH=. lean WeakSelfHostingCore.lean
 LEAN_PATH=. lean FeatureExpressibility.lean
+LEAN_PATH=. lean ThreePolicyFusion.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
