@@ -65,6 +65,12 @@ are derived from the models, deployed, and re-observed live.
   actions commute, and every fused action refines to a two-outcome process
   kernel protecting an abstract root while leaving the whole periphery
   plastic.
+- `OpenEndedProcessCore.lean` — the periphery-polymorphic form of that same
+  two-equation kernel: open named-coordinate assemblages, conservative
+  append-only observation, admission witnesses that cannot be relabeled across
+  authorities, authority revision with fresh evidence, admitted whole-root and
+  quiescent succession, and exact specialization back to the three-policy
+  runner.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -85,6 +91,7 @@ LEAN_PATH=. lean MinimalKernel.lean
 LEAN_PATH=. lean WeakSelfHostingCore.lean
 LEAN_PATH=. lean FeatureExpressibility.lean
 LEAN_PATH=. lean ThreePolicyFusion.lean
+LEAN_PATH=. lean OpenEndedProcessCore.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
