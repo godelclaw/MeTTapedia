@@ -222,6 +222,196 @@ theorem fused_action_is_hosted_by_weak_core {K : Type} (heartbeat : Nat)
       step heartbeat execute state action := by
   rfl
 
+/-! ## Process-core executable normal form
+
+The executable kernel does not even name the three policies.  It protects an
+abstract root and lets a process replace the entire periphery on success.
+Agent, Iter, and Coding state—and policy selection itself—are merely one
+possible periphery representation supplied by an adapter.
+-/
+
+structure Periphery where
+  development : IterArchitecture.Boundary
+  life : ProtectedPlasticity.Living
+  coding : CodingAgent.State
+  active : Policy
+deriving Repr, DecidableEq
+
+structure Rooted (K : Type) where
+  root : K
+  periphery : Periphery
+deriving Repr, DecidableEq
+
+def pack {K : Type} (state : State K) : Rooted K :=
+  ⟨state.kernel,
+    ⟨state.development, state.life, state.coding, state.active⟩⟩
+
+/-- The whole cognitive process kernel: accept every successful periphery and
+treat failure as a stuttering step. -/
+def processStep {K : Type} (state : Rooted K) :
+    Outcome Periphery → Rooted K
+  | .success next => { state with periphery := next }
+  | .failure => state
+
+abbrev Process := Periphery → Outcome Periphery
+
+/-- A process sees and may replace all plastic state, but receives no root
+coordinate to rewrite. -/
+def invoke {K : Type} (state : Rooted K) (process : Process) : Rooted K :=
+  processStep state (process state.periphery)
+
+def processRun {K : Type} :
+    List (Outcome Periphery) → Rooted K → Rooted K
+  | [], state => state
+  | outcome :: rest, state => processRun rest (processStep state outcome)
+
+theorem failed_process_is_transactional {K : Type} (state : Rooted K) :
+    processStep state .failure = state := by
+  rfl
+
+theorem every_successful_periphery_is_admitted {K : Type}
+    (state : Rooted K) (target : Periphery) :
+    processStep state (.success target) = { state with periphery := target } := by
+  rfl
+
+theorem process_step_preserves_root {K : Type} (state : Rooted K)
+    (outcome : Outcome Periphery) :
+    (processStep state outcome).root = state.root := by
+  cases outcome <;> rfl
+
+theorem process_run_preserves_root {K : Type}
+    (outcomes : List (Outcome Periphery)) (state : Rooted K) :
+    (processRun outcomes state).root = state.root := by
+  induction outcomes generalizing state with
+  | nil => rfl
+  | cons outcome rest ih =>
+      calc
+        (processRun (outcome :: rest) state).root =
+            (processRun rest (processStep state outcome)).root := rfl
+        _ = (processStep state outcome).root := ih (processStep state outcome)
+        _ = state.root := process_step_preserves_root state outcome
+
+theorem invoke_preserves_root {K : Type} (state : Rooted K)
+    (process : Process) :
+    (invoke state process).root = state.root := by
+  exact process_step_preserves_root state (process state.periphery)
+
+/-- Any constitutive property—including a universal-care interpretation—is
+preserved parametrically.  The kernel need not know or rank values itself. -/
+theorem every_root_property_is_invariant {K : Type}
+    (Good : K → Prop) (outcomes : List (Outcome Periphery)) (state : Rooted K)
+    (good : Good state.root) :
+    Good (processRun outcomes state).root := by
+  rwa [process_run_preserves_root]
+
+/-! ### Semantic minimality
+
+This is a uniqueness result, not a claim about source-code size.  The contract
+has only two equations: admit every successful periphery without changing the
+root, and make failure a stutter.  Root preservation is derived rather than
+added as a third condition.
+-/
+
+abbrev Runner (K : Type) := Rooted K → Outcome Periphery → Rooted K
+
+def ProcessContract {K : Type} (runner : Runner K) : Prop :=
+  (∀ state target, runner state (.success target) =
+    { state with periphery := target }) ∧
+  (∀ state, runner state .failure = state)
+
+theorem process_step_satisfies_contract {K : Type} :
+    ProcessContract (@processStep K) := by
+  exact ⟨fun _ _ => rfl, fun _ => rfl⟩
+
+theorem contract_implies_root_preservation {K : Type}
+    (runner : Runner K) (contract : ProcessContract runner)
+    (state : Rooted K) (outcome : Outcome Periphery) :
+    (runner state outcome).root = state.root := by
+  cases outcome with
+  | success target => rw [contract.1 state target]
+  | failure => rw [contract.2 state]
+
+/-- The weak process kernel adds no behavior beyond the contract.  Any other
+runner with the same protection, plasticity, and failure laws is extensionally
+equal to it. -/
+theorem process_step_is_unique_contract_runner {K : Type}
+    (runner : Runner K) (contract : ProcessContract runner) :
+    runner = @processStep K := by
+  funext state outcome
+  cases outcome with
+  | success target => exact contract.1 state target
+  | failure => exact contract.2 state
+
+/-- A source action is evaluated by its policy adapter, producing one new
+periphery candidate.  No source-specific branch is added to `processStep`. -/
+def compileOutcome {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) (state : State K) (action : Action) :
+    Outcome Periphery :=
+  let next := step heartbeat execute state action
+  .success ⟨next.development, next.life, next.coding, next.active⟩
+
+theorem process_step_refines_source {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) (state : State K) (action : Action) :
+    processStep (pack state)
+        (compileOutcome heartbeat execute state action) =
+      pack (step heartbeat execute state action) := by
+  cases action <;> rfl
+
+/-- Compile a source trace while threading the state observed by each policy
+adapter. -/
+def compileTrace {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) :
+    List Action → State K → List (Outcome Periphery)
+  | [], _ => []
+  | action :: rest, state =>
+      compileOutcome heartbeat execute state action ::
+        compileTrace heartbeat execute rest
+          (step heartbeat execute state action)
+
+/-- Running the tiny process kernel over compiled candidates reaches exactly
+the fused source runner's final state for every mixed trace. -/
+theorem process_run_refines_source {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) (actions : List Action) (state : State K) :
+    processRun (compileTrace heartbeat execute actions state) (pack state) =
+      pack (run heartbeat execute actions state) := by
+  induction actions generalizing state with
+  | nil => rfl
+  | cons action rest ih =>
+      simp only [compileTrace, processRun, run]
+      rw [process_step_refines_source]
+      exact ih (step heartbeat execute state action)
+
+/-- The generic process runner conservatively preserves Iter semantics. -/
+theorem process_iter_projection {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) (actions : List Action) (state : State K) :
+    (processRun (compileTrace heartbeat execute actions state)
+      (pack state)).periphery.development =
+        IterArchitecture.applyTransformations
+          (iterActions actions) state.development := by
+  rw [process_run_refines_source]
+  exact iter_projection heartbeat execute actions state
+
+/-- The generic process runner conservatively preserves the living-agent
+semantics, including its heartbeat parameter. -/
+theorem process_agent_projection {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) (actions : List Action) (state : State K) :
+    (processRun (compileTrace heartbeat execute actions state)
+      (pack state)).periphery.life =
+        ProtectedPlasticity.lifeRun heartbeat
+          (agentActions actions) state.life := by
+  rw [process_run_refines_source]
+  exact agent_projection heartbeat execute actions state
+
+/-- The generic process runner conservatively preserves CodingAgent
+request/broker/evidence semantics. -/
+theorem process_coding_projection {K : Type} (heartbeat : Nat)
+    (execute : CodingAgent.Executor) (actions : List Action) (state : State K) :
+    (processRun (compileTrace heartbeat execute actions state)
+      (pack state)).periphery.coding =
+        CodingAgent.run execute (codingActions actions) state.coding := by
+  rw [process_run_refines_source]
+  exact coding_projection heartbeat execute actions state
+
 end ThreePolicyFusion
 
 /-! ## Axiom audit -/
@@ -235,3 +425,12 @@ end ThreePolicyFusion
 #print axioms ThreePolicyFusion.transform_coding_commute
 #print axioms ThreePolicyFusion.life_coding_commute
 #print axioms ThreePolicyFusion.fused_action_is_hosted_by_weak_core
+#print axioms ThreePolicyFusion.failed_process_is_transactional
+#print axioms ThreePolicyFusion.process_run_preserves_root
+#print axioms ThreePolicyFusion.every_root_property_is_invariant
+#print axioms ThreePolicyFusion.process_step_is_unique_contract_runner
+#print axioms ThreePolicyFusion.process_step_refines_source
+#print axioms ThreePolicyFusion.process_run_refines_source
+#print axioms ThreePolicyFusion.process_iter_projection
+#print axioms ThreePolicyFusion.process_agent_projection
+#print axioms ThreePolicyFusion.process_coding_projection
