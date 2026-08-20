@@ -71,6 +71,11 @@ are derived from the models, deployed, and re-observed live.
   authorities, authority revision with fresh evidence, admitted whole-root and
   quiescent succession, and exact specialization back to the three-policy
   runner.
+- `ContextProjection.lean` — typed known/absent/unavailable source states,
+  latest-revision views over append-only ledgers, causal-frontier isolation,
+  compositional delta replay, non-authoritative materializations, and an open
+  policy type capable of hosting arbitrary context managers without changing
+  the process core.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -92,6 +97,7 @@ LEAN_PATH=. lean WeakSelfHostingCore.lean
 LEAN_PATH=. lean FeatureExpressibility.lean
 LEAN_PATH=. lean ThreePolicyFusion.lean
 LEAN_PATH=. lean OpenEndedProcessCore.lean
+LEAN_PATH=. lean ContextProjection.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
