@@ -549,6 +549,47 @@ theorem exists_vertex_mem_all_crossingEdges_of_component_card_eq_one
     (hunique ⟨inside, hinside⟩ ⟨vertex, hvertex⟩)
   simpa only [heq] using hinsideEdge
 
+/-- An exact selected triangle either encloses a cyclic side or a literal
+single star centre incident to every selected crossing.  The two-vertex bond
+branch is impossible because its selected boundary has four edges. -/
+theorem hasCycleOnSide_or_exists_vertex_mem_all_crossingEdges_of_card_eq_three
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hthree : cycle.selectedCycle.crossingEdges.card = 3) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+      ∃ vertex : V, vertex ∈ component.supp ∧
+        ∀ edge ∈ cycle.selectedCycle.crossingEdges, vertex ∈ edge.1 := by
+  rcases cycle.hasCycleOnSide_or_component_star_or_bond component hroot with
+    hcycle | hstar | hbond
+  · exact .inl hcycle
+  · exact .inr
+      (cycle.exists_vertex_mem_all_crossingEdges_of_component_card_eq_one
+        component hroot hstar.1)
+  · omega
+
+/-- Choose the component away from the outer root for an exact selected
+triangle and classify it as cyclic or a literal single star centre. -/
+theorem exists_component_cycle_or_star_of_length_eq_three
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (hlength : cycle.walk.length = 3) :
+    ∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          cycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+          ∃ vertex : V, vertex ∈ component.supp ∧
+            ∀ edge ∈ cycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  rcases cycle.exists_component_away_from_outerRoot with ⟨component, hroot⟩
+  refine ⟨component, hroot, ?_⟩
+  apply cycle.hasCycleOnSide_or_exists_vertex_mem_all_crossingEdges_of_card_eq_three
+    component hroot
+  rw [cycle.crossingEdges_card_eq_length]
+  exact hlength
+
 /-- A two-vertex deletion component consists of a unique adjacent pair in
 the ambient graph. -/
 theorem exists_adjacent_pair_of_component_card_eq_two

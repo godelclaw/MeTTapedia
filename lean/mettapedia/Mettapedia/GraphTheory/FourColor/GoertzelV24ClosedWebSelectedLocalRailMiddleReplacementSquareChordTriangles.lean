@@ -265,6 +265,168 @@ theorem SquareBondRealization.InternalDualChordSelectedTriangles.second_support_
   exact cycle.support_internal current
     (selected.triangles.second_support_original current hcurrent)
 
+/-- Repackage the first selected chord triangle as the established short-cycle
+separator input, retaining the internal bond as its distinguished crossing. -/
+noncomputable def SquareBondRealization.InternalDualChordSelectedTriangles.firstShortCycle
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    MiddleReplacementShortDualCycle (web := web)
+      selected.triangles.chord.adjacency.leftFace := by
+  classical
+  let anchor := Classical.choose
+    ((selected.firstSelected.mem_crossingEdges_iff bond.internalEdge).1
+      selected.internal_mem_first)
+  have hanchor : selected.firstSelected.crossingEdge anchor =
+      bond.internalEdge := Classical.choose_spec
+    ((selected.firstSelected.mem_crossingEdges_iff bond.internalEdge).1
+      selected.internal_mem_first)
+  exact {
+    start := selected.triangles.chord.adjacency.leftFace
+    walk := selected.firstSelected.walk
+    isCycle := selected.firstSelected.isCycle
+    length_eq_three_or_four := .inl selected.first_length_eq_three
+    face_mem_support := selected.firstSelected.walk.start_mem_support
+    support_internal := selected.first_support_internal
+    anchor := anchor
+    anchorEdge := bond.internalEdge
+    anchorEdge_mem_shared := by
+      rw [← hanchor]
+      exact selected.firstSelected.crossing_mem_shared anchor
+  }
+
+/-- Repackage the second selected chord triangle as the established short-cycle
+separator input, retaining the internal bond as its distinguished crossing. -/
+noncomputable def SquareBondRealization.InternalDualChordSelectedTriangles.secondShortCycle
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    MiddleReplacementShortDualCycle (web := web)
+      selected.triangles.chord.adjacency.leftFace := by
+  classical
+  let anchor := Classical.choose
+    ((selected.secondSelected.mem_crossingEdges_iff bond.internalEdge).1
+      selected.internal_mem_second)
+  have hanchor : selected.secondSelected.crossingEdge anchor =
+      bond.internalEdge := Classical.choose_spec
+    ((selected.secondSelected.mem_crossingEdges_iff bond.internalEdge).1
+      selected.internal_mem_second)
+  exact {
+    start := selected.triangles.chord.adjacency.leftFace
+    walk := selected.secondSelected.walk
+    isCycle := selected.secondSelected.isCycle
+    length_eq_three_or_four := .inl selected.second_length_eq_three
+    face_mem_support := selected.secondSelected.walk.start_mem_support
+    support_internal := selected.second_support_internal
+    anchor := anchor
+    anchorEdge := bond.internalEdge
+    anchorEdge_mem_shared := by
+      rw [← hanchor]
+      exact selected.secondSelected.crossing_mem_shared anchor
+  }
+
+/-- The first chord triangle now reaches the existing selected-separator
+component classifier: its inner side is cyclic or a literal one-vertex star. -/
+theorem SquareBondRealization.InternalDualChordSelectedTriangles.first_exists_component_cycle_or_star
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    ∃ triangleComponent :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.firstShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ triangleComponent.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ triangleComponent.supp) ∨
+          ∃ vertex : V, vertex ∈ triangleComponent.supp ∧
+            ∀ edge ∈ selected.firstShortCycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  apply selected.firstShortCycle.exists_component_cycle_or_star_of_length_eq_three
+  exact selected.first_length_eq_three
+
+/-- The second chord triangle now reaches the existing selected-separator
+component classifier: its inner side is cyclic or a literal one-vertex star. -/
+theorem SquareBondRealization.InternalDualChordSelectedTriangles.second_exists_component_cycle_or_star
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    ∃ triangleComponent :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ triangleComponent.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ triangleComponent.supp) ∨
+          ∃ vertex : V, vertex ∈ triangleComponent.supp ∧
+            ∀ edge ∈ selected.secondShortCycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  apply selected.secondShortCycle.exists_component_cycle_or_star_of_length_eq_three
+  exact selected.second_length_eq_three
+
+/-- The star alternative for the first chord triangle is anchored at an
+endpoint of the original square's internal bond. -/
+theorem SquareBondRealization.InternalDualChordSelectedTriangles.first_exists_component_cycle_or_endpointStar
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    ∃ triangleComponent :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.firstShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ triangleComponent.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ triangleComponent.supp) ∨
+          ∃ vertex : V, vertex ∈ triangleComponent.supp ∧
+            vertex ∈ bond.internalEdge.1 ∧
+            ∀ edge ∈ selected.firstShortCycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  rcases selected.first_exists_component_cycle_or_star with
+    ⟨triangleComponent, hroot, hcycle | ⟨vertex, hvertex, hall⟩⟩
+  · exact ⟨triangleComponent, hroot, .inl hcycle⟩
+  · have hinternal : bond.internalEdge ∈
+        selected.firstShortCycle.selectedCycle.crossingEdges := by
+      simpa [SquareBondRealization.InternalDualChordSelectedTriangles.firstShortCycle]
+        using selected.firstShortCycle.anchorEdge_mem_crossingEdges
+    exact ⟨triangleComponent, hroot,
+      .inr ⟨vertex, hvertex, hall bond.internalEdge hinternal, hall⟩⟩
+
+/-- The star alternative for the second chord triangle is anchored at an
+endpoint of the original square's internal bond. -/
+theorem SquareBondRealization.InternalDualChordSelectedTriangles.second_exists_component_cycle_or_endpointStar
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    ∃ triangleComponent :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ triangleComponent.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ triangleComponent.supp) ∨
+          ∃ vertex : V, vertex ∈ triangleComponent.supp ∧
+            vertex ∈ bond.internalEdge.1 ∧
+            ∀ edge ∈ selected.secondShortCycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  rcases selected.second_exists_component_cycle_or_star with
+    ⟨triangleComponent, hroot, hcycle | ⟨vertex, hvertex, hall⟩⟩
+  · exact ⟨triangleComponent, hroot, .inl hcycle⟩
+  · have hinternal : bond.internalEdge ∈
+        selected.secondShortCycle.selectedCycle.crossingEdges := by
+      simpa [SquareBondRealization.InternalDualChordSelectedTriangles.secondShortCycle]
+        using selected.secondShortCycle.anchorEdge_mem_crossingEdges
+    exact ⟨triangleComponent, hroot,
+      .inr ⟨vertex, hvertex, hall bond.internalEdge hinternal, hall⟩⟩
+
 /-- **L1 selected-triangle consumer.**  Both triangles cut off by the
 internal chord can be handed to the existing selected separator machinery,
 with the internal bond retained as a literal crossing. -/
