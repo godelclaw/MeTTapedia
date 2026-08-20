@@ -2393,6 +2393,10 @@ uses the exact union identity to assign it to an endpoint triangle, and then
 uses the local two-sided face law to recover the visited face.  Hence the
 triangle split covers the complete original face support; it does not yet say
 that both surviving attachment faces receive the same assignment.
+The packaged existential keeps the useful special case explicitly: together
+with the two endpoint centres and both edge identities, it returns a proof
+that the collision face itself lies on one of the two endpoint triangles.
+This is a choice receipt for the reroute, not the reroute.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical

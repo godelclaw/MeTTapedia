@@ -674,6 +674,33 @@ theorem SquareBondRealization.exists_endpointSelectedTriangles_exact
       secondTriangle.crossingEdges_eq_incidentEdgeFinset, hfirst, hsecond]
     exact bond.incidentEdgeFinset_union_eq_insert_internalEdge hroot
 
+/-- The exact endpoint decomposition also assigns the original collision face
+to at least one endpoint triangle.  This is a face-level choice receipt for a
+later reroute, not yet a choice of the surviving rail attachment on that
+triangle. -/
+theorem SquareBondRealization.exists_endpointSelectedTriangles_exact_with_face
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    ∃ firstTriangle secondTriangle : bond.EndpointSelectedTriangle,
+      firstTriangle.center = bond.first ∧
+        secondTriangle.center = bond.second ∧
+        firstTriangle.selectedCycle.crossingEdges ∩
+            secondTriangle.selectedCycle.crossingEdges = {bond.internalEdge} ∧
+        firstTriangle.selectedCycle.crossingEdges ∪
+            secondTriangle.selectedCycle.crossingEdges =
+          insert bond.internalEdge cycle.selectedCycle.crossingEdges ∧
+        (face ∈ firstTriangle.selectedCycle.walk.support ∨
+          face ∈ secondTriangle.selectedCycle.walk.support) := by
+  rcases bond.exists_endpointSelectedTriangles_exact hroot with
+    ⟨firstTriangle, secondTriangle, hfirst, hsecond, hinter, hunion⟩
+  have hface := bond.original_support_covered_by_endpointTriangles
+    firstTriangle secondTriangle hunion face cycle.face_mem_support
+  exact ⟨firstTriangle, secondTriangle, hfirst, hsecond, hinter, hunion, hface⟩
+
 end MiddleReplacementShortDualCycle
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
