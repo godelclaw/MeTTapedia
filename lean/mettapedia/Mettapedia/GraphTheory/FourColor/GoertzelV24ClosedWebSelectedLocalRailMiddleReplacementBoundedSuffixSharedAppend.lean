@@ -219,6 +219,118 @@ noncomputable def classifyBoundedLiveSharedRailAppend
   | swappedStraightCollision => exact .futureCollision (by simp [ShiftedFutureHasCollision, hfuture])
   | swappedSwappedCollision => exact .futureCollision (by simp [ShiftedFutureHasCollision, hfuture])
 
+private abbrev CurrentState
+    {firstStart secondStart : SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter)) :=
+  BoundedLiveMiddleReplacementState
+    (firstInterior := firstInterior)
+    (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+    (hlastNext := hlastNext)
+    (firstPlacement := firstPlacement) (secondPlacement := secondPlacement)
+    (thirdPlacement := thirdPlacement) (fourthPlacement := fourthPlacement)
+    (firstSuccessor := firstSuccessor) (bridge := bridge)
+    (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) prefixAssembly
+
+/-- The canonical shared-cut prefix selected from an actual bounded rolling
+state.  Its existence theorem performs the source-gap append; this definition
+only fixes that witness for the proof-relevant transition packet below. -/
+noncomputable def boundedLiveSharedRailPrefixOfState
+    {firstStart secondStart : SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter))
+    (state : CurrentState
+      (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext)
+      (firstPlacement := firstPlacement) (secondPlacement := secondPlacement)
+      (thirdPlacement := thirdPlacement) (fourthPlacement := fourthPlacement)
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)
+      prefixAssembly) :
+    BoundedLiveSharedRailPrefix
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (firstPlacement := firstPlacement)
+      (secondPlacement := secondPlacement) (firstSuccessor := firstSuccessor)
+      (firstStart := firstStart) (secondStart := secondStart) :=
+  Classical.choice (boundedLiveSharedRailPrefix_nonempty_ofState
+    prefixAssembly state)
+
+/-- A proof-relevant bounded rolling step assembled entirely from the stored
+state and the actual source classifiers.  The equalities prevent later users
+from replacing any of its three computations by an arbitrary inhabitant with
+the same endpoint types. -/
+structure BoundedLiveSharedRailAppendTransition
+    {firstStart secondStart : SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter))
+    (state : CurrentState
+      (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext)
+      (firstPlacement := firstPlacement) (secondPlacement := secondPlacement)
+      (thirdPlacement := thirdPlacement) (fourthPlacement := fourthPlacement)
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)
+      prefixAssembly) where
+  frozen : BoundedLiveSharedRailPrefix
+    (corridor := corridor) (firstInterior := firstInterior)
+    (hfirstNext := hfirstNext) (firstPlacement := firstPlacement)
+    (secondPlacement := secondPlacement) (firstSuccessor := firstSuccessor)
+    (firstStart := firstStart) (secondStart := secondStart)
+  frozen_eq : frozen = boundedLiveSharedRailPrefixOfState prefixAssembly state
+  common : BoundedLiveCommonSpanTransition
+    (lastSuccessor := lastSuccessor)
+    (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
+    (fourthSuccessor := fourthSuccessor) state.source state.liveTraces
+  common_eq : common = BoundedLiveCommonSpanTransition.ofClassifiers
+    (lastSuccessor := lastSuccessor)
+    (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
+    (fourthSuccessor := fourthSuccessor) state.source state.liveTraces
+  outcome : BoundedLiveSharedRailAppendOutcome frozen common.future
+  outcome_eq : outcome = classifyBoundedLiveSharedRailAppend frozen common.future
+
+/-- **L1 constructed bounded shared step.** Select the proved shared-cut
+prefix, run the actual common-span future classifiers, and classify their
+retained append.  Every collision branch remains in `outcome`. -/
+noncomputable def BoundedLiveSharedRailAppendTransition.ofState
+    {firstStart secondStart : SelectedFace (web := web)}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter))
+    (state : CurrentState
+      (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext)
+      (firstPlacement := firstPlacement) (secondPlacement := secondPlacement)
+      (thirdPlacement := thirdPlacement) (fourthPlacement := fourthPlacement)
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)
+      prefixAssembly) :
+    BoundedLiveSharedRailAppendTransition
+      (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
+      (fourthSuccessor := fourthSuccessor) prefixAssembly state := by
+  let frozen := boundedLiveSharedRailPrefixOfState prefixAssembly state
+  let common := BoundedLiveCommonSpanTransition.ofClassifiers
+    (lastSuccessor := lastSuccessor)
+    (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
+    (fourthSuccessor := fourthSuccessor) state.source state.liveTraces
+  let outcome := classifyBoundedLiveSharedRailAppend frozen common.future
+  exact
+    { frozen := frozen
+      frozen_eq := rfl
+      common := common
+      common_eq := rfl
+      outcome := outcome
+      outcome_eq := rfl }
+
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
 end
