@@ -2089,6 +2089,18 @@ proof-relevance gap needed before defining the bounded live suffix of the
 rolling state.  It does not perform that rolling induction, attach either
 annular end cap, construct the separated crosscut pair, or close L1.
 
+That receipt now transports the remote-window invariant as well.  The two
+supports of the first terminal window are separated from all sufficiently
+future windows at its first centre, and monotonicity advances their cutoff to
+the third centre; the last terminal window supplies the same certificate there
+directly.  Since every successful four-cell output face belongs to one of
+those four supports, both output rails inherit full-support separation from
+every later remote window.  The result is a constructed property of the
+canonical support-certified transition, not a new premise.  It is the safety
+certificate needed before freezing a successful bounded suffix; collision
+alternatives, the actual rolling constructor, both end caps, the separated
+crosscut pair, and L1 remain open.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
