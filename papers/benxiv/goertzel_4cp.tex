@@ -2630,9 +2630,19 @@ gap-at-least-four theorem separates it from every sufficiently later selected
 window.  Lean therefore freezes either successful repaired pair at the third
 centre without adding a centre-avoidance or global-disjointness hypothesis.
 The exact collision branch remains explicit.  This is the safety receipt for
-advancing a repaired bounded window, not yet the prepend operation, collision
-elimination, arbitrary-length fold, end-cap construction, separated crosscut
-pair, or L1 closure.
+advancing a repaired bounded window.
+
+The repaired window can now be attached to an older frozen prefix as well.
+The module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementFrozenPrepend}
+uses the prefix's interior-only certificate and the repair's three source
+packets to prove all four old/new support separations.  It then appends both
+simple rails, allowing precisely their two common splice endpoints, and moves
+the frozen cutoff to the third corridor centre.  Both straight and swapped
+repairs are constructed without a centre-avoidance premise; an exact local
+collision is returned unchanged.  This is one bounded rolling step, not yet
+collision elimination, an arbitrary-length fold, either end cap, the
+separated crosscut pair, or L1 closure.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical

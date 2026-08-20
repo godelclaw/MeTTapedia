@@ -97,7 +97,7 @@ theorem InteriorSeparatedFromFutureSelectedWindows.mono
   ⟨SupportSeparatedFromFutureSelectedWindows.mono hfrozen.1 hle,
     SupportSeparatedFromFutureSelectedWindows.mono hfrozen.2 hle⟩
 
-private theorem walk_support_disjoint_tail_of_dropLast_disjoint_of_end_not_mem
+theorem walk_support_disjoint_tail_of_dropLast_disjoint_of_end_not_mem
     {F : Type*} {H : SimpleGraph F}
     {prefixStart prefixFinish suffixStart suffixFinish : F}
     (prefixWalk : H.Walk prefixStart prefixFinish)
@@ -117,7 +117,7 @@ private theorem walk_support_disjoint_tail_of_dropLast_disjoint_of_end_not_mem
     subst face
     exact hendNotMem hsuffixTail
 
-private theorem walk_support_disjoint_tail_of_dropLast_disjoint
+theorem walk_support_disjoint_tail_of_dropLast_disjoint
     {F : Type*} {H : SimpleGraph F} {start middle finish : F}
     (prefixWalk : H.Walk start middle) (suffix : H.Walk middle finish)
     (hsuffix : suffix.IsPath)
@@ -129,7 +129,7 @@ private theorem walk_support_disjoint_tail_of_dropLast_disjoint
   rw [← suffix.cons_tail_support] at hnodup
   exact (List.nodup_cons.mp hnodup).1
 
-private theorem dropLast_append_of_right_ne_nil
+theorem dropLast_append_of_right_ne_nil
     {A : Type*} (left right : List A) (hright : right ≠ []) :
     (left ++ right).dropLast = left ++ right.dropLast := by
   induction left with
@@ -140,7 +140,7 @@ private theorem dropLast_append_of_right_ne_nil
       rw [List.cons_append, List.dropLast_cons_of_ne_nil htail, ih]
       rfl
 
-private theorem appendAssembly_interiorSeparatedFromFuture
+theorem appendAssembly_interiorSeparatedFromFuture
     {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
       SelectedFace (web := web)}
     {oldCutoff newCutoff : Nat}
