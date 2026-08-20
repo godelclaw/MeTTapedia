@@ -2036,6 +2036,18 @@ geometry.  What remains is exactly the neighbouring four-cell transition
 which produces the next terminal window, followed by the two literal end
 caps.  This invariant is not that transition and is not L1 closure.
 
+The invariant now has its constructor-level consumer.  Once a certified
+terminal window begins more than three corridor positions beyond the stored
+cutoff, the future-separation predicate proves all four support conditions
+needed to prepend the frozen pair: the two same-track path conditions and the
+two crossed separation conditions.  Lean then constructs the combined pair,
+retains its straight-or-exchanged endpoint order, and proves that either
+result satisfies the same future-separation predicate at the new cutoff.
+Hence the length of the frozen prefix is no longer part of the geometric case
+analysis.  The remaining formation problem is finite and local: construct the
+neighbouring four-cell transition and then attach the two literal annular end
+caps.  This result does not claim either construction or L1 closure.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
