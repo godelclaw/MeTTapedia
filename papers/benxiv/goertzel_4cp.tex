@@ -2136,6 +2136,18 @@ reroute the outer collision, eliminate the other three bounded bands, perform
 the arbitrary-length fold, attach either end cap, construct the separated
 crosscut pair, or close L1.
 
+The parity-matched half of that finite repair table is now deterministic.
+In
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleCollisionClearance},
+a straight repair of a first/first or second/second collision forces the
+opposite repaired rail to avoid the collision face; after an endpoint
+exchange, the analogous statement holds for first/second and second/first
+collisions.  The proof combines connector-free track provenance with the two
+already-proved input rail separations.  Thus four of the eight
+repair-parity/collision-origin combinations no longer require a clear-rail
+choice.  The four parity-mismatched combinations still carry only the proved
+disjunctive avoidance certificate, and no outer four-cell reroute is claimed.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
