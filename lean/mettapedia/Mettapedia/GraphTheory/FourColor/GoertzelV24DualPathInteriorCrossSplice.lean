@@ -224,6 +224,37 @@ theorem crossSpliceAroundWithBridge_support_subset
       rw [newSuffix.support_tail_of_not_nil hsuffixNotNil] at hsuffix
       exact List.mem_of_mem_tail hsuffix
 
+/-- Sharp support receipt for the bridge splice.  Unlike the coarser public
+receipt above, this remembers that only the prefix before `current` and the
+suffix after `current` survive.  This distinction is needed when a later
+separation proof may legitimately ignore collisions in the discarded pieces. -/
+theorem crossSpliceAroundWithBridge_support_subset_sharp
+    {oldStart oldFinish newStart newFinish current : V}
+    (oldWalk : G.Walk oldStart oldFinish)
+    (newWalk : G.Walk newStart newFinish)
+    (hold : current ∈ oldWalk.support)
+    (hnew : current ∈ newWalk.support)
+    (bridge : G.Walk
+      (oldWalk.takeUntil current hold).penultimate
+      (newWalk.dropUntil current hnew).snd) :
+    ∀ vertex ∈
+        (crossSpliceAroundWithBridge oldWalk newWalk hold hnew bridge).support,
+      vertex ∈ (oldWalk.takeUntil current hold).dropLast.support ∨
+        vertex ∈ bridge.support ∨
+        vertex ∈ (newWalk.dropUntil current hnew).tail.support := by
+  intro vertex hvertex
+  have hraw :=
+    ((oldWalk.takeUntil current hold).dropLast.append
+      (bridge.append (newWalk.dropUntil current hnew).tail))
+      |>.support_bypass_subset_support hvertex
+  rcases (SimpleGraph.Walk.mem_support_append_iff _ _).1 hraw with
+    hprefix | hrest
+  · exact .inl hprefix
+  · rcases (SimpleGraph.Walk.mem_support_append_iff _ _).1 hrest with
+      hbridge | hsuffix
+    · exact .inr (.inl hbridge)
+    · exact .inr (.inr hsuffix)
+
 /-- Pairwise separation from the two source pieces and the bridge implies
 separation from the final loop-erased splice. -/
 theorem crossSpliceAroundWithBridge_support_disjoint

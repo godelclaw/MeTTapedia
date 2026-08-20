@@ -452,6 +452,10 @@ structure SecondBandFutureSourceSplice
   route : SelectedDualGraph (web := web).Walk oldStart newFinish
   isPath : route.IsPath
   avoids : face ∉ route.support
+  oldOccurrence : face ∈ oldWalk.support
+  newOccurrence : face ∈ newWalk.support
+  oldStart_ne : oldStart ≠ face
+  newFinish_ne : face ≠ newFinish
   support_receipt : ∀ current ∈ route.support,
     current ∈ oldWalk.support ∨
       current ∈
@@ -480,6 +484,34 @@ structure SecondBandFutureSourceSplice
               (hlastNext := hlastNext) (hfourthNext := hfourthNext)
               (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)).center] ∨
       current ∈ newWalk.support
+  support_receipt_sharp : ∀ current ∈ route.support,
+    current ∈ (oldWalk.takeUntil face oldOccurrence).dropLast.support ∨
+      current ∈
+        [corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (SecondInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (ThirdInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (FourthInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (FifthInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext) (hfourthNext := hfourthNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (SixthInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+              (hfifthNext := hfifthNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (SeventhInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+              (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)).center] ∨
+      current ∈ (newWalk.dropUntil face newOccurrence).tail.support
 
 /-- The exact support receipt reduces separation from any companion walk to
 the old source piece, the six literal corridor centres, and the future source
@@ -530,6 +562,62 @@ theorem SecondBandFutureSourceSplice.support_disjoint
   rw [List.disjoint_left]
   intro current hroute hcompanion
   rcases splice.support_receipt current hroute with holdCurrent | hcenter | hnewCurrent
+  · exact (List.disjoint_left.mp hold holdCurrent) hcompanion
+  · exact hcenters current hcenter hcompanion
+  · exact (List.disjoint_left.mp hnew hnewCurrent) hcompanion
+
+/-- The sharp support receipt discards the old suffix after the collision and
+the future prefix before it.  Thus separation from a companion walk only asks
+about the two retained source fragments and the six literal corridor centres;
+no hypothesis is spent on source geometry removed by the splice. -/
+theorem SecondBandFutureSourceSplice.support_disjoint_sharp
+    {face oldStart oldFinish newStart newFinish companionStart companionFinish :
+      SelectedFace (web := web)}
+    {oldWalk : SelectedDualGraph (web := web).Walk oldStart oldFinish}
+    {newWalk : SelectedDualGraph (web := web).Walk newStart newFinish}
+    (splice : SecondBandFutureSourceSplice
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      face oldWalk newWalk)
+    (companion : SelectedDualGraph (web := web).Walk
+      companionStart companionFinish)
+    (hold : (oldWalk.takeUntil face splice.oldOccurrence).dropLast.support.Disjoint
+      companion.support)
+    (hcenters : ∀ center ∈
+      [corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SecondInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (ThirdInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (FourthInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (FifthInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext) (hfourthNext := hfourthNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SixthInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+            (hfifthNext := hfifthNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SeventhInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+            (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)).center],
+      center ∉ companion.support)
+    (hnew : (newWalk.dropUntil face splice.newOccurrence).tail.support.Disjoint
+      companion.support) :
+    splice.route.support.Disjoint companion.support := by
+  rw [List.disjoint_left]
+  intro current hroute hcompanion
+  rcases splice.support_receipt_sharp current hroute with
+    holdCurrent | hcenter | hnewCurrent
   · exact (List.disjoint_left.mp hold holdCurrent) hcompanion
   · exact hcenters current hcenter hcompanion
   · exact (List.disjoint_left.mp hnew hnewCurrent) hcompanion
@@ -594,7 +682,17 @@ theorem SecondFourthFarEndpoint.exists_secondBandFutureCrossSplice
   rcases endpoint.exists_secondToFutureCenterBridge hleft hright hfaceLeft
       hfaceRight with ⟨centerBridge⟩
   let route := crossSpliceAroundWithBridge oldWalk newWalk hold hnew centerBridge.walk
-  refine ⟨⟨route, crossSpliceAroundWithBridge_isPath _ _ _ _ _, ?_, ?_⟩⟩
+  refine ⟨{
+    route := route
+    isPath := crossSpliceAroundWithBridge_isPath _ _ _ _ _
+    avoids := ?_
+    oldOccurrence := hold
+    newOccurrence := hnew
+    oldStart_ne := holdStart
+    newFinish_ne := hnewEnd
+    support_receipt := ?_
+    support_receipt_sharp := ?_
+  }⟩
   · exact current_not_mem_crossSpliceAroundWithBridge_support
       oldWalk newWalk holdPath hnewPath hold hnew holdStart hnewEnd
         centerBridge.walk centerBridge.avoids
@@ -629,6 +727,42 @@ theorem SecondFourthFarEndpoint.exists_secondBandFutureCrossSplice
           exact .inr (.inr (.inr (.inr (.inr hseventh))))))
       · exact .inr (.inr (hright ▸
           futureCrossSplice_snd_mem_original_support newWalk hnew hnewEnd))
+    · exact .inr (.inr hnewCurrent)
+  · intro current hcurrent
+    rcases crossSpliceAroundWithBridge_support_subset_sharp oldWalk newWalk hold hnew
+        centerBridge.walk current hcurrent with holdCurrent | hcenter | hnewCurrent
+    · exact .inl holdCurrent
+    · have hbridge := centerBridge.support_receipt current hcenter
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at hbridge
+      rcases hbridge with hleft | hsecond | hthird | hfourth | hfifth | hsixth |
+          hseventh | hright
+      · have hpenultimate :
+            oldPrefix.penultimate ∈ oldPrefix.dropLast.support := by
+          rw [oldPrefix.support_dropLast hprefixNotNil]
+          exact oldPrefix.penultimate_mem_dropLast_support hprefixNotNil
+        exact .inl (by simpa only [oldPrefix, hleft] using hpenultimate)
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inl hsecond))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inl hthird)))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inl hfourth))))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inr (.inl hfifth)))))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inr (.inr (.inl hsixth))))))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inr (.inr (.inr hseventh))))))
+      · have hsnd : newSuffix.snd ∈ newSuffix.tail.support := by
+          rw [newSuffix.support_tail_of_not_nil hsuffixNotNil]
+          exact newSuffix.snd_mem_tail_support hsuffixNotNil
+        exact .inr (.inr (by simpa only [newSuffix, hright] using hsnd))
     · exact .inr (.inr hnewCurrent)
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
