@@ -2182,7 +2182,14 @@ nonlocal source term.  Moreover, track provenance unfolds the repaired-middle
 side of either band into seven literal atoms: two old bridge tracks, two
 successor tracks, the Cell--3 centre, and its two seam flanks.  The remaining
 finite table is therefore expressed entirely in source pieces rather than an
-opaque loop-erased path.  One atom is now directionally resolved: the displayed
+opaque loop-erased path.  Since every one of the four source rails has length
+at most two, Lean now expands membership in each rail into its start, optional
+middle, or finish.  Thus the repaired side of either join has at most fifteen
+explicit coordinates: three for each short rail, plus the centre and two seam
+faces.  Coordinates are allowed to coincide for stationary and one-step rails;
+no false distinctness is assumed.  The outer side of each join has not yet
+received the same coordinate expansion.  One atom is also directionally
+resolved: the displayed
 second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas
 every face in a fourth-cell continuation is adjacent to the fourth centre.

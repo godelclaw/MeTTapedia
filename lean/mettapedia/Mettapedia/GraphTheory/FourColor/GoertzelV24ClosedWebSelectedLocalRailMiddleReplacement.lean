@@ -798,6 +798,105 @@ theorem faceInCanonicalMiddleSourcePieces_of_middleRepair
           (fun hnew => .inr (.inr (.inl hnew)))
           (htrack.2 face (by simpa [rebaseMiddleSwapped] using hsecond))
 
+/-- A coordinate on a walk of length at most two.  The alternatives are
+deliberately allowed to coincide when the walk has length zero or one; the
+point is finite exhaustion, not a false distinctness assertion. -/
+inductive FaceInShortRailCoordinates {F : Type*} {H : SimpleGraph F}
+    {start finish : F} (walk : H.Walk start finish) (face : F) : Prop
+  | start (face_eq : face = start)
+  | middle (face_eq : face = walk.getVert 1)
+  | finish (face_eq : face = finish)
+
+private theorem faceInShortRailCoordinates_of_mem_support
+    {F : Type*} {H : SimpleGraph F} {start finish face : F}
+    (walk : H.Walk start finish) (hlength : walk.length ≤ 2)
+    (hface : face ∈ walk.support) :
+    FaceInShortRailCoordinates walk face := by
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hface with
+    ⟨index, hindex, hindexLe⟩
+  have hindexTwo : index ≤ 2 := hindexLe.trans hlength
+  interval_cases index
+  · exact .start (by simpa using hindex.symm)
+  · exact .middle (by simpa using hindex.symm)
+  · have hlengthTwo : walk.length = 2 := by omega
+    exact .finish (by
+      calc
+        face = walk.getVert 2 := hindex.symm
+        _ = walk.getVert walk.length := by rw [hlengthTwo]
+        _ = finish := walk.getVert_length)
+
+/-- Fully finite coordinates for the canonical middle repair's source
+support.  The four short rail packets have been expanded to start, optional
+middle, or finish; the three displayed connector faces remain literal
+singletons. -/
+inductive FaceInCanonicalMiddleCoordinates
+    (face : SelectedFace (web := web)) : Prop
+  | bridgeOldFirst
+      (coordinate : FaceInShortRailCoordinates
+        (BridgeLeft (firstSuccessor := firstSuccessor)
+          (bridge := bridge)).paths.firstRail face)
+  | bridgeOldSecond
+      (coordinate : FaceInShortRailCoordinates
+        (BridgeLeft (firstSuccessor := firstSuccessor)
+          (bridge := bridge)).paths.secondRail face)
+  | bridgeNewFirst
+      (coordinate : FaceInShortRailCoordinates bridge.firstContinuation face)
+  | bridgeNewSecond
+      (coordinate : FaceInShortRailCoordinates bridge.secondContinuation face)
+  | center
+      (face_eq : face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center)
+  | beforeSeam
+      (face_eq : face = selectedPlacementSideFace secondPlacement
+        bridge.frame.leftBefore)
+  | afterSeam
+      (face_eq : face = selectedPlacementSideFace secondPlacement
+        bridge.frame.leftAfter)
+
+/-- Every source-piece membership of the canonical middle repair is one of
+fifteen explicit walk coordinates: three on each of four length-at-most-two
+rails, plus the centre and two seam faces. -/
+theorem faceInCanonicalMiddleCoordinates_of_sourcePieces
+    {face : SelectedFace (web := web)}
+    (hface : FaceInCanonicalMiddleSourcePieces
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face) :
+    FaceInCanonicalMiddleCoordinates
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face := by
+  rcases hface with hface | hface | hface | hface | hface | hface | hface
+  · exact .bridgeOldFirst
+      (faceInShortRailCoordinates_of_mem_support _
+        (BridgeLeft (firstSuccessor := firstSuccessor)
+          (bridge := bridge)).paths.firstRail_length_le_two hface)
+  · exact .bridgeOldSecond
+      (faceInShortRailCoordinates_of_mem_support _
+        (BridgeLeft (firstSuccessor := firstSuccessor)
+          (bridge := bridge)).paths.secondRail_length_le_two hface)
+  · exact .bridgeNewFirst
+      (faceInShortRailCoordinates_of_mem_support _ (by
+        simpa [SeparatedSelectedSourceLocalRailSuccessor.firstContinuation] using
+          bridge.rightRails.paths.firstRail_length_le_two) hface)
+  · exact .bridgeNewSecond
+      (faceInShortRailCoordinates_of_mem_support _ (by
+        simpa [SeparatedSelectedSourceLocalRailSuccessor.secondContinuation] using
+          bridge.rightRails.paths.secondRail_length_le_two) hface)
+  · exact .center hface
+  · exact .beforeSeam hface
+  · exact .afterSeam hface
+
+/-- Track provenance plus the length-two bound turns every repaired-middle
+face into a finite literal coordinate. -/
+theorem faceInCanonicalMiddleCoordinates_of_middleRepair
+    (trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)))
+    {face : SelectedFace (web := web)}
+    (hface : FaceInCanonicalMiddleRepair
+      (firstSuccessor := firstSuccessor) (bridge := bridge) trace face) :
+    FaceInCanonicalMiddleCoordinates
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face :=
+  faceInCanonicalMiddleCoordinates_of_sourcePieces
+    (faceInCanonicalMiddleSourcePieces_of_middleRepair trace hface)
+
 /-- Source-level form of the two residual adjacent bands.  The repaired
 middle is no longer opaque: its contact face is one of seven displayed atoms
 of the literal second/third-cell bridge window. -/
@@ -836,6 +935,43 @@ theorem ExactSelectedLocalRailMiddleReplacementLocalBand.toSourceLocalBand
   | middleLast middle last =>
       exact .middleLast
         (faceInCanonicalMiddleSourcePieces_of_middleRepair trace middle) last
+
+/-- Coordinate-level form of the residual local table.  The outer packet is
+still retained as the side of the collision, while the repaired-middle side
+is now one of finitely many explicit positions on four walks of length at
+most two, or one of three displayed faces. -/
+inductive ExactSelectedLocalRailMiddleReplacementCoordinateLocalBand
+    (face : SelectedFace (web := web)) : Prop
+  | firstMiddle
+      (first : face ∈ firstLeft.toAssembly.firstRail.support ∨
+        face ∈ firstLeft.toAssembly.secondRail.support)
+      (middle : FaceInCanonicalMiddleCoordinates
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+  | middleLast
+      (middle : FaceInCanonicalMiddleCoordinates
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+      (last : face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).firstRail.support ∨
+        face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).secondRail.support)
+
+/-- Replace the repaired-middle support packet in either adjacent band by
+its finite coordinate classification. -/
+theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.toCoordinateLocalBand
+    {face : SelectedFace (web := web)}
+    (band : ExactSelectedLocalRailMiddleReplacementSourceLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face) :
+    ExactSelectedLocalRailMiddleReplacementCoordinateLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face := by
+  cases band with
+  | firstMiddle first middle =>
+      exact .firstMiddle first
+        (faceInCanonicalMiddleCoordinates_of_sourcePieces middle)
+  | middleLast middle last =>
+      exact .middleLast
+        (faceInCanonicalMiddleCoordinates_of_sourcePieces middle) last
 
 /-- The second-cell centre cannot occur on either literal fourth-cell
 continuation.  The former is the corridor centre two positions behind the
