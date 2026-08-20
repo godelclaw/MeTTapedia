@@ -3068,6 +3068,16 @@ themselves inhabit the later bounded rolling state.  The ignored end-to-end
 probe imports this comparison beside the reductive endpoint.  Thus neither
 the rolling iteration, the end caps, nor L1 is claimed here.
 
+The selected-cycle interface now supports the corresponding provenance repair
+directly.  Given two distinct steps of a simple dual cycle and literal shared
+primal edges at those steps,
+\texttt{SelectedDualCycle.ofWalkWithCrossingsAtTwo} retains both crossings
+definitionally while selecting the remaining crossings from adjacency.  Thus
+the pointed square need not recover its two rail crossings from arbitrary
+choices after construction.  What remains is the source-coordinate theorem
+locating the incoming and outgoing receipts at the two collision-adjacent
+steps of that square.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

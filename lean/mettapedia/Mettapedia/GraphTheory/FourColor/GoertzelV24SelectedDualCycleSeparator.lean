@@ -127,6 +127,103 @@ noncomputable def ofWalkWithCrossingAt (RS : RotationSystem V E)
     (ofWalkWithCrossingAt RS walk hcycle anchor edge hedge).crossingEdge anchor = edge := by
   simp [ofWalkWithCrossingAt]
 
+/-- Choose literal shared primal crossings for a simple dual cycle while
+pinning two distinct specified steps.  This is the provenance-preserving
+constructor needed when a local rail enters and leaves the same replacement
+window through two already-selected primal edges. -/
+noncomputable def ofWalkWithCrossingsAtTwo (RS : RotationSystem V E)
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Walk start start)
+    (hcycle : walk.IsCycle)
+    (first second : Fin walk.length) (hne : first ≠ second)
+    (firstEdge secondEdge : E)
+    (hfirstEdge : firstEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert first.val).1
+      (walk.getVert (first.val + 1)).1)
+    (hsecondEdge : secondEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert second.val).1
+      (walk.getVert (second.val + 1)).1) : SelectedDualCycle RS start where
+  walk := walk
+  isCycle := hcycle
+  crossingEdge := fun step =>
+    if step = first then firstEdge
+    else if step = second then secondEdge
+    else Classical.choose
+      (exists_mem_sharedInteriorEdges_of_adj
+        (orbitFaceBoundary RS)
+        (Finset.univ : Finset (OrbitFace RS))
+        (walk.adj_getVert_succ step.isLt))
+  crossing_mem_shared := by
+    intro step
+    by_cases hfirst : step = first
+    · simpa [hfirst] using hfirstEdge
+    · by_cases hsecond : step = second
+      · subst step
+        simpa [hne.symm] using hsecondEdge
+      · simp only [hfirst, hsecond, ↓reduceIte]
+        exact Classical.choose_spec
+          (exists_mem_sharedInteriorEdges_of_adj
+            (orbitFaceBoundary RS)
+            (Finset.univ : Finset (OrbitFace RS))
+            (walk.adj_getVert_succ step.isLt))
+
+@[simp] theorem ofWalkWithCrossingsAtTwo_crossingEdge_first
+    (RS : RotationSystem V E)
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Walk start start)
+    (hcycle : walk.IsCycle)
+    (first second : Fin walk.length) (hne : first ≠ second)
+    (firstEdge secondEdge : E)
+    (hfirstEdge : firstEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert first.val).1
+      (walk.getVert (first.val + 1)).1)
+    (hsecondEdge : secondEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert second.val).1
+      (walk.getVert (second.val + 1)).1) :
+    (ofWalkWithCrossingsAtTwo RS walk hcycle first second hne
+      firstEdge secondEdge hfirstEdge hsecondEdge).crossingEdge first =
+        firstEdge := by
+  simp [ofWalkWithCrossingsAtTwo]
+
+@[simp] theorem ofWalkWithCrossingsAtTwo_crossingEdge_second
+    (RS : RotationSystem V E)
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Walk start start)
+    (hcycle : walk.IsCycle)
+    (first second : Fin walk.length) (hne : first ≠ second)
+    (firstEdge secondEdge : E)
+    (hfirstEdge : firstEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert first.val).1
+      (walk.getVert (first.val + 1)).1)
+    (hsecondEdge : secondEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      (walk.getVert second.val).1
+      (walk.getVert (second.val + 1)).1) :
+    (ofWalkWithCrossingsAtTwo RS walk hcycle first second hne
+      firstEdge secondEdge hfirstEdge hsecondEdge).crossingEdge second =
+        secondEdge := by
+  simp [ofWalkWithCrossingsAtTwo, hne.symm]
+
 /-- The finite carrier of the selected primal crossings. -/
 def crossingEdges {RS : RotationSystem V E}
     {start : AmbientFace
