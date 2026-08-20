@@ -108,6 +108,28 @@ theorem hasCycleOnSide_or_squareBond
 
 end MiddleReplacementShortDualCycle
 
+namespace MiddleReplacementSquareDualCycle
+
+variable {face : SelectedFace (web := web)}
+
+/-- Feed a typed distance-two square residue directly into the exact
+cyclic-side-or-two-vertex-bond classification.  The four-step equality is
+carried by the packet rather than being reconstructed by each consumer. -/
+theorem hasCycleOnSide_or_squareBond
+    (square : MiddleReplacementSquareDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        square.cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+      Nonempty
+        (MiddleReplacementShortDualCycle.SquareBondRealization
+          square.cycle component) :=
+  square.cycle.hasCycleOnSide_or_squareBond component hroot
+    square.length_eq_four
+
+end MiddleReplacementSquareDualCycle
+
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
 end

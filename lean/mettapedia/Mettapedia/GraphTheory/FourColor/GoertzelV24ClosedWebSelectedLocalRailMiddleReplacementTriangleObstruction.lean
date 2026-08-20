@@ -179,12 +179,12 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.thirdFourthTriangle_cyc
 
 /-- **L1 reduced middle-replacement frontier.**  Every exact surviving
 collision is now one of two literal corridor centres, one of two actual
-cyclic adjacent-triangle obstructions, or a proof-relevant short-cycle
-packet arising from a distance-two square branch.
+cyclic adjacent-triangle obstructions, or a proof-relevant four-step square
+packet arising from a distance-two branch.
 
-The last disjunct is deliberately still typed as a selected short dual
-cycle.  This theorem does not identify it with a primal facial square or
-apply the source's square reduction. -/
+The last disjunct retains its exact length in the type.  It is deliberately
+still a selected facial-dual cycle: this theorem does not identify it with a
+primal facial square or apply the source's square reduction. -/
 theorem ExactSelectedLocalRailMiddleReplacementCollision.center_or_cyclicTriangle_or_squareCycle
     (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
       blockLength corridor)
@@ -213,7 +213,7 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.center_or_cyclicTriangl
         Nonempty
           (SeparatedSelectedSourceLocalRailSuccessor.CyclicAppendObstruction
             lastSuccessor triangle)) ∨
-      Nonempty (MiddleReplacementShortDualCycle (web := web) face) := by
+      Nonempty (MiddleReplacementSquareDualCycle (web := web) face) := by
   let geometry := collision.hasLadderGeometry hsource
   cases geometry with
   | secondCenter face_eq => exact .inl face_eq
@@ -223,25 +223,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.center_or_cyclicTriangl
         (collision.firstSecondTriangle_cyclicObstruction hsource
           first_adjacent second_adjacent)))
   | firstThirdSquare first_adjacent third_adjacent face_ne_second =>
-      have result :=
-        (ExactSelectedLocalRailMiddleReplacementLadderGeometry.firstThirdSquare
-          (hlastNext := hlastNext) first_adjacent third_adjacent
-            face_ne_second).center_or_shortCycle
-            (rungs := rungs)
-      rcases result with second | third | cycle
-      · exact .inl second
-      · exact .inr (.inl third)
-      · exact .inr (.inr (.inr (.inr cycle)))
+      exact .inr (.inr (.inr (.inr ⟨
+        squareDualCycle_of_firstThirdSquare (rungs := rungs)
+          first_adjacent third_adjacent face_ne_second⟩)))
   | secondFourthSquare second_adjacent fourth_adjacent face_ne_third =>
-      have result :=
-        (ExactSelectedLocalRailMiddleReplacementLadderGeometry.secondFourthSquare
-          (hfirstNext := hfirstNext) second_adjacent fourth_adjacent
-            face_ne_third).center_or_shortCycle
-            (rungs := rungs)
-      rcases result with second | third | cycle
-      · exact .inl second
-      · exact .inr (.inl third)
-      · exact .inr (.inr (.inr (.inr cycle)))
+      exact .inr (.inr (.inr (.inr ⟨
+        squareDualCycle_of_secondFourthSquare (rungs := rungs)
+          second_adjacent fourth_adjacent face_ne_third⟩)))
   | thirdFourthTriangle third_adjacent fourth_adjacent =>
       exact .inr (.inr (.inr (.inl
         (collision.thirdFourthTriangle_cyclicObstruction hsource

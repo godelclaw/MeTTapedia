@@ -104,6 +104,14 @@ structure MiddleReplacementShortDualCycle
     (Finset.univ : Finset (OrbitFace web.annular.RS))
     (walk.getVert anchor.val).1 (walk.getVert (anchor.val + 1)).1
 
+/-- A short-cycle packet whose source geometry proves that it is the
+four-step distance-two square branch.  Keeping this equality in the type
+prevents a later consumer from confusing it with either adjacent triangle. -/
+structure MiddleReplacementSquareDualCycle
+    (face : SelectedFace (web := web)) where
+  cycle : MiddleReplacementShortDualCycle (web := web) face
+  length_eq_four : cycle.walk.length = 4
+
 /-- The four-step closed walk around a common neighbour of corridor centres
 two positions apart. -/
 private def dualSquareWalk
@@ -139,6 +147,192 @@ private theorem dualSquareWalk_isCycle
     hfourthFirst.ne.symm, hfirstThird, hfirstThird.symm, hsecondFourth]
 
 include rungs
+
+/-- Literal four-step cycle for the first-to-third distance-two branch. -/
+private noncomputable def firstThirdSquareCycle
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    MiddleReplacementSquareDualCycle (web := web) face := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  have hfirstSecond : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt firstInterior.center)
+      (skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center) :=
+    skeleton.consecutive_adjacent firstInterior.center
+      (nextCorridorInterior firstInterior hfirstNext).center rfl
+  have hsecondThird : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center)
+      (skeleton.faceAt (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :=
+    skeleton.consecutive_adjacent
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center rfl
+  let walk := dualSquareWalk hfirstSecond hsecondThird hthird hfirst.symm
+  have hfirstThird : skeleton.faceAt firstInterior.center ≠
+      skeleton.faceAt (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center :=
+    skeleton.faceAt_ne (by
+      intro h
+      have hval := congrArg Fin.val h
+      change firstInterior.center.val =
+        firstInterior.center.val + 1 + 1 at hval
+      omega)
+  let cycle : MiddleReplacementShortDualCycle (web := web) face := {
+    start := skeleton.faceAt firstInterior.center
+    walk := walk
+    isCycle := dualSquareWalk_isCycle hfirstSecond hsecondThird hthird
+      hfirst.symm hfirstThird (by exact fun h => hfaceSecond h.symm)
+    length_eq_three_or_four := .inr
+      (dualSquareWalk_length hfirstSecond hsecondThird hthird hfirst.symm)
+    face_mem_support := by simp [walk, dualSquareWalk]
+    support_internal := by
+      intro current hcurrent
+      simp only [walk, dualSquareWalk, SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
+      rcases hcurrent with hcurrent | hcurrent | hcurrent | hcurrent | hcurrent
+      · subst current
+        exact corridor.face_internal firstInterior.center
+      · subst current
+        exact corridor.face_internal
+          (nextCorridorInterior firstInterior hfirstNext).center
+      · subst current
+        exact corridor.face_internal (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+      · subst current
+        exact corridor.neighbor_internal firstInterior.center face hfirst
+      · rcases hcurrent with hcurrent | hcurrent
+        · subst current
+          exact corridor.face_internal firstInterior.center
+        · simp at hcurrent
+    anchor := ⟨0, by simp [walk, dualSquareWalk]⟩
+    anchorEdge := rungs.edge firstInterior.outgoing
+    anchorEdge_mem_shared := by
+      simpa [walk, dualSquareWalk] using rungs.mem_shared firstInterior.outgoing
+  }
+  exact ⟨cycle, by simp [cycle, walk, dualSquareWalk]⟩
+
+/-- Literal four-step cycle for the second-to-fourth distance-two branch. -/
+private noncomputable def secondFourthSquareCycle
+    {face : SelectedFace (web := web)}
+    (hsecond : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face)
+    (hfourth : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center) face)
+    (hfaceThird : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :
+    MiddleReplacementSquareDualCycle (web := web) face := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let secondInterior := nextCorridorInterior firstInterior hfirstNext
+  let thirdInterior := nextCorridorInterior secondInterior hbridgeNext
+  let fourthInterior := nextCorridorInterior thirdInterior hlastNext
+  have hsecondThird : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt secondInterior.center)
+      (skeleton.faceAt thirdInterior.center) :=
+    skeleton.consecutive_adjacent secondInterior.center thirdInterior.center rfl
+  have hthirdFourth : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt thirdInterior.center)
+      (skeleton.faceAt fourthInterior.center) :=
+    skeleton.consecutive_adjacent thirdInterior.center fourthInterior.center rfl
+  let walk := dualSquareWalk hsecondThird hthirdFourth hfourth hsecond.symm
+  have hsecondFourth : skeleton.faceAt secondInterior.center ≠
+      skeleton.faceAt fourthInterior.center :=
+    skeleton.faceAt_ne (by
+      intro h
+      have hval := congrArg Fin.val h
+      dsimp [fourthInterior, thirdInterior, secondInterior,
+        nextCorridorInterior] at hval
+      omega)
+  let cycle : MiddleReplacementShortDualCycle (web := web) face := {
+    start := skeleton.faceAt secondInterior.center
+    walk := walk
+    isCycle := dualSquareWalk_isCycle hsecondThird hthirdFourth hfourth
+      hsecond.symm hsecondFourth (by exact fun h => hfaceThird h.symm)
+    length_eq_three_or_four := .inr
+      (dualSquareWalk_length hsecondThird hthirdFourth hfourth hsecond.symm)
+    face_mem_support := by simp [walk, dualSquareWalk]
+    support_internal := by
+      intro current hcurrent
+      simp only [walk, dualSquareWalk, SimpleGraph.Walk.support_cons,
+        SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
+      rcases hcurrent with hcurrent | hcurrent | hcurrent | hcurrent | hcurrent
+      · subst current
+        exact corridor.face_internal secondInterior.center
+      · subst current
+        exact corridor.face_internal thirdInterior.center
+      · subst current
+        exact corridor.face_internal fourthInterior.center
+      · subst current
+        exact corridor.neighbor_internal secondInterior.center face hsecond
+      · rcases hcurrent with hcurrent | hcurrent
+        · subst current
+          exact corridor.face_internal secondInterior.center
+        · simp at hcurrent
+    anchor := ⟨0, by simp [walk, dualSquareWalk]⟩
+    anchorEdge := rungs.edge secondInterior.outgoing
+    anchorEdge_mem_shared := by
+      change rungs.edge secondInterior.outgoing ∈ sharedInteriorEdges
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        (skeleton.faceAt secondInterior.center).1
+        (skeleton.faceAt thirdInterior.center).1
+      simpa [thirdInterior] using rungs.mem_shared secondInterior.outgoing
+  }
+  exact ⟨cycle, by simp [cycle, walk, dualSquareWalk]⟩
+
+/-- Public constructor for the typed first-to-third square packet. -/
+noncomputable def squareDualCycle_of_firstThirdSquare
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    MiddleReplacementSquareDualCycle (web := web) face :=
+  firstThirdSquareCycle (rungs := rungs) hfirst hthird hfaceSecond
+
+/-- Public constructor for the typed second-to-fourth square packet. -/
+noncomputable def squareDualCycle_of_secondFourthSquare
+    {face : SelectedFace (web := web)}
+    (hsecond : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face)
+    (hfourth : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center) face)
+    (hfaceThird : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :
+    MiddleReplacementSquareDualCycle (web := web) face :=
+  secondFourthSquareCycle (rungs := rungs) hsecond hfourth hfaceThird
 
 /-- Every normalized non-centre collision produces an actual simple short
 dual cycle.  The two centre cases remain explicit and are not converted into
