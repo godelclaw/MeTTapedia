@@ -3,6 +3,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebFiniteCutRadialEscap
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSeparator
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CubicSmallBoundaryCycle
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceWalk
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SelectedDualCycleBond
 
 /-!
 # Boundary-free components of the middle-replacement separator
@@ -34,11 +35,13 @@ open GoertzelV24ClosedWebTotalClosure
 open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FiniteDeletionCyclicCut
+open GoertzelV24FramedLocalDualCycleBond
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceWalk
 open GoertzelV24SelectedDualCycleSeparator
+open GoertzelV24SelectedDualCycleBond
 open SimpleGraph
 open SimpleGraphDartRotation
 open Instance.LocalLayerFormation
@@ -93,6 +96,58 @@ theorem exists_component_away_from_outerRoot
   exact exists_component_not_mem_root_of_not_connected
     cycle.selectedCycle.crossingEdges web.annular.RS.outer.fst
     cycle.not_connected_deleteEdges_crossingEdges
+
+/-- Local facial two-sidedness propagates any nonempty component boundary
+around the selected short cycle.  Thus the computed boundary is exactly the
+three or four literally selected crossings, without global two-sidedness or
+unique shared-edge assumptions. -/
+theorem componentCrossingEdges_eq_crossingEdges
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    componentCrossingEdges cycle.selectedCycle.crossingEdges component =
+      cycle.selectedCycle.crossingEdges := by
+  classical
+  let removed := cycle.selectedCycle.crossingEdges
+  let deleted := G.deleteEdges (edgeFinsetValueSet removed)
+  let outside := deleted.connectedComponentMk web.annular.RS.outer.fst
+  have hrootOutside : web.annular.RS.outer.fst ∈ outside.supp := rfl
+  have hdistinct : component ≠ outside := by
+    intro heq
+    exact hroot (heq ▸ hrootOutside)
+  have hcomponentNonempty :
+      (componentCrossingEdges removed component).Nonempty :=
+    componentCrossingEdges_nonempty_of_distinct
+      web.annular.cellulation.connected removed component outside hdistinct
+  have hcomponentBoundary :
+      componentCrossingEdges removed component =
+        localCrossingEdgeFinset G
+          (fun vertex => vertex ∈ component.supp) := by
+    ext edge
+    dsimp [removed]
+    simp only [mem_componentCrossingEdges_iff,
+      mem_localCrossingEdgeFinset_iff]
+  have hsubset : localCrossingEdgeFinset G
+        (fun vertex => vertex ∈ component.supp) ⊆ removed := by
+    rw [← hcomponentBoundary]
+    exact componentCrossingEdges_subset_removed removed component
+  have hnonempty : (localCrossingEdgeFinset G
+      (fun vertex => vertex ∈ component.supp)).Nonempty := by
+    rw [← hcomponentBoundary]
+    exact hcomponentNonempty
+  have hboundary :=
+    crossingEdgeFinset_eq_crossingEdges_of_isCycle_of_subset_of_supportTwoSided
+      web.annular.cellulation.rotation cycle.selectedCycle
+      (fun vertex => vertex ∈ component.supp) hsubset hnonempty
+      (by
+        intro current hcurrent dart hdart
+        apply dartOrbitFace_ne_alpha_of_mem_interiorFaces web dart
+        rw [hdart]
+        exact cycle.support_internal current hcurrent)
+  rw [hcomponentBoundary]
+  exact hboundary
 
 /-- A component away from the distinguished outer dart is away from every
 vertex on the complete outer-hole face. -/
@@ -334,6 +389,238 @@ theorem hasCycleOnSide_or_component_card_eq_one_or_two
     have hpositive :
         0 < Nat.card {vertex : V // vertex ∈ component.supp} := Nat.card_pos
     omega
+
+/-- In the acyclic branch the exact selected boundary has cardinality two
+more than the locally cubic deletion component.  Thus the three- and
+four-edge cases cannot be interchanged: a selected triangle surrounds one
+vertex, while a selected quadrilateral surrounds two. -/
+theorem component_card_add_two_eq_crossingEdges_card_of_not_hasCycleOnSide
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hnoCycle :
+      ¬ HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) :
+    Nat.card {vertex : V // vertex ∈ component.supp} + 2 =
+      cycle.selectedCycle.crossingEdges.card := by
+  classical
+  let side : V → Prop := fun vertex => vertex ∈ component.supp
+  let sideFintype : Fintype {vertex : V // side vertex} :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  letI sideSubtypeFintype : Fintype {vertex : V // side vertex} :=
+    sideFintype
+  letI sideSetFintype : Fintype ↑({vertex | side vertex} : Set V) :=
+    sideFintype
+  have hdegree : ∀ vertex, side vertex → G.degree vertex = 3 := by
+    intro vertex hvertex
+    have hcubic := web.boundary_wellFormed.cubic_elsewhere vertex
+      (by
+        intro inner heq
+        subst vertex
+        exact (cycle.innerStub_not_mem_component component hroot inner) hvertex)
+      (by
+        intro outer heq
+        subst vertex
+        exact (cycle.outerStub_not_mem_component component hroot outer) hvertex)
+    convert
+      (GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+        (G := G) vertex).symm.trans hcubic using 1
+  have hacyclic : (G.induce {vertex | side vertex}).IsAcyclic := by
+    intro vertex walk hwalk
+    apply hnoCycle
+    let inclusion :=
+      (SimpleGraph.Embedding.induce (G := G) {vertex | side vertex}).toHom
+    refine ⟨vertex.1, vertex.2, walk.map inclusion, ?_, ?_⟩
+    · exact hwalk.map (fun _ _ heq => Subtype.ext heq)
+    · intro other hother
+      have hother' : other ∈ walk.support.map inclusion := by
+        exact SimpleGraph.Walk.support_map inclusion walk ▸ hother
+      rcases List.mem_map.mp hother' with ⟨source, _hsource, hsource⟩
+      rw [← hsource]
+      exact source.2
+  have htree : (G.induce {vertex | side vertex}).IsTree :=
+    ⟨connected_induce_component cycle.selectedCycle.crossingEdges component,
+      hacyclic⟩
+  have htreeCard := htree.card_edgeFinset
+  have hpartition := Fintype.card_congr
+    (sideDartEquivInternalSumCrossing G side)
+  rw [Fintype.card_sum] at hpartition
+  have hsideCard := card_sideDart_eq_three_mul_of_local side hdegree
+  have hinternalCard := card_internalSideDart_eq_twice_card_edges
+    (G := G) side
+  have hlocalBoundary :
+      localCrossingEdgeFinset G side =
+        cycle.selectedCycle.crossingEdges := by
+    calc
+      localCrossingEdgeFinset G side =
+          componentCrossingEdges cycle.selectedCycle.crossingEdges component := by
+        ext edge
+        simp only [side, mem_localCrossingEdgeFinset_iff,
+          mem_componentCrossingEdges_iff]
+      _ = cycle.selectedCycle.crossingEdges :=
+        cycle.componentCrossingEdges_eq_crossingEdges component hroot
+  have hcrossingCard :
+      Fintype.card (CrossingSideDart G side) =
+        cycle.selectedCycle.crossingEdges.card := by
+    rw [← card_localCrossingEdgeFinset_eq_crossingSideDart,
+      hlocalBoundary]
+  have hsameSideCard :
+      Fintype.card ↑({vertex | side vertex} : Set V) =
+        Fintype.card {vertex : V // side vertex} := by
+    rfl
+  have hnatCard :
+      Nat.card {vertex : V // side vertex} =
+        Fintype.card {vertex : V // side vertex} := Nat.card_eq_fintype_card
+  change Nat.card {vertex : V // side vertex} + 2 = _
+  omega
+
+/-- Exact finite classification of the non-cyclic branch: the selected
+three-edge boundary encloses one vertex, and the selected four-edge boundary
+encloses two. -/
+theorem hasCycleOnSide_or_component_star_or_bond
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+      (Nat.card {vertex : V // vertex ∈ component.supp} = 1 ∧
+        cycle.selectedCycle.crossingEdges.card = 3) ∨
+      (Nat.card {vertex : V // vertex ∈ component.supp} = 2 ∧
+        cycle.selectedCycle.crossingEdges.card = 4) := by
+  by_cases hcycle :
+      HasCycleOnSide G (fun vertex => vertex ∈ component.supp)
+  · exact .inl hcycle
+  · right
+    have hexact :=
+      cycle.component_card_add_two_eq_crossingEdges_card_of_not_hasCycleOnSide
+        component hroot hcycle
+    rcases cycle.hasCycleOnSide_or_component_card_eq_one_or_two component hroot with
+      hcycle' | hone | htwo
+    · exact False.elim (hcycle hcycle')
+    · exact .inl ⟨hone, by omega⟩
+    · exact .inr ⟨htwo, by omega⟩
+
+/-- A singleton acyclic component is a literal star centre: every selected
+crossing is incident to its unique vertex. -/
+theorem exists_vertex_mem_all_crossingEdges_of_component_card_eq_one
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcard : Nat.card {vertex : V // vertex ∈ component.supp} = 1) :
+    ∃ vertex : V, vertex ∈ component.supp ∧
+      ∀ edge ∈ cycle.selectedCycle.crossingEdges, vertex ∈ edge.1 := by
+  classical
+  letI componentFintype :
+      Fintype {vertex : V // vertex ∈ component.supp} :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  have hcardFintype :
+      Fintype.card {vertex : V // vertex ∈ component.supp} = 1 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  let vertex : V := component.nonempty_supp.choose
+  have hvertex : vertex ∈ component.supp := component.nonempty_supp.choose_spec
+  have hunique : ∀ first second :
+      {candidate : V // candidate ∈ component.supp}, first = second := by
+    rcases Fintype.card_eq_one_iff.mp hcardFintype with ⟨witness, hall⟩
+    intro first second
+    exact (hall first).trans (hall second).symm
+  refine ⟨vertex, hvertex, ?_⟩
+  intro edge hedge
+  have hboundary : edge ∈ componentCrossingEdges
+      cycle.selectedCycle.crossingEdges component := by
+    rw [cycle.componentCrossingEdges_eq_crossingEdges component hroot]
+    exact hedge
+  rcases (mem_componentCrossingEdges_iff
+      cycle.selectedCycle.crossingEdges component edge).1 hboundary with
+    ⟨inside, outside, hinsideEdge, _houtsideEdge, hinside, _houtside⟩
+  have heq : inside = vertex := congrArg Subtype.val
+    (hunique ⟨inside, hinside⟩ ⟨vertex, hvertex⟩)
+  simpa only [heq] using hinsideEdge
+
+/-- A two-vertex deletion component consists of a unique adjacent pair in
+the ambient graph. -/
+theorem exists_adjacent_pair_of_component_card_eq_two
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hcard : Nat.card {vertex : V // vertex ∈ component.supp} = 2) :
+    ∃ first second : V,
+      first ≠ second ∧ component.supp = {first, second} ∧
+        G.Adj first second := by
+  classical
+  have hsuppCard : component.supp.ncard = 2 := by
+    rw [← Nat.card_coe_set_eq]
+    exact hcard
+  rcases Set.ncard_eq_two.mp hsuppCard with
+    ⟨first, second, hfirstSecond, hsupp⟩
+  have hfirstMem : first ∈ component.supp := by
+    rw [hsupp]
+    simp
+  have hsecondMem : second ∈ component.supp := by
+    rw [hsupp]
+    simp
+  let firstVertex : component.supp := ⟨first, hfirstMem⟩
+  let secondVertex : component.supp := ⟨second, hsecondMem⟩
+  have hverticesNe : firstVertex ≠ secondVertex := by
+    intro heq
+    exact hfirstSecond (congrArg Subtype.val heq)
+  have hconnected := connected_induce_component
+    cycle.selectedCycle.crossingEdges component
+  rcases hconnected.exists_isPath firstVertex secondVertex with
+    ⟨path, hpath⟩
+  letI componentFintype : Fintype component.supp :=
+    Fintype.ofInjective (fun vertex => vertex.1) Subtype.val_injective
+  have hsubtypeCard : Fintype.card component.supp = 2 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  have hlengthLt : path.length < 2 := by
+    simpa [hsubtypeCard] using hpath.length_lt
+  have hlengthPositive : 0 < path.length := by
+    apply Nat.pos_of_ne_zero
+    intro hzero
+    exact hverticesNe (path.eq_of_length_eq_zero hzero)
+  have hlength : path.length = 1 := by omega
+  have hadj : (G.induce component.supp).Adj firstVertex secondVertex :=
+    path.adj_of_length_eq_one hlength
+  exact ⟨first, second, hfirstSecond, hsupp, hadj⟩
+
+/-- In the two-vertex branch every selected crossing is attached to one of
+the two endpoints of the component's unique internal bond. -/
+theorem exists_adjacent_pair_covering_crossingEdges_of_component_card_eq_two
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcard : Nat.card {vertex : V // vertex ∈ component.supp} = 2) :
+    ∃ first second : V,
+      first ≠ second ∧ component.supp = {first, second} ∧
+        G.Adj first second ∧
+        ∀ edge ∈ cycle.selectedCycle.crossingEdges,
+          first ∈ edge.1 ∨ second ∈ edge.1 := by
+  classical
+  obtain ⟨first, second, hne, hsupp, hadj⟩ :=
+    cycle.exists_adjacent_pair_of_component_card_eq_two component hcard
+  refine ⟨first, second, hne, hsupp, hadj, ?_⟩
+  intro edge hedge
+  have hboundary : edge ∈ componentCrossingEdges
+      cycle.selectedCycle.crossingEdges component := by
+    rw [cycle.componentCrossingEdges_eq_crossingEdges component hroot]
+    exact hedge
+  rcases (mem_componentCrossingEdges_iff
+      cycle.selectedCycle.crossingEdges component edge).1 hboundary with
+    ⟨inside, outside, hinsideEdge, _houtsideEdge, hinside, _houtside⟩
+  have hinsidePair : inside = first ∨ inside = second := by
+    rw [hsupp] at hinside
+    simpa using hinside
+  rcases hinsidePair with rfl | rfl
+  · exact .inl hinsideEdge
+  · exact .inr hinsideEdge
 
 end MiddleReplacementShortDualCycle
 

@@ -2226,12 +2226,19 @@ component membership around the two proved hole-face orbits, and using a
 radial path which avoids any selected cut of cardinality below five, proves
 that both complete hole boundaries and all ten named degree-one stubs lie
 outside this component.  The remaining vertices on its side are therefore
-locally cubic.  The degree sum then gives an exact trichotomy: the component
-contains a primal cycle, consists of one vertex, or consists of two vertices.
-This is the bounded component classification required before the source's
-rotor/digon/square consumers can be applied.  It does not yet identify the
-one- and two-vertex attachment geometry, eliminate the cyclic branch, apply a
-source reduction, or eliminate the two centre cases.  One atom is also directionally
+locally cubic.  A generic selected-cycle bond theorem now propagates any
+nonempty exact side boundary around the literal selected dual cycle, using
+two-sidedness only for the faces visited by that cycle.  Consequently the
+computed component boundary is exactly the full selected set, without global
+face-intersection uniqueness.  Exact handshaking then sharpens the trichotomy:
+the component contains a primal cycle, or a three-edge selected boundary
+encloses exactly one vertex, or a four-edge selected boundary encloses exactly
+two vertices.  In the singleton case every selected crossing is incident to
+the unique centre; in the two-vertex case the vertices are adjacent and every
+selected crossing is incident to one of them.  This is the literal
+star-or-bond attachment classification.  It does not eliminate the cyclic
+branch, turn a facial-dual short cycle into a primal facial triangle or square,
+apply a source reduction, or eliminate the two centre cases.  One atom is also directionally
 resolved: the displayed
 second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas
