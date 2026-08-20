@@ -2920,6 +2920,16 @@ bypass itself, and separation from the companion rail remain open; no
 collision elimination or closure of the source's bulk-corridor flag L1 is
 claimed.
 
+The same terminal-window module now exposes the next coordinate layer without
+guessing it.  Every endpoint of an edge on either canonical output track is
+classified into the exact old rail, successor rail, or one of the three named
+connector faces, with straight-versus-swapped endpoint parity retained.  In
+particular, the predecessor and successor attached to an internal collision
+now inherit a finite source-origin split from their localized incident edges.
+What remains is the genuinely geometric finite comparison between those
+source alternatives and the faces of the square-bond endpoint triangle; no
+such equality is inferred merely from support membership.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailTracedFourCellSupport
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailConstructionTrackProvenance
 
 /-!
 # L1: track-sensitive support and edge provenance for the traced four-cell transition
@@ -385,6 +386,112 @@ theorem ExactCertifiedSelectedLocalRailTerminalWindow.mem_secondSupport_of_mem_s
         ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
         CertifiedSelectedLocalRailTerminalWindow.secondSupport] using
         assembly.secondRail.mem_support_of_mem_edges hedge hface
+
+/-- Exact source-track origin of a face on the first output of a canonical
+adjacent construction trace.  The outgoing successor track changes with the
+stored endpoint parity, while the old first track does not. -/
+def ExactSelectedLocalRailConstructionTrace.FirstOutputFaceOrigin
+    (trace : ExactSelectedLocalRailConstructionTrace firstSuccessor firstLeft)
+    (face : SelectedFace (web := web)) : Prop :=
+  match trace.toOutcome with
+  | .straight _ =>
+      FaceInExpectedSelectedRailTrack (corridor := corridor)
+        (leftInterior := firstInterior) (leftPlacement := firstPlacement)
+        (successor := firstSuccessor) firstLeft.paths.firstRail.support
+        firstSuccessor.firstContinuation.support face
+  | .swapped _ =>
+      FaceInExpectedSelectedRailTrack (corridor := corridor)
+        (leftInterior := firstInterior) (leftPlacement := firstPlacement)
+        (successor := firstSuccessor) firstLeft.paths.firstRail.support
+        firstSuccessor.secondContinuation.support face
+
+/-- Exact source-track origin of a face on the second output. -/
+def ExactSelectedLocalRailConstructionTrace.SecondOutputFaceOrigin
+    (trace : ExactSelectedLocalRailConstructionTrace firstSuccessor firstLeft)
+    (face : SelectedFace (web := web)) : Prop :=
+  match trace.toOutcome with
+  | .straight _ =>
+      FaceInExpectedSelectedRailTrack (corridor := corridor)
+        (leftInterior := firstInterior) (leftPlacement := firstPlacement)
+        (successor := firstSuccessor) firstLeft.paths.secondRail.support
+        firstSuccessor.secondContinuation.support face
+  | .swapped _ =>
+      FaceInExpectedSelectedRailTrack (corridor := corridor)
+        (leftInterior := firstInterior) (leftPlacement := firstPlacement)
+        (successor := firstSuccessor) firstLeft.paths.secondRail.support
+        firstSuccessor.firstContinuation.support face
+
+/-- Every endpoint of an edge on the first output track retains its exact
+old/new/connector source classification. -/
+theorem ExactSelectedLocalRailConstructionTrace.firstOutputFaceOrigin_of_mem_edge
+    (trace : ExactSelectedLocalRailConstructionTrace firstSuccessor firstLeft)
+    {edge : Sym2 (SelectedFace (web := web))}
+    {face : SelectedFace (web := web)}
+    (hedge : edge ∈ trace.toExactTerminalWindow.firstEdges)
+    (hface : face ∈ edge) :
+    trace.FirstOutputFaceOrigin face := by
+  have hsupport := trace.toExactTerminalWindow
+    |>.mem_firstSupport_of_mem_firstEdges hedge hface
+  have htrack := trace.hasTrackProvenance
+  cases hresult : trace.toOutcome with
+  | straight assembly =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      rw [ExactSelectedLocalRailConstructionTrace.FirstOutputFaceOrigin,
+        hresult]
+      apply htrack.1 face
+      simpa [ExactSelectedLocalRailConstructionTrace.toExactTerminalWindow,
+        ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+        CertifiedSelectedLocalRailTerminalWindow.firstSupport, hresult] using
+        hsupport
+  | swapped assembly =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      rw [ExactSelectedLocalRailConstructionTrace.FirstOutputFaceOrigin,
+        hresult]
+      apply htrack.1 face
+      simpa [ExactSelectedLocalRailConstructionTrace.toExactTerminalWindow,
+        ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+        CertifiedSelectedLocalRailTerminalWindow.firstSupport, hresult] using
+        hsupport
+
+/-- Every endpoint of an edge on the second output has the analogous exact
+source classification. -/
+theorem ExactSelectedLocalRailConstructionTrace.secondOutputFaceOrigin_of_mem_edge
+    (trace : ExactSelectedLocalRailConstructionTrace firstSuccessor firstLeft)
+    {edge : Sym2 (SelectedFace (web := web))}
+    {face : SelectedFace (web := web)}
+    (hedge : edge ∈ trace.toExactTerminalWindow.secondEdges)
+    (hface : face ∈ edge) :
+    trace.SecondOutputFaceOrigin face := by
+  have hsupport := trace.toExactTerminalWindow
+    |>.mem_secondSupport_of_mem_secondEdges hedge hface
+  have htrack := trace.hasTrackProvenance
+  cases hresult : trace.toOutcome with
+  | straight assembly =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      rw [ExactSelectedLocalRailConstructionTrace.SecondOutputFaceOrigin,
+        hresult]
+      apply htrack.2 face
+      simpa [ExactSelectedLocalRailConstructionTrace.toExactTerminalWindow,
+        ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+        CertifiedSelectedLocalRailTerminalWindow.secondSupport, hresult] using
+        hsupport
+  | swapped assembly =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      rw [ExactSelectedLocalRailConstructionTrace.SecondOutputFaceOrigin,
+        hresult]
+      apply htrack.2 face
+      simpa [ExactSelectedLocalRailConstructionTrace.toExactTerminalWindow,
+        ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+        CertifiedSelectedLocalRailTerminalWindow.secondSupport, hresult] using
+        hsupport
 
 /-- Ordered terminal-window edge provenance. -/
 def EdgesContainedInOrderedExactTerminalTracks
