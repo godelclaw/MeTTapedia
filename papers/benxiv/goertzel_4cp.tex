@@ -2336,11 +2336,17 @@ provenance: every non-chord step reuses a crossing already selected on the
 original four-cycle, rather than choosing a fresh edge from the same pair of
 faces.  Thus the split introduces exactly one new crossing edge, the internal
 bond, while its complete support remains among the annulus's interior faces.
+Conversely, every edge of the original four-cycle belongs to at least one of
+the two chord triangles, and the selector transports the crossing attached to
+that exact old step.  In particular the literal source rung pinned at the
+replacement square's anchor survives in one selected triangle; it is not
+replaced by an arbitrary edge having the same incident faces.
 These triangles are therefore ready for the existing selected separator
 machinery without forgetting which literal source edges they cross.  They
 remain facial-dual triangles: no claim identifies them with the manuscript's
-primal rotor triangle, and the parallel face-pair branch remains a distinct
-open residue.
+primal rotor triangle, and coverage alone does not prove that the three
+crossings meet at one vertex.  The cyclic component and parallel face-pair
+branches therefore remain distinct open residues.
 
 The two chord triangles now reach that separator machinery literally.  Each
 is repackaged as the established selected short-cycle datum, with the original

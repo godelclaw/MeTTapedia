@@ -156,6 +156,8 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
           edge = s(left, right) ∨ edge ∈ walk.edges) ∧
         (∀ edge ∈ secondTriangle.edges,
           edge = s(left, right) ∨ edge ∈ walk.edges) ∧
+        (∀ edge ∈ walk.edges,
+          edge ∈ firstTriangle.edges ∨ edge ∈ secondTriangle.edges) ∧
         (∀ vertex ∈ firstTriangle.support, vertex ∈ walk.support) ∧
         (∀ vertex ∈ secondTriangle.support, vertex ∈ walk.support) ∧
         ∃ firstOnly : Sym2 W,
@@ -333,11 +335,67 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
     · exact .inl rfl
     · exact .inr hoppositeMem
     · exact .inr hpreviousMem
+  have horiginalEdges : ∀ edge ∈ walk.edges,
+      edge ∈ firstTriangle.edges ∨ edge ∈ secondTriangle.edges := by
+    intro edge hedge
+    rcases List.mem_iff_getElem.mp hedge with ⟨index, hindex, hget⟩
+    let position : Fin walk.length := ⟨index, by simpa using hindex⟩
+    have hget' :
+        walk.edges.get (Fin.cast walk.length_edges.symm position) = edge := by
+      simpa [position] using hget
+    have hposition : position = step ∨ position = next ∨
+        position = opposite ∨ position = previous := by
+      have hpositionLt := position.isLt
+      have hstepLt := step.isLt
+      simp only [Fin.ext_iff, previous, opposite, next, finRotate_apply,
+        Fin.val_add, Fin.val_one', hlength] at hpositionLt hstepLt ⊢
+      omega
+    rcases hposition with hposition | hposition | hposition | hposition
+    · have hcast := congrArg (Fin.cast walk.length_edges.symm) hposition
+      have hedgeEq : edge = s(left, firstMiddle) := by
+        calc
+          edge = walk.edges.get
+              (Fin.cast walk.length_edges.symm position) := hget'.symm
+          _ = walk.edges.get
+              (Fin.cast walk.length_edges.symm step) :=
+                congrArg walk.edges.get hcast
+          _ = s(left, firstMiddle) := hstepEdge
+      exact .inl (by simp [firstTriangle, hedgeEq])
+    · have hcast := congrArg (Fin.cast walk.length_edges.symm) hposition
+      have hedgeEq : edge = s(firstMiddle, right) := by
+        calc
+          edge = walk.edges.get
+              (Fin.cast walk.length_edges.symm position) := hget'.symm
+          _ = walk.edges.get
+              (Fin.cast walk.length_edges.symm next) :=
+                congrArg walk.edges.get hcast
+          _ = s(firstMiddle, right) := hnextEdge
+      exact .inl (by simp [firstTriangle, hedgeEq])
+    · have hcast := congrArg (Fin.cast walk.length_edges.symm) hposition
+      have hedgeEq : edge = s(right, secondMiddle) := by
+        calc
+          edge = walk.edges.get
+              (Fin.cast walk.length_edges.symm position) := hget'.symm
+          _ = walk.edges.get
+              (Fin.cast walk.length_edges.symm opposite) :=
+                congrArg walk.edges.get hcast
+          _ = s(right, secondMiddle) := hoppositeEdge
+      exact .inr (by simp [secondTriangle, hedgeEq])
+    · have hcast := congrArg (Fin.cast walk.length_edges.symm) hposition
+      have hedgeEq : edge = s(secondMiddle, left) := by
+        calc
+          edge = walk.edges.get
+              (Fin.cast walk.length_edges.symm position) := hget'.symm
+          _ = walk.edges.get
+              (Fin.cast walk.length_edges.symm previous) :=
+                congrArg walk.edges.get hcast
+          _ = s(secondMiddle, left) := hpreviousEdge
+      exact .inr (by simp [secondTriangle, hedgeEq])
   exact ⟨firstTriangle, secondTriangle, hfirstCycle, by simp [firstTriangle],
     hsecondCycle, by simp [secondTriangle], by
       simp [firstTriangle, Sym2.eq_swap], by
       simp [secondTriangle, Sym2.eq_swap],
-    hfirstEdges, hsecondEdges, hfirstSupport, hsecondSupport,
+    hfirstEdges, hsecondEdges, horiginalEdges, hfirstSupport, hsecondSupport,
     s(left, firstMiddle), by simp [firstTriangle], by
       simp [secondTriangle, hfirstNeChord, hfirstNeOpposite,
         hfirstNePrevious]⟩
@@ -641,7 +699,8 @@ theorem exists_internal_chord_two_triangles_of_adjacent_pair_boundary_eq
         hcycle hlength hchord with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
       hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
-      _hfirstEdges, _hsecondEdges, _hfirstSupport, _hsecondSupport,
+      _hfirstEdges, _hsecondEdges, _horiginalEdges, _hfirstSupport,
+      _hsecondSupport,
       hfirstOnly⟩
   exact ⟨internalEdge, leftFace, rightFace, firstTriangle, secondTriangle,
     hinternalValue, hinternalNotRemoved, hleftBoundary, hrightBoundary,

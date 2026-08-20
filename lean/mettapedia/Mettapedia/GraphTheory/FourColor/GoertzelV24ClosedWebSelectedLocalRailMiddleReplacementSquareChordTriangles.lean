@@ -166,6 +166,7 @@ private theorem exists_inherited_or_chord_crossing
       (orbitFaceBoundary RS)
       (Finset.univ : Finset (OrbitFace RS))
       chordLeft.1 chordRight.1)
+    (hchordNotOriginal : s(chordLeft, chordRight) ∉ original.walk.edges)
     (hedges : ∀ dualEdge ∈ small.edges,
       dualEdge = s(chordLeft, chordRight) ∨ dualEdge ∈ original.walk.edges)
     (step : Fin small.length) :
@@ -175,6 +176,11 @@ private theorem exists_inherited_or_chord_crossing
         (Finset.univ : Finset (OrbitFace RS)) small step
     ∃ edge : G.edgeSet,
       (dualEdge = s(chordLeft, chordRight) → edge = chordEdge) ∧
+        (∀ originalStep : Fin original.walk.length,
+          dualEdge = GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary RS)
+            (Finset.univ : Finset (OrbitFace RS)) original.walk originalStep →
+              edge = original.crossingEdge originalStep) ∧
         (edge = chordEdge ∨ edge ∈ original.crossingEdges) ∧
         edge ∈ sharedInteriorEdges
           (orbitFaceBoundary RS)
@@ -196,7 +202,21 @@ private theorem exists_inherited_or_chord_crossing
       (Finset.univ : Finset (OrbitFace RS)) small step]
     exact List.get_mem small.edges _
   by_cases hchord : dualEdge = s(chordLeft, chordRight)
-  · refine ⟨chordEdge, fun _ => rfl, .inl rfl, ?_⟩
+  · refine ⟨chordEdge, fun _ => rfl, ?_, .inl rfl, ?_⟩
+    · intro originalStep hdual
+      exfalso
+      apply hchordNotOriginal
+      have hdual' : dualEdge =
+          GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary RS)
+            (Finset.univ : Finset (OrbitFace RS))
+            original.walk originalStep := by
+        simpa [dualEdge] using hdual
+      rw [← hchord, hdual',
+        ← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS)) original.walk originalStep]
+      exact List.get_mem original.walk.edges _
     apply mem_sharedInteriorEdges_of_sym2_eq RS hchord
     exact hchordShared
   · have horiginal : dualEdge ∈ original.walk.edges :=
@@ -213,9 +233,33 @@ private theorem exists_inherited_or_chord_crossing
         (orbitFaceBoundary RS)
         (Finset.univ : Finset (OrbitFace RS)) original.walk originalStep]
       simpa [originalStep] using hget.symm
-    refine ⟨original.crossingEdge originalStep, ?_, .inr ?_, ?_⟩
+    refine ⟨original.crossingEdge originalStep, ?_, ?_, .inr ?_, ?_⟩
     · intro hdual
       exact False.elim (hchord hdual)
+    · intro requestedStep hrequested
+      have hcore :
+          GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+              (orbitFaceBoundary RS)
+              (Finset.univ : Finset (OrbitFace RS))
+              original.walk originalStep =
+            GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+              (orbitFaceBoundary RS)
+              (Finset.univ : Finset (OrbitFace RS))
+              original.walk requestedStep := hpairs.symm.trans hrequested
+      have hgets : original.walk.edges.get
+            (Fin.cast original.walk.length_edges.symm originalStep) =
+          original.walk.edges.get
+            (Fin.cast original.walk.length_edges.symm requestedStep) := by
+        simpa only [
+          GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge] using
+            hcore
+      have hcast : Fin.cast original.walk.length_edges.symm originalStep =
+          Fin.cast original.walk.length_edges.symm requestedStep :=
+        (List.nodup_iff_injective_get.mp original.isCycle.edges_nodup) hgets
+      have hsteps : originalStep = requestedStep :=
+        Fin.cast_injective original.walk.length_edges.symm hcast
+      subst requestedStep
+      rfl
     · exact (original.mem_crossingEdges_iff _).2 ⟨originalStep, rfl⟩
     · apply mem_sharedInteriorEdges_of_sym2_eq RS hpairs
       exact original.crossing_mem_shared originalStep
@@ -238,6 +282,7 @@ noncomputable def selectedCycleOfOriginalOrChord
       (orbitFaceBoundary RS)
       (Finset.univ : Finset (OrbitFace RS))
       chordLeft.1 chordRight.1)
+    (hchordNotOriginal : s(chordLeft, chordRight) ∉ original.walk.edges)
     (hedges : ∀ dualEdge ∈ small.edges,
       dualEdge = s(chordLeft, chordRight) ∨
         dualEdge ∈ original.walk.edges) :
@@ -246,11 +291,11 @@ noncomputable def selectedCycleOfOriginalOrChord
   isCycle := hcycle
   crossingEdge := fun step => Classical.choose
     (exists_inherited_or_chord_crossing RS original small hchordShared
-      hedges step)
+      hchordNotOriginal hedges step)
   crossing_mem_shared := fun step =>
     (Classical.choose_spec
       (exists_inherited_or_chord_crossing RS original small hchordShared
-        hedges step)).2.2
+        hchordNotOriginal hedges step)).2.2.2
 
 /-- Every crossing of the inherited chord subcycle is either the new chord
 or one of the original selected crossings. -/
@@ -270,17 +315,54 @@ theorem selectedCycleOfOriginalOrChord_crossingEdge_eq_or_mem
       (orbitFaceBoundary RS)
       (Finset.univ : Finset (OrbitFace RS))
       chordLeft.1 chordRight.1)
+    (hchordNotOriginal : s(chordLeft, chordRight) ∉ original.walk.edges)
     (hedges : ∀ dualEdge ∈ small.edges,
       dualEdge = s(chordLeft, chordRight) ∨
         dualEdge ∈ original.walk.edges)
     (step : Fin small.length) :
     (selectedCycleOfOriginalOrChord RS original small hcycle hchordShared
-      hedges).crossingEdge step = chordEdge ∨
+      hchordNotOriginal hedges).crossingEdge step = chordEdge ∨
       (selectedCycleOfOriginalOrChord RS original small hcycle hchordShared
-        hedges).crossingEdge step ∈ original.crossingEdges := by
+        hchordNotOriginal hedges).crossingEdge step ∈ original.crossingEdges := by
   exact (Classical.choose_spec
     (exists_inherited_or_chord_crossing RS original small hchordShared
-      hedges step)).2.1
+      hchordNotOriginal hedges step)).2.2.1
+
+/-- On every inherited dual step, the chord subcycle reuses the crossing at
+that exact step of the original selected cycle. -/
+theorem selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq_original
+    (RS : RotationSystem V G.edgeSet)
+    {originalStart smallStart : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    (original : SelectedDualCycle RS originalStart)
+    (small : (interiorDualGraph
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))).Walk smallStart smallStart)
+    (hcycle : small.IsCycle)
+    {chordLeft chordRight : AmbientFace
+      (Finset.univ : Finset (OrbitFace RS))}
+    {chordEdge : G.edgeSet}
+    (hchordShared : chordEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS))
+      chordLeft.1 chordRight.1)
+    (hchordNotOriginal : s(chordLeft, chordRight) ∉ original.walk.edges)
+    (hedges : ∀ dualEdge ∈ small.edges,
+      dualEdge = s(chordLeft, chordRight) ∨
+        dualEdge ∈ original.walk.edges)
+    (step : Fin small.length) (originalStep : Fin original.walk.length)
+    (hdual : GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+      (orbitFaceBoundary RS)
+      (Finset.univ : Finset (OrbitFace RS)) small step =
+        GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+          (orbitFaceBoundary RS)
+          (Finset.univ : Finset (OrbitFace RS)) original.walk originalStep) :
+    (selectedCycleOfOriginalOrChord RS original small hcycle hchordShared
+      hchordNotOriginal hedges).crossingEdge step =
+        original.crossingEdge originalStep := by
+  exact (Classical.choose_spec
+    (exists_inherited_or_chord_crossing RS original small hchordShared
+      hchordNotOriginal hedges step)).2.1 originalStep hdual
 
 /-- A step whose dual edge is the new chord crosses the specified chord edge
 definitionally through the provenance-aware selector. -/
@@ -300,6 +382,7 @@ theorem selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq
       (orbitFaceBoundary RS)
       (Finset.univ : Finset (OrbitFace RS))
       chordLeft.1 chordRight.1)
+    (hchordNotOriginal : s(chordLeft, chordRight) ∉ original.walk.edges)
     (hedges : ∀ dualEdge ∈ small.edges,
       dualEdge = s(chordLeft, chordRight) ∨
         dualEdge ∈ original.walk.edges)
@@ -309,10 +392,10 @@ theorem selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq
       (Finset.univ : Finset (OrbitFace RS)) small step =
         s(chordLeft, chordRight)) :
     (selectedCycleOfOriginalOrChord RS original small hcycle hchordShared
-      hedges).crossingEdge step = chordEdge := by
+      hchordNotOriginal hedges).crossingEdge step = chordEdge := by
   exact (Classical.choose_spec
     (exists_inherited_or_chord_crossing RS original small hchordShared
-      hedges step)).1 hdual
+      hchordNotOriginal hedges step)).1 hdual
 
 /-- The internal bond is a shared interior edge of the two faces in its
 literal dual-adjacency packet. -/
@@ -379,6 +462,8 @@ structure SquareBondRealization.InternalDualChordTriangles
   second_edges_original_or_chord : ∀ edge ∈ secondTriangle.edges,
     edge = s(chord.adjacency.leftFace, chord.adjacency.rightFace) ∨
       edge ∈ cycle.walk.edges
+  original_edges_covered : ∀ edge ∈ cycle.walk.edges,
+    edge ∈ firstTriangle.edges ∨ edge ∈ secondTriangle.edges
   first_support_original : ∀ current ∈ firstTriangle.support,
     current ∈ cycle.walk.support
   second_support_original : ∀ current ∈ secondTriangle.support,
@@ -401,7 +486,8 @@ theorem SquareBondRealization.InternalDualChord.exists_triangles
         cycle.isCycle hlength chord.isChord with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
       hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
-      hfirstEdges, hsecondEdges, hfirstSupport, hsecondSupport, hdistinct⟩
+      hfirstEdges, hsecondEdges, horiginalEdges, hfirstSupport,
+      hsecondSupport, hdistinct⟩
   exact ⟨{
     chord := chord
     firstTriangle := firstTriangle
@@ -414,6 +500,7 @@ theorem SquareBondRealization.InternalDualChord.exists_triangles
     chord_mem_second := hsecondChord
     first_edges_original_or_chord := hfirstEdges
     second_edges_original_or_chord := hsecondEdges
+    original_edges_covered := horiginalEdges
     first_support_original := hfirstSupport
     second_support_original := hsecondSupport
     distinct_side := hdistinct
@@ -444,6 +531,112 @@ structure SquareBondRealization.InternalDualChordSelectedTriangles
   second_crossing_inherited : ∀ step,
     secondSelected.crossingEdge step = bond.internalEdge ∨
       secondSelected.crossingEdge step ∈ cycle.selectedCycle.crossingEdges
+  first_crossing_at_original : ∀ step originalStep,
+    GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        firstSelected.walk step =
+      GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        cycle.selectedCycle.walk originalStep →
+      firstSelected.crossingEdge step =
+        cycle.selectedCycle.crossingEdge originalStep
+  second_crossing_at_original : ∀ step originalStep,
+    GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        secondSelected.walk step =
+      GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        cycle.selectedCycle.walk originalStep →
+      secondSelected.crossingEdge step =
+        cycle.selectedCycle.crossingEdge originalStep
+
+/-- Every selected crossing of the original replacement square is retained
+by one of the two chord triangles at the corresponding dual step. -/
+theorem SquareBondRealization.InternalDualChordSelectedTriangles.original_crossing_covered
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles)
+    (originalStep : Fin cycle.selectedCycle.walk.length) :
+    (∃ firstStep : Fin selected.firstSelected.walk.length,
+      selected.firstSelected.crossingEdge firstStep =
+        cycle.selectedCycle.crossingEdge originalStep) ∨
+      ∃ secondStep : Fin selected.secondSelected.walk.length,
+        selected.secondSelected.crossingEdge secondStep =
+          cycle.selectedCycle.crossingEdge originalStep := by
+  let originalDual :=
+    GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      cycle.selectedCycle.walk originalStep
+  have horiginalMem : originalDual ∈ cycle.selectedCycle.walk.edges := by
+    change
+      GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        cycle.selectedCycle.walk originalStep ∈ cycle.selectedCycle.walk.edges
+    rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      cycle.selectedCycle.walk originalStep]
+    exact List.get_mem cycle.selectedCycle.walk.edges _
+  rcases selected.triangles.original_edges_covered originalDual horiginalMem with
+    hfirst | hsecond
+  · rcases List.mem_iff_getElem.mp hfirst with ⟨index, hindex, hget⟩
+    let firstStep : Fin selected.firstSelected.walk.length :=
+      ⟨index, by
+        rw [selected.first_walk_eq]
+        simpa using hindex⟩
+    have hdual :
+        GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))
+            selected.firstSelected.walk firstStep = originalDual := by
+      rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        selected.firstSelected.walk firstStep]
+      simpa [firstStep, selected.first_walk_eq] using hget
+    exact .inl ⟨firstStep,
+      selected.first_crossing_at_original firstStep originalStep hdual⟩
+  · rcases List.mem_iff_getElem.mp hsecond with ⟨index, hindex, hget⟩
+    let secondStep : Fin selected.secondSelected.walk.length :=
+      ⟨index, by
+        rw [selected.second_walk_eq]
+        simpa using hindex⟩
+    have hdual :
+        GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))
+            selected.secondSelected.walk secondStep = originalDual := by
+      rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        selected.secondSelected.walk secondStep]
+      simpa [secondStep, selected.second_walk_eq] using hget
+    exact .inr ⟨secondStep,
+      selected.second_crossing_at_original secondStep originalStep hdual⟩
+
+/-- In particular, one chord triangle retains the literal source rung pinned
+at the original square's anchor step. -/
+theorem SquareBondRealization.InternalDualChordSelectedTriangles.anchorEdge_covered
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (selected : bond.InternalDualChordSelectedTriangles) :
+    (∃ firstStep : Fin selected.firstSelected.walk.length,
+      selected.firstSelected.crossingEdge firstStep = cycle.anchorEdge) ∨
+      ∃ secondStep : Fin selected.secondSelected.walk.length,
+        selected.secondSelected.crossingEdge secondStep = cycle.anchorEdge := by
+  simpa using selected.original_crossing_covered cycle.anchor
 
 /-- Every face of the first selected chord triangle remains in the literal
 interior support of the original replacement square. -/
@@ -651,12 +844,16 @@ theorem SquareBondRealization.InternalDualChordTriangles.exists_selectedTriangle
     (triangles : bond.InternalDualChordTriangles) :
     Nonempty bond.InternalDualChordSelectedTriangles := by
   have hshared := triangles.chord.adjacency.internal_mem_shared
+  have hchordNotOriginal :
+      s(triangles.chord.adjacency.leftFace,
+        triangles.chord.adjacency.rightFace) ∉ cycle.selectedCycle.walk.edges :=
+    (SimpleGraph.Walk.isChord_sym2Mk.1 triangles.chord.isChord).2.1
   let firstSelected := selectedCycleOfOriginalOrChord web.annular.RS
     cycle.selectedCycle triangles.firstTriangle triangles.first_isCycle
-    hshared triangles.first_edges_original_or_chord
+    hshared hchordNotOriginal triangles.first_edges_original_or_chord
   let secondSelected := selectedCycleOfOriginalOrChord web.annular.RS
     cycle.selectedCycle triangles.secondTriangle triangles.second_isCycle
-    hshared triangles.second_edges_original_or_chord
+    hshared hchordNotOriginal triangles.second_edges_original_or_chord
   have hfirstInternal : bond.internalEdge ∈ firstSelected.crossingEdges := by
     rcases List.mem_iff_getElem.mp triangles.chord_mem_first with
       ⟨index, hindex, hget⟩
@@ -678,7 +875,7 @@ theorem SquareBondRealization.InternalDualChordTriangles.exists_selectedTriangle
       dsimp only [firstSelected]
       exact selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq
         web.annular.RS cycle.selectedCycle triangles.firstTriangle
-        triangles.first_isCycle hshared
+        triangles.first_isCycle hshared hchordNotOriginal
         triangles.first_edges_original_or_chord step hdual
     exact (firstSelected.mem_crossingEdges_iff _).2 ⟨step, hselected⟩
   have hsecondInternal : bond.internalEdge ∈ secondSelected.crossingEdges := by
@@ -702,7 +899,7 @@ theorem SquareBondRealization.InternalDualChordTriangles.exists_selectedTriangle
       dsimp only [secondSelected]
       exact selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq
         web.annular.RS cycle.selectedCycle triangles.secondTriangle
-        triangles.second_isCycle hshared
+        triangles.second_isCycle hshared hchordNotOriginal
         triangles.second_edges_original_or_chord step hdual
     exact (secondSelected.mem_crossingEdges_iff _).2 ⟨step, hselected⟩
   exact ⟨{
@@ -721,14 +918,26 @@ theorem SquareBondRealization.InternalDualChordTriangles.exists_selectedTriangle
       intro step
       exact selectedCycleOfOriginalOrChord_crossingEdge_eq_or_mem
         web.annular.RS cycle.selectedCycle triangles.firstTriangle
-        triangles.first_isCycle hshared
+        triangles.first_isCycle hshared hchordNotOriginal
         triangles.first_edges_original_or_chord step
     second_crossing_inherited := by
       intro step
       exact selectedCycleOfOriginalOrChord_crossingEdge_eq_or_mem
         web.annular.RS cycle.selectedCycle triangles.secondTriangle
-        triangles.second_isCycle hshared
+        triangles.second_isCycle hshared hchordNotOriginal
         triangles.second_edges_original_or_chord step
+    first_crossing_at_original := by
+      intro step originalStep hdual
+      exact selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq_original
+        web.annular.RS cycle.selectedCycle triangles.firstTriangle
+        triangles.first_isCycle hshared hchordNotOriginal
+        triangles.first_edges_original_or_chord step originalStep hdual
+    second_crossing_at_original := by
+      intro step originalStep hdual
+      exact selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq_original
+        web.annular.RS cycle.selectedCycle triangles.secondTriangle
+        triangles.second_isCycle hshared hchordNotOriginal
+        triangles.second_edges_original_or_chord step originalStep hdual
   }⟩
 
 end MiddleReplacementShortDualCycle
