@@ -291,6 +291,46 @@ theorem ExactSelectedLocalRailTracedFourCellTransition.hasCollisionTrackOrigin
           exact .swappedSwappedSecondSecond (hfirst.2 _ hold)
             (hlast.2 _ (List.mem_of_mem_tail hnew'))
 
+/-- The same packet retains the canonical finite repair at the middle seam
+where the four-cell collision is detected. -/
+theorem ExactSelectedLocalRailTracedFourCellTransition.bridgeHasTrackProvenance
+    (transition : ExactSelectedLocalRailTracedFourCellTransition
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)) :
+    transition.bridgeTrace.HasTrackProvenance :=
+  transition.bridgeTrace.hasTrackProvenance
+
+/-- The first successor track of the first window is definitionally the first
+old track presented to the middle-seam classifier, modulo the endpoint casts
+stored by successor compatibility. -/
+theorem firstContinuation_support_eq_bridgeLeft_firstRail_support :
+    firstSuccessor.firstContinuation.support =
+      (firstSuccessor.rightRailsAsNextLeft bridge).paths.firstRail.support := by
+  rw [firstSuccessor.firstContinuation_support]
+  exact (firstSuccessor.rightRailsAsNextLeft_firstRail_support bridge).symm
+
+/-- The same identification for the second track. -/
+theorem secondContinuation_support_eq_bridgeLeft_secondRail_support :
+    firstSuccessor.secondContinuation.support =
+      (firstSuccessor.rightRailsAsNextLeft bridge).paths.secondRail.support := by
+  rw [firstSuccessor.secondContinuation_support]
+  exact (firstSuccessor.rightRailsAsNextLeft_secondRail_support bridge).symm
+
+/-- The first successor track produced at the middle seam is the first old
+track of the last window. -/
+theorem bridge_firstContinuation_support_eq_lastLeft_firstRail_support :
+    bridge.firstContinuation.support =
+      (bridge.rightRailsAsNextLeft lastSuccessor).paths.firstRail.support := by
+  rw [bridge.firstContinuation_support]
+  exact (bridge.rightRailsAsNextLeft_firstRail_support lastSuccessor).symm
+
+/-- The corresponding middle/last identification on the second track. -/
+theorem bridge_secondContinuation_support_eq_lastLeft_secondRail_support :
+    bridge.secondContinuation.support =
+      (bridge.rightRailsAsNextLeft lastSuccessor).paths.secondRail.support := by
+  rw [bridge.secondContinuation_support]
+  exact (bridge.rightRailsAsNextLeft_secondRail_support lastSuccessor).symm
+
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
 end

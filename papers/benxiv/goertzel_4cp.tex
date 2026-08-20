@@ -1941,11 +1941,14 @@ recorded branch to split a frozen remote prefix from the bounded suffix which
 the following Cell--3 repair may replace.
 
 The first consumer now runs that construction trace on both sides of a
-four-cell transition.  The value
+four-cell transition and on the seam between them.  The value
 \texttt{ExactSelectedLocalRailTracedFourCellTransition} is constructed from
-the two actual adjacent classifiers, applies the post-bypass four-cell
-classifier to their exact windows, and stores the two proof-relevant local
-branches beside the result.  If the result is a collision, the same packet
+the three actual adjacent classifiers, applies the post-bypass four-cell
+classifier to the two outer exact windows, and stores all three
+proof-relevant local branches beside the result.  The middle trace is the
+canonical repair of the very seam at which a retained collision is detected;
+omitting it would leave the subsequent finite table without its central work
+ticket.  If the result is a collision, the same packet
 also carries its five-position four-centre classification and both literal
 piece envelopes.  Thus the remaining finite table is restricted to canonical
 repairs actually produced by the source construction; arbitrary certified
@@ -1996,7 +1999,15 @@ old-second/successor-second track, together with the three explicitly named
 connector faces of either window.  The other seven cases record the analogous
 track exchange rather than collapsing it into an unordered source-piece
 union.  This is the finite track table which the next distance and seam
-argument consumes.  No origin has yet been declared impossible.
+argument consumes.  The packet also exposes the track receipt of its middle
+repair trace.  The compatibility constructor which presents one successor's
+right rails as the next successor's left rails is now explicit rather than an
+opaque dependent cast; its two support equalities are proved once at the
+producer.  Consequently the first window's two successor tracks are literally
+the middle repair's two old tracks, and the middle repair's successor tracks
+are literally the last window's two old tracks.  The retained collision is
+therefore expressed in the same track vocabulary as the repair which must
+consume it.  No origin has yet been declared impossible.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three

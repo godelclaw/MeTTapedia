@@ -155,10 +155,59 @@ noncomputable def SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft
       rightPlacement) :
     SeparatedSelectedSourceLocalRailPaths middlePlacement
       first.frame.rightAfter first.frame.rightBefore second.frame.leftBefore
-      second.frame.leftAfter := by
-  rw [← first.rightOutgoingBefore_eq_nextLeftBefore second,
-    ← first.rightOutgoingAfter_eq_nextLeftAfter second]
-  exact first.rightRails
+      second.frame.leftAfter :=
+  let hbefore : selectedPlacementSideFace middlePlacement
+        first.rightOutgoingBefore =
+      selectedPlacementSideFace middlePlacement second.frame.leftBefore :=
+    congrArg (selectedPlacementSideFace middlePlacement)
+      (first.rightOutgoingBefore_eq_nextLeftBefore second)
+  let hafter : selectedPlacementSideFace middlePlacement
+        first.rightOutgoingAfter =
+      selectedPlacementSideFace middlePlacement second.frame.leftAfter :=
+    congrArg (selectedPlacementSideFace middlePlacement)
+      (first.rightOutgoingAfter_eq_nextLeftAfter second)
+  { paths :=
+      { firstRail := first.rightRails.paths.firstRail.copy rfl hbefore
+        secondRail := first.rightRails.paths.secondRail.copy rfl hafter
+        firstRail_isPath := by
+          simpa using first.rightRails.paths.firstRail_isPath
+        secondRail_isPath := by
+          simpa using first.rightRails.paths.secondRail_isPath
+        firstRail_support_adjacent_center := by
+          intro face hface
+          exact first.rightRails.paths.firstRail_support_adjacent_center face
+            (by simpa using hface)
+        secondRail_support_adjacent_center := by
+          intro face hface
+          exact first.rightRails.paths.secondRail_support_adjacent_center face
+            (by simpa using hface)
+        firstRail_length_le_two := by
+          simpa using first.rightRails.paths.firstRail_length_le_two
+        secondRail_length_le_two := by
+          simpa using first.rightRails.paths.secondRail_length_le_two
+        firstRail_length_add_secondRail_length_le_two := by
+          simpa using
+            first.rightRails.paths.firstRail_length_add_secondRail_length_le_two }
+    firstRail_support_disjoint_secondRail := by
+      simpa using first.rightRails.firstRail_support_disjoint_secondRail }
+
+@[simp] theorem SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft_firstRail_support
+    (first : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      middlePlacement)
+    (second : SeparatedSelectedSourceLocalRailSuccessor hnextNext middlePlacement
+      rightPlacement) :
+    (first.rightRailsAsNextLeft second).paths.firstRail.support =
+      first.rightRails.paths.firstRail.support := by
+  simp [SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft]
+
+@[simp] theorem SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft_secondRail_support
+    (first : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      middlePlacement)
+    (second : SeparatedSelectedSourceLocalRailSuccessor hnextNext middlePlacement
+      rightPlacement) :
+    (first.rightRailsAsNextLeft second).paths.secondRail.support =
+      first.rightRails.paths.secondRail.support := by
+  simp [SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft]
 
 end Instance.SelectedLocalLayerFormation
 

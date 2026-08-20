@@ -9,12 +9,13 @@ terminal windows.  That is useful algebraically, but too broad for the finite
 source repair: an arbitrary inhabitant need not expose which canonical local
 repair produced its rails.
 
-This module runs the actual adjacent classifier on both two-cell windows,
-retains both proof-relevant construction traces, and then runs the strongest
-post-bypass four-cell classifier.  Every bad branch is packaged with the
-already-proved five-position geometry and both literal source-piece
-envelopes.  The remaining case table can therefore inspect the two concrete
-local repair branches rather than reason about arbitrary certified windows.
+This module runs the actual adjacent classifier on both two-cell windows and
+on their intervening seam, retains all three proof-relevant construction
+traces, and then runs the strongest post-bypass four-cell classifier.  Every
+bad branch is packaged with the already-proved five-position geometry and
+both literal source-piece envelopes.  The remaining case table can therefore
+inspect the two terminal branches together with the canonical repair of the
+middle seam, rather than reason about arbitrary certified windows.
 
 This is a constructed transition packet, not collision elimination, a
 rolling arbitrary-length transition, either end cap, or closure of Fable flag
@@ -87,6 +88,9 @@ variable
 private abbrev LastLeft :=
   bridge.rightRailsAsNextLeft lastSuccessor
 
+private abbrev BridgeLeft :=
+  firstSuccessor.rightRailsAsNextLeft bridge
+
 /-- Collision localization predicate on the strongest four-cell outcome. -/
 def ExactSelectedLocalRailFourCellRetainedOutcome.HasLocalizedCollisionData
     {firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
@@ -137,6 +141,8 @@ theorem classifyExactSelectedLocalRailFourCellRetained_hasLocalizedCollisionData
 branches, their exact windows, and the post-bypass four-cell result. -/
 structure ExactSelectedLocalRailTracedFourCellTransition where
   firstTrace : ExactSelectedLocalRailConstructionTrace firstSuccessor firstLeft
+  bridgeTrace : ExactSelectedLocalRailConstructionTrace bridge
+    (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))
   lastTrace : ExactSelectedLocalRailConstructionTrace lastSuccessor
     (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))
   outcome : ExactSelectedLocalRailFourCellRetainedOutcome
@@ -153,6 +159,9 @@ noncomputable def ExactSelectedLocalRailTracedFourCellTransition.ofClassifiers
       (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) := by
   let firstTrace := ExactSelectedLocalRailConstructionTrace.ofClassifier
     (successor := firstSuccessor) (left := firstLeft)
+  let bridgeTrace := ExactSelectedLocalRailConstructionTrace.ofClassifier
+    (successor := bridge)
+    (left := BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))
   let lastTrace := ExactSelectedLocalRailConstructionTrace.ofClassifier
     (successor := lastSuccessor)
     (left := LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))
@@ -160,6 +169,7 @@ noncomputable def ExactSelectedLocalRailTracedFourCellTransition.ofClassifiers
     firstTrace.toExactTerminalWindow lastTrace.toExactTerminalWindow
   exact
     { firstTrace := firstTrace
+      bridgeTrace := bridgeTrace
       lastTrace := lastTrace
       outcome := outcome
       hasLocalizedCollisionData :=
