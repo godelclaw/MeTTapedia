@@ -26,6 +26,10 @@ open WeakAgentEcology
 /-- An open association from names to replaceable processes. -/
 abbrev Registry (Name Periphery : Type) := Name → Process Periphery
 
+/-- A dynamically populated registry may reject an unknown name explicitly. -/
+abbrev PartialRegistry (Name Periphery : Type) :=
+  Name → Option (Process Periphery)
+
 /-- A policy preset is data: an ordered list of process names. -/
 structure Preset (Name : Type) where
   stages : List Name
@@ -37,11 +41,37 @@ def compile {Name Periphery : Type}
     List (Process Periphery) :=
   preset.stages.map registry
 
+/-- Resolve a preset against a partial registry, failing on the first unknown
+stage instead of silently installing a default process. -/
+def compileChecked {Name Periphery : Type}
+    (registry : PartialRegistry Name Periphery) (preset : Preset Name) :
+    Option (List (Process Periphery)) :=
+  preset.stages.mapM registry
+
 /-- Execute a compiled preset using the unchanged weak process runner. -/
 def run {Root Name Periphery : Type}
     (registry : Registry Name Periphery) (preset : Preset Name)
     (state : Rooted Root Periphery) : Rooted Root Periphery :=
   runProcesses (compile registry preset) state
+
+def runChecked {Root Name Periphery : Type}
+    (registry : PartialRegistry Name Periphery) (preset : Preset Name)
+    (state : Rooted Root Periphery) : Option (Rooted Root Periphery) :=
+  (compileChecked registry preset).map (fun processes =>
+    runProcesses processes state)
+
+theorem unknown_singleton_is_rejected {Name Periphery : Type}
+    (registry : PartialRegistry Name Periphery) (selected : Name)
+    (unknown : registry selected = none) :
+    compileChecked registry ⟨[selected]⟩ = none := by
+  simp [compileChecked, unknown]
+
+theorem checked_success_uses_the_same_runner {Root Name Periphery : Type}
+    (registry : PartialRegistry Name Periphery) (preset : Preset Name)
+    (state : Rooted Root Periphery) (processes : List (Process Periphery))
+    (resolved : compileChecked registry preset = some processes) :
+    runChecked registry preset state = some (runProcesses processes state) := by
+  simp [runChecked, resolved]
 
 /-- Preset composition is ordinary list concatenation. -/
 def append {Name : Type} (left right : Preset Name) : Preset Name :=
@@ -164,6 +194,8 @@ end PolicyPipeline
 /-! ## Axiom audit -/
 
 #print axioms PolicyPipeline.run_append
+#print axioms PolicyPipeline.unknown_singleton_is_rejected
+#print axioms PolicyPipeline.checked_success_uses_the_same_runner
 #print axioms PolicyPipeline.run_preserves_root
 #print axioms PolicyPipeline.failed_named_stage_erases
 #print axioms PolicyPipeline.stage_replacement_is_local
