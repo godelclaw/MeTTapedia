@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacement
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementCycles
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAppendCyclicObstruction
 
 /-!
@@ -175,6 +176,76 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.thirdFourthTriangle_cyc
     outerRoot_not_mem := hroot
     hasCycle := triangle.hasCycleOnSide component hroot
   }⟩⟩
+
+/-- **L1 reduced middle-replacement frontier.**  Every exact surviving
+collision is now one of two literal corridor centres, one of two actual
+cyclic adjacent-triangle obstructions, or a proof-relevant short-cycle
+packet arising from a distance-two square branch.
+
+The last disjunct is deliberately still typed as a selected short dual
+cycle.  This theorem does not identify it with a primal facial square or
+apply the source's square reduction. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.center_or_cyclicTriangle_or_squareCycle
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    {face : SelectedFace (web := web)}
+    (collision : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center ∨
+      face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+      (∃ triangle :
+          SeparatedSelectedSourceLocalRailSuccessor.AdjacentDualTriangle
+            firstSuccessor,
+        Nonempty
+          (SeparatedSelectedSourceLocalRailSuccessor.CyclicAppendObstruction
+            firstSuccessor triangle)) ∨
+      (∃ triangle :
+          SeparatedSelectedSourceLocalRailSuccessor.AdjacentDualTriangle
+            lastSuccessor,
+        Nonempty
+          (SeparatedSelectedSourceLocalRailSuccessor.CyclicAppendObstruction
+            lastSuccessor triangle)) ∨
+      Nonempty (MiddleReplacementShortDualCycle (web := web) face) := by
+  let geometry := collision.hasLadderGeometry hsource
+  cases geometry with
+  | secondCenter face_eq => exact .inl face_eq
+  | thirdCenter face_eq => exact .inr (.inl face_eq)
+  | firstSecondTriangle first_adjacent second_adjacent =>
+      exact .inr (.inr (.inl
+        (collision.firstSecondTriangle_cyclicObstruction hsource
+          first_adjacent second_adjacent)))
+  | firstThirdSquare first_adjacent third_adjacent face_ne_second =>
+      have result :=
+        (ExactSelectedLocalRailMiddleReplacementLadderGeometry.firstThirdSquare
+          (hlastNext := hlastNext) first_adjacent third_adjacent
+            face_ne_second).center_or_shortCycle
+            (rungs := rungs)
+      rcases result with second | third | cycle
+      · exact .inl second
+      · exact .inr (.inl third)
+      · exact .inr (.inr (.inr (.inr cycle)))
+  | secondFourthSquare second_adjacent fourth_adjacent face_ne_third =>
+      have result :=
+        (ExactSelectedLocalRailMiddleReplacementLadderGeometry.secondFourthSquare
+          (hfirstNext := hfirstNext) second_adjacent fourth_adjacent
+            face_ne_third).center_or_shortCycle
+            (rungs := rungs)
+      rcases result with second | third | cycle
+      · exact .inl second
+      · exact .inr (.inl third)
+      · exact .inr (.inr (.inr (.inr cycle)))
+  | thirdFourthTriangle third_adjacent fourth_adjacent =>
+      exact .inr (.inr (.inr (.inl
+        (collision.thirdFourthTriangle_cyclicObstruction hsource
+          third_adjacent fourth_adjacent))))
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
