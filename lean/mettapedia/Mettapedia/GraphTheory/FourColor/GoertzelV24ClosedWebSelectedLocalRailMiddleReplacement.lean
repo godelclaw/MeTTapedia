@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleCollisionClearance
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedRailPairRetainedSupport
 
 /-!
 # L1: replace the overlapping middle window by its canonical repair
@@ -214,20 +215,40 @@ inductive ExactSelectedLocalRailMiddleReplacementOutcome
       (middle : StraightMiddleAssembly (firstSuccessor := firstSuccessor)
         (bridge := bridge))
       (hresult : trace.toOutcome = .straight middle)
+      (prefixMiddle : SelectedSourceLocalRailAssembly (web := web)
+        (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+        (selectedPlacementSideFace firstPlacement firstIncomingAfter)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter))
+      (hleft : classifyRetainedBypassAppend firstLeft.toAssembly
+        (rebaseMiddleStraight middle) = .assembled prefixMiddle)
       (assembly : SelectedSourceLocalRailAssembly (web := web)
         (selectedPlacementSideFace firstPlacement firstIncomingBefore)
         (selectedPlacementSideFace firstPlacement firstIncomingAfter)
         (selectedPlacementSideFace fourthPlacement lastSuccessor.rightOutgoingBefore)
         (selectedPlacementSideFace fourthPlacement lastSuccessor.rightOutgoingAfter))
+      (hright : classifyRetainedBypassAppend prefixMiddle
+        (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)) = .assembled assembly)
   | swapped
       (middle : SwappedMiddleAssembly (firstSuccessor := firstSuccessor)
         (bridge := bridge))
       (hresult : trace.toOutcome = .swapped middle)
+      (prefixMiddle : SelectedSourceLocalRailAssembly (web := web)
+        (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+        (selectedPlacementSideFace firstPlacement firstIncomingAfter)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore))
+      (hleft : classifyRetainedBypassAppend firstLeft.toAssembly
+        (rebaseMiddleSwapped middle) = .assembled prefixMiddle)
       (assembly : SelectedSourceLocalRailAssembly (web := web)
         (selectedPlacementSideFace firstPlacement firstIncomingBefore)
         (selectedPlacementSideFace firstPlacement firstIncomingAfter)
         (selectedPlacementSideFace fourthPlacement lastSuccessor.rightOutgoingAfter)
         (selectedPlacementSideFace fourthPlacement lastSuccessor.rightOutgoingBefore))
+      (hright : classifyCrossedRetainedBypassAppend prefixMiddle
+        (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)) = .assembled assembly)
   | collision
       (face : SelectedFace (web := web))
       (data : ExactSelectedLocalRailMiddleReplacementCollision
@@ -256,7 +277,8 @@ noncomputable def classifyExactSelectedLocalRailMiddleReplacement
           cases hright : classifyRetainedBypassAppend prefixMiddle
               (rebaseLastContinuation (bridge := bridge)
                 (lastSuccessor := lastSuccessor)) with
-          | assembled assembly => exact .straight middle hresult assembly
+          | assembled assembly =>
+              exact .straight middle hresult prefixMiddle hleft assembly hright
           | collision witness =>
               exact .collision witness.face
                 (.straightRight middle hresult prefixMiddle hleft witness hright rfl)
@@ -270,10 +292,230 @@ noncomputable def classifyExactSelectedLocalRailMiddleReplacement
           cases hright : classifyCrossedRetainedBypassAppend prefixMiddle
               (rebaseLastContinuation (bridge := bridge)
                 (lastSuccessor := lastSuccessor)) with
-          | assembled assembly => exact .swapped middle hresult assembly
+          | assembled assembly =>
+              exact .swapped middle hresult prefixMiddle hleft assembly hright
           | collision witness =>
               exact .collision witness.face
                 (.swappedRight middle hresult prefixMiddle hleft witness hright rfl)
+
+/-- A face lies on one of the three literal assembly packets used by a middle
+replacement: the untouched first cell, the rebased canonical middle repair,
+or the untouched fourth-cell continuation. -/
+def FaceInMiddleReplacementSplicePieces
+    {middleFirstFinish middleSecondFinish : SelectedFace (web := web)}
+    (middle : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore)
+      (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
+      middleFirstFinish middleSecondFinish)
+    (face : SelectedFace (web := web)) : Prop :=
+  face ∈ firstLeft.toAssembly.firstRail.support ∨
+    face ∈ firstLeft.toAssembly.secondRail.support ∨
+    face ∈ middle.firstRail.support ∨
+    face ∈ middle.secondRail.support ∨
+    face ∈ (rebaseLastContinuation (bridge := bridge)
+      (lastSuccessor := lastSuccessor)).firstRail.support ∨
+    face ∈ (rebaseLastContinuation (bridge := bridge)
+      (lastSuccessor := lastSuccessor)).secondRail.support
+
+private theorem faceInMiddleReplacementSplicePieces_of_prefixMiddle
+    {middleFirstFinish middleSecondFinish : SelectedFace (web := web)}
+    {middle : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore)
+      (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
+      middleFirstFinish middleSecondFinish}
+    {prefixMiddle : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter)
+      middleFirstFinish middleSecondFinish}
+    (hprovenance : AssemblySupportContainedInAssemblyPair
+      firstLeft.toAssembly middle prefixMiddle)
+    {face : SelectedFace (web := web)}
+    (hface : face ∈ prefixMiddle.firstRail.support ∨
+      face ∈ prefixMiddle.secondRail.support) :
+    FaceInMiddleReplacementSplicePieces
+      (bridge := bridge) (lastSuccessor := lastSuccessor)
+      (firstLeft := firstLeft) middle face := by
+  rcases hface with hfirst | hsecond
+  · rcases hprovenance.1 face hfirst with
+      holdFirst | holdSecond | hmiddleFirst | hmiddleSecond
+    · exact .inl holdFirst
+    · exact .inr (.inl holdSecond)
+    · exact .inr (.inr (.inl hmiddleFirst))
+    · exact .inr (.inr (.inr (.inl hmiddleSecond)))
+  · rcases hprovenance.2 face hsecond with
+      holdFirst | holdSecond | hmiddleFirst | hmiddleSecond
+    · exact .inl holdFirst
+    · exact .inr (.inl holdSecond)
+    · exact .inr (.inr (.inl hmiddleFirst))
+    · exact .inr (.inr (.inr (.inl hmiddleSecond)))
+
+private theorem faceInMiddleReplacementSplicePieces_of_final
+    {middleFirstFinish middleSecondFinish finalFirst finalSecond :
+      SelectedFace (web := web)}
+    {middle : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore)
+      (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
+      middleFirstFinish middleSecondFinish}
+    {prefixMiddle : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter)
+      middleFirstFinish middleSecondFinish}
+    {finalAssembly : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter)
+      finalFirst finalSecond}
+    (hleft : AssemblySupportContainedInAssemblyPair
+      firstLeft.toAssembly middle prefixMiddle)
+    (hright : AssemblySupportContainedInAssemblyPair prefixMiddle
+      (rebaseLastContinuation (bridge := bridge)
+        (lastSuccessor := lastSuccessor)) finalAssembly)
+    {face : SelectedFace (web := web)}
+    (hface : face ∈ finalAssembly.firstRail.support ∨
+      face ∈ finalAssembly.secondRail.support) :
+    FaceInMiddleReplacementSplicePieces
+      (bridge := bridge) (lastSuccessor := lastSuccessor)
+      (firstLeft := firstLeft) middle face := by
+  have hsource := hface.elim (hright.1 face) (hright.2 face)
+  rcases hsource with hprefixFirst | hprefixSecond | hlastFirst | hlastSecond
+  · exact faceInMiddleReplacementSplicePieces_of_prefixMiddle hleft
+      (.inl hprefixFirst)
+  · exact faceInMiddleReplacementSplicePieces_of_prefixMiddle hleft
+      (.inr hprefixSecond)
+  · exact .inr (.inr (.inr (.inr (.inl hlastFirst))))
+  · exact .inr (.inr (.inr (.inr (.inr hlastSecond))))
+
+/-- Source-piece membership expressed only through the canonical trace, not
+through the proof term witnessing which classifier branch was taken. -/
+def FaceInCanonicalMiddleReplacementSplicePieces
+    (trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)))
+    (face : SelectedFace (web := web)) : Prop :=
+  match trace.toOutcome with
+  | .straight middle =>
+      FaceInMiddleReplacementSplicePieces
+        (bridge := bridge) (lastSuccessor := lastSuccessor)
+        (firstLeft := firstLeft) (rebaseMiddleStraight middle) face
+  | .swapped middle =>
+      FaceInMiddleReplacementSplicePieces
+        (bridge := bridge) (lastSuccessor := lastSuccessor)
+        (firstLeft := firstLeft) (rebaseMiddleSwapped middle) face
+
+/-- Both first-join and second-join collision constructors carry a literal
+source-piece membership witness. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.hasSourcePieceMembership
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    FaceInCanonicalMiddleReplacementSplicePieces
+      (bridge := bridge) (lastSuccessor := lastSuccessor)
+      (firstLeft := firstLeft) trace face := by
+  cases data with
+  | straightLeft middle hresult witness hclassified hface =>
+      subst face
+      simp only [FaceInCanonicalMiddleReplacementSplicePieces, hresult]
+      cases witness.origin with
+      | firstSecond hold hnew => exact .inl hold
+      | secondFirst hold hnew => exact .inr (.inl hold)
+  | swappedLeft middle hresult witness hclassified hface =>
+      subst face
+      simp only [FaceInCanonicalMiddleReplacementSplicePieces, hresult]
+      cases witness.origin with
+      | firstSecond hold hnew => exact .inl hold
+      | secondFirst hold hnew => exact .inr (.inl hold)
+  | straightRight middle hresult prefixMiddle hleft witness hright hface =>
+      subst face
+      simp only [FaceInCanonicalMiddleReplacementSplicePieces, hresult]
+      cases witness.origin with
+      | firstSecond hold hnew =>
+          exact .inr (.inr (.inr (.inr (.inr (List.mem_of_mem_tail hnew)))))
+      | secondFirst hold hnew =>
+          exact .inr (.inr (.inr (.inr (.inl (List.mem_of_mem_tail hnew)))))
+  | swappedRight middle hresult prefixMiddle hleft witness hright hface =>
+      subst face
+      simp only [FaceInCanonicalMiddleReplacementSplicePieces, hresult]
+      cases witness.origin with
+      | firstFirst hold hnew =>
+          exact .inr (.inr (.inr (.inr (.inl (List.mem_of_mem_tail hnew)))))
+      | secondSecond hold hnew =>
+          exact .inr (.inr (.inr (.inr (.inr (List.mem_of_mem_tail hnew)))))
+
+/-- Exact source-support receipt on every success and collision branch of the
+two-stage replacement. -/
+def ExactSelectedLocalRailMiddleReplacementOutcome.HasSourceSupportProvenance
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    (outcome : ExactSelectedLocalRailMiddleReplacementOutcome
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace) : Prop :=
+  match outcome with
+  | .straight middle _ _ _ assembly _ =>
+      (∀ face ∈ assembly.firstRail.support,
+          FaceInMiddleReplacementSplicePieces
+            (bridge := bridge) (lastSuccessor := lastSuccessor)
+            (firstLeft := firstLeft)
+            (rebaseMiddleStraight middle) face) ∧
+        ∀ face ∈ assembly.secondRail.support,
+          FaceInMiddleReplacementSplicePieces
+            (bridge := bridge) (lastSuccessor := lastSuccessor)
+            (firstLeft := firstLeft)
+            (rebaseMiddleStraight middle) face
+  | .swapped middle _ _ _ assembly _ =>
+      (∀ face ∈ assembly.firstRail.support,
+          FaceInMiddleReplacementSplicePieces
+            (bridge := bridge) (lastSuccessor := lastSuccessor)
+            (firstLeft := firstLeft)
+            (rebaseMiddleSwapped middle) face) ∧
+        ∀ face ∈ assembly.secondRail.support,
+          FaceInMiddleReplacementSplicePieces
+            (bridge := bridge) (lastSuccessor := lastSuccessor)
+            (firstLeft := firstLeft)
+            (rebaseMiddleSwapped middle) face
+  | .collision face _ =>
+      FaceInCanonicalMiddleReplacementSplicePieces
+        (bridge := bridge) (lastSuccessor := lastSuccessor)
+        (firstLeft := firstLeft) trace face
+
+/-- The canonical middle-replacement classifier introduces no face outside
+the three literal packets which it splices. -/
+theorem ExactSelectedLocalRailMiddleReplacementOutcome.hasSourceSupportProvenance
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    (outcome : ExactSelectedLocalRailMiddleReplacementOutcome
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace) :
+    outcome.HasSourceSupportProvenance := by
+  classical
+  cases outcome with
+  | straight middle hresult prefixMiddle hclassified assembly hfinal =>
+      have hleft := classifyRetainedBypassAppend_hasSupportProvenance
+        firstLeft.toAssembly (rebaseMiddleStraight middle)
+      rw [hclassified] at hleft
+      have hright := classifyRetainedBypassAppend_hasSupportProvenance
+        prefixMiddle (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor))
+      rw [hfinal] at hright
+      exact ⟨
+        fun face hface => faceInMiddleReplacementSplicePieces_of_final
+          hleft hright (.inl hface),
+        fun face hface => faceInMiddleReplacementSplicePieces_of_final
+          hleft hright (.inr hface)⟩
+  | swapped middle hresult prefixMiddle hclassified assembly hfinal =>
+      have hleft := classifyRetainedBypassAppend_hasSupportProvenance
+        firstLeft.toAssembly (rebaseMiddleSwapped middle)
+      rw [hclassified] at hleft
+      have hright := classifyCrossedRetainedBypassAppend_hasSupportProvenance
+        prefixMiddle (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor))
+      rw [hfinal] at hright
+      exact ⟨
+        fun face hface => faceInMiddleReplacementSplicePieces_of_final
+          hleft hright (.inl hface),
+        fun face hface => faceInMiddleReplacementSplicePieces_of_final
+          hleft hright (.inr hface)⟩
+  | collision face data => exact data.hasSourcePieceMembership
 
 /-- The replacement classifier retains the independently proved concrete rail
 which avoids the original middle-band collision face. -/

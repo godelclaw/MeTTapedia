@@ -2166,7 +2166,12 @@ the left or right join, together with the exact repair parity, concrete
 assemblies, and classifier equation.  The packet separately retains the
 proved middle rail which avoids the original collision face.  Thus the
 overlapping window has been replaced by a real path construction and the
-remaining failure has moved to one of two named boundary joins.  Neither join
+remaining failure has moved to one of two named boundary joins.  Successful
+rails and surviving collision faces also carry exact support provenance:
+every such face belongs to the first-cell packet, the rebased canonical
+middle repair, or the fourth-cell continuations.  Hence the two remaining
+joins can be attacked with the existing remote/local separation theorems
+without guessing where loop erasure obtained a face.  Neither join
 is yet proved collision-free, so this is not collision elimination, the
 arbitrary-length fold, either end cap, the separated crosscut pair, or L1
 closure.
