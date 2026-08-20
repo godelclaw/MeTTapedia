@@ -322,6 +322,122 @@ theorem SquareBondRealization.exists_internalDualAdjacency
     adjacent := hadjDual
   }⟩
 
+/-- The internal bond adjacency is genuinely off the selected dual walk. -/
+structure SquareBondRealization.InternalDualChord
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component) where
+  adjacency : bond.InternalDualAdjacency
+  isChord : cycle.walk.IsChord
+    s(adjacency.leftFace, adjacency.rightFace)
+
+/-- The alternative to an off-walk chord: one selected crossing and the
+internal bond are two distinct primal edges on the same pair of cycle-support
+faces.  This is the exact local residue that a later two-edge-cut or face-pair
+uniqueness consumer must discharge. -/
+structure SquareBondRealization.ParallelSelectedBoundary
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component) where
+  adjacency : bond.InternalDualAdjacency
+  selectedEdge : G.edgeSet
+  selected_mem_crossingEdges :
+    selectedEdge ∈ cycle.selectedCycle.crossingEdges
+  selected_ne_internal : selectedEdge ≠ bond.internalEdge
+  selected_mem_left : selectedEdge ∈
+    orbitFaceBoundary web.annular.RS adjacency.leftFace.1
+  selected_mem_right : selectedEdge ∈
+    orbitFaceBoundary web.annular.RS adjacency.rightFace.1
+
+/-- **L1 square-bond fail-closed split.**  The literal internal adjacency is
+either an off-walk chord of the selected four-cycle, or a selected boundary
+edge is a second, distinct primal edge shared by the same two faces.  No
+global pairwise-unique-face-edge hypothesis is assumed. -/
+theorem SquareBondRealization.exists_internalDualChord_or_parallelSelectedBoundary
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    Nonempty bond.InternalDualChord ∨
+      Nonempty bond.ParallelSelectedBoundary := by
+  obtain ⟨adjacency⟩ := bond.exists_internalDualAdjacency hroot
+  let dualEdge : Sym2 (SelectedFace (web := web)) :=
+    s(adjacency.leftFace, adjacency.rightFace)
+  by_cases hoff : dualEdge ∉ cycle.walk.edges
+  · left
+    refine ⟨{
+      adjacency := adjacency
+      isChord := ?_
+    }⟩
+    exact (SimpleGraph.Walk.isChord_sym2Mk).2
+      ⟨adjacency.adjacent, hoff, adjacency.left_mem_support,
+        adjacency.right_mem_support⟩
+  · right
+    have hon : dualEdge ∈ cycle.walk.edges := not_not.mp hoff
+    rcases List.mem_iff_getElem.mp hon with ⟨index, hindex, hget⟩
+    let step : Fin cycle.walk.length :=
+      ⟨index, by simpa using hindex⟩
+    let edgeStep : Fin cycle.walk.edges.length :=
+      Fin.cast cycle.walk.length_edges.symm step
+    have hget' : cycle.walk.edges.get edgeStep = dualEdge := by
+      simpa [edgeStep, step] using hget
+    have hpair :
+        GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))
+            cycle.walk step = dualEdge := by
+      rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS)) cycle.walk step]
+      exact hget'
+    let selectedEdge := cycle.selectedCycle.crossingEdge step
+    have hselectedCrossing : selectedEdge ∈
+        cycle.selectedCycle.crossingEdges :=
+      (cycle.selectedCycle.mem_crossingEdges_iff selectedEdge).2
+        ⟨step, rfl⟩
+    have hselectedNe : selectedEdge ≠ bond.internalEdge := by
+      intro heq
+      apply bond.internalEdge_not_mem_crossingEdges hroot
+      rw [← heq]
+      exact hselectedCrossing
+    have hselectedShared := cycle.selectedCycle.crossing_mem_shared step
+    rcases (mem_sharedInteriorEdges_iff
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).1
+        hselectedShared with ⟨_hinterior, hstepLeft, hstepRight⟩
+    change s(cycle.walk.getVert step.val,
+      cycle.walk.getVert (step.val + 1)) =
+        s(adjacency.leftFace, adjacency.rightFace) at hpair
+    rcases Sym2.eq_iff.mp hpair with horiented | hreversed
+    · rcases horiented with ⟨hleft, hright⟩
+      refine ⟨{
+        adjacency := adjacency
+        selectedEdge := selectedEdge
+        selected_mem_crossingEdges := hselectedCrossing
+        selected_ne_internal := hselectedNe
+        selected_mem_left := ?_
+        selected_mem_right := ?_
+      }⟩
+      · simpa [hleft] using hstepLeft
+      · simpa [hright] using hstepRight
+    · rcases hreversed with ⟨hleft, hright⟩
+      refine ⟨{
+        adjacency := adjacency
+        selectedEdge := selectedEdge
+        selected_mem_crossingEdges := hselectedCrossing
+        selected_ne_internal := hselectedNe
+        selected_mem_left := ?_
+        selected_mem_right := ?_
+      }⟩
+      · simpa [hright] using hstepRight
+      · simpa [hleft] using hstepLeft
+
 end MiddleReplacementShortDualCycle
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly

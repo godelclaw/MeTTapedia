@@ -2317,6 +2317,14 @@ reroute.  The remaining finite question is now exact: is the bond adjacency
 off the selected walk, or does it coincide with one of the four selected
 steps?
 
+That question is now a kernel-checked dichotomy.  If the bond adjacency is not
+one of the four walk edges, Lean packages it as an actual walk chord.  If it is
+a walk edge, Lean instead exhibits the selected primal crossing at that step
+and proves that it is distinct from the internal bond while both edges lie on
+the same pair of cycle-support faces.  Hence the non-chord branch is no longer
+an unspecified degeneracy: it is exactly a two-edge face-pair multiplicity.
+No global unique-shared-edge property of the opened carrier is assumed.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
