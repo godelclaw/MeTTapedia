@@ -162,6 +162,80 @@ theorem SquareBondRealization.EndpointSelectedTriangle.crossingEdges_eq_incident
         (orbitFace_incidence_le_two web.annular.RS),
       triangle.length_eq_three]
 
+/-- The incident stars of the two bond endpoints overlap in exactly the
+internal bond.  This is a simple-graph fact: an edge incident to both distinct
+endpoints is the bond itself. -/
+theorem SquareBondRealization.incidentEdgeFinset_inter_eq_singleton_internalEdge
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component) :
+    incidentEdgeFinset G bond.first ∩ incidentEdgeFinset G bond.second =
+      {bond.internalEdge} := by
+  classical
+  ext edge
+  simp only [Finset.mem_inter, Finset.mem_singleton]
+  constructor
+  · rintro ⟨hfirstIncident, hsecondIncident⟩
+    apply Subtype.ext
+    have hfirst : bond.first ∈ (edge.1 : Sym2 V) := by
+      simpa [incidentEdgeFinset] using hfirstIncident
+    have hsecond : bond.second ∈ (edge.1 : Sym2 V) := by
+      simpa [incidentEdgeFinset] using hsecondIncident
+    exact Sym2.eq_of_ne_mem bond.first_ne_second hfirst hsecond
+      (by simp [SquareBondRealization.internalEdge, Sym2.mem_iff])
+      (by simp [SquareBondRealization.internalEdge, Sym2.mem_iff])
+  · rintro rfl
+    simp [SquareBondRealization.internalEdge, incidentEdgeFinset, Sym2.mem_iff]
+
+/-- The two endpoint stars cover precisely the selected four-edge square
+boundary together with the internal bond.  No other primal crossing is
+introduced by the endpoint-triangle construction. -/
+theorem SquareBondRealization.incidentEdgeFinset_union_eq_insert_internalEdge
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    incidentEdgeFinset G bond.first ∪ incidentEdgeFinset G bond.second =
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges := by
+  classical
+  ext edge
+  constructor
+  · intro hedge
+    rcases Finset.mem_union.1 hedge with hfirst | hsecond
+    · by_cases heq : edge = bond.internalEdge
+      · exact Finset.mem_insert.2 (.inl heq)
+      · apply Finset.mem_insert.2
+        apply Or.inr
+        have herase : edge ∈
+            (incidentEdgeFinset G bond.first).erase bond.internalEdge :=
+          Finset.mem_erase.2 ⟨heq, hfirst⟩
+        rw [← bond.filter_incident_first_eq_erase_internalEdge hroot] at herase
+        exact (Finset.mem_filter.1 herase).2
+    · by_cases heq : edge = bond.internalEdge
+      · exact Finset.mem_insert.2 (.inl heq)
+      · apply Finset.mem_insert.2
+        apply Or.inr
+        have herase : edge ∈
+            (incidentEdgeFinset G bond.second).erase bond.internalEdge :=
+          Finset.mem_erase.2 ⟨heq, hsecond⟩
+        rw [← bond.filter_incident_second_eq_erase_internalEdge hroot] at herase
+        exact (Finset.mem_filter.1 herase).2
+  · intro hedge
+    rcases Finset.mem_insert.1 hedge with heq | hcrossing
+    · subst edge
+      exact Finset.mem_union.2 (.inl (by
+        simp [SquareBondRealization.internalEdge, incidentEdgeFinset,
+          Sym2.mem_iff]))
+    · rcases bond.covers_crossingEdges edge hcrossing with hfirst | hsecond
+      · exact Finset.mem_union.2 (.inl (by
+          simpa [incidentEdgeFinset] using hfirst))
+      · exact Finset.mem_union.2 (.inr (by
+          simpa [incidentEdgeFinset] using hsecond))
+
 /-- The oriented internal bond and the two following darts at its first cubic
 endpoint form a literal selected dual triangle whose three primal crossings
 all meet that endpoint. -/
@@ -464,6 +538,36 @@ theorem SquareBondRealization.exists_endpointSelectedTriangles
   rcases adjacency.exists_secondEndpointSelectedTriangle hroot with
     ⟨secondTriangle, hsecond⟩
   exact ⟨firstTriangle, secondTriangle, hfirst, hsecond⟩
+
+/-- **L1 exact endpoint-triangle decomposition.**  The two constructed
+triangles meet on exactly the internal bond and together cross exactly that
+bond plus the original four selected square-boundary edges.  This is the
+edge-level packet needed by a later rail reroute; it does not itself choose or
+append either repaired rail. -/
+theorem SquareBondRealization.exists_endpointSelectedTriangles_exact
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    ∃ firstTriangle secondTriangle : bond.EndpointSelectedTriangle,
+      firstTriangle.center = bond.first ∧
+        secondTriangle.center = bond.second ∧
+        firstTriangle.selectedCycle.crossingEdges ∩
+            secondTriangle.selectedCycle.crossingEdges = {bond.internalEdge} ∧
+        firstTriangle.selectedCycle.crossingEdges ∪
+            secondTriangle.selectedCycle.crossingEdges =
+          insert bond.internalEdge cycle.selectedCycle.crossingEdges := by
+  rcases bond.exists_endpointSelectedTriangles hroot with
+    ⟨firstTriangle, secondTriangle, hfirst, hsecond⟩
+  refine ⟨firstTriangle, secondTriangle, hfirst, hsecond, ?_, ?_⟩
+  · rw [firstTriangle.crossingEdges_eq_incidentEdgeFinset,
+      secondTriangle.crossingEdges_eq_incidentEdgeFinset, hfirst, hsecond]
+    exact bond.incidentEdgeFinset_inter_eq_singleton_internalEdge
+  · rw [firstTriangle.crossingEdges_eq_incidentEdgeFinset,
+      secondTriangle.crossingEdges_eq_incidentEdgeFinset, hfirst, hsecond]
+    exact bond.incidentEdgeFinset_union_eq_insert_internalEdge hroot
 
 end MiddleReplacementShortDualCycle
 
