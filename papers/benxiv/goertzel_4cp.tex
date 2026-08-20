@@ -3089,6 +3089,15 @@ incrementally.  The next theorem must still locate the two rail receipts at
 the collision-adjacent square steps and run the bond classification for that
 selection.
 
+The incidence bridge needed by that adapter is now public and checked.  A
+literal receipt crossing shared by its original two faces remains a shared
+interior edge at any supplied walk step whose unoriented facial-dual edge is
+equal to the receipted edge.  This transports incidence only: it neither
+chooses the collision-adjacent steps nor asserts uniqueness of a primal edge
+between two faces.  The remaining local task is therefore a finite coordinate
+identification, after which the three-crossing selector can be instantiated
+without replacing either receipt by an arbitrary choice.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

@@ -147,6 +147,28 @@ variable
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring}
 
+/-- A receipted primal crossing remains shared after identifying its
+unoriented facial-dual edge with a particular walk step.  This is only
+incidence transport; it does not choose the step or assert uniqueness of a
+primal edge shared by the two faces. -/
+theorem SelectedAdjacentTerminalEdgeCrossingReceipt.crossing_mem_shared_at
+    {edge : Sym2 (SelectedFace web)}
+    (receipt : SelectedAdjacentTerminalEdgeCrossingReceipt edge)
+    {start finish : SelectedFace web}
+    (walk : (SelectedDualGraph web).Walk start finish)
+    (step : Fin walk.length)
+    (hedge : edge = coreDualWalkGraphEdge
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) walk step) :
+    receipt.crossing ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (walk.getVert step.val).1 (walk.getVert (step.val + 1)).1 := by
+  apply MiddleReplacementShortDualCycle.mem_sharedInteriorEdges_of_sym2_eq
+    web.annular.RS
+  · simpa [coreDualWalkGraphEdge] using hedge.symm.trans receipt.edge_eq
+  · exact receipt.crossing_mem_shared
+
 /-- A primal edge selected by both an arbitrary receipted dual edge and an
 endpoint triangle determines the same unoriented dual edge.  Incidence at
 most two, rather than global shared-edge uniqueness, is the load-bearing

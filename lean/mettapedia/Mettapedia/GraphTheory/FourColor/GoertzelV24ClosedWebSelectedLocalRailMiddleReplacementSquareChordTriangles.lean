@@ -120,7 +120,7 @@ private theorem exists_selectedCycle_with_pinned_shared_edge
 
 /-- Transport a literal shared primal edge along equality of the underlying
 unoriented facial-dual edge. -/
-private theorem mem_sharedInteriorEdges_of_sym2_eq
+theorem mem_sharedInteriorEdges_of_sym2_eq
     (RS : RotationSystem V G.edgeSet)
     {firstLeft firstRight secondLeft secondRight : AmbientFace
       (Finset.univ : Finset (OrbitFace RS))}
