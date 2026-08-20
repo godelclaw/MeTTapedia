@@ -252,11 +252,13 @@ noncomputable def boundedLiveSharedRailPrefixOfState
       (firstSuccessor := firstSuccessor) (bridge := bridge)
       (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)
       prefixAssembly) :
-    BoundedLiveSharedRailPrefix
+    SourceTiedBoundedLiveSharedRailPrefix
       (corridor := corridor) (firstInterior := firstInterior)
       (hfirstNext := hfirstNext) (firstPlacement := firstPlacement)
       (secondPlacement := secondPlacement) (firstSuccessor := firstSuccessor)
-      (firstStart := firstStart) (secondStart := secondStart) :=
+      (firstIncomingBefore := firstIncomingBefore)
+      (firstIncomingAfter := firstIncomingAfter) (firstLeft := firstLeft)
+      prefixAssembly :=
   Classical.choice (boundedLiveSharedRailPrefix_nonempty_ofState
     prefixAssembly state)
 
@@ -279,11 +281,13 @@ structure BoundedLiveSharedRailAppendTransition
       (firstSuccessor := firstSuccessor) (bridge := bridge)
       (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)
       prefixAssembly) where
-  frozen : BoundedLiveSharedRailPrefix
+  frozen : SourceTiedBoundedLiveSharedRailPrefix
     (corridor := corridor) (firstInterior := firstInterior)
     (hfirstNext := hfirstNext) (firstPlacement := firstPlacement)
     (secondPlacement := secondPlacement) (firstSuccessor := firstSuccessor)
-    (firstStart := firstStart) (secondStart := secondStart)
+    (firstIncomingBefore := firstIncomingBefore)
+    (firstIncomingAfter := firstIncomingAfter) (firstLeft := firstLeft)
+    prefixAssembly
   frozen_eq : frozen = boundedLiveSharedRailPrefixOfState prefixAssembly state
   common : BoundedLiveCommonSpanTransition
     (lastSuccessor := lastSuccessor)
@@ -293,8 +297,9 @@ structure BoundedLiveSharedRailAppendTransition
     (lastSuccessor := lastSuccessor)
     (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
     (fourthSuccessor := fourthSuccessor) state.source state.liveTraces
-  outcome : BoundedLiveSharedRailAppendOutcome frozen common.future
-  outcome_eq : outcome = classifyBoundedLiveSharedRailAppend frozen common.future
+  outcome : BoundedLiveSharedRailAppendOutcome frozen.toBounded common.future
+  outcome_eq : outcome =
+    classifyBoundedLiveSharedRailAppend frozen.toBounded common.future
 
 /-- **L1 constructed bounded shared step.** Select the proved shared-cut
 prefix, run the actual common-span future classifiers, and classify their
@@ -322,7 +327,7 @@ noncomputable def BoundedLiveSharedRailAppendTransition.ofState
     (lastSuccessor := lastSuccessor)
     (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
     (fourthSuccessor := fourthSuccessor) state.source state.liveTraces
-  let outcome := classifyBoundedLiveSharedRailAppend frozen common.future
+  let outcome := classifyBoundedLiveSharedRailAppend frozen.toBounded common.future
   exact
     { frozen := frozen
       frozen_eq := rfl

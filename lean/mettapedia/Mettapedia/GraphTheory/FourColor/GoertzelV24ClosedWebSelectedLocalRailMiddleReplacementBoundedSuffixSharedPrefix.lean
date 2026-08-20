@@ -111,6 +111,25 @@ structure BoundedLiveSharedRailPrefix
   interiorSeparated : InteriorSeparatedFromFutureSelectedWindows
     (corridor := corridor) assembly firstInterior.center.val
 
+/-- The shared-cut prefix together with the source decomposition which built
+it.  This stronger packet is what a later collision-localization theorem must
+consume: the weak prefix alone intentionally forgets whether a face came from
+the old frozen assembly or from the first live rail pair. -/
+structure SourceTiedBoundedLiveSharedRailPrefix
+    {firstStart secondStart :
+      AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (prefixAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart
+      (selectedPlacementSideFace firstPlacement firstIncomingBefore)
+      (selectedPlacementSideFace firstPlacement firstIncomingAfter)) where
+  toBounded : BoundedLiveSharedRailPrefix
+    (corridor := corridor) (firstInterior := firstInterior)
+    (hfirstNext := hfirstNext) (firstPlacement := firstPlacement)
+    (secondPlacement := secondPlacement) (firstSuccessor := firstSuccessor)
+    (firstStart := firstStart) (secondStart := secondStart)
+  supportProvenance : AssemblySupportContainedInAssemblyPair
+    prefixAssembly firstLeft.toAssembly toBounded.assembly
+
 /-- The first live local pair is supported in the first adjacent selected
 window. -/
 private theorem firstLeft_supportedByFirstWindow
@@ -145,13 +164,15 @@ theorem boundedLiveSharedRailPrefix_nonempty_ofState
       (firstSuccessor := firstSuccessor) (bridge := bridge)
       (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)
       prefixAssembly) :
-    Nonempty (BoundedLiveSharedRailPrefix
+    Nonempty (SourceTiedBoundedLiveSharedRailPrefix
       (V := V) (G := G) (data := data) (coloring := coloring) (web := web)
       (blockLength := blockLength) (corridor := corridor) (rungs := rungs)
       (firstInterior := firstInterior) (hfirstNext := hfirstNext)
       (firstPlacement := firstPlacement) (secondPlacement := secondPlacement)
       (firstSuccessor := firstSuccessor)
-      (firstStart := firstStart) (secondStart := secondStart)) := by
+      (firstIncomingBefore := firstIncomingBefore)
+      (firstIncomingAfter := firstIncomingAfter) (firstLeft := firstLeft)
+      prefixAssembly) := by
   let localAssembly : SelectedSourceLocalRailAssembly (web := web)
       (selectedPlacementSideFace firstPlacement firstIncomingBefore)
       (selectedPlacementSideFace firstPlacement firstIncomingAfter)
@@ -229,11 +250,39 @@ theorem boundedLiveSharedRailPrefix_nonempty_ofState
     rebaseAssemblyFinish joined
       firstSuccessor.frame.leftBeforeFace_eq_rightAfterFace
       firstSuccessor.frame.leftAfterFace_eq_rightBeforeFace
+  have hjointProvenance : AssemblySupportContainedInAssemblyPair
+      prefixAssembly localAssembly joined := by
+    constructor
+    · intro face hface
+      change face ∈
+        (prefixAssembly.firstRail.append localAssembly.firstRail).support at hface
+      rw [SimpleGraph.Walk.support_append] at hface
+      rcases List.mem_append.mp hface with hold | hlocal
+      · exact .inl hold
+      · exact .inr (.inr (.inl (List.mem_of_mem_tail hlocal)))
+    · intro face hface
+      change face ∈
+        (prefixAssembly.secondRail.append localAssembly.secondRail).support at hface
+      rw [SimpleGraph.Walk.support_append] at hface
+      rcases List.mem_append.mp hface with hold | hlocal
+      · exact .inr (.inl hold)
+      · exact .inr (.inr (.inr (List.mem_of_mem_tail hlocal)))
+  have hrebasedProvenance : AssemblySupportContainedInAssemblyPair
+      prefixAssembly localAssembly rebased := by
+    constructor
+    · intro face hface
+      rw [rebaseAssemblyFinish_firstRail_support] at hface
+      exact hjointProvenance.1 face hface
+    · intro face hface
+      rw [rebaseAssemblyFinish_secondRail_support] at hface
+      exact hjointProvenance.2 face hface
   exact ⟨
-    { assembly := rebased
-      interiorSeparated := by
-        simpa [InteriorSeparatedFromFutureSelectedWindows, rebased] using
-          hjointInterior }⟩
+    { toBounded :=
+        { assembly := rebased
+          interiorSeparated := by
+            simpa [InteriorSeparatedFromFutureSelectedWindows, rebased] using
+              hjointInterior }
+      supportProvenance := hrebasedProvenance }⟩
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

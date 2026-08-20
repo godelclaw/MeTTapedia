@@ -2715,6 +2715,11 @@ and transports its terminal faces across the proved successor-frame
 equalities.  The resulting simple two-rail prefix ends exactly where the
 common-span future transition begins and retains an interior-frozen
 certificate at the first live centre.  No separation assumption is added.
+The packet now also retains its source decomposition explicitly: every face
+on either rebased output rail is proved to come from the corresponding old
+frozen rail or from the literal first live pair.  This receipt is essential
+for localizing any collision found by the following append; merely choosing
+an inhabitant of the weaker prefix type would not preserve that information.
 The matching bounded append is now fail-closed as well.
 \texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedAppend}
 runs the retained-support classifier between the constructed shared-cut prefix
@@ -2733,7 +2738,9 @@ The same module also packages the entire calculation directly from the stored
 rolling state: it selects the proved shared-cut prefix, constructs the shifted
 common-span packet from the actual source classifiers, and records the append
 result with definitional equality receipts for all three computations.  This
-rules out replacing any stage by an unrelated inhabitant with matching types.
+rules out replacing any stage by an unrelated inhabitant with matching types,
+while the stronger shared-prefix field retains the source-support provenance
+needed by its collision consumer.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
