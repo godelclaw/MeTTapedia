@@ -152,6 +152,10 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
         secondTriangle.IsCycle ∧ secondTriangle.length = 3 ∧
         s(left, right) ∈ firstTriangle.edges ∧
         s(left, right) ∈ secondTriangle.edges ∧
+        (∀ edge ∈ firstTriangle.edges,
+          edge = s(left, right) ∨ edge ∈ walk.edges) ∧
+        (∀ edge ∈ secondTriangle.edges,
+          edge = s(left, right) ∨ edge ∈ walk.edges) ∧
         (∀ vertex ∈ firstTriangle.support, vertex ∈ walk.support) ∧
         (∀ vertex ∈ secondTriangle.support, vertex ∈ walk.support) ∧
         ∃ firstOnly : Sym2 W,
@@ -208,6 +212,13 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
     rw [edges_get_cast_eq_s_getVert,
       getVert_succ_eq_getVert_finRotate_of_isCycle hcycle]
     simp [firstMiddle, next, hleftPosition]
+  have hnextEdge :
+      walk.edges.get (Fin.cast walk.length_edges.symm next) =
+        s(firstMiddle, right) := by
+    rw [edges_get_cast_eq_s_getVert,
+      getVert_succ_eq_getVert_finRotate_of_isCycle hcycle]
+    change s(firstMiddle, walk.getVert opposite.val) = s(firstMiddle, right)
+    rw [hrightAtOpposite]
   have hoppositeEdge :
       walk.edges.get (Fin.cast walk.length_edges.symm opposite) =
         s(right, secondMiddle) := by
@@ -220,6 +231,18 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
     rw [edges_get_cast_eq_s_getVert,
       getVert_succ_eq_getVert_finRotate_of_isCycle hcycle, hclose]
     simp [secondMiddle, hleftPosition]
+  have hstepMem : s(left, firstMiddle) ∈ walk.edges := by
+    rw [← hstepEdge]
+    exact List.get_mem walk.edges _
+  have hnextMem : s(firstMiddle, right) ∈ walk.edges := by
+    rw [← hnextEdge]
+    exact List.get_mem walk.edges _
+  have hoppositeMem : s(right, secondMiddle) ∈ walk.edges := by
+    rw [← hoppositeEdge]
+    exact List.get_mem walk.edges _
+  have hpreviousMem : s(secondMiddle, left) ∈ walk.edges := by
+    rw [← hpreviousEdge]
+    exact List.get_mem walk.edges _
   have hstepNeOpposite : step ≠ opposite := by
     intro hsteps
     have hvalues := congrArg Fin.val hsteps
@@ -290,11 +313,31 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
     · exact hrightSupport
     · exact walk.getVert_mem_support previous.val
     · exact hleftSupport
+  have hfirstEdges : ∀ edge ∈ firstTriangle.edges,
+      edge = s(left, right) ∨ edge ∈ walk.edges := by
+    intro edge hedge
+    simp only [firstTriangle, SimpleGraph.Walk.edges_cons,
+      SimpleGraph.Walk.edges_nil, List.mem_cons, List.not_mem_nil,
+      or_false] at hedge
+    rcases hedge with rfl | rfl | rfl
+    · exact .inr hstepMem
+    · exact .inr hnextMem
+    · exact .inl Sym2.eq_swap
+  have hsecondEdges : ∀ edge ∈ secondTriangle.edges,
+      edge = s(left, right) ∨ edge ∈ walk.edges := by
+    intro edge hedge
+    simp only [secondTriangle, SimpleGraph.Walk.edges_cons,
+      SimpleGraph.Walk.edges_nil, List.mem_cons, List.not_mem_nil,
+      or_false] at hedge
+    rcases hedge with rfl | rfl | rfl
+    · exact .inl rfl
+    · exact .inr hoppositeMem
+    · exact .inr hpreviousMem
   exact ⟨firstTriangle, secondTriangle, hfirstCycle, by simp [firstTriangle],
     hsecondCycle, by simp [secondTriangle], by
       simp [firstTriangle, Sym2.eq_swap], by
       simp [secondTriangle, Sym2.eq_swap],
-    hfirstSupport, hsecondSupport,
+    hfirstEdges, hsecondEdges, hfirstSupport, hsecondSupport,
     s(left, firstMiddle), by simp [firstTriangle], by
       simp [secondTriangle, hfirstNeChord, hfirstNeOpposite,
         hfirstNePrevious]⟩
@@ -598,7 +641,8 @@ theorem exists_internal_chord_two_triangles_of_adjacent_pair_boundary_eq
         hcycle hlength hchord with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
       hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
-      _hfirstSupport, _hsecondSupport, hfirstOnly⟩
+      _hfirstEdges, _hsecondEdges, _hfirstSupport, _hsecondSupport,
+      hfirstOnly⟩
   exact ⟨internalEdge, leftFace, rightFace, firstTriangle, secondTriangle,
     hinternalValue, hinternalNotRemoved, hleftBoundary, hrightBoundary,
     hchord, hfirstCycle, hfirstLength, hsecondCycle, hsecondLength,
