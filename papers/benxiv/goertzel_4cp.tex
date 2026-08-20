@@ -2834,6 +2834,17 @@ the endpoint-triangle bypass faces with the predecessor and successor on the
 named track, nor prove the modified track disjoint from its named companion.
 Those two statements remain the next local consumer obligations.
 
+The successful retained-bypass branch now keeps the same track information.
+In
+\texttt{GoertzelV24ClosedWebSelectedRailPairRetainedSupport}, ordered
+composition confines the two returned supports respectively to the
+old-first/new-first and old-second/new-second track pairs; crossed composition
+confines them to old-first/new-second and old-second/new-first.  This is stated
+at the support level, before the independent mutual-disjointness test, so the
+provenance is not obtained by assuming that a bypass candidate is already a
+valid two-rail assembly.  The terminal-window specialization and its use in
+the endpoint-matching argument remain open.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

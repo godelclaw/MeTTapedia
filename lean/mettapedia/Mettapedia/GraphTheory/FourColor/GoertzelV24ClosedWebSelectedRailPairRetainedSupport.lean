@@ -154,6 +154,149 @@ theorem crossedBypassedPair_secondSupportContained
   · exact .inr (.inl hold)
   · exact .inr (.inr (.inl hnew))
 
+/-- A support uses one named old track and one named new track.  This is the
+track-sensitive refinement of `SupportContainedInAssemblyPair`. -/
+def SupportContainedInTrackPair
+    (oldSupport newSupport support : List (SelectedFace (web := web))) : Prop :=
+  ∀ face ∈ support, face ∈ oldSupport ∨ face ∈ newSupport
+
+/-- Ordered composition preserves first-to-first and second-to-second track
+provenance after loop erasure. -/
+def AssemblySupportContainedInOrderedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish)
+    (firstSupport secondSupport : List (SelectedFace (web := web))) : Prop :=
+  SupportContainedInTrackPair oldAssembly.firstRail.support
+      newAssembly.firstRail.support firstSupport ∧
+    SupportContainedInTrackPair oldAssembly.secondRail.support
+      newAssembly.secondRail.support secondSupport
+
+/-- Crossed composition preserves first-to-second and second-to-first track
+provenance after loop erasure. -/
+def AssemblySupportContainedInCrossedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish)
+    (firstSupport secondSupport : List (SelectedFace (web := web))) : Prop :=
+  SupportContainedInTrackPair oldAssembly.firstRail.support
+      newAssembly.secondRail.support firstSupport ∧
+    SupportContainedInTrackPair oldAssembly.secondRail.support
+      newAssembly.firstRail.support secondSupport
+
+/-- Both ordered bypassed rails retain their individual track pairs. -/
+theorem orderedBypassedPair_supportContainedInOrderedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish) :
+    AssemblySupportContainedInOrderedTrackPairs oldAssembly newAssembly
+      (orderedBypassedPair oldAssembly newAssembly).firstRail.support
+      (orderedBypassedPair oldAssembly newAssembly).secondRail.support := by
+  constructor
+  · intro face hface
+    exact bypass_append_support_contained oldAssembly.firstRail
+      newAssembly.firstRail face hface
+  · intro face hface
+    exact bypass_append_support_contained oldAssembly.secondRail
+      newAssembly.secondRail face hface
+
+/-- Both crossed bypassed rails retain their individual track pairs. -/
+theorem crossedBypassedPair_supportContainedInCrossedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish) :
+    AssemblySupportContainedInCrossedTrackPairs oldAssembly newAssembly
+      (crossedBypassedPair oldAssembly newAssembly).firstRail.support
+      (crossedBypassedPair oldAssembly newAssembly).secondRail.support := by
+  constructor
+  · intro face hface
+    exact bypass_append_support_contained oldAssembly.firstRail
+      newAssembly.secondRail face hface
+  · intro face hface
+    exact bypass_append_support_contained oldAssembly.secondRail
+      newAssembly.firstRail face hface
+
+/-- Track-sensitive provenance predicate on the ordered retained classifier.
+Collision branches already retain their exact cross origin. -/
+def ClassifiedRetainedBypassAppendOutcome.HasTrackProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish}
+    (outcome : ClassifiedRetainedBypassAppendOutcome oldAssembly newAssembly) : Prop :=
+  match outcome with
+  | .assembled assembly =>
+      AssemblySupportContainedInOrderedTrackPairs oldAssembly newAssembly
+        assembly.firstRail.support assembly.secondRail.support
+  | .collision _ => True
+
+/-- The canonical ordered retained classifier preserves the named track
+pairs, not merely their four-way union. -/
+theorem classifyRetainedBypassAppend_hasTrackProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish) :
+    (classifyRetainedBypassAppend oldAssembly newAssembly).HasTrackProvenance := by
+  classical
+  unfold classifyRetainedBypassAppend
+  dsimp
+  split
+  · exact orderedBypassedPair_supportContainedInOrderedTrackPairs
+      oldAssembly newAssembly
+  · trivial
+
+/-- Track-sensitive provenance predicate on the crossed retained classifier. -/
+def ClassifiedCrossedRetainedBypassAppendOutcome.HasTrackProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish}
+    (outcome : ClassifiedCrossedRetainedBypassAppendOutcome
+      oldAssembly newAssembly) : Prop :=
+  match outcome with
+  | .assembled assembly =>
+      AssemblySupportContainedInCrossedTrackPairs oldAssembly newAssembly
+        assembly.firstRail.support assembly.secondRail.support
+  | .collision _ => True
+
+/-- The canonical crossed retained classifier preserves the named track
+pairs, not merely their four-way union. -/
+theorem classifyCrossedRetainedBypassAppend_hasTrackProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish) :
+    (classifyCrossedRetainedBypassAppend oldAssembly newAssembly
+      |>.HasTrackProvenance) := by
+  classical
+  unfold classifyCrossedRetainedBypassAppend
+  dsimp
+  split
+  · exact crossedBypassedPair_supportContainedInCrossedTrackPairs
+      oldAssembly newAssembly
+  · trivial
+
 /-- Provenance predicate on the ordered retained classifier.  Collision
 branches already carry their exact cross origin, while successful branches
 must retain support containment. -/
