@@ -155,6 +155,32 @@ noncomputable def sourceCrosscutInsideBoundaryWord
 
 /-- Read the complementary literal open coloring at the opposite dart of
 each same source boundary edge. -/
+noncomputable def sourceCrosscutOutsideBoundaryWordOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (outside :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring
+        Color) :
+    pair.SourceCrosscutBoundaryIndex → Color :=
+  fun index =>
+    openOldDartColor data.toRotationSystem
+      (fun vertex => vertex ∉ pair.componentSide boundary.component)
+      (pair.sourceCrosscutComplementRootOfBoundary data boundary) outside
+      (data.toRotationSystem.alpha
+        (pair.sourceCrosscutBoundaryDartAt data boundary index).1.1)
+      (pair.sourceCrosscutBoundaryDartAt data boundary index).2
+
+/-- Compatibility spelling of the complementary boundary word for callers
+that still carry the former global-cubicity premise. -/
 noncomputable def sourceCrosscutOutsideBoundaryWord
     (data : Data G)
     {start finish : AmbientFace
@@ -167,17 +193,88 @@ noncomputable def sourceCrosscutOutsideBoundaryWord
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
     (boundary : SourceCrosscutBoundaryData data pair)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (_hcubic : data.toRotationSystem.IsCubic)
     (outside :
-      (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).EdgeColoring Color) :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color) :
     pair.SourceCrosscutBoundaryIndex → Color :=
-  fun index =>
-    openOldDartColor data.toRotationSystem
-      (fun vertex => vertex ∉ pair.componentSide boundary.component)
-      (pair.sourceCrosscutComplementRoot data boundary hcubic) outside
-      (data.toRotationSystem.alpha
-        (pair.sourceCrosscutBoundaryDartAt data boundary index).1.1)
-      (pair.sourceCrosscutBoundaryDartAt data boundary index).2
+  pair.sourceCrosscutOutsideBoundaryWordOfBoundary data boundary outside
+
+/-- Equality of the two literal source-ordered boundary words gives the
+generic open-region boundary agreement without any global degree premise. -/
+theorem sourceCrosscutOpenBoundaryAgreement_of_words_eqOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (inside : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color)
+    (outside :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color)
+    (hwords : pair.sourceCrosscutInsideBoundaryWord data boundary inside =
+      pair.sourceCrosscutOutsideBoundaryWordOfBoundary data boundary outside) :
+    pair.SourceCrosscutOpenBoundaryAgreementOfBoundary data boundary inside outside := by
+  intro dart hinside houtside
+  let exposed : BoundaryDart data.toRotationSystem
+      (fun vertex => vertex ∈ pair.componentSide boundary.component) :=
+    ⟨⟨dart, hinside⟩, houtside⟩
+  let insideColor : BoundaryDart data.toRotationSystem
+      (fun vertex => vertex ∈ pair.componentSide boundary.component) → Color :=
+    fun boundaryDart =>
+      openOldDartColor data.toRotationSystem
+        (fun vertex => vertex ∈ pair.componentSide boundary.component)
+        (pair.sourceCrosscutOpenRoot data boundary) inside
+        boundaryDart.1.1 boundaryDart.1.2
+  let outsideColor : BoundaryDart data.toRotationSystem
+      (fun vertex => vertex ∈ pair.componentSide boundary.component) → Color :=
+    fun boundaryDart =>
+      openOldDartColor data.toRotationSystem
+        (fun vertex => vertex ∉ pair.componentSide boundary.component)
+        (pair.sourceCrosscutComplementRootOfBoundary data boundary) outside
+        (data.toRotationSystem.alpha boundaryDart.1.1) boundaryDart.2
+  rcases pair.sourceCrosscutBoundaryDartAt_surjective data boundary exposed with
+    ⟨index, hindex⟩
+  have hword := congrFun hwords index
+  change insideColor (pair.sourceCrosscutBoundaryDartAt data boundary index) =
+    outsideColor (pair.sourceCrosscutBoundaryDartAt data boundary index) at hword
+  change insideColor exposed = outsideColor exposed
+  simpa [hindex] using hword
+
+/-- The two literal source crosscut tangles close to an ambient Tait coloring
+whenever their source-ordered boundary words agree, with the complementary
+root supplied by the boundary package. -/
+theorem exists_sourceCrosscutAmbientTaitColoring_of_openColorings_of_words_eqOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (inside : (pair.sourceCrosscutOpenRegion data boundary).EdgeColoring Color)
+    (outside :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color)
+    (hinside : (pair.sourceCrosscutOpenRegion data boundary).IsTaitEdgeColoring inside)
+    (houtside :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).IsTaitEdgeColoring
+        outside)
+    (hwords : pair.sourceCrosscutInsideBoundaryWord data boundary inside =
+      pair.sourceCrosscutOutsideBoundaryWordOfBoundary data boundary outside) :
+    ∃ closed : data.toRotationSystem.EdgeColoring Color,
+      data.toRotationSystem.IsTaitEdgeColoring closed := by
+  exact pair.exists_sourceCrosscutAmbientTaitColoring_of_openColoringsOfBoundary
+    data boundary inside outside hinside houtside
+    (pair.sourceCrosscutOpenBoundaryAgreement_of_words_eqOfBoundary
+      data boundary inside outside hwords)
 
 /-- Equality of the two literal source-ordered boundary words is exactly the
 generic open-region boundary agreement.  This eliminates the universal seam
