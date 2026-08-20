@@ -2283,6 +2283,16 @@ deliberately only one route: no claim is made that a compatible second route
 can be chosen disjointly, so this is not yet a repaired rail pair or a crosscut
 constructor.
 
+The four-step residue is now sharpened independently of any source reduction.
+Its selected remote component is either cyclic, or Lean constructs exactly two
+distinct adjacent vertices whose support is the whole component and whose
+endpoints meet every one of the four selected crossings.  In particular the
+literal corridor rung retained by the short-cycle packet meets one of those
+two vertices.  The singleton-star branch is impossible because the exact
+handshake equation assigns it a three-edge, not four-edge, boundary.  This is
+the complete graph-level square residue; it is not an identification with a
+primal facial square and does not invoke the manuscript's square reduction.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
