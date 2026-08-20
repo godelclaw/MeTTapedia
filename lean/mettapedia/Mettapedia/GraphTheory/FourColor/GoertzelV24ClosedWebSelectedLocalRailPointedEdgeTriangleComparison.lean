@@ -258,6 +258,32 @@ theorem SelectedAdjacentTerminalEdgeCrossingReceipt.edge_mem_endpointTriangle_of
   rw [triangle.crossingEdges_eq_incidentEdgeFinset]
   simpa [incidentEdgeFinset] using hcenter
 
+/-- A receipted crossing on the selected square boundary belongs to at least
+one of the two endpoint triangles.  This is the exact allocation statement
+supported by the two-vertex bond: it deliberately does not assert that two
+different rail crossings choose the same endpoint. -/
+theorem SelectedAdjacentTerminalEdgeCrossingReceipt.edge_mem_first_or_second_endpointTriangle
+    {edge : Sym2 (SelectedFace web)}
+    (receipt : SelectedAdjacentTerminalEdgeCrossingReceipt edge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hfirstCenter : firstTriangle.center = bond.first)
+    (hsecondCenter : secondTriangle.center = bond.second)
+    (hcrossing : receipt.crossing ∈ cycle.selectedCycle.crossingEdges) :
+    edge ∈ firstTriangle.selectedCycle.walk.edges ∨
+      edge ∈ secondTriangle.selectedCycle.walk.edges := by
+  rcases bond.covers_crossingEdges receipt.crossing hcrossing with
+    hfirst | hsecond
+  · exact .inl (receipt.edge_mem_endpointTriangle_of_meets_center
+      firstTriangle (by simpa [hfirstCenter] using hfirst))
+  · exact .inr (receipt.edge_mem_endpointTriangle_of_meets_center
+      secondTriangle (by simpa [hsecondCenter] using hsecond))
+
 /-- Once both pointed incident crossings meet the same square endpoint, the
 endpoint triangle gives the one-edge predecessor-to-successor bypass required
 by the rolling rail repair. -/
@@ -294,6 +320,71 @@ theorem InteriorOccurrence.endpointTriangle_bypass_of_crossingReceipts
       (by simp [InteriorOccurrence.outgoingEdge])
   exact triangle.adj_of_mem_support_of_ne hpredecessor hsuccessor
     (occurrence.predecessor_ne_successor hpath)
+
+/-- **L1 square-endpoint allocation.**  If both literal pointed rail
+crossings occur on the selected four-edge square boundary, then either one
+endpoint triangle already supplies the predecessor-to-successor bypass, or
+the two rail edges are allocated to opposite endpoint triangles.  The second
+alternative is retained explicitly; no same-endpoint claim is assumed. -/
+theorem InteriorOccurrence.endpointTriangle_bypass_or_opposite_of_crossingReceipts
+    {start finish current : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    (occurrence : InteriorOccurrence (current := current) walk)
+    (hpath : walk.IsPath)
+    (incomingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.incomingEdge)
+    (outgoingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.outgoingEdge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hfirstCenter : firstTriangle.center = bond.first)
+    (hsecondCenter : secondTriangle.center = bond.second)
+    (hincomingCrossing :
+      incomingReceipt.crossing ∈ cycle.selectedCycle.crossingEdges)
+    (houtgoingCrossing :
+      outgoingReceipt.crossing ∈ cycle.selectedCycle.crossingEdges) :
+    (SelectedDualGraph web).Adj occurrence.predecessor occurrence.successor ∨
+      ((occurrence.incomingEdge ∈ firstTriangle.selectedCycle.walk.edges ∧
+          occurrence.outgoingEdge ∈ secondTriangle.selectedCycle.walk.edges) ∨
+        (occurrence.incomingEdge ∈ secondTriangle.selectedCycle.walk.edges ∧
+          occurrence.outgoingEdge ∈ firstTriangle.selectedCycle.walk.edges)) := by
+  have hincoming := incomingReceipt
+    |>.edge_mem_first_or_second_endpointTriangle firstTriangle secondTriangle
+      hfirstCenter hsecondCenter hincomingCrossing
+  have houtgoing := outgoingReceipt
+    |>.edge_mem_first_or_second_endpointTriangle firstTriangle secondTriangle
+      hfirstCenter hsecondCenter houtgoingCrossing
+  rcases hincoming with hincomingFirst | hincomingSecond <;>
+    rcases houtgoing with houtgoingFirst | houtgoingSecond
+  · left
+    have hpredecessor : occurrence.predecessor ∈
+        firstTriangle.selectedCycle.walk.support :=
+      firstTriangle.selectedCycle.walk.mem_support_of_mem_edges hincomingFirst
+        (by simp [InteriorOccurrence.incomingEdge])
+    have hsuccessor : occurrence.successor ∈
+        firstTriangle.selectedCycle.walk.support :=
+      firstTriangle.selectedCycle.walk.mem_support_of_mem_edges houtgoingFirst
+        (by simp [InteriorOccurrence.outgoingEdge])
+    exact firstTriangle.adj_of_mem_support_of_ne hpredecessor hsuccessor
+      (occurrence.predecessor_ne_successor hpath)
+  · exact .inr (.inl ⟨hincomingFirst, houtgoingSecond⟩)
+  · exact .inr (.inr ⟨hincomingSecond, houtgoingFirst⟩)
+  · left
+    have hpredecessor : occurrence.predecessor ∈
+        secondTriangle.selectedCycle.walk.support :=
+      secondTriangle.selectedCycle.walk.mem_support_of_mem_edges hincomingSecond
+        (by simp [InteriorOccurrence.incomingEdge])
+    have hsuccessor : occurrence.successor ∈
+        secondTriangle.selectedCycle.walk.support :=
+      secondTriangle.selectedCycle.walk.mem_support_of_mem_edges houtgoingSecond
+        (by simp [InteriorOccurrence.outgoingEdge])
+    exact secondTriangle.adj_of_mem_support_of_ne hpredecessor hsuccessor
+      (occurrence.predecessor_ne_successor hpath)
 
 end TriangleComparison
 
