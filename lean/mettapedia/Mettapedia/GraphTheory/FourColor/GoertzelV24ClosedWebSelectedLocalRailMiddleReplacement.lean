@@ -837,6 +837,69 @@ theorem ExactSelectedLocalRailMiddleReplacementLocalBand.toSourceLocalBand
       exact .middleLast
         (faceInCanonicalMiddleSourcePieces_of_middleRepair trace middle) last
 
+/-- The second-cell centre cannot occur on either literal fourth-cell
+continuation.  The former is the corridor centre two positions behind the
+latter, so such membership would contradict skeleton nonadjacency. -/
+theorem face_ne_middleCenter_of_mem_lastPiece
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {face : SelectedFace (web := web)}
+    (hlast : face ∈ (rebaseLastContinuation (bridge := bridge)
+        (lastSuccessor := lastSuccessor)).firstRail.support ∨
+      face ∈ (rebaseLastContinuation (bridge := bridge)
+        (lastSuccessor := lastSuccessor)).secondRail.support) :
+    face ≠ corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+      (nextCorridorInterior firstInterior hfirstNext).center := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  have hnotadj : ¬ (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+      (skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center)
+      (skeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center) :=
+    skeleton.separated_not_adjacent
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center (by
+          change firstInterior.center.val + 1 + 1 < firstInterior.center.val + 3
+          omega)
+  intro hface
+  rcases hlast with hlast | hlast
+  · have hadj := lastSuccessor.rightRails.paths.firstRail_support_adjacent_center
+      face (by
+        simpa [rebaseLastContinuation, continuationAssembly] using hlast)
+    exact hnotadj (by simpa [skeleton, hface] using hadj.symm)
+  · have hadj := lastSuccessor.rightRails.paths.secondRail_support_adjacent_center
+      face (by
+        simpa [rebaseLastContinuation, continuationAssembly] using hlast)
+    exact hnotadj (by simpa [skeleton, hface] using hadj.symm)
+
+/-- A residual collision at the displayed second-cell centre is necessarily
+in the left adjacent band; the right band has just been ruled out. -/
+theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.firstMiddle_of_eq_middleCenter
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {face : SelectedFace (web := web)}
+    (band : ExactSelectedLocalRailMiddleReplacementSourceLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face)
+    (hface : face =
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    (face ∈ firstLeft.toAssembly.firstRail.support ∨
+        face ∈ firstLeft.toAssembly.secondRail.support) ∧
+      FaceInCanonicalMiddleSourcePieces
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face := by
+  cases band with
+  | firstMiddle first middle => exact ⟨first, middle⟩
+  | middleLast middle last =>
+      exact False.elim ((face_ne_middleCenter_of_mem_lastPiece hsource last) hface)
+
 /-- The replacement classifier retains the independently proved concrete rail
 which avoids the original middle-band collision face. -/
 structure ExactSelectedLocalRailMiddleReplacement

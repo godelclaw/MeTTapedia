@@ -2182,8 +2182,14 @@ nonlocal source term.  Moreover, track provenance unfolds the repaired-middle
 side of either band into seven literal atoms: two old bridge tracks, two
 successor tracks, the Cell--3 centre, and its two seam flanks.  The remaining
 finite table is therefore expressed entirely in source pieces rather than an
-opaque loop-erased path; it does not yet eliminate either bounded band.  Neither join
-is yet proved collision-free, so this is not collision elimination, the
+opaque loop-erased path.  One atom is now directionally resolved: the displayed
+second-cell centre cannot occur on either fourth-cell continuation.  The
+second and fourth corridor centres are nonadjacent in the skeleton, whereas
+every face in a fourth-cell continuation is adjacent to the fourth centre.
+Consequently, if the collision face is the displayed second-cell centre, Lean
+forces it into the first/repaired-middle band and rules out the
+repaired-middle/fourth band.  This does not eliminate either bounded band in
+general.  Neither join is yet proved collision-free, so this is not collision elimination, the
 arbitrary-length fold, either end cap, the separated crosscut pair, or L1
 closure.
 
