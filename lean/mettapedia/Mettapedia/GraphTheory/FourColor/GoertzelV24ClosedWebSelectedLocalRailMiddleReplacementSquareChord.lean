@@ -60,7 +60,7 @@ variable {face : SelectedFace (web := web)}
 
 /-- A locally three-dart cyclic vertex rotation changes the underlying graph
 edge at its first step. -/
-private theorem edgeOf_rho_ne_edgeOf_of_dartsAt_card_eq_three
+theorem edgeOf_rho_ne_edgeOf_of_dartsAt_card_eq_three
     (web : Instance data coloring)
     (hrotation : VertexRotationCyclic web.annular.RS) (dart : G.Dart)
     (hcard : (web.annular.RS.dartsAt
@@ -94,7 +94,7 @@ private theorem edgeOf_rho_ne_edgeOf_of_dartsAt_card_eq_three
 
 /-- A face incident to a literally selected crossing of a simple dual cycle
 is one of the two cycle vertices at that step. -/
-private theorem face_mem_support_of_mem_crossingEdges_of_mem_boundary
+theorem face_mem_support_of_mem_crossingEdges_of_mem_boundary
     (cycle : GoertzelV24SelectedDualCycleSeparator.SelectedDualCycle
       web.annular.RS face)
     {edge : G.edgeSet} {candidate : OrbitFace web.annular.RS}
@@ -143,8 +143,19 @@ structure SquareBondRealization.InternalDualAdjacency
       (G.deleteEdges (edgeFinsetValueSet
         cycle.selectedCycle.crossingEdges)).ConnectedComponent}
     (bond : SquareBondRealization cycle component) where
+  /-- The literally oriented internal bond, from the first residue vertex to
+  the second.  Retaining the dart lets later consumers use the local cubic
+  rotation rather than reconstructing an orientation from the unoriented
+  edge. -/
+  central : G.Dart
+  central_fst : central.fst = bond.first
+  central_snd : central.snd = bond.second
+  central_edge : web.annular.RS.edgeOf central = bond.internalEdge
   leftFace : SelectedFace (web := web)
   rightFace : SelectedFace (web := web)
+  leftFace_eq : leftFace.1 = dartOrbitFace web.annular.RS central
+  rightFace_eq : rightFace.1 =
+    dartOrbitFace web.annular.RS (web.annular.RS.alpha central)
   left_mem_support : leftFace ∈ cycle.walk.support
   right_mem_support : rightFace ∈ cycle.walk.support
   faces_ne : leftFace ≠ rightFace
@@ -312,8 +323,16 @@ theorem SquareBondRealization.exists_internalDualAdjacency
     · exact hleftInternal
     · exact hrightInternal
   exact ⟨{
+    central := central
+    central_fst := rfl
+    central_snd := rfl
+    central_edge := by
+      simp [central, SquareBondRealization.internalEdge,
+        Data.toRotationSystem_edgeOf]
     leftFace := leftFace
     rightFace := rightFace
+    leftFace_eq := rfl
+    rightFace_eq := rfl
     left_mem_support := hleftSupport
     right_mem_support := hrightSupport
     faces_ne := hfacesNe

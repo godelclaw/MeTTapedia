@@ -2360,6 +2360,21 @@ its constructive case is anchored at a literal bond endpoint, while its cyclic
 case is an explicit remaining reduction obligation.  This theorem still does
 not perform the rail repair or discharge the cyclic case.
 
+A stronger local construction now removes that cyclic alternative from the
+task of finding the two endpoint stars.  The internal-adjacency packet retains
+the literally oriented primal bond.  Iterating the cyclic rotation at either
+stub-free cubic endpoint enumerates the bond and the two other incident edges;
+their three face corners form a selected facial-dual triangle.  Lean proves
+for each endpoint that the triangle has length three, remains in the original
+four-cycle's interior support, and crosses exactly the full incident-edge
+finset of that endpoint.  Reversing the bond supplies the second triangle by
+the same theorem.  Thus both common primal centres are constructed directly,
+without closed-map minimality, global face-pair uniqueness, or a cyclic-cut
+premise.  The earlier chord-versus-parallel classification remains true, but
+is no longer a prerequisite for this endpoint construction.  This still does
+not identify the facial-dual triangles with primal rotor triangles or perform
+the rail repair that consumes the two centres.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
