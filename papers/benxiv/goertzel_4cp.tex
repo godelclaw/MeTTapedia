@@ -2504,10 +2504,21 @@ source corridor's proved remote-separation law: once the future selected-cell
 centre lies at least three positions beyond the fourth-cell centre, either
 fourth-cell far endpoint is absent from both future local rail supports.  This
 is a derived geometric fact, not a new hypothesis on the rolling assembly.
-It fixes the exact look-ahead cost of the residue.  It does not yet show that
-the intervening append operations preserve the collision-bearing prefix, so
-the next construction must combine this receipt with a prefix-preserving
-advance rather than silently rely on loop erasure.
+It fixes the exact look-ahead cost of the residue.  At that stage it did not
+show whether the intervening loop erasure preserved the collision-bearing
+prefix, so the next construction had to account for both possibilities.
+
+That apparent prefix requirement has now been removed without assuming it.
+The next canonical four-cell classifier is run on the actual source rails
+beginning in the fourth cell.  Its new endpoint-advance theorem is exhaustive:
+the classifier either returns its exact collision-bearing constructor, erases
+the old endpoint face from both successful rails, or retains the face on
+exactly one rail while proving that it is not that rail's remote finish.  Thus
+loop erasure cannot lose the argument: if it deletes the face, the collision
+is already cleared; if it preserves the face, the proved three-centre gap has
+made the occurrence nonterminal for the combined rolling route.  This is the
+canonical future-window advance, not yet the centre-chain splice for the
+surviving case or elimination of a newly returned collision.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
