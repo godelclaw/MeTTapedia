@@ -190,6 +190,7 @@ theorem SecondFourthFarEndpoint.canonicalFutureTransition_resolvesAtFinish
       blockLength corridor)
     {face : SelectedFace (web := web)}
     (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
       (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face) :
     let transition :=
       SupportCertifiedExactSelectedLocalRailTracedFourCellTransition.ofClassifiers
