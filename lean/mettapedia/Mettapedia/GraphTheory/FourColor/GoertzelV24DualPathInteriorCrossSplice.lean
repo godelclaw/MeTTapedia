@@ -181,6 +181,77 @@ theorem crossSpliceAroundWithBridge_isPath
     (crossSpliceAroundWithBridge oldWalk newWalk hold hnew bridge).IsPath := by
   exact SimpleGraph.Walk.bypass_isPath _
 
+/-- Loop erasure introduces no new vertex: every face of the bridge splice
+comes from the old path, the supplied bridge, or the new path. -/
+theorem crossSpliceAroundWithBridge_support_subset
+    {oldStart oldFinish newStart newFinish current : V}
+    (oldWalk : G.Walk oldStart oldFinish)
+    (newWalk : G.Walk newStart newFinish)
+    (hold : current ∈ oldWalk.support)
+    (hnew : current ∈ newWalk.support)
+    (holdStart : oldStart ≠ current)
+    (hnewEnd : current ≠ newFinish)
+    (bridge : G.Walk
+      (oldWalk.takeUntil current hold).penultimate
+      (newWalk.dropUntil current hnew).snd) :
+    ∀ vertex ∈
+        (crossSpliceAroundWithBridge oldWalk newWalk hold hnew bridge).support,
+      vertex ∈ oldWalk.support ∨ vertex ∈ bridge.support ∨
+        vertex ∈ newWalk.support := by
+  let oldPrefix := oldWalk.takeUntil current hold
+  let newSuffix := newWalk.dropUntil current hnew
+  have hprefixNotNil : ¬ oldPrefix.Nil := by
+    simpa only [oldPrefix, SimpleGraph.Walk.nil_takeUntil] using holdStart
+  have hsuffixNotNil : ¬ newSuffix.Nil := by
+    intro hnil
+    exact hnewEnd hnil.eq
+  intro vertex hvertex
+  have hraw :=
+    (oldPrefix.dropLast.append (bridge.append newSuffix.tail))
+      |>.support_bypass_subset_support hvertex
+  rcases (SimpleGraph.Walk.mem_support_append_iff _ _).1 hraw with
+    hprefix | hrest
+  · left
+    apply oldWalk.support_takeUntil_subset_support hold
+    rw [oldPrefix.support_dropLast hprefixNotNil] at hprefix
+    exact List.dropLast_subset _ hprefix
+  · rcases (SimpleGraph.Walk.mem_support_append_iff _ _).1 hrest with
+      hbridge | hsuffix
+    · exact .inr (.inl hbridge)
+    · right
+      right
+      apply newWalk.support_dropUntil_subset_support hnew
+      rw [newSuffix.support_tail_of_not_nil hsuffixNotNil] at hsuffix
+      exact List.mem_of_mem_tail hsuffix
+
+/-- Pairwise separation from the two source pieces and the bridge implies
+separation from the final loop-erased splice. -/
+theorem crossSpliceAroundWithBridge_support_disjoint
+    {oldStart oldFinish newStart newFinish current : V}
+    (oldWalk : G.Walk oldStart oldFinish)
+    (newWalk : G.Walk newStart newFinish)
+    (hold : current ∈ oldWalk.support)
+    (hnew : current ∈ newWalk.support)
+    (holdStart : oldStart ≠ current)
+    (hnewEnd : current ≠ newFinish)
+    (bridge : G.Walk
+      (oldWalk.takeUntil current hold).penultimate
+      (newWalk.dropUntil current hnew).snd)
+    {companionStart companionFinish : V}
+    (companion : G.Walk companionStart companionFinish)
+    (holdDisjoint : oldWalk.support.Disjoint companion.support)
+    (hbridgeDisjoint : bridge.support.Disjoint companion.support)
+    (hnewDisjoint : newWalk.support.Disjoint companion.support) :
+    (crossSpliceAroundWithBridge oldWalk newWalk hold hnew bridge).support.Disjoint
+      companion.support := by
+  rw [List.disjoint_left]
+  intro vertex hroute hcompanion
+  rcases crossSpliceAroundWithBridge_support_subset oldWalk newWalk hold hnew
+      holdStart hnewEnd bridge vertex hroute with hold | hbridge | hnew
+  · exact (List.disjoint_left.mp holdDisjoint hold) hcompanion
+  · exact (List.disjoint_left.mp hbridgeDisjoint hbridge) hcompanion
+  · exact (List.disjoint_left.mp hnewDisjoint hnew) hcompanion
+
 /-- A bridge which avoids the removed vertex yields a simple splice which
 also avoids it. -/
 theorem current_not_mem_crossSpliceAroundWithBridge_support

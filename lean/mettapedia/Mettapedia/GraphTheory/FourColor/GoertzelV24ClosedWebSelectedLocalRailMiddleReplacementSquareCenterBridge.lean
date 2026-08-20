@@ -119,7 +119,17 @@ theorem exists_firstThirdSquare_crossSplice
       corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
         (nextCorridorInterior firstInterior hfirstNext).center) :
     ∃ route : SelectedDualGraph (web := web).Walk oldStart newFinish,
-      route.IsPath ∧ face ∉ route.support := by
+      route.IsPath ∧ face ∉ route.support ∧
+        ∀ current ∈ route.support,
+          current ∈ oldWalk.support ∨
+          current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            firstInterior.center ∨
+          current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior firstInterior hfirstNext).center ∨
+          current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+          current ∈ newWalk.support := by
   let skeleton :=
     corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
   let secondInterior := nextCorridorInterior firstInterior hfirstNext
@@ -156,10 +166,26 @@ theorem exists_firstThirdSquare_crossSplice
     · exact hthird.ne.symm
     · exact newSuffix.adj_snd hsuffixNotNil |>.ne
   let route := crossSpliceAroundWithBridge oldWalk newWalk hold hnew centerBridge
-  refine ⟨route, crossSpliceAroundWithBridge_isPath _ _ _ _ _, ?_⟩
-  exact current_not_mem_crossSpliceAroundWithBridge_support
-    oldWalk newWalk holdPath hnewPath hold hnew holdStart hnewEnd
-      centerBridge hbridgeAvoids
+  refine ⟨route, crossSpliceAroundWithBridge_isPath _ _ _ _ _, ?_, ?_⟩
+  · exact current_not_mem_crossSpliceAroundWithBridge_support
+      oldWalk newWalk holdPath hnewPath hold hnew holdStart hnewEnd
+        centerBridge hbridgeAvoids
+  · intro current hcurrent
+    rcases crossSpliceAroundWithBridge_support_subset oldWalk newWalk hold hnew
+        holdStart hnewEnd centerBridge current hcurrent with
+      holdCurrent | hcenter | hnewCurrent
+    · exact .inl holdCurrent
+    · simp only [centerBridge, threeCenterBridge_support, List.mem_cons,
+        List.not_mem_nil, or_false] at hcenter
+      rcases hcenter with hleft | hfirst | hsecond | hthird | hright
+      · exact .inl
+          (hleft ▸ penultimate_mem_original_support oldWalk hold holdStart)
+      · exact .inr (.inl hfirst)
+      · exact .inr (.inr (.inl hsecond))
+      · exact .inr (.inr (.inr (.inl hthird)))
+      · exact .inr (.inr (.inr (.inr
+          (hright ▸ snd_mem_original_support newWalk hnew hnewEnd))))
+    · exact .inr (.inr (.inr (.inr hnewCurrent)))
 
 /-- **L1 second--fourth square repair.**  The shifted three-centre chain gives
 the symmetric collision-removing splice. -/
@@ -195,7 +221,20 @@ theorem exists_secondFourthSquare_crossSplice
         (nextCorridorInterior
           (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :
     ∃ route : SelectedDualGraph (web := web).Walk oldStart newFinish,
-      route.IsPath ∧ face ∉ route.support := by
+      route.IsPath ∧ face ∉ route.support ∧
+        ∀ current ∈ route.support,
+          current ∈ oldWalk.support ∨
+          current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior firstInterior hfirstNext).center ∨
+          current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+          current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+              (nextCorridorInterior
+                (nextCorridorInterior
+                  (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+                hlastNext).center ∨
+          current ∈ newWalk.support := by
   let skeleton :=
     corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
   let secondInterior := nextCorridorInterior firstInterior hfirstNext
@@ -233,10 +272,26 @@ theorem exists_secondFourthSquare_crossSplice
     · exact hfourth.ne.symm
     · exact newSuffix.adj_snd hsuffixNotNil |>.ne
   let route := crossSpliceAroundWithBridge oldWalk newWalk hold hnew centerBridge
-  refine ⟨route, crossSpliceAroundWithBridge_isPath _ _ _ _ _, ?_⟩
-  exact current_not_mem_crossSpliceAroundWithBridge_support
-    oldWalk newWalk holdPath hnewPath hold hnew holdStart hnewEnd
-      centerBridge hbridgeAvoids
+  refine ⟨route, crossSpliceAroundWithBridge_isPath _ _ _ _ _, ?_, ?_⟩
+  · exact current_not_mem_crossSpliceAroundWithBridge_support
+      oldWalk newWalk holdPath hnewPath hold hnew holdStart hnewEnd
+        centerBridge hbridgeAvoids
+  · intro current hcurrent
+    rcases crossSpliceAroundWithBridge_support_subset oldWalk newWalk hold hnew
+        holdStart hnewEnd centerBridge current hcurrent with
+      holdCurrent | hcenter | hnewCurrent
+    · exact .inl holdCurrent
+    · simp only [centerBridge, threeCenterBridge_support, List.mem_cons,
+        List.not_mem_nil, or_false] at hcenter
+      rcases hcenter with hleft | hsecond | hthird | hfourth | hright
+      · exact .inl
+          (hleft ▸ penultimate_mem_original_support oldWalk hold holdStart)
+      · exact .inr (.inl hsecond)
+      · exact .inr (.inr (.inl hthird))
+      · exact .inr (.inr (.inr (.inl hfourth)))
+      · exact .inr (.inr (.inr (.inr
+          (hright ▸ snd_mem_original_support newWalk hnew hnewEnd))))
+    · exact .inr (.inr (.inr (.inr hnewCurrent)))
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

@@ -2432,6 +2432,12 @@ centre-adjacency invariants from the exact collision packet.  It does not yet
 prove separation from the companion rail, iterate repairs along an arbitrary
 corridor, attach the two annular end caps, or construct the final separated
 crosscut pair.
+The returned path now carries an exact support receipt as well: loop erasure
+uses only the old local path, the three displayed corridor centres, and the new
+local path.  A generic corollary therefore reduces disjointness from a companion
+rail to disjointness from precisely those ingredients.  Discharging those
+local separation facts from each exact collision constructor is the next
+source-facing step; it is not assumed here.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
