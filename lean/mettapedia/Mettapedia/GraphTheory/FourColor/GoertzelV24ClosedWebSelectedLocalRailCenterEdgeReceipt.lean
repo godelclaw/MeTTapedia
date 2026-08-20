@@ -113,6 +113,96 @@ theorem selectedPlacementCenterSideEdgeReceipt
           ⟨Instance.InteriorFace.edge_mem_interiorEdgeSupport web sideDart hinternal,
             hcenter, hside⟩ }
 
+/-- The literal one-edge dual walk from a selected side face to its Cell-3
+centre.  Centre-residue repairs use this half-connector when they stop at the
+centre instead of crossing to the opposite selected side. -/
+def selectedPlacementSideToCenter
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+        (selectedPlacementSideFace placement position)
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center) :=
+  .cons
+    (selectedPlacementSideFace_adjacent_center
+      (corridor := corridor) placement position).symm
+    .nil
+
+/-- The reverse one-edge connector from the Cell-3 centre to a selected side
+face. -/
+def selectedPlacementCenterToSide
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement}) :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
+        ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+          interior.center)
+        (selectedPlacementSideFace placement position) :=
+  .cons
+    (selectedPlacementSideFace_adjacent_center
+      (corridor := corridor) placement position)
+    .nil
+
+/-- The unique edge of a selected side-to-centre half-connector retains the
+same literal primal crossing receipt as the full centre bridge. -/
+theorem selectedPlacementSideToCenter_edge_receipt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (edge : Sym2 (AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))))
+    (hedge : edge ∈ (selectedPlacementSideToCenter placement position).edges) :
+    SelectedPlacementCenterSideEdgeReceipt placement position edge := by
+  have hedge_eq : edge = s(
+      selectedPlacementSideFace placement position,
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center) := by
+    simpa [selectedPlacementSideToCenter] using hedge
+  rw [hedge_eq]
+  simpa [Sym2.eq_swap] using
+    selectedPlacementCenterSideEdgeReceipt placement position
+
+/-- The reverse half-connector has the identical undirected crossing
+receipt. -/
+theorem selectedPlacementCenterToSide_edge_receipt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {interior : CorridorInterior blockLength}
+    (placement : SelectedInternalHexRungPlacement corridor rungs interior)
+    (position : {position // position ∈ selectedPlacementSidePositions placement})
+    (edge : Sym2 (AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))))
+    (hedge : edge ∈ (selectedPlacementCenterToSide placement position).edges) :
+    SelectedPlacementCenterSideEdgeReceipt placement position edge := by
+  have hedge_eq : edge = s(
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton).faceAt
+        interior.center,
+      selectedPlacementSideFace placement position) := by
+    simpa [selectedPlacementCenterToSide] using hedge
+  rw [hedge_eq]
+  exact selectedPlacementCenterSideEdgeReceipt placement position
+
 /-- The literal two-edge connector through a selected Cell-3 centre. -/
 def selectedPlacementCenterBridge
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

@@ -69,15 +69,10 @@ private def leftCenterBridge :
       (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
         (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
         (selectedPlacementSideFace leftPlacement successor.frame.leftBefore) :=
-  .cons
-    (left.paths.secondRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
-      left.paths.secondRail.end_mem_support).symm
-    (.cons
-      (left.paths.firstRail_support_adjacent_center
-        (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
-        left.paths.firstRail.end_mem_support)
-      .nil)
+  by
+    let _ := left
+    exact selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+      successor.frame.leftBefore
 
 private def afterToCenter :
     (interiorDualGraph (orbitFaceBoundary web.annular.RS)
@@ -85,26 +80,19 @@ private def afterToCenter :
         (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
         ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
           |>.faceAt leftInterior.center)) :=
-  .cons
-    (left.paths.secondRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
-      left.paths.secondRail.end_mem_support).symm
-    .nil
+  by
+    let _ := left
+    exact selectedPlacementSideToCenter leftPlacement successor.frame.leftAfter
 
 private def rightCenterBridge :
     (interiorDualGraph (orbitFaceBoundary web.annular.RS)
       (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
         (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
         (selectedPlacementSideFace leftPlacement successor.frame.leftAfter) :=
-  .cons
-    (left.paths.firstRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
-      left.paths.firstRail.end_mem_support).symm
-    (.cons
-      (left.paths.secondRail_support_adjacent_center
-        (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
-        left.paths.secondRail.end_mem_support)
-      .nil)
+  by
+    let _ := left
+    exact selectedPlacementCenterBridge leftPlacement successor.frame.leftBefore
+      successor.frame.leftAfter
 
 private def beforeToCenter :
     (interiorDualGraph (orbitFaceBoundary web.annular.RS)
@@ -112,11 +100,9 @@ private def beforeToCenter :
         (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
         ((corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
           |>.faceAt leftInterior.center)) :=
-  .cons
-    (left.paths.firstRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
-      left.paths.firstRail.end_mem_support).symm
-      .nil
+  by
+    let _ := left
+    exact selectedPlacementSideToCenter leftPlacement successor.frame.leftBefore
 
 private theorem mem_adjacentPieces_of_mem_centerResidue_leftCenterBridge
     {face : AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS))}
@@ -130,7 +116,8 @@ private theorem mem_adjacentPieces_of_mem_centerResidue_leftCenterBridge
         |>.faceAt leftInterior.center) ∨
       face = selectedPlacementSideFace leftPlacement
         successor.frame.leftBefore := by
-    simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+    simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+      SimpleGraph.Walk.support_cons,
       SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
       List.mem_singleton, List.not_mem_nil, or_false] using hface
   rcases hbridge with hafter | hcenter | hbefore
@@ -151,7 +138,8 @@ private theorem mem_adjacentPieces_of_mem_centerResidue_rightCenterBridge
         |>.faceAt leftInterior.center) ∨
       face = selectedPlacementSideFace leftPlacement
         successor.frame.leftAfter := by
-    simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+    simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+      SimpleGraph.Walk.support_cons,
       SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
       List.mem_singleton, List.not_mem_nil, or_false] using hface
   rcases hbridge with hbefore | hcenter | hafter
@@ -170,7 +158,8 @@ private theorem mem_adjacentPieces_of_mem_afterToCenter
         successor.frame.leftAfter ∨
       face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
         |>.faceAt leftInterior.center) := by
-    simpa only [afterToCenter, SimpleGraph.Walk.support_cons,
+    simpa only [afterToCenter, selectedPlacementSideToCenter,
+      SimpleGraph.Walk.support_cons,
       SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
       List.mem_singleton, List.not_mem_nil, or_false] using hface
   rcases hstep with hafter | hcenter
@@ -188,7 +177,8 @@ private theorem mem_adjacentPieces_of_mem_beforeToCenter
         successor.frame.leftBefore ∨
       face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
         |>.faceAt leftInterior.center) := by
-    simpa only [beforeToCenter, SimpleGraph.Walk.support_cons,
+    simpa only [beforeToCenter, selectedPlacementSideToCenter,
+      SimpleGraph.Walk.support_cons,
       SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
       List.mem_singleton, List.not_mem_nil, or_false] using hface
   rcases hstep with hbefore | hcenter
@@ -264,7 +254,8 @@ noncomputable def appendFirstSecondCenter
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-        simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+        simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
           List.mem_singleton, List.not_mem_nil, or_false]
           using hbridge
@@ -310,7 +301,8 @@ noncomputable def appendFirstSecondCenter
     · have hcenterFace : face =
           (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
             |>.faceAt leftInterior.center) := by
-        simpa only [afterToCenter, SimpleGraph.Walk.support_cons,
+        simpa only [afterToCenter, selectedPlacementSideToCenter,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_singleton]
           using hstep
       exact (left.paths.firstRail_support_adjacent_center face hfirst).ne
@@ -411,7 +403,8 @@ theorem appendFirstSecondCenter_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-          simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenter | hbefore
@@ -437,7 +430,8 @@ theorem appendFirstSecondCenter_trackProvenance
       · have hcenterFace : face =
             (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
               |>.faceAt leftInterior.center) := by
-          simpa only [afterToCenter, SimpleGraph.Walk.support_cons,
+          simpa only [afterToCenter, selectedPlacementSideToCenter,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons,
             List.mem_singleton] using hstep
         exact Or.inr (Or.inr (Or.inl hcenterFace))
@@ -502,7 +496,8 @@ noncomputable def appendSecondFirstCenter
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftAfter := by
-        simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+        simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
           List.mem_singleton, List.not_mem_nil, or_false]
           using hbridge
@@ -549,7 +544,8 @@ noncomputable def appendSecondFirstCenter
     · have hcenterFace : face =
           (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
             |>.faceAt leftInterior.center) := by
-        simpa only [beforeToCenter, SimpleGraph.Walk.support_cons,
+        simpa only [beforeToCenter, selectedPlacementSideToCenter,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_singleton]
           using hstep
       exact (left.paths.secondRail_support_adjacent_center face hsecond).ne
@@ -645,7 +641,8 @@ theorem appendSecondFirstCenter_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftAfter := by
-          simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenter | hafter
@@ -672,7 +669,8 @@ theorem appendSecondFirstCenter_trackProvenance
       · have hcenterFace : face =
             (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
               |>.faceAt leftInterior.center) := by
-          simpa only [beforeToCenter, SimpleGraph.Walk.support_cons,
+          simpa only [beforeToCenter, selectedPlacementSideToCenter,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons,
             List.mem_singleton] using hstep
         exact Or.inr (Or.inr (Or.inl hcenterFace))
