@@ -2171,7 +2171,14 @@ rails and surviving collision faces also carry exact support provenance:
 every such face belongs to the first-cell packet, the rebased canonical
 middle repair, or the fourth-cell continuations.  Hence the two remaining
 joins can be attacked with the existing remote/local separation theorems
-without guessing where loop erasure obtained a face.  Neither join
+without guessing where loop erasure obtained a face.  The first such attack
+is now complete: a right-join collision whose prefix contribution came from
+the first cell would meet the fourth-cell continuation, but those literal
+rail pieces are generated at centres three positions apart and the proved
+remote-separation theorem makes that impossible.  Therefore every surviving
+collision lies in one of exactly two bounded adjacent bands:
+first/repaired-middle or repaired-middle/fourth.  This removes the sole
+nonlocal source term; it does not eliminate either bounded band.  Neither join
 is yet proved collision-free, so this is not collision elimination, the
 arbitrary-length fold, either end cap, the separated crosscut pair, or L1
 closure.

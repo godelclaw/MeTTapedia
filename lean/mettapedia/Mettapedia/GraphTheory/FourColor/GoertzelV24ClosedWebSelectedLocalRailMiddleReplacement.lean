@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleCollisionClearance
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailSeparation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedRailPairRetainedSupport
 
 /-!
@@ -516,6 +517,207 @@ theorem ExactSelectedLocalRailMiddleReplacementOutcome.hasSourceSupportProvenanc
         fun face hface => faceInMiddleReplacementSplicePieces_of_final
           hleft hright (.inr hface)⟩
   | collision face data => exact data.hasSourcePieceMembership
+
+/-- Membership in the canonical repaired middle packet, with its endpoint
+parity read from the construction trace rather than supplied independently. -/
+def FaceInCanonicalMiddleRepair
+    (trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)))
+    (face : SelectedFace (web := web)) : Prop :=
+  match trace.toOutcome with
+  | .straight middle =>
+      face ∈ (rebaseMiddleStraight middle).firstRail.support ∨
+        face ∈ (rebaseMiddleStraight middle).secondRail.support
+  | .swapped middle =>
+      face ∈ (rebaseMiddleSwapped middle).firstRail.support ∨
+        face ∈ (rebaseMiddleSwapped middle).secondRail.support
+
+/-- After the first-to-fourth remote term is removed, a surviving collision
+of the canonical middle replacement lies in one of the two literal adjacent
+join bands. -/
+inductive ExactSelectedLocalRailMiddleReplacementLocalBand
+    (trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)))
+    (face : SelectedFace (web := web)) : Prop
+  | firstMiddle
+      (first : face ∈ firstLeft.toAssembly.firstRail.support ∨
+        face ∈ firstLeft.toAssembly.secondRail.support)
+      (middle : FaceInCanonicalMiddleRepair
+        (firstSuccessor := firstSuccessor) (bridge := bridge) trace face)
+  | middleLast
+      (middle : FaceInCanonicalMiddleRepair
+        (firstSuccessor := firstSuccessor) (bridge := bridge) trace face)
+      (last : face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).firstRail.support ∨
+        face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).secondRail.support)
+
+private theorem firstPiece_disjoint_lastPiece
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {face : SelectedFace (web := web)}
+    (hfirst : face ∈ firstLeft.toAssembly.firstRail.support ∨
+      face ∈ firstLeft.toAssembly.secondRail.support)
+    (hlast : face ∈ (rebaseLastContinuation (bridge := bridge)
+        (lastSuccessor := lastSuccessor)).firstRail.support ∨
+      face ∈ (rebaseLastContinuation (bridge := bridge)
+        (lastSuccessor := lastSuccessor)).secondRail.support) : False := by
+  have hgap : firstInterior.center.val + 2 <
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center.val := by
+    change firstInterior.center.val + 2 < firstInterior.center.val + 3
+    omega
+  rcases hfirst with hfirst | hsecond <;>
+    rcases hlast with hlast | hlast
+  · exact (List.disjoint_left.mp
+      (SelectedSourceLocalRailPaths.firstRail_support_disjoint_firstRail_of_add_two_lt
+        hsource firstLeft.paths lastSuccessor.rightRails.paths hgap) (by
+          simpa using hfirst)) (by
+          simpa [rebaseLastContinuation, continuationAssembly] using hlast)
+  · exact (List.disjoint_left.mp
+      (SelectedSourceLocalRailPaths.firstRail_support_disjoint_secondRail_of_add_two_lt
+        hsource firstLeft.paths lastSuccessor.rightRails.paths hgap) (by
+          simpa using hfirst)) (by
+          simpa [rebaseLastContinuation, continuationAssembly] using hlast)
+  · exact (List.disjoint_left.mp
+      (SelectedSourceLocalRailPaths.secondRail_support_disjoint_firstRail_of_add_two_lt
+        hsource firstLeft.paths lastSuccessor.rightRails.paths hgap) (by
+          simpa using hsecond)) (by
+          simpa [rebaseLastContinuation, continuationAssembly] using hlast)
+  · exact (List.disjoint_left.mp
+      (SelectedSourceLocalRailPaths.secondRail_support_disjoint_secondRail_of_add_two_lt
+        hsource firstLeft.paths lastSuccessor.rightRails.paths hgap) (by
+          simpa using hsecond)) (by
+          simpa [rebaseLastContinuation, continuationAssembly] using hlast)
+
+/-- **L1 bounded collision localization.** Source boundary-cleanliness rules
+out the sole nonlocal first-to-fourth term in the two-stage replacement.
+Every surviving bad branch is therefore an exact contact across the left or
+right adjacent join of the repaired middle packet. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.hasLocalBand
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    ExactSelectedLocalRailMiddleReplacementLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face := by
+  classical
+  cases data with
+  | straightLeft middle hresult witness hclassified hface =>
+      subst face
+      have hmiddle : FaceInCanonicalMiddleRepair
+          (firstSuccessor := firstSuccessor) (bridge := bridge)
+          trace witness.face := by
+        simp only [FaceInCanonicalMiddleRepair, hresult]
+        cases witness.origin with
+        | firstSecond hold hnew =>
+            exact .inr (List.mem_of_mem_tail hnew)
+        | secondFirst hold hnew =>
+            exact .inl (List.mem_of_mem_tail hnew)
+      cases witness.origin with
+      | firstSecond hold hnew => exact .firstMiddle (.inl hold) hmiddle
+      | secondFirst hold hnew => exact .firstMiddle (.inr hold) hmiddle
+  | swappedLeft middle hresult witness hclassified hface =>
+      subst face
+      have hmiddle : FaceInCanonicalMiddleRepair
+          (firstSuccessor := firstSuccessor) (bridge := bridge)
+          trace witness.face := by
+        simp only [FaceInCanonicalMiddleRepair, hresult]
+        cases witness.origin with
+        | firstSecond hold hnew =>
+            exact .inr (List.mem_of_mem_tail hnew)
+        | secondFirst hold hnew =>
+            exact .inl (List.mem_of_mem_tail hnew)
+      cases witness.origin with
+      | firstSecond hold hnew => exact .firstMiddle (.inl hold) hmiddle
+      | secondFirst hold hnew => exact .firstMiddle (.inr hold) hmiddle
+  | straightRight middle hresult prefixMiddle hleft witness hright hface =>
+      subst face
+      have hprovenance := classifyRetainedBypassAppend_hasSupportProvenance
+        firstLeft.toAssembly (rebaseMiddleStraight middle)
+      rw [hleft] at hprovenance
+      cases witness.origin with
+      | firstSecond hold hnew =>
+          have hlast : witness.face ∈
+              (rebaseLastContinuation (bridge := bridge)
+                (lastSuccessor := lastSuccessor)).secondRail.support :=
+            List.mem_of_mem_tail hnew
+          rcases hprovenance.1 witness.face hold with
+            hfirst | hsecond | hmiddleFirst | hmiddleSecond
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inl hfirst) (.inr hlast))
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inr hsecond) (.inr hlast))
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inl hmiddleFirst) (.inr hlast)
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inr hmiddleSecond) (.inr hlast)
+      | secondFirst hold hnew =>
+          have hlast : witness.face ∈
+              (rebaseLastContinuation (bridge := bridge)
+                (lastSuccessor := lastSuccessor)).firstRail.support :=
+            List.mem_of_mem_tail hnew
+          rcases hprovenance.2 witness.face hold with
+            hfirst | hsecond | hmiddleFirst | hmiddleSecond
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inl hfirst) (.inl hlast))
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inr hsecond) (.inl hlast))
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inl hmiddleFirst) (.inl hlast)
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inr hmiddleSecond) (.inl hlast)
+  | swappedRight middle hresult prefixMiddle hleft witness hright hface =>
+      subst face
+      have hprovenance := classifyRetainedBypassAppend_hasSupportProvenance
+        firstLeft.toAssembly (rebaseMiddleSwapped middle)
+      rw [hleft] at hprovenance
+      cases witness.origin with
+      | firstFirst hold hnew =>
+          have hlast : witness.face ∈
+              (rebaseLastContinuation (bridge := bridge)
+                (lastSuccessor := lastSuccessor)).firstRail.support :=
+            List.mem_of_mem_tail hnew
+          rcases hprovenance.1 witness.face hold with
+            hfirst | hsecond | hmiddleFirst | hmiddleSecond
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inl hfirst) (.inl hlast))
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inr hsecond) (.inl hlast))
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inl hmiddleFirst) (.inl hlast)
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inr hmiddleSecond) (.inl hlast)
+      | secondSecond hold hnew =>
+          have hlast : witness.face ∈
+              (rebaseLastContinuation (bridge := bridge)
+                (lastSuccessor := lastSuccessor)).secondRail.support :=
+            List.mem_of_mem_tail hnew
+          rcases hprovenance.2 witness.face hold with
+            hfirst | hsecond | hmiddleFirst | hmiddleSecond
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inl hfirst) (.inr hlast))
+          · exact False.elim (firstPiece_disjoint_lastPiece hsource
+              (.inr hsecond) (.inr hlast))
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inl hmiddleFirst) (.inr hlast)
+          · exact .middleLast (by
+              simp only [FaceInCanonicalMiddleRepair, hresult]
+              exact .inr hmiddleSecond) (.inr hlast)
 
 /-- The replacement classifier retains the independently proved concrete rail
 which avoids the original middle-band collision face. -/
