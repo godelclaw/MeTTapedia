@@ -93,6 +93,21 @@ private abbrev ThirdInterior :=
   nextCorridorInterior
     (nextCorridorInterior firstInterior hfirstNext) hbridgeNext
 
+/-- The present cutoff cannot drive the immediately adjacent next copy of
+the same prepend theorem.  After one four-cell repair the cutoff is the third
+centre while the next block would begin at the fourth centre, but the frozen
+prefix API requires a gap of more than three.  Thus arbitrary iteration needs
+a bounded live suffix, not merely `dropLast` on each accumulated rail. -/
+theorem immediateNextMiddleReplacement_gap_false :
+    ¬ ((ThirdInterior (firstInterior := firstInterior)
+          (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)).center.val + 3 <
+        (nextCorridorInterior
+          (ThirdInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext))
+          hlastNext).center.val) := by
+  change ¬ (firstInterior.center.val + 2 + 3 < firstInterior.center.val + 3)
+  omega
+
 private theorem frozenSupport_disjoint_of_middleReplacementPieces
     {cutoff : Nat} {frozenSupport support : List (SelectedFace (web := web))}
     (hfrozen : SupportSeparatedFromFutureSelectedWindows

@@ -2642,7 +2642,14 @@ the frozen cutoff to the third corridor centre.  Both straight and swapped
 repairs are constructed without a centre-avoidance premise; an exact local
 collision is returned unchanged.  This is one bounded rolling step, not yet
 collision elimination, an arbitrary-length fold, either end cap, the
-separated crosscut pair, or L1 closure.
+separated crosscut pair, or L1 closure.  In fact Lean now records the precise
+iteration warning:
+\texttt{immediateNextMiddleReplacement\_gap\_false} proves that the
+third-centre cutoff produced by this step cannot meet the gap required by an
+immediately adjacent next block beginning at the fourth centre.  A genuine
+iteration must therefore retain several recent cells as a bounded mutable
+suffix and freeze only the older prefix; deleting only the final support
+occurrence is insufficient.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
