@@ -2869,6 +2869,20 @@ the endpoint-coordinate question from even being stated on the correct rail;
 it does not answer that coordinate question or construct a mutually separated
 repair.
 
+The next positional refinement is now kernel-checked as well.  The generic
+module
+\texttt{GoertzelV24DualPathPointedOccurrence} proves that a vertex in the tail
+of a simple path is either the terminal endpoint or has a strict internal
+index with literal predecessor and successor vertices; their two incident
+adjacencies and pairwise distinctions follow from the path invariant.  The
+source-local specialization
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowPointedOrigin}
+attaches exactly this dichotomy to the future occurrence in the retained
+collision packet.  The terminal case is deliberately not discarded.  This
+turns anonymous support membership into the proof-relevant coordinate needed
+by the endpoint-triangle comparison, but it does not prove that comparison,
+construct a bypass, or establish companion-rail separation.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
