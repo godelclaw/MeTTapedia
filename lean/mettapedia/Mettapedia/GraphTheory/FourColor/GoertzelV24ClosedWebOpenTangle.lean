@@ -54,6 +54,29 @@ attribute [-instance]
 
 namespace Instance
 
+/-- The Cell-3 annular carrier is not globally cubic.  Its first inner stub
+has degree one, whereas global cubicity would make every vertex have degree
+three.
+
+This is the direct interface guard needed by the source splice: the current
+global-cubic semantic-profile API cannot be instantiated on the open annulus
+without an explicit cap/closure transport or a localization of that API to
+the interior vertices. -/
+theorem not_isCubic
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) :
+    ¬ web.annular.RS.IsCubic := by
+  intro hcubic
+  have hregular : G.IsRegularOfDegree 3 :=
+    web.annular.cellulation.rotation.toRotationSystem_isCubic_iff.mp hcubic
+  have hone : G.degree (data.innerStub 0) = 1 := by
+    rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+      (G := G)]
+    exact web.boundary_wellFormed.inner_stub_degree_one 0
+  have hthree : G.degree (data.innerStub 0) = 3 :=
+    hregular (data.innerStub 0)
+  omega
+
 /-- A Cell-3 open tangle cannot itself carry the closed cubic
 minimal-counterexample structure: its first inner stub has degree one, while
 that structure makes every vertex cubic. -/
@@ -62,16 +85,7 @@ theorem graphBackedVertexMinimalTaitCounterexample_elim
     (web : Instance data coloring)
     (minimal : GraphBackedVertexMinimalTaitCounterexample
       web.annular.cellulation.rotation) : False := by
-  have hregular : G.IsRegularOfDegree 3 :=
-    web.annular.cellulation.rotation.toRotationSystem_isCubic_iff.mp
-      minimal.spherical.cubic
-  have hone : G.degree (data.innerStub 0) = 1 := by
-    rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
-      (G := G)]
-    exact web.boundary_wellFormed.inner_stub_degree_one 0
-  have hthree : G.degree (data.innerStub 0) = 3 :=
-    hregular (data.innerStub 0)
-  omega
+  exact web.not_isCubic minimal.spherical.cubic
 
 /-- A dart of an annular-interior face cannot be based at an interface stub.
 The degree-one edge of either stub is entirely on its named hole face, while

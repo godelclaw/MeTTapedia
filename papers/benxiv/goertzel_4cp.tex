@@ -87,7 +87,7 @@
 Reductive--Compositional Route to the Four-Color Theorem:\\
 \large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
 \author{The MeTTapedia formalization effort}
-\date{Living revision: 14 August 2026}
+\date{Living revision: 21 August 2026}
 
 \begin{document}
 \maketitle
@@ -3537,6 +3537,26 @@ theorems genuinely fit the final spine, but they are not alone a concrete
 Cell--3 reduction; the splice must reconstruct the full output instance.
 Recording that distinction now prevents a late carrier mismatch without
 weakening any conditional theorem into a construction.
+
+The same type audit has now reached the first semantic splice constructor and
+found a sharper mismatch.  Addendum~XXVII performs its preservation checklist
+on an open annular tangle with boundary stubs.  The current Lean completed-step
+constructor, by contrast, requires global cubicity of that annular carrier.
+This is not merely an inconvenient premise:
+
+\[
+  \texttt{GoertzelV24ClosedWebAtGoodWord.Instance.not\_isCubic}
+\]
+
+is a direct theorem, because the first named inner stub has degree one.  Thus
+the current global-cubic semantic-profile API cannot be applied directly to
+the source object.  The missing interface is now a precise choice between two
+source-faithful constructions: localize the splice argument to cubicity away
+from the boundary stubs, or transport the annulus through an explicitly capped
+closed carrier and reopen it while preserving the closed-web-at-good-word
+packet.  No reduction is claimed here.  The point of the audit is that this
+adapter has been discovered before the physical crosscut construction is
+declared complete, rather than after the reduction spine has been assembled.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
