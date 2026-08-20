@@ -13,11 +13,12 @@ old-centre connectors.
 
 The elementary walk operations used by all terminal repairs---copy, append,
 prefix truncation, and loop erasure---preserve this invariant because they
-introduce no edge.  The later branch theorem may therefore concentrate only
-on the finite constructor shapes.  This file does not identify either pointed
-collision edge with a replacement-square endpoint triangle, iterate the
-terminal transition, attach end caps, or close the source's bulk-corridor flag
-L1.
+introduce no edge.  The two immediate centre repairs and all six residual
+repairs discharge it, after which the exhaustive classifier attaches it to
+the public complete append and its proof-relevant construction trace.  This
+file does not identify either pointed collision edge with a
+replacement-square endpoint triangle, iterate the terminal transition,
+attach end caps, or close the source's bulk-corridor flag L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -324,6 +325,30 @@ def AssemblyHasSelectedAdjacentTerminalEdgeReceipts
       (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
       assembly.secondRail
 
+/-- Receipt provenance for a finite repair which may preserve or exchange its
+two outgoing endpoint labels. -/
+def AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+    (result :
+      Sum (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter))
+        (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore))) : Prop :=
+  match result with
+  | .inl assembly =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        assembly
+  | .inr assembly =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        assembly
+
 /-- The ordinary loop-erased append preserves source receipts on both
 ordered rails. -/
 theorem appendSuccessorBypass_hasSelectedAdjacentTerminalEdgeReceipts
@@ -375,6 +400,690 @@ theorem appendSuccessorSwapBothCrossCollisions_hasSelectedAdjacentTerminalEdgeRe
   · simpa only [appendSuccessorSwapBothCrossCollisions] using
       secondToFirstReroute_hasSelectedAdjacentTerminalEdgeReceipts
         secondFirstFace hsecondFirstOld hsecondFirstNew
+
+/-- The immediate first-to-second repair also preserves receipts: its crossed
+rail is the canonical reroute, while the companion rail is the old second
+rail, the literal centre bridge, and the successor first continuation. -/
+theorem appendSingleFirstSecondViaLeftCenter_hasSelectedAdjacentTerminalEdgeReceipts
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support
+      successor.secondContinuation.support.tail)
+    (holdSecond :
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          left.paths.secondRail.support)
+    (hnewFirst :
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          successor.firstContinuation.support.tail)
+    (hcenter :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∉
+        (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+          (successor := successor) (left := left) collision.face
+          collision.mem_old collision.mem_new).route.support) :
+    AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendSingleFirstSecondViaLeftCenter collision holdSecond hnewFirst
+        hcenter) := by
+  constructor
+  · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route
+    exact firstToSecondReroute_hasSelectedAdjacentTerminalEdgeReceipts
+      collision.face collision.mem_old collision.mem_new
+  · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      ((left.paths.secondRail.append
+        (selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+          successor.frame.leftBefore)).append
+            successor.firstContinuation).bypass
+    exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+      (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts
+          (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+            successor.frame.leftAfter successor.frame.leftBefore))
+        firstContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+
+/-- The symmetric immediate repair preserves the same receipts; reversal of
+the undirected centre bridge introduces no new edge. -/
+theorem appendSingleSecondFirstViaLeftCenter_hasSelectedAdjacentTerminalEdgeReceipts
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support
+      successor.firstContinuation.support.tail)
+    (holdFirst :
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          left.paths.firstRail.support)
+    (hnewSecond :
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          successor.secondContinuation.support.tail)
+    (hcenter :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∉
+        (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+          (successor := successor) (left := left) collision.face
+          collision.mem_old collision.mem_new).route.support) :
+    AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendSingleSecondFirstViaLeftCenter collision holdFirst hnewSecond
+        hcenter) := by
+  constructor
+  · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      ((left.paths.firstRail.append
+        (selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+          successor.frame.leftBefore).reverse).append
+            successor.secondContinuation).bypass
+    exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+      (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_reverse
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftAfter successor.frame.leftBefore)))
+        secondContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+  · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route
+    exact secondToFirstReroute_hasSelectedAdjacentTerminalEdgeReceipts
+      collision.face collision.mem_old collision.mem_new
+
+/-- The first same-track residue introduces no anonymous edge in either of
+its two endpoint-order branches. -/
+theorem appendFirstSecondSameFirst_hasSelectedAdjacentTerminalEdgeReceipts
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.firstContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 2 ∧
+      left.paths.secondRail.length = 0 ∧
+      successor.firstContinuation.length = 1 ∧
+      successor.secondContinuation.length = 1) :
+    AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendFirstSecondSameFirst cross same lengths) := by
+  classical
+  by_cases hcrossStart : cross.face =
+      selectedPlacementSideFace leftPlacement leftIncomingBefore
+  · simp only [appendFirstSecondSameFirst, hcrossStart,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      simp at hedge
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.secondRail.append
+          (selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+            successor.frame.leftBefore)).append
+              successor.firstContinuation).bypass
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+            leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftAfter successor.frame.leftBefore))
+          firstContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+  · simp only [appendFirstSecondSameFirst, hcrossStart,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      simp at hedge
+    · intro edge hedge
+      apply secondContinuation_hasSelectedAdjacentTerminalEdgeReceipts edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+
+/-- The rail-exchanged same-track residue likewise introduces only the two
+selected forward tracks and the old-centre connector. -/
+theorem appendSecondFirstSameSecond_hasSelectedAdjacentTerminalEdgeReceipts
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.secondContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 0 ∧
+      left.paths.secondRail.length = 2 ∧
+      successor.firstContinuation.length = 1 ∧
+      successor.secondContinuation.length = 1) :
+    AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendSecondFirstSameSecond cross same lengths) := by
+  classical
+  by_cases hcrossStart : cross.face =
+      selectedPlacementSideFace leftPlacement leftIncomingAfter
+  · simp only [appendSecondFirstSameSecond, hcrossStart,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.firstRail.append
+          (selectedPlacementCenterBridge leftPlacement successor.frame.leftBefore
+            successor.frame.leftAfter)).append
+              successor.secondContinuation).bypass
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+            leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftBefore successor.frame.leftAfter))
+          secondContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+    · intro edge hedge
+      simp at hedge
+  · simp only [appendSecondFirstSameSecond, hcrossStart,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      apply firstContinuation_hasSelectedAdjacentTerminalEdgeReceipts edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+    · intro edge hedge
+      simp at hedge
+
+/-- The seam-reversed first-to-second residue preserves literal receipts in
+both endpoint-order branches. -/
+theorem appendFirstSecondSameSecond_hasSelectedAdjacentTerminalEdgeReceipts
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.secondContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 1 ∧
+      left.paths.secondRail.length = 1 ∧
+      successor.firstContinuation.length = 0 ∧
+      successor.secondContinuation.length = 2) :
+    AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendFirstSecondSameSecond cross same lengths) := by
+  classical
+  by_cases hcrossEnd : cross.face =
+      selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter
+  · simp only [appendFirstSecondSameSecond, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      simp at hedge
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.secondRail.append
+          (selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+            successor.frame.leftBefore)).append
+              successor.firstContinuation).bypass
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+            leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftAfter successor.frame.leftBefore))
+          firstContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+  · simp only [appendFirstSecondSameSecond, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      apply leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+    · intro edge hedge
+      simp at hedge
+
+/-- The rail-exchanged seam-reversed residue preserves the same literal
+receipt trichotomy. -/
+theorem appendSecondFirstSameFirst_hasSelectedAdjacentTerminalEdgeReceipts
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.firstContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 1 ∧
+      left.paths.secondRail.length = 1 ∧
+      successor.firstContinuation.length = 2 ∧
+      successor.secondContinuation.length = 0) :
+    AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendSecondFirstSameFirst cross same lengths) := by
+  classical
+  by_cases hcrossEnd : cross.face =
+      selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore
+  · simp only [appendSecondFirstSameFirst, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.firstRail.append
+          (selectedPlacementCenterBridge leftPlacement successor.frame.leftBefore
+            successor.frame.leftAfter)).append
+              successor.secondContinuation).bypass
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+            leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftBefore successor.frame.leftAfter))
+          secondContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+    · intro edge hedge
+      simp at hedge
+  · simp only [appendSecondFirstSameFirst, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      simp at hedge
+    · intro edge hedge
+      apply leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+
+/-- The first centre-revisit repair either truncates the colliding old rail
+or ends at the literal old centre; neither operation invents an edge. -/
+theorem appendFirstSecondCenter_hasSelectedAdjacentTerminalEdgeReceipts
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (center :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∈
+        successor.secondContinuation.support.tail)
+    (lengths : 0 < left.paths.firstRail.length ∧
+      successor.firstContinuation.length = 0 ∧
+      successor.secondContinuation.length = 2) :
+    AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendFirstSecondCenter cross center lengths) := by
+  classical
+  by_cases hcrossEnd : cross.face =
+      selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter
+  · simp only [appendFirstSecondCenter, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      apply walkHasSelectedAdjacentTerminalEdgeReceipts_takeUntil
+        leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts cross.mem_old edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.secondRail.append
+          (selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+            successor.frame.leftBefore)).append
+              successor.firstContinuation).bypass
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+            leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftAfter successor.frame.leftBefore))
+          firstContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+  · simp only [appendFirstSecondCenter, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · intro edge hedge
+      apply leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.secondRail.append
+          (selectedPlacementSideToCenter leftPlacement successor.frame.leftAfter)
+            |>.bypass).copy rfl _)
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_copy
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts
+          (selectedPlacementSideToCenter_hasSelectedAdjacentTerminalEdgeReceipts
+            successor.frame.leftAfter))) rfl _
+
+/-- The symmetric centre-revisit repair preserves the identical source-edge
+receipt invariant. -/
+theorem appendSecondFirstCenter_hasSelectedAdjacentTerminalEdgeReceipts
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (center :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∈
+        successor.firstContinuation.support.tail)
+    (lengths : 0 < left.paths.secondRail.length ∧
+      successor.firstContinuation.length = 2 ∧
+      successor.secondContinuation.length = 0) :
+    AssemblySumHasSelectedAdjacentTerminalEdgeReceipts
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      (appendSecondFirstCenter cross center lengths) := by
+  classical
+  by_cases hcrossEnd : cross.face =
+      selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore
+  · simp only [appendSecondFirstCenter, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.firstRail.append
+          (selectedPlacementCenterBridge leftPlacement successor.frame.leftBefore
+            successor.frame.leftAfter)).append
+              successor.secondContinuation).bypass
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+            leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts
+            (selectedPlacementCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+              successor.frame.leftBefore successor.frame.leftAfter))
+          secondContinuation_hasSelectedAdjacentTerminalEdgeReceipts)
+    · intro edge hedge
+      apply walkHasSelectedAdjacentTerminalEdgeReceipts_takeUntil
+        leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts cross.mem_old edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+  · simp only [appendSecondFirstCenter, hcrossEnd,
+      AssemblySumHasSelectedAdjacentTerminalEdgeReceipts]
+    constructor
+    · change WalkHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        ((left.paths.firstRail.append
+          (selectedPlacementSideToCenter leftPlacement successor.frame.leftBefore)
+            |>.bypass).copy rfl _)
+      exact walkHasSelectedAdjacentTerminalEdgeReceipts_copy
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_bypass
+        (walkHasSelectedAdjacentTerminalEdgeReceipts_append
+          leftFirstRail_hasSelectedAdjacentTerminalEdgeReceipts
+          (selectedPlacementSideToCenter_hasSelectedAdjacentTerminalEdgeReceipts
+            successor.frame.leftBefore))) rfl _
+    · intro edge hedge
+      apply leftSecondRail_hasSelectedAdjacentTerminalEdgeReceipts edge
+      simpa only [SimpleGraph.Walk.edges_copy] using hedge
+
+/-- Receipt provenance on a complete straight-or-swapped adjacent result. -/
+def SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts
+    (result : SelectedLocalRailAppendCompleteOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly | .swapped assembly =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        assembly
+
+/-- Receipt predicate on the first exhaustive classifier.  Its unresolved
+collision branches deliberately carry no claim yet. -/
+def SelectedLocalRailAppendOutcome.HasSelectedAdjacentTerminalEdgeReceipts
+    (result : SelectedLocalRailAppendOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly | .swapped assembly =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        assembly
+  | .singleFirstSecond _ _ => True
+  | .singleSecondFirst _ _ => True
+  | .doubleCrossSameTrack _ _ _ => True
+
+theorem classifyLocalSuccessorAppend_hasSelectedAdjacentTerminalEdgeReceipts :
+    (classifyLocalSuccessorAppend successor left)
+      |>.HasSelectedAdjacentTerminalEdgeReceipts := by
+  classical
+  unfold classifyLocalSuccessorAppend
+  split
+  · rename_i hfirstSecond
+    split
+    · rename_i hsecondFirst
+      exact appendSuccessorBypass_hasSelectedAdjacentTerminalEdgeReceipts
+        hfirstSecond hsecondFirst
+    · trivial
+  · rename_i hfirstSecond
+    dsimp only
+    split
+    · trivial
+    · rename_i hsecondFirst
+      split
+      · rename_i hfirstFirst
+        split
+        · rename_i hsecondSecond
+          exact
+            appendSuccessorSwapBothCrossCollisions_hasSelectedAdjacentTerminalEdgeReceipts
+              (SelectedRailSupportCollision.of_not_disjoint hfirstSecond).face
+              (SelectedRailSupportCollision.of_not_disjoint hsecondFirst).face
+              (SelectedRailSupportCollision.of_not_disjoint hfirstSecond).mem_old
+              (SelectedRailSupportCollision.of_not_disjoint hfirstSecond).mem_new
+              (SelectedRailSupportCollision.of_not_disjoint hsecondFirst).mem_old
+              (SelectedRailSupportCollision.of_not_disjoint hsecondFirst).mem_new
+              hfirstFirst hsecondSecond
+        · trivial
+      · trivial
+
+/-- Receipt predicate for the first centre-bridge classifier. -/
+def SingleFirstSecondCenterBridgeOutcome.HasSelectedAdjacentTerminalEdgeReceipts
+    {collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail}
+    (result : SingleFirstSecondCenterBridgeOutcome collision) : Prop :=
+  match result with
+  | .assembly value =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        value
+  | .meetsOldSecond _ | .meetsNewFirst _ | .containsLeftCenter _ => True
+
+theorem classifySingleFirstSecondCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail) :
+    (classifySingleFirstSecondCenterBridge collision)
+      |>.HasSelectedAdjacentTerminalEdgeReceipts := by
+  classical
+  unfold classifySingleFirstSecondCenterBridge
+  dsimp only
+  split
+  · rename_i holdSecond
+    split
+    · rename_i hnewFirst
+      split
+      · trivial
+      · rename_i hcenter
+        exact
+          appendSingleFirstSecondViaLeftCenter_hasSelectedAdjacentTerminalEdgeReceipts
+            collision holdSecond hnewFirst hcenter
+    · trivial
+  · trivial
+
+/-- Receipt predicate for the rail-exchanged centre-bridge classifier. -/
+def SingleSecondFirstCenterBridgeOutcome.HasSelectedAdjacentTerminalEdgeReceipts
+    {collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail}
+    (result : SingleSecondFirstCenterBridgeOutcome collision) : Prop :=
+  match result with
+  | .assembly value =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        value
+  | .meetsOldFirst _ | .meetsNewSecond _ | .containsLeftCenter _ => True
+
+theorem classifySingleSecondFirstCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail) :
+    (classifySingleSecondFirstCenterBridge collision)
+      |>.HasSelectedAdjacentTerminalEdgeReceipts := by
+  classical
+  unfold classifySingleSecondFirstCenterBridge
+  dsimp only
+  split
+  · rename_i holdFirst
+    split
+    · rename_i hnewSecond
+      split
+      · trivial
+      · rename_i hcenter
+        exact
+          appendSingleSecondFirstViaLeftCenter_hasSelectedAdjacentTerminalEdgeReceipts
+            collision holdFirst hnewSecond hcenter
+    · trivial
+  · trivial
+
+/-- Receipt provenance after removal of the impossible mixed double-cross
+branch. -/
+def SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts
+    (result : SelectedLocalRailAppendResolvedOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly | .swapped assembly =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        assembly
+  | .singleFirstSecond _ _ | .singleSecondFirst _ _ => True
+
+theorem classifyLocalSuccessorAppendResolved_hasSelectedAdjacentTerminalEdgeReceipts :
+    (classifyLocalSuccessorAppendResolved successor left)
+      |>.HasSelectedAdjacentTerminalEdgeReceipts := by
+  classical
+  have hbase := classifyLocalSuccessorAppend_hasSelectedAdjacentTerminalEdgeReceipts
+    (successor := successor) (left := left)
+  cases hresult : classifyLocalSuccessorAppend successor left with
+  | straight assembly =>
+      simpa [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+        SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+        using hbase
+  | swapped assembly =>
+      simpa [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+        SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+        using hbase
+  | singleFirstSecond _ _ =>
+      simp [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+  | singleSecondFirst _ _ =>
+      simp [classifyLocalSuccessorAppendResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+  | doubleCrossSameTrack firstSecond secondFirst sameTrack =>
+      exact False.elim
+        (not_doubleCrossSameTrack firstSecond secondFirst sameTrack)
+
+/-- Receipt provenance on the final finite length classifier. -/
+def SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts
+    (result : SelectedLocalRailAppendLengthResolvedOutcome successor left) : Prop :=
+  match result with
+  | .straight assembly | .swapped assembly =>
+      AssemblyHasSelectedAdjacentTerminalEdgeReceipts
+        (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+        assembly
+  | .firstSecondSameFirst _ _ _ | .firstSecondSameSecond _ _ _ |
+      .firstSecondCenter _ _ _ | .secondFirstSameFirst _ _ _ |
+      .secondFirstSameSecond _ _ _ | .secondFirstCenter _ _ _ => True
+
+theorem classifyLocalSuccessorAppendLengthResolved_hasSelectedAdjacentTerminalEdgeReceipts :
+    (classifyLocalSuccessorAppendLengthResolved successor left)
+      |>.HasSelectedAdjacentTerminalEdgeReceipts := by
+  classical
+  have hresolved :=
+    classifyLocalSuccessorAppendResolved_hasSelectedAdjacentTerminalEdgeReceipts
+      (successor := successor) (left := left)
+  cases hresult : classifyLocalSuccessorAppendResolved successor left with
+  | straight assembly =>
+      simpa [classifyLocalSuccessorAppendLengthResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+        using hresolved
+  | swapped assembly =>
+      simpa [classifyLocalSuccessorAppendLengthResolved, hresult,
+        SelectedLocalRailAppendResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+        using hresolved
+  | singleFirstSecond cross _ =>
+      have hs :=
+        classifySingleFirstSecondCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+          cross
+      cases hcenter : classifySingleFirstSecondCenterBridge cross with
+      | assembly value =>
+          simpa [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SingleFirstSecondCenterBridgeOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+            using hs
+      | meetsOldSecond _ | meetsNewFirst _ | containsLeftCenter _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+  | singleSecondFirst cross _ =>
+      have hs :=
+        classifySingleSecondFirstCenterBridge_hasSelectedAdjacentTerminalEdgeReceipts
+          cross
+      cases hcenter : classifySingleSecondFirstCenterBridge cross with
+      | assembly value =>
+          simpa [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SingleSecondFirstCenterBridgeOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+            using hs
+      | meetsOldFirst _ | meetsNewSecond _ | containsLeftCenter _ =>
+          simp [classifyLocalSuccessorAppendLengthResolved, hresult, hcenter,
+            SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+
+/-- **L1 complete adjacent receipt theorem.** Every constructive branch of
+the unconditional adjacent append retains a literal selected-step or named
+old-centre connector receipt for every surviving edge. -/
+theorem appendLocalSuccessorComplete_hasSelectedAdjacentTerminalEdgeReceipts :
+    (appendLocalSuccessorComplete successor left)
+      |>.HasSelectedAdjacentTerminalEdgeReceipts := by
+  classical
+  have hlength :=
+    classifyLocalSuccessorAppendLengthResolved_hasSelectedAdjacentTerminalEdgeReceipts
+      (successor := successor) (left := left)
+  cases hresult : classifyLocalSuccessorAppendLengthResolved successor left with
+  | straight assembly =>
+      simpa [appendLocalSuccessorComplete, hresult,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+        SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+        using hlength
+  | swapped assembly =>
+      simpa [appendLocalSuccessorComplete, hresult,
+        SelectedLocalRailAppendLengthResolvedOutcome.HasSelectedAdjacentTerminalEdgeReceipts,
+        SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+        using hlength
+  | firstSecondSameFirst cross same lengths =>
+      have hs :=
+        appendFirstSecondSameFirst_hasSelectedAdjacentTerminalEdgeReceipts
+          cross same lengths
+      cases hrepair : appendFirstSecondSameFirst cross same lengths <;>
+        simpa [appendLocalSuccessorComplete, hresult, hrepair,
+          AssemblySumHasSelectedAdjacentTerminalEdgeReceipts,
+          SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+          using hs
+  | firstSecondSameSecond cross same lengths =>
+      have hs :=
+        appendFirstSecondSameSecond_hasSelectedAdjacentTerminalEdgeReceipts
+          cross same lengths
+      cases hrepair : appendFirstSecondSameSecond cross same lengths <;>
+        simpa [appendLocalSuccessorComplete, hresult, hrepair,
+          AssemblySumHasSelectedAdjacentTerminalEdgeReceipts,
+          SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+          using hs
+  | firstSecondCenter cross center lengths =>
+      have hs := appendFirstSecondCenter_hasSelectedAdjacentTerminalEdgeReceipts
+        cross center lengths
+      cases hrepair : appendFirstSecondCenter cross center lengths <;>
+        simpa [appendLocalSuccessorComplete, hresult, hrepair,
+          AssemblySumHasSelectedAdjacentTerminalEdgeReceipts,
+          SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+          using hs
+  | secondFirstSameFirst cross same lengths =>
+      have hs :=
+        appendSecondFirstSameFirst_hasSelectedAdjacentTerminalEdgeReceipts
+          cross same lengths
+      cases hrepair : appendSecondFirstSameFirst cross same lengths <;>
+        simpa [appendLocalSuccessorComplete, hresult, hrepair,
+          AssemblySumHasSelectedAdjacentTerminalEdgeReceipts,
+          SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+          using hs
+  | secondFirstSameSecond cross same lengths =>
+      have hs :=
+        appendSecondFirstSameSecond_hasSelectedAdjacentTerminalEdgeReceipts
+          cross same lengths
+      cases hrepair : appendSecondFirstSameSecond cross same lengths <;>
+        simpa [appendLocalSuccessorComplete, hresult, hrepair,
+          AssemblySumHasSelectedAdjacentTerminalEdgeReceipts,
+          SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+          using hs
+  | secondFirstCenter cross center lengths =>
+      have hs := appendSecondFirstCenter_hasSelectedAdjacentTerminalEdgeReceipts
+        cross center lengths
+      cases hrepair : appendSecondFirstCenter cross center lengths <;>
+        simpa [appendLocalSuccessorComplete, hresult, hrepair,
+          AssemblySumHasSelectedAdjacentTerminalEdgeReceipts,
+          SelectedLocalRailAppendCompleteOutcome.HasSelectedAdjacentTerminalEdgeReceipts]
+          using hs
+
+/-- Every proof-relevant canonical construction trace retains the complete
+terminal edge-receipt theorem after its finite repair branch is erased. -/
+theorem ExactSelectedLocalRailConstructionTrace.toOutcome_hasSelectedAdjacentTerminalEdgeReceipts
+    (trace : ExactSelectedLocalRailConstructionTrace successor left) :
+    trace.toOutcome.HasSelectedAdjacentTerminalEdgeReceipts := by
+  rw [trace.toOutcome_eq_complete]
+  exact appendLocalSuccessorComplete_hasSelectedAdjacentTerminalEdgeReceipts
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
