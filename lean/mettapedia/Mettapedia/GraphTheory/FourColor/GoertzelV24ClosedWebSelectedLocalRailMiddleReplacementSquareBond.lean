@@ -23,6 +23,7 @@ open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FiniteDeletionCyclicCut
+open GoertzelV24FramedLocalDualCycleBond
 
 universe u
 
@@ -63,6 +64,154 @@ structure SquareBondRealization
   adjacent : G.Adj first second
   covers_crossingEdges : ∀ edge ∈ cycle.selectedCycle.crossingEdges,
     first ∈ edge.1 ∨ second ∈ edge.1
+
+/-- The literal edge internal to the two-vertex square-bond side. -/
+def SquareBondRealization.internalEdge
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component) : G.edgeSet :=
+  ⟨s(bond.first, bond.second), (SimpleGraph.mem_edgeSet G).2 bond.adjacent⟩
+
+/-- The selected four-edge boundary is exactly the local side boundary of
+the realized adjacent pair. -/
+theorem SquareBondRealization.crossingEdges_eq_localBoundary
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    cycle.selectedCycle.crossingEdges =
+      localCrossingEdgeFinset G
+        (fun vertex => vertex ∈ ({bond.first, bond.second} : Set V)) := by
+  rw [← cycle.componentCrossingEdges_eq_crossingEdges component hroot]
+  ext edge
+  simp only [mem_componentCrossingEdges_iff,
+    mem_localCrossingEdgeFinset_iff, bond.component_supp]
+
+/-- The internal bond edge is not one of the four selected crossings. -/
+theorem SquareBondRealization.internalEdge_not_mem_crossingEdges
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    bond.internalEdge ∉ cycle.selectedCycle.crossingEdges := by
+  rw [bond.crossingEdges_eq_localBoundary hroot]
+  intro hcrossing
+  rcases (mem_localCrossingEdgeFinset_iff
+      (fun vertex => vertex ∈ ({bond.first, bond.second} : Set V))
+      bond.internalEdge).1 hcrossing with
+    ⟨inside, outside, _hinsideEdge, houtsideEdge,
+      _hinsideSide, houtsideSide⟩
+  apply houtsideSide
+  simpa [SquareBondRealization.internalEdge, Sym2.mem_iff] using houtsideEdge
+
+/-- At the first endpoint, the four selected crossings are exactly the
+incident edges other than the internal bond. -/
+theorem SquareBondRealization.filter_incident_first_eq_erase_internalEdge
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    (incidentEdgeFinset G bond.first).filter
+        (fun edge => edge ∈ cycle.selectedCycle.crossingEdges) =
+      (incidentEdgeFinset G bond.first).erase bond.internalEdge := by
+  classical
+  rw [bond.crossingEdges_eq_localBoundary hroot]
+  ext edge
+  simp only [Finset.mem_filter, Finset.mem_erase]
+  constructor
+  · rintro ⟨hincident, hcrossing⟩
+    refine ⟨?_, hincident⟩
+    intro hedge
+    subst edge
+    exact bond.internalEdge_not_mem_crossingEdges hroot (by
+      rw [bond.crossingEdges_eq_localBoundary hroot]
+      exact hcrossing)
+  · rintro ⟨hedgeNe, hincident⟩
+    refine ⟨hincident, ?_⟩
+    have hfirstEdge : bond.first ∈ (edge.1 : Sym2 V) := by
+      simpa [incidentEdgeFinset] using hincident
+    rcases Sym2.mem_iff_exists.1 hfirstEdge with ⟨other, hedgeValue⟩
+    have hfirstOther : G.Adj bond.first other := by
+      rw [← SimpleGraph.mem_edgeSet G, ← hedgeValue]
+      exact edge.2
+    have hotherNeFirst : other ≠ bond.first := hfirstOther.ne.symm
+    have hotherNeSecond : other ≠ bond.second := by
+      intro hother
+      subst other
+      apply hedgeNe
+      apply Subtype.ext
+      simpa [SquareBondRealization.internalEdge] using hedgeValue
+    apply (mem_localCrossingEdgeFinset_iff
+      (fun vertex => vertex ∈ ({bond.first, bond.second} : Set V)) edge).2
+    refine ⟨bond.first, other, hfirstEdge, ?_, by simp, ?_⟩
+    · rw [hedgeValue]
+      simp
+    · simp [hotherNeFirst, hotherNeSecond]
+
+/-- Local cubicity makes exactly two selected crossings incident to the first
+endpoint of the square bond. -/
+theorem SquareBondRealization.first_crossingEdges_card_eq_two
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    ((incidentEdgeFinset G bond.first).filter
+      (fun edge => edge ∈ cycle.selectedCycle.crossingEdges)).card = 2 := by
+  classical
+  rw [bond.filter_incident_first_eq_erase_internalEdge hroot]
+  have hfirstMem : bond.first ∈ component.supp := by
+    rw [bond.component_supp]
+    simp
+  have hcubic := web.boundary_wellFormed.cubic_elsewhere bond.first
+    (by
+      intro inner heq
+      apply cycle.innerStub_not_mem_component component hroot inner
+      rw [← heq]
+      exact hfirstMem)
+    (by
+      intro outer heq
+      apply cycle.outerStub_not_mem_component component hroot outer
+      rw [← heq]
+      exact hfirstMem)
+  have hinternal : bond.internalEdge ∈ incidentEdgeFinset G bond.first := by
+    simp [SquareBondRealization.internalEdge, incidentEdgeFinset, Sym2.mem_iff]
+  rw [Finset.card_erase_of_mem hinternal, hcubic]
+
+/-- Local cubicity makes exactly two selected crossings incident to the second
+endpoint of the square bond. -/
+theorem SquareBondRealization.second_crossingEdges_card_eq_two
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    ((incidentEdgeFinset G bond.second).filter
+      (fun edge => edge ∈ cycle.selectedCycle.crossingEdges)).card = 2 := by
+  let swapped : SquareBondRealization cycle component := {
+    first := bond.second
+    second := bond.first
+    first_ne_second := bond.first_ne_second.symm
+    component_supp := by simpa [Set.pair_comm] using bond.component_supp
+    adjacent := bond.adjacent.symm
+    covers_crossingEdges := by
+      intro edge hedge
+      rcases bond.covers_crossingEdges edge hedge with hfirst | hsecond
+      · exact .inr hfirst
+      · exact .inl hsecond
+  }
+  simpa [swapped, SquareBondRealization.internalEdge, Sym2.eq_swap] using
+    swapped.first_crossingEdges_card_eq_two hroot
 
 /-- The retained literal source rung is incident to one endpoint of the
 two-vertex bond. -/
