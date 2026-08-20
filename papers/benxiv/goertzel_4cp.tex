@@ -2187,8 +2187,10 @@ at most two, Lean now expands membership in each rail into its start, optional
 middle, or finish.  Thus the repaired side of either join has at most fifteen
 explicit coordinates: three for each short rail, plus the centre and two seam
 faces.  Coordinates are allowed to coincide for stationary and one-step rails;
-no false distinctness is assumed.  The outer side of each join has not yet
-received the same coordinate expansion.  One atom is also directionally
+no false distinctness is assumed.  The untouched first- and fourth-cell rails
+are now expanded by the same length-two argument.  Both sides of both residual
+joins are therefore finite coordinate data; this exposes the complete bounded
+case interface but does not yet eliminate its cases.  One atom is also directionally
 resolved: the displayed
 second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas

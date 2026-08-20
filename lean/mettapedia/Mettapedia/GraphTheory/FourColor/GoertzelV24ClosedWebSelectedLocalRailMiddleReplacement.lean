@@ -973,6 +973,58 @@ theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.toCoordinateLocal
       exact .middleLast
         (faceInCanonicalMiddleCoordinates_of_sourcePieces middle) last
 
+/-- Both sides of a residual join expressed in finite coordinates.  Each
+outer rail is again a literal Cell-3 rail of length at most two, so no opaque
+support-membership packet remains in this local table. -/
+inductive ExactSelectedLocalRailMiddleReplacementFullyCoordinateLocalBand
+    (face : SelectedFace (web := web)) : Prop
+  | firstMiddle
+      (first : FaceInShortRailCoordinates firstLeft.toAssembly.firstRail face ∨
+        FaceInShortRailCoordinates firstLeft.toAssembly.secondRail face)
+      (middle : FaceInCanonicalMiddleCoordinates
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+  | middleLast
+      (middle : FaceInCanonicalMiddleCoordinates
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+      (last : FaceInShortRailCoordinates
+          (rebaseLastContinuation (bridge := bridge)
+            (lastSuccessor := lastSuccessor)).firstRail face ∨
+        FaceInShortRailCoordinates
+          (rebaseLastContinuation (bridge := bridge)
+            (lastSuccessor := lastSuccessor)).secondRail face)
+
+/-- Expand the remaining first/fourth support packet by the same length-two
+coordinate argument used for the repaired middle. -/
+theorem ExactSelectedLocalRailMiddleReplacementCoordinateLocalBand.toFullyCoordinateLocalBand
+    {face : SelectedFace (web := web)}
+    (band : ExactSelectedLocalRailMiddleReplacementCoordinateLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face) :
+    ExactSelectedLocalRailMiddleReplacementFullyCoordinateLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face := by
+  cases band with
+  | firstMiddle first middle =>
+      refine .firstMiddle ?_ middle
+      rcases first with first | second
+      · exact .inl (faceInShortRailCoordinates_of_mem_support _ (by
+          simpa using firstLeft.paths.firstRail_length_le_two) first)
+      · exact .inr (faceInShortRailCoordinates_of_mem_support _ (by
+          simpa using firstLeft.paths.secondRail_length_le_two) second)
+  | middleLast middle last =>
+      refine .middleLast middle ?_
+      rcases last with first | second
+      · exact .inl (faceInShortRailCoordinates_of_mem_support _ (by
+          simpa [rebaseLastContinuation, continuationAssembly,
+            rebaseAssemblyStart,
+            SeparatedSelectedSourceLocalRailSuccessor.firstContinuation] using
+              lastSuccessor.rightRails.paths.firstRail_length_le_two) first)
+      · exact .inr (faceInShortRailCoordinates_of_mem_support _ (by
+          simpa [rebaseLastContinuation, continuationAssembly,
+            rebaseAssemblyStart,
+            SeparatedSelectedSourceLocalRailSuccessor.secondContinuation] using
+              lastSuccessor.rightRails.paths.secondRail_length_le_two) second)
+
 /-- The second-cell centre cannot occur on either literal fourth-cell
 continuation.  The former is the corridor centre two positions behind the
 latter, so such membership would contradict skeleton nonadjacency. -/
