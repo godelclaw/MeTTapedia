@@ -127,8 +127,12 @@ structure SourceTiedBoundedLiveSharedRailPrefix
     (hfirstNext := hfirstNext) (firstPlacement := firstPlacement)
     (secondPlacement := secondPlacement) (firstSuccessor := firstSuccessor)
     (firstStart := firstStart) (secondStart := secondStart)
-  supportProvenance : AssemblySupportContainedInAssemblyPair
-    prefixAssembly firstLeft.toAssembly toBounded.assembly
+  firstSupportProvenance : ∀ face ∈ toBounded.assembly.firstRail.support,
+    face ∈ prefixAssembly.firstRail.support.dropLast ∨
+      face ∈ firstLeft.toAssembly.firstRail.support
+  secondSupportProvenance : ∀ face ∈ toBounded.assembly.secondRail.support,
+    face ∈ prefixAssembly.secondRail.support.dropLast ∨
+      face ∈ firstLeft.toAssembly.secondRail.support
 
 /-- The first live local pair is supported in the first adjacent selected
 window. -/
@@ -250,39 +254,42 @@ theorem boundedLiveSharedRailPrefix_nonempty_ofState
     rebaseAssemblyFinish joined
       firstSuccessor.frame.leftBeforeFace_eq_rightAfterFace
       firstSuccessor.frame.leftAfterFace_eq_rightBeforeFace
-  have hjointProvenance : AssemblySupportContainedInAssemblyPair
-      prefixAssembly localAssembly joined := by
-    constructor
-    · intro face hface
-      change face ∈
-        (prefixAssembly.firstRail.append localAssembly.firstRail).support at hface
-      rw [SimpleGraph.Walk.support_append] at hface
-      rcases List.mem_append.mp hface with hold | hlocal
-      · exact .inl hold
-      · exact .inr (.inr (.inl (List.mem_of_mem_tail hlocal)))
-    · intro face hface
-      change face ∈
-        (prefixAssembly.secondRail.append localAssembly.secondRail).support at hface
-      rw [SimpleGraph.Walk.support_append] at hface
-      rcases List.mem_append.mp hface with hold | hlocal
-      · exact .inr (.inl hold)
-      · exact .inr (.inr (.inr (List.mem_of_mem_tail hlocal)))
-  have hrebasedProvenance : AssemblySupportContainedInAssemblyPair
-      prefixAssembly localAssembly rebased := by
-    constructor
-    · intro face hface
-      rw [rebaseAssemblyFinish_firstRail_support] at hface
-      exact hjointProvenance.1 face hface
-    · intro face hface
-      rw [rebaseAssemblyFinish_secondRail_support] at hface
-      exact hjointProvenance.2 face hface
+  have hjointFirstProvenance : ∀ face ∈ joined.firstRail.support,
+      face ∈ prefixAssembly.firstRail.support.dropLast ∨
+        face ∈ localAssembly.firstRail.support := by
+    intro face hface
+    change face ∈
+      (prefixAssembly.firstRail.append localAssembly.firstRail).support at hface
+    rw [SimpleGraph.Walk.support_append_eq_support_dropLast_append] at hface
+    exact List.mem_append.mp hface
+  have hjointSecondProvenance : ∀ face ∈ joined.secondRail.support,
+      face ∈ prefixAssembly.secondRail.support.dropLast ∨
+        face ∈ localAssembly.secondRail.support := by
+    intro face hface
+    change face ∈
+      (prefixAssembly.secondRail.append localAssembly.secondRail).support at hface
+    rw [SimpleGraph.Walk.support_append_eq_support_dropLast_append] at hface
+    exact List.mem_append.mp hface
+  have hrebasedFirstProvenance : ∀ face ∈ rebased.firstRail.support,
+      face ∈ prefixAssembly.firstRail.support.dropLast ∨
+        face ∈ localAssembly.firstRail.support := by
+    intro face hface
+    rw [rebaseAssemblyFinish_firstRail_support] at hface
+    exact hjointFirstProvenance face hface
+  have hrebasedSecondProvenance : ∀ face ∈ rebased.secondRail.support,
+      face ∈ prefixAssembly.secondRail.support.dropLast ∨
+        face ∈ localAssembly.secondRail.support := by
+    intro face hface
+    rw [rebaseAssemblyFinish_secondRail_support] at hface
+    exact hjointSecondProvenance face hface
   exact ⟨
     { toBounded :=
         { assembly := rebased
           interiorSeparated := by
             simpa [InteriorSeparatedFromFutureSelectedWindows, rebased] using
               hjointInterior }
-      supportProvenance := hrebasedProvenance }⟩
+      firstSupportProvenance := hrebasedFirstProvenance
+      secondSupportProvenance := hrebasedSecondProvenance }⟩
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

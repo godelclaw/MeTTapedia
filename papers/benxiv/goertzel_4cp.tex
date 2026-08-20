@@ -2742,6 +2742,18 @@ rules out replacing any stage by an unrelated inhabitant with matching types,
 while the stronger shared-prefix field retains the source-support provenance
 needed by its collision consumer.
 
+That consumer now localizes every newly retained prefix/future collision.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollision}
+uses the future packet's exact terminal-window provenance on the singleton
+support containing the collision face.  The old state's frozen
+\texttt{dropLast} invariant excludes that face from either arbitrarily long
+old rail; the shared-prefix provenance then forces it onto one of the two
+literal first-live rails.  The live endpoint is treated correctly as part of
+the local rail rather than the frozen interior.  Thus a collision introduced
+by this append is now bounded source geometry, not an unbounded-prefix debt.
+The theorem localizes rather than eliminates that collision, and collisions
+already internal to the four-cell future remain a separate exact branch.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
