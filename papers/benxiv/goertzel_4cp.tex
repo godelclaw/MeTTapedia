@@ -1967,6 +1967,21 @@ one of these four bands.  None of the four surviving bands is claimed empty;
 their elimination or rerouting, the rolling induction, and both end caps
 remain open.
 
+The first construction-sensitive refinement of those bands is now proved at
+the four stationary-residue constructors.  The former five-piece envelope
+forgot which rail contributed a face; the new
+\texttt{AssemblySumSupportedByExpectedSelectedRailTracks} records, for each
+straight or exchanged output, its named old rail and endpoint-selected
+successor rail.  A tempting stronger statement---that no output ever touches
+the opposite old track---is false at the literal connector endpoint: the
+two-edge centre bridge contains both seam flanks.  The checked invariant
+therefore names those two flanks and the Cell--3 centre explicitly, while
+excluding every interior face of the opposite track.  All four same-track
+length residues satisfy this sharper invariant.  The two centre-revisit
+residues and the principal straight/crossed constructors still need the same
+export before the canonical construction trace can prune the four remaining
+collision bands.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary

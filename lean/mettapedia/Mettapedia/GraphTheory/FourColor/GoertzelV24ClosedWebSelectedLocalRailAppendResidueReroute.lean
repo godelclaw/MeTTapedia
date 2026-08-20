@@ -14,7 +14,9 @@ This file constructs both alternatives and proves the resulting rails simple
 and mutually support-disjoint.  It also proves their rail-exchanged and
 seam-reversed forms, discharging four of the six oriented finite residues,
 and proves that every resulting support stays in the literal adjacent
-two-cell carrier.
+two-cell carrier.  The four repairs now also retain track-sensitive
+provenance: each output uses its named old rail and endpoint-selected
+successor rail, apart from the three explicitly named centre-connector faces.
 The two centre-revisit residues remain; this file does not yet give the full
 adjacent classifier, iterate a corridor, attach end caps, or close Fable flag
 L1.
@@ -116,6 +118,64 @@ def AssemblySumSupportedByAdjacentSelectedRailPieces
   | .inr assembly =>
       AssemblySupportedByAdjacentSelectedRailPieces (successor := successor)
         (left := left) assembly
+
+/-- A face stays on one named rail track, apart from the three literal
+connector faces of the displayed Cell-3 bridge.  Naming the two seam flanks
+separately is essential: a centre bridge may touch the opposite old rail at
+its endpoint without using any interior face of that rail. -/
+def FaceInExpectedSelectedRailTrack
+    (oldSupport newSupport : List
+      (AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS))))
+    (face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) : Prop :=
+  face ∈ oldSupport ∨ face ∈ newSupport ∨
+    face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      |>.faceAt leftInterior.center) ∨
+    face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+    face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter
+
+/-- Track-sensitive provenance for a repair which may preserve or exchange
+its outgoing endpoint labels.  Unlike the five-piece envelope above, this
+records which old rail and which successor rail can occur in each output. -/
+def AssemblySumSupportedByExpectedSelectedRailTracks
+    (result :
+      Sum (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter))
+        (SelectedSourceLocalRailAssembly (web := web)
+          (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+          (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter)
+          (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore))) : Prop :=
+  match result with
+  | .inl assembly =>
+      (∀ face ∈ assembly.firstRail.support,
+          FaceInExpectedSelectedRailTrack (corridor := corridor)
+            (leftInterior := leftInterior)
+            (leftPlacement := leftPlacement) (successor := successor)
+            left.paths.firstRail.support
+            successor.firstContinuation.support face) ∧
+        ∀ face ∈ assembly.secondRail.support,
+          FaceInExpectedSelectedRailTrack (corridor := corridor)
+            (leftInterior := leftInterior)
+            (leftPlacement := leftPlacement) (successor := successor)
+            left.paths.secondRail.support
+            successor.secondContinuation.support face
+  | .inr assembly =>
+      (∀ face ∈ assembly.firstRail.support,
+          FaceInExpectedSelectedRailTrack (corridor := corridor)
+            (leftInterior := leftInterior)
+            (leftPlacement := leftPlacement) (successor := successor)
+            left.paths.firstRail.support
+            successor.secondContinuation.support face) ∧
+        ∀ face ∈ assembly.secondRail.support,
+          FaceInExpectedSelectedRailTrack (corridor := corridor)
+            (leftInterior := leftInterior)
+            (leftPlacement := leftPlacement) (successor := successor)
+            left.paths.secondRail.support
+            successor.firstContinuation.support face
 
 private theorem eq_end_of_mem_support_tail_of_length_le_one
     {F : Type*} {H : SimpleGraph F} {start finish face : F}
@@ -366,6 +426,65 @@ theorem appendFirstSecondSameFirst_supportContained
       rw [SimpleGraph.Walk.support_copy] at hface
       exact Or.inr (Or.inr (Or.inr (Or.inr hface)))
 
+/-- The first stationary residue preserves the two named rail tracks, with
+the successor tracks exchanged exactly when the endpoint order is exchanged. -/
+theorem appendFirstSecondSameFirst_trackProvenance
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.firstContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 2 ∧
+      left.paths.secondRail.length = 0 ∧
+      successor.firstContinuation.length = 1 ∧
+      successor.secondContinuation.length = 1) :
+    AssemblySumSupportedByExpectedSelectedRailTracks (successor := successor)
+      (left := left) (appendFirstSecondSameFirst cross same lengths) := by
+  classical
+  by_cases hcrossStart : cross.face =
+      selectedPlacementSideFace leftPlacement leftIncomingBefore
+  · simp only [appendFirstSecondSameFirst, hcrossStart,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      have hfaceEq : face = cross.face := by simpa [hcrossStart] using hface
+      exact Or.inl (hfaceEq ▸ cross.mem_old)
+    · intro face hface
+      let rawSecond :=
+        (left.paths.secondRail.append (leftCenterBridge (successor := successor)
+          (left := left))).append successor.firstContinuation
+      have hraw : face ∈ rawSecond.support :=
+        rawSecond.support_bypass_subset_support hface
+      simp only [rawSecond, SimpleGraph.Walk.support_append, List.mem_append] at hraw
+      rcases hraw with (hold | hbridge) | hnew
+      · exact Or.inl hold
+      · have hbridge' : face =
+            (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+              |>.faceAt leftInterior.center) ∨
+          face = selectedPlacementSideFace leftPlacement
+            successor.frame.leftBefore := by
+          simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
+            List.mem_singleton, List.not_mem_nil, or_false] using hbridge
+        rcases hbridge' with hcenter | hbefore
+        · exact Or.inr (Or.inr (Or.inl hcenter))
+        · exact Or.inr (Or.inr (Or.inr (Or.inl hbefore)))
+      · exact Or.inr (Or.inl (List.mem_of_mem_tail hnew))
+  · simp only [appendFirstSecondSameFirst, hcrossStart,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      have hsameStart : same.face =
+          selectedPlacementSideFace leftPlacement leftIncomingBefore :=
+        (firstSecondSameFirst_cross_eq_start_or_same_eq_start
+          cross same lengths).resolve_left hcrossStart
+      have hfaceEq : face = same.face := by simpa [hsameStart] using hface
+      exact Or.inl (hfaceEq ▸ same.mem_old)
+    · intro face hface
+      rw [SimpleGraph.Walk.support_copy] at hface
+      exact Or.inr (Or.inl hface)
+
 private def rightCenterBridge :
     (interiorDualGraph (orbitFaceBoundary web.annular.RS)
       (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
@@ -579,6 +698,65 @@ theorem appendSecondFirstSameSecond_supportContained
       have hfaceEq : face = same.face := by simpa [hsameStart] using hface
       exact Or.inr (Or.inr (Or.inl (hfaceEq ▸ same.mem_old)))
 
+/-- The symmetric stationary residue has the same track-sensitive
+provenance, including the explicit three-face centre connector. -/
+theorem appendSecondFirstSameSecond_trackProvenance
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.secondContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 0 ∧
+      left.paths.secondRail.length = 2 ∧
+      successor.firstContinuation.length = 1 ∧
+      successor.secondContinuation.length = 1) :
+    AssemblySumSupportedByExpectedSelectedRailTracks (successor := successor)
+      (left := left) (appendSecondFirstSameSecond cross same lengths) := by
+  classical
+  by_cases hcrossStart : cross.face =
+      selectedPlacementSideFace leftPlacement leftIncomingAfter
+  · simp only [appendSecondFirstSameSecond, hcrossStart,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      let rawFirst :=
+        (left.paths.firstRail.append (rightCenterBridge (successor := successor)
+          (left := left))).append successor.secondContinuation
+      have hraw : face ∈ rawFirst.support :=
+        rawFirst.support_bypass_subset_support hface
+      simp only [rawFirst, SimpleGraph.Walk.support_append, List.mem_append] at hraw
+      rcases hraw with (hold | hbridge) | hnew
+      · exact Or.inl hold
+      · have hbridge' : face =
+            (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+              |>.faceAt leftInterior.center) ∨
+          face = selectedPlacementSideFace leftPlacement
+            successor.frame.leftAfter := by
+          simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
+            List.mem_singleton, List.not_mem_nil, or_false] using hbridge
+        rcases hbridge' with hcenter | hafter
+        · exact Or.inr (Or.inr (Or.inl hcenter))
+        · exact Or.inr (Or.inr (Or.inr (Or.inr hafter)))
+      · exact Or.inr (Or.inl (List.mem_of_mem_tail hnew))
+    · intro face hface
+      have hfaceEq : face = cross.face := by simpa [hcrossStart] using hface
+      exact Or.inl (hfaceEq ▸ cross.mem_old)
+  · simp only [appendSecondFirstSameSecond, hcrossStart,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      rw [SimpleGraph.Walk.support_copy] at hface
+      exact Or.inr (Or.inl hface)
+    · intro face hface
+      have hsameStart : same.face =
+          selectedPlacementSideFace leftPlacement leftIncomingAfter :=
+        (secondFirstSameSecond_cross_eq_start_or_same_eq_start
+          cross same lengths).resolve_left hcrossStart
+      have hfaceEq : face = same.face := by simpa [hsameStart] using hface
+      exact Or.inl (hfaceEq ▸ same.mem_old)
+
 /-- Seam-reversed construction for the `firstSecondSameSecond` residue. -/
 noncomputable def appendFirstSecondSameSecond
     (cross : SelectedRailSupportCollision (web := web)
@@ -753,6 +931,82 @@ theorem appendFirstSecondSameSecond_supportContained
       have hfaceEq : face = same.face := by simpa [hsameOldStart, hsameEnd] using hface
       exact Or.inr (Or.inr (Or.inl (hfaceEq ▸ same.mem_old)))
 
+/-- Seam reversal does not erase rail identity: each output uses its named
+old rail, its endpoint-selected successor rail, and only the literal centre
+connector faces. -/
+theorem appendFirstSecondSameSecond_trackProvenance
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.secondContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.secondContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 1 ∧
+      left.paths.secondRail.length = 1 ∧
+      successor.firstContinuation.length = 0 ∧
+      successor.secondContinuation.length = 2) :
+    AssemblySumSupportedByExpectedSelectedRailTracks (successor := successor)
+      (left := left) (appendFirstSecondSameSecond cross same lengths) := by
+  classical
+  by_cases hcrossEnd : cross.face =
+      selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter
+  · simp only [appendFirstSecondSameSecond, hcrossEnd,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      let actual :
+          SeparatedSelectedSourceLocalRailSuccessor.ActualCrossAppendCollision
+            successor left := ⟨cross.face, Or.inl ⟨cross.mem_old, cross.mem_new⟩⟩
+      have hcrossOldStart : cross.face =
+          selectedPlacementSideFace leftPlacement leftIncomingBefore :=
+        eq_start_of_mem_support_of_length_le_one_of_ne_end left.paths.firstRail
+          (by omega) cross.mem_old actual.toAdjacentDualTriangle.third_ne_before
+      have hfaceEq : face = cross.face := by simpa [hcrossOldStart] using hface
+      exact Or.inl (hfaceEq ▸ cross.mem_old)
+    · intro face hface
+      let rawSecond :=
+        (left.paths.secondRail.append (leftCenterBridge (successor := successor)
+          (left := left))).append successor.firstContinuation
+      have hraw : face ∈ rawSecond.support :=
+        rawSecond.support_bypass_subset_support hface
+      simp only [rawSecond, SimpleGraph.Walk.support_append, List.mem_append] at hraw
+      rcases hraw with (hold | hbridge) | hnew
+      · exact Or.inl hold
+      · have hbridge' : face =
+            (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+              |>.faceAt leftInterior.center) ∨
+          face = selectedPlacementSideFace leftPlacement
+            successor.frame.leftBefore := by
+          simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
+            List.mem_singleton, List.not_mem_nil, or_false] using hbridge
+        rcases hbridge' with hcenter | hbefore
+        · exact Or.inr (Or.inr (Or.inl hcenter))
+        · exact Or.inr (Or.inr (Or.inr (Or.inl hbefore)))
+      · exact Or.inr (Or.inl (List.mem_of_mem_tail hnew))
+  · simp only [appendFirstSecondSameSecond, hcrossEnd,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      rw [SimpleGraph.Walk.support_copy] at hface
+      exact Or.inl hface
+    · intro face hface
+      let actual :
+          SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+            successor left :=
+        ⟨same.face, Or.inr (Or.inl ⟨same.mem_old, same.mem_new⟩)⟩
+      have hsameEnd : same.face = selectedPlacementSideFace rightPlacement
+          successor.rightOutgoingAfter :=
+        (firstSecondSameSecond_cross_eq_end_or_same_eq_end
+          cross same lengths).resolve_left hcrossEnd
+      have hsameOldStart : same.face =
+          selectedPlacementSideFace leftPlacement leftIncomingAfter :=
+        eq_start_of_mem_support_of_length_le_one_of_ne_end left.paths.secondRail
+          (by omega) same.mem_old actual.toAdjacentDualTriangle.third_ne_after
+      have hfaceEq : face = same.face := by
+        simpa [hsameOldStart, hsameEnd] using hface
+      exact Or.inl (hfaceEq ▸ same.mem_old)
+
 /-- Rail-exchanged seam-reversed construction for
 `secondFirstSameFirst`. -/
 noncomputable def appendSecondFirstSameFirst
@@ -926,6 +1180,80 @@ theorem appendSecondFirstSameFirst_supportContained
     · intro face hface
       rw [SimpleGraph.Walk.support_copy] at hface
       exact Or.inr (Or.inr (Or.inl hface))
+
+/-- The rail-exchanged seam-reversed residue also preserves the two expected
+tracks modulo the explicit three-face centre connector. -/
+theorem appendSecondFirstSameFirst_trackProvenance
+    (cross : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support successor.firstContinuation.support.tail)
+    (same : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support successor.firstContinuation.support.tail)
+    (lengths : left.paths.firstRail.length = 1 ∧
+      left.paths.secondRail.length = 1 ∧
+      successor.firstContinuation.length = 2 ∧
+      successor.secondContinuation.length = 0) :
+    AssemblySumSupportedByExpectedSelectedRailTracks (successor := successor)
+      (left := left) (appendSecondFirstSameFirst cross same lengths) := by
+  classical
+  by_cases hcrossEnd : cross.face =
+      selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore
+  · simp only [appendSecondFirstSameFirst, hcrossEnd,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      let rawFirst :=
+        (left.paths.firstRail.append (rightCenterBridge (successor := successor)
+          (left := left))).append successor.secondContinuation
+      have hraw : face ∈ rawFirst.support :=
+        rawFirst.support_bypass_subset_support hface
+      simp only [rawFirst, SimpleGraph.Walk.support_append, List.mem_append] at hraw
+      rcases hraw with (hold | hbridge) | hnew
+      · exact Or.inl hold
+      · have hbridge' : face =
+            (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+              |>.faceAt leftInterior.center) ∨
+          face = selectedPlacementSideFace leftPlacement
+            successor.frame.leftAfter := by
+          simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
+            List.mem_singleton, List.not_mem_nil, or_false] using hbridge
+        rcases hbridge' with hcenter | hafter
+        · exact Or.inr (Or.inr (Or.inl hcenter))
+        · exact Or.inr (Or.inr (Or.inr (Or.inr hafter)))
+      · exact Or.inr (Or.inl (List.mem_of_mem_tail hnew))
+    · intro face hface
+      let actual :
+          SeparatedSelectedSourceLocalRailSuccessor.ActualCrossAppendCollision
+            successor left := ⟨cross.face, Or.inr ⟨cross.mem_old, cross.mem_new⟩⟩
+      have hcrossOldStart : cross.face =
+          selectedPlacementSideFace leftPlacement leftIncomingAfter :=
+        eq_start_of_mem_support_of_length_le_one_of_ne_end left.paths.secondRail
+          (by omega) cross.mem_old actual.toAdjacentDualTriangle.third_ne_after
+      have hfaceEq : face = cross.face := by simpa [hcrossOldStart] using hface
+      exact Or.inl (hfaceEq ▸ cross.mem_old)
+  · simp only [appendSecondFirstSameFirst, hcrossEnd,
+      AssemblySumSupportedByExpectedSelectedRailTracks,
+      FaceInExpectedSelectedRailTrack]
+    constructor
+    · intro face hface
+      let actual :
+          SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+            successor left := ⟨same.face, Or.inl ⟨same.mem_old, same.mem_new⟩⟩
+      have hsameEnd : same.face = selectedPlacementSideFace rightPlacement
+          successor.rightOutgoingBefore :=
+        (secondFirstSameFirst_cross_eq_end_or_same_eq_end
+          cross same lengths).resolve_left hcrossEnd
+      have hsameOldStart : same.face =
+          selectedPlacementSideFace leftPlacement leftIncomingBefore :=
+        eq_start_of_mem_support_of_length_le_one_of_ne_end left.paths.firstRail
+          (by omega) same.mem_old actual.toAdjacentDualTriangle.third_ne_before
+      have hfaceEq : face = same.face := by
+        simpa [hsameOldStart, hsameEnd] using hface
+      exact Or.inl (hfaceEq ▸ same.mem_old)
+    · intro face hface
+      rw [SimpleGraph.Walk.support_copy] at hface
+      exact Or.inl hface
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
