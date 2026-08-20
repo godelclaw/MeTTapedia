@@ -2009,6 +2009,21 @@ are literally the last window's two old tracks.  The retained collision is
 therefore expressed in the same track vocabulary as the repair which must
 consume it.  No origin has yet been declared impossible.
 
+One of the four broad bands has now been consumed.  In the
+successor/old case, the first-window successor support is the old support of
+the stored middle repair, while the last-window old support is that repair's
+successor support.  Splitting the latter support at its initial vertex gives
+either a strict-tail append collision or one of the two shared seam
+endpoints.  A generic lemma for both ordered and exchanged retained bypasses
+excludes those endpoints using path simplicity and mutual rail disjointness.
+Consequently the successor/old band is replaced by an actual collision
+witness for the canonical middle-seam append.  The remaining alternatives
+are old/old, successor/third-centre, successor/successor, or this exact
+middle collision.  This is a genuine band reduction, but not yet a reroute:
+the collision witness selected by the outer retained classifier must still be
+related to the finite branch stored in the middle construction trace before
+the rolling suffix can advance.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary

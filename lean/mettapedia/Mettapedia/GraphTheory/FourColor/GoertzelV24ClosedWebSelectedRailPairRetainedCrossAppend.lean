@@ -123,6 +123,58 @@ structure RetainedBypassCrossCollision
   mem_second : face ∈ (orderedBypassedPair oldAssembly newAssembly).secondRail.support
   origin : RetainedCrossOrigin oldAssembly newAssembly face
 
+private theorem path_start_not_mem_support_tail
+    {F : Type*} {H : SimpleGraph F} {start finish : F}
+    (walk : H.Walk start finish) (hpath : walk.IsPath) :
+    start ∉ walk.support.tail := by
+  have hnodup := hpath.support_nodup
+  rw [← walk.cons_tail_support] at hnodup
+  exact (List.nodup_cons.mp hnodup).1
+
+/-- A retained ordered collision is distinct from the first suffix start. -/
+theorem RetainedBypassCrossCollision.face_ne_newFirstStart
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish}
+    (collision : RetainedBypassCrossCollision oldAssembly newAssembly) :
+    collision.face ≠ middleFirst := by
+  intro hface
+  cases collision.origin with
+  | firstSecond hold hnew =>
+      have hfirst : collision.face ∈ newAssembly.firstRail.support := by
+        simpa [hface] using newAssembly.firstRail.start_mem_support
+      exact (List.disjoint_left.mp
+        newAssembly.firstRail_support_disjoint_secondRail hfirst)
+          (List.mem_of_mem_tail hnew)
+  | secondFirst hold hnew =>
+      exact path_start_not_mem_support_tail newAssembly.firstRail
+        newAssembly.firstRail_isPath (by simpa [hface] using hnew)
+
+/-- A retained ordered collision is distinct from the second suffix start. -/
+theorem RetainedBypassCrossCollision.face_ne_newSecondStart
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish}
+    (collision : RetainedBypassCrossCollision oldAssembly newAssembly) :
+    collision.face ≠ middleSecond := by
+  intro hface
+  cases collision.origin with
+  | firstSecond hold hnew =>
+      exact path_start_not_mem_support_tail newAssembly.secondRail
+        newAssembly.secondRail_isPath (by simpa [hface] using hnew)
+  | secondFirst hold hnew =>
+      have hsecond : collision.face ∈ newAssembly.secondRail.support := by
+        simpa [hface] using newAssembly.secondRail.start_mem_support
+      exact (List.disjoint_left.mp
+        newAssembly.firstRail_support_disjoint_secondRail
+          (List.mem_of_mem_tail hnew)) hsecond
+
 /-- Forget survival through bypass and retain the exact raw cross-support
 witness consumed by the source-local geometry. -/
 def RetainedBypassCrossCollision.toRawCrossCollision
@@ -268,6 +320,54 @@ structure CrossedRetainedBypassCrossCollision
   mem_first : face ∈ (crossedBypassedPair oldAssembly newAssembly).firstRail.support
   mem_second : face ∈ (crossedBypassedPair oldAssembly newAssembly).secondRail.support
   origin : CrossedRetainedCrossOrigin oldAssembly newAssembly face
+
+/-- A retained crossed-order collision is distinct from the first suffix
+rail's start (`middleSecond` in exchanged endpoint order). -/
+theorem CrossedRetainedBypassCrossCollision.face_ne_newFirstStart
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish}
+    (collision : CrossedRetainedBypassCrossCollision oldAssembly newAssembly) :
+    collision.face ≠ middleSecond := by
+  intro hface
+  cases collision.origin with
+  | firstFirst hold hnew =>
+      exact path_start_not_mem_support_tail newAssembly.firstRail
+        newAssembly.firstRail_isPath (by simpa [hface] using hnew)
+  | secondSecond hold hnew =>
+      have hfirst : collision.face ∈ newAssembly.firstRail.support := by
+        rw [hface]
+        exact newAssembly.firstRail.start_mem_support
+      exact (List.disjoint_left.mp
+        newAssembly.firstRail_support_disjoint_secondRail hfirst)
+          (List.mem_of_mem_tail hnew)
+
+/-- A retained crossed-order collision is also distinct from the second
+suffix rail's start (`middleFirst`). -/
+theorem CrossedRetainedBypassCrossCollision.face_ne_newSecondStart
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish}
+    (collision : CrossedRetainedBypassCrossCollision oldAssembly newAssembly) :
+    collision.face ≠ middleFirst := by
+  intro hface
+  cases collision.origin with
+  | firstFirst hold hnew =>
+      have hfirst : collision.face ∈ newAssembly.firstRail.support :=
+        List.mem_of_mem_tail hnew
+      have hsecond : collision.face ∈ newAssembly.secondRail.support := by
+        simpa [hface] using newAssembly.secondRail.start_mem_support
+      exact (List.disjoint_left.mp
+        newAssembly.firstRail_support_disjoint_secondRail hfirst) hsecond
+  | secondSecond hold hnew =>
+      exact path_start_not_mem_support_tail newAssembly.secondRail
+        newAssembly.secondRail_isPath (by simpa [hface] using hnew)
 
 /-- Crossed-order retained collisions likewise project to the generic raw
 cross witness after the suffix pair is viewed in continuation order. -/

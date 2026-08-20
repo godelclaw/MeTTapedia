@@ -331,6 +331,261 @@ theorem bridge_secondContinuation_support_eq_lastLeft_secondRail_support :
   rw [bridge.secondContinuation_support]
   exact (bridge.rightRailsAsNextLeft_secondRail_support lastSuccessor).symm
 
+private theorem mem_support_eq_start_or_mem_tail
+    {F : Type*} {H : SimpleGraph F} {start finish face : F}
+    (walk : H.Walk start finish) (hface : face ∈ walk.support) :
+    face = start ∨ face ∈ walk.support.tail := by
+  rw [← walk.cons_tail_support] at hface
+  exact List.mem_cons.mp hface
+
+/-- A full-support contact across the middle seam is either an actual append
+collision (strictly after the shared endpoint) or one of the two legal shared
+seam faces. -/
+inductive MiddleSeamTrackContact (face : SelectedFace (web := web)) : Prop
+  | collision
+      (value : SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision bridge
+        (firstSuccessor.rightRailsAsNextLeft bridge))
+      (face_eq : value.face = face)
+  | firstEndpoint
+      (face_eq : face = selectedPlacementSideFace secondPlacement
+        bridge.frame.leftBefore)
+  | secondEndpoint
+      (face_eq : face = selectedPlacementSideFace secondPlacement
+        bridge.frame.leftAfter)
+
+/-- The `successor/old` broad collision band is precisely middle-seam contact.
+The only part not consumed by the append classifier is its two shared
+endpoints. -/
+theorem middleSeamTrackContact_of_successorOld
+    {face : SelectedFace (web := web)}
+    (firstSuccessorPiece : face ∈ firstSuccessor.firstContinuation.support ∨
+      face ∈ firstSuccessor.secondContinuation.support)
+    (lastOld : face ∈
+        (bridge.rightRailsAsNextLeft lastSuccessor).paths.firstRail.support ∨
+      face ∈
+        (bridge.rightRailsAsNextLeft lastSuccessor).paths.secondRail.support) :
+    MiddleSeamTrackContact (firstSuccessor := firstSuccessor)
+      (bridge := bridge) face := by
+  have hleft : face ∈
+        (firstSuccessor.rightRailsAsNextLeft bridge).paths.firstRail.support ∨
+      face ∈
+        (firstSuccessor.rightRailsAsNextLeft bridge).paths.secondRail.support := by
+    rcases firstSuccessorPiece with hfirst | hsecond
+    · exact Or.inl (by
+        rw [← firstContinuation_support_eq_bridgeLeft_firstRail_support]
+        exact hfirst)
+    · exact Or.inr (by
+        rw [← secondContinuation_support_eq_bridgeLeft_secondRail_support]
+        exact hsecond)
+  have hright : face ∈ bridge.firstContinuation.support ∨
+      face ∈ bridge.secondContinuation.support := by
+    rcases lastOld with hfirst | hsecond
+    · exact Or.inl (by
+        rw [bridge_firstContinuation_support_eq_lastLeft_firstRail_support]
+        exact hfirst)
+    · exact Or.inr (by
+        rw [bridge_secondContinuation_support_eq_lastLeft_secondRail_support]
+        exact hsecond)
+  rcases hleft with hleftFirst | hleftSecond
+  · rcases hright with hrightFirst | hrightSecond
+    · rcases mem_support_eq_start_or_mem_tail bridge.firstContinuation
+          hrightFirst with hstart | htail
+      · exact .firstEndpoint hstart
+      · exact .collision
+          ⟨face, Or.inl ⟨hleftFirst, htail⟩⟩ rfl
+    · rcases mem_support_eq_start_or_mem_tail bridge.secondContinuation
+          hrightSecond with hstart | htail
+      · exact .secondEndpoint hstart
+      · exact .collision
+          ⟨face, Or.inr (Or.inr (Or.inl ⟨hleftFirst, htail⟩))⟩ rfl
+  · rcases hright with hrightFirst | hrightSecond
+    · rcases mem_support_eq_start_or_mem_tail bridge.firstContinuation
+          hrightFirst with hstart | htail
+      · exact .firstEndpoint hstart
+      · exact .collision
+          ⟨face, Or.inr (Or.inr (Or.inr ⟨hleftSecond, htail⟩))⟩ rfl
+    · rcases mem_support_eq_start_or_mem_tail bridge.secondContinuation
+          hrightSecond with hstart | htail
+      · exact .secondEndpoint hstart
+      · exact .collision
+          ⟨face, Or.inr (Or.inl ⟨hleftSecond, htail⟩)⟩ rfl
+
+private theorem ne_middleBefore_of_ne_firstOutgoingBefore
+    {face : SelectedFace (web := web)}
+    (hne : face ≠ selectedPlacementSideFace secondPlacement
+      firstSuccessor.rightOutgoingBefore) :
+    face ≠ selectedPlacementSideFace secondPlacement bridge.frame.leftBefore := by
+  intro hface
+  apply hne
+  exact hface.trans (congrArg
+    (fun position => selectedPlacementSideFace secondPlacement position)
+    (firstSuccessor.rightOutgoingBefore_eq_nextLeftBefore bridge).symm)
+
+private theorem ne_middleAfter_of_ne_firstOutgoingAfter
+    {face : SelectedFace (web := web)}
+    (hne : face ≠ selectedPlacementSideFace secondPlacement
+      firstSuccessor.rightOutgoingAfter) :
+    face ≠ selectedPlacementSideFace secondPlacement bridge.frame.leftAfter := by
+  intro hface
+  apply hne
+  exact hface.trans (congrArg
+    (fun position => selectedPlacementSideFace secondPlacement position)
+    (firstSuccessor.rightOutgoingAfter_eq_nextLeftAfter bridge).symm)
+
+/-- Collision branches returned by the retained four-cell classifier cannot
+occur at either legal shared endpoint of the middle seam.  This is a path and
+mutual-support fact, independent of the corridor geometry. -/
+def ExactSelectedLocalRailFourCellRetainedOutcome.CollisionFaceAvoidsMiddleSeamEndpoints
+    {firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft}
+    {lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))}
+    (outcome : ExactSelectedLocalRailFourCellRetainedOutcome
+      firstWindow lastWindow) : Prop :=
+  match outcome with
+  | .straight _ | .swapped _ => True
+  | .straightStraightCollision _ _ _ _ collision
+  | .straightSwappedCollision _ _ _ _ collision =>
+      collision.face ≠ selectedPlacementSideFace secondPlacement
+          bridge.frame.leftBefore ∧
+        collision.face ≠ selectedPlacementSideFace secondPlacement
+          bridge.frame.leftAfter
+  | .swappedStraightCollision _ _ _ _ collision
+  | .swappedSwappedCollision _ _ _ _ collision =>
+      collision.face ≠ selectedPlacementSideFace secondPlacement
+          bridge.frame.leftBefore ∧
+        collision.face ≠ selectedPlacementSideFace secondPlacement
+          bridge.frame.leftAfter
+
+/-- Every bad retained outcome avoids the two middle-seam endpoints. -/
+theorem ExactSelectedLocalRailTracedFourCellTransition.collisionFaceAvoidsMiddleSeamEndpoints
+    (transition : ExactSelectedLocalRailTracedFourCellTransition
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)) :
+    transition.outcome.CollisionFaceAvoidsMiddleSeamEndpoints := by
+  generalize hout : transition.outcome = outcome at ⊢
+  cases outcome with
+  | straight assembly => trivial
+  | swapped assembly => trivial
+  | straightStraightCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact ⟨ne_middleBefore_of_ne_firstOutgoingBefore
+          collision.face_ne_newFirstStart,
+        ne_middleAfter_of_ne_firstOutgoingAfter
+          collision.face_ne_newSecondStart⟩
+  | straightSwappedCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact ⟨ne_middleBefore_of_ne_firstOutgoingBefore
+          collision.face_ne_newFirstStart,
+        ne_middleAfter_of_ne_firstOutgoingAfter
+          collision.face_ne_newSecondStart⟩
+  | swappedStraightCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact ⟨ne_middleBefore_of_ne_firstOutgoingBefore
+          collision.face_ne_newFirstStart,
+        ne_middleAfter_of_ne_firstOutgoingAfter
+          collision.face_ne_newSecondStart⟩
+  | swappedSwappedCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact ⟨ne_middleBefore_of_ne_firstOutgoingBefore
+          collision.face_ne_newFirstStart,
+        ne_middleAfter_of_ne_firstOutgoingAfter
+          collision.face_ne_newSecondStart⟩
+
+/-- The collision bands after consuming the middle `successor/old` overlap.
+That band is replaced by an actual collision in the canonical middle-seam
+append classifier; the other three bands are retained verbatim. -/
+inductive ExactSelectedLocalRailFourCellCollisionBandAfterMiddleSeam
+    (face : SelectedFace (web := web)) : Prop
+  | oldOld
+      (firstOld : face ∈ firstLeft.paths.firstRail.support ∨
+        face ∈ firstLeft.paths.secondRail.support)
+      (lastOld : face ∈
+          (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)).paths.firstRail.support ∨
+        face ∈
+          (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)).paths.secondRail.support)
+  | successorThirdCenter
+      (firstSuccessorPiece : face ∈ firstSuccessor.firstContinuation.support ∨
+        face ∈ firstSuccessor.secondContinuation.support)
+      (atThirdCenter : face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+  | middleCollision
+      (value : SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision bridge
+        (firstSuccessor.rightRailsAsNextLeft bridge))
+      (face_eq : value.face = face)
+  | successorSuccessor
+      (firstSuccessorPiece : face ∈ firstSuccessor.firstContinuation.support ∨
+        face ∈ firstSuccessor.secondContinuation.support)
+      (lastSuccessorPiece : face ∈ lastSuccessor.firstContinuation.support ∨
+        face ∈ lastSuccessor.secondContinuation.support)
+
+/-- Endpoint exclusion turns the broad middle `successor/old` band into a
+literal append collision. -/
+theorem collisionBandAfterMiddleSeam_of_collisionBand
+    {face : SelectedFace (web := web)}
+    (hband : ExactSelectedLocalRailFourCellCollisionBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face)
+    (hneBefore : face ≠ selectedPlacementSideFace secondPlacement
+      bridge.frame.leftBefore)
+    (hneAfter : face ≠ selectedPlacementSideFace secondPlacement
+      bridge.frame.leftAfter) :
+    ExactSelectedLocalRailFourCellCollisionBandAfterMiddleSeam
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face := by
+  cases hband with
+  | oldOld firstOld lastOld => exact .oldOld firstOld lastOld
+  | successorThirdCenter firstSuccessorPiece atThirdCenter =>
+      exact .successorThirdCenter firstSuccessorPiece atThirdCenter
+  | successorSuccessor firstSuccessorPiece lastSuccessorPiece =>
+      exact .successorSuccessor firstSuccessorPiece lastSuccessorPiece
+  | successorOld firstSuccessorPiece lastOld =>
+      cases middleSeamTrackContact_of_successorOld firstSuccessorPiece lastOld with
+      | collision value face_eq => exact .middleCollision value face_eq
+      | firstEndpoint face_eq => exact False.elim (hneBefore face_eq)
+      | secondEndpoint face_eq => exact False.elim (hneAfter face_eq)
+
+/-- Reduced collision-band predicate on a canonical outcome. -/
+def ExactSelectedLocalRailFourCellRetainedOutcome.HasCollisionBandAfterMiddleSeam
+    {firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft}
+    {lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))}
+    (outcome : ExactSelectedLocalRailFourCellRetainedOutcome
+      firstWindow lastWindow) : Prop :=
+  match outcome with
+  | .straight _ | .swapped _ => True
+  | .straightStraightCollision _ _ _ _ collision
+  | .straightSwappedCollision _ _ _ _ collision
+  | .swappedStraightCollision _ _ _ _ collision
+  | .swappedSwappedCollision _ _ _ _ collision =>
+      ExactSelectedLocalRailFourCellCollisionBandAfterMiddleSeam
+        (firstSuccessor := firstSuccessor) (bridge := bridge)
+        (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) collision.face
+
+/-- **L1 middle-seam band reduction.** The canonical four-cell transition has
+only three untouched remote bands or an actual collision already classified
+by the stored middle repair. -/
+theorem ExactSelectedLocalRailTracedFourCellTransition.hasCollisionBandAfterMiddleSeam
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    (transition : ExactSelectedLocalRailTracedFourCellTransition
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft)) :
+    transition.outcome.HasCollisionBandAfterMiddleSeam := by
+  have hband := transition.hasCollisionBandData hsource
+  have haway := transition.collisionFaceAvoidsMiddleSeamEndpoints
+  generalize hout : transition.outcome = outcome at hband haway ⊢
+  cases outcome with
+  | straight assembly => trivial
+  | swapped assembly => trivial
+  | straightStraightCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact collisionBandAfterMiddleSeam_of_collisionBand hband haway.1 haway.2
+  | straightSwappedCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact collisionBandAfterMiddleSeam_of_collisionBand hband haway.1 haway.2
+  | swappedStraightCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact collisionBandAfterMiddleSeam_of_collisionBand hband haway.1 haway.2
+  | swappedSwappedCollision firstAssembly lastAssembly hfirst hlast collision =>
+      exact collisionBandAfterMiddleSeam_of_collisionBand hband haway.1 haway.2
+
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
 end
