@@ -82,6 +82,18 @@ theorem boundaryDart_edge_mem_vertexSetCrossingEdges
     rw [RS.mem_dartsOn]
     exact RS.edge_alpha boundary.1.1
 
+/-- A vertex distinct from some other vertex in a connected graph carries a
+literal graph dart.  This is the local root datum needed to open one side of a
+source splice; global cubicity is much stronger than this conclusion. -/
+theorem exists_dartAt_of_connected_of_ne
+    (data : Data G) (hconnected : G.Connected) {vertex other : V}
+    (hne : vertex ≠ other) :
+    ∃ dart : data.toRotationSystem.D,
+      data.toRotationSystem.vertOf dart = vertex := by
+  rcases (hconnected vertex other).nonempty_neighborSet_left hne with
+    ⟨neighbor, hadjacent⟩
+  exact ⟨⟨(vertex, neighbor), hadjacent⟩, rfl⟩
+
 /-- The complete, source-derived boundary data of the paired annular
 transversals.  It intentionally records only geometry: the later semantic
 profile layer must still prove its own preservation claims against this real
@@ -105,6 +117,8 @@ structure SourceCrosscutBoundaryData
     pair.componentSide component
   removed : V
   removed_not_kept : removed ∉ pair.componentSide component
+  removedDart : data.toRotationSystem.D
+  removedDart_vertOf : data.toRotationSystem.vertOf removedDart = removed
   leftCrosses : ∀ step, ∃ dart : data.toRotationSystem.D,
     data.toRotationSystem.edgeOf dart = pair.left.crossingEdge hunique step ∧
     data.toRotationSystem.vertOf dart ∈ pair.componentSide component ∧
@@ -151,6 +165,16 @@ theorem exists_sourceCrosscutBoundaryData
   rcases pair.exists_outer_primalCutComponent_exactBoundary_and_removed data
       htwoSided hdual hconnected hsphere with
     ⟨component, removed, houter, hremoved, hboundary⟩
+  have hremovedNeOuter :
+      removed ≠ data.toRotationSystem.vertOf data.toRotationSystem.outer := by
+    intro heq
+    apply hremoved
+    simpa [heq] using houter
+  let removedDart := Classical.choose
+    (exists_dartAt_of_connected_of_ne data hconnected hremovedNeOuter)
+  have hremovedDart : data.toRotationSystem.vertOf removedDart = removed :=
+    Classical.choose_spec
+      (exists_dartAt_of_connected_of_ne data hconnected hremovedNeOuter)
   exact ⟨{
     component := component
     component_boundary := hboundary
@@ -160,6 +184,8 @@ theorem exists_sourceCrosscutBoundaryData
     removed_not_kept := by
       intro hkept
       exact hremoved ((pair.mem_componentSide_iff component removed).1 hkept)
+    removedDart := removedDart
+    removedDart_vertOf := hremovedDart
     leftCrosses := by
       intro step
       apply pair.exists_oriented_componentSide_crossingDart data component hboundary
@@ -225,6 +251,16 @@ theorem exists_sourceCrosscutBoundaryData_of_euler
   rcases pair.exists_outer_primalCutComponent_exactBoundary_and_removed_of_euler
       data htwoSided hdual hconnected heuler with
     ⟨component, removed, houter, hremoved, hboundary⟩
+  have hremovedNeOuter :
+      removed ≠ data.toRotationSystem.vertOf data.toRotationSystem.outer := by
+    intro heq
+    apply hremoved
+    simpa [heq] using houter
+  let removedDart := Classical.choose
+    (exists_dartAt_of_connected_of_ne data hconnected hremovedNeOuter)
+  have hremovedDart : data.toRotationSystem.vertOf removedDart = removed :=
+    Classical.choose_spec
+      (exists_dartAt_of_connected_of_ne data hconnected hremovedNeOuter)
   exact ⟨{
     component := component
     component_boundary := hboundary
@@ -234,6 +270,8 @@ theorem exists_sourceCrosscutBoundaryData_of_euler
     removed_not_kept := by
       intro hkept
       exact hremoved ((pair.mem_componentSide_iff component removed).1 hkept)
+    removedDart := removedDart
+    removedDart_vertOf := hremovedDart
     leftCrosses := by
       intro step
       apply pair.exists_oriented_componentSide_crossingDart data component hboundary

@@ -80,6 +80,17 @@ theorem sourceCrosscutBoundaryData_nonempty
     have hmem := Finset.ext_iff.mp hboundary edge
     simpa [cutEdges, localEdgeFinsetValueSet, edgeFinsetValueSet,
       localComponentCrossingEdges, componentCrossingEdges] using hmem
+  have hremovedNeOuter : removed ≠ web.annular.RS.vertOf web.annular.RS.outer := by
+    intro heq
+    apply hremoved
+    simpa [heq] using houter
+  let removedDart := Classical.choose
+    (SeparatedAlignedSimpleDualCrosscuts.exists_dartAt_of_connected_of_ne
+      web.annular.cellulation.rotation web.connected hremovedNeOuter)
+  have hremovedDart : web.annular.RS.vertOf removedDart = removed :=
+    Classical.choose_spec
+      (SeparatedAlignedSimpleDualCrosscuts.exists_dartAt_of_connected_of_ne
+        web.annular.cellulation.rotation web.connected hremovedNeOuter)
   exact ⟨{
     component := component
     component_boundary := hboundary'
@@ -91,6 +102,8 @@ theorem sourceCrosscutBoundaryData_nonempty
       exact hremoved
         ((layers.separatedLocalLayerPair hunique).mem_componentSide_iff
           component removed |>.1 hkept)
+    removedDart := removedDart
+    removedDart_vertOf := hremovedDart
     leftCrosses := by
       intro step
       apply GoertzelV24AnnularCrosscut.SeparatedAlignedSimpleDualCrosscuts.exists_oriented_componentSide_crossingDart

@@ -3538,9 +3538,9 @@ Cell--3 reduction; the splice must reconstruct the full output instance.
 Recording that distinction now prevents a late carrier mismatch without
 weakening any conditional theorem into a construction.
 
-The same type audit has now reached the first semantic splice constructor and
-found a sharper mismatch.  Addendum~XXVII performs its preservation checklist
-on an open annular tangle with boundary stubs.  The current Lean completed-step
+The same type audit reached the first semantic splice constructor and found a
+sharper mismatch.  Addendum~XXVII performs its preservation checklist on an
+open annular tangle with boundary stubs.  The existing Lean completed-step
 constructor, by contrast, requires global cubicity of that annular carrier.
 This is not merely an inconvenient premise:
 
@@ -3548,15 +3548,26 @@ This is not merely an inconvenient premise:
   \texttt{GoertzelV24ClosedWebAtGoodWord.Instance.not\_isCubic}
 \]
 
-is a direct theorem, because the first named inner stub has degree one.  Thus
-the current global-cubic semantic-profile API cannot be applied directly to
-the source object.  The missing interface is now a precise choice between two
-source-faithful constructions: localize the splice argument to cubicity away
-from the boundary stubs, or transport the annulus through an explicitly capped
-closed carrier and reopen it while preserving the closed-web-at-good-word
-packet.  No reduction is claimed here.  The point of the audit is that this
-adapter has been discovered before the physical crosscut construction is
-declared complete, rather than after the reduction spine has been assembled.
+is a direct theorem, because the first named inner stub has degree one.
+
+The first repair is now a kernel-checked construction.  The source boundary
+package retains one actual dart based at its deleted-side vertex, obtained
+from connectedness when that package is built.  That datum now roots the
+literal complementary open region and its two-sided serial-tangle
+presentation without a global degree premise.  The concrete boundary
+agreement and the theorem gluing two Tait-coloured open pieces back to an
+ambient Tait colouring likewise have source-facing versions with no cubicity
+hypothesis.  Older signatures are preserved as compatibility wrappers, and
+the previous completed-step consumer still rebuilds, so this localization did
+not fracture the established profile/count tower.
+
+This is not yet a no-cubic completed-step theorem.  The intervening finite
+profile and count interfaces still carry the older cubic parameter in their
+types, even though the complementary root and literal gluing beneath them no
+longer use it.  The remaining adapter is therefore sharply bounded: propagate
+the retained boundary root through those interfaces and then expose the
+source-facing completed step.  No physical crosscut construction, packed
+strict reduction, or Four-Color conclusion is claimed by this repair.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier

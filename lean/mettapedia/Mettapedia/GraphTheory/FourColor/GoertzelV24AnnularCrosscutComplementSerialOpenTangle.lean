@@ -153,9 +153,32 @@ theorem sourceCrosscutComplementBoundaryDartAt_right_edgeOf
   rw [pair.sourceCrosscutComplementBoundaryDartAt_edgeOf data boundary]
   rfl
 
-/-- A retained root for the literal complementary open tangle.  It is the
-same old dart used to root the already constructed open-region rotation
-system, before that construction adds its fresh boundary stub. -/
+/-- A retained root for the literal complementary open tangle, obtained from
+the dart stored in the source-boundary package.  It is the same old dart used
+to root the already constructed open-region rotation system, before that
+construction adds its fresh boundary stub. -/
+noncomputable def sourceCrosscutComplementRetainedRootOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair) :
+    RetainedDart data.toRotationSystem
+      (fun vertex => vertex ∉ pair.componentSide boundary.component) :=
+  ⟨pair.sourceCrosscutComplementDartOfBoundary data boundary, by
+    intro hkept
+    apply boundary.removed_not_kept
+    rw [← pair.sourceCrosscutComplementDartOfBoundary_vertOf data boundary]
+    exact hkept⟩
+
+/-- Compatibility entry point for callers that still carry global cubicity.
+The complementary root itself now comes from the literal source boundary. -/
 noncomputable def sourceCrosscutComplementRetainedRoot
     (data : Data G)
     {start finish : AmbientFace
@@ -168,19 +191,39 @@ noncomputable def sourceCrosscutComplementRetainedRoot
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
     (boundary : SourceCrosscutBoundaryData data pair)
-    (hcubic : data.toRotationSystem.IsCubic) :
+    (_hcubic : data.toRotationSystem.IsCubic) :
     RetainedDart data.toRotationSystem
       (fun vertex => vertex ∉ pair.componentSide boundary.component) :=
-  ⟨pair.sourceCrosscutComplementDart data boundary hcubic, by
-    intro hkept
-    apply boundary.removed_not_kept
-    rw [← pair.sourceCrosscutComplementDart_vertOf data boundary hcubic]
-    exact hkept⟩
+  pair.sourceCrosscutComplementRetainedRootOfBoundary data boundary
 
 /-- The actual complementary source region as a two-sided literal open
 tangle.  Its input and output carriers are the two source transversals, while
 its internal carrier consists precisely of old darts whose mates remain in
 the complementary Cell. -/
+noncomputable def sourceCrosscutComplementTwoSidedOpenTangleOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair) :
+    TwoSidedOpenTangleData
+      { vertex : V // vertex ∉ pair.componentSide boundary.component }
+      (InternalDart data.toRotationSystem
+        (fun vertex => vertex ∉ pair.componentSide boundary.component))
+      (Fin pair.left.walk.length) (Fin pair.right.walk.length) :=
+  (OpenTangleData.ofVertexSide data.toRotationSystem
+      (fun vertex => vertex ∉ pair.componentSide boundary.component)
+      (pair.sourceCrosscutComplementRetainedRootOfBoundary data boundary)).splitBoundary
+    (pair.sourceCrosscutComplementBoundarySplit data boundary)
+
+/-- Compatibility entry point for the earlier globally cubic API.  The
+two-sided source tangle is now rooted by the boundary package itself. -/
 noncomputable def sourceCrosscutComplementTwoSidedOpenTangle
     (data : Data G)
     {start finish : AmbientFace
@@ -193,16 +236,13 @@ noncomputable def sourceCrosscutComplementTwoSidedOpenTangle
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
     (boundary : SourceCrosscutBoundaryData data pair)
-    (hcubic : data.toRotationSystem.IsCubic) :
+    (_hcubic : data.toRotationSystem.IsCubic) :
     TwoSidedOpenTangleData
       { vertex : V // vertex ∉ pair.componentSide boundary.component }
       (InternalDart data.toRotationSystem
         (fun vertex => vertex ∉ pair.componentSide boundary.component))
       (Fin pair.left.walk.length) (Fin pair.right.walk.length) :=
-  (OpenTangleData.ofVertexSide data.toRotationSystem
-      (fun vertex => vertex ∉ pair.componentSide boundary.component)
-      (pair.sourceCrosscutComplementRetainedRoot data boundary hcubic)).splitBoundary
-    (pair.sourceCrosscutComplementBoundarySplit data boundary)
+  pair.sourceCrosscutComplementTwoSidedOpenTangleOfBoundary data boundary
 
 end SeparatedAlignedSimpleDualCrosscuts
 
