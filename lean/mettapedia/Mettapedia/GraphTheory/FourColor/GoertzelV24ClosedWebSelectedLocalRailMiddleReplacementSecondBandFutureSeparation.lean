@@ -103,7 +103,7 @@ theorem SecondFourthFarEndpoint.not_mem_futureRailSupports
           (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
         hlastNext).center.val + 2 < futureInterior.center.val) :
     face ∉ future.firstRail.support ∧ face ∉ future.secondRail.support := by
-  rcases endpoint with endpoint | endpoint
+  rcases endpoint with ⟨endpoint, _, _, _⟩ | ⟨endpoint, _, _, _⟩
   · subst face
     constructor
     · intro hfuture

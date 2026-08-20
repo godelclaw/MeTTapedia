@@ -213,9 +213,35 @@ inductive SecondFourthFarEndpoint (face : SelectedFace (web := web)) : Prop
   | first
       (face_eq : face = selectedPlacementSideFace fourthPlacement
         lastSuccessor.rightOutgoingBefore)
+      (second_adjacent : SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center) face)
+      (fourth_adjacent : SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+            hlastNext).center) face)
+      (ne_third_center : face ≠
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
   | second
       (face_eq : face = selectedPlacementSideFace fourthPlacement
         lastSuccessor.rightOutgoingAfter)
+      (second_adjacent : SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center) face)
+      (fourth_adjacent : SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+            hlastNext).center) face)
+      (ne_third_center : face ≠
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
 
 private theorem oldFirst_start_ne
     (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
@@ -568,13 +594,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.resolveSecondBand
       · rcases last with hnew | hnew
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingBefore
-          · exact ⟨.farEndpoint (.first hfinish)⟩
+          · exact ⟨.farEndpoint (.first hfinish hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_firstFirstSourceSplice hsource collision
                 holdFirst hnew hsecond hfourth hthird hfinish with ⟨splice⟩
             exact ⟨.secondFourthSplice splice⟩
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingAfter
-          · exact ⟨.farEndpoint (.second hfinish)⟩
+          · exact ⟨.farEndpoint (.second hfinish hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_firstSecondSourceSplice hsource collision
                 holdFirst hnew hsecond hfourth hthird hfinish with ⟨splice⟩
             exact ⟨.secondFourthSplice splice⟩
@@ -588,13 +614,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.resolveSecondBand
       · rcases last with hnew | hnew
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingBefore
-          · exact ⟨.farEndpoint (.first hfinish)⟩
+          · exact ⟨.farEndpoint (.first hfinish hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_secondFirstSourceSplice hsource collision
                 holdSecond hnew hsecond hfourth hthird hfinish with ⟨splice⟩
             exact ⟨.secondFourthSplice splice⟩
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingAfter
-          · exact ⟨.farEndpoint (.second hfinish)⟩
+          · exact ⟨.farEndpoint (.second hfinish hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_secondSecondSourceSplice hsource collision
                 holdSecond hnew hsecond hfourth hthird hfinish with ⟨splice⟩
             exact ⟨.secondFourthSplice splice⟩
