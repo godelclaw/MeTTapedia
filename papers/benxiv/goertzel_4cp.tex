@@ -2998,6 +2998,29 @@ compare the pointed predecessor/successor crossings with the square-bond
 endpoint triangle; this does not yet construct the arbitrary-length crosscuts
 required by the splice.
 
+The first branch-independent propagation layer is now kernel-checked in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailConstructionTraceEdgeReceipt}.
+It packages the exact terminal-edge alternatives---an old selected forward
+step, a successor selected forward step, or a named old-centre connector---as
+a walk invariant and proves that copying, append, prefix/suffix truncation,
+reversal, loop erasure, and the two canonical cross-collision reroutes
+preserve it.  Consequently both rails of the ordinary successor append and
+of the double-cross repair retain source receipts on every surviving edge.
+This is the common calculus needed by all finite terminal repairs; it does
+not yet discharge the two immediate centre-bridge cases or the six residual
+repairs, and therefore does not yet attach the invariant to the final
+proof-relevant construction trace or close L1.
+
+The disposable end-to-end type probe has also been extended through the
+logical endpoint of the GWCO descent.  Once a supplier constructs a strictly
+smaller packed closed-web-at-good-word instance above a threshold, Lean now
+assembles the carrier-changing reductive system and proves that exclusion of
+all such instances is equivalent to its \texttt{BaseVerified} claim.  This
+checks the reduction-to-base interface, but it is deliberately not a 4CT
+headline theorem: the source's subsequent trail-completability assembly from
+GWCO to colorability remains a separate open interface, while the supplier
+must still reconstruct every output invariant named above.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
