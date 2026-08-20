@@ -324,6 +324,54 @@ variable
       firstIncomingBefore firstIncomingAfter firstSuccessor.frame.leftBefore
       firstSuccessor.frame.leftAfter}
 
+/-- Exact source ingredients from which a first--third square splice may draw
+its support.  This is the finite separation interface for the companion rail. -/
+def FaceInFirstThirdSquareSourceSpliceSupport
+    (oldSupport newSupport : List (SelectedFace (web := web)))
+    (current : SelectedFace (web := web)) : Prop :=
+  current ∈ oldSupport ∨
+    current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+      firstInterior.center ∨
+    current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+      (nextCorridorInterior firstInterior hfirstNext).center ∨
+    current = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+    current ∈ newSupport
+
+/-- A support receipt for the literal source splice reduces companion
+separation to the two source pieces and the three displayed centres. -/
+theorem support_disjoint_of_faceInFirstThirdSquareSourceSpliceSupport
+    {oldSupport newSupport routeSupport companionSupport :
+      List (SelectedFace (web := web))}
+    (hroute : ∀ current ∈ routeSupport,
+      FaceInFirstThirdSquareSourceSpliceSupport
+        (corridor := corridor) (firstInterior := firstInterior)
+        (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+        oldSupport newSupport current)
+    (hold : oldSupport.Disjoint companionSupport)
+    (hfirstCenter :
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center ∉ companionSupport)
+    (hsecondCenter :
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center ∉ companionSupport)
+    (hthirdCenter :
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∉
+        companionSupport)
+    (hnew : newSupport.Disjoint companionSupport) :
+    routeSupport.Disjoint companionSupport := by
+  rw [List.disjoint_left]
+  intro current hcurrent hcompanion
+  rcases hroute current hcurrent with holdCurrent | hfirst | hsecond | hthird | hnewCurrent
+  · exact (List.disjoint_left.mp hold holdCurrent) hcompanion
+  · exact hfirstCenter (hfirst ▸ hcompanion)
+  · exact hsecondCenter (hsecond ▸ hcompanion)
+  · exact hthirdCenter (hthird ▸ hcompanion)
+  · exact (List.disjoint_left.mp hnew hnewCurrent) hcompanion
+
 /-- The first/first literal source-track instance of the first--third square
 repair.  Reversing the old rail starts at the proved collision-free seam flank;
 the following successor ends at the proved collision-free opposite seam. -/
@@ -352,7 +400,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
     ∃ route : SelectedDualGraph (web := web).Walk
         (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore)
         (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore),
-      route.IsPath ∧ face ∉ route.support := by
+      route.IsPath ∧ face ∉ route.support ∧
+        ∀ current ∈ route.support,
+          FaceInFirstThirdSquareSourceSpliceSupport
+            (corridor := corridor) (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            firstLeft.paths.firstRail.support bridge.firstContinuation.support
+            current := by
   have hold : face ∈ firstLeft.paths.firstRail.reverse.support := by
     simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
   have holdStart :
@@ -387,8 +441,12 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
       firstLeft.paths.firstRail.reverse bridge.firstContinuation
       firstLeft.paths.firstRail_isPath.reverse bridge.firstContinuation_isPath
       hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
-      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
-  exact ⟨route, hpath, havoids⟩
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, hsupport⟩
+  refine ⟨route, hpath, havoids, ?_⟩
+  intro current hcurrent
+  simpa only [FaceInFirstThirdSquareSourceSpliceSupport,
+    SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+      hsupport current hcurrent
 
 /-- The first/second literal source-track instance of the first--third square
 repair. -/
@@ -417,7 +475,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
     ∃ route : SelectedDualGraph (web := web).Walk
         (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore)
         (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter),
-      route.IsPath ∧ face ∉ route.support := by
+      route.IsPath ∧ face ∉ route.support ∧
+        ∀ current ∈ route.support,
+          FaceInFirstThirdSquareSourceSpliceSupport
+            (corridor := corridor) (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            firstLeft.paths.firstRail.support bridge.secondContinuation.support
+            current := by
   have hold : face ∈ firstLeft.paths.firstRail.reverse.support := by
     simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
   have holdStart :
@@ -452,8 +516,12 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
       firstLeft.paths.firstRail.reverse bridge.secondContinuation
       firstLeft.paths.firstRail_isPath.reverse bridge.secondContinuation_isPath
       hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
-      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
-  exact ⟨route, hpath, havoids⟩
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, hsupport⟩
+  refine ⟨route, hpath, havoids, ?_⟩
+  intro current hcurrent
+  simpa only [FaceInFirstThirdSquareSourceSpliceSupport,
+    SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+      hsupport current hcurrent
 
 /-- The second/first literal source-track instance of the first--third square
 repair. -/
@@ -482,7 +550,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
     ∃ route : SelectedDualGraph (web := web).Walk
         (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
         (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore),
-      route.IsPath ∧ face ∉ route.support := by
+      route.IsPath ∧ face ∉ route.support ∧
+        ∀ current ∈ route.support,
+          FaceInFirstThirdSquareSourceSpliceSupport
+            (corridor := corridor) (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            firstLeft.paths.secondRail.support bridge.firstContinuation.support
+            current := by
   have hold : face ∈ firstLeft.paths.secondRail.reverse.support := by
     simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
   have holdStart :
@@ -517,8 +591,12 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
       firstLeft.paths.secondRail.reverse bridge.firstContinuation
       firstLeft.paths.secondRail_isPath.reverse bridge.firstContinuation_isPath
       hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
-      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
-  exact ⟨route, hpath, havoids⟩
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, hsupport⟩
+  refine ⟨route, hpath, havoids, ?_⟩
+  intro current hcurrent
+  simpa only [FaceInFirstThirdSquareSourceSpliceSupport,
+    SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+      hsupport current hcurrent
 
 /-- The second/second literal source-track instance of the first--third square
 repair. -/
@@ -547,7 +625,13 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
     ∃ route : SelectedDualGraph (web := web).Walk
         (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
         (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter),
-      route.IsPath ∧ face ∉ route.support := by
+      route.IsPath ∧ face ∉ route.support ∧
+        ∀ current ∈ route.support,
+          FaceInFirstThirdSquareSourceSpliceSupport
+            (corridor := corridor) (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            firstLeft.paths.secondRail.support bridge.secondContinuation.support
+            current := by
   have hold : face ∈ firstLeft.paths.secondRail.reverse.support := by
     simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
   have holdStart :
@@ -582,8 +666,12 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
       firstLeft.paths.secondRail.reverse bridge.secondContinuation
       firstLeft.paths.secondRail_isPath.reverse bridge.secondContinuation_isPath
       hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
-      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
-  exact ⟨route, hpath, havoids⟩
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, hsupport⟩
+  refine ⟨route, hpath, havoids, ?_⟩
+  intro current hcurrent
+  simpa only [FaceInFirstThirdSquareSourceSpliceSupport,
+    SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+      hsupport current hcurrent
 
 end SourceTrackSpecialization
 

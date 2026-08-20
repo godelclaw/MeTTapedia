@@ -2449,6 +2449,22 @@ route to the matching third-cell outgoing flank which avoids it.  This closes
 the continuation-pairing table, not the square branch: middle source atoms
 outside the third-cell continuations, the second--fourth mirror, and separation
 from the companion rail remain open.
+Each of the four source specializations now retains that exact support receipt
+rather than discarding it at the source boundary.  The public predicate
+\texttt{FaceInFirstThirdSquareSourceSpliceSupport} says that every route face
+comes from the selected old rail, one of the three corridor centres, or the
+selected new continuation.  Its disjointness theorem reduces companion-rail
+separation to those five literal ingredients.  It does not assert the three
+centre-avoidance facts; legal zero-step local shapes make those facts part of
+the remaining source geometry.
+
+The superficially symmetric second--fourth specialization has a further
+endpoint issue.  The available four-cell packet proves that the collision is
+not either third-cell seam flank, but it does not prove that the collision is
+different from the fourth-cell continuation's far endpoint.  A route ending
+at that face cannot simultaneously avoid it.  Thus this mirror needs either
+one more successor cell, making the collision internal, or a separately proved
+far-end exclusion; it is not obtained by renaming the first--third theorem.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
