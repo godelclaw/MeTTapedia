@@ -2672,6 +2672,18 @@ recurrence must consequently retain a bounded raw terminal window alongside
 the frozen path prefix (or first prove a seam-retention theorem); splitting a
 flattened path at an assumed seam would silently reintroduce the missing claim.
 
+That corrected state now exists in Lean.  The
+\texttt{BoundedLiveMiddleReplacementState} keeps the interior-frozen old
+prefix and the exact proof-relevant four-cell repair as separate data while
+also carrying the already-verified flattened prepend result.  Its equality
+receipts identify the stored repair with the canonical finite classifier and
+the stored flattened result with the proved prepend operation.  Thus the next
+rolling step can inspect the literal terminal construction without asserting
+that any internal seam survived flattening.  The present constructor is only
+the seed of the wider recurrence: shifting the live suffix, consuming a new
+collision, arbitrary iteration, both annular end caps, the separated crosscut
+pair, and L1 remain open.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
