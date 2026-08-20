@@ -2761,11 +2761,19 @@ proves that every constructed shared-prefix transition either succeeds or
 retains one of two proof-relevant finite packets.  An internal future
 collision is promoted to the existing exact four-cell collision band,
 including the stored middle repair when applicable; a collision introduced
-by joining the prefix is returned with membership in the literal first-live
-rail pair.  Consequently no failed rolling step can refer to an unspecified
-location in the unbounded prefix.  This is a common bounded interface for the
-next local case analysis, not an elimination of either packet, an iteration
-theorem, an end cap, a crosscut constructor, or closure of L1.
+by joining the prefix is first placed on the literal first-live rail pair and
+in one of the shifted future's two exact terminal windows.  The more remote
+of those windows lies at corridor centres four and five.  Exact five-piece
+window provenance, together with the first-live rails' adjacency to centre
+one, makes any shared face there either a forbidden distant centre adjacency
+or a forbidden common neighbour.  Hence that last-window alternative is
+empty: every newly retained collision is confined to the first live pair and
+the shifted future's first terminal pair, a literal three-cell window.
+Consequently no failed rolling step can refer to an unspecified location in
+the unbounded prefix, and one of its two terminal-window alternatives has
+been eliminated rather than merely named.  The first-window collision class
+and the internal exact four-cell bands remain; this is not arbitrary
+iteration, an end cap, a crosscut constructor, or closure of L1.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
