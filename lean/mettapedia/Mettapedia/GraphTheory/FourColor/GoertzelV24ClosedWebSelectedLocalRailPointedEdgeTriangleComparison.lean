@@ -93,6 +93,172 @@ variable
     {rightPlacement : SelectedInternalHexRungPlacement corridor rungs
       (nextCorridorInterior leftInterior hnext)}
 
+/-- Proof-relevant source provenance for a normalized adjacent-terminal
+crossing.  The three constructors deliberately remain distinct: a surviving
+dual edge can come from the old selected placement, the successor placement,
+or an explicit old-centre connector.  In every case the packet retains the
+named primal corner met by the selected crossing.
+
+This is the finite coordinate datum needed by the square-bond comparison.  It
+does not assert that the corner is either endpoint of a later square bond. -/
+inductive SelectedAdjacentTerminalEdgeCrossingOrigin
+    (edge : Sym2 (SelectedFace web)) : Type
+  | oldForward
+      (left right :
+        {position // position ∈ selectedPlacementSidePositions leftPlacement})
+      (successor : right.1.val ≡ left.1.val + 1 [MOD 6])
+      (step : SelectedPlacementSideForwardEdgeReceipt
+        leftPlacement left right edge)
+  | successorForward
+      (left right :
+        {position // position ∈ selectedPlacementSidePositions rightPlacement})
+      (successor : right.1.val ≡ left.1.val + 1 [MOD 6])
+      (step : SelectedPlacementSideForwardEdgeReceipt
+        rightPlacement left right edge)
+  | oldCenter
+      (position :
+        {position // position ∈ selectedPlacementSidePositions leftPlacement})
+      (step : SelectedPlacementCenterSideEdgeReceipt
+        leftPlacement position edge)
+
+/-- Normalize a proof-relevant source origin to the common facial-dual
+crossing packet consumed by the endpoint-triangle comparison. -/
+def SelectedAdjacentTerminalEdgeCrossingOrigin.toCrossingReceipt
+    {edge : Sym2 (SelectedFace web)}
+    (origin : SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement) edge) :
+    SelectedAdjacentTerminalEdgeCrossingReceipt edge := by
+  cases origin with
+  | oldForward left right _ step =>
+      exact {
+        first := selectedPlacementSideFace leftPlacement left
+        second := selectedPlacementSideFace leftPlacement right
+        edge_eq := step.edge_eq
+        faces_ne := step.faces_ne
+        crossing := selectedPlacementSideForwardThirdEdge leftPlacement left
+        crossing_mem_shared := step.thirdEdge_mem_shared
+      }
+  | successorForward left right _ step =>
+      exact {
+        first := selectedPlacementSideFace rightPlacement left
+        second := selectedPlacementSideFace rightPlacement right
+        edge_eq := step.edge_eq
+        faces_ne := step.faces_ne
+        crossing := selectedPlacementSideForwardThirdEdge rightPlacement left
+        crossing_mem_shared := step.thirdEdge_mem_shared
+      }
+  | oldCenter position step =>
+      let centerFace :=
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          leftInterior.center
+      have hadj : (SelectedDualGraph web).Adj centerFace
+          (selectedPlacementSideFace leftPlacement position) :=
+        selectedPlacementSideFace_adjacent_center
+          (corridor := corridor) leftPlacement position
+      exact {
+        first := centerFace
+        second := selectedPlacementSideFace leftPlacement position
+        edge_eq := step.edge_eq
+        faces_ne := hadj.ne
+        crossing := web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS leftPlacement.root position.1)
+        crossing_mem_shared := step.sideEdge_mem_shared
+      }
+
+/-- The exact named primal corner retained by a source crossing origin. -/
+def SelectedAdjacentTerminalEdgeCrossingOrigin.corner
+    {edge : Sym2 (SelectedFace web)}
+    (origin : SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement) edge) : V :=
+  match origin with
+  | .oldForward left _ _ _ =>
+      selectedPlacementSideForwardCorner leftPlacement left
+  | .successorForward left _ _ _ =>
+      selectedPlacementSideForwardCorner rightPlacement left
+  | .oldCenter position _ =>
+      selectedPlacementSideForwardCorner leftPlacement position
+
+/-- The source corner is genuinely an endpoint of the normalized primal
+crossing.  This is the strongest uniform endpoint fact supported by all three
+receipt constructors; identifying it with a square-bond endpoint is the
+remaining finite placement comparison. -/
+theorem SelectedAdjacentTerminalEdgeCrossingOrigin.corner_mem_crossing
+    {edge : Sym2 (SelectedFace web)}
+    (origin : SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement) edge) :
+    origin.corner ∈ origin.toCrossingReceipt.crossing.1 := by
+  cases origin with
+  | oldForward left right successor step =>
+      let dart := selectedPlacementSideForwardDart leftPlacement left
+      have hvertex : web.annular.RS.vertOf
+            (web.annular.RS.rho (web.annular.RS.phi dart)) =
+          web.annular.RS.vertOf (web.annular.RS.alpha dart) :=
+        (web.annular.RS.vert_rho (web.annular.RS.phi dart)).trans
+          (web.annular.RS.vert_phi_eq_vert_alpha dart)
+      have hmem : web.annular.RS.vertOf
+            (web.annular.RS.rho (web.annular.RS.phi dart)) ∈
+          (web.annular.RS.edgeOf
+            (web.annular.RS.rho (web.annular.RS.phi dart))).1 := by
+        change (web.annular.RS.rho (web.annular.RS.phi dart)).fst ∈
+          s((web.annular.RS.rho (web.annular.RS.phi dart)).fst,
+            (web.annular.RS.rho (web.annular.RS.phi dart)).snd)
+        simp
+      change web.annular.RS.vertOf (web.annular.RS.alpha dart) ∈
+        (web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi dart))).1
+      rw [← hvertex]
+      exact hmem
+  | successorForward left right successor step =>
+      let dart := selectedPlacementSideForwardDart rightPlacement left
+      have hvertex : web.annular.RS.vertOf
+            (web.annular.RS.rho (web.annular.RS.phi dart)) =
+          web.annular.RS.vertOf (web.annular.RS.alpha dart) :=
+        (web.annular.RS.vert_rho (web.annular.RS.phi dart)).trans
+          (web.annular.RS.vert_phi_eq_vert_alpha dart)
+      have hmem : web.annular.RS.vertOf
+            (web.annular.RS.rho (web.annular.RS.phi dart)) ∈
+          (web.annular.RS.edgeOf
+            (web.annular.RS.rho (web.annular.RS.phi dart))).1 := by
+        change (web.annular.RS.rho (web.annular.RS.phi dart)).fst ∈
+          s((web.annular.RS.rho (web.annular.RS.phi dart)).fst,
+            (web.annular.RS.rho (web.annular.RS.phi dart)).snd)
+        simp
+      change web.annular.RS.vertOf (web.annular.RS.alpha dart) ∈
+        (web.annular.RS.edgeOf
+          (web.annular.RS.rho (web.annular.RS.phi dart))).1
+      rw [← hvertex]
+      exact hmem
+  | oldCenter position step =>
+      let dart := selectedPlacementSideForwardDart leftPlacement position
+      have hmem : web.annular.RS.vertOf (web.annular.RS.alpha dart) ∈
+          (web.annular.RS.edgeOf (web.annular.RS.alpha dart)).1 := by
+        change (web.annular.RS.alpha dart).fst ∈
+          s((web.annular.RS.alpha dart).fst,
+            (web.annular.RS.alpha dart).snd)
+        simp
+      change web.annular.RS.vertOf (web.annular.RS.alpha dart) ∈
+        (web.annular.RS.edgeOf dart).1
+      simpa only [web.annular.RS.edge_alpha] using hmem
+
+/-- Every adjacent terminal receipt retains one of the three exact source
+origins above.  Unlike `toCrossingReceipt`, this theorem does not erase which
+placement and which local corner produced the crossing. -/
+theorem SelectedAdjacentTerminalEdgeReceipt.toCrossingOrigin
+    {edge : Sym2 (SelectedFace web)}
+    (receipt : SelectedAdjacentTerminalEdgeReceipt
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      edge) :
+    Nonempty (SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement) edge) := by
+  rcases receipt with oldForward | successorOrCenter
+  · rcases oldForward with ⟨left, right, hsuccessor, step⟩
+    exact ⟨.oldForward left right hsuccessor step⟩
+  · rcases successorOrCenter with successorForward | center
+    · rcases successorForward with ⟨left, right, hsuccessor, step⟩
+      exact ⟨.successorForward left right hsuccessor step⟩
+    · rcases center with ⟨position, step⟩
+      exact ⟨.oldCenter position step⟩
+
 /-- Each old-step, successor-step, or old-centre receipt exposes one common
 primal-crossing representation. -/
 theorem SelectedAdjacentTerminalEdgeReceipt.toCrossingReceipt
@@ -101,43 +267,8 @@ theorem SelectedAdjacentTerminalEdgeReceipt.toCrossingReceipt
       (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
       edge) :
     Nonempty (SelectedAdjacentTerminalEdgeCrossingReceipt edge) := by
-  rcases receipt with oldForward | successorOrCenter
-  · rcases oldForward with ⟨left, right, _hsuccessor, step⟩
-    exact ⟨{
-      first := selectedPlacementSideFace leftPlacement left
-      second := selectedPlacementSideFace leftPlacement right
-      edge_eq := step.edge_eq
-      faces_ne := step.faces_ne
-      crossing := selectedPlacementSideForwardThirdEdge leftPlacement left
-      crossing_mem_shared := step.thirdEdge_mem_shared
-    }⟩
-  · rcases successorOrCenter with successorForward | center
-    · rcases successorForward with ⟨left, right, _hsuccessor, step⟩
-      exact ⟨{
-        first := selectedPlacementSideFace rightPlacement left
-        second := selectedPlacementSideFace rightPlacement right
-        edge_eq := step.edge_eq
-        faces_ne := step.faces_ne
-        crossing := selectedPlacementSideForwardThirdEdge rightPlacement left
-        crossing_mem_shared := step.thirdEdge_mem_shared
-      }⟩
-    · rcases center with ⟨position, step⟩
-      let centerFace :=
-        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
-          leftInterior.center
-      have hadj : (SelectedDualGraph web).Adj centerFace
-          (selectedPlacementSideFace leftPlacement position) :=
-        selectedPlacementSideFace_adjacent_center
-          (corridor := corridor) leftPlacement position
-      exact ⟨{
-        first := centerFace
-        second := selectedPlacementSideFace leftPlacement position
-        edge_eq := step.edge_eq
-        faces_ne := hadj.ne
-        crossing := web.annular.RS.edgeOf
-          (faceCycleDart web.annular.RS leftPlacement.root position.1)
-        crossing_mem_shared := step.sideEdge_mem_shared
-      }⟩
+  rcases receipt.toCrossingOrigin with ⟨origin⟩
+  exact ⟨origin.toCrossingReceipt⟩
 
 end ReceiptNormalization
 
