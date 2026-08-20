@@ -135,12 +135,57 @@ private noncomputable def rebaseMiddleSwapped
     firstSuccessor.frame.leftBeforeFace_eq_rightAfterFace.symm
     firstSuccessor.frame.leftAfterFace_eq_rightBeforeFace.symm
 
+/-- Rebasing a straight middle repair preserves its two-centre support
+provenance. -/
+theorem rebaseMiddleStraight_supportedBySelectedCenterPair
+    (middle : StraightMiddleAssembly (firstSuccessor := firstSuccessor)
+      (bridge := bridge))
+    (hmiddle : SupportedBySelectedCenterPair (corridor := corridor) middle
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :
+    SupportedBySelectedCenterPair (corridor := corridor)
+      (rebaseMiddleStraight middle)
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center := by
+  simpa [SupportedBySelectedCenterPair, rebaseMiddleStraight] using hmiddle
+
+/-- Rebasing a swapped middle repair preserves the same support provenance. -/
+theorem rebaseMiddleSwapped_supportedBySelectedCenterPair
+    (middle : SwappedMiddleAssembly (firstSuccessor := firstSuccessor)
+      (bridge := bridge))
+    (hmiddle : SupportedBySelectedCenterPair (corridor := corridor) middle
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :
+    SupportedBySelectedCenterPair (corridor := corridor)
+      (rebaseMiddleSwapped middle)
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center := by
+  simpa [SupportedBySelectedCenterPair, rebaseMiddleSwapped] using hmiddle
+
 private noncomputable def rebaseLastContinuation :=
   rebaseAssemblyStart (continuationAssembly lastSuccessor)
     (congrArg (selectedPlacementSideFace thirdPlacement)
       (bridge.rightOutgoingBefore_eq_nextLeftBefore lastSuccessor)).symm
     (congrArg (selectedPlacementSideFace thirdPlacement)
       (bridge.rightOutgoingAfter_eq_nextLeftAfter lastSuccessor)).symm
+
+/-- Rebasing the fourth-cell continuation changes only its named start. -/
+@[simp] theorem rebaseLastContinuation_firstRail_support :
+    (rebaseLastContinuation (bridge := bridge)
+      (lastSuccessor := lastSuccessor)).firstRail.support =
+      lastSuccessor.firstContinuation.support := by
+  simp [rebaseLastContinuation, continuationAssembly]
+
+/-- Symmetric support receipt for the rebased fourth-cell continuation. -/
+@[simp] theorem rebaseLastContinuation_secondRail_support :
+    (rebaseLastContinuation (bridge := bridge)
+      (lastSuccessor := lastSuccessor)).secondRail.support =
+      lastSuccessor.secondContinuation.support := by
+  simp [rebaseLastContinuation, continuationAssembly]
 
 /-- Exact surviving collision data from one of the two joins of a canonical
 middle replacement.  The constructors retain the middle branch and the
