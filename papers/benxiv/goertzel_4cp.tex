@@ -2190,7 +2190,15 @@ faces.  Coordinates are allowed to coincide for stationary and one-step rails;
 no false distinctness is assumed.  The untouched first- and fourth-cell rails
 are now expanded by the same length-two argument.  Both sides of both residual
 joins are therefore finite coordinate data; this exposes the complete bounded
-case interface but does not yet eliminate its cases.  One atom is also directionally
+case interface but does not yet eliminate its cases.  Lean now collapses that
+coordinate table to five exact centre geometries: the second-cell centre
+itself; a common neighbour of the first and second centres; a common neighbour
+of the first and third centres; a common neighbour of the second and fourth
+centres; or a common neighbour of the third and fourth centres.  The two
+adjacent-centre cases are literal dual-triangle geometries, and the two
+distance-two cases are bounded alternative routes.  This is a complete
+classification of the surviving local geometry, not an elimination of any
+of its five constructors.  One atom is also directionally
 resolved: the displayed
 second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas

@@ -1088,6 +1088,174 @@ theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.firstMiddle_of_eq
   | middleLast middle last =>
       exact False.elim ((face_ne_middleCenter_of_mem_lastPiece hsource last) hface)
 
+/-- The three possible centre relations of a face in the canonical middle
+repair.  Old bridge rails and seam faces lie next to the second centre; new
+bridge continuations lie next to the third centre; the displayed centre is
+retained as an equality case. -/
+inductive FaceNearCanonicalMiddleCenters
+    (face : SelectedFace (web := web)) : Prop
+  | secondCenter
+      (face_eq : face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center)
+  | secondAdjacent
+      (adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior firstInterior hfirstNext).center) face)
+  | thirdAdjacent
+      (adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+          face)
+
+/-- Collapse the finite middle-source coordinates to the centre relation
+which matters for the next planar collision argument. -/
+theorem faceNearCanonicalMiddleCenters_of_sourcePieces
+    {face : SelectedFace (web := web)}
+    (hface : FaceInCanonicalMiddleSourcePieces
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face) :
+    FaceNearCanonicalMiddleCenters (corridor := corridor)
+      (firstInterior := firstInterior) (hfirstNext := hfirstNext)
+      (hbridgeNext := hbridgeNext) face := by
+  rcases hface with hface | hface | hface | hface | hface | hface | hface
+  · exact .secondAdjacent
+      ((BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)).paths
+        |>.firstRail_support_adjacent_center face hface)
+  · exact .secondAdjacent
+      ((BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)).paths
+        |>.secondRail_support_adjacent_center face hface)
+  · have hface' : face ∈ bridge.rightRails.paths.firstRail.support := by
+      rw [← bridge.firstContinuation_support]
+      exact hface
+    exact .thirdAdjacent
+      (bridge.rightRails.paths.firstRail_support_adjacent_center face hface')
+  · have hface' : face ∈ bridge.rightRails.paths.secondRail.support := by
+      rw [← bridge.secondContinuation_support]
+      exact hface
+    exact .thirdAdjacent
+      (bridge.rightRails.paths.secondRail_support_adjacent_center face hface')
+  · exact .secondCenter hface
+  · subst face
+    exact .secondAdjacent
+      (selectedPlacementSideFace_adjacent_center
+        (corridor := corridor) secondPlacement bridge.frame.leftBefore)
+  · subst face
+    exact .secondAdjacent
+      (selectedPlacementSideFace_adjacent_center
+        (corridor := corridor) secondPlacement bridge.frame.leftAfter)
+
+/-- The five literal centre geometries of a surviving canonical middle
+replacement collision.  Adjacent-centre cases are dual triangles; the two
+distance-two cases are the bounded alternative routes which the finite local
+classification must still consume. -/
+inductive ExactSelectedLocalRailMiddleReplacementCollisionGeometry
+    (face : SelectedFace (web := web)) : Prop
+  | secondCenter
+      (face_eq : face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center)
+  | firstSecondCommon
+      (first_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            firstInterior.center) face)
+      (second_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior firstInterior hfirstNext).center) face)
+  | firstThirdCommon
+      (first_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            firstInterior.center) face)
+      (third_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+          face)
+  | secondFourthCommon
+      (second_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior firstInterior hfirstNext).center) face)
+      (fourth_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+              hlastNext).center) face)
+  | thirdFourthCommon
+      (third_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+          face)
+      (fourth_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+              hlastNext).center) face)
+
+/-- **Bounded middle-replacement geometry.** Every surviving bad branch has
+one of five exact centre relations.  This is a classification theorem, not a
+claim that any of the five cases is empty. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.hasGeometry
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    ExactSelectedLocalRailMiddleReplacementCollisionGeometry
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) face := by
+  have band := (data.hasLocalBand hsource).toSourceLocalBand
+  cases band with
+  | firstMiddle first middle =>
+      have hfirst : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            firstInterior.center) face := by
+        rcases first with first | second
+        · exact firstLeft.paths.firstRail_support_adjacent_center face first
+        · exact firstLeft.paths.secondRail_support_adjacent_center face second
+      cases faceNearCanonicalMiddleCenters_of_sourcePieces middle with
+      | secondCenter face_eq => exact .secondCenter face_eq
+      | secondAdjacent adjacent => exact .firstSecondCommon hfirst adjacent
+      | thirdAdjacent adjacent => exact .firstThirdCommon hfirst adjacent
+  | middleLast middle last =>
+      have hfourth : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+              hlastNext).center) face := by
+        rcases last with first | second
+        · exact lastSuccessor.rightRails.paths.firstRail_support_adjacent_center
+            face (by
+              simpa [rebaseLastContinuation, continuationAssembly] using first)
+        · exact lastSuccessor.rightRails.paths.secondRail_support_adjacent_center
+            face (by
+              simpa [rebaseLastContinuation, continuationAssembly] using second)
+      cases faceNearCanonicalMiddleCenters_of_sourcePieces middle with
+      | secondCenter face_eq =>
+          exact False.elim ((face_ne_middleCenter_of_mem_lastPiece hsource last)
+            face_eq)
+      | secondAdjacent adjacent => exact .secondFourthCommon adjacent hfourth
+      | thirdAdjacent adjacent => exact .thirdFourthCommon adjacent hfourth
+
 /-- The replacement classifier retains the independently proved concrete rail
 which avoids the original middle-band collision face. -/
 structure ExactSelectedLocalRailMiddleReplacement
