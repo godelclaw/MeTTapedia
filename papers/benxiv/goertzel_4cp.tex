@@ -1987,6 +1987,17 @@ tracks.  This does not itself make any of the four surviving collision bands
 empty; it supplies the branch-sensitive input from which that elimination or
 rerouting must be proved.
 
+The retained four-cell collision now consumes both receipts.  Its four
+endpoint-parity branches each store one of two exact cross origins, giving
+eight proof-relevant cases in all.  For example, the
+straight/straight first--second case can use only the first window's
+old-first/successor-first track and the last window's
+old-second/successor-second track, together with the three explicitly named
+connector faces of either window.  The other seven cases record the analogous
+track exchange rather than collapsing it into an unordered source-piece
+union.  This is the finite track table which the next distance and seam
+argument consumes.  No origin has yet been declared impossible.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
