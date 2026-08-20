@@ -2037,7 +2037,7 @@ which produces the next terminal window, followed by the two literal end
 caps.  This invariant is not that transition and is not L1 closure.
 
 A tempting constructor-level use of the invariant has been refuted.  One
-cannot mark the emph{entire} endpoint-carrying assembly as frozen and then
+cannot mark the \emph{entire} endpoint-carrying assembly as frozen and then
 prepend a later terminal window: each old rail ends at the very face where the
 corresponding new support begins, whereas the invariant requires their full
 supports to be disjoint.  Lean proves this contradiction separately for both
@@ -2047,6 +2047,20 @@ owning the named splice endpoints.  This negative result prevents a green but
 vacuous prepend theorem from being mistaken for the induction.  Constructing
 that split state, its neighbouring four-cell transition, and the two literal
 annular end caps remains open; L1 is not closed.
+
+The corrected interface is now formalized as well.  Instead of freezing a
+complete rail support, it freezes \texttt{support.dropLast}: the old interior
+is immutable, while the final face remains the live splice endpoint owned by
+the bounded terminal window.  A certified terminal window constructs this
+state, and the interface-aware prepend theorem advances it across any remote
+prefix satisfying the established gap-$\geq4$ certificate.  Same-track
+endpoint sharing is discharged by path simplicity; crossed endpoint contact
+is excluded by the terminal pair's mutual separation.  Most importantly, the
+returned ordered-or-exchanged assembly again carries the interior-frozen
+certificate at the new cutoff, using the exact support identity for appended
+walks.  Thus the unbounded prefix algebra is now a non-vacuous inductive
+interface.  The neighbouring four-cell repair must still construct each
+compatible live window, and both literal annular end caps and L1 remain open.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
