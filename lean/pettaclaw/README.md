@@ -19,10 +19,11 @@ are derived from the models, deployed, and re-observed live.
   separation cycle, and why the deployed fixes end it), and the
   developmental bound (substrate continuity as a precondition for
   higher intentionality).
-- `IterArchitecture.lean` — the `patham9/iter` seed loop: ordered
+- `IterArchitecture.lean` — the current `patham9/iter` reference loop: ordered
   failure-transactional transformations, the separation between advertised
   and executable tools, one-cycle hot reload, burst pacing, restart behavior,
-  and a proved necessary-feature gap for hosting PettaClaw unchanged.
+  path-only automatic memory visibility, and a proved necessary-feature gap
+  for hosting PettaClaw unchanged.
 - `ProtectedPlasticity.lean` — the essential Iter–PettaClaw fusion: an
   invariant constitution, freely transformable development, lawfully evolving
   life, and conservative projection of every mixed trace back to both source
@@ -76,6 +77,11 @@ are derived from the models, deployed, and re-observed live.
   compositional delta replay, non-authoritative materializations, and an open
   policy type capable of hosting arbitrary context managers without changing
   the process core.
+- `WeakAgentEcology.lean` — the weakest common Agent/Iter/Coding host: an open
+  table of replaceable context-sensitive policies over the unchanged
+  two-equation runner, locally transactional composition, exact preservation
+  of all three source projections and Iter pipelines, arbitrary policy and
+  context replacement, and erasure counterexamples for both kernel equations.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -98,6 +104,7 @@ LEAN_PATH=. lean FeatureExpressibility.lean
 LEAN_PATH=. lean ThreePolicyFusion.lean
 LEAN_PATH=. lean OpenEndedProcessCore.lean
 LEAN_PATH=. lean ContextProjection.lean
+LEAN_PATH=. lean WeakAgentEcology.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),

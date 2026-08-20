@@ -2,15 +2,15 @@ import ClawArchitectures
 import PresentMoment
 
 /-!
-# IterArchitecture — the seed loop and the PettaClaw hosting gap
+# IterArchitecture — the current reference loop and the PettaClaw hosting gap
 
-An executable model of the architectural core in `patham9/iter` at seed
-commit `a82fa555867ea1eeed7c04954d634f7ff58d4e18` (2026-08-11), compared
+An executable model of the architectural core in `patham9/iter` at upstream
+commit `f6f2d1e137c179cbe951defd543527c43cb97da0` (2026-08-20), compared
 with the deployed PettaClaw model in `ClawArchitectures.lean` and the
 restart invariant in `PresentMoment.lean`.
 
 The model deliberately stays below Python and below any proposed rho
-encoding.  It records what the seed actually does:
+encoding.  It records what the reference loop actually does:
 
 * transformations form a lexicographically ordered, failure-transactional
   fold over the LLM message/tool boundary;
@@ -20,13 +20,17 @@ encoding.  It records what the seed actually does:
   not to later calls in the same response;
 * every channel event has the same pacing effect, independent of origin;
 * `nop` enters a timed slow wait and then starts a new autonomous burst;
-* persistence saves experience but not the control state of the burst.
+* persistence saves experience but not the control state of the burst; and
+* the automatic memory surface contains paths, not file contents.
 
 The final feature record is only a necessary compatibility check.  Passing it
 would not by itself prove that an adapted Iter implements PettaClaw.
 
 Trusted boundary: correspondence between these definitions and `iter.py` is
 maintained by hand, as is the existing PettaClaw model-to-code boundary.
+At the pinned commit, the invalid no-tool response branch reads an undefined
+`llm_result` name.  The model records the intended valid tool-calling path; it
+does not turn that implementation defect into architectural semantics.
 -/
 
 namespace IterArchitecture
@@ -43,7 +47,7 @@ deriving Repr, DecidableEq
 /-- `none` models an exception, timeout, or unserializable result. -/
 abbrev Transformation := Boundary → Option Boundary
 
-/-- The seed keeps the old boundary when one transformation fails. -/
+/-- The reference loop keeps the old boundary when one transformation fails. -/
 def applyTransformation (boundary : Boundary)
     (transformation : Transformation) : Boundary :=
   match transformation boundary with
@@ -88,13 +92,34 @@ theorem transformation_order_observable :
 
 /-! ## Advertisement is not authority -/
 
-def maxTools : Nat := 20
+def maxTools : Nat := 30
 
-/-- The seed loads only the first twenty sorted tool files. -/
+/-- The reference loop loads only the first thirty sorted tool files. -/
 def loadBounded (tools : List Nat) : List Nat := tools.take maxTools
 
-theorem twenty_first_sorted_tool_is_omitted :
-    20 ∉ loadBounded (List.range 21) := by
+theorem thirty_first_sorted_tool_is_omitted :
+    30 ∉ loadBounded (List.range 31) := by
+  decide
+
+/-! ## The automatic memory surface is a path index -/
+
+structure MemoryArtifact where
+  name : Nat
+  content : List Nat
+deriving Repr, DecidableEq
+
+/-- The current request builder enumerates memory paths.  Reading and
+selecting their contents is delegated to tools or transformations. -/
+def memoryListing (artifacts : List MemoryArtifact) : List Nat :=
+  artifacts.map MemoryArtifact.name
+
+/-- Two materially different memories can therefore have the same automatic
+request surface.  This is not a defect in the weak loop; it identifies the
+replaceable context-policy work that a hosted agent must supply. -/
+theorem memory_contents_are_not_automatically_visible :
+    let left : List MemoryArtifact := [⟨7, [1]⟩]
+    let right : List MemoryArtifact := [⟨7, [2]⟩]
+    left ≠ right ∧ memoryListing left = memoryListing right := by
   decide
 
 /-- `loaded` is the `INOPS` snapshot used for dispatch; `advertised` is the
@@ -182,7 +207,7 @@ inductive WaitKind
   | slow
 deriving Repr, DecidableEq
 
-/-- Exact control fields from the seed, modulo the pending event string. -/
+/-- Exact control fields from the reference loop, modulo the pending event string. -/
 structure Pace where
   autonomousSteps : Nat
   newBurst : Bool
@@ -192,7 +217,7 @@ deriving Repr, DecidableEq
 def bootPace : Pace := ⟨0, true, false⟩
 
 /-- Beginning a cycle.  `Origin` is intentionally erased to presence: the
-seed has no human/sibling distinction at this layer. -/
+reference loop has no human/sibling distinction at this layer. -/
 def beginCycle (pace : Pace) : Option Origin → Pace × PromptKind
   | some _ => (⟨0, false, false⟩, .external)
   | none =>
@@ -201,7 +226,7 @@ def beginCycle (pace : Pace) : Option Origin → Pace × PromptKind
       else if pace.postTaskMode then (pace, .autonomous)
       else (pace, .continueTask)
 
-/-- End one valid tool-calling model turn.  The seed tests only the last tool
+/-- End one valid tool-calling model turn.  The reference loop tests only the last tool
 name for `nop`; `lastWasNop` records that exact rule. -/
 def finishCycle (pace : Pace) (hadEvent lastWasNop : Bool) :
     Pace × WaitKind :=
@@ -247,7 +272,7 @@ structure Runtime where
   pending : Option Origin
 deriving Repr, DecidableEq
 
-/-- The seed's durable file contains experience, not pacing or pending input. -/
+/-- The reference loop's durable file contains experience, not pacing or pending input. -/
 structure Disk where
   experience : List Nat
 deriving Repr, DecidableEq
@@ -268,7 +293,7 @@ theorem restart_breaks_control_continuity :
   refine ⟨⟨[1], ⟨7, false, false⟩, some .human⟩, ?_⟩
   decide
 
-/-- With no fresh input, every restart injects the seed's "task completed;
+/-- With no fresh input, every restart injects the reference loop's "task completed;
 select a task" prompt, even if the interrupted control state said otherwise. -/
 theorem restart_selects_new_task_without_input (runtime : Runtime) :
     (beginCycle (restart runtime).pace none).2 = .selectTask := rfl
@@ -298,15 +323,15 @@ def meetsPettaCoreRequirements (features : HostFeatures) : Prop :=
   features.policyRevokesExecution = true ∧
   features.requiredToolSurface = true
 
-/-- Capabilities of the unmodified seed, justified by the concrete results
+/-- Capabilities of the unmodified reference loop, justified by the concrete results
 above. -/
-def iterSeedFeatures : HostFeatures := ⟨false, false, false, false, false⟩
+def iterReferenceFeatures : HostFeatures := ⟨false, false, false, false, false⟩
 
-/-- The seed can carry an agent identity and call tools, but it is not a
+/-- The reference loop can carry an agent identity and call tools, but it is not a
 drop-in host for the deployed PettaClaw life core. -/
-theorem iter_seed_is_not_drop_in_pettaclaw_host :
-    ¬ meetsPettaCoreRequirements iterSeedFeatures := by
-  simp [meetsPettaCoreRequirements, iterSeedFeatures]
+theorem iter_reference_is_not_drop_in_pettaclaw_host :
+    ¬ meetsPettaCoreRequirements iterReferenceFeatures := by
+  simp [meetsPettaCoreRequirements, iterReferenceFeatures]
 
 /-- A feature-level target for an adapter layer.  This theorem is intentionally
 not named sufficiency: transport, memory, and model-to-code conformance remain
@@ -323,7 +348,8 @@ end IterArchitecture
 #print axioms IterArchitecture.failed_transformation_is_transactional
 #print axioms IterArchitecture.applyTransformations_append
 #print axioms IterArchitecture.transformation_order_observable
-#print axioms IterArchitecture.twenty_first_sorted_tool_is_omitted
+#print axioms IterArchitecture.thirty_first_sorted_tool_is_omitted
+#print axioms IterArchitecture.memory_contents_are_not_automatically_visible
 #print axioms IterArchitecture.hiding_does_not_revoke
 #print axioms IterArchitecture.hidden_tool_remains_executable
 #print axioms IterArchitecture.advertised_schema_is_not_implementation
@@ -334,5 +360,5 @@ end IterArchitecture
 #print axioms IterArchitecture.pettaclaw_is_origin_sensitive
 #print axioms IterArchitecture.restart_breaks_control_continuity
 #print axioms IterArchitecture.pettaclaw_healthy_restart_preserves_present_moment
-#print axioms IterArchitecture.iter_seed_is_not_drop_in_pettaclaw_host
+#print axioms IterArchitecture.iter_reference_is_not_drop_in_pettaclaw_host
 #print axioms IterArchitecture.adapted_target_passes_necessary_check
