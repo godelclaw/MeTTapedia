@@ -102,6 +102,87 @@ theorem current_not_mem_crossSpliceAround_support
   · apply hsuffixAvoids
     simpa only [SimpleGraph.Walk.support_cons, List.tail_cons] using hsuffix
 
+/-- A whole bridge walk may replace the single bypass edge.  This is the form
+needed when source geometry routes from a rail attachment face through one or
+more displayed corridor centres before returning to the other rail. -/
+noncomputable def crossSpliceAroundWithBridge
+    {oldStart oldFinish newStart newFinish current : V}
+    (oldWalk : G.Walk oldStart oldFinish)
+    (newWalk : G.Walk newStart newFinish)
+    (hold : current ∈ oldWalk.support)
+    (hnew : current ∈ newWalk.support)
+    (bridge : G.Walk
+      (oldWalk.takeUntil current hold).penultimate
+      (newWalk.dropUntil current hnew).snd) :
+    G.Walk oldStart newFinish :=
+  let oldPrefix := oldWalk.takeUntil current hold
+  let newSuffix := newWalk.dropUntil current hnew
+  (oldPrefix.dropLast.append (bridge.append newSuffix.tail)).bypass
+
+/-- Loop erasure makes the bridge-spliced walk simple. -/
+theorem crossSpliceAroundWithBridge_isPath
+    {oldStart oldFinish newStart newFinish current : V}
+    (oldWalk : G.Walk oldStart oldFinish)
+    (newWalk : G.Walk newStart newFinish)
+    (hold : current ∈ oldWalk.support)
+    (hnew : current ∈ newWalk.support)
+    (bridge : G.Walk
+      (oldWalk.takeUntil current hold).penultimate
+      (newWalk.dropUntil current hnew).snd) :
+    (crossSpliceAroundWithBridge oldWalk newWalk hold hnew bridge).IsPath := by
+  exact SimpleGraph.Walk.bypass_isPath _
+
+/-- A bridge which avoids the removed vertex yields a simple splice which
+also avoids it. -/
+theorem current_not_mem_crossSpliceAroundWithBridge_support
+    {oldStart oldFinish newStart newFinish current : V}
+    (oldWalk : G.Walk oldStart oldFinish)
+    (newWalk : G.Walk newStart newFinish)
+    (holdPath : oldWalk.IsPath)
+    (hnewPath : newWalk.IsPath)
+    (hold : current ∈ oldWalk.support)
+    (hnew : current ∈ newWalk.support)
+    (holdStart : oldStart ≠ current)
+    (hnewEnd : current ≠ newFinish)
+    (bridge : G.Walk
+      (oldWalk.takeUntil current hold).penultimate
+      (newWalk.dropUntil current hnew).snd)
+    (hbridge : current ∉ bridge.support) :
+    current ∉
+      (crossSpliceAroundWithBridge oldWalk newWalk hold hnew bridge).support := by
+  let oldPrefix := oldWalk.takeUntil current hold
+  let newSuffix := newWalk.dropUntil current hnew
+  have hprefixNotNil : ¬ oldPrefix.Nil := by
+    simpa only [oldPrefix, SimpleGraph.Walk.nil_takeUntil] using holdStart
+  have hsuffixNotNil : ¬ newSuffix.Nil := by
+    intro hnil
+    exact hnewEnd hnil.eq
+  have hprefixPath : oldPrefix.IsPath := holdPath.takeUntil hold
+  have hsuffixPath : newSuffix.IsPath := hnewPath.dropUntil hnew
+  have hprefixAvoids : current ∉ oldPrefix.dropLast.support := by
+    rw [oldPrefix.support_dropLast hprefixNotNil]
+    intro hmem
+    have hne := hprefixPath.support_nodup.rel_dropLast_getLast hmem
+    exact hne (oldPrefix.getLast_support).symm
+  have hstartNotTail : current ∉ newSuffix.support.tail := by
+    have hnodup := hsuffixPath.support_nodup
+    rw [← newSuffix.cons_tail_support] at hnodup
+    exact (List.nodup_cons.mp hnodup).1
+  have hsuffixAvoids : current ∉ newSuffix.tail.support := by
+    rw [newSuffix.support_tail_of_not_nil hsuffixNotNil]
+    exact hstartNotTail
+  intro hcurrent
+  have hraw :=
+    (oldPrefix.dropLast.append (bridge.append newSuffix.tail))
+      |>.support_bypass_subset_support hcurrent
+  rcases (SimpleGraph.Walk.mem_support_append_iff _ _).1 hraw with
+    hprefix | hrest
+  · exact hprefixAvoids hprefix
+  · rcases (SimpleGraph.Walk.mem_support_append_iff _ _).1 hrest with
+      hbridge' | hsuffix
+    · exact hbridge hbridge'
+    · exact hsuffixAvoids hsuffix
+
 end
 
 end GoertzelV24DualPathInteriorCrossSplice

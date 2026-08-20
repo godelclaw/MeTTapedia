@@ -2399,19 +2399,25 @@ that the collision face itself lies on one of the two endpoint triangles.
 This is a choice receipt for the reroute, not the reroute.
 For that chosen triangle the remaining two faces are distinct and joined by
 one literal dual edge.  Thus Lean now constructs the complete local bypass of
-the collision face.  What remains is the source-incidence statement that
-identifies those two faces with the predecessor and successor of one retained
-rail; without it the local edge has not yet been spliced into the rail.
+the collision face.  A subsequent type audit blocks a tempting unsupported
+identification: the other triangle faces are drawn from the displayed
+corridor-centre square, whereas the retained rails carry side faces adjacent
+to those centres.  The current interfaces prove no uniform equality with the
+rail predecessor and successor.  A source-faithful uniform repair must instead
+join those rail positions through a short chain of corridor centres; the
+triangle faces cannot simply be renamed as the rail positions.
 The generic splicing operation itself is now machine-checked.  Given two
 simple facial-dual walks meeting at an internal face and an edge from the
 predecessor on the first walk to the successor on the second,
 \texttt{crossSpliceAround} cuts away the shared face, inserts that bypass edge,
 and loop-erases the result.  The returned walk is proved simple and its support
-is proved not to contain the removed face.  This separates generic path surgery
-from source geometry cleanly: the remaining local obligation is precisely to
-identify the endpoint-triangle's two surviving faces with those predecessor
-and successor positions.  No separation from the companion rail, iteration,
-or annular end cap follows merely from the generic splice.
+is proved not to contain the removed face.  Its strengthened companion
+\texttt{crossSpliceAroundWithBridge} accepts a complete walk between the two
+attachment positions and proves the same avoidance theorem when that bridge
+avoids the removed face.  This separates generic path surgery from source
+geometry cleanly: the remaining local obligation is the explicit
+predecessor--centre-chain--successor bridge and its separation from the other
+rail.  No iteration or annular end cap follows merely from the generic splice.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
