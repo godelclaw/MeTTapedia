@@ -117,6 +117,74 @@ def ExactSelectedLocalRailFourCellRetainedOutcome.HasWindowSupportProvenance
   | .swappedStraightCollision _ _ _ _ _
   | .swappedSwappedCollision _ _ _ _ _ => True
 
+/-- A face occurs on one of the two rails of a successful four-cell outcome.
+Collision outcomes have no successful rail and therefore make this predicate
+false rather than silently forgetting their witness. -/
+def ExactSelectedLocalRailFourCellRetainedOutcome.SuccessfulRailContains
+    {firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft}
+    {lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))}
+    (outcome : ExactSelectedLocalRailFourCellRetainedOutcome
+      firstWindow lastWindow)
+    (face : SelectedFace (web := web)) : Prop :=
+  match outcome with
+  | .straight assembly | .swapped assembly =>
+      face ∈ assembly.firstRail.support ∨ face ∈ assembly.secondRail.support
+  | .straightStraightCollision _ _ _ _ _
+  | .straightSwappedCollision _ _ _ _ _
+  | .swappedStraightCollision _ _ _ _ _
+  | .swappedSwappedCollision _ _ _ _ _ => False
+
+/-- The two literal terminal windows give the complete center provenance of a
+successful four-cell rail face. -/
+def FaceNearExactTerminalCenterPairs
+    (face : SelectedFace (web := web)) : Prop :=
+  FaceNearSelectedCenterPair (corridor := corridor)
+      firstInterior.center (nextCorridorInterior firstInterior hfirstNext).center face ∨
+    FaceNearSelectedCenterPair (corridor := corridor)
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center face
+
+/-- Exact support provenance locates every successful returned face in the
+closed neighbourhood of one of the two terminal center pairs. -/
+theorem ExactSelectedLocalRailFourCellRetainedOutcome.faceNearTerminalCenterPairs_of_contains
+    {firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft}
+    {lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))}
+    (outcome : ExactSelectedLocalRailFourCellRetainedOutcome
+      firstWindow lastWindow)
+    (hprovenance : outcome.HasWindowSupportProvenance)
+    {face : SelectedFace (web := web)}
+    (hcontains : outcome.SuccessfulRailContains face) :
+    FaceNearExactTerminalCenterPairs
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) face := by
+  cases outcome with
+  | straight assembly | swapped assembly =>
+      rcases hcontains with hfirst | hsecond
+      · have hwindow := hprovenance.1 face hfirst
+        rcases hwindow with hfirstFirst | hfirstSecond | hlastFirst | hlastSecond
+        · exact .inl (firstWindow.toCertified.firstSupport_near face hfirstFirst)
+        · exact .inl (firstWindow.toCertified.secondSupport_near face hfirstSecond)
+        · exact .inr (lastWindow.toCertified.firstSupport_near face hlastFirst)
+        · exact .inr (lastWindow.toCertified.secondSupport_near face hlastSecond)
+      · have hwindow := hprovenance.2 face hsecond
+        rcases hwindow with hfirstFirst | hfirstSecond | hlastFirst | hlastSecond
+        · exact .inl (firstWindow.toCertified.firstSupport_near face hfirstFirst)
+        · exact .inl (firstWindow.toCertified.secondSupport_near face hfirstSecond)
+        · exact .inr (lastWindow.toCertified.firstSupport_near face hlastFirst)
+        · exact .inr (lastWindow.toCertified.secondSupport_near face hlastSecond)
+  | straightStraightCollision | straightSwappedCollision |
+      swappedStraightCollision | swappedSwappedCollision =>
+      exact hcontains.elim
+
 private theorem supportContainedInWindows_of_assemblies
     (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
       firstSuccessor firstLeft)

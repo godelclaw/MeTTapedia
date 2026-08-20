@@ -253,6 +253,89 @@ inductive SecondFourthFarEndpoint (face : SelectedFace (web := web)) : Prop
           (nextCorridorInterior
             (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
 
+/-- The far-end packet retains the old rail on which the collision was
+observed.  This is construction data for the later cross-splice, not an
+existence hypothesis. -/
+theorem SecondFourthFarEndpoint.oldOrigin
+    {face : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face) :
+    face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+          (bridge := bridge)).paths.firstRail.support ∨
+      face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+          (bridge := bridge)).paths.secondRail.support := by
+  cases endpoint with
+  | first _ oldOrigin _ _ _ | second _ oldOrigin _ _ _ => exact oldOrigin
+
+/-- The retained face is adjacent to the second corridor centre. -/
+theorem SecondFourthFarEndpoint.secondAdjacent
+    {face : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face) :
+    SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face := by
+  cases endpoint with
+  | first _ _ secondAdjacent _ _ | second _ _ secondAdjacent _ _ =>
+      exact secondAdjacent
+
+/-- The retained face is adjacent to the fourth corridor centre. -/
+theorem SecondFourthFarEndpoint.fourthAdjacent
+    {face : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face) :
+    SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext).center) face := by
+  cases endpoint with
+  | first _ _ _ fourthAdjacent _ | second _ _ _ fourthAdjacent _ =>
+      exact fourthAdjacent
+
+/-- The retained face is not the third corridor centre. -/
+theorem SecondFourthFarEndpoint.neThirdCenter
+    {face : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face) :
+    face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center := by
+  cases endpoint with
+  | first _ _ _ _ neThird | second _ _ _ _ neThird => exact neThird
+
+/-- Any corridor centre separated by at least one intervening centre from the
+second centre differs from the retained face.  This is the generic
+center-avoidance fact needed by the rolling cross-splice. -/
+theorem SecondFourthFarEndpoint.neCenter_of_second_add_one_lt
+    {face : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face)
+    {futureInterior : CorridorInterior blockLength}
+    (hgap : (nextCorridorInterior firstInterior hfirstNext).center.val + 1 <
+      futureInterior.center.val) :
+    face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        futureInterior.center := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  have hnotAdjacent : ¬ SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center)
+      (skeleton.faceAt futureInterior.center) :=
+    skeleton.separated_not_adjacent
+      (nextCorridorInterior firstInterior hfirstNext).center
+      futureInterior.center hgap
+  intro hface
+  exact hnotAdjacent (by
+    simpa [skeleton, hface] using endpoint.secondAdjacent)
+
 private theorem oldFirst_start_ne
     (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
       blockLength corridor)
