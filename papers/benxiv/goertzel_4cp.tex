@@ -1976,11 +1976,16 @@ successor rail.  A tempting stronger statement---that no output ever touches
 the opposite old track---is false at the literal connector endpoint: the
 two-edge centre bridge contains both seam flanks.  The checked invariant
 therefore names those two flanks and the Cell--3 centre explicitly, while
-excluding every interior face of the opposite track.  All four same-track
-length residues satisfy this sharper invariant.  The two centre-revisit
-residues and the principal straight/crossed constructors still need the same
-export before the canonical construction trace can prune the four remaining
-collision bands.
+excluding every interior face of the opposite track.  The export is now
+complete.  It covers all four same-track length residues, both centre-revisit
+residues, both immediate centre bridges, the principal straight append, and
+the principal crossed repair.  The invariant is propagated through every
+finite classifier to the public complete append and to
+\texttt{ExactSelectedLocalRailConstructionTrace}.  Thus every canonical
+terminal window now carries a receipt for its actual old and successor rail
+tracks.  This does not itself make any of the four surviving collision bands
+empty; it supplies the branch-sensitive input from which that elimination or
+rerouting must be proved.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three

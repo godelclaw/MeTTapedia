@@ -305,6 +305,80 @@ theorem appendSingleFirstSecondViaLeftCenter_supportContained
     · exact Or.inr (Or.inr (Or.inr (Or.inl
         (List.mem_of_mem_tail hright))))
 
+/-- Track-sensitive form of the immediate first-to-second centre bridge.
+The crossed output uses old first/new second; the unmatched output uses old
+second/new first.  Only the two seam flanks and the displayed centre may be
+introduced by the connector. -/
+theorem appendSingleFirstSecondViaLeftCenter_trackProvenance
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.firstRail.support
+      successor.secondContinuation.support.tail)
+    (holdSecond :
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          left.paths.secondRail.support)
+    (hnewFirst :
+      (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          successor.firstContinuation.support.tail)
+    (hcenter :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∉
+        (SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+          (successor := successor) (left := left) collision.face
+          collision.mem_old collision.mem_new).route.support) :
+    let assembly := appendSingleFirstSecondViaLeftCenter collision
+      holdSecond hnewFirst hcenter
+    (∀ face ∈ assembly.firstRail.support,
+        face ∈ left.paths.firstRail.support ∨
+        face ∈ successor.secondContinuation.support ∨
+        face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt leftInterior.center) ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter) ∧
+      ∀ face ∈ assembly.secondRail.support,
+        face ∈ left.paths.secondRail.support ∨
+        face ∈ successor.firstContinuation.support ∨
+        face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt leftInterior.center) ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter := by
+  dsimp only
+  constructor
+  · intro face hface
+    let reroute :=
+      SeparatedSelectedSourceLocalRailSuccessor.firstToSecondReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new
+    rcases reroute.route_support_subset face hface with hold | hnew
+    · exact Or.inl hold
+    · exact Or.inr (Or.inl (List.mem_of_mem_tail hnew))
+  · intro face hface
+    let bridge := leftCenterBridge (successor := successor) (left := left)
+    let rawSecond :=
+      (left.paths.secondRail.append bridge).append successor.firstContinuation
+    have hraw : face ∈ rawSecond.support := by
+      exact rawSecond.support_bypass_subset_support (by
+        simpa [appendSingleFirstSecondViaLeftCenter, rawSecond, bridge] using hface)
+    rw [SimpleGraph.Walk.support_append, SimpleGraph.Walk.support_append] at hraw
+    rcases List.mem_append.mp hraw with hleftBridge | hright
+    · rcases List.mem_append.mp hleftBridge with hold | hbridge
+      · exact Or.inl hold
+      · have hbridge' : face =
+            (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+              |>.faceAt leftInterior.center) ∨
+          face = selectedPlacementSideFace leftPlacement
+            successor.frame.leftBefore := by
+          simpa only [bridge, leftCenterBridge, SimpleGraph.Walk.support_cons,
+            SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
+            List.mem_singleton, List.not_mem_nil, or_false] using hbridge
+        rcases hbridge' with hcenterFace | hbefore
+        · exact Or.inr (Or.inr (Or.inl hcenterFace))
+        · exact Or.inr (Or.inr (Or.inr (Or.inl hbefore)))
+    · exact Or.inr (Or.inl (List.mem_of_mem_tail hright))
+
 /-- The second-to-first reroute cannot return to the old first seam flank. -/
 private theorem secondToFirstReroute_before_not_mem
     (collision : SelectedRailSupportCollision (web := web)
@@ -490,6 +564,70 @@ theorem appendSingleSecondFirstViaLeftCenter_supportContained
     · exact Or.inr (Or.inr (Or.inl hold))
     · exact Or.inr (Or.inr (Or.inr (Or.inl
         (List.mem_of_mem_tail hnew))))
+
+/-- Symmetric track-sensitive form of the immediate centre bridge. -/
+theorem appendSingleSecondFirstViaLeftCenter_trackProvenance
+    (collision : SelectedRailSupportCollision (web := web)
+      left.paths.secondRail.support
+      successor.firstContinuation.support.tail)
+    (holdFirst :
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          left.paths.firstRail.support)
+    (hnewSecond :
+      (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new).route.support.Disjoint
+          successor.secondContinuation.support.tail)
+    (hcenter :
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt leftInterior.center) ∉
+        (SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+          (successor := successor) (left := left) collision.face
+          collision.mem_old collision.mem_new).route.support) :
+    let assembly := appendSingleSecondFirstViaLeftCenter collision
+      holdFirst hnewSecond hcenter
+    (∀ face ∈ assembly.firstRail.support,
+        face ∈ left.paths.firstRail.support ∨
+        face ∈ successor.secondContinuation.support ∨
+        face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt leftInterior.center) ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter) ∧
+      ∀ face ∈ assembly.secondRail.support,
+        face ∈ left.paths.secondRail.support ∨
+        face ∈ successor.firstContinuation.support ∨
+        face = (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt leftInterior.center) ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftBefore ∨
+        face = selectedPlacementSideFace leftPlacement successor.frame.leftAfter := by
+  dsimp only
+  constructor
+  · intro face hface
+    let bridge := (leftCenterBridge (successor := successor) (left := left)).reverse
+    let rawFirst :=
+      (left.paths.firstRail.append bridge).append successor.secondContinuation
+    have hraw : face ∈ rawFirst.support := by
+      exact rawFirst.support_bypass_subset_support (by
+        simpa [appendSingleSecondFirstViaLeftCenter, rawFirst, bridge] using hface)
+    rw [SimpleGraph.Walk.support_append, SimpleGraph.Walk.support_append] at hraw
+    rcases List.mem_append.mp hraw with hleftBridge | hright
+    · rcases List.mem_append.mp hleftBridge with hold | hbridge
+      · exact Or.inl hold
+      · simp [bridge, leftCenterBridge] at hbridge
+        rcases hbridge with hcenterFace | hafter
+        · exact Or.inr (Or.inr (Or.inl hcenterFace))
+        · exact Or.inr (Or.inr (Or.inr (Or.inr hafter)))
+    · exact Or.inr (Or.inl (List.mem_of_mem_tail hright))
+  · intro face hface
+    let reroute :=
+      SeparatedSelectedSourceLocalRailSuccessor.secondToFirstReroute
+        (successor := successor) (left := left) collision.face
+        collision.mem_old collision.mem_new
+    rcases reroute.route_support_subset face hface with hold | hnew
+    · exact Or.inl hold
+    · exact Or.inr (Or.inl (List.mem_of_mem_tail hnew))
 
 private def firstRerouteMeetsOldSecond_to_sameSecondCollision
     (collision : SelectedRailSupportCollision (web := web)
