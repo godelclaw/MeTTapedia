@@ -160,6 +160,200 @@ structure SecondBandFutureSourceSpliceCompanionPieces
   old_disjoint : oldWalk.support.Disjoint oldCompanion.support
   new_disjoint : newWalk.support.Disjoint newCompanion.support
 
+/-- A complete companion walk obtained by joining the middle classifier's
+opposite rail to the retained future companion piece.  The route is loop
+erased, and its support receipt remembers the two literal inputs.  Separation
+from the primary splice is deliberately not a field here. -/
+structure SecondBandFutureSourceSpliceCompanionRoute
+    {face oldStart oldFinish newStart newFinish
+      oldCompanionStart oldCompanionFinish
+      newCompanionStart newCompanionFinish : SelectedFace (web := web)}
+    {oldWalk : SelectedDualGraph (web := web).Walk oldStart oldFinish}
+    {newWalk : SelectedDualGraph (web := web).Walk newStart newFinish}
+    {oldCompanion : SelectedDualGraph (web := web).Walk
+      oldCompanionStart oldCompanionFinish}
+    {newCompanion : SelectedDualGraph (web := web).Walk
+      newCompanionStart newCompanionFinish}
+    (pieces : SecondBandFutureSourceSpliceCompanionPieces
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      (face := face)
+      oldWalk newWalk oldCompanion newCompanion) where
+  middle : SelectedDualGraph (web := web).Walk
+    oldCompanionStart newCompanionStart
+  middle_isPath : middle.IsPath
+  route : SelectedDualGraph (web := web).Walk
+    oldCompanionStart newCompanionFinish
+  route_isPath : route.IsPath
+  support_receipt : ∀ current ∈ route.support,
+    current ∈ middle.support ∨ current ∈ newCompanion.support
+
+/-- Append and loop erase a literal middle connector and future source piece.
+This is the algebraic constructor used by the four source-parity lemmas below. -/
+noncomputable def SecondBandFutureSourceSpliceCompanionRoute.ofMiddle
+    {face oldStart oldFinish newStart newFinish
+      oldCompanionStart oldCompanionFinish
+      newCompanionStart newCompanionFinish : SelectedFace (web := web)}
+    {oldWalk : SelectedDualGraph (web := web).Walk oldStart oldFinish}
+    {newWalk : SelectedDualGraph (web := web).Walk newStart newFinish}
+    {oldCompanion : SelectedDualGraph (web := web).Walk
+      oldCompanionStart oldCompanionFinish}
+    {newCompanion : SelectedDualGraph (web := web).Walk
+      newCompanionStart newCompanionFinish}
+    (pieces : SecondBandFutureSourceSpliceCompanionPieces
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      (face := face)
+      oldWalk newWalk oldCompanion newCompanion)
+    (middle : SelectedDualGraph (web := web).Walk
+      oldCompanionStart newCompanionStart)
+    (hmiddle : middle.IsPath) :
+    SecondBandFutureSourceSpliceCompanionRoute pieces := by
+  let raw := middle.append newCompanion
+  refine {
+    middle := middle
+    middle_isPath := hmiddle
+    route := raw.bypass
+    route_isPath := raw.bypass_isPath
+    support_receipt := ?_
+  }
+  intro current hcurrent
+  have hraw := raw.support_bypass_subset_support hcurrent
+  rw [SimpleGraph.Walk.support_append] at hraw
+  rcases List.mem_append.mp hraw with hmiddleCurrent | hnewCurrent
+  · exact .inl hmiddleCurrent
+  · exact .inr (List.mem_of_mem_tail hnewCurrent)
+
+private abbrev MiddleStraightAssembly :=
+  SelectedSourceLocalRailAssembly (web := web)
+    (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightAfter)
+    (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightBefore)
+    (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore)
+    (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter)
+
+private abbrev MiddleSwappedAssembly :=
+  SelectedSourceLocalRailAssembly (web := web)
+    (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightAfter)
+    (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightBefore)
+    (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter)
+    (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore)
+
+/-- Straight middle parity joins the opposite second track in a first/first
+source splice to the future second track. -/
+noncomputable def SecondBandFutureSourceSpliceCompanionPieces.route_firstFirst_of_straight
+    {face newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    {newFirst : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightAfter)
+      newFirstFinish}
+    {newSecond : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightBefore)
+      newSecondFinish}
+    (pieces : SecondBandFutureSourceSpliceCompanionPieces
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      (face := face)
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.firstRail newFirst
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.secondRail newSecond)
+    (middle : MiddleStraightAssembly (firstSuccessor := firstSuccessor)
+      (bridge := bridge)) :
+    SecondBandFutureSourceSpliceCompanionRoute pieces :=
+  SecondBandFutureSourceSpliceCompanionRoute.ofMiddle pieces
+    (middle.secondRail.copy rfl
+      (bridge.rightOutgoingAfterFace_eq_nextRightBeforeFace lastSuccessor))
+    (by simpa using middle.secondRail_isPath)
+
+/-- Straight middle parity joins the opposite first track in a second/second
+source splice to the future first track. -/
+noncomputable def SecondBandFutureSourceSpliceCompanionPieces.route_secondSecond_of_straight
+    {face newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    {newFirst : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightAfter)
+      newFirstFinish}
+    {newSecond : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightBefore)
+      newSecondFinish}
+    (pieces : SecondBandFutureSourceSpliceCompanionPieces
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      (face := face)
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.secondRail newSecond
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.firstRail newFirst)
+    (middle : MiddleStraightAssembly (firstSuccessor := firstSuccessor)
+      (bridge := bridge)) :
+    SecondBandFutureSourceSpliceCompanionRoute pieces :=
+  SecondBandFutureSourceSpliceCompanionRoute.ofMiddle pieces
+    (middle.firstRail.copy rfl
+      (bridge.rightOutgoingBeforeFace_eq_nextRightAfterFace lastSuccessor))
+    (by simpa using middle.firstRail_isPath)
+
+/-- Swapped middle parity joins the opposite second track in a first/second
+source splice to the future first track. -/
+noncomputable def SecondBandFutureSourceSpliceCompanionPieces.route_firstSecond_of_swapped
+    {face newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    {newFirst : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightAfter)
+      newFirstFinish}
+    {newSecond : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightBefore)
+      newSecondFinish}
+    (pieces : SecondBandFutureSourceSpliceCompanionPieces
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      (face := face)
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.firstRail newSecond
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.secondRail newFirst)
+    (middle : MiddleSwappedAssembly (firstSuccessor := firstSuccessor)
+      (bridge := bridge)) :
+    SecondBandFutureSourceSpliceCompanionRoute pieces :=
+  SecondBandFutureSourceSpliceCompanionRoute.ofMiddle pieces
+    (middle.secondRail.copy rfl
+      (bridge.rightOutgoingBeforeFace_eq_nextRightAfterFace lastSuccessor))
+    (by simpa using middle.secondRail_isPath)
+
+/-- Swapped middle parity joins the opposite first track in a second/first
+source splice to the future second track. -/
+noncomputable def SecondBandFutureSourceSpliceCompanionPieces.route_secondFirst_of_swapped
+    {face newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    {newFirst : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightAfter)
+      newFirstFinish}
+    {newSecond : SelectedDualGraph (web := web).Walk
+      (selectedPlacementSideFace fourthPlacement lastSuccessor.frame.rightBefore)
+      newSecondFinish}
+    (pieces : SecondBandFutureSourceSpliceCompanionPieces
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      (face := face)
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.secondRail newFirst
+      (BridgeLeft (firstSuccessor := firstSuccessor)
+        (bridge := bridge)).paths.firstRail newSecond)
+    (middle : MiddleSwappedAssembly (firstSuccessor := firstSuccessor)
+      (bridge := bridge)) :
+    SecondBandFutureSourceSpliceCompanionRoute pieces :=
+  SecondBandFutureSourceSpliceCompanionRoute.ofMiddle pieces
+    (middle.firstRail.copy rfl
+      (bridge.rightOutgoingAfterFace_eq_nextRightBeforeFace lastSuccessor))
+    (by simpa using middle.firstRail_isPath)
+
 /-- Successful future outcomes either clear the old endpoint or retain one of
 the four exact source-splice parities together with the complementary source
 pieces.  Collision constructors remain explicitly fail-closed. -/

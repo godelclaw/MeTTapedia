@@ -2577,6 +2577,17 @@ seven.  No such complete companion walk, rebuilt two-rail assembly, rolling
 iteration, annular end cap, separated crosscut pair, or L1 closure is claimed
 by this refinement.
 
+There is now a constructive payoff from retaining that parity.  When the
+future splice agrees with the canonical middle classifier---first-to-first or
+second-to-second for a straight middle, and first-to-second or second-to-first
+for a swapped middle---the opposite rail of the middle assembly already joins
+the two complementary source pieces.  Lean appends it to the future piece,
+loop-erases the result, and records a support receipt for the complete
+companion walk.  The actual transition has not yet been proved to choose one
+of those matching parities: for either middle outcome, two crossed mismatch
+cases remain.  Separation from the repaired primary splice, arbitrary-length
+iteration, end caps, and L1 therefore remain open.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
