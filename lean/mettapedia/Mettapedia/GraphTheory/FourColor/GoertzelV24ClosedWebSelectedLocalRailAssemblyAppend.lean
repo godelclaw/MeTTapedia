@@ -89,6 +89,47 @@ noncomputable def rebaseAssemblyStart
     (rebaseAssemblyStart assembly hfirst hsecond).secondRail.support =
       assembly.secondRail.support := by simp [rebaseAssemblyStart]
 
+/-- Change only the names of an assembly's two finishing faces.
+
+This is the endpoint-symmetric companion of `rebaseAssemblyStart`.  Both
+walks are copied across the supplied face equalities; their supports and all
+path/separation certificates are unchanged. -/
+noncomputable def rebaseAssemblyFinish
+    {firstStart secondStart oldFirstFinish oldSecondFinish
+      newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart oldFirstFinish oldSecondFinish)
+    (hfirst : oldFirstFinish = newFirstFinish)
+    (hsecond : oldSecondFinish = newSecondFinish) :
+    SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart newFirstFinish newSecondFinish where
+  firstRail := assembly.firstRail.copy rfl hfirst
+  secondRail := assembly.secondRail.copy rfl hsecond
+  firstRail_isPath := by simpa using assembly.firstRail_isPath
+  secondRail_isPath := by simpa using assembly.secondRail_isPath
+  firstRail_support_disjoint_secondRail := by
+    simpa using assembly.firstRail_support_disjoint_secondRail
+
+@[simp] theorem rebaseAssemblyFinish_firstRail_support
+    {firstStart secondStart oldFirstFinish oldSecondFinish
+      newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart oldFirstFinish oldSecondFinish)
+    (hfirst : oldFirstFinish = newFirstFinish)
+    (hsecond : oldSecondFinish = newSecondFinish) :
+    (rebaseAssemblyFinish assembly hfirst hsecond).firstRail.support =
+      assembly.firstRail.support := by simp [rebaseAssemblyFinish]
+
+@[simp] theorem rebaseAssemblyFinish_secondRail_support
+    {firstStart secondStart oldFirstFinish oldSecondFinish
+      newFirstFinish newSecondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart oldFirstFinish oldSecondFinish)
+    (hfirst : oldFirstFinish = newFirstFinish)
+    (hsecond : oldSecondFinish = newSecondFinish) :
+    (rebaseAssemblyFinish assembly hfirst hsecond).secondRail.support =
+      assembly.secondRail.support := by simp [rebaseAssemblyFinish]
+
 /-- Append two ordered pairs of selected facial-dual rails.
 
 The same-track premises are exactly the path conditions for the two appended

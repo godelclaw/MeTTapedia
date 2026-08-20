@@ -15,10 +15,12 @@ the raw step and proves the two overlap receipts which make it the same live
 calculation: its first trace is the old suffix's later trace, and its bridge
 trace is the newly classified trace of the shifted suffix.
 
-The result is a constructed common-span packet, not a flattening theorem.  A
-successful future outcome still has to be joined to the retained one-cell
-connector, and every future collision remains explicit.  No prefix is frozen,
-no end cap or dual crosscut is constructed, and Fable flag L1 remains open.
+The result is a constructed common-span packet, not a flattening theorem.
+Consecutive flattened traces overlap on a complete selected rail piece, so
+the old trace cannot be appended wholesale.  The frozen prefix must instead
+stop immediately before that shared piece; a later module constructs exactly
+that cut point.  Every future collision remains explicit.  No end cap or dual
+crosscut is constructed, and Fable flag L1 remains open.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor

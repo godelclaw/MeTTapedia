@@ -2702,10 +2702,23 @@ trace and that its bridge trace is the newly classified trace of the shifted
 suffix.  Thus the common-span future packet is the continuation of the actual
 stored calculation, not an unrelated inhabitant with matching endpoints.  Its
 successful branches span cells $2$--$5$, and its collision branches retain
-their exact witnesses.  The retained cell~1--cell~2 connector must
-still be joined to that packet before the old frozen prefix can advance; this
-module does not claim that flattening, arbitrary iteration, either end cap, or
-L1 closure.
+their exact witnesses.  A direct formal attempt to append the old
+cell~1--cell~2 trace revealed that consecutive flattened traces overlap on a
+complete selected rail piece, not only at a terminal face.  Appending both
+wholesale would therefore double-count literal source geometry.
+
+The rolling cut is now constructed on the correct side of that overlap.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedPrefix}
+extends the genuinely frozen old prefix through only the first live local
+pair, derives all four old/new support separations from the stored source gap,
+and transports its terminal faces across the proved successor-frame
+equalities.  The resulting simple two-rail prefix ends exactly where the
+common-span future transition begins and retains an interior-frozen
+certificate at the first live centre.  No separation assumption is added.
+The next theorem must classify this prefix-to-future append while preserving
+both the future collision and retained-cross collision branches.  Arbitrary
+iteration, both end caps, the separated crosscut pair, and L1 closure remain
+open.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
