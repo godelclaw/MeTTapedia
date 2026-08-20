@@ -2114,6 +2114,23 @@ step, not yet its arbitrary-length iteration.  Eliminating the collision
 branch, constructing both annular end caps and the separated crosscut pair,
 and closing L1 remain open.
 
+The middle collision is now tied to its actual repair without identifying two
+arbitrary witness choices.  The outer retained classifier may select a
+different collision face from the one encountered internally by the adjacent
+classifier, so witness equality would be an unjustified strengthening.  The
+new
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleCollisionRepair}
+instead evaluates the stored canonical middle trace.  Its concrete
+straight-or-exchanged assembly has disjoint rail supports; consequently, for
+the particular face named by the outer collision, at least one repaired rail
+avoids that face.  The strengthened middle-band constructor records this
+face-specific avoidance together with the trace's exact source-track
+provenance.  Thus the remaining finite consumer can choose the clear repaired
+track without synchronizing collision-choice functions.  This does not yet
+reroute the outer collision, eliminate the other three bounded bands, perform
+the arbitrary-length fold, attach either end cap, construct the separated
+crosscut pair, or close L1.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
