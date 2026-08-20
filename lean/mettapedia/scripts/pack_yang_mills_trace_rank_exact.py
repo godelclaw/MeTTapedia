@@ -18,6 +18,7 @@ CHUNK_SIZE = 1_024
 PAGE_SIZE = 32
 TOKEN_WIDTH = 16
 OFFSET_WIDTH = 32
+ROW_WORD_FIELDS = 16
 SPECS = (
     (
         "HypercubicDimension16TraceRankCertificateDataBasis.lean",
@@ -140,7 +141,91 @@ def unpack_packed_nat_row_word(
     return entries
 
 
+def unpack_packed_nat_row_chunks(
+    payloads: list[int], width: int, signed_index: int
+) -> list[tuple[int, ...]]:
+    tokens = [
+        packed_nat_field(payload, TOKEN_WIDTH, position)
+        for payload in payloads
+        for position in range(ROW_WORD_FIELDS)
+    ]
+    count = tokens[0]
+    values = tokens[1 : 1 + count * width]
+    entries = []
+    for entry_position in range(0, len(values), width):
+        entry = values[entry_position : entry_position + width]
+        entry[signed_index] = zigzag_decode(entry[signed_index])
+        entries.append(tuple(entry))
+    return entries
+
+
+def array_items(expression: str) -> list[str]:
+    expression = expression.strip()
+    if not expression.startswith("#["):
+        raise RuntimeError("expected Lean array literal")
+    depth = 0
+    closing = None
+    for position, character in enumerate(expression[1:], start=1):
+        if character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+            if depth == 0:
+                closing = position
+                break
+    if closing is None:
+        raise RuntimeError("unterminated Lean array literal")
+    interior = expression[2:closing]
+    items: list[str] = []
+    start = 0
+    depth = 0
+    for position, character in enumerate(interior):
+        if character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+        elif character == "," and depth == 0:
+            item = interior[start:position].strip()
+            if item:
+                items.append(item)
+            start = position + 1
+    item = interior[start:].strip()
+    if item:
+        items.append(item)
+    return items
+
+
+def nested_paged_payload_rows(source: str, prefix: str) -> list[list[int]] | None:
+    headers = list(re.finditer(
+        rf"(?:@\[[^]]+\]\s*)?(?:private )?def {prefix}Payload(\d+) : "
+        r"Array \(Array \(Array Nat\)\) :=",
+        source,
+    ))
+    if not headers:
+        return None
+    rows: list[list[int]] = []
+    for position, header in enumerate(headers):
+        end = headers[position + 1].start() if position + 1 < len(headers) else source.index(
+            "@[irreducible] def", header.end()
+        )
+        section = source[header.end() : end]
+        payload = section[section.index("#[") :]
+        for page in array_items(payload):
+            for row in array_items(page):
+                rows.append([int(chunk, 16) for chunk in array_items(row)])
+    return rows
+
+
 def packed_rows(source: str, prefix: str, width: int, signed_index: int) -> list[list[tuple[int, ...]]] | None:
+    nested_rows = nested_paged_payload_rows(source, prefix)
+    if nested_rows is not None:
+        rows = [
+            unpack_packed_nat_row_chunks(payloads, width, signed_index)
+            for payloads in nested_rows
+        ]
+        if len(rows) != COUNT:
+            raise RuntimeError("packed exact nested paged payload has wrong total cardinality")
+        return rows
     page_headers = list(re.finditer(
         rf"(?:@\[[^]]+\]\s*)?(?:private )?def {prefix}Payload(\d+) : Array \(Array Nat\) :=",
         source,
@@ -226,24 +311,30 @@ def payloads_and_branches(
                     zigzag_encode(value) if offset == signed_index else value
                     for offset, value in enumerate(entry)
                 )
-            words.append(packed_nat_literal(tokens, TOKEN_WIDTH))
+            words.append([
+                packed_nat_literal(tokens[offset : offset + ROW_WORD_FIELDS], TOKEN_WIDTH)
+                for offset in range(0, len(tokens), ROW_WORD_FIELDS)
+            ])
         pages = [words[offset : offset + PAGE_SIZE] for offset in range(0, len(words), PAGE_SIZE)]
-        page_text = ",\n    ".join(f"#[{', '.join(page)}]" for page in pages)
+        page_text = ",\n    ".join(
+            f"#[{', '.join(f'#[{', '.join(row)}]' for row in page)}]"
+            for page in pages
+        )
         definitions.append(
-            f'''@[reducible] def {prefix}Payload{index} : Array (Array Nat) :=
+            f'''@[irreducible] def {prefix}Payload{index} : Array (Array (Array Nat)) :=
   #[{page_text}]'''
         )
         word = (
             f"(({prefix}Payload{index}.getD ((index % {CHUNK_SIZE}) / {PAGE_SIZE}) #[]).getD "
-            f"((index % {CHUNK_SIZE}) % {PAGE_SIZE}) 0)"
+            f"((index % {CHUNK_SIZE}) % {PAGE_SIZE}) #[])"
         )
         direct_branches.append(
-            f"    | {index} => some ({decoder_name} (decodeCountPrefixedPackedNat {word} {width}))"
+            f"    | {index} => some ({decoder_name} (decodeCountPrefixedPackedNatChunks {word} {width}))"
         )
         decoded_branches.append(
             f"    | {index} => (List.range {len(chunk)}).toArray.map fun row => "
-            f"{decoder_name} (decodeCountPrefixedPackedNat "
-            f"(({prefix}Payload{index}.getD (row / {PAGE_SIZE}) #[]).getD (row % {PAGE_SIZE}) 0) {width})"
+            f"{decoder_name} (decodeCountPrefixedPackedNatChunks "
+            f"(({prefix}Payload{index}.getD (row / {PAGE_SIZE}) #[]).getD (row % {PAGE_SIZE}) #[]) {width})"
         )
     return "\n\n".join(definitions), "\n".join(direct_branches), "\n".join(decoded_branches)
 
@@ -282,9 +373,10 @@ def render(spec: tuple[object, ...], rows: list[list[tuple[int, ...]]]) -> str:
     return f'''import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceRankCertificateDataTypes
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PackedFiniteDataCodec
 
-/-! Flat exact sparse data for OUR eight-field trace-rank replay. -/
+/-! Bounded row-local packed exact sparse data for OUR eight-field trace-rank replay. -/
 
 set_option autoImplicit false
+set_option maxRecDepth 32768
 
 namespace Mettapedia
 namespace QuantumTheory
@@ -295,7 +387,7 @@ open HypercubicDimension16PackedFiniteDataCodec
 
 {decoder}
 
-/-! Bounded pages of packed natural row numerals carry the sparse rows. -/
+/-! Bounded pages of row-local packed natural numerals carry the sparse rows. -/
 {payloads}
 
 @[irreducible] def {decoded_name} (chunk : Nat) : Array {row_type} :=

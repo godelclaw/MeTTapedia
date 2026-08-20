@@ -18,6 +18,7 @@ CHUNK_SIZE = 1_024
 PAGE_SIZE = 32
 TOKEN_WIDTH = 16
 OFFSET_WIDTH = 32
+ROW_WORD_FIELDS = 16
 
 
 def original_row_arrays(source: str, prefix: str, lookup: str) -> list[list[int]]:
@@ -95,6 +96,75 @@ def unpack_packed_nat_row_word(payload: int) -> list[int]:
     return [packed_nat_field(payload, TOKEN_WIDTH, position) for position in range(1, count + 1)]
 
 
+def unpack_packed_nat_row_chunks(payloads: list[int]) -> list[int]:
+    fields = [
+        packed_nat_field(payload, TOKEN_WIDTH, position)
+        for payload in payloads
+        for position in range(ROW_WORD_FIELDS)
+    ]
+    return fields[1 : 1 + fields[0]]
+
+
+def array_items(expression: str) -> list[str]:
+    expression = expression.strip()
+    if not expression.startswith("#["):
+        raise RuntimeError("expected Lean array literal")
+    depth = 0
+    closing = None
+    for position, character in enumerate(expression[1:], start=1):
+        if character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+            if depth == 0:
+                closing = position
+                break
+    if closing is None:
+        raise RuntimeError("unterminated Lean array literal")
+    interior = expression[2:closing]
+    items: list[str] = []
+    start = 0
+    depth = 0
+    for position, character in enumerate(interior):
+        if character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+        elif character == "," and depth == 0:
+            item = interior[start:position].strip()
+            if item:
+                items.append(item)
+            start = position + 1
+    item = interior[start:].strip()
+    if item:
+        items.append(item)
+    return items
+
+
+def nested_paged_payload_rows(source: str, prefix: str) -> list[list[int]] | None:
+    headers = list(re.finditer(
+        rf"(?:@\[[^]]+\]\s*)?(?:private )?def {prefix}Payload(\d+) : "
+        r"Array \(Array \(Array Nat\)\) :=",
+        source,
+    ))
+    if not headers:
+        return None
+    rows: list[list[int]] = []
+    for position, header in enumerate(headers):
+        if position + 1 < len(headers):
+            end = headers[position + 1].start()
+        else:
+            end = source.find("@[reducible] def", header.end())
+            if end == -1:
+                end = source.find("@[irreducible] def", header.end())
+        section = source[header.end() : end]
+        payload = section[section.index("#[") :]
+        for page in array_items(payload):
+            for row in array_items(page):
+                rows.append([int(chunk, 16) for chunk in array_items(row)])
+    return rows
+
+
 def paged_payload_words(source: str, prefix: str) -> list[int] | None:
     headers = list(re.finditer(
         rf"(?:@\[[^]]+\]\s*)?(?:private )?def {prefix}Payload(\d+) : Array \(Array Nat\) :=",
@@ -135,6 +205,12 @@ def decoded_chunk_counts(source: str, decoded_name: str) -> dict[int, int]:
 
 
 def packed_rows(source: str, prefix: str) -> list[list[int]] | None:
+    nested_rows = nested_paged_payload_rows(source, prefix)
+    if nested_rows is not None:
+        rows = [unpack_packed_nat_row_chunks(payloads) for payloads in nested_rows]
+        if len(rows) != ROWS:
+            raise RuntimeError("packed nested replay payload has wrong row cardinality")
+        return rows
     paged_words = paged_payload_words(source, prefix)
     if paged_words is not None:
         rows = [unpack_packed_nat_row_word(word) for word in paged_words]
@@ -225,24 +301,31 @@ def row_payloads(prefix: str, rows: list[list[int]]) -> tuple[str, str, str]:
     for index, chunk in enumerate(chunks):
         words = []
         for row in chunk:
-            words.append(packed_nat_literal([len(row), *row], TOKEN_WIDTH))
+            tokens = [len(row), *row]
+            words.append([
+                packed_nat_literal(tokens[offset : offset + ROW_WORD_FIELDS], TOKEN_WIDTH)
+                for offset in range(0, len(tokens), ROW_WORD_FIELDS)
+            ])
         pages = [words[offset : offset + PAGE_SIZE] for offset in range(0, len(words), PAGE_SIZE)]
-        page_text = ",\n    ".join(f"#[{', '.join(page)}]" for page in pages)
+        page_text = ",\n    ".join(
+            f"#[{', '.join(f'#[{', '.join(row)}]' for row in page)}]"
+            for page in pages
+        )
         definitions.append(
-            f'''@[reducible] def {prefix}Payload{index} : Array (Array Nat) :=
+            f'''@[irreducible] def {prefix}Payload{index} : Array (Array (Array Nat)) :=
   #[{page_text}]'''
         )
         word = (
             f"(({prefix}Payload{index}.getD ((index % {CHUNK_SIZE}) / {PAGE_SIZE}) #[]).getD "
-            f"((index % {CHUNK_SIZE}) % {PAGE_SIZE}) 0)"
+            f"((index % {CHUNK_SIZE}) % {PAGE_SIZE}) #[])"
         )
         direct_branches.append(
-            f"  | {index} => some (decodeCountPrefixedPackedNat {word} 1)"
+            f"  | {index} => some (decodeCountPrefixedPackedNatChunks {word} 1)"
         )
         decoded_branches.append(
             f"  | {index} => (List.range {len(chunk)}).toArray.map fun row => "
-            f"decodeCountPrefixedPackedNat "
-            f"(({prefix}Payload{index}.getD (row / {PAGE_SIZE}) #[]).getD (row % {PAGE_SIZE}) 0) 1"
+            f"decodeCountPrefixedPackedNatChunks "
+            f"(({prefix}Payload{index}.getD (row / {PAGE_SIZE}) #[]).getD (row % {PAGE_SIZE}) #[]) 1"
         )
     return "\n\n".join(definitions), "\n".join(direct_branches), "\n".join(decoded_branches)
 
@@ -256,7 +339,7 @@ def value_payloads(prefix: str, values: list[int]) -> tuple[str, str, str]:
         pages = [chunk[offset : offset + PAGE_SIZE] for offset in range(0, len(chunk), PAGE_SIZE)]
         page_text = ",\n    ".join(f"#[{', '.join(str(value) for value in page)}]" for page in pages)
         definitions.append(
-            f'''@[reducible] def {prefix}Payload{index} : Array (Array Nat) :=
+            f'''@[irreducible] def {prefix}Payload{index} : Array (Array Nat) :=
   #[{page_text}]'''
         )
         direct_branches.append(
@@ -277,7 +360,7 @@ def render(rows: list[list[int]], pivots: list[int], free_columns: list[int]) ->
     return f'''import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceRankCertificateDataTypes
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PackedFiniteDataCodec
 
-/-! Flat exact replay data for OUR eight-field trace-rank certificate. -/
+/-! Bounded row-local packed replay data for OUR eight-field trace-rank certificate. -/
 
 set_option autoImplicit false
 
@@ -288,7 +371,7 @@ namespace HypercubicDimension16TraceRankCertificateData
 
 open HypercubicDimension16PackedFiniteDataCodec
 
-/-! Bounded pages of packed natural row numerals carry each replay component. -/
+/-! Bounded pages of row-local packed natural numerals carry each replay component. -/
 {row_payloads_text}
 
 {pivot_payloads_text}

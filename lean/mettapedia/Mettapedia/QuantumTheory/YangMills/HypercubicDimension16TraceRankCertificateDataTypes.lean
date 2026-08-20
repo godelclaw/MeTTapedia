@@ -3,7 +3,6 @@ import Mathlib.Data.Rat.Defs
 /-! Generated sparse data for the exact eight-field trace-rank replay. -/
 
 set_option autoImplicit false
-set_option maxHeartbeats 0
 set_option maxRecDepth 1000000
 
 namespace Mettapedia

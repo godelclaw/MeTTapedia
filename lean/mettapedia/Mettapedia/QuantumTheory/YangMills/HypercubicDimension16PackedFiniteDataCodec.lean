@@ -3,9 +3,9 @@ import Mathlib.Init
 /-!
 # Flat finite-data codec for OUR dimension-sixteen realizations
 
-Generated finite tables are carried as UTF-8 byte literals rather than Lean
-arrays of numeral terms.  This module contains the small kernel-reducible
-decoder shared by those payloads.
+Generated finite tables are carried as flat text payloads or bounded pages of
+packed numerals rather than unbounded structure-literal arrays.  This module
+contains the small kernel-reducible decoders shared by those payloads.
 -/
 
 set_option autoImplicit false
@@ -151,6 +151,26 @@ to one row rather than proportional to an entire certificate block. -/
   let count := packedNatField payload 16 0
   decodePackedNatValuesLoop payload 16 (count * fieldWidth) 1 #[]
 
+/-- Extract one field from a bounded row-local array of packed numerals.
+The generator puts at most sixteen fields in each numeral, so kernel reduction
+never divides by a power belonging to an entire dense sparse row. -/
+@[reducible] def packedNatChunkField
+    (payload : Array Nat) (width index : Nat) : Nat :=
+  packedNatField (payload.getD (index / 16) 0) width (index % 16)
+
+@[reducible] def decodePackedNatChunkValuesLoop (payload : Array Nat) (width : Nat) :
+    Nat → Nat → Array Nat → Array Nat
+  | 0, _, values => values
+  | count + 1, position, values =>
+      decodePackedNatChunkValuesLoop payload width count (position + 1)
+        (values.push (packedNatChunkField payload width position))
+
+/-- Decode one count-prefixed row from bounded row-local packed numerals. -/
+@[reducible] def decodeCountPrefixedPackedNatChunks
+    (payload : Array Nat) (fieldWidth : Nat) : Array Nat :=
+  let count := packedNatChunkField payload 16 0
+  decodePackedNatChunkValuesLoop payload 16 (count * fieldWidth) 1 #[]
+
 /-- Consume a fixed number of values from a decoded token list. -/
 @[reducible] def takeNatValues : Nat → List Nat → Array Nat → Option (Array Nat × List Nat)
   | 0, values, output => some (output, values)
@@ -207,6 +227,10 @@ example :
 
 example :
     decodeCountPrefixedPackedNat 0x000c0001 1 = #[12] := by
+  decide +kernel
+
+example :
+    decodeCountPrefixedPackedNatChunks #[0x000c0001] 1 = #[12] := by
   decide +kernel
 
 end HypercubicDimension16PackedFiniteDataCodec

@@ -23,14 +23,14 @@ open HypercubicDimension16PackedFiniteDataCodec
 theorem selectedIntegerRow_packed_first_regression :
     selectedIntegerRow? 0 = some #[(0, (1 : Int))] := by
   unfold selectedIntegerRow? selectedIntegerRowsPayload0
-  norm_num [decodeCountPrefixedPackedNat, decodePackedNatValuesLoop,
-    packedNatField, decodeIntegerSparseRow]
+  norm_num [decodeCountPrefixedPackedNatChunks, decodePackedNatChunkValuesLoop,
+    packedNatChunkField, packedNatField, decodeIntegerSparseRow]
 
 theorem selectedIntegerRow_packed_page_end_regression :
     selectedIntegerRow? 1023 = some #[(1023, (1 : Int))] := by
   unfold selectedIntegerRow? selectedIntegerRowsPayload0
-  norm_num [decodeCountPrefixedPackedNat, decodePackedNatValuesLoop,
-    packedNatField, decodeIntegerSparseRow]
+  norm_num [decodeCountPrefixedPackedNatChunks, decodePackedNatChunkValuesLoop,
+    packedNatChunkField, packedNatField, decodeIntegerSparseRow]
 
 end HypercubicDimension16TraceRankCertificateData
 
