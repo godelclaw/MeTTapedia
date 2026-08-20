@@ -14,10 +14,14 @@ the rotation system's incidence-at-most-two theorem shows that one primal edge
 shared by the receipted face pair and selected by the endpoint triangle forces
 the same unoriented dual edge.  Consequently, if the incoming and outgoing
 receipted crossings at a pointed collision both meet one endpoint centre, the
-triangle supplies the literal predecessor-to-successor bypass.
+triangle supplies the literal predecessor-to-successor bypass.  The exact-
+packet variant also retains the internal square bond: a side-to-side receipt
+need not be forced onto the outer four-edge boundary before the endpoint
+triangles can consume it.
 
-This does not yet prove that the two source crossings meet the same endpoint
-centre.  Discharging that finite placement comparison, iterating the rolling
+This does not yet identify each retained source corner with one of the two
+square-bond endpoints, nor consume the possible opposite-endpoint allocation.
+Discharging that finite placement comparison, iterating the rolling
 transition, and attaching the two end caps remain open; Fable flag L1 is not
 closed here.
 -/
@@ -437,6 +441,33 @@ theorem SelectedAdjacentTerminalEdgeCrossingReceipt.edge_mem_first_or_second_end
   · exact .inr (receipt.edge_mem_endpointTriangle_of_meets_center
       secondTriangle (by simpa [hsecondCenter] using hsecond))
 
+/-- A receipted crossing in the exact two-triangle edge packet belongs to at
+least one endpoint triangle.  Unlike the square-boundary-only allocator above,
+this statement also permits the internal bond shared by the two endpoint
+triangles. -/
+theorem SelectedAdjacentTerminalEdgeCrossingReceipt.edge_mem_first_or_second_endpointTriangle_of_union
+    {edge : Sym2 (SelectedFace web)}
+    (receipt : SelectedAdjacentTerminalEdgeCrossingReceipt edge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hunion :
+      firstTriangle.selectedCycle.crossingEdges ∪
+          secondTriangle.selectedCycle.crossingEdges =
+        insert bond.internalEdge cycle.selectedCycle.crossingEdges)
+    (hcrossing : receipt.crossing ∈
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges) :
+    edge ∈ firstTriangle.selectedCycle.walk.edges ∨
+      edge ∈ secondTriangle.selectedCycle.walk.edges := by
+  rw [← hunion] at hcrossing
+  rcases Finset.mem_union.1 hcrossing with hfirst | hsecond
+  · exact .inl (receipt.edge_mem_endpointTriangle firstTriangle hfirst)
+  · exact .inr (receipt.edge_mem_endpointTriangle secondTriangle hsecond)
+
 /-- Once both pointed incident crossings meet the same square endpoint, the
 endpoint triangle gives the one-edge predecessor-to-successor bypass required
 by the rolling rail repair. -/
@@ -538,6 +569,163 @@ theorem InteriorOccurrence.endpointTriangle_bypass_or_opposite_of_crossingReceip
         (by simp [InteriorOccurrence.outgoingEdge])
     exact secondTriangle.adj_of_mem_support_of_ne hpredecessor hsuccessor
       (occurrence.predecessor_ne_successor hpath)
+
+/-- **L1 exact-packet allocation.**  The bypass-or-opposite alternative only
+needs each pointed rail crossing to lie in the two endpoint triangles' exact
+edge packet.  This is the square boundary together with the internal bond, so
+side-to-side terminal receipts are not incorrectly discarded. -/
+theorem InteriorOccurrence.endpointTriangle_bypass_or_opposite_of_crossingReceipts_of_union
+    {start finish current : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    (occurrence : InteriorOccurrence (current := current) walk)
+    (hpath : walk.IsPath)
+    (incomingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.incomingEdge)
+    (outgoingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.outgoingEdge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hunion :
+      firstTriangle.selectedCycle.crossingEdges ∪
+          secondTriangle.selectedCycle.crossingEdges =
+        insert bond.internalEdge cycle.selectedCycle.crossingEdges)
+    (hincomingCrossing : incomingReceipt.crossing ∈
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges)
+    (houtgoingCrossing : outgoingReceipt.crossing ∈
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges) :
+    (SelectedDualGraph web).Adj occurrence.predecessor occurrence.successor ∨
+      ((occurrence.incomingEdge ∈ firstTriangle.selectedCycle.walk.edges ∧
+          occurrence.outgoingEdge ∈ secondTriangle.selectedCycle.walk.edges) ∨
+        (occurrence.incomingEdge ∈ secondTriangle.selectedCycle.walk.edges ∧
+          occurrence.outgoingEdge ∈ firstTriangle.selectedCycle.walk.edges)) := by
+  have hincoming := incomingReceipt
+    |>.edge_mem_first_or_second_endpointTriangle_of_union
+      firstTriangle secondTriangle hunion hincomingCrossing
+  have houtgoing := outgoingReceipt
+    |>.edge_mem_first_or_second_endpointTriangle_of_union
+      firstTriangle secondTriangle hunion houtgoingCrossing
+  rcases hincoming with hincomingFirst | hincomingSecond <;>
+    rcases houtgoing with houtgoingFirst | houtgoingSecond
+  · left
+    have hpredecessor : occurrence.predecessor ∈
+        firstTriangle.selectedCycle.walk.support :=
+      firstTriangle.selectedCycle.walk.mem_support_of_mem_edges hincomingFirst
+        (by simp [InteriorOccurrence.incomingEdge])
+    have hsuccessor : occurrence.successor ∈
+        firstTriangle.selectedCycle.walk.support :=
+      firstTriangle.selectedCycle.walk.mem_support_of_mem_edges houtgoingFirst
+        (by simp [InteriorOccurrence.outgoingEdge])
+    exact firstTriangle.adj_of_mem_support_of_ne hpredecessor hsuccessor
+      (occurrence.predecessor_ne_successor hpath)
+  · exact .inr (.inl ⟨hincomingFirst, houtgoingSecond⟩)
+  · exact .inr (.inr ⟨hincomingSecond, houtgoingFirst⟩)
+  · left
+    have hpredecessor : occurrence.predecessor ∈
+        secondTriangle.selectedCycle.walk.support :=
+      secondTriangle.selectedCycle.walk.mem_support_of_mem_edges hincomingSecond
+        (by simp [InteriorOccurrence.incomingEdge])
+    have hsuccessor : occurrence.successor ∈
+        secondTriangle.selectedCycle.walk.support :=
+      secondTriangle.selectedCycle.walk.mem_support_of_mem_edges houtgoingSecond
+        (by simp [InteriorOccurrence.outgoingEdge])
+    exact secondTriangle.adj_of_mem_support_of_ne hpredecessor hsuccessor
+      (occurrence.predecessor_ne_successor hpath)
+
+/-- A retained source corner at either square-bond endpoint places its exact
+primal crossing in the two endpoint triangles' expanded edge packet.  The
+corner-to-endpoint equality is deliberately exposed: it is the remaining
+finite source-placement comparison, not an inferred uniqueness claim. -/
+theorem SelectedAdjacentTerminalEdgeCrossingOrigin.crossing_mem_endpointTrianglePacket_of_corner_eq_endpoint
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {leftPlacement : SelectedInternalHexRungPlacement corridor rungs leftInterior}
+    {rightPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior leftInterior hnext)}
+    {edge : Sym2 (SelectedFace web)}
+    (origin : SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement) edge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcorner : origin.corner = bond.first ∨ origin.corner = bond.second) :
+    origin.toCrossingReceipt.crossing ∈
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges := by
+  have hincident : origin.toCrossingReceipt.crossing ∈
+      incidentEdgeFinset G bond.first ∪ incidentEdgeFinset G bond.second := by
+    rcases hcorner with hfirst | hsecond
+    · exact Finset.mem_union.2 (.inl (by
+        simpa [incidentEdgeFinset, hfirst] using origin.corner_mem_crossing))
+    · exact Finset.mem_union.2 (.inr (by
+        simpa [incidentEdgeFinset, hsecond] using origin.corner_mem_crossing))
+  rwa [bond.incidentEdgeFinset_union_eq_insert_internalEdge hroot] at hincident
+
+/-- The proof-relevant source origins feed the exact-packet square consumer as
+soon as their named corners are identified with the two bond endpoints.  This
+does not prove those two finite coordinate identifications, and therefore does
+not yet close L1. -/
+theorem InteriorOccurrence.endpointTriangle_bypass_or_opposite_of_crossingOrigins
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {leftPlacement : SelectedInternalHexRungPlacement corridor rungs leftInterior}
+    {rightPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior leftInterior hnext)}
+    {start finish current : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    (occurrence : InteriorOccurrence (current := current) walk)
+    (hpath : walk.IsPath)
+    (incomingOrigin : SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      occurrence.incomingEdge)
+    (outgoingOrigin : SelectedAdjacentTerminalEdgeCrossingOrigin
+      (leftPlacement := leftPlacement) (rightPlacement := rightPlacement)
+      occurrence.outgoingEdge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hunion :
+      firstTriangle.selectedCycle.crossingEdges ∪
+          secondTriangle.selectedCycle.crossingEdges =
+        insert bond.internalEdge cycle.selectedCycle.crossingEdges)
+    (hincomingCorner :
+      incomingOrigin.corner = bond.first ∨ incomingOrigin.corner = bond.second)
+    (houtgoingCorner :
+      outgoingOrigin.corner = bond.first ∨ outgoingOrigin.corner = bond.second) :
+    (SelectedDualGraph web).Adj occurrence.predecessor occurrence.successor ∨
+      ((occurrence.incomingEdge ∈ firstTriangle.selectedCycle.walk.edges ∧
+          occurrence.outgoingEdge ∈ secondTriangle.selectedCycle.walk.edges) ∨
+        (occurrence.incomingEdge ∈ secondTriangle.selectedCycle.walk.edges ∧
+          occurrence.outgoingEdge ∈ firstTriangle.selectedCycle.walk.edges)) := by
+  exact InteriorOccurrence.endpointTriangle_bypass_or_opposite_of_crossingReceipts_of_union
+    occurrence hpath incomingOrigin.toCrossingReceipt
+    outgoingOrigin.toCrossingReceipt firstTriangle secondTriangle hunion
+    (incomingOrigin
+      |>.crossing_mem_endpointTrianglePacket_of_corner_eq_endpoint
+        hroot hincomingCorner)
+    (outgoingOrigin
+      |>.crossing_mem_endpointTrianglePacket_of_corner_eq_endpoint
+        hroot houtgoingCorner)
 
 end TriangleComparison
 
