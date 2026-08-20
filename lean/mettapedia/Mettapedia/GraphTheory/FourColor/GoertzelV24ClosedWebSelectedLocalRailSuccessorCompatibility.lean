@@ -189,7 +189,15 @@ noncomputable def SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft
           simpa using
             first.rightRails.paths.firstRail_length_add_secondRail_length_le_two }
     firstRail_support_disjoint_secondRail := by
-      simpa using first.rightRails.firstRail_support_disjoint_secondRail }
+      simpa using first.rightRails.firstRail_support_disjoint_secondRail
+    firstRail_edge_has_forward_origin := by
+      intro edge hedge
+      exact first.rightRails.firstRail_edge_has_forward_origin edge (by
+        simpa using hedge)
+    secondRail_edge_has_forward_origin := by
+      intro edge hedge
+      exact first.rightRails.secondRail_edge_has_forward_origin edge (by
+        simpa using hedge) }
 
 @[simp] theorem SeparatedSelectedSourceLocalRailSuccessor.rightRailsAsNextLeft_firstRail_support
     (first : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement

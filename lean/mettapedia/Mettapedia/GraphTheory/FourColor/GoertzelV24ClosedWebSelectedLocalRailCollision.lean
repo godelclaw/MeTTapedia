@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailShape
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailShapeEdgeOrigin
 
 /-!
 # Exact local collision alternative for selected Cell-3 rails
@@ -55,6 +55,10 @@ structure SeparatedSelectedSourceLocalRailPaths
     outgoingBefore outgoingAfter
   firstRail_support_disjoint_secondRail :
     paths.firstRail.support.Disjoint paths.secondRail.support
+  firstRail_edge_has_forward_origin : ∀ edge ∈ paths.firstRail.edges,
+    SelectedPlacementForwardEdgeOrigin placement edge
+  secondRail_edge_has_forward_origin : ∀ edge ∈ paths.secondRail.edges,
+    SelectedPlacementForwardEdgeOrigin placement edge
 
 private def repeatCollisionOfFaceEq
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -149,6 +153,18 @@ theorem separatedSelectedSourceLocalRailPaths_or_collision_of_shape
       refine ⟨{
         paths := paths
         firstRail_support_disjoint_secondRail := ?_
+        firstRail_edge_has_forward_origin := by
+          intro edge hedge
+          exact selectedSourceLocalRailPathsOfShape_edge_has_forward_origin
+            placement incomingBefore incomingAfter outgoingBefore outgoingAfter
+              (.forwardTwo first_eq middle houtMiddle hmiddleIn) edge
+              (Or.inl hedge)
+        secondRail_edge_has_forward_origin := by
+          intro edge hedge
+          exact selectedSourceLocalRailPathsOfShape_edge_has_forward_origin
+            placement incomingBefore incomingAfter outgoingBefore outgoingAfter
+              (.forwardTwo first_eq middle houtMiddle hmiddleIn) edge
+              (Or.inr hedge)
       }⟩
       rw [List.disjoint_left]
       intro face hfirst hsecond
@@ -243,6 +259,16 @@ theorem separatedSelectedSourceLocalRailPaths_or_collision_of_shape
       refine ⟨{
         paths := paths
         firstRail_support_disjoint_secondRail := ?_
+        firstRail_edge_has_forward_origin := by
+          intro edge hedge
+          exact selectedSourceLocalRailPathsOfShape_edge_has_forward_origin
+            placement incomingBefore incomingAfter outgoingBefore outgoingAfter
+              (.forwardThree hfirst hsecond) edge (Or.inl hedge)
+        secondRail_edge_has_forward_origin := by
+          intro edge hedge
+          exact selectedSourceLocalRailPathsOfShape_edge_has_forward_origin
+            placement incomingBefore incomingAfter outgoingBefore outgoingAfter
+              (.forwardThree hfirst hsecond) edge (Or.inr hedge)
       }⟩
       rw [List.disjoint_left]
       intro face hfirstMem hsecondMem
@@ -318,6 +344,18 @@ theorem separatedSelectedSourceLocalRailPaths_or_collision_of_shape
       refine ⟨{
         paths := paths
         firstRail_support_disjoint_secondRail := ?_
+        firstRail_edge_has_forward_origin := by
+          intro edge hedge
+          exact selectedSourceLocalRailPathsOfShape_edge_has_forward_origin
+            placement incomingBefore incomingAfter outgoingBefore outgoingAfter
+              (.forwardFour middle hinMiddle hmiddleOut second_eq) edge
+              (Or.inl hedge)
+        secondRail_edge_has_forward_origin := by
+          intro edge hedge
+          exact selectedSourceLocalRailPathsOfShape_edge_has_forward_origin
+            placement incomingBefore incomingAfter outgoingBefore outgoingAfter
+              (.forwardFour middle hinMiddle hmiddleOut second_eq) edge
+              (Or.inr hedge)
       }⟩
       rw [List.disjoint_left]
       intro face hfirst hsecond

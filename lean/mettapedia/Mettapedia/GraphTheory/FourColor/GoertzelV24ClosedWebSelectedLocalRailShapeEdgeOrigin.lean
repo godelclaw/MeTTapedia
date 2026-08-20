@@ -10,9 +10,9 @@ surviving those operations therefore retains an exact selected forward-step
 receipt: two source slots, their cyclic successor relation, the locally cubic
 corner, and the literal crossed primal edge.
 
-This is bounded source provenance.  It does not yet strengthen the abstract
-separated-rail structure, propagate through terminal-window replacement, or
-construct the arbitrary-length crosscuts required by L1.
+This is bounded source provenance.  The subsequent separated-rail layer
+retains it as a proof-relevant invariant; terminal-window replacement and the
+arbitrary-length crosscuts required by L1 remain later obligations.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor

@@ -159,6 +159,28 @@ noncomputable def secondContinuation
       successor.rightRails.paths.secondRail.support := by
   simp [secondContinuation]
 
+/-- Rebasing the first successor rail across the seam preserves its exact
+source edge receipt in the right Cell-3 placement. -/
+theorem firstContinuation_edge_has_forward_origin
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    {edge : Sym2 (SelectedFace (web := web))}
+    (hedge : edge ∈ successor.firstContinuation.edges) :
+    SelectedPlacementForwardEdgeOrigin rightPlacement edge := by
+  apply successor.rightRails.firstRail_edge_has_forward_origin edge
+  simpa [firstContinuation] using hedge
+
+/-- The analogous exact source receipt for the rebased second successor
+rail. -/
+theorem secondContinuation_edge_has_forward_origin
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
+      rightPlacement)
+    {edge : Sym2 (SelectedFace (web := web))}
+    (hedge : edge ∈ successor.secondContinuation.edges) :
+    SelectedPlacementForwardEdgeOrigin rightPlacement edge := by
+  apply successor.rightRails.secondRail_edge_has_forward_origin edge
+  simpa [secondContinuation] using hedge
+
 theorem firstContinuation_isPath
     (successor : SeparatedSelectedSourceLocalRailSuccessor hnext leftPlacement
       rightPlacement) : successor.firstContinuation.IsPath := by
