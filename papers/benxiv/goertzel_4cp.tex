@@ -2955,6 +2955,17 @@ This is an edge-level provenance result, not yet its propagation through a
 two-step rail, a bypassed terminal track, a middle replacement, or the final
 long crosscut assembly.
 
+That first propagation is now proved in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailShapeEdgeOrigin}.  For each of
+the canonical (0+2), (1+1), and (2+0) rail shapes, every edge surviving
+loop erasure, reversal, and append retains a literal selected forward-step
+origin and hence the same exact primal crossing receipt.  The proof uses only
+that bypassed edges come from the raw walk, appended edge lists split between
+their factors, and reversal preserves undirected edge membership.  It has not
+yet strengthened every abstract separated-rail value or transported the
+receipt through terminal-window middle replacement and the long crosscut
+assembly.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
