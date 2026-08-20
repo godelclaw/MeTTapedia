@@ -2272,6 +2272,17 @@ general.  Neither join is yet proved collision-free, so this is not collision el
 arbitrary-length fold, either end cap, the separated crosscut pair, or L1
 closure.
 
+The retained-collision API now also has a literal assembly-level consumer.
+For either endpoint order, Lean cuts the appropriate accumulated rail at the
+stored collision face, follows the opposing new rail from that same face, and
+loop-erases the result.  The output is a simple route with the intended outer
+endpoints, together with a proof that its support lies in exactly those two
+displayed rail pieces.  This lifts the earlier one-cell reroute to arbitrary
+accumulated assemblies and applies directly at either localized join.  It is
+deliberately only one route: no claim is made that a compatible second route
+can be chosen disjointly, so this is not yet a repaired rail pair or a crosscut
+constructor.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
