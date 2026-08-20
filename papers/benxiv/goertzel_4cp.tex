@@ -2820,6 +2820,20 @@ companion-rail separation, is therefore the exact next local repair
 obligation; merely possessing some local bypass is not counted as a rail
 repair.
 
+The corresponding track provenance is now retained rather than reconstructed
+after localization.  The module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowTrackOrigin}
+proves that each newly retained collision has one of exactly two literal
+origins: old first rail versus future second rail, or old second rail versus
+future first rail.  In both cases the future occurrence remains in the tail of
+the named rail, so it is not merely the shared starting endpoint.  The
+outcome-level repair packet carries this exact cross-track origin together
+with the centre/cyclic/star/bond component resolution.  This repairs a real
+information loss in the earlier first-window packet; it does not yet identify
+the endpoint-triangle bypass faces with the predecessor and successor on the
+named track, nor prove the modified track disjoint from its named companion.
+Those two statements remain the next local consumer obligations.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
