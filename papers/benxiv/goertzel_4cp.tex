@@ -2024,6 +2024,18 @@ the collision witness selected by the outer retained classifier must still be
 related to the finite branch stored in the middle construction trace before
 the rolling suffix can advance.
 
+The unbounded part of that rolling construction has now been separated from
+the bounded repair.  The predicate
+\texttt{SupportSeparatedFromFutureSelectedWindows} says that a support frozen
+at a corridor cutoff is disjoint from every sufficiently remote certified
+two-centre window.  Each canonical terminal window satisfies this predicate
+by the proved gap-$\geq4$ separation theorem; moving the cutoff forward
+preserves it; and both ordered and exchanged assembly append preserve it.
+Thus a completed remote prefix can be accumulated without reopening its
+geometry.  What remains is exactly the neighbouring four-cell transition
+which produces the next terminal window, followed by the two literal end
+caps.  This invariant is not that transition and is not L1 closure.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
