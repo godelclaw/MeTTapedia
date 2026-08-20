@@ -2907,6 +2907,19 @@ strictly smaller: exclude the remote terminal track for the two incident
 edges at the pointed collision, and only then compare them with the
 square-bond endpoint triangle.
 
+That remote edge alternative is now excluded in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowPointedEdgeOrigin}.
+For either retained cross-track collision, source separation forces both the
+incoming and outgoing edge of every strict internal occurrence into the
+corresponding literal first terminal-window track.  The terminal endpoint is
+kept as a separate constructor rather than silently treated as internal.
+Consequently the endpoint-coordinate problem is now genuinely finite and
+local: compare two named edges of one literal terminal track with the existing
+square-bond endpoint triangle.  That comparison, the terminal case, the
+bypass itself, and separation from the companion rail remain open; no
+collision elimination or closure of the source's bulk-corridor flag L1 is
+claimed.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

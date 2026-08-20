@@ -350,6 +350,42 @@ def ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges
   | .straight assembly => assembly.secondRail.edges
   | .swapped assembly => assembly.secondRail.edges
 
+/-- An endpoint of an edge on the first exact track lies in the corresponding
+first support.  This bridges edge provenance back to the existing remote-face
+separation API. -/
+theorem ExactCertifiedSelectedLocalRailTerminalWindow.mem_firstSupport_of_mem_firstEdges
+    (window : ExactCertifiedSelectedLocalRailTerminalWindow
+      (web := web) successor left)
+    {edge : Sym2 (SelectedFace (web := web))}
+    {face : SelectedFace (web := web)}
+    (hedge : edge ∈ window.firstEdges)
+    (hface : face ∈ edge) :
+    face ∈ window.toCertified.firstSupport := by
+  rcases window with ⟨outcome, hexact⟩
+  cases outcome with
+  | straight assembly | swapped assembly =>
+      simpa [ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+        ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+        CertifiedSelectedLocalRailTerminalWindow.firstSupport] using
+        assembly.firstRail.mem_support_of_mem_edges hedge hface
+
+/-- The analogous endpoint-to-support bridge for the second exact track. -/
+theorem ExactCertifiedSelectedLocalRailTerminalWindow.mem_secondSupport_of_mem_secondEdges
+    (window : ExactCertifiedSelectedLocalRailTerminalWindow
+      (web := web) successor left)
+    {edge : Sym2 (SelectedFace (web := web))}
+    {face : SelectedFace (web := web)}
+    (hedge : edge ∈ window.secondEdges)
+    (hface : face ∈ edge) :
+    face ∈ window.toCertified.secondSupport := by
+  rcases window with ⟨outcome, hexact⟩
+  cases outcome with
+  | straight assembly | swapped assembly =>
+      simpa [ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+        ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
+        CertifiedSelectedLocalRailTerminalWindow.secondSupport] using
+        assembly.secondRail.mem_support_of_mem_edges hedge hface
+
 /-- Ordered terminal-window edge provenance. -/
 def EdgesContainedInOrderedExactTerminalTracks
     (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
