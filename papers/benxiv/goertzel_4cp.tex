@@ -2682,11 +2682,16 @@ rolling step can inspect the literal terminal construction without asserting
 that any internal seam survived flattening.  Construction traces with the same
 literal inputs are now proved equal, and a two-trace live suffix has a literal
 one-position advance: its later trace becomes the next suffix's earlier trace,
-while only the newly exposed successor is classified.  The remaining
-recurrence must connect this shifted raw suffix to the next repaired flattened
-outcome and advance the frozen prefix.  Consuming a new collision,
-arbitrary-length iteration, both annular end caps, the separated crosscut pair,
-and L1 remain open.
+while only the newly exposed successor is classified.  The shifted suffix now
+feeds an actual fail-closed recurrence step as well.  The new seam is tested by
+the existing append classifier; a clean seam returns its literal separated
+assembly, whereas a bad seam returns the concrete collision and immediately
+runs the canonical wider middle replacement using the shifted trace.  This is
+a construction, not a conditional wrapper, and it adds no geometric premise.
+The branches deliberately retain different endpoint spans, so the next rung
+must reconcile those spans before advancing the frozen prefix.  Arbitrary-
+length iteration, both annular end caps, the separated crosscut pair, and L1
+remain open.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical

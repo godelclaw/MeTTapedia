@@ -15,12 +15,14 @@ and the verified flattened prepend result together.  The raw packet is the
 bounded live suffix: later steps may inspect its literal construction trace
 without claiming that an internal seam survived loop erasure.
 
-The constructor below uses the actual middle-replacement classifier and the
-already-proved frozen prepend.  It introduces no new separation premise.
-This is the first state constructor for the wider recurrence; it does not yet
-shift the live suffix, eliminate its collision result, iterate to arbitrary
-length, attach either end cap, construct the final dual crosscuts, or close
-Fable flag L1.
+The constructors below use the actual append and middle-replacement
+classifiers plus the already-proved frozen prepend.  They introduce no new
+separation premise.  The live suffix now shifts by one cell and its newly
+exposed seam is classified fail-closed: a clean append is returned directly,
+while an actual collision is immediately fed to the canonical wider repair.
+The two branches do not yet share a common endpoint span, and no additional
+prefix is frozen.  Arbitrary-length iteration, both end caps, the final dual
+crosscuts, and Fable flag L1 remain open.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -241,6 +243,118 @@ noncomputable def advance
       (firstSuccessor.rightRailsAsNextLeft secondSuccessor) where
   earlierTrace := live.laterTrace
   laterTrace := ExactSelectedLocalRailConstructionTrace.ofClassifier
+
+/-- The first genuinely rolling local outcome carried by a bounded live
+suffix.  After shifting the two canonical traces by one cell, either the new
+adjacent append is already separated, or its actual collision is consumed by
+the established four-cell middle replacement.
+
+The two constructors deliberately have different endpoint spans: the direct
+branch is the newly exposed adjacent append, while the replacement branch is
+the wider repaired window beginning one cell earlier.  A later recurrence
+must reconcile those spans before freezing any additional prefix. -/
+inductive RepairAdvanceOutcome
+    {hfourthNext :
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center.val + 2 < blockLength}
+    {fifthPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext)
+        hfourthNext)}
+    {fourthSuccessor : SeparatedSelectedSourceLocalRailSuccessor hfourthNext
+      fourthPlacement fifthPlacement}
+    (live : BoundedLiveTracePair
+      (leftInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hsecondNext := hbridgeNext)
+      (leftPlacement := firstPlacement) (middlePlacement := secondPlacement)
+      (rightPlacement := thirdPlacement)
+      (firstSuccessor := firstSuccessor) (secondSuccessor := bridge) firstLeft) :
+    Type (u + 1)
+  | directAppend
+      (shifted : BoundedLiveTracePair
+        (leftInterior := nextCorridorInterior firstInterior hfirstNext)
+        (hfirstNext := hbridgeNext) (hsecondNext := hlastNext)
+        (leftPlacement := secondPlacement) (middlePlacement := thirdPlacement)
+        (rightPlacement := fourthPlacement)
+        (firstSuccessor := bridge) (secondSuccessor := lastSuccessor)
+        (firstSuccessor.rightRailsAsNextLeft bridge))
+      (shifted_eq : shifted = live.advance)
+      (assembly : SelectedSourceLocalRailAssembly (web := web)
+        (selectedPlacementSideFace thirdPlacement bridge.frame.rightAfter)
+        (selectedPlacementSideFace thirdPlacement bridge.frame.rightBefore)
+        (selectedPlacementSideFace fourthPlacement
+          lastSuccessor.rightOutgoingBefore)
+        (selectedPlacementSideFace fourthPlacement
+          lastSuccessor.rightOutgoingAfter))
+  | middleReplacement
+      (shifted : BoundedLiveTracePair
+        (leftInterior := nextCorridorInterior firstInterior hfirstNext)
+        (hfirstNext := hbridgeNext) (hsecondNext := hlastNext)
+        (leftPlacement := secondPlacement) (middlePlacement := thirdPlacement)
+        (rightPlacement := fourthPlacement)
+        (firstSuccessor := bridge) (secondSuccessor := lastSuccessor)
+        (firstSuccessor.rightRailsAsNextLeft bridge))
+      (shifted_eq : shifted = live.advance)
+      (collision : SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        lastSuccessor (bridge.rightRailsAsNextLeft lastSuccessor))
+      (replacement : ExactSelectedLocalRailMiddleReplacement
+        (firstSuccessor := bridge) (bridge := lastSuccessor)
+        (lastSuccessor := fourthSuccessor)
+        (firstLeft := firstSuccessor.rightRailsAsNextLeft bridge)
+        shifted.laterTrace collision)
+
+/-- **L1 constructed raw recurrence step.**  Shift the bounded suffix and run
+the actual append classifier at the newly exposed seam.  A clean seam returns
+its literal assembly.  A bad seam returns its actual collision and immediately
+runs the canonical middle replacement using the shifted trace.
+
+No separation premise is introduced.  This does not yet prepend the old
+frozen prefix, identify a common endpoint span for the two branches, iterate,
+attach end caps, construct crosscuts, or close L1. -/
+noncomputable def classifyRepairAdvance
+    {hfourthNext :
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center.val + 2 < blockLength}
+    {fifthPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext)
+        hfourthNext)}
+    {fourthSuccessor : SeparatedSelectedSourceLocalRailSuccessor hfourthNext
+      fourthPlacement fifthPlacement}
+    (live : BoundedLiveTracePair
+      (leftInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hsecondNext := hbridgeNext)
+      (leftPlacement := firstPlacement) (middlePlacement := secondPlacement)
+      (rightPlacement := thirdPlacement)
+      (firstSuccessor := firstSuccessor) (secondSuccessor := bridge) firstLeft) :
+    RepairAdvanceOutcome
+      (lastSuccessor := lastSuccessor)
+      (hfourthNext := hfourthNext) (fifthPlacement := fifthPlacement)
+      (fourthSuccessor := fourthSuccessor) live := by
+  let shifted := live.advance
+    (hthirdNext := hlastNext) (fourthPlacement := fourthPlacement)
+    (thirdSuccessor := lastSuccessor)
+  apply Classical.choice
+  rcases appendLocalSuccessor_or_actualCollision lastSuccessor
+      (bridge.rightRailsAsNextLeft lastSuccessor) with hdirect | hcollision
+  · exact ⟨.directAppend shifted rfl hdirect.some⟩
+  · let collision := hcollision.some
+    exact ⟨.middleReplacement shifted rfl collision
+      (ExactSelectedLocalRailMiddleReplacement.ofClassifier
+        (firstSuccessor := bridge) (bridge := lastSuccessor)
+        (lastSuccessor := fourthSuccessor)
+        (firstLeft := firstSuccessor.rightRailsAsNextLeft bridge)
+        shifted.laterTrace collision)⟩
 
 end BoundedLiveTracePair
 
