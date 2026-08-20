@@ -273,6 +273,74 @@ theorem SquareBondRealization.incidentEdgeFinset_union_eq_insert_internalEdge
       · exact Finset.mem_union.2 (.inr (by
           simpa [incidentEdgeFinset] using hsecond))
 
+/-- If two endpoint triangles have the exact crossing-edge union, then their
+face supports cover the original square-cycle support.  At a visited square
+face, choose an incident selected crossing; the union receipt assigns that
+crossing to one endpoint triangle, and local two-sidedness puts the face on
+that triangle. -/
+theorem SquareBondRealization.original_support_covered_by_endpointTriangles
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hunion : firstTriangle.selectedCycle.crossingEdges ∪
+        secondTriangle.selectedCycle.crossingEdges =
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges) :
+    ∀ current ∈ cycle.walk.support,
+      current ∈ firstTriangle.selectedCycle.walk.support ∨
+        current ∈ secondTriangle.selectedCycle.walk.support := by
+  intro current hcurrent
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hcurrent with
+    ⟨index, hindex, hindexLe⟩
+  have hpositive : 0 < cycle.walk.length := by
+    rcases cycle.length_eq_three_or_four with hthree | hfour <;> omega
+  by_cases hindexLt : index < cycle.walk.length
+  · let step : Fin cycle.walk.length := ⟨index, hindexLt⟩
+    have hget : cycle.walk.getVert step.val = current := by
+      exact hindex
+    let edge := cycle.selectedCycle.crossingEdge step
+    have hedgeOriginal : edge ∈ cycle.selectedCycle.crossingEdges :=
+      (cycle.selectedCycle.mem_crossingEdges_iff edge).2 ⟨step, rfl⟩
+    have hedgePair : edge ∈ firstTriangle.selectedCycle.crossingEdges ∪
+        secondTriangle.selectedCycle.crossingEdges := by
+      rw [hunion]
+      exact Finset.mem_insert.2 (.inr hedgeOriginal)
+    have hboundary : edge ∈ orbitFaceBoundary web.annular.RS current.1 := by
+      have hleft := cycle.selectedCycle.crossingEdge_mem_leftFace step
+      simpa only [MiddleReplacementShortDualCycle.selectedCycle_walk, hget] using hleft
+    rcases Finset.mem_union.1 hedgePair with hfirst | hsecond
+    · exact .inl (by
+        simpa using face_mem_support_of_mem_crossingEdges_of_mem_boundary
+          firstTriangle.selectedCycle hfirst hboundary)
+    · exact .inr (by
+        simpa using face_mem_support_of_mem_crossingEdges_of_mem_boundary
+          secondTriangle.selectedCycle hsecond hboundary)
+  · have hindexEq : index = cycle.walk.length :=
+      Nat.le_antisymm hindexLe (Nat.le_of_not_gt hindexLt)
+    subst index
+    let step : Fin cycle.walk.length := ⟨0, hpositive⟩
+    have hget : cycle.walk.getVert step.val = current := by
+      simpa [step] using hindex
+    let edge := cycle.selectedCycle.crossingEdge step
+    have hedgeOriginal : edge ∈ cycle.selectedCycle.crossingEdges :=
+      (cycle.selectedCycle.mem_crossingEdges_iff edge).2 ⟨step, rfl⟩
+    have hedgePair : edge ∈ firstTriangle.selectedCycle.crossingEdges ∪
+        secondTriangle.selectedCycle.crossingEdges := by
+      rw [hunion]
+      exact Finset.mem_insert.2 (.inr hedgeOriginal)
+    have hboundary : edge ∈ orbitFaceBoundary web.annular.RS current.1 := by
+      have hleft := cycle.selectedCycle.crossingEdge_mem_leftFace step
+      simpa only [MiddleReplacementShortDualCycle.selectedCycle_walk, hget] using hleft
+    rcases Finset.mem_union.1 hedgePair with hfirst | hsecond
+    · exact .inl (by
+        simpa using face_mem_support_of_mem_crossingEdges_of_mem_boundary
+          firstTriangle.selectedCycle hfirst hboundary)
+    · exact .inr (by
+        simpa using face_mem_support_of_mem_crossingEdges_of_mem_boundary
+          secondTriangle.selectedCycle hsecond hboundary)
+
 /-- The oriented internal bond and the two following darts at its first cubic
 endpoint form a literal selected dual triangle whose three primal crossings
 all meet that endpoint. -/
