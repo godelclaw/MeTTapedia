@@ -62,13 +62,25 @@ noncomputable def selectedCycle
       (Finset.univ : Finset (OrbitFace web.annular.RS))}
     (cycle : MiddleReplacementShortDualCycle (web := web) face) :
     SelectedDualCycle web.annular.RS cycle.start :=
-  SelectedDualCycle.ofWalk web.annular.RS cycle.walk cycle.isCycle
+  SelectedDualCycle.ofWalkWithCrossingAt web.annular.RS cycle.walk cycle.isCycle
+    cycle.anchor cycle.anchorEdge cycle.anchorEdge_mem_shared
 
 @[simp] theorem selectedCycle_walk
     {face : AmbientFace
       (Finset.univ : Finset (OrbitFace web.annular.RS))}
     (cycle : MiddleReplacementShortDualCycle (web := web) face) :
     cycle.selectedCycle.walk = cycle.walk := rfl
+
+/-- The selected separator retains the literal source rung recorded by the
+short-cycle construction. -/
+@[simp] theorem selectedCycle_crossingEdge_anchor
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (cycle : MiddleReplacementShortDualCycle (web := web) face) :
+    cycle.selectedCycle.crossingEdge cycle.anchor = cycle.anchorEdge := by
+  exact SelectedDualCycle.ofWalkWithCrossingAt_crossingEdge
+    web.annular.RS cycle.walk cycle.isCycle cycle.anchor cycle.anchorEdge
+      cycle.anchorEdge_mem_shared
 
 /-- The selected primal cut has the same cardinality as the short dual
 cycle. -/

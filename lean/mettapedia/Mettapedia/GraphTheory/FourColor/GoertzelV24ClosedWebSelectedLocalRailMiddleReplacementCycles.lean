@@ -97,6 +97,12 @@ structure MiddleReplacementShortDualCycle
   face_mem_support : face ∈ walk.support
   support_internal : ∀ current ∈ walk.support,
     current.1 ∈ web.annular.cellulation.interiorFaces
+  anchor : Fin walk.length
+  anchorEdge : G.edgeSet
+  anchorEdge_mem_shared : anchorEdge ∈ sharedInteriorEdges
+    (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))
+    (walk.getVert anchor.val).1 (walk.getVert (anchor.val + 1)).1
 
 /-- The four-step closed walk around a common neighbour of corridor centres
 two positions apart. -/
@@ -131,6 +137,8 @@ private theorem dualSquareWalk_isCycle
     SimpleGraph.Walk.isTrail_def, hfirstSecond.ne, hfirstSecond.ne.symm,
     hsecondThird.ne, hthirdFourth.ne, hfourthFirst.ne,
     hfourthFirst.ne.symm, hfirstThird, hfirstThird.symm, hsecondFourth]
+
+include rungs
 
 /-- Every normalized non-centre collision produces an actual simple short
 dual cycle.  The two centre cases remain explicit and are not converted into
@@ -182,7 +190,9 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
   | firstSecondTriangle hfirst hsecond =>
       let walk := dualTriangleWalk web.annular.cellulation.rotation
         hfirstSecond hsecond hfirst.symm
-      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk,
+        ?_, ?_, ?_, ?_, ⟨0, by simp [walk, dualTriangleWalk]⟩,
+        rungs.edge firstInterior.outgoing, ?_⟩⟩)
       · exact dualTriangleWalk_isCycle web.annular.cellulation.rotation
           hfirstSecond hsecond hfirst.symm
       · exact .inl (dualTriangleWalk_length web.annular.cellulation.rotation
@@ -203,6 +213,8 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           · subst current
             exact corridor.face_internal firstInterior.center
           · simp at hcurrent
+      · simpa [walk, dualTriangleWalk] using
+          rungs.mem_shared firstInterior.outgoing
   | firstThirdSquare hfirst hthird hfaceSecond =>
       let walk := dualSquareWalk hfirstSecond hsecondThird hthird hfirst.symm
       have hfirstThird : skeleton.faceAt firstInterior.center ≠
@@ -214,7 +226,9 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           change firstInterior.center.val =
             firstInterior.center.val + 1 + 1 at hval
           omega)
-      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk,
+        ?_, ?_, ?_, ?_, ⟨0, by simp [walk, dualSquareWalk]⟩,
+        rungs.edge firstInterior.outgoing, ?_⟩⟩)
       · exact dualSquareWalk_isCycle hfirstSecond hsecondThird hthird hfirst.symm
           hfirstThird (by exact fun h => hfaceSecond h.symm)
       · exact .inr (dualSquareWalk_length hfirstSecond hsecondThird hthird hfirst.symm)
@@ -237,6 +251,8 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           · subst current
             exact corridor.face_internal firstInterior.center
           · simp at hcurrent
+      · simpa [walk, dualSquareWalk] using
+          rungs.mem_shared firstInterior.outgoing
   | secondFourthSquare hsecond hfourth hfaceThird =>
       let thirdInterior := nextCorridorInterior
         (nextCorridorInterior firstInterior hfirstNext) hbridgeNext
@@ -251,7 +267,9 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           dsimp [fourthInterior, thirdInterior, nextCorridorInterior] at hval
           omega)
       refine .inr (.inr ⟨⟨skeleton.faceAt
-        (nextCorridorInterior firstInterior hfirstNext).center, walk, ?_, ?_, ?_, ?_⟩⟩)
+        (nextCorridorInterior firstInterior hfirstNext).center, walk,
+        ?_, ?_, ?_, ?_, ⟨0, by simp [walk, dualSquareWalk]⟩,
+        rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing, ?_⟩⟩)
       · exact dualSquareWalk_isCycle hsecondThird hthirdFourth hfourth hsecond.symm
           hsecondFourth (by exact fun h => hfaceThird h.symm)
       · exact .inr (dualSquareWalk_length hsecondThird hthirdFourth hfourth hsecond.symm)
@@ -275,12 +293,19 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
             exact corridor.face_internal
               (nextCorridorInterior firstInterior hfirstNext).center
           · simp at hcurrent
+      · simpa [walk, dualSquareWalk] using
+          rungs.mem_shared
+            (nextCorridorInterior firstInterior hfirstNext).outgoing
   | thirdFourthTriangle hthird hfourth =>
       let thirdInterior := nextCorridorInterior
         (nextCorridorInterior firstInterior hfirstNext) hbridgeNext
       let walk := dualTriangleWalk web.annular.cellulation.rotation
         hthirdFourth hfourth hthird.symm
-      refine .inr (.inr ⟨⟨skeleton.faceAt thirdInterior.center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      refine .inr (.inr ⟨⟨skeleton.faceAt thirdInterior.center, walk,
+        ?_, ?_, ?_, ?_, ⟨0, by
+          rw [dualTriangleWalk_length]
+          omega⟩,
+        rungs.edge thirdInterior.outgoing, ?_⟩⟩)
       · exact dualTriangleWalk_isCycle web.annular.cellulation.rotation
           hthirdFourth hfourth hthird.symm
       · exact .inl (dualTriangleWalk_length web.annular.cellulation.rotation
@@ -303,6 +328,13 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           · subst current
             exact corridor.face_internal thirdInterior.center
           · simp at hcurrent
+      · change rungs.edge thirdInterior.outgoing ∈ sharedInteriorEdges
+          (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))
+          (skeleton.faceAt thirdInterior.center).1
+          (skeleton.faceAt
+            (nextCorridorInterior thirdInterior hlastNext).center).1
+        exact rungs.mem_shared thirdInterior.outgoing
 
 /-- Source-facing composition: a surviving replacement collision is either
 one of the two literal centre cases or carries a concrete short interior dual
@@ -322,7 +354,7 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.center_or_shortCycle
         (nextCorridorInterior
           (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
       Nonempty (MiddleReplacementShortDualCycle (web := web) face) :=
-  (collision.hasLadderGeometry hsource).center_or_shortCycle
+  (collision.hasLadderGeometry hsource).center_or_shortCycle (rungs := rungs)
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

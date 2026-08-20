@@ -2236,7 +2236,13 @@ encloses exactly one vertex, or a four-edge selected boundary encloses exactly
 two vertices.  In the singleton case every selected crossing is incident to
 the unique centre; in the two-vertex case the vertices are adjacent and every
 selected crossing is incident to one of them.  This is the literal
-star-or-bond attachment classification.  It does not eliminate the cyclic
+star-or-bond attachment classification.  The short-cycle construction now
+also retains one literal selected corridor rung at a canonical dual step.
+The separator uses that edge at the same step, and the component calculation
+proves that the singleton centre, or one endpoint of the two-vertex bond, is
+incident to it.  This records source provenance without asserting a globally
+unique shared edge.  It does not identify the facial-dual cycle with a primal
+facial boundary, and it does not eliminate the cyclic
 branch, turn a facial-dual short cycle into a primal facial triangle or square,
 apply a source reduction, or eliminate the two centre cases.  One atom is also directionally
 resolved: the displayed

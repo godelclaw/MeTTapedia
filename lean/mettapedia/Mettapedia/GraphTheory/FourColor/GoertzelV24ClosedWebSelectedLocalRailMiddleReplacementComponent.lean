@@ -76,6 +76,14 @@ namespace MiddleReplacementShortDualCycle
 variable {face : AmbientFace
   (Finset.univ : Finset (OrbitFace web.annular.RS))}
 
+/-- The concrete source rung retained by the short-cycle construction is one
+of the selected primal crossings. -/
+@[simp] theorem anchorEdge_mem_crossingEdges
+    (cycle : MiddleReplacementShortDualCycle (web := web) face) :
+    cycle.anchorEdge ∈ cycle.selectedCycle.crossingEdges := by
+  exact (cycle.selectedCycle.mem_crossingEdges_iff cycle.anchorEdge).2
+    ⟨cycle.anchor, cycle.selectedCycle_crossingEdge_anchor⟩
+
 /-- The separator theorem on the finite crossing-edge support consumed by the
 deletion-component API. -/
 theorem not_connected_deleteEdges_crossingEdges
@@ -621,6 +629,41 @@ theorem exists_adjacent_pair_covering_crossingEdges_of_component_card_eq_two
   rcases hinsidePair with rfl | rfl
   · exact .inl hinsideEdge
   · exact .inr hinsideEdge
+
+/-- In the singleton branch the unique star centre is incident to the literal
+source rung retained by the short-cycle constructor. -/
+theorem exists_vertex_mem_anchorEdge_of_component_card_eq_one
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcard : Nat.card {vertex : V // vertex ∈ component.supp} = 1) :
+    ∃ vertex : V, vertex ∈ component.supp ∧ vertex ∈ cycle.anchorEdge.1 := by
+  obtain ⟨vertex, hvertex, hall⟩ :=
+    cycle.exists_vertex_mem_all_crossingEdges_of_component_card_eq_one
+      component hroot hcard
+  exact ⟨vertex, hvertex, hall cycle.anchorEdge cycle.anchorEdge_mem_crossingEdges⟩
+
+/-- In the two-vertex branch at least one endpoint of the unique internal bond
+is incident to the literal source rung retained by the short-cycle
+constructor. -/
+theorem exists_adjacent_pair_meeting_anchorEdge_of_component_card_eq_two
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (hcard : Nat.card {vertex : V // vertex ∈ component.supp} = 2) :
+    ∃ first second : V,
+      first ≠ second ∧ component.supp = {first, second} ∧
+        G.Adj first second ∧
+        (first ∈ cycle.anchorEdge.1 ∨ second ∈ cycle.anchorEdge.1) := by
+  obtain ⟨first, second, hne, hsupp, hadj, hall⟩ :=
+    cycle.exists_adjacent_pair_covering_crossingEdges_of_component_card_eq_two
+      component hroot hcard
+  exact ⟨first, second, hne, hsupp, hadj,
+    hall cycle.anchorEdge cycle.anchorEdge_mem_crossingEdges⟩
 
 end MiddleReplacementShortDualCycle
 
