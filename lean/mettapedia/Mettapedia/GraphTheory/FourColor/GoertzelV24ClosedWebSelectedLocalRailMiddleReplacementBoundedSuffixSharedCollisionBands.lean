@@ -220,7 +220,7 @@ terminal window of the shifted four-cell future.  The first occurrence is
 adjacent to the first centre, while exact terminal-window provenance places
 the second occurrence at or adjacent to the fourth or fifth centre.  Source
 boundary-cleanliness excludes a common neighbour across that gap. -/
-private theorem firstLive_not_mem_shiftedLastWindow
+theorem firstLive_not_mem_shiftedLastWindow
     (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
       blockLength corridor)
     (future : ShiftedFuture
