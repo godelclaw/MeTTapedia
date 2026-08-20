@@ -152,6 +152,8 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
         secondTriangle.IsCycle ∧ secondTriangle.length = 3 ∧
         s(left, right) ∈ firstTriangle.edges ∧
         s(left, right) ∈ secondTriangle.edges ∧
+        (∀ vertex ∈ firstTriangle.support, vertex ∈ walk.support) ∧
+        (∀ vertex ∈ secondTriangle.support, vertex ∈ walk.support) ∧
         ∃ firstOnly : Sym2 W,
           firstOnly ∈ firstTriangle.edges ∧
             firstOnly ∉ secondTriangle.edges := by
@@ -160,7 +162,7 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
       hcycle hlength hchord with
     ⟨step, hleftPosition, hrightPosition⟩
   rcases (SimpleGraph.Walk.isChord_sym2Mk.1 hchord) with
-    ⟨hleftRight, hnotEdge, _hleftSupport, _hrightSupport⟩
+    ⟨hleftRight, hnotEdge, hleftSupport, hrightSupport⟩
   let next := finRotate walk.length step
   let opposite := finRotate walk.length next
   let previous := finRotate walk.length opposite
@@ -266,10 +268,33 @@ theorem exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
       SimpleGraph.Walk.isTrail_def, hleftRight.ne, hleftRight.ne.symm,
       hrightSecondMiddle.ne, hsecondMiddleLeft.ne,
       hsecondMiddleLeft.ne.symm]
+  have hfirstSupport : ∀ vertex ∈ firstTriangle.support,
+      vertex ∈ walk.support := by
+    intro vertex hvertex
+    simp only [firstTriangle, SimpleGraph.Walk.support_cons,
+      SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+      or_false] at hvertex
+    rcases hvertex with rfl | rfl | rfl | rfl
+    · exact hleftSupport
+    · exact walk.getVert_mem_support next.val
+    · exact hrightSupport
+    · exact hleftSupport
+  have hsecondSupport : ∀ vertex ∈ secondTriangle.support,
+      vertex ∈ walk.support := by
+    intro vertex hvertex
+    simp only [secondTriangle, SimpleGraph.Walk.support_cons,
+      SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil,
+      or_false] at hvertex
+    rcases hvertex with rfl | rfl | rfl | rfl
+    · exact hleftSupport
+    · exact hrightSupport
+    · exact walk.getVert_mem_support previous.val
+    · exact hleftSupport
   exact ⟨firstTriangle, secondTriangle, hfirstCycle, by simp [firstTriangle],
     hsecondCycle, by simp [secondTriangle], by
       simp [firstTriangle, Sym2.eq_swap], by
       simp [secondTriangle, Sym2.eq_swap],
+    hfirstSupport, hsecondSupport,
     s(left, firstMiddle), by simp [firstTriangle], by
       simp [secondTriangle, hfirstNeChord, hfirstNeOpposite,
         hfirstNePrevious]⟩
@@ -573,7 +598,7 @@ theorem exists_internal_chord_two_triangles_of_adjacent_pair_boundary_eq
         hcycle hlength hchord with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
       hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
-      hfirstOnly⟩
+      _hfirstSupport, _hsecondSupport, hfirstOnly⟩
   exact ⟨internalEdge, leftFace, rightFace, firstTriangle, secondTriangle,
     hinternalValue, hinternalNotRemoved, hleftBoundary, hrightBoundary,
     hchord, hfirstCycle, hfirstLength, hsecondCycle, hsecondLength,
