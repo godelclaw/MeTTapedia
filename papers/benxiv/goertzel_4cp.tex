@@ -2588,6 +2588,15 @@ of those matching parities: for either middle outcome, two crossed mismatch
 cases remain.  Separation from the repaired primary splice, arbitrary-length
 iteration, end caps, and L1 therefore remain open.
 
+That remaining parity fork is now represented explicitly by the canonical
+classifier.  Its proof-relevant trace retains either the literal straight or
+literal swapped middle assembly.  For each of the four possible source-splice
+pairings, Lean now returns either the complete companion path in the compatible
+case or a typed mismatch packet proving that the classifier pairing and splice
+pairing differ.  Hence there is no longer an unnamed ``wrong parity'' failure,
+but the mismatch packet is deliberately not counted as a repair: centre
+avoidance, mutual separation, rolling iteration, end caps, and L1 remain open.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
