@@ -2243,10 +2243,19 @@ proves that the singleton centre, or one endpoint of the two-vertex bond, is
 incident to it.  This records source provenance without asserting a globally
 unique shared edge.  It does not identify the facial-dual cycle with a primal
 facial boundary, and it does not eliminate the cyclic
-branch, turn a facial-dual short cycle into a primal facial triangle or square,
-apply a source reduction, or eliminate the two centre cases.  One atom is also directionally
-resolved: the displayed
-second-cell centre cannot occur on either fourth-cell continuation.  The
+  branch, turn a facial-dual short cycle into a primal facial triangle or square,
+  apply a source reduction, or eliminate the two centre cases.  One atom is also directionally
+  resolved.  Both adjacent-triangle cases now reuse the earlier append
+  obstruction rather than acquiring a second local theory.  The surviving
+  collision face is proved distinct from both named flanks of the relevant
+  interface, so the first/second and third/fourth shapes each instantiate a
+  literal three-edge facial-dual separator whose selected outer-remote side
+  contains a primal cycle.  This is a cyclic append obstruction, not a rotor
+  reduction: the source's rotor is a primal facial triangle, whereas the
+  object here is a facial-dual triangle with selected primal crossings.  The
+  cyclic side, the two square cases, and the two centre cases therefore remain
+  open.  The displayed
+  second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas
 every face in a fourth-cell continuation is adjacent to the fourth centre.
 Consequently, if the collision face is the displayed second-cell centre, Lean
