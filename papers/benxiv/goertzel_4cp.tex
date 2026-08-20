@@ -2153,6 +2153,24 @@ of avoiding the specified face.  This gives the next path-surgery theorem a
 literal simple rail rather than a bare existential.  No outer four-cell
 reroute is claimed yet.
 
+That rail now participates in a literal, fail-closed middle replacement.
+The module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacement}
+keeps the first-cell rails and fourth-cell continuations fixed, rebases the
+canonical two-cell middle repair across the proved seam-face equalities, and
+tests both joins after loop erasure.  A successful branch therefore returns
+an actual separated four-cell assembly, with straight or exchanged endpoint
+order recorded.  A failing branch does not collapse back to an unmet
+disjointness premise: it records whether the surviving collision occurred at
+the left or right join, together with the exact repair parity, concrete
+assemblies, and classifier equation.  The packet separately retains the
+proved middle rail which avoids the original collision face.  Thus the
+overlapping window has been replaced by a real path construction and the
+remaining failure has moved to one of two named boundary joins.  Neither join
+is yet proved collision-free, so this is not collision elimination, the
+arbitrary-length fold, either end cap, the separated crosscut pair, or L1
+closure.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
