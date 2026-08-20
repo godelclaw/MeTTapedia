@@ -3078,6 +3078,17 @@ choices after construction.  What remains is the source-coordinate theorem
 locating the incoming and outgoing receipts at the two collision-adjacent
 steps of that square.
 
+The adapter into the established replacement-cycle tower is now explicit as
+well.  A \texttt{CrossingSelection} chooses a shared primal edge at every step
+of the already-proved fixed dual walk.  Its anchor-only instance recovers the
+existing separator presentation, while
+\texttt{anchorAndTwoSelection} retains three pairwise-distinct source
+crossings: the corridor-rung anchor and the two pointed rail edges.  This
+changes no facial-dual walk geometry and lets the separator consumers migrate
+incrementally.  The next theorem must still locate the two rail receipts at
+the collision-adjacent square steps and run the bond classification for that
+selection.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
