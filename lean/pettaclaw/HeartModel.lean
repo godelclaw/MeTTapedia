@@ -136,11 +136,11 @@ theorem bounded_spend (es : List Ev) (hf : unarmed es) (s : S) :
     | .msg none =>
       have := ih hf' (tick s none).1
       simp [calls, step, tick, arm] at this ⊢
-      split <;> omega
+      by_cases hleft : 0 < s.loops - 1 <;> simp [hleft] <;> omega
     | .msg (some Msg.bot) =>
       have := ih hf' (tick s (some Msg.bot)).1
       simp [calls, step, tick, arm] at this ⊢
-      split <;> omega
+      by_cases hleft : 0 < s.loops - 1 <;> simp [hleft] <;> omega
     | .msg (some Msg.human) => exact absurd rfl he
 
 /-- **Breath bound.** A single un-renewed cycle holds at most `maxLoops`
