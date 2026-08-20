@@ -2715,10 +2715,20 @@ and transports its terminal faces across the proved successor-frame
 equalities.  The resulting simple two-rail prefix ends exactly where the
 common-span future transition begins and retains an interior-frozen
 certificate at the first live centre.  No separation assumption is added.
-The next theorem must classify this prefix-to-future append while preserving
-both the future collision and retained-cross collision branches.  Arbitrary
-iteration, both end caps, the separated crosscut pair, and L1 closure remain
-open.
+The matching bounded append is now fail-closed as well.
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedAppend}
+runs the retained-support classifier between the constructed shared-cut prefix
+and the constructed cells~$2$--$5$ future.  A successful future yields a
+simple two-rail assembly in its literal ordered or exchanged far-end order.
+A collision already found by the four-cell classifier remains stored in that
+exact future packet, while a new collision against the older prefix retains
+the corresponding support witness separately for the ordered and exchanged
+far-end cases.  The latter two cases use the same ordered append operation:
+``exchanged'' changes the far endpoints, not the two faces at which the future
+begins.  Thus no collision is erased and no endpoint permutation is inferred.
+This closes one bounded prefix-to-future classification, not its collision
+elimination or arbitrary-length iteration; both end caps, the separated
+crosscut pair, and L1 remain open.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
