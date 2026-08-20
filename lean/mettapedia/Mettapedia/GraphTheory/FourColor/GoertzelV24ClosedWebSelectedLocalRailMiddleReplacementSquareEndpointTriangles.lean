@@ -162,6 +162,43 @@ theorem SquareBondRealization.EndpointSelectedTriangle.crossingEdges_eq_incident
         (orbitFace_incidence_le_two web.annular.RS),
       triangle.length_eq_three]
 
+/-- Every two distinct faces on an endpoint triangle are adjacent.  Thus, once
+a later collision consumer identifies its two surviving attachment faces in
+this support, the third face can be bypassed by one literal dual edge. -/
+theorem SquareBondRealization.EndpointSelectedTriangle.adj_of_mem_support_of_ne
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (triangle : bond.EndpointSelectedTriangle)
+    {first second : SelectedFace (web := web)}
+    (hfirst : first ∈ triangle.selectedCycle.walk.support)
+    (hsecond : second ∈ triangle.selectedCycle.walk.support)
+    (hne : first ≠ second) :
+    SelectedDualGraph (web := web).Adj first second := by
+  have hcycle := triangle.selectedCycle.isCycle
+  have hlength := triangle.length_eq_three
+  cases hwalk : triangle.selectedCycle.walk with
+  | nil => simp [hwalk] at hlength
+  | cons hfirstSecond tail =>
+      cases tail with
+      | nil => simp [hwalk] at hlength
+      | cons hsecondThird tail =>
+          cases tail with
+          | nil => simp [hwalk] at hlength
+          | cons hthirdFirst tail =>
+              cases tail with
+              | nil =>
+                  simp only [hwalk, SimpleGraph.Walk.support_cons,
+                    SimpleGraph.Walk.support_nil, List.mem_cons,
+                    List.not_mem_nil, or_false] at hfirst hsecond
+                  rcases hfirst with rfl | rfl | rfl | rfl <;>
+                    rcases hsecond with rfl | rfl | rfl | rfl <;>
+                    simp_all [SimpleGraph.Walk.isCycle_def] <;>
+                    first | assumption | (symm; assumption)
+              | cons hfourth tail => simp [hwalk] at hlength
+
 /-- The incident stars of the two bond endpoints overlap in exactly the
 internal bond.  This is a simple-graph fact: an edge incident to both distinct
 endpoints is the bond itself. -/

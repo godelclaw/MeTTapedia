@@ -2382,6 +2382,11 @@ replacement square.  Consequently the local split loses no literal source
 edge and introduces no crossing other than the bond.  This is the edge-level
 input to a rail reroute, not yet the face-path construction or its separation
 proof.
+The face-side geometry is equally explicit: any two distinct faces in either
+endpoint triangle's support are adjacent.  Therefore a collision face can be
+bypassed by one dual edge once the two surviving rail attachment faces are
+shown to lie in the same endpoint triangle.  That incidence statement, and
+the resulting separation from the companion rail, remain to be proved.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
