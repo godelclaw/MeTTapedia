@@ -2540,6 +2540,21 @@ made the occurrence nonterminal for the combined rolling route.  This is the
 canonical future-window advance, not yet the centre-chain splice for the
 surviving case or elimination of a newly returned collision.
 
+The surviving case is now consumed by an actual source-supported splice.
+The old far-end packet retains not only which old rail contains the face but
+also that the face is not that rail's starting endpoint, so the old prefix can
+be cut at the retained occurrence without adding a hypothesis.  The future
+four-cell packet supplies the successful rail, path proof, nonterminal
+occurrence, and exact terminal-centre neighbourhood.  Lean joins those two
+literal rail pieces through the proved face-avoiding centre bridge and returns
+a simple walk whose support is contained in the old rail, corridor centres two
+through seven, and the new rail.  The canonical theorem is exhaustive: a new
+collision constructor remains explicit, successful output either clears the
+old face from both rails, or one of the four old/new rail combinations carries
+this concrete splice.  This closes the surviving-face routing obligation; it
+does not yet prove separation from the companion rail, rebuild the full
+two-rail assembly, iterate the rolling step, construct end caps, or close L1.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

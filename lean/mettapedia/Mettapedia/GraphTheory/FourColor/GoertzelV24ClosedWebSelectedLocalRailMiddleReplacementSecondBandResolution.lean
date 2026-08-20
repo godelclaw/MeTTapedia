@@ -214,10 +214,14 @@ inductive SecondFourthFarEndpoint (face : SelectedFace (web := web)) : Prop
       (face_eq : face = selectedPlacementSideFace fourthPlacement
         lastSuccessor.rightOutgoingBefore)
       (old_origin :
-        face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
-            (bridge := bridge)).paths.firstRail.support ∨
-          face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
-            (bridge := bridge)).paths.secondRail.support)
+        (face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+              (bridge := bridge)).paths.firstRail.support ∧
+            selectedPlacementSideFace secondPlacement
+                firstSuccessor.frame.rightAfter ≠ face) ∨
+          (face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+              (bridge := bridge)).paths.secondRail.support ∧
+            selectedPlacementSideFace secondPlacement
+                firstSuccessor.frame.rightBefore ≠ face))
       (second_adjacent : SelectedDualGraph (web := web).Adj
         (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
           (nextCorridorInterior firstInterior hfirstNext).center) face)
@@ -235,10 +239,14 @@ inductive SecondFourthFarEndpoint (face : SelectedFace (web := web)) : Prop
       (face_eq : face = selectedPlacementSideFace fourthPlacement
         lastSuccessor.rightOutgoingAfter)
       (old_origin :
-        face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
-            (bridge := bridge)).paths.firstRail.support ∨
-          face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
-            (bridge := bridge)).paths.secondRail.support)
+        (face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+              (bridge := bridge)).paths.firstRail.support ∧
+            selectedPlacementSideFace secondPlacement
+                firstSuccessor.frame.rightAfter ≠ face) ∨
+          (face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+              (bridge := bridge)).paths.secondRail.support ∧
+            selectedPlacementSideFace secondPlacement
+                firstSuccessor.frame.rightBefore ≠ face))
       (second_adjacent : SelectedDualGraph (web := web).Adj
         (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
           (nextCorridorInterior firstInterior hfirstNext).center) face)
@@ -265,6 +273,26 @@ theorem SecondFourthFarEndpoint.oldOrigin
           (bridge := bridge)).paths.firstRail.support ∨
       face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
           (bridge := bridge)).paths.secondRail.support := by
+  cases endpoint with
+  | first _ oldOrigin _ _ _ | second _ oldOrigin _ _ _ =>
+      exact oldOrigin.elim (fun first => .inl first.1) (fun second => .inr second.1)
+
+/-- The old-rail origin retains the start-avoidance premise consumed by
+`takeUntil`; it was proved from the exact collision packet before that packet
+was reduced to its far-end residue. -/
+theorem SecondFourthFarEndpoint.oldOriginWithStart
+    {face : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face) :
+    (face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+            (bridge := bridge)).paths.firstRail.support ∧
+        selectedPlacementSideFace secondPlacement
+            firstSuccessor.frame.rightAfter ≠ face) ∨
+      (face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+            (bridge := bridge)).paths.secondRail.support ∧
+        selectedPlacementSideFace secondPlacement
+            firstSuccessor.frame.rightBefore ≠ face) := by
   cases endpoint with
   | first _ oldOrigin _ _ _ | second _ oldOrigin _ _ _ => exact oldOrigin
 
@@ -688,14 +716,16 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.resolveSecondBand
       · rcases last with hnew | hnew
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingBefore
-          · exact ⟨.farEndpoint (.first hfinish (.inl holdFirst)
+          · exact ⟨.farEndpoint (.first hfinish
+              (.inl ⟨holdFirst, oldFirst_start_ne hsource collision⟩)
               hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_firstFirstSourceSplice hsource collision
                 holdFirst hnew hsecond hfourth hthird hfinish with ⟨splice⟩
             exact ⟨.secondFourthSplice splice⟩
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingAfter
-          · exact ⟨.farEndpoint (.second hfinish (.inl holdFirst)
+          · exact ⟨.farEndpoint (.second hfinish
+              (.inl ⟨holdFirst, oldFirst_start_ne hsource collision⟩)
               hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_firstSecondSourceSplice hsource collision
                 holdFirst hnew hsecond hfourth hthird hfinish with ⟨splice⟩
@@ -710,14 +740,16 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.resolveSecondBand
       · rcases last with hnew | hnew
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingBefore
-          · exact ⟨.farEndpoint (.first hfinish (.inr holdSecond)
+          · exact ⟨.farEndpoint (.first hfinish
+              (.inr ⟨holdSecond, oldSecond_start_ne hsource collision⟩)
               hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_secondFirstSourceSplice hsource collision
                 holdSecond hnew hsecond hfourth hthird hfinish with ⟨splice⟩
             exact ⟨.secondFourthSplice splice⟩
         · by_cases hfinish : face = selectedPlacementSideFace fourthPlacement
               lastSuccessor.rightOutgoingAfter
-          · exact ⟨.farEndpoint (.second hfinish (.inr holdSecond)
+          · exact ⟨.farEndpoint (.second hfinish
+              (.inr ⟨holdSecond, oldSecond_start_ne hsource collision⟩)
               hsecond hfourth hthird)⟩
           · rcases exists_secondFourthSquare_secondSecondSourceSplice hsource collision
                 holdSecond hnew hsecond hfourth hthird hfinish with ⟨splice⟩

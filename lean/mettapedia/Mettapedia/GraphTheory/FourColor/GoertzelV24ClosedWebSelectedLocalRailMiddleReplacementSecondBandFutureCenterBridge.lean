@@ -23,6 +23,7 @@ namespace GoertzelV24ClosedWebAtGoodWord
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24DualPathInteriorCrossSplice
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
@@ -417,6 +418,165 @@ theorem SecondFourthFarEndpoint.exists_secondToFutureCenterBridge
       · exact hmemSixth
       · exact hmemSeventh
       · exact hmemRight
+
+private theorem futureCrossSplice_penultimate_mem_original_support
+    {start finish current : SelectedFace (web := web)}
+    (walk : SelectedDualGraph (web := web).Walk start finish)
+    (hcurrent : current ∈ walk.support) (hstart : start ≠ current) :
+    (walk.takeUntil current hcurrent).penultimate ∈ walk.support := by
+  have hnotNil : ¬(walk.takeUntil current hcurrent).Nil := by
+    simpa only [SimpleGraph.Walk.nil_takeUntil] using hstart
+  apply walk.support_takeUntil_subset_support hcurrent
+  exact List.dropLast_subset _
+    ((walk.takeUntil current hcurrent).penultimate_mem_dropLast_support hnotNil)
+
+private theorem futureCrossSplice_snd_mem_original_support
+    {start finish current : SelectedFace (web := web)}
+    (walk : SelectedDualGraph (web := web).Walk start finish)
+    (hcurrent : current ∈ walk.support) (hend : current ≠ finish) :
+    (walk.dropUntil current hcurrent).snd ∈ walk.support := by
+  have hnotNil : ¬(walk.dropUntil current hcurrent).Nil := by
+    intro hnil
+    exact hend hnil.eq
+  apply walk.support_dropUntil_subset_support hcurrent
+  exact List.mem_of_mem_tail
+    ((walk.dropUntil current hcurrent).snd_mem_tail_support hnotNil)
+
+/-- A completed old-to-future splice around the advanced collision face.  Its
+support remains inside the two source rails and the literal center chain. -/
+structure SecondBandFutureSourceSplice
+    {oldStart oldFinish newStart newFinish : SelectedFace (web := web)}
+    (face : SelectedFace (web := web))
+    (oldWalk : SelectedDualGraph (web := web).Walk oldStart oldFinish)
+    (newWalk : SelectedDualGraph (web := web).Walk newStart newFinish) where
+  route : SelectedDualGraph (web := web).Walk oldStart newFinish
+  isPath : route.IsPath
+  avoids : face ∉ route.support
+  support_receipt : ∀ current ∈ route.support,
+    current ∈ oldWalk.support ∨
+      current ∈
+        [corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (SecondInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (ThirdInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (FourthInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (FifthInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext) (hfourthNext := hfourthNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (SixthInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+              (hfifthNext := hfifthNext)).center,
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (SeventhInterior (firstInterior := firstInterior)
+              (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+              (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+              (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)).center] ∨
+      current ∈ newWalk.support
+
+/-- The literal center bridge closes the surviving-face branch of the advanced
+endpoint repair for any chosen old and future source rails. -/
+theorem SecondFourthFarEndpoint.exists_secondBandFutureCrossSplice
+    {face oldStart oldFinish newStart newFinish : SelectedFace (web := web)}
+    (endpoint : SecondFourthFarEndpoint
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (fourthPlacement := fourthPlacement) (lastSuccessor := lastSuccessor) face)
+    (oldWalk : SelectedDualGraph (web := web).Walk oldStart oldFinish)
+    (newWalk : SelectedDualGraph (web := web).Walk newStart newFinish)
+    (holdPath : oldWalk.IsPath) (hnewPath : newWalk.IsPath)
+    (hold : face ∈ oldWalk.support) (hnew : face ∈ newWalk.support)
+    (holdStart : oldStart ≠ face) (hnewEnd : face ≠ newFinish)
+    (holdAdjacent : ∀ current ∈ oldWalk.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SecondInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext)).center) current)
+    (hnewNear : ∀ current ∈ newWalk.support,
+      FaceNearExactTerminalCenterPairs
+        (corridor := corridor)
+        (firstInterior := FourthInterior (firstInterior := firstInterior)
+          (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+          (hlastNext := hlastNext))
+        (hfirstNext := hfourthNext) (hbridgeNext := hfifthNext)
+        (hlastNext := hsixthNext) current) :
+    Nonempty (SecondBandFutureSourceSplice
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      face oldWalk newWalk) := by
+  let oldPrefix := oldWalk.takeUntil face hold
+  let newSuffix := newWalk.dropUntil face hnew
+  have hprefixNotNil : ¬oldPrefix.Nil := by
+    simpa only [oldPrefix, SimpleGraph.Walk.nil_takeUntil] using holdStart
+  have hsuffixNotNil : ¬newSuffix.Nil := by
+    intro hnil
+    exact hnewEnd hnil.eq
+  have hleft : SelectedDualGraph (web := web).Adj oldPrefix.penultimate
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (SecondInterior (firstInterior := firstInterior)
+          (hfirstNext := hfirstNext)).center) :=
+    (holdAdjacent oldPrefix.penultimate
+      (futureCrossSplice_penultimate_mem_original_support oldWalk hold holdStart)).symm
+  have hright : FaceNearExactTerminalCenterPairs
+      (corridor := corridor)
+      (firstInterior := FourthInterior (firstInterior := firstInterior)
+        (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+        (hlastNext := hlastNext))
+      (hfirstNext := hfourthNext) (hbridgeNext := hfifthNext)
+      (hlastNext := hsixthNext) newSuffix.snd :=
+    hnewNear newSuffix.snd
+      (futureCrossSplice_snd_mem_original_support newWalk hnew hnewEnd)
+  have hfaceLeft : face ≠ oldPrefix.penultimate :=
+    (oldPrefix.adj_penultimate hprefixNotNil).ne.symm
+  have hfaceRight : face ≠ newSuffix.snd :=
+    (newSuffix.adj_snd hsuffixNotNil).ne
+  rcases endpoint.exists_secondToFutureCenterBridge hleft hright hfaceLeft
+      hfaceRight with ⟨centerBridge⟩
+  let route := crossSpliceAroundWithBridge oldWalk newWalk hold hnew centerBridge.walk
+  refine ⟨⟨route, crossSpliceAroundWithBridge_isPath _ _ _ _ _, ?_, ?_⟩⟩
+  · exact current_not_mem_crossSpliceAroundWithBridge_support
+      oldWalk newWalk holdPath hnewPath hold hnew holdStart hnewEnd
+        centerBridge.walk centerBridge.avoids
+  · intro current hcurrent
+    rcases crossSpliceAroundWithBridge_support_subset oldWalk newWalk hold hnew
+        holdStart hnewEnd centerBridge.walk current hcurrent with
+      holdCurrent | hcenter | hnewCurrent
+    · exact .inl holdCurrent
+    · have hbridge := centerBridge.support_receipt current hcenter
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at hbridge
+      rcases hbridge with hleft | hsecond | hthird | hfourth | hfifth | hsixth |
+          hseventh | hright
+      · exact .inl (hleft ▸
+          futureCrossSplice_penultimate_mem_original_support oldWalk hold holdStart)
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inl hsecond))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inl hthird)))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inl hfourth))))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inr (.inl hfifth)))))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inr (.inr (.inl hsixth))))))
+      · exact .inr (.inl (by
+          simp only [List.mem_cons, List.not_mem_nil, or_false]
+          exact .inr (.inr (.inr (.inr (.inr hseventh))))))
+      · exact .inr (.inr (hright ▸
+          futureCrossSplice_snd_mem_original_support newWalk hnew hnewEnd))
+    · exact .inr (.inr hnewCurrent)
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
