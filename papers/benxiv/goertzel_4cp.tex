@@ -2146,7 +2146,12 @@ collisions.  The proof combines connector-free track provenance with the two
 already-proved input rail separations.  Thus four of the eight
 repair-parity/collision-origin combinations no longer require a clear-rail
 choice.  The four parity-mismatched combinations still carry only the proved
-disjunctive avoidance certificate, and no outer four-cell reroute is claimed.
+disjunctive avoidance certificate.  That certificate is now also exposed as
+proof-relevant data: one of four constructors retains the actual
+straight-or-swapped assembly, the chosen first or second rail, and its proof
+of avoiding the specified face.  This gives the next path-surgery theorem a
+literal simple rail rather than a bare existential.  No outer four-cell
+reroute is claimed yet.
 
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three

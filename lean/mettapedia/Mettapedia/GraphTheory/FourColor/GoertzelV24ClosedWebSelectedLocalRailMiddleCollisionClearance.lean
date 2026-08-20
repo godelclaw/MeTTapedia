@@ -61,6 +61,20 @@ variable
       leftIncomingBefore leftIncomingAfter successor.frame.leftBefore
       successor.frame.leftAfter}
 
+private abbrev StraightMiddleAssembly :=
+  SelectedSourceLocalRailAssembly (web := web)
+    (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+    (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+    (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore)
+    (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter)
+
+private abbrev SwappedMiddleAssembly :=
+  SelectedSourceLocalRailAssembly (web := web)
+    (selectedPlacementSideFace leftPlacement leftIncomingBefore)
+    (selectedPlacementSideFace leftPlacement leftIncomingAfter)
+    (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter)
+    (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore)
+
 /-- In a straight repair, a first/first collision forces the repaired second
 rail to avoid the collision face. -/
 theorem ExactSelectedLocalRailConstructionTrace.straight_secondRail_avoids_firstFirst
@@ -68,11 +82,7 @@ theorem ExactSelectedLocalRailConstructionTrace.straight_secondRail_avoids_first
     (collision :
       SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
         successor left)
-    (assembly : SelectedSourceLocalRailAssembly (web := web)
-      (selectedPlacementSideFace leftPlacement leftIncomingBefore)
-      (selectedPlacementSideFace leftPlacement leftIncomingAfter)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter))
+    (assembly : StraightMiddleAssembly (successor := successor))
     (hresult : trace.toOutcome = .straight assembly)
     (hcollision : collision.face ∈ left.paths.firstRail.support ∧
       collision.face ∈ successor.firstContinuation.support.tail) :
@@ -94,11 +104,7 @@ theorem ExactSelectedLocalRailConstructionTrace.straight_firstRail_avoids_second
     (collision :
       SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
         successor left)
-    (assembly : SelectedSourceLocalRailAssembly (web := web)
-      (selectedPlacementSideFace leftPlacement leftIncomingBefore)
-      (selectedPlacementSideFace leftPlacement leftIncomingAfter)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter))
+    (assembly : StraightMiddleAssembly (successor := successor))
     (hresult : trace.toOutcome = .straight assembly)
     (hcollision : collision.face ∈ left.paths.secondRail.support ∧
       collision.face ∈ successor.secondContinuation.support.tail) :
@@ -120,11 +126,7 @@ theorem ExactSelectedLocalRailConstructionTrace.swapped_secondRail_avoids_firstS
     (collision :
       SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
         successor left)
-    (assembly : SelectedSourceLocalRailAssembly (web := web)
-      (selectedPlacementSideFace leftPlacement leftIncomingBefore)
-      (selectedPlacementSideFace leftPlacement leftIncomingAfter)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore))
+    (assembly : SwappedMiddleAssembly (successor := successor))
     (hresult : trace.toOutcome = .swapped assembly)
     (hcollision : collision.face ∈ left.paths.firstRail.support ∧
       collision.face ∈ successor.secondContinuation.support.tail) :
@@ -146,11 +148,7 @@ theorem ExactSelectedLocalRailConstructionTrace.swapped_firstRail_avoids_secondF
     (collision :
       SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
         successor left)
-    (assembly : SelectedSourceLocalRailAssembly (web := web)
-      (selectedPlacementSideFace leftPlacement leftIncomingBefore)
-      (selectedPlacementSideFace leftPlacement leftIncomingAfter)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingAfter)
-      (selectedPlacementSideFace rightPlacement successor.rightOutgoingBefore))
+    (assembly : SwappedMiddleAssembly (successor := successor))
     (hresult : trace.toOutcome = .swapped assembly)
     (hcollision : collision.face ∈ left.paths.secondRail.support ∧
       collision.face ∈ successor.firstContinuation.support.tail) :
@@ -164,6 +162,64 @@ theorem ExactSelectedLocalRailConstructionTrace.swapped_firstRail_avoids_secondF
   · exact (List.disjoint_left.mp
       successor.firstContinuation_support_disjoint_secondContinuation
       (List.mem_of_mem_tail hcollision.2)) hnew
+
+/-- Proof-relevant choice of one concrete middle-repair rail which avoids an
+independently selected actual collision face.  Endpoint parity and the chosen
+rail are retained instead of being erased behind an existential. -/
+inductive CollisionAvoidingMiddleRail
+    (trace : ExactSelectedLocalRailConstructionTrace successor left)
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left) : Type (u + 1)
+  | straightFirst
+      (assembly : StraightMiddleAssembly (successor := successor))
+      (hresult : trace.toOutcome = .straight assembly)
+      (avoids : collision.face ∉ assembly.firstRail.support)
+  | straightSecond
+      (assembly : StraightMiddleAssembly (successor := successor))
+      (hresult : trace.toOutcome = .straight assembly)
+      (avoids : collision.face ∉ assembly.secondRail.support)
+  | swappedFirst
+      (assembly : SwappedMiddleAssembly (successor := successor))
+      (hresult : trace.toOutcome = .swapped assembly)
+      (avoids : collision.face ∉ assembly.firstRail.support)
+  | swappedSecond
+      (assembly : SwappedMiddleAssembly (successor := successor))
+      (hresult : trace.toOutcome = .swapped assembly)
+      (avoids : collision.face ∉ assembly.secondRail.support)
+
+/-- Mutual separation in the actual canonical repair constructs a
+proof-relevant clear middle rail for every independently selected collision
+face. -/
+theorem ExactSelectedLocalRailConstructionTrace.exists_collisionAvoidingMiddleRail
+    (trace : ExactSelectedLocalRailConstructionTrace successor left)
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left) :
+    Nonempty (CollisionAvoidingMiddleRail trace collision) := by
+  have havoids := trace.avoidsActualCollisionFaceOnOneRail collision
+  cases hresult : trace.toOutcome with
+  | straight assembly =>
+      rw [hresult] at havoids
+      rcases havoids with hfirst | hsecond
+      · exact ⟨.straightFirst assembly hresult hfirst⟩
+      · exact ⟨.straightSecond assembly hresult hsecond⟩
+  | swapped assembly =>
+      rw [hresult] at havoids
+      rcases havoids with hfirst | hsecond
+      · exact ⟨.swappedFirst assembly hresult hfirst⟩
+      · exact ⟨.swappedSecond assembly hresult hsecond⟩
+
+/-- A canonical, noncomputable choice of the proved clear middle rail.  This
+does not add a hypothesis: it chooses from the nonempty finite alternative
+above. -/
+noncomputable def ExactSelectedLocalRailConstructionTrace.collisionAvoidingMiddleRail
+    (trace : ExactSelectedLocalRailConstructionTrace successor left)
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left) :
+    CollisionAvoidingMiddleRail trace collision :=
+  Classical.choice (trace.exists_collisionAvoidingMiddleRail collision)
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
