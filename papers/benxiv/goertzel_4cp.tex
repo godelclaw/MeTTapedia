@@ -2843,7 +2843,20 @@ confines them to old-first/new-second and old-second/new-first.  This is stated
 at the support level, before the independent mutual-disjointness test, so the
 provenance is not obtained by assuming that a bypass candidate is already a
 valid two-rail assembly.  The terminal-window specialization and its use in
-the endpoint-matching argument remain open.
+the endpoint-matching argument were the next open steps.
+
+That specialization is now machine-checked in
+\texttt{GoertzelV24ClosedWebSelectedLocalRailTracedFourCellTrackSupport}.
+Every successful canonical four-cell transition retains either the ordered
+terminal-track pairing or the crossed pairing, and the classifier-built
+transition is packaged with this certificate.  Thus the future rail named by
+the earlier collision-origin packet can now be traced back to one particular
+first-window track plus one particular last-window continuation, instead of
+only to their four-way union.  The next step is to exclude the remote
+continuation at the shared collision and thereby obtain the literal future
+first-window track needed by the endpoint-coordinate argument.  No collision
+has yet been repaired, and neither companion separation nor C--5/L1 closure is
+claimed.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
