@@ -43,6 +43,16 @@ def predecessor (occurrence : InteriorOccurrence (current := current) walk) : V 
 def successor (occurrence : InteriorOccurrence (current := current) walk) : V :=
   walk.getVert (occurrence.index + 1)
 
+/-- The graph edge by which the path enters the pointed occurrence. -/
+def incomingEdge (occurrence : InteriorOccurrence (current := current) walk) :
+    Sym2 V :=
+  s(occurrence.predecessor, current)
+
+/-- The graph edge by which the path leaves the pointed occurrence. -/
+def outgoingEdge (occurrence : InteriorOccurrence (current := current) walk) :
+    Sym2 V :=
+  s(current, occurrence.successor)
+
 theorem predecessor_adj_current
     (occurrence : InteriorOccurrence (current := current) walk) :
     G.Adj occurrence.predecessor current := by
@@ -70,6 +80,36 @@ theorem current_ne_successor
     (occurrence : InteriorOccurrence (current := current) walk) :
     current ≠ occurrence.successor :=
   occurrence.current_adj_successor.ne
+
+/-- The incoming edge is a literal edge of the original walk, not merely an
+ambient adjacency reconstructed from its support. -/
+theorem incomingEdge_mem_edges
+    (occurrence : InteriorOccurrence (current := current) walk) :
+    occurrence.incomingEdge ∈ walk.edges := by
+  have hindex : occurrence.index - 1 < walk.darts.length := by
+    rw [walk.length_darts]
+    exact Nat.lt_of_le_of_lt (Nat.sub_le occurrence.index 1)
+      occurrence.index_lt
+  have hstep : occurrence.index - 1 + 1 = occurrence.index :=
+    Nat.sub_add_cancel occurrence.index_pos
+  rw [SimpleGraph.Walk.edges]
+  apply List.mem_map.mpr
+  refine ⟨walk.darts[occurrence.index - 1], List.getElem_mem hindex, ?_⟩
+  rw [walk.darts_getElem_eq_getVert (occurrence.index - 1) hindex]
+  simp [incomingEdge, predecessor, hstep, occurrence.getVert_eq]
+
+/-- The outgoing edge is likewise retained as an edge occurrence of the
+original walk. -/
+theorem outgoingEdge_mem_edges
+    (occurrence : InteriorOccurrence (current := current) walk) :
+    occurrence.outgoingEdge ∈ walk.edges := by
+  have hindex : occurrence.index < walk.darts.length := by
+    simpa using occurrence.index_lt
+  rw [SimpleGraph.Walk.edges]
+  apply List.mem_map.mpr
+  refine ⟨walk.darts[occurrence.index], List.getElem_mem hindex, ?_⟩
+  rw [walk.darts_getElem_eq_getVert occurrence.index hindex]
+  simp [outgoingEdge, successor, occurrence.getVert_eq]
 
 /-- Simplicity prevents the two neighbours of an internal occurrence from
 coinciding. -/

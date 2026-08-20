@@ -2883,6 +2883,19 @@ turns anonymous support membership into the proof-relevant coordinate needed
 by the endpoint-triangle comparison, but it does not prove that comparison,
 construct a bypass, or establish companion-rail separation.
 
+The coordinate now retains edge provenance as well as vertex provenance.
+For a strict internal occurrence,
+\texttt{GoertzelV24DualPathPointedOccurrence} names the incoming and outgoing
+edges and proves that both occur literally in the path's edge list.  In
+\texttt{GoertzelV24ClosedWebSelectedRailPairRetainedSupport}, every edge of a
+successful loop-erased append is correspondingly traced to one of the two
+named input tracks, with the ordered and crossed pairings kept distinct.
+Thus loop erasure may remove edges but cannot manufacture the two edges used
+at the pointed collision.  This is the prerequisite for comparing its actual
+rail neighbourhood with the existing square-bond endpoint triangle; that
+comparison, the terminal-endpoint case, and companion-rail separation remain
+open.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an

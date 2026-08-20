@@ -228,6 +228,85 @@ theorem crossedBypassedPair_supportContainedInCrossedTrackPairs
     exact bypass_append_support_contained oldAssembly.secondRail
       newAssembly.firstRail face hface
 
+/-- An output edge uses one named old track or one named new track.  This is
+the edge-level analogue of `SupportContainedInTrackPair`. -/
+def EdgeContainedInTrackPair
+    (oldEdges newEdges edges : List (Sym2 (SelectedFace (web := web)))) : Prop :=
+  ∀ edge ∈ edges, edge ∈ oldEdges ∨ edge ∈ newEdges
+
+/-- Ordered composition preserves the edge provenance of both output rails. -/
+def AssemblyEdgesContainedInOrderedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish)
+    (firstEdges secondEdges : List (Sym2 (SelectedFace (web := web)))) : Prop :=
+  EdgeContainedInTrackPair oldAssembly.firstRail.edges
+      newAssembly.firstRail.edges firstEdges ∧
+    EdgeContainedInTrackPair oldAssembly.secondRail.edges
+      newAssembly.secondRail.edges secondEdges
+
+/-- Crossed composition preserves the corresponding crossed edge pairing. -/
+def AssemblyEdgesContainedInCrossedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish)
+    (firstEdges secondEdges : List (Sym2 (SelectedFace (web := web)))) : Prop :=
+  EdgeContainedInTrackPair oldAssembly.firstRail.edges
+      newAssembly.secondRail.edges firstEdges ∧
+    EdgeContainedInTrackPair oldAssembly.secondRail.edges
+      newAssembly.firstRail.edges secondEdges
+
+private theorem bypass_append_edges_contained
+    {start middle finish : SelectedFace (web := web)}
+    (oldWalk : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk start middle)
+    (newWalk : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk middle finish) :
+    EdgeContainedInTrackPair oldWalk.edges newWalk.edges
+      (oldWalk.append newWalk).bypass.edges := by
+  intro edge hedge
+  have hraw := (oldWalk.append newWalk).edges_bypass_subset_edges hedge
+  rw [SimpleGraph.Walk.edges_append] at hraw
+  exact List.mem_append.mp hraw
+
+/-- Both ordered bypassed rails retain the edge lists of their named track
+pairs; loop erasure deletes edges but creates none. -/
+theorem orderedBypassedPair_edgesContainedInOrderedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish) :
+    AssemblyEdgesContainedInOrderedTrackPairs oldAssembly newAssembly
+      (orderedBypassedPair oldAssembly newAssembly).firstRail.edges
+      (orderedBypassedPair oldAssembly newAssembly).secondRail.edges := by
+  exact ⟨bypass_append_edges_contained oldAssembly.firstRail
+      newAssembly.firstRail,
+    bypass_append_edges_contained oldAssembly.secondRail newAssembly.secondRail⟩
+
+/-- Both crossed bypassed rails retain the corresponding crossed track-edge
+pairs. -/
+theorem crossedBypassedPair_edgesContainedInCrossedTrackPairs
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish) :
+    AssemblyEdgesContainedInCrossedTrackPairs oldAssembly newAssembly
+      (crossedBypassedPair oldAssembly newAssembly).firstRail.edges
+      (crossedBypassedPair oldAssembly newAssembly).secondRail.edges := by
+  exact ⟨bypass_append_edges_contained oldAssembly.firstRail
+      newAssembly.secondRail,
+    bypass_append_edges_contained oldAssembly.secondRail newAssembly.firstRail⟩
+
 /-- Track-sensitive provenance predicate on the ordered retained classifier.
 Collision branches already retain their exact cross origin. -/
 def ClassifiedRetainedBypassAppendOutcome.HasTrackProvenance
@@ -294,6 +373,73 @@ theorem classifyCrossedRetainedBypassAppend_hasTrackProvenance
   dsimp
   split
   · exact crossedBypassedPair_supportContainedInCrossedTrackPairs
+      oldAssembly newAssembly
+  · trivial
+
+/-- Edge-sensitive provenance predicate on the ordered retained classifier. -/
+def ClassifiedRetainedBypassAppendOutcome.HasTrackEdgeProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish}
+    (outcome : ClassifiedRetainedBypassAppendOutcome oldAssembly newAssembly) : Prop :=
+  match outcome with
+  | .assembled assembly =>
+      AssemblyEdgesContainedInOrderedTrackPairs oldAssembly newAssembly
+        assembly.firstRail.edges assembly.secondRail.edges
+  | .collision _ => True
+
+/-- The ordered classifier preserves edge-level track provenance. -/
+theorem classifyRetainedBypassAppend_hasTrackEdgeProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleFirst middleSecond firstFinish secondFinish) :
+    (classifyRetainedBypassAppend oldAssembly newAssembly
+      |>.HasTrackEdgeProvenance) := by
+  classical
+  unfold classifyRetainedBypassAppend
+  dsimp
+  split
+  · exact orderedBypassedPair_edgesContainedInOrderedTrackPairs
+      oldAssembly newAssembly
+  · trivial
+
+/-- Edge-sensitive provenance predicate on the crossed retained classifier. -/
+def ClassifiedCrossedRetainedBypassAppendOutcome.HasTrackEdgeProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    {oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond}
+    {newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish}
+    (outcome : ClassifiedCrossedRetainedBypassAppendOutcome
+      oldAssembly newAssembly) : Prop :=
+  match outcome with
+  | .assembled assembly =>
+      AssemblyEdgesContainedInCrossedTrackPairs oldAssembly newAssembly
+        assembly.firstRail.edges assembly.secondRail.edges
+  | .collision _ => True
+
+/-- The crossed classifier preserves edge-level track provenance. -/
+theorem classifyCrossedRetainedBypassAppend_hasTrackEdgeProvenance
+    {firstStart secondStart middleFirst middleSecond firstFinish secondFinish :
+      SelectedFace (web := web)}
+    (oldAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstStart secondStart middleFirst middleSecond)
+    (newAssembly : SelectedSourceLocalRailAssembly (web := web)
+      middleSecond middleFirst firstFinish secondFinish) :
+    (classifyCrossedRetainedBypassAppend oldAssembly newAssembly
+      |>.HasTrackEdgeProvenance) := by
+  classical
+  unfold classifyCrossedRetainedBypassAppend
+  dsimp
+  split
+  · exact crossedBypassedPair_edgesContainedInCrossedTrackPairs
       oldAssembly newAssembly
   · trivial
 
