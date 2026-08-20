@@ -1,16 +1,17 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailTracedFourCellSupport
 
 /-!
-# L1: track-sensitive support provenance for the traced four-cell transition
+# L1: track-sensitive support and edge provenance for the traced four-cell transition
 
 The earlier terminal-window receipt remembers only that a successful returned
 rail lies in the union of four supports.  This module retains the stronger
 pairing supplied by the actual retained-bypass classifier: the first and
 second outputs each use one named track from the first window and its ordered
-or crossed continuation from the last window.
+or crossed continuation from the last window.  The same pairing is now
+retained separately for the literal output edge lists.
 
-This is proof-relevant support provenance for the constructed four-cell
-transition.  It does not identify a retained collision with a rail endpoint,
+This is proof-relevant support and edge provenance for the constructed
+four-cell transition.  It does not identify a retained collision with a rail endpoint,
 repair a collision, prove companion separation after a repair, iterate the
 transition, attach end caps, construct separated crosscuts, or close Fable
 flag L1.
@@ -328,6 +329,260 @@ theorem classifyExactSelectedLocalRailFourCellRetained_hasSuccessfulTrackSupport
                   CertifiedSelectedLocalRailTerminalWindow.firstSupport, lastWindow]
               · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.toCertified,
                   CertifiedSelectedLocalRailTerminalWindow.secondSupport, lastWindow]
+              · exact hgeneric
+          | collision collision => simp
+
+/-- The first literal edge list carried by an exact terminal window. -/
+def ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges
+    (window : ExactCertifiedSelectedLocalRailTerminalWindow
+      (web := web) successor left) :
+    List (Sym2 (SelectedFace (web := web))) :=
+  match window.outcome with
+  | .straight assembly => assembly.firstRail.edges
+  | .swapped assembly => assembly.firstRail.edges
+
+/-- The second literal edge list carried by an exact terminal window. -/
+def ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges
+    (window : ExactCertifiedSelectedLocalRailTerminalWindow
+      (web := web) successor left) :
+    List (Sym2 (SelectedFace (web := web))) :=
+  match window.outcome with
+  | .straight assembly => assembly.secondRail.edges
+  | .swapped assembly => assembly.secondRail.edges
+
+/-- Ordered terminal-window edge provenance. -/
+def EdgesContainedInOrderedExactTerminalTracks
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (firstEdges secondEdges : List (Sym2 (SelectedFace (web := web)))) : Prop :=
+  EdgeContainedInTrackPair firstWindow.firstEdges lastWindow.firstEdges
+      firstEdges ∧
+    EdgeContainedInTrackPair firstWindow.secondEdges lastWindow.secondEdges
+      secondEdges
+
+/-- Crossed terminal-window edge provenance. -/
+def EdgesContainedInCrossedExactTerminalTracks
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    (firstEdges secondEdges : List (Sym2 (SelectedFace (web := web)))) : Prop :=
+  EdgeContainedInTrackPair firstWindow.firstEdges lastWindow.secondEdges
+      firstEdges ∧
+    EdgeContainedInTrackPair firstWindow.secondEdges lastWindow.firstEdges
+      secondEdges
+
+/-- Successful four-cell outcomes retain the ordered or crossed pairing of
+their literal terminal-window edge lists. -/
+def ExactSelectedLocalRailFourCellRetainedOutcome.HasSuccessfulTrackEdgeProvenance
+    {firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft}
+    {lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))}
+    (outcome : ExactSelectedLocalRailFourCellRetainedOutcome
+      firstWindow lastWindow) : Prop :=
+  match outcome with
+  | .straight assembly | .swapped assembly =>
+      EdgesContainedInOrderedExactTerminalTracks firstWindow lastWindow
+          assembly.firstRail.edges assembly.secondRail.edges ∨
+        EdgesContainedInCrossedExactTerminalTracks firstWindow lastWindow
+          assembly.firstRail.edges assembly.secondRail.edges
+  | .straightStraightCollision _ _ _ _ _
+  | .straightSwappedCollision _ _ _ _ _
+  | .swappedStraightCollision _ _ _ _ _
+  | .swappedSwappedCollision _ _ _ _ _ => True
+
+private theorem orderedTrackEdges_of_assemblies
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    {firstFirstStart firstSecondStart firstFirstFinish firstSecondFinish :
+      SelectedFace (web := web)}
+    {firstAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstFirstStart firstSecondStart firstFirstFinish firstSecondFinish}
+    {lastFirstFinish lastSecondFinish : SelectedFace (web := web)}
+    {lastAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstFirstFinish firstSecondFinish lastFirstFinish lastSecondFinish}
+    {firstEdges secondEdges : List (Sym2 (SelectedFace (web := web)))}
+    (hfirstFirst : firstAssembly.firstRail.edges = firstWindow.firstEdges)
+    (hfirstSecond : firstAssembly.secondRail.edges = firstWindow.secondEdges)
+    (hlastFirst : lastAssembly.firstRail.edges = lastWindow.firstEdges)
+    (hlastSecond : lastAssembly.secondRail.edges = lastWindow.secondEdges)
+    (hcontained : AssemblyEdgesContainedInOrderedTrackPairs
+      firstAssembly lastAssembly firstEdges secondEdges) :
+    EdgesContainedInOrderedExactTerminalTracks firstWindow lastWindow
+      firstEdges secondEdges := by
+  constructor
+  · intro edge hedge
+    rcases hcontained.1 edge hedge with hold | hlast
+    · exact .inl (by simpa [hfirstFirst] using hold)
+    · exact .inr (by simpa [hlastFirst] using hlast)
+  · intro edge hedge
+    rcases hcontained.2 edge hedge with hold | hlast
+    · exact .inl (by simpa [hfirstSecond] using hold)
+    · exact .inr (by simpa [hlastSecond] using hlast)
+
+private theorem crossedTrackEdges_of_assemblies
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)))
+    {firstFirstStart firstSecondStart firstFirstFinish firstSecondFinish :
+      SelectedFace (web := web)}
+    {firstAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstFirstStart firstSecondStart firstFirstFinish firstSecondFinish}
+    {lastFirstFinish lastSecondFinish : SelectedFace (web := web)}
+    {lastAssembly : SelectedSourceLocalRailAssembly (web := web)
+      firstSecondFinish firstFirstFinish lastFirstFinish lastSecondFinish}
+    {firstEdges secondEdges : List (Sym2 (SelectedFace (web := web)))}
+    (hfirstFirst : firstAssembly.firstRail.edges = firstWindow.firstEdges)
+    (hfirstSecond : firstAssembly.secondRail.edges = firstWindow.secondEdges)
+    (hlastFirst : lastAssembly.firstRail.edges = lastWindow.firstEdges)
+    (hlastSecond : lastAssembly.secondRail.edges = lastWindow.secondEdges)
+    (hcontained : AssemblyEdgesContainedInCrossedTrackPairs
+      firstAssembly lastAssembly firstEdges secondEdges) :
+    EdgesContainedInCrossedExactTerminalTracks firstWindow lastWindow
+      firstEdges secondEdges := by
+  constructor
+  · intro edge hedge
+    rcases hcontained.1 edge hedge with hold | hlast
+    · exact .inl (by simpa [hfirstFirst] using hold)
+    · exact .inr (by simpa [hlastSecond] using hlast)
+  · intro edge hedge
+    rcases hcontained.2 edge hedge with hold | hlast
+    · exact .inl (by simpa [hfirstSecond] using hold)
+    · exact .inr (by simpa [hlastFirst] using hlast)
+
+/-- The canonical retained four-cell classifier preserves exact edge-level
+terminal-track pairing on every successful branch. -/
+theorem classifyExactSelectedLocalRailFourCellRetained_hasSuccessfulTrackEdgeProvenance
+    (firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+      firstSuccessor firstLeft)
+    (lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+      (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor))) :
+    (classifyExactSelectedLocalRailFourCellRetained firstWindow lastWindow
+      |>.HasSuccessfulTrackEdgeProvenance) := by
+  classical
+  rcases firstWindow with ⟨firstOutcome, firstExact⟩
+  rcases lastWindow with ⟨lastOutcome, lastExact⟩
+  cases firstOutcome with
+  | straight firstAssembly =>
+      let firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+          firstSuccessor firstLeft := ⟨.straight firstAssembly, firstExact⟩
+      cases lastOutcome with
+      | straight lastAssembly =>
+          let lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+              (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)) :=
+            ⟨.straight lastAssembly, lastExact⟩
+          let rebased := rebaseAssemblyStart lastAssembly
+            (firstSuccessor.rightOutgoingBeforeFace_eq_nextRightAfterFace bridge).symm
+            (firstSuccessor.rightOutgoingAfterFace_eq_nextRightBeforeFace bridge).symm
+          simp only [classifyExactSelectedLocalRailFourCellRetained,
+            ExactSelectedLocalRailFourCellRetainedOutcome.HasSuccessfulTrackEdgeProvenance]
+          have hgeneric := classifyRetainedBypassAppend_hasTrackEdgeProvenance
+            firstAssembly rebased
+          cases hretained : classifyRetainedBypassAppend firstAssembly rebased with
+          | assembled assembly =>
+              rw [hretained] at hgeneric
+              left
+              apply orderedTrackEdges_of_assemblies firstWindow lastWindow
+                (firstAssembly := firstAssembly) (lastAssembly := rebased)
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  firstWindow]
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  firstWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  lastWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  lastWindow]
+              · exact hgeneric
+          | collision collision => simp
+      | swapped lastAssembly =>
+          let lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+              (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)) :=
+            ⟨.swapped lastAssembly, lastExact⟩
+          let rebased := rebaseAssemblyStart lastAssembly
+            (firstSuccessor.rightOutgoingBeforeFace_eq_nextRightAfterFace bridge).symm
+            (firstSuccessor.rightOutgoingAfterFace_eq_nextRightBeforeFace bridge).symm
+          simp only [classifyExactSelectedLocalRailFourCellRetained,
+            ExactSelectedLocalRailFourCellRetainedOutcome.HasSuccessfulTrackEdgeProvenance]
+          have hgeneric := classifyRetainedBypassAppend_hasTrackEdgeProvenance
+            firstAssembly rebased
+          cases hretained : classifyRetainedBypassAppend firstAssembly rebased with
+          | assembled assembly =>
+              rw [hretained] at hgeneric
+              left
+              apply orderedTrackEdges_of_assemblies firstWindow lastWindow
+                (firstAssembly := firstAssembly) (lastAssembly := rebased)
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  firstWindow]
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  firstWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  lastWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  lastWindow]
+              · exact hgeneric
+          | collision collision => simp
+  | swapped firstAssembly =>
+      let firstWindow : ExactCertifiedSelectedLocalRailTerminalWindow
+          firstSuccessor firstLeft := ⟨.swapped firstAssembly, firstExact⟩
+      cases lastOutcome with
+      | straight lastAssembly =>
+          let lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+              (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)) :=
+            ⟨.straight lastAssembly, lastExact⟩
+          let rebased := rebaseAssemblyStart lastAssembly
+            (firstSuccessor.rightOutgoingBeforeFace_eq_nextRightAfterFace bridge).symm
+            (firstSuccessor.rightOutgoingAfterFace_eq_nextRightBeforeFace bridge).symm
+          simp only [classifyExactSelectedLocalRailFourCellRetained,
+            ExactSelectedLocalRailFourCellRetainedOutcome.HasSuccessfulTrackEdgeProvenance]
+          have hgeneric := classifyCrossedRetainedBypassAppend_hasTrackEdgeProvenance
+            firstAssembly rebased
+          cases hretained : classifyCrossedRetainedBypassAppend firstAssembly rebased with
+          | assembled assembly =>
+              rw [hretained] at hgeneric
+              right
+              apply crossedTrackEdges_of_assemblies firstWindow lastWindow
+                (firstAssembly := firstAssembly) (lastAssembly := rebased)
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  firstWindow]
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  firstWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  lastWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  lastWindow]
+              · exact hgeneric
+          | collision collision => simp
+      | swapped lastAssembly =>
+          let lastWindow : ExactCertifiedSelectedLocalRailTerminalWindow lastSuccessor
+              (LastLeft (bridge := bridge) (lastSuccessor := lastSuccessor)) :=
+            ⟨.swapped lastAssembly, lastExact⟩
+          let rebased := rebaseAssemblyStart lastAssembly
+            (firstSuccessor.rightOutgoingBeforeFace_eq_nextRightAfterFace bridge).symm
+            (firstSuccessor.rightOutgoingAfterFace_eq_nextRightBeforeFace bridge).symm
+          simp only [classifyExactSelectedLocalRailFourCellRetained,
+            ExactSelectedLocalRailFourCellRetainedOutcome.HasSuccessfulTrackEdgeProvenance]
+          have hgeneric := classifyCrossedRetainedBypassAppend_hasTrackEdgeProvenance
+            firstAssembly rebased
+          cases hretained : classifyCrossedRetainedBypassAppend firstAssembly rebased with
+          | assembled assembly =>
+              rw [hretained] at hgeneric
+              right
+              apply crossedTrackEdges_of_assemblies firstWindow lastWindow
+                (firstAssembly := firstAssembly) (lastAssembly := rebased)
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  firstWindow]
+              · simp [ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  firstWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.firstEdges,
+                  lastWindow]
+              · simp [rebased, ExactCertifiedSelectedLocalRailTerminalWindow.secondEdges,
+                  lastWindow]
               · exact hgeneric
           | collision collision => simp
 

@@ -89,6 +89,30 @@ noncomputable def rebaseAssemblyStart
     (rebaseAssemblyStart assembly hfirst hsecond).secondRail.support =
       assembly.secondRail.support := by simp [rebaseAssemblyStart]
 
+/-- Rebasing the first starting face changes only endpoint typing, not the
+literal first-rail edge list. -/
+@[simp] theorem rebaseAssemblyStart_firstRail_edges
+    {oldFirstStart oldSecondStart newFirstStart newSecondStart
+      firstFinish secondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      oldFirstStart oldSecondStart firstFinish secondFinish)
+    (hfirst : oldFirstStart = newFirstStart)
+    (hsecond : oldSecondStart = newSecondStart) :
+    (rebaseAssemblyStart assembly hfirst hsecond).firstRail.edges =
+      assembly.firstRail.edges := by simp [rebaseAssemblyStart]
+
+/-- Rebasing the second starting face likewise preserves the literal
+second-rail edge list. -/
+@[simp] theorem rebaseAssemblyStart_secondRail_edges
+    {oldFirstStart oldSecondStart newFirstStart newSecondStart
+      firstFinish secondFinish : SelectedFace (web := web)}
+    (assembly : SelectedSourceLocalRailAssembly (web := web)
+      oldFirstStart oldSecondStart firstFinish secondFinish)
+    (hfirst : oldFirstStart = newFirstStart)
+    (hsecond : oldSecondStart = newSecondStart) :
+    (rebaseAssemblyStart assembly hfirst hsecond).secondRail.edges =
+      assembly.secondRail.edges := by simp [rebaseAssemblyStart]
+
 /-- Change only the names of an assembly's two finishing faces.
 
 This is the endpoint-symmetric companion of `rebaseAssemblyStart`.  Both
