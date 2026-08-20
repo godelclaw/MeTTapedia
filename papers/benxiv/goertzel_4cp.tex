@@ -1953,6 +1953,20 @@ windows have been removed from that consumer boundary.  The packet still
 returns a collision alternative and therefore is not the rolling induction or
 a construction of the final crosscut pair.
 
+The literal source-piece product has now been pruned before the repair table
+is opened.  In
+\texttt{GoertzelV24ClosedWebSelectedLocalRailTracedCollisionBands}, corridor
+distance rules out every retained collision at the first centre, every
+old-first-window-rail collision with the third centre, and every
+old-first-window-rail collision with either fourth-centre rail.  Thus the
+twenty-five raw pairs of five source pieces reduce to four proof-relevant
+bands: old/old, successor/third-centre, successor/old, and
+successor/successor.  The theorem is applied directly to the canonical traced
+transition, so the next table sees only source-produced repair branches and
+one of these four bands.  None of the four surviving bands is claimed empty;
+their elimination or rerouting, the rolling induction, and both end caps
+remain open.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
