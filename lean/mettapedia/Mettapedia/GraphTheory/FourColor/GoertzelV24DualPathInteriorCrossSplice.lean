@@ -102,6 +102,55 @@ theorem current_not_mem_crossSpliceAround_support
   · apply hsuffixAvoids
     simpa only [SimpleGraph.Walk.support_cons, List.tail_cons] using hsuffix
 
+/-- The literal four-edge bridge through three displayed corridor centres.
+The endpoint adjacencies come from the two local rail packets, while the two
+middle adjacencies come from consecutive corridor faces. -/
+def threeCenterBridge
+    {left firstCenter middleCenter lastCenter right : V}
+    (hleft : G.Adj left firstCenter)
+    (hfirstMiddle : G.Adj firstCenter middleCenter)
+    (hmiddleLast : G.Adj middleCenter lastCenter)
+    (hright : G.Adj lastCenter right) :
+    G.Walk left right :=
+  .cons hleft (.cons hfirstMiddle (.cons hmiddleLast (.cons hright .nil)))
+
+@[simp] theorem threeCenterBridge_length
+    {left firstCenter middleCenter lastCenter right : V}
+    (hleft : G.Adj left firstCenter)
+    (hfirstMiddle : G.Adj firstCenter middleCenter)
+    (hmiddleLast : G.Adj middleCenter lastCenter)
+    (hright : G.Adj lastCenter right) :
+    (threeCenterBridge hleft hfirstMiddle hmiddleLast hright).length = 4 := by
+  rfl
+
+@[simp] theorem threeCenterBridge_support
+    {left firstCenter middleCenter lastCenter right : V}
+    (hleft : G.Adj left firstCenter)
+    (hfirstMiddle : G.Adj firstCenter middleCenter)
+    (hmiddleLast : G.Adj middleCenter lastCenter)
+    (hright : G.Adj lastCenter right) :
+    (threeCenterBridge hleft hfirstMiddle hmiddleLast hright).support =
+      [left, firstCenter, middleCenter, lastCenter, right] := by
+  rfl
+
+/-- Exact support makes collision avoidance of the centre bridge a finite
+five-vertex check. -/
+theorem current_not_mem_threeCenterBridge_support
+    {left firstCenter middleCenter lastCenter right current : V}
+    (hleft : G.Adj left firstCenter)
+    (hfirstMiddle : G.Adj firstCenter middleCenter)
+    (hmiddleLast : G.Adj middleCenter lastCenter)
+    (hright : G.Adj lastCenter right)
+    (hcurrentLeft : current ≠ left)
+    (hcurrentFirst : current ≠ firstCenter)
+    (hcurrentMiddle : current ≠ middleCenter)
+    (hcurrentLast : current ≠ lastCenter)
+    (hcurrentRight : current ≠ right) :
+    current ∉
+      (threeCenterBridge hleft hfirstMiddle hmiddleLast hright).support := by
+  simp [threeCenterBridge, hcurrentLeft, hcurrentFirst, hcurrentMiddle,
+    hcurrentLast, hcurrentRight]
+
 /-- A whole bridge walk may replace the single bypass edge.  This is the form
 needed when source geometry routes from a rail attachment face through one or
 more displayed corridor centres before returning to the other rail. -/

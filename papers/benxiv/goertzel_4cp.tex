@@ -2419,6 +2419,20 @@ geometry cleanly: the remaining local obligation is the explicit
 predecessor--centre-chain--successor bridge and its separation from the other
 rail.  No iteration or annular end cap follows merely from the generic splice.
 
+The explicit centre-chain bridge is now machine-checked for both alternating
+replacement-square branches.  The predecessor on the old local path is joined
+to its corridor centre, then across the two consecutive centre adjacencies,
+and finally from the third centre to the successor on the new local path.  Its
+support is exactly the five displayed faces.  The square incidence and the
+internal-endpoint conditions therefore prove that the collision face is absent,
+after which the generic bridge splice returns a simple route avoiding that
+collision.  This is a source-faithful local repair, conditional only on
+extracting the two surrounding local path pieces and their already-recorded
+centre-adjacency invariants from the exact collision packet.  It does not yet
+prove separation from the companion rail, iterate repairs along an arbitrary
+corridor, attach the two annular end caps, or construct the final separated
+crosscut pair.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
