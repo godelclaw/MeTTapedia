@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAppendDoubleCross
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailCenterEdgeReceipt
 
 /-!
 # L1: bridge the unmatched rail through a literal Cell-3 centre
@@ -104,15 +105,10 @@ the left Cell-3 centre. -/
 private def leftCenterBridge : SelectedDualGraph (web := web).Walk
     (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
     (selectedPlacementSideFace leftPlacement successor.frame.leftBefore) :=
-  .cons
-    (left.paths.secondRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
-      left.paths.secondRail.end_mem_support).symm
-    (.cons
-      (left.paths.firstRail_support_adjacent_center
-        (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
-        left.paths.firstRail.end_mem_support)
-      .nil)
+  by
+    let _ := left
+    exact selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+      successor.frame.leftBefore
 
 /-- The first-to-second reroute constructed at a collision cannot return to
 the old first rail's seam endpoint. -/
@@ -229,7 +225,7 @@ noncomputable def appendSingleFirstSecondViaLeftCenter
   rcases List.mem_append.mp hsecondRaw with hleftBridge | hright
   · rcases List.mem_append.mp hleftBridge with hold | hbridge
     · exact (List.disjoint_left.mp holdSecond hfirst) hold
-    · simp [bridge, leftCenterBridge] at hbridge
+    · simp [bridge, leftCenterBridge, selectedPlacementCenterBridge] at hbridge
       rcases hbridge with hcenterFace | hbefore
       · exact hcenter (hcenterFace ▸ hfirst)
       · exact firstToSecondReroute_before_not_mem collision (hbefore ▸ hfirst)
@@ -298,7 +294,7 @@ theorem appendSingleFirstSecondViaLeftCenter_supportContained
     rcases List.mem_append.mp hraw with hleftBridge | hright
     · rcases List.mem_append.mp hleftBridge with hold | hbridge
       · exact Or.inr (Or.inr (Or.inl hold))
-      · simp [bridge, leftCenterBridge] at hbridge
+      · simp [bridge, leftCenterBridge, selectedPlacementCenterBridge] at hbridge
         rcases hbridge with hcenterFace | hbefore
         · exact Or.inl hcenterFace
         · exact Or.inr (Or.inl (hbefore ▸ left.paths.firstRail.end_mem_support))
@@ -371,7 +367,8 @@ theorem appendSingleFirstSecondViaLeftCenter_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-          simpa only [bridge, leftCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [bridge, leftCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenterFace | hbefore
@@ -490,7 +487,7 @@ noncomputable def appendSingleSecondFirstViaLeftCenter
   rcases List.mem_append.mp hfirstRaw with hleftBridge | hright
   · rcases List.mem_append.mp hleftBridge with hold | hbridge
     · exact (List.disjoint_left.mp holdFirst hsecond) hold
-    · simp [bridge, leftCenterBridge] at hbridge
+    · simp [bridge, leftCenterBridge, selectedPlacementCenterBridge] at hbridge
       rcases hbridge with hcenterFace | hafter
       · exact hcenter (hcenterFace ▸ hsecond)
       · exact secondToFirstReroute_after_not_mem collision (hafter ▸ hsecond)
@@ -547,7 +544,7 @@ theorem appendSingleSecondFirstViaLeftCenter_supportContained
     rcases List.mem_append.mp hraw with hleftBridge | hright
     · rcases List.mem_append.mp hleftBridge with hold | hbridge
       · exact Or.inr (Or.inl hold)
-      · simp [bridge, leftCenterBridge] at hbridge
+      · simp [bridge, leftCenterBridge, selectedPlacementCenterBridge] at hbridge
         rcases hbridge with hcenterFace | hafter
         · exact Or.inl hcenterFace
         · exact Or.inr (Or.inr (Or.inl
@@ -615,7 +612,7 @@ theorem appendSingleSecondFirstViaLeftCenter_trackProvenance
     rcases List.mem_append.mp hraw with hleftBridge | hright
     · rcases List.mem_append.mp hleftBridge with hold | hbridge
       · exact Or.inl hold
-      · simp [bridge, leftCenterBridge] at hbridge
+      · simp [bridge, leftCenterBridge, selectedPlacementCenterBridge] at hbridge
         rcases hbridge with hcenterFace | hafter
         · exact Or.inr (Or.inr (Or.inl hcenterFace))
         · exact Or.inr (Or.inr (Or.inr (Or.inr hafter)))

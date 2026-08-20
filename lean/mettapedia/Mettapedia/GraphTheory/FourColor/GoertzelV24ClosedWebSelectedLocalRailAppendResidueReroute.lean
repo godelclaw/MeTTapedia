@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailAppendResidueCoordinates
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailCenterEdgeReceipt
 
 /-!
 # L1: construct the first length-and-coordinate append residue
@@ -216,15 +217,10 @@ private def leftCenterBridge :
       (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
         (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
         (selectedPlacementSideFace leftPlacement successor.frame.leftBefore) :=
-  .cons
-    (left.paths.secondRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
-      left.paths.secondRail.end_mem_support).symm
-    (.cons
-      (left.paths.firstRail_support_adjacent_center
-        (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
-        left.paths.firstRail.end_mem_support)
-      .nil)
+  by
+    let _ := left
+    exact selectedPlacementCenterBridge leftPlacement successor.frame.leftAfter
+      successor.frame.leftBefore
 
 /-- The left-to-right bridge introduces only the previous Cell-3 centre;
 its two flank endpoints already belong to the old local rails. -/
@@ -240,7 +236,8 @@ theorem mem_adjacentSelectedRailPieces_of_mem_leftCenterBridge_support
         |>.faceAt leftInterior.center) ∨
       face = selectedPlacementSideFace leftPlacement
         successor.frame.leftBefore := by
-    simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+    simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+      SimpleGraph.Walk.support_cons,
       SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
       List.mem_singleton, List.not_mem_nil, or_false] using hface
   rcases hbridge with hafter | hcenter | hbefore
@@ -315,7 +312,8 @@ noncomputable def appendFirstSecondSameFirst
               |>.faceAt leftInterior.center) ∨
           cross.face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-        simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+        simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
           List.mem_singleton, List.not_mem_nil, or_false]
           using hbridge
@@ -463,7 +461,8 @@ theorem appendFirstSecondSameFirst_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-          simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenter | hbefore
@@ -490,15 +489,10 @@ private def rightCenterBridge :
       (Finset.univ : Finset (OrbitFace web.annular.RS))).Walk
         (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
         (selectedPlacementSideFace leftPlacement successor.frame.leftAfter) :=
-  .cons
-    (left.paths.firstRail_support_adjacent_center
-      (selectedPlacementSideFace leftPlacement successor.frame.leftBefore)
-      left.paths.firstRail.end_mem_support).symm
-    (.cons
-      (left.paths.secondRail_support_adjacent_center
-        (selectedPlacementSideFace leftPlacement successor.frame.leftAfter)
-        left.paths.secondRail.end_mem_support)
-      .nil)
+  by
+    let _ := left
+    exact selectedPlacementCenterBridge leftPlacement successor.frame.leftBefore
+      successor.frame.leftAfter
 
 /-- The right-to-left bridge has the same finite source provenance. -/
 theorem mem_adjacentSelectedRailPieces_of_mem_rightCenterBridge_support
@@ -513,7 +507,8 @@ theorem mem_adjacentSelectedRailPieces_of_mem_rightCenterBridge_support
         |>.faceAt leftInterior.center) ∨
       face = selectedPlacementSideFace leftPlacement
         successor.frame.leftAfter := by
-    simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+    simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+      SimpleGraph.Walk.support_cons,
       SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
       List.mem_singleton, List.not_mem_nil, or_false] using hface
   rcases hbridge with hbefore | hcenter | hafter
@@ -589,7 +584,8 @@ noncomputable def appendSecondFirstSameSecond
               |>.faceAt leftInterior.center) ∨
           cross.face = selectedPlacementSideFace leftPlacement
             successor.frame.leftAfter := by
-        simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+        simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
           List.mem_singleton, List.not_mem_nil, or_false]
           using hbridge
@@ -732,7 +728,8 @@ theorem appendSecondFirstSameSecond_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftAfter := by
-          simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenter | hafter
@@ -831,7 +828,8 @@ noncomputable def appendFirstSecondSameSecond
               |>.faceAt leftInterior.center) ∨
           cross.face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-        simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+        simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
           List.mem_singleton, List.not_mem_nil, or_false]
           using hbridge
@@ -976,7 +974,8 @@ theorem appendFirstSecondSameSecond_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftBefore := by
-          simpa only [leftCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [leftCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenter | hbefore
@@ -1081,7 +1080,8 @@ noncomputable def appendSecondFirstSameFirst
               |>.faceAt leftInterior.center) ∨
           cross.face = selectedPlacementSideFace leftPlacement
             successor.frame.leftAfter := by
-        simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+        simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+          SimpleGraph.Walk.support_cons,
           SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
           List.mem_singleton, List.not_mem_nil, or_false]
           using hbridge
@@ -1215,7 +1215,8 @@ theorem appendSecondFirstSameFirst_trackProvenance
               |>.faceAt leftInterior.center) ∨
           face = selectedPlacementSideFace leftPlacement
             successor.frame.leftAfter := by
-          simpa only [rightCenterBridge, SimpleGraph.Walk.support_cons,
+          simpa only [rightCenterBridge, selectedPlacementCenterBridge,
+            SimpleGraph.Walk.support_cons,
             SimpleGraph.Walk.support_nil, List.tail_cons, List.mem_cons,
             List.mem_singleton, List.not_mem_nil, or_false] using hbridge
         rcases hbridge' with hcenter | hafter
