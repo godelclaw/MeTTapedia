@@ -2397,6 +2397,11 @@ The packaged existential keeps the useful special case explicitly: together
 with the two endpoint centres and both edge identities, it returns a proof
 that the collision face itself lies on one of the two endpoint triangles.
 This is a choice receipt for the reroute, not the reroute.
+For that chosen triangle the remaining two faces are distinct and joined by
+one literal dual edge.  Thus Lean now constructs the complete local bypass of
+the collision face.  What remains is the source-incidence statement that
+identifies those two faces with the predecessor and successor of one retained
+rail; without it the local edge has not yet been spliced into the rail.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical

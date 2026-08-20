@@ -199,6 +199,60 @@ theorem SquareBondRealization.EndpointSelectedTriangle.adj_of_mem_support_of_ne
                     first | assumption | (symm; assumption)
               | cons hfourth tail => simp [hwalk] at hlength
 
+/-- Removing any chosen face from an endpoint triangle leaves its other two
+faces joined by one dual edge.  This is the complete local bypass geometry;
+a later rail consumer must still identify those two faces with the actual
+predecessor and successor of its collision. -/
+theorem SquareBondRealization.EndpointSelectedTriangle.exists_bypass_faces
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : SquareBondRealization cycle component}
+    (triangle : bond.EndpointSelectedTriangle)
+    {current : SelectedFace (web := web)}
+    (hcurrent : current ∈ triangle.selectedCycle.walk.support) :
+    ∃ first second : SelectedFace (web := web),
+      first ∈ triangle.selectedCycle.walk.support ∧
+        second ∈ triangle.selectedCycle.walk.support ∧
+        first ≠ current ∧ second ≠ current ∧ first ≠ second ∧
+        SelectedDualGraph (web := web).Adj current first ∧
+        SelectedDualGraph (web := web).Adj current second ∧
+        SelectedDualGraph (web := web).Adj first second := by
+  have hlength := triangle.length_eq_three
+  cases hwalk : triangle.selectedCycle.walk with
+  | nil => simp [hwalk] at hlength
+  | cons hfirstSecond tail =>
+      cases tail with
+      | nil => simp [hwalk] at hlength
+      | cons hsecondThird tail =>
+          cases tail with
+          | nil => simp [hwalk] at hlength
+          | cons hthirdFirst tail =>
+              cases tail with
+              | nil =>
+                  simp only [hwalk, SimpleGraph.Walk.support_cons,
+                    SimpleGraph.Walk.support_nil, List.mem_cons,
+                    List.not_mem_nil, or_false] at hcurrent
+                  rcases hcurrent with rfl | rfl | rfl | rfl
+                  · refine ⟨_, _, by simp, by simp,
+                      hfirstSecond.ne.symm, hthirdFirst.ne,
+                      hsecondThird.ne, hfirstSecond, hthirdFirst.symm,
+                      hsecondThird⟩
+                  · refine ⟨_, _, by simp, by simp,
+                      hfirstSecond.ne, hsecondThird.ne.symm,
+                      hthirdFirst.ne.symm, hfirstSecond.symm, hsecondThird,
+                      hthirdFirst.symm⟩
+                  · refine ⟨_, _, by simp, by simp,
+                      hsecondThird.ne, hthirdFirst.ne.symm,
+                      hfirstSecond.ne.symm, hsecondThird.symm, hthirdFirst,
+                      hfirstSecond.symm⟩
+                  · refine ⟨_, _, by simp, by simp,
+                      hfirstSecond.ne.symm, hthirdFirst.ne,
+                      hsecondThird.ne, hfirstSecond, hthirdFirst.symm,
+                      hsecondThird⟩
+              | cons hfourth tail => simp [hwalk] at hlength
+
 /-- The incident stars of the two bond endpoints overlap in exactly the
 internal bond.  This is a simple-graph fact: an edge incident to both distinct
 endpoints is the bond itself. -/
@@ -700,6 +754,36 @@ theorem SquareBondRealization.exists_endpointSelectedTriangles_exact_with_face
   have hface := bond.original_support_covered_by_endpointTriangles
     firstTriangle secondTriangle hunion face cycle.face_mem_support
   exact ⟨firstTriangle, secondTriangle, hfirst, hsecond, hinter, hunion, hface⟩
+
+/-- **L1 local square-collision bypass.**  The realized square supplies an
+endpoint triangle containing the collision face, and deleting that face from
+the triangle leaves two distinct support faces joined by one dual edge.  This
+constructs the local bypass edge; it does not yet identify its endpoints with
+the predecessor and successor on either retained rail. -/
+theorem SquareBondRealization.exists_collisionEndpointTriangle_bypass
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    ∃ triangle : bond.EndpointSelectedTriangle,
+      face ∈ triangle.selectedCycle.walk.support ∧
+        ∃ first second : SelectedFace (web := web),
+          first ∈ triangle.selectedCycle.walk.support ∧
+            second ∈ triangle.selectedCycle.walk.support ∧
+            first ≠ face ∧ second ≠ face ∧ first ≠ second ∧
+            SelectedDualGraph (web := web).Adj face first ∧
+            SelectedDualGraph (web := web).Adj face second ∧
+            SelectedDualGraph (web := web).Adj first second := by
+  rcases bond.exists_endpointSelectedTriangles_exact_with_face hroot with
+    ⟨firstTriangle, secondTriangle, _hfirst, _hsecond, _hinter, _hunion,
+      hface⟩
+  rcases hface with hface | hface
+  · exact ⟨firstTriangle, hface,
+      firstTriangle.exists_bypass_faces hface⟩
+  · exact ⟨secondTriangle, hface,
+      secondTriangle.exists_bypass_faces hface⟩
 
 end MiddleReplacementShortDualCycle
 
