@@ -661,6 +661,7 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.hasLocalBand
           · exact .middleLast (by
               simp only [FaceInCanonicalMiddleRepair, hresult]
               exact .inr hmiddleSecond) (.inr hlast)
+
       | secondFirst hold hnew =>
           have hlast : witness.face ∈
               (rebaseLastContinuation (bridge := bridge)
@@ -718,6 +719,123 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.hasLocalBand
           · exact .middleLast (by
               simp only [FaceInCanonicalMiddleRepair, hresult]
               exact .inr hmiddleSecond) (.inr hlast)
+
+/-- The seven literal source atoms from which the canonical middle repair may
+draw a face: two old tracks, two successor tracks, the Cell-3 centre, and the
+two seam flanks. -/
+def FaceInCanonicalMiddleSourcePieces
+    (face : SelectedFace (web := web)) : Prop :=
+  face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+      (bridge := bridge)).paths.firstRail.support ∨
+    face ∈ (BridgeLeft (firstSuccessor := firstSuccessor)
+      (bridge := bridge)).paths.secondRail.support ∨
+    face ∈ bridge.firstContinuation.support ∨
+    face ∈ bridge.secondContinuation.support ∨
+    face = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+      (nextCorridorInterior firstInterior hfirstNext).center ∨
+    face = selectedPlacementSideFace secondPlacement bridge.frame.leftBefore ∨
+    face = selectedPlacementSideFace secondPlacement bridge.frame.leftAfter
+
+private theorem faceInCanonicalMiddleSourcePieces_of_expected
+    {oldSupport newSupport : List (SelectedFace (web := web))}
+    {face : SelectedFace (web := web)}
+    (hold : face ∈ oldSupport → FaceInCanonicalMiddleSourcePieces
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+    (hnew : face ∈ newSupport → FaceInCanonicalMiddleSourcePieces
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+    (hface : FaceInExpectedSelectedRailTrack (corridor := corridor)
+      (leftInterior := nextCorridorInterior firstInterior hfirstNext)
+      (leftPlacement := secondPlacement) (successor := bridge)
+      oldSupport newSupport face) :
+    FaceInCanonicalMiddleSourcePieces
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face := by
+  simp only [FaceInExpectedSelectedRailTrack] at hface
+  rcases hface with holdFace | newFace | hcenter | hbefore | hafter
+  · exact hold holdFace
+  · exact hnew newFace
+  · exact .inr (.inr (.inr (.inr (.inl hcenter))))
+  · exact .inr (.inr (.inr (.inr (.inr (.inl hbefore)))))
+  · exact .inr (.inr (.inr (.inr (.inr (.inr hafter)))))
+
+/-- Track provenance unfolds every face of the canonical middle repair into
+one of its seven literal source atoms. -/
+theorem faceInCanonicalMiddleSourcePieces_of_middleRepair
+    (trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge)))
+    {face : SelectedFace (web := web)}
+    (hface : FaceInCanonicalMiddleRepair
+      (firstSuccessor := firstSuccessor) (bridge := bridge) trace face) :
+    FaceInCanonicalMiddleSourcePieces
+      (firstSuccessor := firstSuccessor) (bridge := bridge) face := by
+  have htrack := trace.hasTrackProvenance
+  cases hresult : trace.toOutcome with
+  | straight middle =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      simp only [FaceInCanonicalMiddleRepair, hresult] at hface
+      rcases hface with hfirst | hsecond
+      · exact faceInCanonicalMiddleSourcePieces_of_expected
+          (fun hold => .inl hold)
+          (fun hnew => .inr (.inr (.inl hnew)))
+          (htrack.1 face (by simpa [rebaseMiddleStraight] using hfirst))
+      · exact faceInCanonicalMiddleSourcePieces_of_expected
+          (fun hold => .inr (.inl hold))
+          (fun hnew => .inr (.inr (.inr (.inl hnew))))
+          (htrack.2 face (by simpa [rebaseMiddleStraight] using hsecond))
+  | swapped middle =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      simp only [FaceInCanonicalMiddleRepair, hresult] at hface
+      rcases hface with hfirst | hsecond
+      · exact faceInCanonicalMiddleSourcePieces_of_expected
+          (fun hold => .inl hold)
+          (fun hnew => .inr (.inr (.inr (.inl hnew))))
+          (htrack.1 face (by simpa [rebaseMiddleSwapped] using hfirst))
+      · exact faceInCanonicalMiddleSourcePieces_of_expected
+          (fun hold => .inr (.inl hold))
+          (fun hnew => .inr (.inr (.inl hnew)))
+          (htrack.2 face (by simpa [rebaseMiddleSwapped] using hsecond))
+
+/-- Source-level form of the two residual adjacent bands.  The repaired
+middle is no longer opaque: its contact face is one of seven displayed atoms
+of the literal second/third-cell bridge window. -/
+inductive ExactSelectedLocalRailMiddleReplacementSourceLocalBand
+    (face : SelectedFace (web := web)) : Prop
+  | firstMiddle
+      (first : face ∈ firstLeft.toAssembly.firstRail.support ∨
+        face ∈ firstLeft.toAssembly.secondRail.support)
+      (middle : FaceInCanonicalMiddleSourcePieces
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+  | middleLast
+      (middle : FaceInCanonicalMiddleSourcePieces
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face)
+      (last : face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).firstRail.support ∨
+        face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).secondRail.support)
+
+/-- The bounded localization can be read entirely in literal source pieces,
+ready for the finite neighboring-window classification required by the
+source. -/
+theorem ExactSelectedLocalRailMiddleReplacementLocalBand.toSourceLocalBand
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    {face : SelectedFace (web := web)}
+    (band : ExactSelectedLocalRailMiddleReplacementLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    ExactSelectedLocalRailMiddleReplacementSourceLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face := by
+  cases band with
+  | firstMiddle first middle =>
+      exact .firstMiddle first
+        (faceInCanonicalMiddleSourcePieces_of_middleRepair trace middle)
+  | middleLast middle last =>
+      exact .middleLast
+        (faceInCanonicalMiddleSourcePieces_of_middleRepair trace middle) last
 
 /-- The replacement classifier retains the independently proved concrete rail
 which avoids the original middle-band collision face. -/
