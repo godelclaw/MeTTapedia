@@ -11,9 +11,10 @@ classifier.  Equality of those two choices is neither available nor needed.
 
 The canonical middle trace returns a concrete separated assembly.  Hence, for
 the particular face named by the outer collision, at least one of its two
-output rails avoids that face.  This module records that witness-specific fact
-together with the trace's already-proved source-track provenance and inserts
-both into the four-cell collision table.
+output rails avoids that face.  Moreover, the triangle inequalities exclude
+all connector alternatives in the general track-provenance predicate, so any
+remaining occurrence of that face lies on one of the two literal source
+tracks.  This module records both facts in the four-cell collision table.
 
 This is a constructed refinement of the middle band.  It does not yet reroute
 the outer four-cell collision, eliminate the other three bounded bands, perform
@@ -103,6 +104,121 @@ theorem ExactSelectedLocalRailConstructionTrace.avoidsActualCollisionFaceOnOneRa
     trace.toOutcome.AvoidsFaceOnOneRail collision.face :=
   trace.toOutcome.avoidsFaceOnOneRail collision.face
 
+/-- An actual collision face is not the displayed centre of its left Cell--3
+piece. -/
+theorem actualAppendCollision_face_ne_leftCenter
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left) :
+    collision.face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        leftInterior.center :=
+  collision.toAdjacentDualTriangle.leftCenter_adj_third.ne.symm
+
+/-- At an actual collision face the three connector alternatives in the
+track-provenance predicate are impossible. -/
+theorem actualAppendCollision_faceInExpectedTrack_iff
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left)
+    (oldSupport newSupport : List (SelectedFace (web := web))) :
+    FaceInExpectedSelectedRailTrack (corridor := corridor)
+        (leftInterior := leftInterior) (leftPlacement := leftPlacement)
+        (successor := successor) oldSupport newSupport collision.face ↔
+      collision.face ∈ oldSupport ∨ collision.face ∈ newSupport := by
+  simp only [FaceInExpectedSelectedRailTrack]
+  constructor
+  · intro hface
+    rcases hface with hold | hnew | hcenter | hbefore | hafter
+    · exact Or.inl hold
+    · exact Or.inr hnew
+    · exact False.elim
+        (actualAppendCollision_face_ne_leftCenter collision hcenter)
+    · exact False.elim
+        (collision.toAdjacentDualTriangle.third_ne_before hbefore)
+    · exact False.elim
+        (collision.toAdjacentDualTriangle.third_ne_after hafter)
+  · exact fun hface => hface.elim Or.inl (fun hnew => Or.inr (Or.inl hnew))
+
+/-- Track membership of one specified actual collision face in a concrete
+canonical repair.  Unlike the general provenance predicate, this statement
+contains no connector-face alternatives. -/
+def SelectedLocalRailAppendCompleteOutcome.CollisionFaceFollowsExpectedTracks
+    (outcome : SelectedLocalRailAppendCompleteOutcome successor left)
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left) : Prop :=
+  match outcome with
+  | .straight assembly =>
+      (∀ _hface : collision.face ∈ assembly.firstRail.support,
+          collision.face ∈ left.paths.firstRail.support ∨
+            collision.face ∈ successor.firstContinuation.support) ∧
+        ∀ _hface : collision.face ∈ assembly.secondRail.support,
+          collision.face ∈ left.paths.secondRail.support ∨
+            collision.face ∈ successor.secondContinuation.support
+  | .swapped assembly =>
+      (∀ _hface : collision.face ∈ assembly.firstRail.support,
+          collision.face ∈ left.paths.firstRail.support ∨
+            collision.face ∈ successor.secondContinuation.support) ∧
+        ∀ _hface : collision.face ∈ assembly.secondRail.support,
+          collision.face ∈ left.paths.secondRail.support ∨
+            collision.face ∈ successor.firstContinuation.support
+
+/-- The stored canonical construction branch gives exact, connector-free
+track membership for any independently selected actual collision face. -/
+theorem ExactSelectedLocalRailConstructionTrace.collisionFaceFollowsExpectedTracks
+    (trace : ExactSelectedLocalRailConstructionTrace successor left)
+    (collision :
+      SeparatedSelectedSourceLocalRailSuccessor.ActualAppendCollision
+        successor left) :
+    trace.toOutcome.CollisionFaceFollowsExpectedTracks collision := by
+  have htrack := trace.hasTrackProvenance
+  cases hresult : trace.toOutcome with
+  | straight assembly =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      change
+        (∀ hface : collision.face ∈ assembly.firstRail.support,
+            collision.face ∈ left.paths.firstRail.support ∨
+              collision.face ∈ successor.firstContinuation.support) ∧
+          ∀ hface : collision.face ∈ assembly.secondRail.support,
+            collision.face ∈ left.paths.secondRail.support ∨
+              collision.face ∈ successor.secondContinuation.support
+      constructor
+      · intro hface
+        exact (actualAppendCollision_faceInExpectedTrack_iff collision
+          left.paths.firstRail.support
+          successor.firstContinuation.support).mp
+            (htrack.1 collision.face hface)
+      · intro hface
+        exact (actualAppendCollision_faceInExpectedTrack_iff collision
+          left.paths.secondRail.support
+          successor.secondContinuation.support).mp
+            (htrack.2 collision.face hface)
+  | swapped assembly =>
+      rw [ExactSelectedLocalRailConstructionTrace.HasTrackProvenance,
+        hresult, SelectedLocalRailAppendCompleteOutcome.HasTrackProvenance]
+        at htrack
+      change
+        (∀ hface : collision.face ∈ assembly.firstRail.support,
+            collision.face ∈ left.paths.firstRail.support ∨
+              collision.face ∈ successor.secondContinuation.support) ∧
+          ∀ hface : collision.face ∈ assembly.secondRail.support,
+            collision.face ∈ left.paths.secondRail.support ∨
+              collision.face ∈ successor.firstContinuation.support
+      constructor
+      · intro hface
+        exact (actualAppendCollision_faceInExpectedTrack_iff collision
+          left.paths.firstRail.support
+          successor.secondContinuation.support).mp
+            (htrack.1 collision.face hface)
+      · intro hface
+        exact (actualAppendCollision_faceInExpectedTrack_iff collision
+          left.paths.secondRail.support
+          successor.firstContinuation.support).mp
+            (htrack.2 collision.face hface)
+
 variable
     {firstInterior : CorridorInterior blockLength}
     {hfirstNext : firstInterior.center.val + 2 < blockLength}
@@ -169,6 +285,9 @@ inductive ExactSelectedLocalRailFourCellCollisionBandWithMiddleTrace
       (avoidsFace : transition.bridgeTrace.toOutcome.AvoidsFaceOnOneRail
         value.face)
       (trackProvenance : transition.bridgeTrace.HasTrackProvenance)
+      (collisionTrackMembership :
+        transition.bridgeTrace.toOutcome.CollisionFaceFollowsExpectedTracks
+          value)
   | successorSuccessor
       (firstSuccessorPiece :
         face ∈ firstSuccessor.firstContinuation.support ∨
@@ -197,6 +316,7 @@ def ExactSelectedLocalRailFourCellCollisionBandAfterMiddleSeam.withMiddleTrace
       .middleTrace value face_eq
         (transition.bridgeTrace.avoidsActualCollisionFaceOnOneRail value)
         transition.bridgeTrace.hasTrackProvenance
+        (transition.bridgeTrace.collisionFaceFollowsExpectedTracks value)
   | .successorSuccessor firstSuccessorPiece lastSuccessorPiece =>
       .successorSuccessor firstSuccessorPiece lastSuccessorPiece
 

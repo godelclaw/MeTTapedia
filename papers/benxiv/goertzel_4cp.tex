@@ -2125,8 +2125,13 @@ straight-or-exchanged assembly has disjoint rail supports; consequently, for
 the particular face named by the outer collision, at least one repaired rail
 avoids that face.  The strengthened middle-band constructor records this
 face-specific avoidance together with the trace's exact source-track
-provenance.  Thus the remaining finite consumer can choose the clear repaired
-track without synchronizing collision-choice functions.  This does not yet
+provenance.  The same collision triangle proves that its face is neither the
+displayed centre nor either seam flank, so the general provenance disjunction
+specializes further: if the face occurs on a repaired rail, it occurs on the
+corresponding old rail or literal successor continuation, with no connector
+alternative.  Thus the remaining finite consumer can choose the clear
+repaired track and its exact source origin without synchronizing
+collision-choice functions.  This does not yet
 reroute the outer collision, eliminate the other three bounded bands, perform
 the arbitrary-length fold, attach either end cap, construct the separated
 crosscut pair, or close L1.
