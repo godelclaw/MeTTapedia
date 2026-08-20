@@ -2062,6 +2062,20 @@ walks.  Thus the unbounded prefix algebra is now a non-vacuous inductive
 interface.  The neighbouring four-cell repair must still construct each
 compatible live window, and both literal annular end caps and L1 remain open.
 
+The closed-to-open face-intersection step has now been isolated at the same
+boundary.  For two fully retained ambient faces, every interior edge shared
+by their opened images is reflected to an ambient shared edge and reconstructed
+as the exact opened image of that edge.  Therefore the closed minimal
+carrier's bound
+\(\lvert\texttt{sharedInteriorEdges}\rvert\leq 1\) survives literal opening.
+The source-facing theorem applies this directly to any two distinct fully
+retained faces of a closed vertex-minimal hex corridor.  This is the local
+uniqueness fact needed by the collision consumer; it is not a global
+uniqueness assertion for arbitrary faces of an annulus.  In particular, the
+remaining C--4 formation theorem must still identify the selected Addendum--V
+carrier with the literal opening and prove that the selected corridor faces
+are fully retained.  Neither premise is inferred from the open annulus alone.
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary
