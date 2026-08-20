@@ -2204,7 +2204,14 @@ four-step boundary.  The resulting six source-ladder shapes are: the second
 or third centre, a dual triangle on the first/second or third/fourth centre
 pair, or a dual square spanning the first/third or second/fourth centre pair.
 This is the exact rotor/centre/square input interface; no reduction or reroute
-is claimed at this point.  One atom is also directionally
+is claimed at this point.  The module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementCycles} turns
+each of the four non-centre shapes into a literal simple closed facial-dual
+walk of length three or four.  The walk contains the collision face, and Lean
+proves that its complete support stays in the annular interior.  Thus the bad
+branch now returns either one of two named centres or a proof-relevant short
+interior dual cycle; applying the rotor or square reduction remains the next
+step.  One atom is also directionally
 resolved: the displayed
 second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas

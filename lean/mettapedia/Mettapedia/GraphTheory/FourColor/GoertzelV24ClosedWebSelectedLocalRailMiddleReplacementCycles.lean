@@ -1,0 +1,333 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacement
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalDualTriangleClassification
+
+/-!
+# Short dual cycles exposed by the middle rail replacement
+
+The canonical middle-replacement collision has already been normalized to
+the source ladder's centre, triangle, and square shapes.  This module turns
+the four non-centre shapes into literal simple closed walks of length three or
+four in the annular facial dual.  Their complete support remains in the
+annular interior.
+
+This is positive geometric data for the rotor/square consumer.  It does not
+apply either reduction, eliminate the two centre cases, construct the rolling
+transition, attach end caps, or close the separated-crosscut obligation.
+-/
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace GoertzelV24ClosedWebAtGoodWord
+
+open GoertzelV24ClosedWebAnnularEmbedding
+open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
+open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24FaceOrbitIncidence
+open GoertzelV24HexCorridorInterfaceMatching
+open GoertzelV24HexCorridorSkeleton
+open GoertzelV24HexFaceRungType
+open GoertzelV24MinimalDualTriangleClassification
+
+universe u
+
+variable {V : Type u} [Fintype V] [DecidableEq V]
+  {G : SimpleGraph V} [DecidableRel G.Adj]
+
+noncomputable section
+
+attribute [-instance]
+  GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
+  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
+  GoertzelV24SeamFaceArcPartition.hitPointFintype
+
+namespace Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
+
+variable
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {firstInterior : CorridorInterior blockLength}
+    {hfirstNext : firstInterior.center.val + 2 < blockLength}
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+    {hlastNext :
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center.val +
+          2 < blockLength}
+    {firstPlacement : SelectedInternalHexRungPlacement corridor rungs firstInterior}
+    {secondPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior firstInterior hfirstNext)}
+    {thirdPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)}
+    {fourthPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext)}
+    {firstSuccessor : SeparatedSelectedSourceLocalRailSuccessor hfirstNext
+      firstPlacement secondPlacement}
+    {bridge : SeparatedSelectedSourceLocalRailSuccessor hbridgeNext
+      secondPlacement thirdPlacement}
+    {lastSuccessor : SeparatedSelectedSourceLocalRailSuccessor hlastNext
+      thirdPlacement fourthPlacement}
+    {firstIncomingBefore firstIncomingAfter :
+      {position // position ∈ selectedPlacementSidePositions firstPlacement}}
+    {firstLeft : SeparatedSelectedSourceLocalRailPaths firstPlacement
+      firstIncomingBefore firstIncomingAfter firstSuccessor.frame.leftBefore
+      firstSuccessor.frame.leftAfter}
+
+private abbrev SelectedFace :=
+  AmbientFace (Finset.univ : Finset (OrbitFace web.annular.RS))
+
+private abbrev SelectedDualGraph :=
+  interiorDualGraph (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))
+
+/-- A literal short dual cycle through the collision face, with the two
+receipts needed by the source-local separator consumer. -/
+structure MiddleReplacementShortDualCycle
+    (face : SelectedFace (web := web)) where
+  start : SelectedFace (web := web)
+  walk : SelectedDualGraph (web := web).Walk start start
+  isCycle : walk.IsCycle
+  length_eq_three_or_four : walk.length = 3 ∨ walk.length = 4
+  face_mem_support : face ∈ walk.support
+  support_internal : ∀ current ∈ walk.support,
+    current.1 ∈ web.annular.cellulation.interiorFaces
+
+/-- The four-step closed walk around a common neighbour of corridor centres
+two positions apart. -/
+private def dualSquareWalk
+    {first second third fourth : SelectedFace (web := web)}
+    (hfirstSecond : SelectedDualGraph (web := web).Adj first second)
+    (hsecondThird : SelectedDualGraph (web := web).Adj second third)
+    (hthirdFourth : SelectedDualGraph (web := web).Adj third fourth)
+    (hfourthFirst : SelectedDualGraph (web := web).Adj fourth first) :
+    SelectedDualGraph (web := web).Walk first first :=
+  .cons hfirstSecond
+    (.cons hsecondThird (.cons hthirdFourth (.cons hfourthFirst .nil)))
+
+@[simp] private theorem dualSquareWalk_length
+    {first second third fourth : SelectedFace (web := web)}
+    (hfirstSecond : SelectedDualGraph (web := web).Adj first second)
+    (hsecondThird : SelectedDualGraph (web := web).Adj second third)
+    (hthirdFourth : SelectedDualGraph (web := web).Adj third fourth)
+    (hfourthFirst : SelectedDualGraph (web := web).Adj fourth first) :
+    (dualSquareWalk hfirstSecond hsecondThird hthirdFourth hfourthFirst).length = 4 := by
+  simp [dualSquareWalk]
+
+private theorem dualSquareWalk_isCycle
+    {first second third fourth : SelectedFace (web := web)}
+    (hfirstSecond : SelectedDualGraph (web := web).Adj first second)
+    (hsecondThird : SelectedDualGraph (web := web).Adj second third)
+    (hthirdFourth : SelectedDualGraph (web := web).Adj third fourth)
+    (hfourthFirst : SelectedDualGraph (web := web).Adj fourth first)
+    (hfirstThird : first ≠ third) (hsecondFourth : second ≠ fourth) :
+    (dualSquareWalk hfirstSecond hsecondThird hthirdFourth hfourthFirst).IsCycle := by
+  simp [dualSquareWalk, SimpleGraph.Walk.isCycle_def,
+    SimpleGraph.Walk.isTrail_def, hfirstSecond.ne, hfirstSecond.ne.symm,
+    hsecondThird.ne, hthirdFourth.ne, hfourthFirst.ne,
+    hfourthFirst.ne.symm, hfirstThird, hfirstThird.symm, hsecondFourth]
+
+/-- Every normalized non-centre collision produces an actual simple short
+dual cycle.  The two centre cases remain explicit and are not converted into
+spurious cycles. -/
+theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCycle
+    {face : SelectedFace (web := web)}
+    (geometry : ExactSelectedLocalRailMiddleReplacementLadderGeometry
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) face) :
+    face = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center ∨
+      face = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+      Nonempty (MiddleReplacementShortDualCycle (web := web) face) := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  have hfirstSecond : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt firstInterior.center)
+      (skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center) :=
+    skeleton.consecutive_adjacent firstInterior.center
+      (nextCorridorInterior firstInterior hfirstNext).center rfl
+  have hsecondThird : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center)
+      (skeleton.faceAt (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :=
+    skeleton.consecutive_adjacent
+      (nextCorridorInterior firstInterior hfirstNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center rfl
+  have hthirdFourth : SelectedDualGraph (web := web).Adj
+      (skeleton.faceAt (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      (skeleton.faceAt (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center) :=
+    skeleton.consecutive_adjacent
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center rfl
+  cases geometry with
+  | secondCenter face_eq => exact .inl face_eq
+  | thirdCenter face_eq => exact .inr (.inl face_eq)
+  | firstSecondTriangle hfirst hsecond =>
+      let walk := dualTriangleWalk web.annular.cellulation.rotation
+        hfirstSecond hsecond hfirst.symm
+      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      · exact dualTriangleWalk_isCycle web.annular.cellulation.rotation
+          hfirstSecond hsecond hfirst.symm
+      · exact .inl (dualTriangleWalk_length web.annular.cellulation.rotation
+          hfirstSecond hsecond hfirst.symm)
+      · simp [walk, dualTriangleWalk]
+      · intro current hcurrent
+        simp only [walk, dualTriangleWalk, SimpleGraph.Walk.support_cons,
+          SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
+        rcases hcurrent with hcurrent | hcurrent | hcurrent | hcurrent
+        · subst current
+          exact corridor.face_internal firstInterior.center
+        · subst current
+          exact corridor.face_internal
+            (nextCorridorInterior firstInterior hfirstNext).center
+        · subst current
+          exact corridor.neighbor_internal firstInterior.center face hfirst
+        · rcases hcurrent with hcurrent | hcurrent
+          · subst current
+            exact corridor.face_internal firstInterior.center
+          · simp at hcurrent
+  | firstThirdSquare hfirst hthird hfaceSecond =>
+      let walk := dualSquareWalk hfirstSecond hsecondThird hthird hfirst.symm
+      have hfirstThird : skeleton.faceAt firstInterior.center ≠
+          skeleton.faceAt (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center :=
+        skeleton.faceAt_ne (by
+          intro h
+          have hval := congrArg Fin.val h
+          change firstInterior.center.val =
+            firstInterior.center.val + 1 + 1 at hval
+          omega)
+      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      · exact dualSquareWalk_isCycle hfirstSecond hsecondThird hthird hfirst.symm
+          hfirstThird (by exact fun h => hfaceSecond h.symm)
+      · exact .inr (dualSquareWalk_length hfirstSecond hsecondThird hthird hfirst.symm)
+      · simp [walk, dualSquareWalk]
+      · intro current hcurrent
+        simp only [walk, dualSquareWalk, SimpleGraph.Walk.support_cons,
+          SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
+        rcases hcurrent with hcurrent | hcurrent | hcurrent | hcurrent | hcurrent
+        · subst current
+          exact corridor.face_internal firstInterior.center
+        · subst current
+          exact corridor.face_internal
+            (nextCorridorInterior firstInterior hfirstNext).center
+        · subst current
+          exact corridor.face_internal (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+        · subst current
+          exact corridor.neighbor_internal firstInterior.center face hfirst
+        · rcases hcurrent with hcurrent | hcurrent
+          · subst current
+            exact corridor.face_internal firstInterior.center
+          · simp at hcurrent
+  | secondFourthSquare hsecond hfourth hfaceThird =>
+      let thirdInterior := nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext
+      let fourthInterior := nextCorridorInterior thirdInterior hlastNext
+      let walk := dualSquareWalk hsecondThird hthirdFourth hfourth hsecond.symm
+      have hsecondFourth :
+          skeleton.faceAt (nextCorridorInterior firstInterior hfirstNext).center ≠
+          skeleton.faceAt fourthInterior.center :=
+        skeleton.faceAt_ne (by
+          intro h
+          have hval := congrArg Fin.val h
+          dsimp [fourthInterior, thirdInterior, nextCorridorInterior] at hval
+          omega)
+      refine .inr (.inr ⟨⟨skeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      · exact dualSquareWalk_isCycle hsecondThird hthirdFourth hfourth hsecond.symm
+          hsecondFourth (by exact fun h => hfaceThird h.symm)
+      · exact .inr (dualSquareWalk_length hsecondThird hthirdFourth hfourth hsecond.symm)
+      · simp [walk, dualSquareWalk]
+      · intro current hcurrent
+        simp only [walk, dualSquareWalk, SimpleGraph.Walk.support_cons,
+          SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
+        rcases hcurrent with hcurrent | hcurrent | hcurrent | hcurrent | hcurrent
+        · subst current
+          exact corridor.face_internal
+            (nextCorridorInterior firstInterior hfirstNext).center
+        · subst current
+          exact corridor.face_internal thirdInterior.center
+        · subst current
+          exact corridor.face_internal fourthInterior.center
+        · subst current
+          exact corridor.neighbor_internal
+            (nextCorridorInterior firstInterior hfirstNext).center face hsecond
+        · rcases hcurrent with hcurrent | hcurrent
+          · subst current
+            exact corridor.face_internal
+              (nextCorridorInterior firstInterior hfirstNext).center
+          · simp at hcurrent
+  | thirdFourthTriangle hthird hfourth =>
+      let thirdInterior := nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext
+      let walk := dualTriangleWalk web.annular.cellulation.rotation
+        hthirdFourth hfourth hthird.symm
+      refine .inr (.inr ⟨⟨skeleton.faceAt thirdInterior.center, walk, ?_, ?_, ?_, ?_⟩⟩)
+      · exact dualTriangleWalk_isCycle web.annular.cellulation.rotation
+          hthirdFourth hfourth hthird.symm
+      · exact .inl (dualTriangleWalk_length web.annular.cellulation.rotation
+          hthirdFourth hfourth hthird.symm)
+      · have hget : walk.getVert 2 = face := rfl
+        rw [← hget]
+        exact walk.getVert_mem_support 2
+      · intro current hcurrent
+        simp only [walk, dualTriangleWalk, SimpleGraph.Walk.support_cons,
+          SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
+        rcases hcurrent with hcurrent | hcurrent | hcurrent | hcurrent
+        · subst current
+          exact corridor.face_internal thirdInterior.center
+        · subst current
+          exact corridor.face_internal
+            (nextCorridorInterior thirdInterior hlastNext).center
+        · subst current
+          exact corridor.neighbor_internal thirdInterior.center face hthird
+        · rcases hcurrent with hcurrent | hcurrent
+          · subst current
+            exact corridor.face_internal thirdInterior.center
+          · simp at hcurrent
+
+/-- Source-facing composition: a surviving replacement collision is either
+one of the two literal centre cases or carries a concrete short interior dual
+cycle. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.center_or_shortCycle
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (firstSuccessor.rightRailsAsNextLeft bridge)}
+    {face : SelectedFace (web := web)}
+    (collision : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    face = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center ∨
+      face = corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+      Nonempty (MiddleReplacementShortDualCycle (web := web) face) :=
+  (collision.hasLadderGeometry hsource).center_or_shortCycle
+
+end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
+
+end
+
+end GoertzelV24ClosedWebAtGoodWord
+
+end Mettapedia.GraphTheory.FourColor
