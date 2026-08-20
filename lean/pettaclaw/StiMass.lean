@@ -66,7 +66,59 @@ theorem sti_step_bounded (d : Decay) (ss deltas : List Salience) (DMAX : Nat)
   Nat.le_trans (V_zipWith_add_le _ _)
     (Nat.add_le_add (V_map_decay_le d ss) (V_le_length_mul DMAX deltas h))
 
+/-- Named injections: attach a typed identity to each delta, so bundles are
+    addressed by name rather than by list position (defect #6, Lean half). -/
+abbrev NamedDeltas := List (String × Salience)
+
+/-- Present-name deltas: only injections whose name is among the targets are
+    applied; absent-name rows are never silently routed by position. -/
+def namedInject (targets : List String) : NamedDeltas → List Salience
+  | [] => []
+  | (n, d) :: rest =>
+      if targets.contains n then d :: namedInject targets rest
+      else namedInject targets rest
+
+/-- Defect #6 counterpart: absent-name injections are counted explicitly. -/
+def namedDrops (targets : List String) : NamedDeltas → Nat
+  | [] => 0
+  | (n, _) :: rest =>
+      (if targets.contains n then 0 else 1) + namedDrops targets rest
+
+/-- Membership preservation: any delta surviving the named filter came from
+    an actual injection row carrying that same value. -/
+theorem mem_namedInject (targets : List String) :
+    ∀ (nd : NamedDeltas) (x : Salience),
+      x ∈ namedInject targets nd → ∃ p : String × Salience, p ∈ nd ∧ p.2 = x
+  | [], _, h => by simp [namedInject] at h
+  | (n, d) :: rest, x, h => by
+      simp only [namedInject] at h
+      by_cases hc : targets.contains n
+      · rw [if_pos hc] at h
+        cases List.mem_cons.mp h with
+        | inl he => exact ⟨(n, d), List.Mem.head _, he.symm⟩
+        | inr hr =>
+            obtain ⟨p, hp, he⟩ := mem_namedInject targets rest x hr
+            exact ⟨p, List.Mem.tail _ hp, he⟩
+      · rw [if_neg hc] at h
+        obtain ⟨p, hp, he⟩ := mem_namedInject targets rest x h
+        exact ⟨p, List.Mem.tail _ hp, he⟩
+
+/-- Invariant A, named form: decay plus DMAX-bounded injections tagged by
+    name raises total mass by at most the bounded amount surviving the named
+    filter; absent-name rows contribute nothing here and are accounted for
+    separately by namedDrops. -/
+theorem sti_step_bounded_named (d : Decay) (ss : List Salience)
+    (targets : List String) (nd : NamedDeltas) (DMAX : Nat)
+    (h : ∀ p ∈ nd, p.2 ≤ DMAX) :
+    V ((ss.map d.apply).zipWith (· + ·) (namedInject targets nd))
+      ≤ V ss + (namedInject targets nd).length * DMAX :=
+  sti_step_bounded d ss (namedInject targets nd) DMAX
+    (fun x hx => by
+      obtain ⟨p, hp, he⟩ := mem_namedInject targets nd x hx
+      exact he ▸ h p hp)
+
 end StiMass
 
 #print axioms StiMass.sti_mass_decreases
 #print axioms StiMass.sti_step_bounded
+#print axioms StiMass.sti_step_bounded_named
