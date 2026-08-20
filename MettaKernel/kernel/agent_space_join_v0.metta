@@ -11,10 +11,21 @@
 
 !(match &agent (Goal $goal) (SeenGoal $goal))
 
-; SWI-PeTTa currently realizes the shared-variable conjunction as nested
-; matches. The formal simultaneous-meet normalization is proved separately.
-!(match &agent (Goal $goal)
-  (match &agent (NeedsEvidence $goal)
-    (match &agent (Evidence $evidence)
-      (match &agent (Supports $evidence $goal)
-        (Actionable $goal $evidence)))))
+; Comma is the native shared-variable conjunction. The formal
+; simultaneous-meet normalization is proved separately.
+!(match &agent
+  (, (Goal $goal)
+     (NeedsEvidence $goal)
+     (Evidence $evidence)
+     (Supports $evidence $goal))
+  (Actionable $goal $evidence))
+
+!(test
+  (collapse
+    (match &agent
+      (, (Goal $goal)
+         (NeedsEvidence $goal)
+         (Evidence $evidence)
+         (Supports $evidence $goal))
+      (Actionable $goal $evidence)))
+  ((Actionable focus test-receipt)))
