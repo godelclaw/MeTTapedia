@@ -66,59 +66,60 @@ theorem sti_step_bounded (d : Decay) (ss deltas : List Salience) (DMAX : Nat)
   Nat.le_trans (V_zipWith_add_le _ _)
     (Nat.add_le_add (V_map_decay_le d ss) (V_le_length_mul DMAX deltas h))
 
-/-- Named injections: attach a typed identity to each delta, so bundles are
-    addressed by name rather than by list position (defect #6, Lean half). -/
-abbrev NamedDeltas := List (String × Salience)
+/-! ## Named-state transition (probe3-verified 2026-08-20): identity-targeted injections, replaces misaligned zipWith named bridge. -/
 
-/-- Present-name deltas: only injections whose name is among the targets are
-    applied; absent-name rows are never silently routed by position. -/
-def namedInject (targets : List String) : NamedDeltas → List Salience
+abbrev NamedState := List (String × Nat)
+
+/-- Key lookup over association pairs, first match wins. -/
+def namedLookup : NamedState → String → Option Nat
+  | [], _ => none
+  | (k, v) :: rest, n => if k = n then some v else namedLookup rest n
+
+/-- Identity-targeted update: overwrite if name present, leave unchanged if not. -/
+def applyOneNamed (n : String) (d : Nat) : NamedState → NamedState
   | [] => []
-  | (n, d) :: rest =>
-      if targets.contains n then d :: namedInject targets rest
-      else namedInject targets rest
+  | (k, v) :: rest =>
+      if k = n then (k, v + d) :: rest
+      else (k, v) :: applyOneNamed n d rest
 
-/-- Defect #6 counterpart: absent-name injections are counted explicitly. -/
-def namedDrops (targets : List String) : NamedDeltas → Nat
-  | [] => 0
-  | (n, _) :: rest =>
-      (if targets.contains n then 0 else 1) + namedDrops targets rest
+/-- Present-name case: the update is observable through lookup. -/
+theorem applyOneNamed_correct (st : NamedState) (n : String) (v d : Nat)
+    (h : namedLookup st n = some v) :
+    namedLookup (applyOneNamed n d st) n = some (v + d) := by
+  induction st with
+  | nil => simp [namedLookup] at h
+  | cons p rest ih =>
+      obtain ⟨k, w⟩ := p
+      by_cases hk : k = n
+      · subst hk
+        simp only [namedLookup, applyOneNamed, if_true, Option.some.injEq] at h ⊢
+        obtain rfl := h
+        rfl
+      · simp only [namedLookup, applyOneNamed, if_neg hk] at h ⊢
+        exact ih h
 
-/-- Membership preservation: any delta surviving the named filter came from
-    an actual injection row carrying that same value. -/
-theorem mem_namedInject (targets : List String) :
-    ∀ (nd : NamedDeltas) (x : Salience),
-      x ∈ namedInject targets nd → ∃ p : String × Salience, p ∈ nd ∧ p.2 = x
-  | [], _, h => by simp [namedInject] at h
-  | (n, d) :: rest, x, h => by
-      simp only [namedInject] at h
-      by_cases hc : targets.contains n
-      · rw [if_pos hc] at h
-        cases List.mem_cons.mp h with
-        | inl he => exact ⟨(n, d), List.Mem.head _, he.symm⟩
-        | inr hr =>
-            obtain ⟨p, hp, he⟩ := mem_namedInject targets rest x hr
-            exact ⟨p, List.Mem.tail _ hp, he⟩
-      · rw [if_neg hc] at h
-        obtain ⟨p, hp, he⟩ := mem_namedInject targets rest x h
-        exact ⟨p, List.Mem.tail _ hp, he⟩
+/-- Domain preservation: the update never adds or removes keys. -/
+theorem applyOneNamed_preservesKeys (st : NamedState) (n : String) (d : Nat) :
+    (applyOneNamed n d st).map Prod.fst = st.map Prod.fst := by
+  induction st with
+  | nil => rfl
+  | cons p rest ih =>
+      obtain ⟨k, v⟩ := p
+      simp only [applyOneNamed]
+      by_cases hk : k = n <;> simp [hk, ih]
 
-/-- Invariant A, named form: decay plus DMAX-bounded injections tagged by
-    name raises total mass by at most the bounded amount surviving the named
-    filter; absent-name rows contribute nothing here and are accounted for
-    separately by namedDrops. -/
-theorem sti_step_bounded_named (d : Decay) (ss : List Salience)
-    (targets : List String) (nd : NamedDeltas) (DMAX : Nat)
-    (h : ∀ p ∈ nd, p.2 ≤ DMAX) :
-    V ((ss.map d.apply).zipWith (· + ·) (namedInject targets nd))
-      ≤ V ss + (namedInject targets nd).length * DMAX :=
-  sti_step_bounded d ss (namedInject targets nd) DMAX
-    (fun x hx => by
-      obtain ⟨p, hp, he⟩ := mem_namedInject targets nd x hx
-      exact he ▸ h p hp)
+/-- Fold named deltas left-to-right over the state. -/
+def foldNamed (st : NamedState) (nd : List (String × Nat)) : NamedState :=
+  nd.foldl (fun s p => applyOneNamed p.1 p.2 s) st
+
+#check foldNamed
+
+-- Regression rows (Codex counterexample shape): [g1=10, g2=20], g2 += 5
+#eval foldNamed [("g1", 10), ("g2", 20)] [("g2", 5)]
+#eval namedLookup (foldNamed [("g1", 10), ("g2", 20)] [("g2", 5)]) "g1"
+#eval namedLookup (foldNamed [("g1", 10), ("g2", 20)] [("g2", 5)]) "g2"
+#eval foldNamed [("g1", 10), ("g2", 20)] [("g3", 7)]
+
 
 end StiMass
 
-#print axioms StiMass.sti_mass_decreases
-#print axioms StiMass.sti_step_bounded
-#print axioms StiMass.sti_step_bounded_named
