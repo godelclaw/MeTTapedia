@@ -2305,6 +2305,18 @@ for a source-local rotation-order or rerouting argument; it is not itself
 such an argument, and it still does not turn the facial-dual four-cycle into
 the source's primal facial square.
 
+The local rotation calculation now consumes this exact endpoint split.  At
+each stub-free cubic endpoint, the first dart after the internal bond belongs
+to the selected crossing boundary.  Consequently the two facial sides of the
+internal bond are distinct faces already present in the selected four-cycle,
+and the bond itself witnesses their adjacency in the interior dual graph.
+This is a literal dual adjacency, not yet a chord theorem: the same two faces
+could still share a selected boundary edge.  Accordingly it neither identifies
+the four-cycle with the manuscript's primal facial square nor supplies a rail
+reroute.  The remaining finite question is now exact: is the bond adjacency
+off the selected walk, or does it coincide with one of the four selected
+steps?
+
 The opened-carrier cost is now also kernel-checked rather than merely
 counted on paper.  For any connected component after deleting the three
 selected crossings, let \(s\) be the number of its degree-one boundary

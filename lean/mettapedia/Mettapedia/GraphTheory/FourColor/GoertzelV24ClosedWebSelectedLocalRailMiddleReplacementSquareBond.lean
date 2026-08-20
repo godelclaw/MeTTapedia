@@ -156,6 +156,32 @@ theorem SquareBondRealization.filter_incident_first_eq_erase_internalEdge
       simp
     · simp [hotherNeFirst, hotherNeSecond]
 
+/-- The symmetric exact boundary equation at the second endpoint. -/
+theorem SquareBondRealization.filter_incident_second_eq_erase_internalEdge
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    (bond : SquareBondRealization cycle component)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp) :
+    (incidentEdgeFinset G bond.second).filter
+        (fun edge => edge ∈ cycle.selectedCycle.crossingEdges) =
+      (incidentEdgeFinset G bond.second).erase bond.internalEdge := by
+  let swapped : SquareBondRealization cycle component := {
+    first := bond.second
+    second := bond.first
+    first_ne_second := bond.first_ne_second.symm
+    component_supp := by simpa [Set.pair_comm] using bond.component_supp
+    adjacent := bond.adjacent.symm
+    covers_crossingEdges := by
+      intro edge hedge
+      rcases bond.covers_crossingEdges edge hedge with hfirst | hsecond
+      · exact .inr hfirst
+      · exact .inl hsecond
+  }
+  simpa [swapped, SquareBondRealization.internalEdge, Sym2.eq_swap] using
+    swapped.filter_incident_first_eq_erase_internalEdge hroot
+
 /-- Local cubicity makes exactly two selected crossings incident to the first
 endpoint of the square bond. -/
 theorem SquareBondRealization.first_crossingEdges_card_eq_two
@@ -198,20 +224,25 @@ theorem SquareBondRealization.second_crossingEdges_card_eq_two
     (hroot : web.annular.RS.outer.fst ∉ component.supp) :
     ((incidentEdgeFinset G bond.second).filter
       (fun edge => edge ∈ cycle.selectedCycle.crossingEdges)).card = 2 := by
-  let swapped : SquareBondRealization cycle component := {
-    first := bond.second
-    second := bond.first
-    first_ne_second := bond.first_ne_second.symm
-    component_supp := by simpa [Set.pair_comm] using bond.component_supp
-    adjacent := bond.adjacent.symm
-    covers_crossingEdges := by
-      intro edge hedge
-      rcases bond.covers_crossingEdges edge hedge with hfirst | hsecond
-      · exact .inr hfirst
-      · exact .inl hsecond
-  }
-  simpa [swapped, SquareBondRealization.internalEdge, Sym2.eq_swap] using
-    swapped.first_crossingEdges_card_eq_two hroot
+  classical
+  rw [bond.filter_incident_second_eq_erase_internalEdge hroot]
+  have hsecondMem : bond.second ∈ component.supp := by
+    rw [bond.component_supp]
+    simp
+  have hcubic := web.boundary_wellFormed.cubic_elsewhere bond.second
+    (by
+      intro inner heq
+      apply cycle.innerStub_not_mem_component component hroot inner
+      rw [← heq]
+      exact hsecondMem)
+    (by
+      intro outer heq
+      apply cycle.outerStub_not_mem_component component hroot outer
+      rw [← heq]
+      exact hsecondMem)
+  have hinternal : bond.internalEdge ∈ incidentEdgeFinset G bond.second := by
+    simp [SquareBondRealization.internalEdge, incidentEdgeFinset, Sym2.mem_iff]
+  rw [Finset.card_erase_of_mem hinternal, hcubic]
 
 /-- The retained literal source rung is incident to one endpoint of the
 two-vertex bond. -/
