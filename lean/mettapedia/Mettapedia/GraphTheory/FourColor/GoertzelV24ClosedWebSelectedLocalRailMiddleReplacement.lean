@@ -1256,6 +1256,128 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.hasGeometry
       | secondAdjacent adjacent => exact .secondFourthCommon adjacent hfourth
       | thirdAdjacent adjacent => exact .thirdFourthCommon adjacent hfourth
 
+/-- The six source-ladder shapes obtained after splitting a distance-two
+common neighbour according to whether it is the intervening corridor centre.
+The adjacent common-neighbour cases are triangles.  A genuinely new common
+neighbour across two corridor steps is a square together with the two literal
+corridor edges.  This is still positive geometry, not a reduction of any
+case. -/
+inductive ExactSelectedLocalRailMiddleReplacementLadderGeometry
+    (face : SelectedFace (web := web)) : Prop
+  | secondCenter
+      (face_eq : face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center)
+  | thirdCenter
+      (face_eq : face =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+  | firstSecondTriangle
+      (first_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            firstInterior.center) face)
+      (second_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior firstInterior hfirstNext).center) face)
+  | firstThirdSquare
+      (first_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            firstInterior.center) face)
+      (third_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+          face)
+      (face_ne_second : face ≠
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior firstInterior hfirstNext).center)
+  | secondFourthSquare
+      (second_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior firstInterior hfirstNext).center) face)
+      (fourth_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+              hlastNext).center) face)
+      (face_ne_third : face ≠
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+  | thirdFourthTriangle
+      (third_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+          face)
+      (fourth_adjacent : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+          (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior
+                (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+              hlastNext).center) face)
+
+/-- Normalize the five overlapping centre relations into the source's
+triangle/centre/square ladder shapes.  The split is exhaustive and assumes no
+case away. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollisionGeometry.toLadderGeometry
+    {face : SelectedFace (web := web)}
+    (geometry : ExactSelectedLocalRailMiddleReplacementCollisionGeometry
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) face) :
+    ExactSelectedLocalRailMiddleReplacementLadderGeometry
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) face := by
+  cases geometry with
+  | secondCenter face_eq => exact .secondCenter face_eq
+  | firstSecondCommon first_adjacent second_adjacent =>
+      exact .firstSecondTriangle first_adjacent second_adjacent
+  | firstThirdCommon first_adjacent third_adjacent =>
+      by_cases hface : face =
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior firstInterior hfirstNext).center
+      · exact .secondCenter hface
+      · exact .firstThirdSquare first_adjacent third_adjacent hface
+  | secondFourthCommon second_adjacent fourth_adjacent =>
+      by_cases hface : face =
+          corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+            (nextCorridorInterior
+              (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center
+      · exact .thirdCenter hface
+      · exact .secondFourthSquare second_adjacent fourth_adjacent hface
+  | thirdFourthCommon third_adjacent fourth_adjacent =>
+      exact .thirdFourthTriangle third_adjacent fourth_adjacent
+
+/-- Every surviving replacement collision is therefore a literal centre,
+triangle, or square case from the source reduction ladder.  This theorem only
+classifies the branch; it does not yet apply the rotor or square reduction. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.hasLadderGeometry
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (BridgeLeft (firstSuccessor := firstSuccessor) (bridge := bridge))}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face) :
+    ExactSelectedLocalRailMiddleReplacementLadderGeometry
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) face :=
+  (data.hasGeometry hsource).toLadderGeometry
+
 /-- The replacement classifier retains the independently proved concrete rail
 which avoids the original middle-band collision face. -/
 structure ExactSelectedLocalRailMiddleReplacement
