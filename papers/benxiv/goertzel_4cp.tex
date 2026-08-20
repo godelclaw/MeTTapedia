@@ -2679,10 +2679,14 @@ also carrying the already-verified flattened prepend result.  Its equality
 receipts identify the stored repair with the canonical finite classifier and
 the stored flattened result with the proved prepend operation.  Thus the next
 rolling step can inspect the literal terminal construction without asserting
-that any internal seam survived flattening.  The present constructor is only
-the seed of the wider recurrence: shifting the live suffix, consuming a new
-collision, arbitrary iteration, both annular end caps, the separated crosscut
-pair, and L1 remain open.
+that any internal seam survived flattening.  Construction traces with the same
+literal inputs are now proved equal, and a two-trace live suffix has a literal
+one-position advance: its later trace becomes the next suffix's earlier trace,
+while only the newly exposed successor is classified.  The remaining
+recurrence must connect this shifted raw suffix to the next repaired flattened
+outcome and advance the frozen prefix.  Consuming a new collision,
+arbitrary-length iteration, both annular end caps, the separated crosscut pair,
+and L1 remain open.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
