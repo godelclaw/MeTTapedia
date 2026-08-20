@@ -2211,7 +2211,16 @@ walk of length three or four.  The walk contains the collision face, and Lean
 proves that its complete support stays in the annular interior.  Thus the bad
 branch now returns either one of two named centres or a proof-relevant short
 interior dual cycle; applying the rotor or square reduction remains the next
-step.  One atom is also directionally
+step.  The companion module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSeparator}
+turns each such short dual cycle into literal primal separator data.  One
+actual shared primal edge is selected at every dual step; the selected set has
+cardinality exactly three or four, is disjoint from both named hole
+boundaries, and its deletion disconnects the annular carrier.  This is an
+application of the generic selected-cycle parity separator to the constructed
+annular cellulation, not an assumption of global face-intersection uniqueness.
+It does not yet apply the rotor or square reduction and does not eliminate the
+two centre cases.  One atom is also directionally
 resolved: the displayed
 second-cell centre cannot occur on either fourth-cell continuation.  The
 second and fourth corridor centres are nonadjacent in the skeleton, whereas
