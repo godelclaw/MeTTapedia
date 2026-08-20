@@ -1218,8 +1218,6 @@ theorem ExactSelectedLocalRailMiddleReplacementCoordinateLocalBand.toFullyCoordi
 continuation.  The former is the corridor centre two positions behind the
 latter, so such membership would contradict skeleton nonadjacency. -/
 theorem face_ne_middleCenter_of_mem_lastPiece
-    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
-      blockLength corridor)
     {face : SelectedFace (web := web)}
     (hlast : face ∈ (rebaseLastContinuation (bridge := bridge)
         (lastSuccessor := lastSuccessor)).firstRail.support ∨
@@ -1259,8 +1257,6 @@ theorem face_ne_middleCenter_of_mem_lastPiece
 /-- A residual collision at the displayed second-cell centre is necessarily
 in the left adjacent band; the right band has just been ruled out. -/
 theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.firstMiddle_of_eq_middleCenter
-    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
-      blockLength corridor)
     {face : SelectedFace (web := web)}
     (band : ExactSelectedLocalRailMiddleReplacementSourceLocalBand
       (firstSuccessor := firstSuccessor) (bridge := bridge)
@@ -1275,7 +1271,59 @@ theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.firstMiddle_of_eq
   cases band with
   | firstMiddle first middle => exact ⟨first, middle⟩
   | middleLast middle last =>
-      exact False.elim ((face_ne_middleCenter_of_mem_lastPiece hsource last) hface)
+      exact False.elim ((face_ne_middleCenter_of_mem_lastPiece last) hface)
+
+/-- The displayed third-cell centre cannot occur on either literal first-cell
+rail.  Those rails stay adjacent to the first corridor centre, which is two
+positions behind the third centre. -/
+theorem face_ne_thirdCenter_of_mem_firstPiece
+    {face : SelectedFace (web := web)}
+    (hfirst : face ∈ firstLeft.toAssembly.firstRail.support ∨
+      face ∈ firstLeft.toAssembly.secondRail.support) :
+    face ≠ corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  have hnotadj : ¬ (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+      (skeleton.faceAt firstInterior.center)
+      (skeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :=
+    skeleton.separated_not_adjacent firstInterior.center
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center (by
+          change firstInterior.center.val + 1 < firstInterior.center.val + 2
+          omega)
+  intro hface
+  rcases hfirst with hfirst | hfirst
+  · have hadj := firstLeft.paths.firstRail_support_adjacent_center face hfirst
+    exact hnotadj (by simpa [skeleton, hface] using hadj)
+  · have hadj := firstLeft.paths.secondRail_support_adjacent_center face hfirst
+    exact hnotadj (by simpa [skeleton, hface] using hadj)
+
+/-- Symmetrically, a residual collision at the displayed third-cell centre
+is necessarily in the right adjacent band. -/
+theorem ExactSelectedLocalRailMiddleReplacementSourceLocalBand.middleLast_of_eq_thirdCenter
+    {face : SelectedFace (web := web)}
+    (band : ExactSelectedLocalRailMiddleReplacementSourceLocalBand
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) face)
+    (hface : face =
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center) :
+    FaceInCanonicalMiddleSourcePieces
+        (firstSuccessor := firstSuccessor) (bridge := bridge) face ∧
+      (face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).firstRail.support ∨
+        face ∈ (rebaseLastContinuation (bridge := bridge)
+          (lastSuccessor := lastSuccessor)).secondRail.support) := by
+  cases band with
+  | firstMiddle first middle =>
+      exact False.elim ((face_ne_thirdCenter_of_mem_firstPiece first) hface)
+  | middleLast middle last => exact ⟨middle, last⟩
 
 /-- The three possible centre relations of a face in the canonical middle
 repair.  Old bridge rails and seam faces lie next to the second centre; new
@@ -1440,7 +1488,7 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.hasGeometry
               simpa [rebaseLastContinuation, continuationAssembly] using second)
       cases faceNearCanonicalMiddleCenters_of_sourcePieces middle with
       | secondCenter face_eq =>
-          exact False.elim ((face_ne_middleCenter_of_mem_lastPiece hsource last)
+          exact False.elim ((face_ne_middleCenter_of_mem_lastPiece last)
             face_eq)
       | secondAdjacent adjacent => exact .secondFourthCommon adjacent hfourth
       | thirdAdjacent adjacent => exact .thirdFourthCommon adjacent hfourth
