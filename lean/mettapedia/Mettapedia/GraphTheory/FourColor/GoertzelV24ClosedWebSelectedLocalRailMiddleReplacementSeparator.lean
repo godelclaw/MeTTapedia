@@ -55,15 +55,17 @@ variable
 
 namespace MiddleReplacementShortDualCycle
 
-/-- Select one actual primal edge crossed by each step of the short dual
-cycle.  No global face-intersection uniqueness is required. -/
-noncomputable def selectedCycle
+/-- Package the complete source-retained crossing selection carried by the
+short dual cycle.  No global face-intersection uniqueness is required. -/
+def selectedCycle
     {face : AmbientFace
       (Finset.univ : Finset (OrbitFace web.annular.RS))}
     (cycle : MiddleReplacementShortDualCycle (web := web) face) :
     SelectedDualCycle web.annular.RS cycle.start :=
-  SelectedDualCycle.ofWalkWithCrossingAt web.annular.RS cycle.walk cycle.isCycle
-    cycle.anchor cycle.anchorEdge cycle.anchorEdge_mem_shared
+  { walk := cycle.walk
+    isCycle := cycle.isCycle
+    crossingEdge := cycle.crossingEdge
+    crossing_mem_shared := cycle.crossing_mem_shared }
 
 @[simp] theorem selectedCycle_walk
     {face : AmbientFace
@@ -78,9 +80,7 @@ short-cycle construction. -/
       (Finset.univ : Finset (OrbitFace web.annular.RS))}
     (cycle : MiddleReplacementShortDualCycle (web := web) face) :
     cycle.selectedCycle.crossingEdge cycle.anchor = cycle.anchorEdge := by
-  exact SelectedDualCycle.ofWalkWithCrossingAt_crossingEdge
-    web.annular.RS cycle.walk cycle.isCycle cycle.anchor cycle.anchorEdge
-      cycle.anchorEdge_mem_shared
+  exact cycle.crossingEdge_anchor
 
 /-- The selected primal cut has the same cardinality as the short dual
 cycle. -/

@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacement
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalDualTriangleClassification
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SelectedDualCycleSeparator
 
 /-!
 # Short dual cycles exposed by the middle rail replacement
@@ -27,6 +28,7 @@ open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
 open GoertzelV24MinimalDualTriangleClassification
+open GoertzelV24SelectedDualCycleSeparator
 
 universe u
 
@@ -86,8 +88,8 @@ private abbrev SelectedDualGraph :=
   interiorDualGraph (orbitFaceBoundary web.annular.RS)
     (Finset.univ : Finset (OrbitFace web.annular.RS))
 
-/-- A literal short dual cycle through the collision face, with the two
-receipts needed by the source-local separator consumer. -/
+/-- A literal short dual cycle through the collision face, retaining a
+complete choice of primal crossing together with its source-rung anchor. -/
 structure MiddleReplacementShortDualCycle
     (face : SelectedFace (web := web)) where
   start : SelectedFace (web := web)
@@ -103,6 +105,50 @@ structure MiddleReplacementShortDualCycle
     (orbitFaceBoundary web.annular.RS)
     (Finset.univ : Finset (OrbitFace web.annular.RS))
     (walk.getVert anchor.val).1 (walk.getVert (anchor.val + 1)).1
+  crossingEdge : Fin walk.length → G.edgeSet
+  crossing_mem_shared : ∀ step,
+    crossingEdge step ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (walk.getVert step.val).1 (walk.getVert (step.val + 1)).1
+  crossingEdge_anchor : crossingEdge anchor = anchorEdge
+
+/-- Build the legacy anchor-pinned presentation while retaining the complete
+crossing selection it chooses.  Later source consumers may replace that
+selection without changing the walk geometry. -/
+noncomputable def MiddleReplacementShortDualCycle.ofAnchoredWalk
+    {face start : SelectedFace (web := web)}
+    (walk : SelectedDualGraph (web := web).Walk start start)
+    (isCycle : walk.IsCycle)
+    (length_eq_three_or_four : walk.length = 3 ∨ walk.length = 4)
+    (face_mem_support : face ∈ walk.support)
+    (support_internal : ∀ current ∈ walk.support,
+      current.1 ∈ web.annular.cellulation.interiorFaces)
+    (anchor : Fin walk.length)
+    (anchorEdge : G.edgeSet)
+    (anchorEdge_mem_shared : anchorEdge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (walk.getVert anchor.val).1 (walk.getVert (anchor.val + 1)).1) :
+    MiddleReplacementShortDualCycle (web := web) face := by
+  let selected := SelectedDualCycle.ofWalkWithCrossingAt web.annular.RS walk
+    isCycle anchor anchorEdge anchorEdge_mem_shared
+  exact {
+    start := start
+    walk := walk
+    isCycle := isCycle
+    length_eq_three_or_four := length_eq_three_or_four
+    face_mem_support := face_mem_support
+    support_internal := support_internal
+    anchor := anchor
+    anchorEdge := anchorEdge
+    anchorEdge_mem_shared := anchorEdge_mem_shared
+    crossingEdge := selected.crossingEdge
+    crossing_mem_shared := selected.crossing_mem_shared
+    crossingEdge_anchor := by
+      exact SelectedDualCycle.ofWalkWithCrossingAt_crossingEdge
+        web.annular.RS walk isCycle anchor anchorEdge anchorEdge_mem_shared
+  }
 
 /-- A short-cycle packet whose source geometry proves that it is the
 four-step distance-two square branch.  Keeping this equality in the type
@@ -188,15 +234,14 @@ private noncomputable def firstThirdSquareCycle
       change firstInterior.center.val =
         firstInterior.center.val + 1 + 1 at hval
       omega)
-  let cycle : MiddleReplacementShortDualCycle (web := web) face := {
-    start := skeleton.faceAt firstInterior.center
-    walk := walk
-    isCycle := dualSquareWalk_isCycle hfirstSecond hsecondThird hthird
-      hfirst.symm hfirstThird (by exact fun h => hfaceSecond h.symm)
-    length_eq_three_or_four := .inr
-      (dualSquareWalk_length hfirstSecond hsecondThird hthird hfirst.symm)
-    face_mem_support := by simp [walk, dualSquareWalk]
-    support_internal := by
+  let cycle : MiddleReplacementShortDualCycle (web := web) face :=
+    MiddleReplacementShortDualCycle.ofAnchoredWalk
+      walk
+      (dualSquareWalk_isCycle hfirstSecond hsecondThird hthird
+        hfirst.symm hfirstThird (by exact fun h => hfaceSecond h.symm))
+      (.inr (dualSquareWalk_length hfirstSecond hsecondThird hthird hfirst.symm))
+      (by simp [walk, dualSquareWalk])
+      (by
       intro current hcurrent
       simp only [walk, dualSquareWalk, SimpleGraph.Walk.support_cons,
         SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
@@ -215,12 +260,14 @@ private noncomputable def firstThirdSquareCycle
         · subst current
           exact corridor.face_internal firstInterior.center
         · simp at hcurrent
-    anchor := ⟨0, by simp [walk, dualSquareWalk]⟩
-    anchorEdge := rungs.edge firstInterior.outgoing
-    anchorEdge_mem_shared := by
-      simpa [walk, dualSquareWalk] using rungs.mem_shared firstInterior.outgoing
-  }
-  exact ⟨cycle, by simp [cycle, walk, dualSquareWalk]⟩
+      )
+      ⟨0, by simp [walk, dualSquareWalk]⟩
+      (rungs.edge firstInterior.outgoing)
+      (by simpa [walk, dualSquareWalk] using
+        rungs.mem_shared firstInterior.outgoing)
+  exact ⟨cycle, by
+    change walk.length = 4
+    simp [walk, dualSquareWalk]⟩
 
 /-- Literal four-step cycle for the second-to-fourth distance-two branch. -/
 private noncomputable def secondFourthSquareCycle
@@ -261,15 +308,14 @@ private noncomputable def secondFourthSquareCycle
       dsimp [fourthInterior, thirdInterior, secondInterior,
         nextCorridorInterior] at hval
       omega)
-  let cycle : MiddleReplacementShortDualCycle (web := web) face := {
-    start := skeleton.faceAt secondInterior.center
-    walk := walk
-    isCycle := dualSquareWalk_isCycle hsecondThird hthirdFourth hfourth
-      hsecond.symm hsecondFourth (by exact fun h => hfaceThird h.symm)
-    length_eq_three_or_four := .inr
-      (dualSquareWalk_length hsecondThird hthirdFourth hfourth hsecond.symm)
-    face_mem_support := by simp [walk, dualSquareWalk]
-    support_internal := by
+  let cycle : MiddleReplacementShortDualCycle (web := web) face :=
+    MiddleReplacementShortDualCycle.ofAnchoredWalk
+      walk
+      (dualSquareWalk_isCycle hsecondThird hthirdFourth hfourth
+        hsecond.symm hsecondFourth (by exact fun h => hfaceThird h.symm))
+      (.inr (dualSquareWalk_length hsecondThird hthirdFourth hfourth hsecond.symm))
+      (by simp [walk, dualSquareWalk])
+      (by
       intro current hcurrent
       simp only [walk, dualSquareWalk, SimpleGraph.Walk.support_cons,
         SimpleGraph.Walk.support_nil, List.mem_cons] at hcurrent
@@ -286,17 +332,20 @@ private noncomputable def secondFourthSquareCycle
         · subst current
           exact corridor.face_internal secondInterior.center
         · simp at hcurrent
-    anchor := ⟨0, by simp [walk, dualSquareWalk]⟩
-    anchorEdge := rungs.edge secondInterior.outgoing
-    anchorEdge_mem_shared := by
+      )
+      ⟨0, by simp [walk, dualSquareWalk]⟩
+      (rungs.edge secondInterior.outgoing)
+      (by
       change rungs.edge secondInterior.outgoing ∈ sharedInteriorEdges
         (orbitFaceBoundary web.annular.RS)
         (Finset.univ : Finset (OrbitFace web.annular.RS))
         (skeleton.faceAt secondInterior.center).1
         (skeleton.faceAt thirdInterior.center).1
       simpa [thirdInterior] using rungs.mem_shared secondInterior.outgoing
-  }
-  exact ⟨cycle, by simp [cycle, walk, dualSquareWalk]⟩
+      )
+  exact ⟨cycle, by
+    change walk.length = 4
+    simp [walk, dualSquareWalk]⟩
 
 /-- Public constructor for the typed first-to-third square packet. -/
 noncomputable def squareDualCycle_of_firstThirdSquare
@@ -384,9 +433,10 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
   | firstSecondTriangle hfirst hsecond =>
       let walk := dualTriangleWalk web.annular.cellulation.rotation
         hfirstSecond hsecond hfirst.symm
-      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk,
-        ?_, ?_, ?_, ?_, ⟨0, by simp [walk, dualTriangleWalk]⟩,
-        rungs.edge firstInterior.outgoing, ?_⟩⟩)
+      refine .inr (.inr ⟨MiddleReplacementShortDualCycle.ofAnchoredWalk
+        walk
+        ?_ ?_ ?_ ?_ ⟨0, by simp [walk, dualTriangleWalk]⟩
+        (rungs.edge firstInterior.outgoing) ?_⟩)
       · exact dualTriangleWalk_isCycle web.annular.cellulation.rotation
           hfirstSecond hsecond hfirst.symm
       · exact .inl (dualTriangleWalk_length web.annular.cellulation.rotation
@@ -420,9 +470,10 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           change firstInterior.center.val =
             firstInterior.center.val + 1 + 1 at hval
           omega)
-      refine .inr (.inr ⟨⟨skeleton.faceAt firstInterior.center, walk,
-        ?_, ?_, ?_, ?_, ⟨0, by simp [walk, dualSquareWalk]⟩,
-        rungs.edge firstInterior.outgoing, ?_⟩⟩)
+      refine .inr (.inr ⟨MiddleReplacementShortDualCycle.ofAnchoredWalk
+        walk
+        ?_ ?_ ?_ ?_ ⟨0, by simp [walk, dualSquareWalk]⟩
+        (rungs.edge firstInterior.outgoing) ?_⟩)
       · exact dualSquareWalk_isCycle hfirstSecond hsecondThird hthird hfirst.symm
           hfirstThird (by exact fun h => hfaceSecond h.symm)
       · exact .inr (dualSquareWalk_length hfirstSecond hsecondThird hthird hfirst.symm)
@@ -460,10 +511,10 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
           have hval := congrArg Fin.val h
           dsimp [fourthInterior, thirdInterior, nextCorridorInterior] at hval
           omega)
-      refine .inr (.inr ⟨⟨skeleton.faceAt
-        (nextCorridorInterior firstInterior hfirstNext).center, walk,
-        ?_, ?_, ?_, ?_, ⟨0, by simp [walk, dualSquareWalk]⟩,
-        rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing, ?_⟩⟩)
+      refine .inr (.inr ⟨MiddleReplacementShortDualCycle.ofAnchoredWalk
+        walk
+        ?_ ?_ ?_ ?_ ⟨0, by simp [walk, dualSquareWalk]⟩
+        (rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing) ?_⟩)
       · exact dualSquareWalk_isCycle hsecondThird hthirdFourth hfourth hsecond.symm
           hsecondFourth (by exact fun h => hfaceThird h.symm)
       · exact .inr (dualSquareWalk_length hsecondThird hthirdFourth hfourth hsecond.symm)
@@ -495,11 +546,12 @@ theorem ExactSelectedLocalRailMiddleReplacementLadderGeometry.center_or_shortCyc
         (nextCorridorInterior firstInterior hfirstNext) hbridgeNext
       let walk := dualTriangleWalk web.annular.cellulation.rotation
         hthirdFourth hfourth hthird.symm
-      refine .inr (.inr ⟨⟨skeleton.faceAt thirdInterior.center, walk,
-        ?_, ?_, ?_, ?_, ⟨0, by
+      refine .inr (.inr ⟨MiddleReplacementShortDualCycle.ofAnchoredWalk
+        walk
+        ?_ ?_ ?_ ?_ ⟨0, by
           rw [dualTriangleWalk_length]
-          omega⟩,
-        rungs.edge thirdInterior.outgoing, ?_⟩⟩)
+          omega⟩
+        (rungs.edge thirdInterior.outgoing) ?_⟩)
       · exact dualTriangleWalk_isCycle web.annular.cellulation.rotation
           hthirdFourth hfourth hthird.symm
       · exact .inl (dualTriangleWalk_length web.annular.cellulation.rotation

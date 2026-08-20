@@ -701,6 +701,9 @@ noncomputable def SquareBondRealization.InternalDualChordSelectedTriangles.first
     anchorEdge_mem_shared := by
       rw [← hanchor]
       exact selected.firstSelected.crossing_mem_shared anchor
+    crossingEdge := selected.firstSelected.crossingEdge
+    crossing_mem_shared := selected.firstSelected.crossing_mem_shared
+    crossingEdge_anchor := hanchor
   }
 
 /-- Repackage the second selected chord triangle as the established short-cycle
@@ -734,6 +737,9 @@ noncomputable def SquareBondRealization.InternalDualChordSelectedTriangles.secon
     anchorEdge_mem_shared := by
       rw [← hanchor]
       exact selected.secondSelected.crossing_mem_shared anchor
+    crossingEdge := selected.secondSelected.crossingEdge
+    crossing_mem_shared := selected.secondSelected.crossing_mem_shared
+    crossingEdge_anchor := hanchor
   }
 
 /-- The first chord triangle now reaches the existing selected-separator
