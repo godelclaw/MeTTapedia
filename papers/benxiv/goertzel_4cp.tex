@@ -2554,6 +2554,16 @@ old face from both rails, or one of the four old/new rail combinations carries
 this concrete splice.  This closes the surviving-face routing obligation; it
 does not yet prove separation from the companion rail, rebuild the full
 two-rail assembly, iterate the rolling step, construct end caps, or close L1.
+The splice now carries the corresponding finite separation interface as a
+theorem.  If a companion walk is disjoint from the selected old source rail,
+avoids each of corridor centres two through seven, and is disjoint from the
+selected future source rail, then it is disjoint from the complete loop-erased
+splice.  The proof consumes the exact support receipt above; it introduces no
+new geometric assumption.  This theorem deliberately stops at the interface:
+the companion walk and those source-local premises still have to be
+constructed from the retained cross-collision parity data.  Thus it is a
+reusable reduction of the separation proof, not a conditional declaration
+that the two-rail assembly already exists.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical

@@ -481,6 +481,59 @@ structure SecondBandFutureSourceSplice
               (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)).center] ∨
       current ∈ newWalk.support
 
+/-- The exact support receipt reduces separation from any companion walk to
+the old source piece, the six literal corridor centres, and the future source
+piece.  This is the finite separation interface consumed when rebuilding the
+two-rail assembly. -/
+theorem SecondBandFutureSourceSplice.support_disjoint
+    {face oldStart oldFinish newStart newFinish companionStart companionFinish :
+      SelectedFace (web := web)}
+    {oldWalk : SelectedDualGraph (web := web).Walk oldStart oldFinish}
+    {newWalk : SelectedDualGraph (web := web).Walk newStart newFinish}
+    (splice : SecondBandFutureSourceSplice
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+      (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+      (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)
+      face oldWalk newWalk)
+    (companion : SelectedDualGraph (web := web).Walk
+      companionStart companionFinish)
+    (hold : oldWalk.support.Disjoint companion.support)
+    (hcenters : ∀ center ∈
+      [corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SecondInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (ThirdInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (FourthInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (FifthInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext) (hfourthNext := hfourthNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SixthInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+            (hfifthNext := hfifthNext)).center,
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (SeventhInterior (firstInterior := firstInterior)
+            (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext)
+            (hlastNext := hlastNext) (hfourthNext := hfourthNext)
+            (hfifthNext := hfifthNext) (hsixthNext := hsixthNext)).center],
+      center ∉ companion.support)
+    (hnew : newWalk.support.Disjoint companion.support) :
+    splice.route.support.Disjoint companion.support := by
+  rw [List.disjoint_left]
+  intro current hroute hcompanion
+  rcases splice.support_receipt current hroute with holdCurrent | hcenter | hnewCurrent
+  · exact (List.disjoint_left.mp hold holdCurrent) hcompanion
+  · exact hcenters current hcenter hcompanion
+  · exact (List.disjoint_left.mp hnew hnewCurrent) hcompanion
+
 /-- The literal center bridge closes the surviving-face branch of the advanced
 endpoint repair for any chosen old and future source rails. -/
 theorem SecondFourthFarEndpoint.exists_secondBandFutureCrossSplice
