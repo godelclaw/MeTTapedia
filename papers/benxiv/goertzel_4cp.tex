@@ -2438,16 +2438,17 @@ local path.  A generic corollary therefore reduces disjointness from a companion
 rail to disjointness from precisely those ingredients.  Discharging those
 local separation facts from each exact collision constructor is the next
 source-facing step; it is not assumed here.
-One literal source-track specialization is now complete.  If a first--third
-square collision lies on the first rail of the first packet and on the first
-continuation into the third cell, Lean reverses the old rail so that its
-already-proved collision-free seam flank becomes the splice start.  The two
-flank-exclusion theorems then certify that the collision is internal at both
-ends, and the centre-chain construction yields a simple route to the first
-third-cell outgoing flank which avoids it.  This proves one of four possible
-track pairings in that square branch.  It does not yet cover the other track
-pairings, middle source atoms outside the third-cell continuations, the
-second--fourth mirror, or separation from the companion rail.
+All four literal source-track specializations are now complete for a
+first--third square collision lying on a first-cell rail and on a continuation
+into the third cell.  Lean handles the $2\times2$ choices of first/second old
+rail and first/second continuation separately.  In each case it reverses the
+old rail so that the corresponding already-proved collision-free seam flank is
+the splice start.  The two flank-exclusion theorems certify that the collision
+is internal at both ends, and the centre-chain construction yields a simple
+route to the matching third-cell outgoing flank which avoids it.  This closes
+the continuation-pairing table, not the square branch: middle source atoms
+outside the third-cell continuations, the second--fourth mirror, and separation
+from the companion rail remain open.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical

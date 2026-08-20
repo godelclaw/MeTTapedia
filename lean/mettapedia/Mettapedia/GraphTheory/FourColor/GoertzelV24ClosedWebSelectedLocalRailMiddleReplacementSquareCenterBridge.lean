@@ -13,8 +13,11 @@ literal four-edge walk
 `predecessor -> first centre -> middle centre -> last centre -> successor`.
 
 This module constructs that path and proves that loop-erased splicing removes
-the collision.  It does not yet extract the two local walk pieces from every
-constructor of the middle-replacement collision packet, prove separation from
+the collision.  It also specializes all four choices of first-cell rail and
+third-cell continuation in the first--third square branch to literal source
+endpoints.  It does not yet extract the two local walk pieces from every
+constructor of the middle-replacement collision packet, handle the remaining
+middle-cell source atoms or the second--fourth mirror, prove separation from
 the companion rail, iterate the repair, or attach annular end caps.
 -/
 
@@ -383,6 +386,201 @@ theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare
       (hbridgeNext := hbridgeNext)
       firstLeft.paths.firstRail.reverse bridge.firstContinuation
       firstLeft.paths.firstRail_isPath.reverse bridge.firstContinuation_isPath
+      hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
+  exact ⟨route, hpath, havoids⟩
+
+/-- The first/second literal source-track instance of the first--third square
+repair. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare_firstSecondSourceSplice
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (firstSuccessor.rightRailsAsNextLeft bridge)}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face)
+    (hfirst : face ∈ firstLeft.paths.firstRail.support)
+    (hnew : face ∈ bridge.secondContinuation.support)
+    (hfirstAdjacent : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt firstInterior.center) face)
+    (hthirdAdjacent : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ∃ route : SelectedDualGraph (web := web).Walk
+        (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter),
+      route.IsPath ∧ face ∉ route.support := by
+  have hold : face ∈ firstLeft.paths.firstRail.reverse.support := by
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
+  have holdStart :
+      selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftBefore ≠
+        face :=
+    (data.face_ne_firstFlanks hsource).1.symm
+  have hnewEnd : face ≠
+      selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter := by
+    intro hface
+    apply (data.face_ne_lastFlanks hsource).2
+    exact hface.trans (congrArg (selectedPlacementSideFace thirdPlacement)
+      (bridge.rightOutgoingAfter_eq_nextLeftAfter lastSuccessor))
+  have holdAdjacent : ∀ current ∈ firstLeft.paths.firstRail.reverse.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt firstInterior.center) current := by
+    intro current hcurrent
+    apply firstLeft.paths.firstRail_support_adjacent_center
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hcurrent
+  have hnewAdjacent : ∀ current ∈ bridge.secondContinuation.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+        current := by
+    intro current hcurrent
+    apply bridge.rightRails.paths.secondRail_support_adjacent_center
+    simpa only [bridge.secondContinuation_support] using hcurrent
+  rcases exists_firstThirdSquare_crossSplice
+      (firstInterior := firstInterior) (hfirstNext := hfirstNext)
+      (hbridgeNext := hbridgeNext)
+      firstLeft.paths.firstRail.reverse bridge.secondContinuation
+      firstLeft.paths.firstRail_isPath.reverse bridge.secondContinuation_isPath
+      hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
+  exact ⟨route, hpath, havoids⟩
+
+/-- The second/first literal source-track instance of the first--third square
+repair. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare_secondFirstSourceSplice
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (firstSuccessor.rightRailsAsNextLeft bridge)}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face)
+    (hfirst : face ∈ firstLeft.paths.secondRail.support)
+    (hnew : face ∈ bridge.firstContinuation.support)
+    (hfirstAdjacent : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt firstInterior.center) face)
+    (hthirdAdjacent : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ∃ route : SelectedDualGraph (web := web).Walk
+        (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore),
+      route.IsPath ∧ face ∉ route.support := by
+  have hold : face ∈ firstLeft.paths.secondRail.reverse.support := by
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
+  have holdStart :
+      selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter ≠
+        face :=
+    (data.face_ne_firstFlanks hsource).2.symm
+  have hnewEnd : face ≠
+      selectedPlacementSideFace thirdPlacement bridge.rightOutgoingBefore := by
+    intro hface
+    apply (data.face_ne_lastFlanks hsource).1
+    exact hface.trans (congrArg (selectedPlacementSideFace thirdPlacement)
+      (bridge.rightOutgoingBefore_eq_nextLeftBefore lastSuccessor))
+  have holdAdjacent : ∀ current ∈ firstLeft.paths.secondRail.reverse.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt firstInterior.center) current := by
+    intro current hcurrent
+    apply firstLeft.paths.secondRail_support_adjacent_center
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hcurrent
+  have hnewAdjacent : ∀ current ∈ bridge.firstContinuation.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+        current := by
+    intro current hcurrent
+    apply bridge.rightRails.paths.firstRail_support_adjacent_center
+    simpa only [bridge.firstContinuation_support] using hcurrent
+  rcases exists_firstThirdSquare_crossSplice
+      (firstInterior := firstInterior) (hfirstNext := hfirstNext)
+      (hbridgeNext := hbridgeNext)
+      firstLeft.paths.secondRail.reverse bridge.firstContinuation
+      firstLeft.paths.secondRail_isPath.reverse bridge.firstContinuation_isPath
+      hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
+      hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
+  exact ⟨route, hpath, havoids⟩
+
+/-- The second/second literal source-track instance of the first--third square
+repair. -/
+theorem ExactSelectedLocalRailMiddleReplacementCollision.exists_firstThirdSquare_secondSecondSourceSplice
+    (hsource : web.annular.SourceRealizesBoundaryCleanOrbitHexCorridor
+      blockLength corridor)
+    {trace : ExactSelectedLocalRailConstructionTrace bridge
+      (firstSuccessor.rightRailsAsNextLeft bridge)}
+    {face : SelectedFace (web := web)}
+    (data : ExactSelectedLocalRailMiddleReplacementCollision
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (firstLeft := firstLeft) trace face)
+    (hfirst : face ∈ firstLeft.paths.secondRail.support)
+    (hnew : face ∈ bridge.secondContinuation.support)
+    (hfirstAdjacent : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt firstInterior.center) face)
+    (hthirdAdjacent : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+        |>.faceAt (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ∃ route : SelectedDualGraph (web := web).Walk
+        (selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter)
+        (selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter),
+      route.IsPath ∧ face ∉ route.support := by
+  have hold : face ∈ firstLeft.paths.secondRail.reverse.support := by
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hfirst
+  have holdStart :
+      selectedPlacementSideFace firstPlacement firstSuccessor.frame.leftAfter ≠
+        face :=
+    (data.face_ne_firstFlanks hsource).2.symm
+  have hnewEnd : face ≠
+      selectedPlacementSideFace thirdPlacement bridge.rightOutgoingAfter := by
+    intro hface
+    apply (data.face_ne_lastFlanks hsource).2
+    exact hface.trans (congrArg (selectedPlacementSideFace thirdPlacement)
+      (bridge.rightOutgoingAfter_eq_nextLeftAfter lastSuccessor))
+  have holdAdjacent : ∀ current ∈ firstLeft.paths.secondRail.reverse.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt firstInterior.center) current := by
+    intro current hcurrent
+    apply firstLeft.paths.secondRail_support_adjacent_center
+    simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using hcurrent
+  have hnewAdjacent : ∀ current ∈ bridge.secondContinuation.support,
+      SelectedDualGraph (web := web).Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+          |>.faceAt (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+        current := by
+    intro current hcurrent
+    apply bridge.rightRails.paths.secondRail_support_adjacent_center
+    simpa only [bridge.secondContinuation_support] using hcurrent
+  rcases exists_firstThirdSquare_crossSplice
+      (firstInterior := firstInterior) (hfirstNext := hfirstNext)
+      (hbridgeNext := hbridgeNext)
+      firstLeft.paths.secondRail.reverse bridge.secondContinuation
+      firstLeft.paths.secondRail_isPath.reverse bridge.secondContinuation_isPath
       hold hnew holdStart hnewEnd holdAdjacent hnewAdjacent hfirstAdjacent
       hthirdAdjacent hfaceSecond with ⟨route, hpath, havoids, _⟩
   exact ⟨route, hpath, havoids⟩
