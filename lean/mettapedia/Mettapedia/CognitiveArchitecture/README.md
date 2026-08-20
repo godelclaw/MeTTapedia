@@ -119,6 +119,13 @@ with a MetaMo bridge, over a meaning/agency ethics layer. It introduces one
 named primitive as a postulate (currently a `Prop` `axiom` — more a placeholder
 definition than a proved theorem, to be refined):
 
+`GodelClaw/AgentMeTTaSpace.lean` does not define or constrain AtomSpace. It
+instantiates the repository's MeTTa multiset-space and query algebras with a
+small goal/evidence vocabulary. Its central witness proves that two processes
+can contribute typed atoms to one space and answer a variable-sharing join that
+neither contribution answers alone; space-union commutativity and conjunctive
+query normalization are inherited from the general GSLT space/query theory.
+
 ```lean
 -- GodelClaw/Core.lean
 /-- "Realize the known desires of all beings when possible, while avoiding
