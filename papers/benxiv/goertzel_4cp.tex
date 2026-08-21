@@ -4525,6 +4525,34 @@ localized: high negative curvature must itself produce the second pumpable
 geometric coordinate (or an equivalent source collar), rather than being
 silently replaced by the manuscript's false constant pentagon count.
 
+There is now a source-specific way to remove that curvature dependence from
+the \emph{numerical L6 split}, without claiming a clean hexagonal corridor.
+Module
+\texttt{GoertzelV24ClosedWebRadialOrderDichotomy} uses total closure itself:
+the constructed L8 witness places every interior vertex on one of two radial
+paths, so if
+\[
+  2L < |V_{\mathrm{int}}|,
+\]
+one actual radial path has at least $L$ cuts.  Applying the already proved
+cut-load/rotation-sector dichotomy with the empty marked set and defect budget
+zero gives, independently of $W_-$, either $L$ consecutive cuts of bounded
+actual chord load or a rotation sector containing more than the requested
+number of pairwise-laminar spanning chords.  This is the two-coordinate
+conclusion stated in Addendum~XXVII, derived from the closed web's literal
+radial order rather than the false fixed-defect premise.
+
+This theorem is not yet a uniform $V_0$ or a shrinking lemma.  Its two
+conclusions still have to reach the physical splice: the bounded-load run must
+be realized by source-local simple layer boundaries carrying the finite length
+profile, while the laminar family must be realized by deletion transversals
+carrying the depth profile.  The correction is nevertheless structural: the
+unbounded-curvature branch is no longer a missing numerical estimate.  It has
+been replaced by the two explicit geometric realization morphisms that the
+profile/splice layer already expects.  The earlier weighted incidence and
+minimum-routing results remain valid auxiliary constructions, but they are no
+longer being treated as the only possible supplier of L6.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
