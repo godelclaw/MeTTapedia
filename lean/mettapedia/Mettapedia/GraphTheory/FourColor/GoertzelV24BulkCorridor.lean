@@ -10,6 +10,12 @@ open GoertzelV24CurvatureScope
 def nonHexagonalFaceCount (faceLengths : Multiset Nat) : Nat :=
   (faceLengths.filter fun length => length ≠ 6).card
 
+/-- Total boundary length carried by the nonhexagonal entries.  Unlike the
+number of defect faces, this quantity can pay for repeated incidences of one
+long face with a prospective corridor axis. -/
+def nonHexagonalBoundaryLength (faceLengths : Multiset Nat) : Nat :=
+  (faceLengths.filter fun length => length ≠ 6).sum
+
 /-- Face-size multiset of an indexed corridor axis, retaining repeated
 positions. -/
 def corridorFaceSizeMultiset
@@ -103,6 +109,41 @@ theorem nonHexagonalFaceCount_le_pentagonCount_add_negativeWeight
           rw [if_pos hsix, if_neg hnotfive]
           rw [Multiset.card_add, Multiset.card_singleton]
           have hexcess : 1 ≤ length - 6 := by omega
+          omega
+
+/-- At minimum face length five, five units pay for each pentagon boundary
+and seven units of negative-curvature weight pay for every long-face boundary.
+The latter coefficient is sharp for a heptagon. -/
+theorem nonHexagonalBoundaryLength_le_five_mul_pentagonCount_add_seven_mul_negativeWeight
+    (faceLengths : Multiset Nat)
+    (hminimum : FaceCycleMinimumFive faceLengths) :
+    nonHexagonalBoundaryLength faceLengths ≤
+      5 * faceLengths.count 5 +
+        7 * faceCycleNegativeCurvatureWeight faceLengths := by
+  induction faceLengths using Multiset.induction_on with
+  | empty => simp [nonHexagonalBoundaryLength,
+      faceCycleNegativeCurvatureWeight]
+  | cons length rest ih =>
+      have hlength : 5 ≤ length := hminimum length (by simp)
+      have hrest : FaceCycleMinimumFive rest := by
+        intro other hother
+        exact hminimum other (by simp [hother])
+      have htail := ih hrest
+      unfold nonHexagonalBoundaryLength faceCycleNegativeCurvatureWeight at htail ⊢
+      simp only [Multiset.filter_cons, Multiset.map_cons,
+        Multiset.sum_cons, Multiset.count_cons]
+      by_cases hfive : length = 5
+      · subst length
+        norm_num at htail ⊢
+        omega
+      · by_cases hsix : length = 6
+        · subst length
+          simpa using htail
+        · have hseven : 7 ≤ length := by omega
+          have hnotfive : ¬ 5 = length := fun h => hfive h.symm
+          rw [if_pos hsix, if_neg hnotfive]
+          rw [Multiset.sum_add, Multiset.sum_singleton]
+          have hboundary : length ≤ 7 * (length - 6) := by omega
           omega
 
 /-- Weighted-curvature scope gate for the number of nonhexagonal facial

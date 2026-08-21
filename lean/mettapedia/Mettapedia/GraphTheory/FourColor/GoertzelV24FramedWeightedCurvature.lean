@@ -75,6 +75,13 @@ def interiorFaceDefectSet {source : SourceTrail G}
     (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
       face).card ≠ 6
 
+/-- Every edge lying on at least one nonhexagonal internal face.  This union
+retains the actual facial incidence needed to mark contaminated radial cuts. -/
+def interiorFaceDefectEdgeSupport {source : SourceTrail G}
+    (embedded : source.AnnularEmbedding) : Finset G.edgeSet :=
+  embedded.interiorFaceDefectSet.biUnion fun face =>
+    orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem face
+
 /-- Abstract face-length family witnessing the arithmetic gap in the
 unweighted reading of L9.  It has `k` pentagons and `k + excess`
 heptagons. -/
@@ -228,6 +235,37 @@ theorem card_interiorFaceDefectSet_eq_nonHexagonalFaceCount
   rw [Multiset.filter_map, Multiset.card_map]
   rfl
 
+/-- Summing the boundary sizes of the internal defect faces is exactly the
+filtered boundary-length multiset quantity. -/
+theorem sum_interiorFaceDefectSet_boundary_card_eq_nonHexagonalBoundaryLength
+    {source : SourceTrail G} (embedded : source.AnnularEmbedding) :
+    (∑ face ∈ embedded.interiorFaceDefectSet,
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+        face).card) =
+      nonHexagonalBoundaryLength embedded.interiorFaceLengths := by
+  classical
+  unfold interiorFaceDefectSet nonHexagonalBoundaryLength interiorFaceLengths
+  rw [Multiset.filter_map]
+  rfl
+
+/-- The union of all internal defect-face boundaries is no larger than their
+total boundary length.  No disjointness is assumed: shared edges only make
+the union smaller. -/
+theorem card_interiorFaceDefectEdgeSupport_le_nonHexagonalBoundaryLength
+    {source : SourceTrail G} (embedded : source.AnnularEmbedding) :
+    embedded.interiorFaceDefectEdgeSupport.card ≤
+      nonHexagonalBoundaryLength embedded.interiorFaceLengths := by
+  unfold interiorFaceDefectEdgeSupport
+  calc
+    (embedded.interiorFaceDefectSet.biUnion fun face =>
+        orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+          face).card ≤
+        ∑ face ∈ embedded.interiorFaceDefectSet,
+          (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+            face).card := Finset.card_biUnion_le
+    _ = nonHexagonalBoundaryLength embedded.interiorFaceLengths :=
+      embedded.sum_interiorFaceDefectSet_boundary_card_eq_nonHexagonalBoundaryLength
+
 /-- Faithful annular defect budget: it depends on the actual negative
 curvature weight and cannot in general be replaced by a constant. -/
 theorem card_interiorFaceDefectSet_le_twiceWeight_add_boundarySurplus
@@ -251,6 +289,44 @@ theorem card_interiorFaceDefectSet_le_twiceWeight_add_boundarySurplus
         embedded.interiorPentagonCount_le_weight_add_boundarySurplus
           hsource geometry
       omega
+
+/-- The total boundary length of all internal nonhexagonal faces is linear in
+the honest weighted L9 quantities.  This is the multiplicity-safe budget for
+later corridor-position contamination: one long face may meet a path more than
+once, so merely counting defect faces would be insufficient. -/
+theorem nonHexagonalBoundaryLength_interiorFaceLengths_le
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry) :
+    nonHexagonalBoundaryLength embedded.interiorFaceLengths ≤
+      12 * embedded.interiorNegativeCurvatureWeight +
+        5 * embedded.cellulation.boundarySurplus source.toFramedTrailData := by
+  calc
+    nonHexagonalBoundaryLength embedded.interiorFaceLengths ≤
+        5 * embedded.interiorFaceLengths.count 5 +
+          7 * embedded.interiorNegativeCurvatureWeight :=
+      nonHexagonalBoundaryLength_le_five_mul_pentagonCount_add_seven_mul_negativeWeight
+        embedded.interiorFaceLengths
+        (embedded.interiorFaceLengths_minimumFive geometry)
+    _ ≤ 12 * embedded.interiorNegativeCurvatureWeight +
+        5 * embedded.cellulation.boundarySurplus source.toFramedTrailData := by
+      have hpentagons :=
+        embedded.interiorPentagonCount_le_weight_add_boundarySurplus
+          hsource geometry
+      omega
+
+/-- The actual edge support contaminated by internal nonhexagonal faces obeys
+the same linear weighted budget. -/
+theorem card_interiorFaceDefectEdgeSupport_le
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry) :
+    embedded.interiorFaceDefectEdgeSupport.card ≤
+      12 * embedded.interiorNegativeCurvatureWeight +
+        5 * embedded.cellulation.boundarySurplus source.toFramedTrailData :=
+  (embedded.card_interiorFaceDefectEdgeSupport_le_nonHexagonalBoundaryLength).trans
+    (embedded.nonHexagonalBoundaryLength_interiorFaceLengths_le
+      hsource geometry)
 
 theorem internalFaceBoundary_card_sub_six_le_weight
     {source : SourceTrail G} (embedded : source.AnnularEmbedding)

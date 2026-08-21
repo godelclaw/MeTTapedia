@@ -4478,12 +4478,36 @@ one of its two radial paths is quantitatively long.  Lean now performs the case
 split and applies the existing L6 theorem either to the first path or to the
 swapped radial pair.  For every two genuinely bounded contamination sets, the
 result is therefore a shallow clean block on the long path or an explicitly
-large pairwise-laminar rotation sector.  This is not yet a uniform $V_0$: the
-sets of actually contaminated source positions and their common cardinality
-bound remain visible inputs.  Their construction from nonhexagonal faces, and
-the repair when the negative-curvature weight is unbounded, are now the single
-quantitative interface left by this handoff; no twelve-pentagon premise is
-hidden in it.
+large pairwise-laminar rotation sector.  Module
+\texttt{GoertzelV24ClosedWebRadialDefectPositions} now constructs the two
+contamination sets rather than accepting them from the caller.  A radial cut is
+marked exactly when its actual path edge lies on a defect face, a dual
+neighbour of a defect, or a face incident to either named hole.  Simplicity of
+the radial path injects marked cuts into the union of these forbidden facial
+edge supports; the source-annulus geometry then supplies the cardinality
+bound.  The resulting source-facing theorem constructs the L8 witness, chooses
+the long path (swapping the pair when necessary), constructs its bad positions,
+and feeds them directly into the L6 length/depth dichotomy.
+
+The arithmetic used for this construction also corrects a subtler
+multiplicity issue.  Counting nonhexagonal faces is insufficient when one long
+face can meet many radial edges.  For any face-length family bounded below by
+five, Lean proves
+\[
+  \sum_{f:\,|f|\ne6}|f|\;\leq\;5p+7W_-.
+\]
+On a well-formed framed source trail, the weighted excess identity gives the
+derived bound $12W_-+5\rho$, where $\rho$ is the boundary surplus.  These are
+edge-incidence budgets rather than mere face counts.  The framed source-trail
+and closed-web annular-frontier packages are kept as distinct carriers; no
+comparison theorem between them is being assumed here.
+
+This is still not a uniform $V_0$.  The constructed closed-web budget grows
+with $W_-$, so a sufficiently long radial path is obtained only relative to
+the instance's curvature.  The remaining numerical problem is now sharply
+localized: high negative curvature must itself produce the second pumpable
+geometric coordinate (or an equivalent source collar), rather than being
+silently replaced by the manuscript's false constant pentagon count.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
