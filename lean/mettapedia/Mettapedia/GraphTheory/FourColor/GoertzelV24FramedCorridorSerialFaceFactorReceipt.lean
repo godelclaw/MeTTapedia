@@ -89,6 +89,46 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
+/-- An incoming boundary fragment is genuinely used by an outgoing fragment
+when it lies on the same ambient face and its regional support is contained in
+the outgoing support.  Support inclusion alone is insufficient: a boundary
+edge has two facial sides in a two-sided embedding. -/
+def sourceCorridorSerialInputFaceUsedByOutputAt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (output : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).nextLocalLayerPrefixCrossing))
+      (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1)))))
+    (input : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).localLayerPrefixCrossing))
+      (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+        hunique offset)))) : Prop :=
+  let inputData := sourceCorridorSerialInputCutDataAt realization hcubic
+    hrotation htwoSided hunique offset
+  let outputData := sourceCorridorSerialPrefixCutDataAt realization hcubic
+    hrotation htwoSided hunique offset
+  inputData.fragmentFace input = outputData.fragmentFace output ∧
+    inputData.regionalFragmentEdges input ⊆
+      outputData.regionalFragmentEdges output
+
 /-- The part of an outgoing fragment lying in the old serial region. -/
 def sourceCorridorSerialOldFaceSliceAt
     {source : SourceTrail G}
@@ -198,8 +238,10 @@ noncomputable def sourceCorridorSerialFaceFactorReceiptAt
     { inputCount := inputCount
       outputCount := outputCount
       usesInput := fun output input => decide
-        (inputData.regionalFragmentEdges (Fin.cast (by rfl) input) ⊆
-          outputData.regionalFragmentEdges (Fin.cast (by rfl) output))
+        (inputData.fragmentFace (Fin.cast (by rfl) input) =
+            outputData.fragmentFace (Fin.cast (by rfl) output) ∧
+          inputData.regionalFragmentEdges (Fin.cast (by rfl) input) ⊆
+            outputData.regionalFragmentEdges (Fin.cast (by rfl) output))
       oldCap := fun output => ⟨
         min (sourceCorridorSerialOldFaceSliceAt realization hcubic hrotation
           htwoSided hunique offset output).card 5,
@@ -250,6 +292,50 @@ theorem sourceCorridorSerialFaceFactorReceiptAt_counts
           (sourceCorridorSerialPrefixRegion realization hcubic hrotation
             htwoSided hunique (offset.val + 1))) := by
   exact ⟨rfl, rfl⟩
+
+/-- The receipt's incidence bit retains the facial side as well as regional
+support inclusion.  This prevents the two sides of one boundary edge from
+being conflated by the future finite transition decoder. -/
+theorem sourceCorridorSerialFaceFactorReceiptAt_usesInput_eq_true_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (output : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).nextLocalLayerPrefixCrossing))
+      (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1)))))
+    (input : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).localLayerPrefixCrossing))
+      (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
+        hunique offset)))) :
+    let receipt := sourceCorridorSerialFaceFactorReceiptAt realization hcubic
+      hrotation htwoSided hunique offset
+    receipt.usesInput (Fin.cast (by
+        exact sourceCorridorSerialFaceFactorReceiptAt_counts realization
+          hcubic hrotation htwoSided hunique offset |>.2.symm) output)
+      (Fin.cast (by
+        exact sourceCorridorSerialFaceFactorReceiptAt_counts realization
+          hcubic hrotation htwoSided hunique offset |>.1.symm) input) = true ↔
+      sourceCorridorSerialInputFaceUsedByOutputAt realization hcubic hrotation
+        htwoSided hunique offset output input := by
+  simp [sourceCorridorSerialFaceFactorReceiptAt,
+    sourceCorridorSerialInputFaceUsedByOutputAt]
 
 /-- The old and literal-Cell slices cover the entire outgoing fragment.
 This is the finite-set form of the exact serial region equation. -/

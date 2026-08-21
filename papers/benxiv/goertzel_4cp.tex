@@ -5029,6 +5029,28 @@ letter reconstruct the receipt's old-slice incidence and capped overlap.
 Only then may the receipt be joined to the tracked seam code and used for a
 reachable-closure measurement.
 
+That remaining dependence is now fail-closed rather than implicit.  The
+receipt's incoming-incidence bit has first been corrected to require both
+support inclusion and equality of the ambient face: inclusion alone could
+confuse the two facial sides of one boundary edge.  The new module
+\texttt{GoertzelV24FramedCorridorSerialFaceInputResidue} then unions exactly
+the same-face incoming fragments contained in each outgoing fragment and
+defines the part of its old-prefix slice left uncovered.  Lean proves a
+disjoint partition
+\[
+  \text{old slice}=\text{selected input union}\;\dot\cup\;
+  \text{old-input residue}
+\]
+and the corresponding cap-at-five sum law.  The residue itself is observed by
+one value in $\mathrm{Fin}\,6$.  Consequently the old-prefix dependence has
+been localized to the precise proposition that this residue is empty for
+every literal serial update.  That proposition is not asserted here: the
+current vertex-side development classifies every true prefix-frontier edge as
+some Cell input or output, but does not yet prove the internal-interface
+cancellation that reduces the frontier to the displayed ends.  Thus this is a
+strict narrowing of the finite-letter obligation, not yet the executable
+transition or a reachable-state count.
+
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebase} proves that, after one
