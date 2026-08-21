@@ -673,6 +673,57 @@ theorem exists_chordTriangle_cycle_or_commonNeighborVertexIncidenceAt
       · exact hchord
       · exact hall
 
+/-- If the collision face is known not to be either literal flank of the
+middle placement, the star branch is impossible and one of the two selected
+chord triangles has a cyclic inner side. -/
+theorem exists_chordTriangle_cycle_of_face_ne_flanks
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+    {face : SelectedFace web}
+    (hfirst : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hsecond : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face)
+    (hthird : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center)
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hbridgeNext
+      secondPlacement thirdPlacement)
+    (selected :
+      (MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
+        (rungs := rungs) hfirst hthird hfaceSecond).SourceChordSelectedTriangles
+          (secondPlacement := secondPlacement))
+    (hneBefore : face ≠
+      selectedPlacementSideFace secondPlacement successor.frame.leftBefore)
+    (hneAfter : face ≠
+      selectedPlacementSideFace secondPlacement successor.frame.leftAfter) :
+    (∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.firstShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
+      ∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        HasCycleOnSide G (fun vertex => vertex ∈ component.supp) := by
+  rcases selected.exists_chordTriangle_cycle_or_commonNeighborVertexIncidenceAt
+      hfirst hsecond hthird hfaceSecond successor with
+    hfirstCycle | hsecondCycle | hincidence
+  · exact .inl hfirstCycle
+  · exact .inr hsecondCycle
+  · rcases successor.face_eq_before_or_after_of_commonNeighborVertexIncidenceAt
+        face hsecond hthird hincidence with hbefore | hafter
+    · exact False.elim (hneBefore hbefore)
+    · exact False.elim (hneAfter hafter)
+
 end MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
 
 /-- **L1 pointed source-square reduction with selected geometry.**  The
@@ -775,6 +826,72 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSq
             (InteriorOccurrence.not_both_incident_edges_oldCenter
               occurrence hpath incomingPosition incomingStep
                 outgoingPosition outgoingStep hfaceSecond)
+
+/-- **L1 producer-to-consumer source-square reduction.**  For an actual
+pointed allocation at a non-flank collision, the old-forward rows construct a
+selected chord triangle with a cyclic inner side.  The only other outcomes are
+the three explicit successor/old-centre origin rows.
+
+This theorem checks that the chord construction, selected crossing provenance,
+component classifier, and local common-neighbour consumer compose end to end.
+It does not discharge the cyclic separator or any of the three residual rows. -/
+theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSquare_chordTriangleCycle_or_three_origin_rows
+    {start finish face : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    {occurrence : InteriorOccurrence (current := face) walk}
+    (allocation : InteriorOccurrence.SelectedAdjacentPointedFaceAllocation
+      (leftPlacement := secondPlacement) (rightPlacement := thirdPlacement)
+      occurrence)
+    (hpath : walk.IsPath)
+    (hfirst : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hsecond : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face)
+    (hthird : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center)
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hbridgeNext
+      secondPlacement thirdPlacement)
+    (hneBefore : face ≠
+      selectedPlacementSideFace secondPlacement successor.frame.leftBefore)
+    (hneAfter : face ≠
+      selectedPlacementSideFace secondPlacement successor.frame.leftAfter) :
+    let square := MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
+      (rungs := rungs) hfirst hthird hfaceSecond
+    (∃ selected : square.SourceChordSelectedTriangles
+        (secondPlacement := secondPlacement),
+      (∃ component :
+          (G.deleteEdges (edgeFinsetValueSet
+            selected.firstShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+        web.annular.RS.outer.fst ∉ component.supp ∧
+          HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
+        ∃ component :
+          (G.deleteEdges (edgeFinsetValueSet
+            selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+        web.annular.RS.outer.fst ∉ component.supp ∧
+          HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
+      ((allocation.incomingOrigin.IsSuccessorForward ∧
+          allocation.outgoingOrigin.IsSuccessorForward) ∨
+        (allocation.incomingOrigin.IsSuccessorForward ∧
+          allocation.outgoingOrigin.IsOldCenter) ∨
+        (allocation.incomingOrigin.IsOldCenter ∧
+          allocation.outgoingOrigin.IsSuccessorForward)) := by
+  dsimp only
+  rcases allocation.exists_sourceSquare_chordSelectedTriangles_or_three_origin_rows
+      hpath hfirst hthird hfaceSecond with hselected | hrows
+  · rcases hselected with ⟨selected⟩
+    left
+    refine ⟨selected, ?_⟩
+    exact selected.exists_chordTriangle_cycle_of_face_ne_flanks
+      hfirst hsecond hthird hfaceSecond successor hneBefore hneAfter
+  · exact .inr hrows
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
