@@ -54,6 +54,97 @@ def SeamFacesBoundarySimple
     (orbitFaceBoundary data.output (dartOrbitFace data.output root)).card =
       (orbitFaceDarts data.output (dartOrbitFace data.output root)).card
 
+/-- The local topological form of the finite seam receipt.  On every output
+face reached from an ordered seam dart, the two orientations of one edge lie
+on different facial orbits.  Unlike global `OrbitFacesTwoSided`, this says
+nothing about the two protected degree-one hole faces. -/
+def SeamFacesTwoSided
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount) : Prop :=
+  ∀ position : OrderedSeamPosition n,
+    let root := orderedSeamRoot RS data.keep
+      data.left.crossingEdge data.right.crossingEdge
+      data.leftCrosses data.rightCrosses data.leftInjective
+      data.rightInjective position
+    ∀ point : data.output.D,
+      data.output.phi.SameCycle root point →
+        dartOrbitFace data.output point ≠
+          dartOrbitFace data.output (data.output.alpha point)
+
+/-- Seam-local two-sidedness is exactly strong enough to make the edge map
+injective on every seam-root face.  This turns the source's noncrossing claim
+into a pointwise alpha-side separation problem, rather than a cardinality
+calculation on quotient faces. -/
+theorem seamFacesBoundarySimple_of_twoSided
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (htwoSided : data.SeamFacesTwoSided) :
+    data.SeamFacesBoundarySimple := by
+  intro position
+  let root := orderedSeamRoot RS data.keep
+    data.left.crossingEdge data.right.crossingEdge
+    data.leftCrosses data.rightCrosses data.leftInjective
+    data.rightInjective position
+  unfold orbitFaceBoundary
+  apply Finset.card_image_iff.mpr
+  intro left hleft right hright hedge
+  rcases data.output.edge_fiber_two_cases rfl hedge.symm with heq | heq
+  · exact heq.symm
+  · exfalso
+    apply htwoSided position left
+    · change data.output.phi.SameCycle root left
+      exact (Quotient.exact ((mem_orbitFaceDarts_iff data.output
+        (dartOrbitFace data.output root) left).1 hleft)).symm
+    · have hleftFace : dartOrbitFace data.output left =
+          dartOrbitFace data.output root :=
+        (mem_orbitFaceDarts_iff data.output
+          (dartOrbitFace data.output root) left).1 hleft
+      have hrightFace : dartOrbitFace data.output right =
+          dartOrbitFace data.output root :=
+        (mem_orbitFaceDarts_iff data.output
+          (dartOrbitFace data.output root) right).1 hright
+      rw [← heq, hleftFace, hrightFace]
+
+/-- Conversely, a simple boundary at every seam root excludes an opposite
+dart from the same seam face.  Thus the new pointwise receipt is not a
+strengthening or a convenient wrapper: it is equivalent to the previous
+finite cardinality statement. -/
+theorem seamFacesTwoSided_of_boundarySimple
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount)
+    (hsimple : data.SeamFacesBoundarySimple) :
+    data.SeamFacesTwoSided := by
+  unfold SeamFacesTwoSided
+  intro position
+  let root := orderedSeamRoot RS data.keep
+    data.left.crossingEdge data.right.crossingEdge
+    data.leftCrosses data.rightCrosses data.leftInjective
+    data.rightInjective position
+  dsimp only
+  intro point hcycle hsame
+  have hinjective : Set.InjOn data.output.edgeOf
+      (orbitFaceDarts data.output (dartOrbitFace data.output root)) := by
+    apply Finset.card_image_iff.mp
+    exact hsimple position
+  have hpointMem : point ∈
+      orbitFaceDarts data.output (dartOrbitFace data.output root) := by
+    apply (mem_orbitFaceDarts_iff data.output
+      (dartOrbitFace data.output root) point).2
+    exact Quotient.sound hcycle.symm
+  have halphaMem : data.output.alpha point ∈
+      orbitFaceDarts data.output (dartOrbitFace data.output root) := by
+    apply (mem_orbitFaceDarts_iff data.output
+      (dartOrbitFace data.output root) (data.output.alpha point)).2
+    exact hsame.symm.trans
+      ((mem_orbitFaceDarts_iff data.output
+        (dartOrbitFace data.output root) point).1 hpointMem)
+  have heq := hinjective hpointMem halphaMem
+    (data.output.edge_alpha point).symm
+  exact data.output.alpha_fixfree point heq.symm
+
+theorem seamFacesTwoSided_iff_boundarySimple
+    (data : OrderedCutSpliceData RS n terminalCount faceFragmentCount) :
+    data.SeamFacesTwoSided ↔ data.SeamFacesBoundarySimple :=
+  ⟨data.seamFacesBoundarySimple_of_twoSided,
+    data.seamFacesTwoSided_of_boundarySimple⟩
+
 /-- A source-simple face that does not touch the seam remains simple in the
 literal retained-vertex splice.  The proof transports its complete dart cycle
 back to the ambient face and uses the computed equality of retained output
