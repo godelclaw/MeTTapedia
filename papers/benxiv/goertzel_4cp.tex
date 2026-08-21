@@ -3145,6 +3145,18 @@ duplicated.  This repairs provenance, not geometry: the finite placement of
 the two receipts at distinct source steps, the component-side orientation,
 the opposite-endpoint case, rolling iteration, end caps, and L1 remain open.
 
+The pointed-edge face coordinates are now explicit as well.  Each incoming
+receipt identifies the unordered pair consisting of the rail predecessor and
+the collision face with its two named source faces; each outgoing receipt does
+the same for the collision face and successor.  Lean retains both possible
+orientations rather than choosing one from a drawing, and packages the two
+crossing origins together with these exact facial allocations.  This removes
+face identification from the remaining finite comparison.  What remains is
+to orient the named primal corners onto the chosen component side, identify
+them with the two square-bond endpoints, and consume the explicit
+opposite-endpoint alternative.  No rolling bypass or L1 closure is claimed by
+this incidence allocation alone.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
