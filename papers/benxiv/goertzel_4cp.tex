@@ -4305,6 +4305,18 @@ to separation of the repaired whole rail.  This is a preservation theorem,
 not yet a proof of the centre-avoidance premise; the latter is the exact live
 geometric obligation before this repair can enter the rolling pair assembly.
 
+The centre-avoidance premise now has an exact source-local discharge on the
+non-collision branch.  Module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailTerminalRightCenterAvoidance}
+traces every old terminal-track support face back to a selected side slot and
+proves that either exact terminal track avoids the successor Cell--3 centre
+whenever the two displayed consecutive centres share at most one interior
+edge.  If a side slot were that centre, the source placement layer would
+exhibit two distinct shared interior edges; the successor rails themselves
+avoid their centre by irreflexivity.  The cardinality bound is not asserted
+globally.  Its complementary double-edge case remains an explicit bounded L1
+collision to reduce or bypass before the whole rolling pair is constructed.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
