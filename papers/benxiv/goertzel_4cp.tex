@@ -3635,6 +3635,20 @@ physical source cut pair, transport the two named hole faces, and reassemble
 the shortened packed closed-web witness.  This is a checked representation
 joint, not L1/C--5 closure.
 
+The named-face part of that remaining list is now transported too.
+For graph-backed source rotations,
+\texttt{GoertzelV24SimpleGraphRotationEndpointInjective} proves directly that
+unordered endpoint sets identify edges.  The literal dart equivalence then
+descends to a facial-orbit equivalence in
+\texttt{GoertzelV24RotationSystemPrimalFaceTransport}.  Finally,
+\texttt{GoertzelV24ClosedWebSpliceGraphHoleTransport} applies that equivalence
+to the two already-retained source holes and proves that their graph-backed
+output faces are distinct.  The hypotheses remain exact: both hole faces must
+be wholly outside the pumped region, and the ordered-cut endpoint-simplicity
+receipt must be supplied.  Thus this is not yet an output annular cellulation;
+the boundary data, connectivity and Euler fields still have to be assembled,
+and the physical corridor still has to produce the endpoint receipt.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
