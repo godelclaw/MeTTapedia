@@ -63,6 +63,17 @@ Cell's four-edge boundary. -/
 abbrev LocalLayerPairCellBoundedProfile :=
   BoundedCorridorCutProfile 2 0 8
 
+/-- The exact size of the deliberately conservative local Cell carrier.
+This large value is a finiteness certificate, not a practical census bound;
+actual source transfers must still compress their realized states. -/
+theorem card_localLayerPairCellBoundedProfile :
+    Fintype.card LocalLayerPairCellBoundedProfile =
+      74853595474508474029607634310238208 := by
+  rw [card_boundedCorridorCutProfile]
+  norm_num [boundedCorridorCutProfileCount,
+    GoertzelV24CorridorProfile.corridorCutProfileCount,
+    Fin.sum_univ_succ]
+
 /-- The complementary Cell region has at most eight boundary-local face
 fragments.  The bound is derived from its literal four-edge cut, not supplied
 as a profile premise. -/

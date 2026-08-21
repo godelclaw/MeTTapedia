@@ -4397,6 +4397,33 @@ prefix with one of the two named moving-cut portals.  That source-specific
 rail-absorption and exact-frontier theorem remains the connectivity half of
 portal completeness.
 
+The corresponding generic cancellation atom is now kernel checked as well.
+Module
+\texttt{GoertzelV24BoundaryDartUnionAbsorption} proves that two exposed
+boundary darts related by the ambient edge involution carry the two endpoints
+of their shared edge into the union of the retained vertex sides.  The shared
+edge therefore disappears from the true crossing frontier of that union.
+This proof uses no cubicity hypothesis.  The live selected-rail layer already
+proves the required opposite-dart equation at each successor seam, but it does
+not yet package its literal Cells as retained vertex sides.  Thus the remaining
+source junction is precise: construct those sides and identify their surviving
+frontier; do not infer portal completeness merely from the oriented seam.
+
+There is also a quantitative warning at the finite-base end.  The current
+literal-Cell carrier
+\texttt{BoundedCorridorCutProfile 2 0 8} has exactly
+\[
+  74853595474508474029607634310238208
+\]
+states under the proved counting formula.  The heterogeneous transfer-word
+pumping theorem remembers a whole reachable \texttt{Finset} of such profiles,
+so its generic pigeonhole bound is the power set size
+\(2^{74853595474508474029607634310238208}\).  These are valid finiteness
+bounds but not a feasible base census.  The source-faithful next theorem must
+therefore bound the profiles and reachable sets actually realized by the
+literal corridor transfer; merely introducing a smaller carrier as a new
+hypothesis would relocate, rather than prove, the compression.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
