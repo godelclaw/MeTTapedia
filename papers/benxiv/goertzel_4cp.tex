@@ -5221,6 +5221,22 @@ finite letters may still be unrealizable by a literal source Cell, and the
 boundary-rebase composition, measured reachable closure, derived $V_0$, and
 bounded base remain separate obligations.
 
+There is now also a deterministic decoder at the narrower, source-literal
+Cell boundary.  Module
+\texttt{GoertzelV24FramedCorridorFiniteOneCellDecoder} packages the exact
+terminal-aware interface used by one Cell: a profile with two crossings and
+the shared-rung terminal enters, and a profile on the two outgoing crossings
+leaves.  A finite letter retains the Cell's full six-edge profile, its literal
+connectivity placement, the three named outgoing face roles, and the capped
+face-attachment table.  The decoder computes all five outgoing profile
+fields, and Lean proves that every complete one-Cell receipt---therefore every
+actual Tait-coloured literal source Cell---is accepted by some letter.  The
+word remains heterogeneous; no theorem identifies these semantic letters
+merely from the three coarse slab orientations.  This closes executable
+source inclusion for the local Cell half, not the whole serial step: the
+separate boundary rebase must still be composed, abstract-code realizability
+is not asserted, and no reachable count, $V_0$, or bounded base follows yet.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
