@@ -4994,6 +4994,33 @@ It retires the raw Boolean carrier as the route-correct repeat bound.  It does
 not yet measure the subset reachable under the heterogeneous one-Cell support
 word, derive a graph-size $V_0$, or verify the bounded base.
 
+The inter-Cell presentation change is now explicit rather than hidden behind
+a false equality of cuts.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebase} proves that, after one
+literal Cell has been adjoined, the next input region is exactly the same
+accumulated prefix together with the next two displayed crossing edges.  For
+both tracked two-colour connectivity and occurrence-sensitive facial
+continuation, the enlarged graph is exactly the supremum of the old prefix
+graph, the graph on those two edges, and the canonical residual seam.  Every
+residual turn touches one of the two new crossings.  Cubicity therefore puts
+the complete residual support in their closed edge neighbourhood, of
+cardinality at most fourteen; two-sidedness gives the same bound for facial
+occurrences.
+
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseCode} turns this support
+bound into an actual finite letter.  One canonical carrier retains the two
+named, distinct crossings and jointly transports both tracked factors for all
+three tracked-colour pairs; adjacency and reachability are preserved exactly.
+The facial residual seam is likewise transported to a finite graph code of
+size at most fourteen.  Thus the heterogeneous corridor word has two
+machine-localized ingredients at each step: the literal complementary Cell
+and the bounded change of boundary presentation.  The remaining finite-state
+obligation is to align the facial rebase code with the four boundary-fragment
+coordinates and then combine both ingredients into one full five-coordinate
+support letter.  No ambient-colouring existential, reachable-closure count,
+new $V_0$, or bounded-base verification is claimed by these modules.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
