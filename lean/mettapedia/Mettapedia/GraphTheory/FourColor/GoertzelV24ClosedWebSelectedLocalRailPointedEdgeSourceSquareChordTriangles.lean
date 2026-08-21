@@ -1,4 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareChordTriangles
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementCrossingSelection
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalCommonNeighborIncidence
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareChordCrossing
 
 /-!
@@ -111,6 +113,28 @@ structure MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
   second_crossing_chord_or_original : ∀ step,
     secondSelected.crossingEdge step = chordEdge ∨
       secondSelected.crossingEdge step ∈ square.cycle.selectedCycle.crossingEdges
+  first_crossing_at_original : ∀ step originalStep,
+    GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        firstSelected.walk step =
+      GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        square.cycle.selectedCycle.walk originalStep →
+      firstSelected.crossingEdge step =
+        square.cycle.selectedCycle.crossingEdge originalStep
+  second_crossing_at_original : ∀ step originalStep,
+    GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        secondSelected.walk step =
+      GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        square.cycle.selectedCycle.walk originalStep →
+      secondSelected.crossingEdge step =
+        square.cycle.selectedCycle.crossingEdge originalStep
   first_support_original : ∀ current ∈ firstSelected.walk.support,
     current ∈ square.cycle.walk.support
   second_support_original : ∀ current ∈ secondSelected.walk.support,
@@ -189,12 +213,12 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
         (nextCorridorInterior firstInterior hfirstNext).center)
     (hface : face = selectedPlacementSideFace secondPlacement left ∨
       face = selectedPlacementSideFace secondPlacement right) :
-    let square := squareDualCycle_of_firstThirdSquare
+    let square := MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
       (rungs := rungs) hfirst hthird hfaceSecond
     Nonempty (square.SourceChordSelectedTriangles
       (secondPlacement := secondPlacement)) := by
   dsimp only
-  let square := squareDualCycle_of_firstThirdSquare
+  let square := MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
     (rungs := rungs) hfirst hthird hfaceSecond
   rcases
       Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly.SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_secondFace_chordCrossing
@@ -207,7 +231,11 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
       (nextCorridorInterior firstInterior hfirstNext).center
   rcases
       GoertzelV24DualCycleChord.exists_two_triangles_of_isCycle_of_length_eq_four_of_isChord
-        square.cycle.isCycle square.length_eq_four hchord with
+        square.cycle.isCycle square.length_eq_four (by
+          change (squareDualCycle_of_firstThirdSquare (rungs := rungs)
+            hfirst hthird hfaceSecond).cycle.walk.IsChord
+              s(secondFace, face)
+          exact hchord) with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
       hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
       hfirstEdges, hsecondEdges, horiginalEdges, hfirstSupport,
@@ -236,6 +264,8 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
     chordEdge_mem_second := ?_
     first_crossing_chord_or_original := ?_
     second_crossing_chord_or_original := ?_
+    first_crossing_at_original := ?_
+    second_crossing_at_original := ?_
     first_support_original := ?_
     second_support_original := ?_
     original_edges_covered := ?_
@@ -256,6 +286,14 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
     exact MiddleReplacementShortDualCycle.selectedCycleOfOriginalOrChord_crossingEdge_eq_or_mem
       web.annular.RS square.cycle.selectedCycle secondTriangle hsecondCycle
         hchordShared hchordNotOriginal hsecondEdges step
+  · intro step originalStep hdual
+    exact MiddleReplacementShortDualCycle.selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq_original
+      web.annular.RS square.cycle.selectedCycle firstTriangle hfirstCycle
+        hchordShared hchordNotOriginal hfirstEdges step originalStep hdual
+  · intro step originalStep hdual
+    exact MiddleReplacementShortDualCycle.selectedCycleOfOriginalOrChord_crossingEdge_eq_of_coreDualEdge_eq_original
+      web.annular.RS square.cycle.selectedCycle secondTriangle hsecondCycle
+        hchordShared hchordNotOriginal hsecondEdges step originalStep hdual
   · exact hfirstSupport
   · exact hsecondSupport
   · exact horiginalEdges
@@ -264,6 +302,166 @@ namespace MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
 
 variable {face : SelectedFace web}
   {square : MiddleReplacementSquareDualCycle (web := web) face}
+
+/-- Every selected crossing of the reselected source square survives in one
+of its two chord triangles at the corresponding dual step. -/
+theorem original_crossing_covered
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement))
+    (originalStep : Fin square.cycle.selectedCycle.walk.length) :
+    (∃ firstStep : Fin selected.firstSelected.walk.length,
+      selected.firstSelected.crossingEdge firstStep =
+        square.cycle.selectedCycle.crossingEdge originalStep) ∨
+      ∃ secondStep : Fin selected.secondSelected.walk.length,
+        selected.secondSelected.crossingEdge secondStep =
+          square.cycle.selectedCycle.crossingEdge originalStep := by
+  let originalDual :=
+    GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      square.cycle.selectedCycle.walk originalStep
+  have horiginalMem : originalDual ∈ square.cycle.selectedCycle.walk.edges := by
+    change
+      GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        square.cycle.selectedCycle.walk originalStep ∈
+          square.cycle.selectedCycle.walk.edges
+    rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      square.cycle.selectedCycle.walk originalStep]
+    exact List.get_mem square.cycle.selectedCycle.walk.edges _
+  rcases selected.original_edges_covered originalDual horiginalMem with
+    hfirst | hsecond
+  · rcases List.mem_iff_getElem.mp hfirst with ⟨index, hindex, hget⟩
+    let firstStep : Fin selected.firstSelected.walk.length :=
+      ⟨index, by simpa using hindex⟩
+    have hdual :
+        GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))
+            selected.firstSelected.walk firstStep = originalDual := by
+      rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        selected.firstSelected.walk firstStep]
+      simpa [firstStep] using hget
+    exact .inl ⟨firstStep,
+      selected.first_crossing_at_original firstStep originalStep hdual⟩
+  · rcases List.mem_iff_getElem.mp hsecond with ⟨index, hindex, hget⟩
+    let secondStep : Fin selected.secondSelected.walk.length :=
+      ⟨index, by simpa using hindex⟩
+    have hdual :
+        GoertzelV24DualPathTransversal.coreDualWalkGraphEdge
+            (orbitFaceBoundary web.annular.RS)
+            (Finset.univ : Finset (OrbitFace web.annular.RS))
+            selected.secondSelected.walk secondStep = originalDual := by
+      rw [← GoertzelV24DualPathTransversal.edges_get_coreDualWalkGraphEdge
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        selected.secondSelected.walk secondStep]
+      simpa [secondStep] using hget
+    exact .inr ⟨secondStep,
+      selected.second_crossing_at_original secondStep originalStep hdual⟩
+
+/-- One selected chord triangle retains the literal outgoing rung of the
+middle Cell--3 placement.  This uses the reselected source square; the same
+statement is not available from an arbitrary crossing selection on the same
+facial walk. -/
+theorem secondRung_covered
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+    {face : SelectedFace web}
+    (hfirst : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center)
+    (selected :
+      (MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
+        (rungs := rungs) hfirst hthird hfaceSecond).SourceChordSelectedTriangles
+          (secondPlacement := secondPlacement)) :
+    (∃ firstStep : Fin selected.firstSelected.walk.length,
+      selected.firstSelected.crossingEdge firstStep =
+        rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing) ∨
+      ∃ secondStep : Fin selected.secondSelected.walk.length,
+        selected.secondSelected.crossingEdge secondStep =
+          rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing := by
+  let original := squareDualCycle_of_firstThirdSquare
+    (rungs := rungs) hfirst hthird hfaceSecond
+  let square := MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
+    (rungs := rungs) hfirst hthird hfaceSecond
+  let secondStep := MiddleReplacementShortDualCycle.squareSecondStep original
+  have hedge : square.cycle.selectedCycle.crossingEdge secondStep =
+      rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing := by
+    change
+      (MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
+        (rungs := rungs) hfirst hthird hfaceSecond).cycle.crossingEdge
+          (MiddleReplacementShortDualCycle.squareSecondStep
+            (squareDualCycle_of_firstThirdSquare (rungs := rungs)
+              hfirst hthird hfaceSecond)) = _
+    exact
+      MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung_crossingEdge_secondStep
+        (rungs := rungs) hfirst hthird hfaceSecond
+  rcases selected.original_crossing_covered secondStep with
+    ⟨firstStep, hfirstEdge⟩ | ⟨secondStep', hsecondEdge⟩
+  · exact .inl ⟨firstStep, hfirstEdge.trans hedge⟩
+  · exact .inr ⟨secondStep', hsecondEdge.trans hedge⟩
+
+/-- A one-vertex chord-triangle component incident to the retained middle
+source rung supplies the exact pointwise incidence consumed by the literal
+successor bridge. -/
+private theorem commonNeighborVertexIncidenceAt_of_chordStar
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+    {thirdPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)}
+    {face : SelectedFace web}
+    {square : MiddleReplacementSquareDualCycle (web := web) face}
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hbridgeNext
+      secondPlacement thirdPlacement)
+    (hsecond : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face)
+    (hthird : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement))
+    (crossingEdges : Finset G.edgeSet)
+    (hrung : rungs.edge
+      (nextCorridorInterior firstInterior hfirstNext).outgoing ∈ crossingEdges)
+    (vertex : V)
+    (hvertexChord : vertex ∈ selected.chordEdge.1)
+    (hall : ∀ edge ∈ crossingEdges, vertex ∈ edge.1) :
+    successor.CommonNeighborVertexIncidenceAt face hsecond hthird := by
+  have hshared := (mem_sharedInteriorEdges_iff
+    (orbitFaceBoundary web.annular.RS)
+    (Finset.univ : Finset (OrbitFace web.annular.RS))).1
+      selected.chord_mem_shared
+  refine ⟨selected.chordEdge, hshared.2.1, hshared.2.2, vertex, ?_, ?_⟩
+  · apply
+      (GoertzelV24RotationVertexCutProfile.mem_simpleGraphRotationSystem_endpoints_iff
+        web.annular.cellulation.rotation _ vertex).2
+    change vertex ∈
+      (faceCycleEdge web.annular.RS secondPlacement.root
+        secondPlacement.outgoingPosition : G.edgeSet).1
+    rw [secondPlacement.outgoing_edge]
+    exact hall _ hrung
+  · apply
+      (GoertzelV24RotationVertexCutProfile.mem_simpleGraphRotationSystem_endpoints_iff
+        web.annular.cellulation.rotation _ vertex).2
+    exact hvertexChord
 
 /-- Every face of the first selected source-square triangle remains in the
 literal interior support of the original square. -/
@@ -408,6 +606,73 @@ theorem second_exists_component_cycle_or_chordStar
     exact ⟨component, hroot,
       .inr ⟨vertex, hvertex, hall selected.chordEdge hchord, hall⟩⟩
 
+/-- **L1 selected source-square separator reduction.**  After retaining the
+literal middle source rung, one chord triangle either has a cyclic inner side
+or its one-vertex star constructs the pointwise common-neighbour incidence
+needed by the adjacent selected-rail bridge.
+
+The cyclic alternatives remain explicit.  No closed minimality property is
+imported into the opened annular carrier. -/
+theorem exists_chordTriangle_cycle_or_commonNeighborVertexIncidenceAt
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+    {face : SelectedFace web}
+    (hfirst : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hsecond : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) face)
+    (hthird : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center)
+    (successor : SeparatedSelectedSourceLocalRailSuccessor hbridgeNext
+      secondPlacement thirdPlacement)
+    (selected :
+      (MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
+        (rungs := rungs) hfirst hthird hfaceSecond).SourceChordSelectedTriangles
+          (secondPlacement := secondPlacement)) :
+    (∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.firstShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
+      (∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
+      successor.CommonNeighborVertexIncidenceAt face hsecond hthird := by
+  rcases selected.secondRung_covered hfirst hthird hfaceSecond with
+    ⟨firstStep, hfirstRung⟩ | ⟨secondStep, hsecondRung⟩
+  · rcases selected.first_exists_component_cycle_or_chordStar with
+      ⟨component, hroot, hcycle | ⟨vertex, _hvertex, hchord, hall⟩⟩
+    · exact .inl ⟨component, hroot, hcycle⟩
+    · right
+      right
+      apply commonNeighborVertexIncidenceAt_of_chordStar successor hsecond hthird
+        selected selected.firstSelected.crossingEdges
+      · exact (selected.firstSelected.mem_crossingEdges_iff _).2
+          ⟨firstStep, hfirstRung⟩
+      · exact hchord
+      · exact hall
+  · rcases selected.second_exists_component_cycle_or_chordStar with
+      ⟨component, hroot, hcycle | ⟨vertex, _hvertex, hchord, hall⟩⟩
+    · exact .inr (.inl ⟨component, hroot, hcycle⟩)
+    · right
+      right
+      apply commonNeighborVertexIncidenceAt_of_chordStar successor hsecond hthird
+        selected selected.secondSelected.crossingEdges
+      · exact (selected.secondSelected.mem_crossingEdges_iff _).2
+          ⟨secondStep, hsecondRung⟩
+      · exact hchord
+      · exact hall
+
 end MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
 
 /-- **L1 pointed source-square reduction with selected geometry.**  The
@@ -433,7 +698,7 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSq
     (hfaceSecond : face ≠
       corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
         (nextCorridorInterior firstInterior hfirstNext).center) :
-    let square := squareDualCycle_of_firstThirdSquare
+    let square := MiddleReplacementShortDualCycle.squareDualCycleWithSecondRung
       (rungs := rungs) hfirst hthird hfaceSecond
     Nonempty (square.SourceChordSelectedTriangles
         (secondPlacement := secondPlacement)) ∨

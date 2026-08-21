@@ -4228,7 +4228,7 @@ forbids old-centre origins on both sides of the same non-centre collision.
 Consequently Lean reduces the table to precisely three rows:
 successor/successor, successor/old-centre, and
 old-centre/successor
-(	exttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareOriginReduction}).
+(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareOriginReduction}).
 This is an exhaustive local classification, not yet a consumption of the
 chord or a construction of the rolling repair, end caps, separated
 crosscuts, or L1.
@@ -4254,12 +4254,15 @@ Consuming those triangles and rows, rolling the repair, attaching both end
 caps, constructing separated crosscuts, and L1 remain open.
 
 Both selected triangles now feed the generic separator classifier directly,
-without the older square-bond wrapper.  For each triangle Lean constructs the
-component away from the outer root and proves an exact alternative: its inner
-side contains a cycle, or it is a one-vertex star incident to the retained
-chord edge and every selected crossing.  The cyclic alternative remains a
-real open obligation; no minimality property of the closed carrier is assumed
-on the opened annulus.
+without the older square-bond wrapper.  Their crossings are inherited from the
+reselected source square, so one triangle retains the literal outgoing rung of
+the middle Cell--3 placement.  For that triangle Lean constructs the component
+away from the outer root and proves an exact alternative.  If its inner side is
+a one-vertex star, the common vertex is incident to both the literal rung and
+the retained chord edge, which constructs the pointwise common-neighbour
+incidence consumed by the adjacent rail bridge.  Otherwise the inner side is
+cyclic.  This cyclic alternative remains a real open obligation; no minimality
+property of the closed carrier is assumed on the opened annulus.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
