@@ -5205,6 +5205,22 @@ profiles they update.  This remains a finite presentation of the exact local
 geometry, not a claim that the old state and these codes already determine the
 new state.
 
+The abstract serial transition now also has an exact executable boundary.
+Module
+\texttt{GoertzelV24FramedCorridorSerialFullTransitionExecutable} proves that
+an output is produced by some packaged deterministic decoder letter if and
+only if it satisfies the joint finite transition relation on all five profile
+fields.  It also supplies the resulting finite decision procedure.  Thus a
+later sparse closure checker may use the decoder without introducing a second,
+silently different transition semantics.  A certificate-shaped closure
+predicate and its path induction theorem reduce kernel replay to checking the
+listed states are closed under the executable step; they do not prescribe a
+dense all-pairs algorithm.  This is adequacy of the executable
+presentation, not geometric completeness of the abstract alphabet: some
+finite letters may still be unrealizable by a literal source Cell, and the
+boundary-rebase composition, measured reachable closure, derived $V_0$, and
+bounded base remain separate obligations.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
