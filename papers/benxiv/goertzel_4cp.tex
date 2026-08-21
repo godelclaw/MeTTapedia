@@ -3818,6 +3818,20 @@ homeomorphic simple-transversal gluing is the remaining seam-boundary atom.
 This does not prove internal-dual connectedness, reconstruct the output closed
 web, construct the physical crosscut pair, or close L1.
 
+The final bookkeeping ambiguity inside this seam receipt has now been removed.
+In
+\texttt{GoertzelV24ClosedWebSpliceSeamArcClosureCriterion}, retention of the
+two named hole faces supplies internal arc simplicity, and Lean proves that
+pairwise edge-disjointness of distinct canonical arcs is equivalent to
+seam-local two-sidedness.  The ignored end-to-end probe now takes the latter,
+source-topological formulation and derives the former before constructing the
+actual output geometry.  A separate audit rules out a tempting shortcut: the
+already-proved spherical splice package records cubicity and Euler
+characteristic, but not two-sidedness.  Hence the remaining L1 atom must come
+from the homeomorphic simple-transversal gluing (or an equivalent proof that
+no seam-face edge becomes a bridge), not from Euler arithmetic and not from a
+global two-sidedness assumption, which is false at the degree-one holes.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must

@@ -1340,9 +1340,10 @@ theorem sourceCrosscutLayerSplice_outputSize_lt
       data boundary hseparated step)
 
 /-- The retained-vertex specialization for simple layer boundaries.  Its only
-extra geometric premise beyond the open-interface construction is the finite
-endpoint-hole test; interior noncollision is derived from paired
-dual-transversal disjointness. -/
+extra premise at this construction boundary is the finite endpoint-hole test;
+paired dual-transversal disjointness derives the matched seam-endpoint
+separation used to form the rotation splice.  Simplicity of the completed
+seam faces is a later L1 obligation and is not claimed here. -/
 noncomputable def sourceCrosscutLayerSpliceDataOfEndpointFaces
     (data : Data G)
     (hcubic : data.toRotationSystem.IsCubic)
