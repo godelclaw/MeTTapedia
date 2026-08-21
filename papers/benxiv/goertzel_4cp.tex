@@ -3735,24 +3735,26 @@ crosscuts, the two remaining output topology facts, and total closure are not
 yet constructed.
 
 The remaining topology is now stated on only one representation.  The module
-	exttt{GoertzelV24RotationSystemPrimalGeometryTransport} proves that canonical
+\texttt{GoertzelV24RotationSystemPrimalGeometryTransport} proves that canonical
 simple-graph backing sends the boundary support of every literal quotient face
 exactly to the corresponding graph-backed support.  It also constructs a graph
 isomorphism between the facial duals induced on any selected literal face set
 and its canonical image.  The splice specialization identifies the internal
 faces of the computed output cellulation with the image of the literal
-non-hole faces.  Hence 	exttt{outputGeometryOfLiteral} takes facial-boundary
+non-hole faces.  Hence \texttt{outputGeometryOfLiteral} takes facial-boundary
 simplicity and internal-dual connectedness on the literal splice rotation and
 transports them to the actual graph-backed output.
 
 This removes a representation debt, not a topological hypothesis.  The
 literal splice still has to be proved to have simple internal facial
 boundaries and connected internal dual, and the resulting output still needs
-	exttt{TotallyClosedWeb}.  The ignored end-to-end probe typechecks through an
-actual 	exttt{StrictReductionCertificate} with precisely those receipts (and
-the already-listed physical splice data) exposed.  It therefore verifies that
-the current interfaces compose without presenting the conditional probe as a
-source construction, reductive-system instance, or Four-Color theorem.
+\texttt{TotallyClosedWeb}.  The ignored end-to-end probe composes the literal
+topology interface through the actual graph-backed output geometry and checks
+the public \texttt{StrictReductionCertificate} and \texttt{ReductiveSystem}
+interfaces.  It does not yet construct that certificate: reconstruction of a
+complete smaller closed-web witness remains a separate joint.  This keeps the
+probe useful without presenting a conditional interface check as a source
+construction or Four-Color theorem.
 
 The facial-boundary receipt has now been reduced to its actual finite seam
 content.  The module
@@ -3767,14 +3769,13 @@ bijection chooses a canonical finite root and the new
 receipt.  Global two-sidedness is neither assumed nor true for the annular
 source: a degree-one hole edge has both dart sides on the same named hole.
 
-Consequently the end-to-end type probe now reaches the same actual
-\texttt{StrictReductionCertificate} while replacing the infinite-looking
-``every literal internal face is simple'' premise by one finite test over the
-ordered seam positions.  This is a real topology reduction, not yet the
-noncrossing proof of that finite test.  Literal internal-dual connectedness
-and \texttt{TotallyClosedWeb} remain independent output receipts, and the
-physical crosscut constructor still must supply the previously listed source
-splice data.
+Consequently the end-to-end type probe now reaches the actual output-geometry
+constructor while replacing the infinite-looking ``every literal internal
+face is simple'' premise by one finite test over the ordered seam positions.
+This is a real topology reduction, not yet the noncrossing proof of that finite
+test.  Literal internal-dual connectedness and \texttt{TotallyClosedWeb}
+remain independent output receipts, and the physical crosscut constructor
+still must supply the previously listed source splice data.
 
 That finite test now has a topological normal form.  The predicate
 \texttt{SeamFacesTwoSided} asks only that a face reached from an ordered seam
@@ -3782,12 +3783,12 @@ dart not also contain the opposite dart over the same edge.  Lean proves this
 pointwise condition equivalent to \texttt{SeamFacesBoundarySimple}: either
 condition makes the edge map injective on every seam-root face, and boundary
 injectivity conversely excludes the fixed-point-free opposite dart.  The
-ignored end-to-end probe consumes this two-sided form and still constructs an
-actual \texttt{StrictReductionCertificate}.  Thus the open noncrossing step is
-no longer an opaque face-cardinality receipt: it is the local statement to be
-derived from the source's simple transversals and their finite seam-return
-successor.  This equivalence does not construct those transversals, prove
-internal-dual connectedness or total closure, or close L1.
+ignored end-to-end probe consumes this two-sided form and reaches actual output
+geometry.  Thus the open noncrossing step is no longer an opaque
+face-cardinality receipt: it is the local statement to be derived from the
+source's simple transversals and their finite seam-return successor.  This
+equivalence does not construct those transversals, prove internal-dual
+connectedness or total closure, or close L1.
 
 The canonical return arcs make this local statement explicitly finite.
 \texttt{GoertzelV24ClosedWebSpliceSeamArcNoncollision} partitions every
@@ -3796,10 +3797,26 @@ finite receipt has exactly two clauses: the edge trace within one arc is
 injective, and distinct arcs joined into one completed face have disjoint edge
 supports.  Lean proves their conjunction equivalent both to seam-boundary
 simplicity and to seam-local two-sidedness.  The end-to-end reduction probe
-still reaches an actual \texttt{StrictReductionCertificate} from this form.
+reaches actual output geometry from this form and separately checks the public
+carrier-changing reduction interface.
 Thus the remaining source proof separates into the simple retained ambient
 face segment inside each arc and the noncollision of different arcs under the
 simple-transversal gluing; neither clause is assumed proved here.
+
+The first of those two clauses is now constructed from the actual source
+geometry.  In
+\texttt{GoertzelV24ClosedWebSpliceSeamArcAmbientSimplicity}, positive positions
+on a canonical arc transport to consecutive darts of one ambient source face,
+and equality of their retained output edges reflects back to equality of the
+source edges.  The position-zero seam edge is new and therefore cannot equal
+any positive retained edge.  Finally, \texttt{HoleFaceKept} excludes both
+named holes from being that ambient face, so the already-proved simplicity of
+interior source-face boundaries supplies injectivity.  The strengthened
+end-to-end probe therefore assumes only
+\texttt{SeamArcsPairwiseEdgeDisjoint}; cross-arc noncollision under the
+homeomorphic simple-transversal gluing is the remaining seam-boundary atom.
+This does not prove internal-dual connectedness, reconstruct the output closed
+web, construct the physical crosscut pair, or close L1.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
