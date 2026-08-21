@@ -3649,6 +3649,17 @@ receipt must be supplied.  Thus this is not yet an output annular cellulation;
 the boundary data, connectivity and Euler fields still have to be assembled,
 and the physical corridor still has to produce the endpoint receipt.
 
+The ordered boundary carrier is now reconstructed on the same graph-backed
+output.  The module
+\texttt{GoertzelV24ClosedWebSpliceGraphBoundaryData} chooses literal internal
+darts over each wholly retained source boundary edge, sends those old edges
+through the canonical primal edge equivalence, and proves that the five inner
+and five outer edge coordinates remain injective.  The retained source stubs
+likewise give ordered vertex embeddings.  Together these data form an actual
+\texttt{AnnularBoundaryData} on the shortened simple graph.  The next boundary
+is graph-level well-formedness: cross-boundary disjointness, edge incidence,
+degree one at the ten stubs, and cubicity elsewhere have not yet been bundled.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
