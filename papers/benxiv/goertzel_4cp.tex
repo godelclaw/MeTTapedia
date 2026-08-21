@@ -5021,6 +5021,22 @@ coordinates and then combine both ingredients into one full five-coordinate
 support letter.  No ambient-colouring existential, reachable-closure count,
 new $V_0$, or bounded-base verification is claimed by these modules.
 
+The two ingredients now form one exact state-to-state geometric letter in
+module
+\texttt{GoertzelV24FramedCorridorSerialOneStepRegion}.  Between consecutive
+serial input cuts, the added region is definitionally the current literal
+Cell together with the successor presentation's two displayed crossing
+edges.  The next input region is proved equal to the old input region union
+this local extension.  For every tracked colour pair and for every ambient
+face orbit, Lean factors the next graph as the old-state graph, the local
+one-step graph, and their canonical attachment seam.  It also factors the
+local graph itself as the Cell graph, the two-edge rebase graph, and their
+internal seam.  This identifies the exact support object that the finite
+one-Cell transition must encode and rules out treating consecutive cuts as
+definitionally equal.  It is an exact geometric factorization, not yet a
+proof that the two residual seams are determined by the old profile and a
+finite local code; no reachable closure or new threshold is claimed.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
