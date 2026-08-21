@@ -4222,6 +4222,17 @@ the remaining successor-forward/old-centre origin combinations, companion
 separation, rolling iteration, both end caps, the separated-crosscut
 constructor, and L1 remain open.
 
+The residual origin table is also now exact.  In the non-chord branch neither
+incident edge has an old-forward origin, while simplicity of the pointed rail
+forbids old-centre origins on both sides of the same non-centre collision.
+Consequently Lean reduces the table to precisely three rows:
+successor/successor, successor/old-centre, and
+old-centre/successor
+(	exttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareOriginReduction}).
+This is an exhaustive local classification, not yet a consumption of the
+chord or a construction of the rolling repair, end caps, separated
+crosscuts, or L1.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
