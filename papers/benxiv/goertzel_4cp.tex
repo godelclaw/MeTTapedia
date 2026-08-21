@@ -5008,6 +5008,23 @@ quantitative entrance, not yet a uniform $V_0$.  In particular, the
 high-curvature branch, the executable reachable closure, the strict reduction
 supplier, and the bounded base remain visible obligations.
 
+The route-correct serial face factor has now been separated from the local
+geometric-prefix shortcut.  Module
+\texttt{GoertzelV24FramedCorridorSerialFaceFactorReceipt} defines a finite
+receipt with the exact input and output fragment counts, the finite relation
+from outgoing fragments to incoming fragment coordinates, and the capped
+old-prefix, literal-Cell, and overlap contributions.  Its source constructor
+is extracted from the actual heterogeneous serial prefix.  Lean proves that
+the old and local slices cover each entire outgoing fragment and proves the
+overlap-corrected cap-at-five formula.  The latter currently exposes one
+precise geometric premise: the genuine old/local overlap must have size below
+five.  This is not filled by the singleton-factor theorem for the older small
+geometric prefix, since the serial old region may contain arbitrarily many
+Cells.  Thus the remaining face-compression theorem is now sharply stated:
+bound that literal overlap and prove that the incoming coordinates reconstruct
+the old slice.  Only then may the finite receipt be joined to the tracked seam
+code and used for a reachable-closure measurement.
+
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebase} proves that, after one
