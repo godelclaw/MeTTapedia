@@ -4798,10 +4798,39 @@ one-way:
   \text{exact literal support}\quad\Longrightarrow\quad
   \text{joint finite receipt}.
 \]
-The converse adequacy theorem is still open.  Until it is proved, enumerating
-abstract receipts may over-approximate the source geometry and therefore may
-not be substituted for the exact heterogeneous support relation in a
-reachable-closure computation.
+The converse adequacy theorem is still open.  Consequently an abstract
+receipt closure need not equal the exact source closure.  Equality is not
+needed for a safe upper bound, however: once the initial source states and
+every literal transition are proved to enter the receipt closure, spurious
+receipt steps can only enlarge the computed reachable set.  Such an
+over-approximate closure may therefore lower the pigeonhole carrier soundly
+if it remains small; if it explodes, the measurement is merely inconclusive
+rather than false.
+
+Two further interfaces now make that experiment precise.  Module
+\texttt{GoertzelV24WidthTwoPortIncidenceCodec} upgrades the preceding
+injection/counting argument to an actual equivalence: every one of the
+$191184$ finite codes decodes to a complete five-coordinate semantic profile,
+and encoding after decoding (or decoding after encoding) is exact.  This does
+not assert source realizability; it makes the already proved semantic carrier
+executable without losing information.  Module
+\texttt{GoertzelV24FramedCorridorReachableProfileStep} then defines a common
+one-Cell receipt step by retaining the shared-rung terminal on input and
+forgetting it at the cumulative boundary.  Lean proves that every Tait-colored
+literal source Cell is admitted and that this step transports exactly through
+the codec.  Thus the one-Cell inclusion required by source-to-finite
+soundness is complete; the finite seed set and its iterated-closure induction
+remain to be packaged with the successor generator.
+
+The remaining measurement atom is computational representation, not a new
+profile field.  A dense test of all $191184^2$ pairs would repeat the original
+over-encoding mistake, while the present receipt contains large ambient
+witness carriers (notably a full six-edge Cell profile).  The next module must
+generate sparse successors from source-admissible finite Cell and terminal
+receipts, or prove a smaller equivalent decision procedure.  Only after that
+generator is kernel-related to the green receipt should its closure cardinal
+replace $191184$ in L7.  The finite base below the resulting $V_0$ remains a
+separate obligation.
 
 That face-factor dependency has now been removed for one literal outgoing
 fragment.  Module

@@ -14,8 +14,11 @@ coloring, the two finite halves already proved independently:
 The joint receipt accounts for all five profile coordinates.  It is a finite
 necessary image of the exact literal support relation.  The converse adequacy
 theorem—showing which abstract receipts are realized by a literal Cell—is not
-asserted here and remains necessary before an abstract reachable-closure
-measurement can replace the source semantics.
+asserted here.  It remains necessary for an *exact* abstract closure.  A
+receipt closure may nevertheless be used as a sound upper bound once its
+executable step and inclusion of every literal transition have been proved;
+spurious receipt steps can enlarge such a closure but cannot hide a source
+state.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -364,8 +367,9 @@ def LiteralLocalLayerOneCellSupport
           (aligned.toInterface.nextLocalLayerPrefixCrossing step))
 
 /-- Exact literal support maps into the joint finite receipt relation.  This
-is the soundness direction needed before reachable-state measurement; the
-converse adequacy direction is deliberately not inferred from finiteness. -/
+is the soundness direction needed for a safe upper-bound reachable-state
+measurement; the converse adequacy direction, needed for an exact
+measurement, is deliberately not inferred from finiteness. -/
 theorem localLayerFiniteOneCellReceipt_of_literalSupport
     (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
       leftInterior hnext)
