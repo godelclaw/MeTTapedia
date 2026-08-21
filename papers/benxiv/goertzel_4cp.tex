@@ -4969,6 +4969,31 @@ the earlier $191184$-state geometric-prefix theorem.  No route-correct
 reachable closure, new numerical $V_0$, or bounded-base verification is
 claimed here.
 
+The first route-correct serial compression is now machine checked in
+\texttt{GoertzelV24FramedCorridorSerialPrefixProfileCompression}.  A literal
+serial input profile is an occurrence-sensitive graph-derived profile on two
+displayed cut edges.  Each cut edge has only two dart occurrences, so it can
+belong to at most two boundary fragments; face continuation is the actual
+face-equivalence relation.  The existing lossless width-two codec therefore
+applies directly to
+\texttt{sourceCorridorSerialInputBoundedProfileAt}.  Lean computes the exact
+ambient semantic carrier size
+\[
+  1541184
+\]
+and proves that equality of its codes recovers equality of all five original
+profile coordinates.  Adding four residue classes yields two equal complete
+serial-prefix profiles, separated by at least three intervening positions,
+from
+\[
+  4\cdot1541184+1=6164737
+\]
+literal positions.  Unlike the $18000$-state result above, this theorem is
+stated on the source-ordered union of literal complementary Cell regions.
+It retires the raw Boolean carrier as the route-correct repeat bound.  It does
+not yet measure the subset reachable under the heterogeneous one-Cell support
+word, derive a graph-size $V_0$, or verify the bounded base.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
