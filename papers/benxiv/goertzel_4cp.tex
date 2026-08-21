@@ -4828,6 +4828,23 @@ the reachable-state problem.  It does not yet package the attachment and
 capped-length receipt with the finite connectivity law, so it is not by itself
 the complete one-Cell support relation.
 
+The attachment and length coordinate is now finite simultaneously across all
+three roles.  Module
+\texttt{GoertzelV24FramedCorridorFiniteFaceUpdateCode} assigns to each role one
+of the exact receipts \texttt{fresh}, \texttt{continues}~$i$, or
+\texttt{sharedRung}.  Its realization theorem constructs such a three-entry
+table from every literal source Cell and proves that the table computes all
+three outgoing capped face-progress values.  Because one receipt has at most
+$3+2=5$ values at the proved input bound, the entire face-update alphabet has
+at most
+\[
+ 5^3=125
+\]
+elements.  This is a kernel-checked upper bound on the semantic face update,
+not a dense enumeration and not an empirical reachable count.  The face table
+must still be joined with the finite tracked-connectivity update arising from
+the same literal coloring before it defines a complete source letter.
+
 This result sharpens the remaining finite-state programme without changing
 the meaning of the base.  The old twenty-mode Lemma~8.18 closure concerns the
 narrow $\tau$/mirror-$\tau$ laboratory; no typed map currently identifies
