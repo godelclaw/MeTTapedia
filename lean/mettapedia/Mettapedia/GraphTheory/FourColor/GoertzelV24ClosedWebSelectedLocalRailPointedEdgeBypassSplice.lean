@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailPointedEdgeComponentOrientation
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSelectedLocalRailPointedEdgeComponentIncidence
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathInteriorCrossSplice
 
 /-!
@@ -11,9 +11,10 @@ cross-splice operation.  The returned rail is simple, has the original outer
 endpoints, avoids the removed collision face, and retains a precise support
 receipt.
 
-This is generic pointed-walk surgery.  It does not prove the two source-corner
-component-membership facts, separation from the companion rail, iteration of
-the rolling transition, the two end caps, or Fable flag L1.
+This is generic pointed-walk surgery.  It does not classify the two literal
+pointed crossings as selected square-boundary crossings or the internal bond,
+prove separation from the companion rail, iterate the rolling transition,
+attach the two end caps, or close Fable flag L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -200,6 +201,46 @@ theorem InteriorOccurrence.nonempty_spliceRepair
     · exact .inl hold
     · exact .inr (by simpa [bridge] using hbridge)
     · exact .inl hnew
+
+/-- **L1 selected-boundary whole-rail repair.**  Once the two pointed primal
+crossings are identified with selected square-boundary crossings, the bounded
+bypass is constructed and installed in the entire rail.  This is deliberately
+a conditional integration theorem: it does not prove the two source-coordinate
+memberships, companion-rail separation, rolling iteration, or either end cap. -/
+theorem InteriorOccurrence.exists_spliceRepair_of_crossingReceipts_of_mem_crossingEdges
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring}
+    {start finish current : SelectedFace web}
+    {rail : (SelectedDualGraph web).Walk start finish}
+    (occurrence : InteriorOccurrence (current := current) rail)
+    (hpath : rail.IsPath)
+    (incomingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.incomingEdge)
+    (outgoingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.outgoingEdge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (GoertzelV24FiniteDeletionCyclicCut.edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hunion :
+      firstTriangle.selectedCycle.crossingEdges ∪
+          secondTriangle.selectedCycle.crossingEdges =
+        insert bond.internalEdge cycle.selectedCycle.crossingEdges)
+    (hinter : firstTriangle.selectedCycle.crossingEdges ∩
+        secondTriangle.selectedCycle.crossingEdges = {bond.internalEdge})
+    (hincoming :
+      incomingReceipt.crossing ∈ cycle.selectedCycle.crossingEdges)
+    (houtgoing :
+      outgoingReceipt.crossing ∈ cycle.selectedCycle.crossingEdges) :
+    ∃ bypass : InteriorOccurrence.TwoHopBypass occurrence,
+      Nonempty (InteriorOccurrence.SpliceRepair occurrence bypass) := by
+  rcases InteriorOccurrence.exists_twoHopBypass_of_crossingReceipts_of_mem_crossingEdges
+      occurrence hpath incomingReceipt outgoingReceipt firstTriangle
+      secondTriangle hunion hinter hincoming houtgoing with ⟨bypass⟩
+  exact ⟨bypass, InteriorOccurrence.nonempty_spliceRepair occurrence hpath bypass⟩
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

@@ -3216,8 +3216,16 @@ successor exposed by splitting the rail.  Generic bridge splicing and loop
 erasure then produce a path with the original outer endpoints, omit the
 collision face, and prove that every retained face came from the old rail or
 the two-hop bypass.  This is a whole-rail repair, not yet a paired-rail one:
-separation from the companion, source-corner component membership,
+separation from the companion, literal pointed-crossing classification,
 arbitrary-length iteration, both end caps, and L1 remain open.
+
+The selected-boundary case now traverses that whole local stack in one checked
+statement.  If the two pointed primal receipts are members of the selected
+short-cycle crossing set, Lean constructs the bounded bypass and returns the
+entire repaired simple rail with its support bound.  This remains a conditional
+integration theorem: it does not prove the finite source classification into
+selected square sides versus the internal bond, nor companion separation,
+iteration, end caps, or L1.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
