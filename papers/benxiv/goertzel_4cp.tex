@@ -5016,14 +5016,18 @@ from outgoing fragments to incoming fragment coordinates, and the capped
 old-prefix, literal-Cell, and overlap contributions.  Its source constructor
 is extracted from the actual heterogeneous serial prefix.  Lean proves that
 the old and local slices cover each entire outgoing fragment and proves the
-overlap-corrected cap-at-five formula.  The latter currently exposes one
-precise geometric premise: the genuine old/local overlap must have size below
-five.  This is not filled by the singleton-factor theorem for the older small
-geometric prefix, since the serial old region may contain arbitrarily many
-Cells.  Thus the remaining face-compression theorem is now sharply stated:
-bound that literal overlap and prove that the incoming coordinates reconstruct
-the old slice.  Only then may the finite receipt be joined to the tracked seam
-code and used for a reachable-closure measurement.
+overlap-corrected cap-at-five formula.  A strengthened finite
+inclusion--exclusion law removes the earlier small-overlap premise: the capped
+size of a union is determined by the capped sizes of both factors and their
+intersection, even when the raw intersection already reaches the cap.  The
+literal serial face cap is therefore now an unconditional arithmetic function
+of the finite receipt.  No unproved tiling claim is needed, and the
+singleton-factor theorem for the older small geometric prefix is not reused
+on an arbitrarily long serial prefix.  The remaining face-compression theorem
+is narrower: prove that the incoming profile coordinates and the literal Cell
+letter reconstruct the receipt's old-slice incidence and capped overlap.
+Only then may the receipt be joined to the tracked seam code and used for a
+reachable-closure measurement.
 
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module

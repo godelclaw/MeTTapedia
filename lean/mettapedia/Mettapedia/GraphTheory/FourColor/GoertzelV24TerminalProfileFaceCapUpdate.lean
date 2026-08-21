@@ -61,6 +61,38 @@ theorem min_card_union_eq_min_caps_sub_inter_of_inter_card_lt
     left.card right.card (left ∩ right).card threshold
       hoverlapLeft hoverlapRight hinter
 
+/-- Inclusion-exclusion remains determined after all three terms are
+saturated.  No small-overlap hypothesis is needed: when the overlap reaches
+the threshold, both factors and their union have reached it as well. -/
+theorem min_add_sub_eq_min_min_add_sub_min
+    (left right overlap threshold : Nat)
+    (hoverlapLeft : overlap ≤ left) (hoverlapRight : overlap ≤ right) :
+    min (left + right - overlap) threshold =
+      min (min left threshold + min right threshold -
+        min overlap threshold) threshold := by
+  omega
+
+/-- The capped cardinality of a union is determined by the capped
+cardinalities of both factors and of their intersection.  This is the fully
+finite inclusion-exclusion law used by the serial transfer receipt. -/
+theorem min_card_union_eq_min_caps_sub_min_inter
+    {α : Type*} [DecidableEq α] (left right : Finset α) (threshold : Nat) :
+    min (left ∪ right).card threshold =
+      min (min left.card threshold + min right.card threshold -
+        min (left ∩ right).card threshold) threshold := by
+  have hoverlapLeft : (left ∩ right).card ≤ left.card :=
+    Finset.card_le_card Finset.inter_subset_left
+  have hoverlapRight : (left ∩ right).card ≤ right.card :=
+    Finset.card_le_card Finset.inter_subset_right
+  have hunion : (left ∪ right).card =
+      left.card + right.card - (left ∩ right).card := by
+    have hcard := Finset.card_union_add_card_inter left right
+    omega
+  rw [hunion]
+  exact min_add_sub_eq_min_min_add_sub_min
+    left.card right.card (left ∩ right).card threshold
+      hoverlapLeft hoverlapRight
+
 /-- It is enough to bound the common support by a named seam whose cardinality
 is below the saturation threshold.  For the Cell-3 transfer that seam is the
 width-two cut, while the profile threshold is five. -/

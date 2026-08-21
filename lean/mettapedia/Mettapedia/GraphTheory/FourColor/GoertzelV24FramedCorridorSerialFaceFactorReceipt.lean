@@ -303,11 +303,11 @@ theorem sourceCorridorSerialOldFaceSliceAt_union_localFaceSliceAt
     · exact Or.inl ⟨hedge, hold⟩
     · exact Or.inr ⟨hedge, hlocal⟩
 
-/-- Exact cap-at-five update for a literal serial face fragment.  The only
-numerical side condition is that the genuine old/local overlap is below the
-source cap.  The finite receipt stores all three quantities appearing here;
-showing that its old term is reconstructed from the input profile is the
-separate reachable-state compression obligation. -/
+/-- Exact cap-at-five update for a literal serial face fragment.  The finite
+receipt stores the capped sizes of both contributions and of their genuine
+overlap, so no small-overlap or tiling hypothesis is needed.  Showing that
+the old term is reconstructed from the input profile is the separate
+reachable-state compression obligation. -/
 theorem sourceCorridorSerialPrefix_faceLengthCap_eq_factorSlices
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
@@ -332,12 +332,7 @@ theorem sourceCorridorSerialPrefix_faceLengthCap_eq_factorSlices
         ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
           hunique offset).nextLocalLayerPrefixCrossing))
       (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
-        hunique (offset.val + 1)))))
-    (hoverlap :
-      ((sourceCorridorSerialOldFaceSliceAt realization hcubic hrotation
-            htwoSided hunique offset output) ∩
-        sourceCorridorSerialLocalFaceSliceAt realization hcubic hrotation
-          htwoSided hunique offset output).card < 5) :
+        hunique (offset.val + 1))))) :
     (((sourceCorridorSerialPrefixBoundedProfileAt realization hcubic hrotation
         htwoSided hunique offset color hcolor).profile.faceLengthCap
       output).val) =
@@ -346,10 +341,10 @@ theorem sourceCorridorSerialPrefix_faceLengthCap_eq_factorSlices
             htwoSided hunique offset output).card 5 +
           min (sourceCorridorSerialLocalFaceSliceAt realization hcubic
             hrotation htwoSided hunique offset output).card 5 -
-          ((sourceCorridorSerialOldFaceSliceAt realization hcubic hrotation
+          min ((sourceCorridorSerialOldFaceSliceAt realization hcubic hrotation
                 htwoSided hunique offset output) ∩
             sourceCorridorSerialLocalFaceSliceAt realization hcubic hrotation
-              htwoSided hunique offset output).card)
+              htwoSided hunique offset output).card 5)
         5 := by
   let outputData := sourceCorridorSerialPrefixCutDataAt realization hcubic
     hrotation htwoSided hunique offset
@@ -357,7 +352,45 @@ theorem sourceCorridorSerialPrefix_faceLengthCap_eq_factorSlices
   rw [outputData.regionalProfile_faceLengthCap_val color hcolor output]
   rw [← sourceCorridorSerialOldFaceSliceAt_union_localFaceSliceAt
     realization hcubic hrotation htwoSided hunique offset output]
-  exact min_card_union_eq_min_caps_sub_inter_of_inter_card_lt _ _ 5 hoverlap
+  exact min_card_union_eq_min_caps_sub_min_inter _ _ 5
+
+/-- The same cap update stated solely through the graph-free finite receipt.
+This is the serial facial transition law exposed to a future reachable-state
+closure computation. -/
+theorem sourceCorridorSerialPrefix_faceLengthCap_eq_receipt
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+        hunique offset).nextLocalLayerPrefixCrossing step) ≠ 0)
+    (output : Fin (Fintype.card (BoundaryRegionalFragment
+      embedded.cellulation.rotation.toRotationSystem
+      (indexedCrossingEdgeSet
+        ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).nextLocalLayerPrefixCrossing))
+      (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1))))) :
+    let receipt := sourceCorridorSerialFaceFactorReceiptAt realization hcubic
+      hrotation htwoSided hunique offset
+    (((sourceCorridorSerialPrefixBoundedProfileAt realization hcubic hrotation
+        htwoSided hunique offset color hcolor).profile.faceLengthCap
+      output).val) =
+      min ((receipt.oldCap output).val + (receipt.localCap output).val -
+        (receipt.overlapCap output).val) 5 := by
+  exact sourceCorridorSerialPrefix_faceLengthCap_eq_factorSlices
+    realization hcubic hrotation htwoSided hunique offset color hcolor output
 
 end AnnularEmbedding
 
