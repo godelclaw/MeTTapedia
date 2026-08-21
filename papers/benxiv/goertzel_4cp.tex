@@ -5277,18 +5277,28 @@ scope theorem.
 One presentation-only redundancy has now been removed without changing that
 semantic frontier.  The occurrence-sensitive face fragments are indexed by a
 finite enumeration, but the splice interface already accepts an explicit
-permutation of those fragment coordinates.  Module
-\texttt{GoertzelV24WidthTwoFragmentReindexCompression} quotients the complete
-fragment payload by exactly this relabelling action.  It retains the tracked
+permutation of those fragment coordinates.  Modules
+\texttt{GoertzelV24WidthTwoFragmentReindexFinite},
+\texttt{GoertzelV24WidthTwoFragmentReindexCompression}, and
+\texttt{GoertzelV24WidthTwoFragmentReindexSplice} quotient the complete
+fragment payload by exactly this relabelling action.  They retain the tracked
 strand state, the full face-equivalence relation, every port-incidence row,
-and every capped face length.  Most importantly, equality in the quotient is
-proved to return a concrete fragment permutation under which the decoded
-five-coordinate profiles agree in the existing splice vocabulary.  Thus this
-is a lossless quotient of presentation, not an identification of distinct
-geometric states.  Its exact bounded cardinality and the corresponding
-reindexed pigeonhole theorem remain to be proved before it can replace
-$191184$ in the route threshold; the heterogeneous one-step support,
-reachable closure, numerical $V_0$, and bounded base remain separate open
+and every capped face length.  Burnside's lemma, with kernel-evaluated
+component fixed-point sums, proves exact quotient fibers
+$1,15,240,1325$ for zero through three fragments.  Including the unchanged
+twenty-four strand states gives the exact bounded carrier
+\[
+  24(1+15+240+1325)=37944,
+\]
+and the distance-four pigeonhole therefore requires $151777$ successive
+states.  The reindexed L7 theorem is now proved at that bound: it returns two
+cuts separated by at least four positions, a common fragment count, and a
+concrete fragment permutation under which the complete decoded five-field
+profiles agree in the existing splice vocabulary.  Thus this is a lossless
+quotient of presentation, not an identification of distinct geometric
+states.  It replaces the former $191184$ labelled-carrier count at this L7
+interface.  The heterogeneous one-step support, its reachable closure, the
+numerical $V_0$, and the route-native bounded base remain separate open
 obligations.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
