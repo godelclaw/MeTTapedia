@@ -4128,6 +4128,20 @@ attachment showing that each actual pointed origin is the corresponding third
 edge; no companion separation, rolling iteration, end cap, crosscut
 constructor, or L1 closure is inferred from this local dichotomy.
 
+The first proof-relevant origin case is now eliminated without such an
+attachment.  An old-centre receipt joins the second Cell--3 centre to one
+selected side face.  At a strict collision different from that centre, its
+unordered orientation is forced: on entry the predecessor is the centre, and
+on exit the successor is the centre.  A simple rail therefore cannot carry
+old-centre receipts on both sides of the collision, since its predecessor and
+successor would coincide
+(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeCenterCoordinate}).
+The public statement excludes even the simultaneous existence of both
+old-centre receipts, rather than depending on a particular stored origin tag.
+The remaining finite comparison concerns the old- and successor-forward
+corners.  In particular, no exterior-fan case has been discarded and L1 is
+still open.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
