@@ -183,6 +183,125 @@ theorem InteriorOccurrence.exists_selectedAdjacentPointedFaceAllocation
         occurrence outgoingOrigin
   }⟩
 
+section FirstWindowCollision
+
+variable
+    {firstInterior : CorridorInterior blockLength}
+    {hfirstNext : firstInterior.center.val + 2 < blockLength}
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+    {hlastNext :
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center.val +
+          2 < blockLength}
+    {hfourthNext :
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext).center.val + 2 < blockLength}
+    {firstPlacement : SelectedInternalHexRungPlacement corridor rungs firstInterior}
+    {secondPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior firstInterior hfirstNext)}
+    {thirdPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)}
+    {fourthPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+        hlastNext)}
+    {fifthPlacement : SelectedInternalHexRungPlacement corridor rungs
+      (nextCorridorInterior
+        (nextCorridorInterior
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)
+          hlastNext)
+        hfourthNext)}
+    {firstSuccessor : SeparatedSelectedSourceLocalRailSuccessor hfirstNext
+      firstPlacement secondPlacement}
+    {bridge : SeparatedSelectedSourceLocalRailSuccessor hbridgeNext
+      secondPlacement thirdPlacement}
+    {lastSuccessor : SeparatedSelectedSourceLocalRailSuccessor hlastNext
+      thirdPlacement fourthPlacement}
+    {fourthSuccessor : SeparatedSelectedSourceLocalRailSuccessor hfourthNext
+      fourthPlacement fifthPlacement}
+
+private abbrev ShiftedFuture :=
+  SupportCertifiedExactSelectedLocalRailTracedFourCellTransition
+    (firstInterior := nextCorridorInterior firstInterior hfirstNext)
+    (hfirstNext := hbridgeNext) (hbridgeNext := hlastNext)
+    (hlastNext := hfourthNext)
+    (firstPlacement := secondPlacement) (secondPlacement := thirdPlacement)
+    (thirdPlacement := fourthPlacement) (fourthPlacement := fifthPlacement)
+    (firstSuccessor := bridge) (bridge := lastSuccessor)
+    (lastSuccessor := fourthSuccessor)
+    (firstLeft := firstSuccessor.rightRailsAsNextLeft bridge)
+
+/-- The literal first-to-second strict collision alternative carries the
+complete pointed source-face allocation.  This connects the generic packet
+above to the actual first terminal window; it adds no hypothesis. -/
+theorem firstSecondInterior_hasPointedFaceAllocation
+    {future : ShiftedFuture
+      (firstInterior := firstInterior) (hfirstNext := hfirstNext)
+      (hbridgeNext := hbridgeNext) (hlastNext := hlastNext)
+      (hfourthNext := hfourthNext) (firstPlacement := firstPlacement)
+      (secondPlacement := secondPlacement) (thirdPlacement := thirdPlacement)
+      (fourthPlacement := fourthPlacement) (fifthPlacement := fifthPlacement)
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (fourthSuccessor := fourthSuccessor)}
+    {face firstFinish secondFinish : SelectedFace web}
+    {futureAssembly : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightAfter)
+      (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightBefore)
+      firstFinish secondFinish}
+    (occurrence : InteriorOccurrence (current := face)
+      futureAssembly.secondRail)
+    (incomingEdge_firstWindow : occurrence.incomingEdge ∈
+      future.transition.firstTrace.toExactTerminalWindow.secondEdges)
+    (outgoingEdge_firstWindow : occurrence.outgoingEdge ∈
+      future.transition.firstTrace.toExactTerminalWindow.secondEdges) :
+    Nonempty (InteriorOccurrence.SelectedAdjacentPointedFaceAllocation
+      (leftPlacement := secondPlacement) (rightPlacement := thirdPlacement)
+      occurrence) := by
+  rcases firstSecondInterior_hasIncidentEdgeReceipts
+      occurrence incomingEdge_firstWindow
+      outgoingEdge_firstWindow with ⟨incomingReceipt, outgoingReceipt⟩
+  exact InteriorOccurrence.exists_selectedAdjacentPointedFaceAllocation
+    occurrence incomingReceipt outgoingReceipt
+
+/-- The symmetric second-to-first strict collision alternative carries the
+same complete pointed source-face allocation on the first terminal track. -/
+theorem secondFirstInterior_hasPointedFaceAllocation
+    {future : ShiftedFuture
+      (firstInterior := firstInterior) (hfirstNext := hfirstNext)
+      (hbridgeNext := hbridgeNext) (hlastNext := hlastNext)
+      (hfourthNext := hfourthNext) (firstPlacement := firstPlacement)
+      (secondPlacement := secondPlacement) (thirdPlacement := thirdPlacement)
+      (fourthPlacement := fourthPlacement) (fifthPlacement := fifthPlacement)
+      (firstSuccessor := firstSuccessor) (bridge := bridge)
+      (lastSuccessor := lastSuccessor) (fourthSuccessor := fourthSuccessor)}
+    {face firstFinish secondFinish : SelectedFace web}
+    {futureAssembly : SelectedSourceLocalRailAssembly (web := web)
+      (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightAfter)
+      (selectedPlacementSideFace secondPlacement firstSuccessor.frame.rightBefore)
+      firstFinish secondFinish}
+    (occurrence : InteriorOccurrence (current := face)
+      futureAssembly.firstRail)
+    (incomingEdge_firstWindow : occurrence.incomingEdge ∈
+      future.transition.firstTrace.toExactTerminalWindow.firstEdges)
+    (outgoingEdge_firstWindow : occurrence.outgoingEdge ∈
+      future.transition.firstTrace.toExactTerminalWindow.firstEdges) :
+    Nonempty (InteriorOccurrence.SelectedAdjacentPointedFaceAllocation
+      (leftPlacement := secondPlacement) (rightPlacement := thirdPlacement)
+      occurrence) := by
+  rcases secondFirstInterior_hasIncidentEdgeReceipts
+      occurrence incomingEdge_firstWindow
+      outgoingEdge_firstWindow with ⟨incomingReceipt, outgoingReceipt⟩
+  exact InteriorOccurrence.exists_selectedAdjacentPointedFaceAllocation
+    occurrence incomingReceipt outgoingReceipt
+
+end FirstWindowCollision
+
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 
 end
