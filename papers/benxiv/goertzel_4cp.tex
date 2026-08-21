@@ -4925,6 +4925,30 @@ reading.  Thus the honest order is: complete the terminal-aware joint update,
 measure and kernel-check its reachable closure, use the proved smaller carrier
 to lower $V_0$, and then verify the resulting route-native bounded base.
 
+The literal outgoing Cell admits a substantially smaller exact presentation.
+Modules
+\texttt{GoertzelV24FramedCorridorSourceOutgoingProfileCompression} and
+\texttt{GoertzelV24FramedCorridorSourceOutgoingProfileCodec} use the proved
+first/centre/second face roles to omit two tables that the source geometry has
+already fixed: face continuation is equality of roles, and the two displayed
+port rows are left-only, both, and right-only.  What remains is one of 24
+strand states, one of the six orders of the three roles, and one of five
+positive capped lengths for each role.  Lean therefore computes the exact
+carrier cardinality
+\[
+  24\cdot 3!\cdot 5^3=18000.
+\]
+This is not merely a count.  The encoder is extracted from the same joint
+one-Cell receipt as the literal transition; the decoder reconstructs all five
+coordinates of the complete outgoing profile; and equality of compact codes
+is proved to reflect equality of those profiles.  The result does not yet
+replace the current $191184$-state L7 carrier.  The L7 word samples cumulative
+prefixes with the shared rung retained on input, whereas this new code is the
+terminal-free output of one literal Cell.  A successor/shift theorem, together
+with an explicit treatment of the entrance state, must identify those two
+views before the smaller number can enter the separated-prefix pigeonhole or
+the derived $V_0$.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
