@@ -5071,6 +5071,31 @@ finite Cell witness for both tracked and facial data, converse adequacy, the
 executable reachable closure, and the resulting $V_0$ and base verification
 remain open.
 
+The tracked strand law and the common finite witness are now proved.  Module
+\texttt{GoertzelV24FramedCorridorSerialTrackedTransition} separates each
+outgoing two-colour component into two finite cases: it reaches a component
+represented at one of the two displayed input coordinates, or it remains in
+an old-prefix residue which reaches neither input coordinate.  The visible
+case is reconstructed through the incoming profile's
+\texttt{strandConnected} matrix; one Boolean matrix retains the residual
+case.  This distinction is necessary because the displayed two-edge cut has
+not been proved to be the complete vertex frontier of an arbitrary source
+prefix.  It therefore avoids silently assuming the still-open exact portal
+cancellation theorem.
+
+Module
+\texttt{GoertzelV24FramedCorridorSerialFullTransition} combines that tracked
+code with the facial transition and the two outgoing edge colours.  Its
+witness type is finite, and Lean proves that every literal source Cell yields
+one joint transition governing all five profile fields: edge colour, tracked
+connectivity, face continuation, fragment/port incidence, and capped face
+progress.  This closes the finite source-image half of the one-Cell letter.
+It does not yet prove the converse adequacy statement that accepted finite
+codes are realized by literal source Cells, compute the heterogeneous
+reachable closure, derive a numerical $V_0$, or verify the resulting bounded
+base.  Those are the next distinct obligations rather than consequences
+claimed by the present packaging.
+
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebase} proves that, after one
