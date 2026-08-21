@@ -4145,13 +4145,24 @@ still open.
 Each surviving forward receipt now exposes the complete primal star at its
 source corner.  The two consecutive displayed Cell--3 boundary arms and the
 crossed third edge are pairwise distinct, and all three meet that corner
-(	exttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardCornerCoordinate}).
+(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardCornerCoordinate}).
 This uses the receipt's local three-dart fibre rather than global cubicity of
 the opened carrier.  Thus the remaining coordinate comparison has been
 narrowed again: it must identify the appropriate two boundary arms with the
 corresponding pair in the exact source-square packet.  The exterior-fan
 alternative remains explicit; no endpoint identification, repair, end cap,
 crosscut constructor, or L1 closure follows yet.
+
+A further coordinate check rules out one tempting identification rather than
+assuming it.  The two displayed arms of a forward receipt are exactly the
+face-cycle edges at its two non-rung side slots.  Boundary simplicity of the
+certified interior hexagon therefore makes each arm different from both the
+incoming and outgoing selected rungs of that placement
+(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardArmRungExclusion}).
+Thus the next comparison cannot simply rename the two arms as the two source
+rungs.  It must use the actual mixed/collision-side square coordinates, or
+prove component-boundary incidence directly.  This is a checked exclusion,
+not a construction of the pointed bypass, rolling repair, end caps, or L1.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
