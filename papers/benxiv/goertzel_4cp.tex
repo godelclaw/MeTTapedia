@@ -4424,6 +4424,36 @@ therefore bound the profiles and reachable sets actually realized by the
 literal corridor transfer; merely introducing a smaller carrier as a new
 hypothesis would relocate, rather than prove, the compression.
 
+The first lossless compression of that over-encoding is now machine checked.
+Module \texttt{GoertzelV24WidthTwoProfileCompression} observes only laws proved
+for graph-derived width-two profiles: tracked connectivity is symmetric, its
+diagonal is forced by the two boundary colours, and face continuation is
+symmetric with a forced diagonal.  It deletes exactly those redundant matrix
+entries and proves that equality of the compressed codes reconstructs equality
+of all five fields of the original cut profile.  At the four-fragment bound
+used by the cumulative source-prefix word, the exact carrier drops from
+\[
+  801805237456896
+  \quad\hbox{to}\quad
+  1536871176,
+\]
+a factor strictly greater than $521712$.  Module
+\texttt{GoertzelV24FramedCorridorCompressedPrefixProfileRepeat} proves that
+the literal source-indexed prefix profiles satisfy these semantic laws and
+reruns the separated L7 pigeonhole argument on the smaller carrier.  The
+required number of prefix positions is therefore $6147484705$, while equality
+of the complete raw splice profiles is still the conclusion.
+
+This is a substantial carrier reduction, but six billion positions are not a
+practical base threshold.  It is not the promised reachable-state closure.
+The older twenty-mode Lemma~8.18 laboratory concerns the narrow
+$\tau$/mirror-$\tau$ automaton and is not used as a supplier for the general
+source corridor.  The live F obligation is now sharper: bind the proved
+heterogeneous one-Cell transfer relation to a finite representation of its
+actually reachable semantic states, certify closure and completeness, and
+derive the resulting numerical $V_0$.  A smaller carrier introduced merely as
+a hypothesis would remain a conditional wrapper, not this construction.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
