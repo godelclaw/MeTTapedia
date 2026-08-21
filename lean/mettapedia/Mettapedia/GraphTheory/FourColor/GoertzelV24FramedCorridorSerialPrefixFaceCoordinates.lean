@@ -1,23 +1,21 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedFaceSeamFamilyCode
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialBoundaryRebaseCode
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixSeamCode
 
 /-!
-# Boundary-fragment coordinates for the serial rebase face code
+# Boundary-fragment coordinates for the serial-prefix face seam
 
-The occurrence-sensitive facial seam of a serial boundary rebase already has
-a finite graph code for any chosen ambient face orbit.  A profile transition,
-however, observes only the boundary fragments of the successor input cut.
-This file aligns those two presentations.
+The occurrence-sensitive facial seam between the cumulative source prefix and
+one literal Cell already has a finite graph code for any chosen ambient face
+orbit.  The profile on the far side of that Cell observes only its canonical
+boundary fragments.  This file aligns those two presentations.
 
-The generic code below stores the exact number of observed fragments and one
-bounded support-graph code for each of them.  Its source specialization uses
-the successor input cut's canonical fragment enumeration and the corresponding
-ambient orbit-face root.  Thus no arbitrary face root remains in the stored
-letter.
+For each actual output fragment, the stored coordinate is the exact seam graph
+on that fragment's ambient orbit face.  The fragment count is retained rather
+than padded, and agrees definitionally with the output five-field profile.
 
-This is an indexed finite family of exact seam graphs.  It does not yet prove
-that the old five-field profile together with this family determines the
-successor profile, compute a reachable closure, or derive a threshold.
+This is the facial-coordinate half of a finite one-Cell letter.  It does not
+yet prove that an old profile and a finite letter determine the new profile,
+compute a reachable closure, or derive a reduction threshold.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -41,7 +39,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
-local instance framedCorridorSerialBoundaryRebaseFaceCoordinatesEdgeSetDecidableEq :
+local instance framedCorridorSerialPrefixFaceCoordinatesEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
@@ -49,9 +47,9 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
-/-- The face-seam part of one literal serial rebase, indexed by the actual
-boundary fragments of the successor input state. -/
-noncomputable def sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt
+/-- The facial residual seam of one literal source Cell, indexed by the
+canonical boundary fragments of the literal prefix output state. -/
+noncomputable def sourceCorridorSerialPrefixFaceCoordinateCodeAt
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
     (realization : BoundaryCleanCorridorRealization embedded blockLength)
@@ -64,37 +62,35 @@ noncomputable def sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt
       (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
       (Finset.univ : Finset
         (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
-    (offset : Fin (blockLength - 3))
-    (hnext : offset.val + 1 < blockLength - 3) :
+    (offset : Fin (blockLength - 3)) :
     BoundedFaceSeamFamilyCode 4 14 := by
-  let nextOffset := sourceCorridorSerialNextOffset offset hnext
-  let nextData := sourceCorridorSerialInputCutDataAt realization hcubic
-    hrotation htwoSided hunique nextOffset
+  let outputData := sourceCorridorSerialPrefixCutDataAt realization hcubic
+    hrotation htwoSided hunique offset
   let fragmentCount := Fintype.card (BoundaryRegionalFragment
     embedded.cellulation.rotation.toRotationSystem
     (indexedCrossingEdgeSet
       ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
-        nextOffset).localLayerPrefixCrossing))
-    (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
-      hunique nextOffset))
+        offset).nextLocalLayerPrefixCrossing))
+    (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+      hunique (offset.val + 1)))
   have hfragmentCount : fragmentCount ≤ 4 := by
     exact regionalBoundaryGraphCutData_fragmentCount_le_two_mul
       embedded.cellulation.rotation.toRotationSystem
-      (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
-        hunique nextOffset)
+      (sourceCorridorSerialPrefixRegion realization hcubic hrotation htwoSided
+        hunique (offset.val + 1))
       ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided hunique
-        nextOffset).localLayerPrefixCrossing)
+        offset).nextLocalLayerPrefixCrossing)
   refine
     { faceFragmentCount := ⟨fragmentCount, Nat.lt_succ_of_le hfragmentCount⟩
       seamCode := fun fragment =>
-        sourceCorridorSerialBoundaryRebaseFaceSeamCodeAt realization hcubic
-          hrotation htwoSided hunique offset hnext
+        sourceCorridorSerialInputFaceSeamCodeAt realization hcubic hrotation
+          htwoSided hunique offset
           (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
-            (nextData.fragmentFace fragment)) }
+            (outputData.fragmentFace fragment)) }
 
-/-- The stored fragment count is exactly the successor input cut's canonical
+/-- The stored count is exactly the literal prefix output cut's canonical
 occurrence-sensitive boundary-fragment count. -/
-theorem sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt_count
+theorem sourceCorridorSerialPrefixFaceCoordinateCodeAt_count
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
     (realization : BoundaryCleanCorridorRealization embedded blockLength)
@@ -107,23 +103,21 @@ theorem sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt_count
       (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
       (Finset.univ : Finset
         (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
-    (offset : Fin (blockLength - 3))
-    (hnext : offset.val + 1 < blockLength - 3) :
-    (sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt realization hcubic
-      hrotation htwoSided hunique offset hnext).faceFragmentCount.val =
+    (offset : Fin (blockLength - 3)) :
+    (sourceCorridorSerialPrefixFaceCoordinateCodeAt realization hcubic
+      hrotation htwoSided hunique offset).faceFragmentCount.val =
       Fintype.card (BoundaryRegionalFragment
         embedded.cellulation.rotation.toRotationSystem
         (indexedCrossingEdgeSet
           ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
-            hunique (sourceCorridorSerialNextOffset offset hnext))
-            |>.localLayerPrefixCrossing))
-        (sourceCorridorSerialCutRegionAt realization hcubic hrotation htwoSided
-          hunique (sourceCorridorSerialNextOffset offset hnext))) := by
+            hunique offset).nextLocalLayerPrefixCrossing))
+        (sourceCorridorSerialPrefixRegion realization hcubic hrotation
+          htwoSided hunique (offset.val + 1))) := by
   rfl
 
-/-- The same exact count is the face-fragment count stored by the successor
-five-field serial profile. -/
-theorem sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt_count_eq_profile
+/-- The same exact count is the face-fragment count stored by the literal
+prefix output's five-field profile. -/
+theorem sourceCorridorSerialPrefixFaceCoordinateCodeAt_count_eq_profile
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
     (realization : BoundaryCleanCorridorRealization embedded blockLength)
@@ -137,23 +131,20 @@ theorem sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt_count_eq_profile
       (Finset.univ : Finset
         (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
     (offset : Fin (blockLength - 3))
-    (hnext : offset.val + 1 < blockLength - 3)
     (color : G.edgeSet → Color)
     (hcolor : ∀ step,
       color ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
-        hunique (sourceCorridorSerialNextOffset offset hnext))
-        |>.localLayerPrefixCrossing step) ≠ 0) :
-    (sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt realization hcubic
-      hrotation htwoSided hunique offset hnext).faceFragmentCount =
-      (sourceCorridorSerialInputBoundedProfileAt realization hcubic hrotation
-        htwoSided hunique (sourceCorridorSerialNextOffset offset hnext)
-        color hcolor).faceFragmentCount := by
+        hunique offset).nextLocalLayerPrefixCrossing step) ≠ 0) :
+    (sourceCorridorSerialPrefixFaceCoordinateCodeAt realization hcubic
+      hrotation htwoSided hunique offset).faceFragmentCount =
+      (sourceCorridorSerialPrefixBoundedProfileAt realization hcubic hrotation
+        htwoSided hunique offset color hcolor).faceFragmentCount := by
   apply Fin.ext
   rfl
 
-/-- Each stored coordinate is definitionally the finite code of the rebase
-seam on the corresponding successor boundary fragment's ambient face. -/
-theorem sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt_apply
+/-- Each stored coordinate is definitionally the finite code of the first
+serial seam on the corresponding output fragment's ambient face. -/
+theorem sourceCorridorSerialPrefixFaceCoordinateCodeAt_apply
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
     (realization : BoundaryCleanCorridorRealization embedded blockLength)
@@ -167,23 +158,21 @@ theorem sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt_apply
       (Finset.univ : Finset
         (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
     (offset : Fin (blockLength - 3))
-    (hnext : offset.val + 1 < blockLength - 3)
     (fragment : Fin
-      (sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt realization
-        hcubic hrotation htwoSided hunique offset hnext).faceFragmentCount.val) :
-    (sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt realization hcubic
-      hrotation htwoSided hunique offset hnext).seamCode fragment =
-      sourceCorridorSerialBoundaryRebaseFaceSeamCodeAt realization hcubic
-        hrotation htwoSided hunique offset hnext
+      (sourceCorridorSerialPrefixFaceCoordinateCodeAt realization hcubic
+        hrotation htwoSided hunique offset).faceFragmentCount.val) :
+    (sourceCorridorSerialPrefixFaceCoordinateCodeAt realization hcubic
+      hrotation htwoSided hunique offset).seamCode fragment =
+      sourceCorridorSerialInputFaceSeamCodeAt realization hcubic hrotation
+        htwoSided hunique offset
         (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
-          ((sourceCorridorSerialInputCutDataAt realization hcubic hrotation
-            htwoSided hunique (sourceCorridorSerialNextOffset offset hnext))
-            |>.fragmentFace fragment)) := by
+          ((sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+            htwoSided hunique offset).fragmentFace fragment)) := by
   rfl
 
-/-- For every successor boundary fragment, the participating ambient facial
+/-- For every literal prefix output fragment, the participating ambient facial
 seam is exactly isomorphic to the graph stored at that fragment coordinate. -/
-noncomputable def sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeIsoAt
+noncomputable def sourceCorridorSerialPrefixFaceCoordinateCodeIsoAt
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
     (realization : BoundaryCleanCorridorRealization embedded blockLength)
@@ -197,27 +186,24 @@ noncomputable def sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeIsoAt
       (Finset.univ : Finset
         (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
     (offset : Fin (blockLength - 3))
-    (hnext : offset.val + 1 < blockLength - 3)
     (fragment : Fin
-      (sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt realization
-        hcubic hrotation htwoSided hunique offset hnext).faceFragmentCount.val) :
+      (sourceCorridorSerialPrefixFaceCoordinateCodeAt realization hcubic
+        hrotation htwoSided hunique offset).faceFragmentCount.val) :
     let root := orbitFaceRoot
       embedded.cellulation.rotation.toRotationSystem
-      ((sourceCorridorSerialInputCutDataAt realization hcubic hrotation
-        htwoSided hunique (sourceCorridorSerialNextOffset offset hnext))
-        |>.fragmentFace fragment)
-    let seam := sourceCorridorSerialBoundaryRebaseFaceSeamAt realization hcubic
-      hrotation htwoSided hunique offset hnext root
+      ((sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+        htwoSided hunique offset).fragmentFace fragment)
+    let seam := sourceCorridorSerialInputFaceSeamGraphAt realization hcubic
+      hrotation htwoSided hunique offset root
     seam.induce seam.support ≃g
-      ((sourceCorridorSerialBoundaryRebaseFaceCoordinateCodeAt realization
-        hcubic hrotation htwoSided hunique offset hnext).seamCode fragment).graph := by
+      ((sourceCorridorSerialPrefixFaceCoordinateCodeAt realization hcubic
+        hrotation htwoSided hunique offset).seamCode fragment).graph := by
   dsimp only
-  exact sourceCorridorSerialBoundaryRebaseFaceSeamCodeIsoAt realization hcubic
-    hrotation htwoSided hunique offset hnext
+  exact sourceCorridorSerialInputFaceSeamCodeIsoAt realization hcubic hrotation
+    htwoSided hunique offset
     (orbitFaceRoot embedded.cellulation.rotation.toRotationSystem
-      ((sourceCorridorSerialInputCutDataAt realization hcubic hrotation
-        htwoSided hunique (sourceCorridorSerialNextOffset offset hnext))
-        |>.fragmentFace fragment))
+      ((sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+        htwoSided hunique offset).fragmentFace fragment))
 
 end AnnularEmbedding
 

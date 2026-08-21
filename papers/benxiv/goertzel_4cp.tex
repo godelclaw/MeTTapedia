@@ -5040,10 +5040,11 @@ finite local code; no reachable closure or new threshold is claimed.
 The facial rebase code is now aligned with the actual successor profile in
 module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceCoordinates}.
-Its finite dependent carrier stores an exact fragment count at most four and
-one fourteen-vertex support-graph code for each genuine fragment, rather than
+The shared carrier in
+\texttt{GoertzelV24BoundedFaceSeamFamilyCode} stores an exact fragment count
+and one bounded support-graph code for each genuine fragment, rather than
 padding arbitrary face roots.  For the literal source rebase, the stored count
-is proved equal to the successor five-field profile's own
+is at most four and is proved equal to the successor five-field profile's own
 \texttt{faceFragmentCount}.  Each coordinate is taken from that successor
 cut's canonical occurrence-sensitive fragment enumeration, and the ambient
 seam on the fragment's named face is proved graph-isomorphic to the stored
@@ -5051,6 +5052,18 @@ code.  This closes the coordinate-alignment obligation left by the previous
 rebase module.  The remaining theorem is semantic adequacy: the old profile
 and the finite local Cell/rebase receipts must determine exactly the complete
 successor relation.  That theorem, reachable closure, and $V_0$ remain open.
+
+The same exact alignment now holds on the other side of the local step.
+Module
+\texttt{GoertzelV24FramedCorridorSerialPrefixFaceCoordinates} indexes the
+facial seam between the cumulative old prefix and the literal Cell by the
+canonical fragments of the Cell-extended prefix output.  Its exact fragment
+count agrees with that output five-field profile, and the ambient seam on each
+named face is graph-isomorphic to the stored fourteen-vertex code.  Hence both
+facial seams in the two-stage state update now speak the coordinates of the
+profiles they update.  This remains a finite presentation of the exact local
+geometry, not a claim that the old state and these codes already determine the
+new state.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 
