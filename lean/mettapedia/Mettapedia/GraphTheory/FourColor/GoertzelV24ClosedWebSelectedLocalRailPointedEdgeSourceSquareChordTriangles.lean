@@ -27,6 +27,8 @@ open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24DualPathPointedOccurrence
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24CubicSmallBoundaryCycle
+open GoertzelV24FiniteDeletionCyclicCut
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
@@ -109,6 +111,10 @@ structure MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
   second_crossing_chord_or_original : ∀ step,
     secondSelected.crossingEdge step = chordEdge ∨
       secondSelected.crossingEdge step ∈ square.cycle.selectedCycle.crossingEdges
+  first_support_original : ∀ current ∈ firstSelected.walk.support,
+    current ∈ square.cycle.walk.support
+  second_support_original : ∀ current ∈ secondSelected.walk.support,
+    current ∈ square.cycle.walk.support
   original_edges_covered : ∀ dualEdge ∈ square.cycle.walk.edges,
     dualEdge ∈ firstSelected.walk.edges ∨
       dualEdge ∈ secondSelected.walk.edges
@@ -204,8 +210,8 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
         square.cycle.isCycle square.length_eq_four hchord with
     ⟨firstTriangle, secondTriangle, hfirstCycle, hfirstLength,
       hsecondCycle, hsecondLength, hfirstChord, hsecondChord,
-      hfirstEdges, hsecondEdges, horiginalEdges, _hfirstSupport,
-      _hsecondSupport, _hdistinct⟩
+      hfirstEdges, hsecondEdges, horiginalEdges, hfirstSupport,
+      hsecondSupport, _hdistinct⟩
   have hchordNotOriginal : s(secondFace, face) ∉ square.cycle.walk.edges :=
     (SimpleGraph.Walk.isChord_sym2Mk.1 hchord).2.1
   let firstSelected :=
@@ -230,6 +236,8 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
     chordEdge_mem_second := ?_
     first_crossing_chord_or_original := ?_
     second_crossing_chord_or_original := ?_
+    first_support_original := ?_
+    second_support_original := ?_
     original_edges_covered := ?_
   }⟩
   · exact hfirstLength
@@ -248,7 +256,159 @@ theorem SelectedPlacementSideForwardEdgeReceipt.exists_sourceSquare_chordSelecte
     exact MiddleReplacementShortDualCycle.selectedCycleOfOriginalOrChord_crossingEdge_eq_or_mem
       web.annular.RS square.cycle.selectedCycle secondTriangle hsecondCycle
         hchordShared hchordNotOriginal hsecondEdges step
+  · exact hfirstSupport
+  · exact hsecondSupport
   · exact horiginalEdges
+
+namespace MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
+
+variable {face : SelectedFace web}
+  {square : MiddleReplacementSquareDualCycle (web := web) face}
+
+/-- Every face of the first selected source-square triangle remains in the
+literal interior support of the original square. -/
+theorem first_support_internal
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement))
+    (current : SelectedFace web)
+    (hcurrent : current ∈ selected.firstSelected.walk.support) :
+    current.1 ∈ web.annular.cellulation.interiorFaces :=
+  square.cycle.support_internal current
+    (selected.first_support_original current hcurrent)
+
+/-- Every face of the second selected source-square triangle remains in the
+literal interior support of the original square. -/
+theorem second_support_internal
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement))
+    (current : SelectedFace web)
+    (hcurrent : current ∈ selected.secondSelected.walk.support) :
+    current.1 ∈ web.annular.cellulation.interiorFaces :=
+  square.cycle.support_internal current
+    (selected.second_support_original current hcurrent)
+
+/-- Repackage the first selected source-square triangle as the established
+short-cycle separator, anchored at the literal chord crossing. -/
+noncomputable def firstShortCycle
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement)) :
+    MiddleReplacementShortDualCycle (web := web)
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) := by
+  classical
+  let anchor := Classical.choose
+    ((selected.firstSelected.mem_crossingEdges_iff selected.chordEdge).1
+      selected.chordEdge_mem_first)
+  have hanchor : selected.firstSelected.crossingEdge anchor =
+      selected.chordEdge := Classical.choose_spec
+    ((selected.firstSelected.mem_crossingEdges_iff selected.chordEdge).1
+      selected.chordEdge_mem_first)
+  exact {
+    start :=
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center
+    walk := selected.firstSelected.walk
+    isCycle := selected.firstSelected.isCycle
+    length_eq_three_or_four := .inl selected.first_length_eq_three
+    face_mem_support := selected.firstSelected.walk.start_mem_support
+    support_internal := selected.first_support_internal
+    anchor := anchor
+    anchorEdge := selected.chordEdge
+    anchorEdge_mem_shared := by
+      rw [← hanchor]
+      exact selected.firstSelected.crossing_mem_shared anchor
+    crossingEdge := selected.firstSelected.crossingEdge
+    crossing_mem_shared := selected.firstSelected.crossing_mem_shared
+    crossingEdge_anchor := hanchor
+  }
+
+/-- Repackage the second selected source-square triangle as the established
+short-cycle separator, anchored at the same literal chord crossing. -/
+noncomputable def secondShortCycle
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement)) :
+    MiddleReplacementShortDualCycle (web := web)
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) := by
+  classical
+  let anchor := Classical.choose
+    ((selected.secondSelected.mem_crossingEdges_iff selected.chordEdge).1
+      selected.chordEdge_mem_second)
+  have hanchor : selected.secondSelected.crossingEdge anchor =
+      selected.chordEdge := Classical.choose_spec
+    ((selected.secondSelected.mem_crossingEdges_iff selected.chordEdge).1
+      selected.chordEdge_mem_second)
+  exact {
+    start :=
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center
+    walk := selected.secondSelected.walk
+    isCycle := selected.secondSelected.isCycle
+    length_eq_three_or_four := .inl selected.second_length_eq_three
+    face_mem_support := selected.secondSelected.walk.start_mem_support
+    support_internal := selected.second_support_internal
+    anchor := anchor
+    anchorEdge := selected.chordEdge
+    anchorEdge_mem_shared := by
+      rw [← hanchor]
+      exact selected.secondSelected.crossing_mem_shared anchor
+    crossingEdge := selected.secondSelected.crossingEdge
+    crossing_mem_shared := selected.secondSelected.crossing_mem_shared
+    crossingEdge_anchor := hanchor
+  }
+
+/-- The first selected source-square triangle reaches the generic separator
+classifier.  Its inner side is cyclic or a one-vertex star incident to the
+literal chord crossing and every selected boundary edge. -/
+theorem first_exists_component_cycle_or_chordStar
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement)) :
+    ∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.firstShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+          ∃ vertex : V, vertex ∈ component.supp ∧
+            vertex ∈ selected.chordEdge.1 ∧
+            ∀ edge ∈ selected.firstShortCycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  rcases selected.firstShortCycle.exists_component_cycle_or_star_of_length_eq_three
+      selected.first_length_eq_three with
+    ⟨component, hroot, hcycle | ⟨vertex, hvertex, hall⟩⟩
+  · exact ⟨component, hroot, .inl hcycle⟩
+  · have hchord : selected.chordEdge ∈
+        selected.firstShortCycle.selectedCycle.crossingEdges := by
+      simpa [firstShortCycle] using
+        selected.firstShortCycle.anchorEdge_mem_crossingEdges
+    exact ⟨component, hroot,
+      .inr ⟨vertex, hvertex, hall selected.chordEdge hchord, hall⟩⟩
+
+/-- The second selected source-square triangle has the same cyclic-or-star
+classification, anchored at the same literal chord crossing. -/
+theorem second_exists_component_cycle_or_chordStar
+    (selected : square.SourceChordSelectedTriangles
+      (secondPlacement := secondPlacement)) :
+    ∃ component :
+        (G.deleteEdges (edgeFinsetValueSet
+          selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
+      web.annular.RS.outer.fst ∉ component.supp ∧
+        (HasCycleOnSide G (fun vertex => vertex ∈ component.supp) ∨
+          ∃ vertex : V, vertex ∈ component.supp ∧
+            vertex ∈ selected.chordEdge.1 ∧
+            ∀ edge ∈ selected.secondShortCycle.selectedCycle.crossingEdges,
+              vertex ∈ edge.1) := by
+  rcases selected.secondShortCycle.exists_component_cycle_or_star_of_length_eq_three
+      selected.second_length_eq_three with
+    ⟨component, hroot, hcycle | ⟨vertex, hvertex, hall⟩⟩
+  · exact ⟨component, hroot, .inl hcycle⟩
+  · have hchord : selected.chordEdge ∈
+        selected.secondShortCycle.selectedCycle.crossingEdges := by
+      simpa [secondShortCycle] using
+        selected.secondShortCycle.anchorEdge_mem_crossingEdges
+    exact ⟨component, hroot,
+      .inr ⟨vertex, hvertex, hall selected.chordEdge hchord, hall⟩⟩
+
+end MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
 
 /-- **L1 pointed source-square reduction with selected geometry.**  The
 actual pointed allocation now returns constructed selected chord triangles,
