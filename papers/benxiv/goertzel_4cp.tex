@@ -3623,9 +3623,17 @@ rotation, and therefore with facial steps, then packages the result as actual
 \texttt{SimpleGraphDartRotation.Data}.  Its ordered-cut specialization consumes
 the same finite \texttt{OrderedCutEndpointSimple} receipt; it does not silently
 derive that receipt from arbitrary local crosscuts.  Thus the remaining
-representation work at this joint is narrower: construct the receipt from the
-physical source cut pair, transport the two named hole faces and coloring, and
-reassemble the shortened packed closed-web witness.
+representation work at this joint is narrower still.  The module
+\texttt{GoertzelV24RotationSystemPrimalColorTransport} proves that the
+canonical edge equivalence is an isomorphism from the rotation system's
+edge-adjacency graph to the line graph of its computed primal graph.  It then
+transports the literal proper splice colouring and its nonzero Tait condition,
+including an ordered-cut specialization using the already-proved equal-profile
+splice colouring.  This result consumes the same finite endpoint receipt; it
+does not construct it.  What remains is to derive that receipt from the
+physical source cut pair, transport the two named hole faces, and reassemble
+the shortened packed closed-web witness.  This is a checked representation
+joint, not L1/C--5 closure.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
