@@ -209,6 +209,103 @@ theorem exists_letter_decode_eq_some_of_receipt
     rw [receipt.roleIndex.apply_symm_apply] at hlength
     convert hlength.symm using 1 <;> rfl
 
+/-- The profile computed by a count-compatible letter carries the receipt
+from which that letter was decoded. -/
+theorem receipt_outputProfile
+    (code : LocalLayerFiniteOneCellLetterCode)
+    (input : BoundedCorridorCutProfile 2 1 3)
+    (hcount : input.faceFragmentCount.val = code.inputCount.val) :
+    LocalLayerFiniteOneCellReceiptThree input
+      (code.outputProfile input hcount) := by
+  classical
+  rcases input with ⟨inputCount, inputProfile⟩
+  rcases code with
+    ⟨codeInputCount, cellProfile, geometry, roleIndex, faceUpdate⟩
+  have hcountFin : inputCount = codeInputCount := Fin.ext hcount
+  subst codeInputCount
+  have hcount_rfl : hcount = rfl := Subsingleton.elim _ _
+  rw [hcount_rfl]
+  let letter : LocalLayerFiniteOneCellLetterCode :=
+    ⟨inputCount, cellProfile, geometry, roleIndex, faceUpdate⟩
+  let receipt : LocalLayerFiniteOneCellCode
+      (widenFaceFragmentBoundThreeToFour ⟨inputCount, inputProfile⟩)
+      (widenFaceFragmentBoundThreeToFour
+        (letter.outputProfile ⟨inputCount, inputProfile⟩ rfl)) :=
+    { cellProfile := cellProfile
+      geometry := geometry
+      roleIndex := roleIndex
+      faceUpdate := faceUpdate }
+  refine ⟨receipt, rfl, ?_, ?_, ?_, ?_, ?_⟩
+  · intro step
+    rfl
+  · intro pair first second
+    simp [receipt, widenFaceFragmentBoundThreeToFour,
+      LocalLayerFiniteOneCellLetterCode.outputProfile,
+      LocalLayerFiniteOneCellLetterCode.outputStrandConnected]
+  · intro left right
+    simp [receipt, widenFaceFragmentBoundThreeToFour,
+      LocalLayerFiniteOneCellLetterCode.outputProfile]
+  · intro role step
+    simp only [receipt, widenFaceFragmentBoundThreeToFour,
+      LocalLayerFiniteOneCellLetterCode.outputProfile, decide_eq_true_eq]
+    have hrole : roleIndex.symm (roleIndex role) = role :=
+      roleIndex.symm_apply_apply role
+    exact ⟨fun h => Eq.mp
+        (congrArg (fun current => current.ContainsPort step) hrole) h,
+      fun h => Eq.mpr
+        (congrArg (fun current => current.ContainsPort step) hrole) h⟩
+  · intro role
+    simp only [receipt, widenFaceFragmentBoundThreeToFour,
+      LocalLayerFiniteOneCellLetterCode.outputProfile]
+    have hrole : roleIndex.symm (roleIndex role) = role :=
+      roleIndex.symm_apply_apply role
+    let currentLetter : LocalLayerFiniteOneCellLetterCode :=
+      ⟨inputCount, cellProfile, geometry, roleIndex, faceUpdate⟩
+    have hinputCap :
+        currentLetter.inputFaceLengthCap
+            ⟨inputCount, inputProfile⟩ rfl =
+          inputProfile.faceLengthCap := by
+      funext fragment
+      rfl
+    let finalCap := fun current : LocalLayerRightFaceRole =>
+      (faceUpdate current).updatedCap inputProfile.faceLengthCap current
+    calc
+      (faceUpdate (roleIndex.symm (roleIndex role))).updatedCap
+          (currentLetter.inputFaceLengthCap
+            ⟨inputCount, inputProfile⟩ rfl)
+          (roleIndex.symm (roleIndex role)) =
+        finalCap (roleIndex.symm (roleIndex role)) := by rw [hinputCap]
+      _ = finalCap role := congrArg finalCap hrole
+
+/-- Conversely, every successful decoder application satisfies the complete
+terminal-aware receipt relation.  Thus the deterministic decoder neither
+adds nor loses transitions relative to the declared finite receipt semantics. -/
+theorem receipt_of_exists_letter_decode_eq_some
+    {input : BoundedCorridorCutProfile 2 1 3}
+    {output : BoundedCorridorCutProfile 2 0 3}
+    (hdecode : LocalLayerFiniteOneCellDecoderStep input output) :
+    LocalLayerFiniteOneCellReceiptThree input output := by
+  classical
+  rcases hdecode with ⟨code, hdecode⟩
+  rw [LocalLayerFiniteOneCellLetterCode.decode] at hdecode
+  split at hdecode
+  next hcount =>
+    simp only [Option.some.injEq] at hdecode
+    subst output
+    exact receipt_outputProfile code input hcount
+  next hcount =>
+    simp at hdecode
+
+/-- Exact executable presentation of the finite terminal-aware receipt. -/
+theorem localLayerFiniteOneCellDecoderStep_iff_receipt
+    (input : BoundedCorridorCutProfile 2 1 3)
+    (output : BoundedCorridorCutProfile 2 0 3) :
+    LocalLayerFiniteOneCellDecoderStep input output ↔
+      LocalLayerFiniteOneCellReceiptThree input output := by
+  constructor
+  · exact receipt_of_exists_letter_decode_eq_some
+  · exact exists_letter_decode_eq_some_of_receipt
+
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
 
