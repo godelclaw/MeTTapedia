@@ -264,6 +264,102 @@ def HasBoundaryCleanHexagonalGeodesicBlock {source : SourceTrail G}
                     embedded.cellulation.rotation.toRotationSystem
                     neighbor.1).card = 6
 
+/-- L1 path adapter: any sufficiently long geodesic in the actual internal
+dual contains a boundary-clean hexagonal block.  This factors the geometric
+part of the weighted corridor theorem from the separate argument that
+produces a long geodesic. -/
+theorem hasBoundaryCleanHexagonalGeodesicBlock_of_geodesic
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    {start finish : AmbientFace embedded.cellulation.interiorFaces}
+    (path : (interiorDualGraph
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      embedded.cellulation.interiorFaces).Walk start finish)
+    (hpath : path.IsPath)
+    (hgeodesic : path.length =
+      (interiorDualGraph
+        (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+        embedded.cellulation.interiorFaces).dist start finish)
+    (blockLength : Nat) (hpositive : 0 < blockLength)
+    (hpositionCount :
+      (embedded.boundaryCleanContaminationBudget + 1) * blockLength ≤
+        path.length + 1) :
+    embedded.HasBoundaryCleanHexagonalGeodesicBlock blockLength := by
+  classical
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let boundary := orbitFaceBoundary RS
+  let internalFaces := embedded.cellulation.interiorFaces
+  let internalDual := interiorDualGraph boundary internalFaces
+  let badBudget := embedded.boundaryCleanContaminationBudget
+  have hforbidden : embedded.corridorForbiddenFaces.card ≤ badBudget := by
+    simpa [badBudget] using
+      embedded.card_corridorForbiddenFaces_le_boundaryCleanContaminationBudget
+        hsource geometry
+  have hbad :
+      (pathMarkedPositions boundary internalFaces
+        embedded.corridorForbiddenFaces path
+        ((badBudget + 1) * blockLength)).card ≤ badBudget :=
+    (card_pathMarkedPositions_le boundary internalFaces
+      embedded.corridorForbiddenFaces path hpath _
+        (by simpa [badBudget] using hpositionCount)).trans hforbidden
+  obtain ⟨block, hblock⟩ := exists_corridorBlock_avoiding
+    badBudget blockLength hpositive
+      (pathMarkedPositions boundary internalFaces
+        embedded.corridorForbiddenFaces path
+        ((badBudget + 1) * blockLength)) hbad
+  refine ⟨start, finish, path, hpath, hgeodesic,
+    (by simpa [badBudget] using hpositionCount), block, ?_⟩
+  intro offset
+  let position := corridorBlockIndex (defectBudget := badBudget) block offset
+  let selected := path.getVert position.val
+  have hselectedClean : selected ∉ embedded.corridorForbiddenFaces := by
+    intro hmarked
+    exact hblock offset
+      ((mem_pathMarkedPositions_iff boundary internalFaces
+        embedded.corridorForbiddenFaces path
+        ((badBudget + 1) * blockLength) position).2 hmarked)
+  have hselectedNotDefectNeighborhood :
+      selected ∉ faceDefectClosedNeighborhood boundary internalFaces := by
+    intro hmarked
+    exact hselectedClean (Finset.mem_union_left _ hmarked)
+  have hselectedNotHoleAdjacent :
+      selected ∉ embedded.holeAdjacentInteriorFaces := by
+    intro hmarked
+    exact hselectedClean (Finset.mem_union_right _ hmarked)
+  constructor
+  · by_contra hnonhex
+    exact hselectedNotDefectNeighborhood
+      (mem_faceDefectClosedNeighborhood_of_defect
+        boundary internalFaces selected hnonhex)
+  · intro neighbor hadj
+    have hneighborNotHole : neighbor.1 ∉ embedded.cellulation.holeFaces := by
+      intro hhole
+      apply hselectedNotHoleAdjacent
+      apply (embedded.mem_holeAdjacentInteriorFaces_iff selected).2
+      apply Finset.mem_biUnion.2
+      refine ⟨neighbor.1, hhole, ?_⟩
+      simpa [holeAdjacentFullFaces, RS, boundary] using hadj.symm
+    have hneighborInternal : neighbor.1 ∈ internalFaces := by
+      simp [internalFaces,
+        GoertzelV24FramedAnnularExcess.FramedAnnularCellulation.interiorFaces,
+        hneighborNotHole]
+    let internalNeighbor : AmbientFace internalFaces :=
+      ⟨neighbor.1, hneighborInternal⟩
+    have hadjInternal : internalDual.Adj selected internalNeighbor := by
+      rcases (interiorDualGraph_adj_iff boundary
+        (Finset.univ : Finset (OrbitFace RS))).1 hadj with
+          ⟨hne, edge, _hfull, hselected, hneighbor⟩
+      exact
+        interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+          boundary internalFaces embedded.internalFace_incidence_le_two
+            hne hselected hneighbor
+    refine ⟨hneighborInternal, ?_⟩
+    by_contra hnonhex
+    apply hselectedNotDefectNeighborhood
+    exact mem_faceDefectClosedNeighborhood_of_adj_defect
+      boundary internalFaces hadjInternal hnonhex
+
 /-- Boundary-aware weighted L1.  The additional contamination term is the
 actual hole perimeter, so no internal path position adjacent to a container
 face is mistaken for a full translation-invariant corridor position. -/
