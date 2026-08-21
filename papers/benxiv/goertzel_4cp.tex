@@ -4419,6 +4419,20 @@ is the quantitative premise needed for the next uncrossing step.  It does not
 yet prove that the chosen shortest dual routes are noncrossing or laminar, and
 so it is not a uniform cutoff or a completed L6 argument.
 
+The metric uncrossing atom needed after that minimization is now kernel checked
+as well.  Module \texttt{GoertzelV24WalkTailExchange} proves that two graph
+walks meeting at a vertex may exchange their suffixes while preserving their
+combined length exactly.  Module
+\texttt{GoertzelV24FramedMinimumCurvatureUncrossing} applies this to two
+geodesics selected by the minimum weighted-L9 pairing.  Minimality supplies the
+reverse inequality, so the crossed endpoint distances are equal to the
+original distance sum and both exchanged walks are again geodesics.  This is
+the precise metric content of uncrossing; it does not yet choose a simultaneous
+family of routes minimizing crossing complexity, prove that a forbidden
+intersection strictly decreases such a secondary measure, or construct the
+annular laminar depth required by L6.  Those are the remaining geometric steps
+before the high-curvature branch yields a uniform cutoff.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
