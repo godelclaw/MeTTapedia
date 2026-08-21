@@ -4767,6 +4767,29 @@ quantifies over graph-dependent prefix factors, and must be replaced by a
 bounded coordinate code with a proved adequacy theorem before a closure
 measurement is meaningful.
 
+That face-factor dependency has now been removed for one literal outgoing
+fragment.  Module
+\texttt{GoertzelV24FramedCorridorPrefixFactorSubsingleton} proves that the
+old-prefix factors contributing to such a fragment have cardinality at most
+one.  Two cut-touching factors resolve to the same incoming boundary support;
+two residual factors are both the singleton shared rung; and a mixed pair
+would put an incoming cut edge on the new Cell boundary, contradicting their
+proved disjointness.  Module
+\texttt{GoertzelV24FramedCorridorFiniteFaceAttachment} therefore replaces the
+dependent factor family by the finite alphabet
+\[
+  \{\mathsf{fresh},\ \mathsf{continues}(i),\ \mathsf{sharedRung}\},
+\]
+which has exactly $n+2$ letters for an input with $n$ face coordinates.  Its
+coverage theorem retains exact ambient-face and edge-support data, and its cap
+theorem proves that the same code computes the exact capped face-length update
+already established from the rotation geometry.  At the proved input bound
+$n\leq 3$, one outgoing fragment thus has at most five attachment receipts.
+This is not yet the complete finite transition: the outgoing fragment carrier
+must still be bounded and padded, and the per-fragment receipts must be joined
+with color, connectivity, face equivalence, and port-incidence coordinates
+before any reachable-closure measurement is authoritative.
+
 This result sharpens the remaining finite-state programme without changing
 the meaning of the base.  The old twenty-mode Lemma~8.18 closure concerns the
 narrow $\tau$/mirror-$\tau$ laboratory; no typed map currently identifies
