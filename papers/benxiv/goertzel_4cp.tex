@@ -5056,6 +5056,21 @@ the serial letter.  Abstract-code realizability, the joint five-coordinate
 support relation, the reachable-state count, and the resulting $V_0$ and base
 verification remain open and are not claimed here.
 
+Module
+\texttt{GoertzelV24FramedCorridorSerialFaceTransition} now packages those
+facts as one finite facial transition between the route-correct bounded serial
+profiles.  Its code retains the occurrence-sensitive use of incoming
+fragments, the single capped residue, the literal-Cell and overlap caps, and
+the outgoing continuation and port-incidence tables.  The outgoing face cap
+is not copied into the code: Lean decodes it from the incoming profile and
+the four finite cap ingredients.  Every actual literal source Cell produces
+such a transition, covering jointly the continuation, port-incidence, and
+capped-progress coordinates of the manuscript's face data.  This is the
+source-image direction only.  The tracked two-colour strand law, a common
+finite Cell witness for both tracked and facial data, converse adequacy, the
+executable reachable closure, and the resulting $V_0$ and base verification
+remain open.
+
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebase} proves that, after one
