@@ -4941,13 +4941,24 @@ carrier cardinality
 This is not merely a count.  The encoder is extracted from the same joint
 one-Cell receipt as the literal transition; the decoder reconstructs all five
 coordinates of the complete outgoing profile; and equality of compact codes
-is proved to reflect equality of those profiles.  The result does not yet
-replace the current $191184$-state L7 carrier.  The L7 word samples cumulative
-prefixes with the shared rung retained on input, whereas this new code is the
-terminal-free output of one literal Cell.  A successor/shift theorem, together
-with an explicit treatment of the entrance state, must identify those two
-views before the smaller number can enter the separated-prefix pigeonhole or
-the derived $V_0$.
+is proved to reflect equality of those profiles.  Module
+\texttt{GoertzelV24FramedCorridorSourceOutgoingProfileRepeat} then samples this
+code at every literal Cell in the heterogeneous source corridor.  Four residue
+classes force two positions at gap at least four, so Lean obtains equality of
+the complete original outgoing cumulative-prefix profiles from
+\[
+  4\cdot 18000+1=72001
+\]
+indexed Cells.  Thus the smaller carrier now gives a source-shaped
+witness-level L7 repeat; it is not merely a proposed compression.
+
+The reachable-state and threshold claims remain narrower than this result.
+Iterating the terminal-aware one-Cell support still requires a successor/shift
+theorem identifying one Cell's output with the next Cell's input, together
+with an entrance convention.  The currently packaged graph-size threshold
+still uses the earlier $191184$-state theorem until that downstream calibration
+is replaced.  No reachable closure, new numerical $V_0$, or bounded-base
+verification is claimed here.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 
