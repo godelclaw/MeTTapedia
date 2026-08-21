@@ -11,10 +11,12 @@ cross-splice operation.  The returned rail is simple, has the original outer
 endpoints, avoids the removed collision face, and retains a precise support
 receipt.
 
-This is generic pointed-walk surgery.  It does not classify the two literal
-pointed crossings as selected square-boundary crossings or the internal bond,
-prove separation from the companion rail, iterate the rolling transition,
-attach the two end caps, or close Fable flag L1.
+This is generic pointed-walk surgery.  Its support receipt also reduces
+separation from a companion rail to the old rail and the supplied bypass.  It
+does not classify the two literal pointed crossings as selected
+square-boundary crossings or the internal bond, prove either of those two
+input disjointness facts for the source construction, iterate the rolling
+transition, attach the two end caps, or close Fable flag L1.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -69,6 +71,28 @@ structure InteriorOccurrence.SpliceRepair
   current_not_mem_support : current ∉ walk.support
   support_subset : ∀ vertex ∈ walk.support,
     vertex ∈ rail.support ∨ vertex ∈ bypass.walk.support
+
+/-- A repaired rail is disjoint from a companion whenever both pieces named
+by its sharp support receipt are.  This is the exact preservation interface
+needed by the paired-rail assembly: it neither assumes nor proves that the
+source bypass itself avoids the companion. -/
+theorem InteriorOccurrence.SpliceRepair.support_disjoint_of_parts
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring}
+    {start finish current companionStart companionFinish : SelectedFace web}
+    {rail : (SelectedDualGraph web).Walk start finish}
+    {companion : (SelectedDualGraph web).Walk companionStart companionFinish}
+    {occurrence : InteriorOccurrence (current := current) rail}
+    {bypass : InteriorOccurrence.TwoHopBypass occurrence}
+    (repair : InteriorOccurrence.SpliceRepair occurrence bypass)
+    (hold : rail.support.Disjoint companion.support)
+    (hbypass : bypass.walk.support.Disjoint companion.support) :
+    repair.walk.support.Disjoint companion.support := by
+  rw [List.disjoint_left]
+  intro vertex hrepair hcompanion
+  rcases repair.support_subset vertex hrepair with holdVertex | hbypassVertex
+  · exact (List.disjoint_left.mp hold holdVertex) hcompanion
+  · exact (List.disjoint_left.mp hbypass hbypassVertex) hcompanion
 
 private theorem InteriorOccurrence.current_mem_support
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

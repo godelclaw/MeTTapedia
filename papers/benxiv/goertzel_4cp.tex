@@ -3227,6 +3227,14 @@ integration theorem: it does not prove the finite source classification into
 selected square sides versus the internal bond, nor companion separation,
 iteration, end caps, or L1.
 
+The paired-rail obligation has now been cut at its exact support boundary.
+Every repaired-rail face comes from either the old rail or the supplied
+two-hop bypass, so Lean proves that disjointness of both pieces from a
+companion implies disjointness of the repaired whole rail from that companion.
+This is preservation, not a new geometric construction: the source must still
+prove that the concrete bypass avoids the companion, as well as the pointed
+crossing classification, rolling iteration, end caps, and L1.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
