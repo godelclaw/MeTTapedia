@@ -3611,8 +3611,21 @@ equivalence.  For the actual ordered-cut output, the existing finite
 \texttt{OrderedCutEndpointSimple} test supplies exactly that injectivity.
 This closes the edge-carrier part of the reconstruction without assuming that
 an arbitrary splice is simple.  The source construction must still discharge
-the finite endpoint test and transport the dart rotation and the two named
-hole faces before a packed shortened witness has been constructed.
+the finite endpoint test before a packed shortened witness has been
+constructed.
+
+The dart-and-rotation half of the same reconstruction joint is now closed as
+well.  Under precisely that endpoint-injectivity premise,
+\texttt{GoertzelV24RotationSystemPrimalGraphBacking} gives a canonical
+equivalence from the literal splice darts to the darts of the computed primal
+simple graph.  It proves compatibility with dart reversal and with the vertex
+rotation, and therefore with facial steps, then packages the result as actual
+\texttt{SimpleGraphDartRotation.Data}.  Its ordered-cut specialization consumes
+the same finite \texttt{OrderedCutEndpointSimple} receipt; it does not silently
+derive that receipt from arbitrary local crosscuts.  Thus the remaining
+representation work at this joint is narrower: construct the receipt from the
+physical source cut pair, transport the two named hole faces and coloring, and
+reassemble the shortened packed closed-web witness.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
