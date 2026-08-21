@@ -4361,8 +4361,8 @@ construct the separated crosscuts, or close L1.
 The finite-base threshold now has its first end-to-end numerical composition.
 Module
 \texttt{GoertzelV24FramedBaseThreshold} now fixes the four-port
-separated-repeat length to $74564740$, using the lossless
-face-equivalence carrier below.  It proves that this length meets the literal
+separated-repeat length to $6164740$, using the lossless
+port-incidence carrier below.  It proves that this length meets the literal
 source-layer spacing inequality and feeds it to the existing framed
 boundary-clean corridor bound.  Above the resulting explicit face threshold,
 Lean constructs a clean corridor of the required length or proves that the
@@ -4472,7 +4472,22 @@ Module
 the literal cumulative source prefixes to this quotient and proves a complete
 raw-profile repeat at gap at least four from $74564737$ positions.
 
-This is a substantial carrier reduction, but seventy-four million positions
+There is one more graph-semantic restriction before any reachability
+argument.  Each displayed cut edge has exactly two actual darts, so it can
+occur in at most two occurrence-sensitive boundary fragments.  Module
+\texttt{GoertzelV24WidthTwoPortIncidenceCompression} maps every fragment
+containing a fixed edge injectively to one of those darts.  The proof is valid
+even when a bridge contributes both occurrences to the same quotient face;
+it assumes no global two-sidedness.  The resulting lossless carrier has
+$1541184$ states at four fragments, about $12.1$ times fewer than the preceding
+face-equivalence carrier and more than $520$ million times fewer than the raw
+carrier.  Module
+\texttt{GoertzelV24FramedCorridorPortIncidencePrefixProfileRepeat} discharges
+the new semantic law for the literal cumulative source prefix and proves a
+complete raw-profile repeat at gap at least four from $6164737$ positions.
+The framed threshold above consequently uses block length $6164740$.
+
+This is a substantial carrier reduction, but more than six million positions
 still make a direct base audit impractical.  The primary manuscripts require
 an explicit L7 upper bound, not a separately postulated reachable-state
 quotient.  The older twenty-mode Lemma~8.18 laboratory concerns the narrow

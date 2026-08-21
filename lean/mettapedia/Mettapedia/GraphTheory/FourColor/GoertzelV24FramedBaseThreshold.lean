@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedBoundaryCleanCorridor
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorFaceEquivalencePrefixProfileRepeat
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorPortIncidencePrefixProfileRepeat
 
 /-!
 # An explicit framed threshold for a separated profile repeat
@@ -25,7 +25,7 @@ namespace GoertzelV24FramedBaseThreshold
 open GoertzelV24ClosedWebProfileFiniteness
 open GoertzelV24CleanHexCorridor
 open GoertzelV24FramedTrail
-open GoertzelV24WidthTwoFaceEquivalenceCompression
+open GoertzelV24WidthTwoPortIncidenceCompression
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
@@ -39,14 +39,14 @@ local instance framedBaseThresholdEdgeSetDecidableEq : DecidableEq G.edgeSet :=
 /-- The first block length whose modulo-four profile pigeonhole has enough
 positions to return two source layers separated by more than three offsets. -/
 def separatedSourceProfileBlockLength : Nat :=
-  4 * boundedWidthTwoFaceEquivalenceProfileCount 4 + 4
+  4 * boundedWidthTwoPortIncidenceProfileCount 4 + 4
 
 /-- The semantic compression makes the actual block length a checked
 numeral, rather than leaving the conservative raw profile formula opaque. -/
 theorem separatedSourceProfileBlockLength_eq :
-    separatedSourceProfileBlockLength = 74564740 := by
+    separatedSourceProfileBlockLength = 6164740 := by
   rw [separatedSourceProfileBlockLength,
-    boundedWidthTwoFaceEquivalenceProfileCount_four]
+    boundedWidthTwoPortIncidenceProfileCount_four]
 
 theorem separatedSourceProfileBlockLength_pos :
     0 < separatedSourceProfileBlockLength := by
@@ -56,7 +56,7 @@ theorem separatedSourceProfileBlockLength_pos :
 /-- The chosen block length discharges the exact arithmetic premise of the
 source-layer separated-profile theorem. -/
 theorem separatedSourceProfileBlockLength_large :
-    4 * boundedWidthTwoFaceEquivalenceProfileCount 4 + 1 ≤
+    4 * boundedWidthTwoPortIncidenceProfileCount 4 + 1 ≤
       separatedSourceProfileBlockLength - 3 := by
   unfold separatedSourceProfileBlockLength
   omega
