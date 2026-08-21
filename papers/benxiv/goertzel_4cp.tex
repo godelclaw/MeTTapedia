@@ -3209,6 +3209,16 @@ of a selected square side or the internal square bond.  That classification,
 companion-rail separation, rolling iteration, both end caps, and L1 remain
 open.
 
+The canonical first--third square now also carries public source coordinates.
+Its four facial vertices are definitionally the first, second, and third
+Cell--3 centres followed by the collision face, and Lean proves that the first
+two centre-to-centre sides are crossed by the literal outgoing rungs of the
+first two interiors.  A proof-relevant reselection retains both rung crossings
+while leaving the facial cycle unchanged.  This removes an arbitrary crossing
+choice from the finite comparison, but does not identify either actual pointed
+rail edge with a collision-adjacent square side or prove that it meets the
+selected primal component.  That incidence remains the live local atom.
+
 The bounded bypass is now also installed in the entire selected rail.  Path
 simplicity identifies the strict occurrence with the unique support index;
 this proves that the bypass endpoints are exactly the predecessor and

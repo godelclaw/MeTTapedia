@@ -364,6 +364,23 @@ noncomputable def squareDualCycle_of_firstThirdSquare
     MiddleReplacementSquareDualCycle (web := web) face :=
   firstThirdSquareCycle (rungs := rungs) hfirst hthird hfaceSecond
 
+@[simp] theorem squareDualCycle_of_firstThirdSquare_anchor_val
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    (squareDualCycle_of_firstThirdSquare (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.anchor.val = 0 := by
+  rfl
+
 /-! ### L1: public coordinates of the canonical first--third square
 
 The construction above deliberately hides its concrete four-cons walk.  The

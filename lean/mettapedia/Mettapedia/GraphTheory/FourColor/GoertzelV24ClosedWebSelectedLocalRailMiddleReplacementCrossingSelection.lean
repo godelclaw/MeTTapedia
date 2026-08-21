@@ -23,6 +23,9 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24HexCorridorInterfaceMatching
+open GoertzelV24HexCorridorSkeleton
+open GoertzelV24HexFaceRungType
 open GoertzelV24SelectedDualCycleSeparator
 
 universe u
@@ -115,6 +118,131 @@ noncomputable def anchoredSelection
     (cycle : MiddleReplacementShortDualCycle (web := web) face) :
     cycle.anchoredSelection.crossingEdge cycle.anchor = cycle.anchorEdge := by
   exact cycle.selectedCycle_crossingEdge_anchor
+
+/-- Retain the distinguished source anchor and one further literal crossing
+of the fixed replacement-cycle walk. -/
+noncomputable def anchorAndOneSelection
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    cycle.CrossingSelection where
+  crossingEdge := fun current =>
+    if current = cycle.anchor then cycle.anchorEdge
+    else if current = step then edge
+    else cycle.anchoredSelection.crossingEdge current
+  crossing_mem_shared := by
+    intro current
+    by_cases hanchor : current = cycle.anchor
+    · simpa [hanchor] using cycle.anchorEdge_mem_shared
+    · by_cases hstep : current = step
+      · subst current
+        simpa [hstepAnchor] using hedge
+      · simp only [hanchor, hstep, ↓reduceIte]
+        exact cycle.anchoredSelection.crossing_mem_shared current
+
+@[simp] theorem anchorAndOneSelection_crossingEdge_anchor
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    (cycle.anchorAndOneSelection step hstepAnchor edge hedge).crossingEdge
+      cycle.anchor = cycle.anchorEdge := by
+  simp [anchorAndOneSelection]
+
+@[simp] theorem anchorAndOneSelection_crossingEdge_step
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    (cycle.anchorAndOneSelection step hstepAnchor edge hedge).crossingEdge
+      step = edge := by
+  simp [anchorAndOneSelection, hstepAnchor]
+
+/-- Promote an anchor-plus-one selection without changing the facial walk. -/
+noncomputable def anchorAndOneCycle
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    MiddleReplacementShortDualCycle (web := web) face :=
+  let selection := cycle.anchorAndOneSelection step hstepAnchor edge hedge
+  selection.reselect
+    (cycle.anchorAndOneSelection_crossingEdge_anchor step hstepAnchor edge hedge)
+
+@[simp] theorem anchorAndOneCycle_walk
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    (cycle.anchorAndOneCycle step hstepAnchor edge hedge).walk = cycle.walk := rfl
+
+@[simp] theorem anchorAndOneCycle_crossingEdge_anchor
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    (cycle.anchorAndOneCycle step hstepAnchor edge hedge).crossingEdge
+      cycle.anchor = cycle.anchorEdge := by
+  simp [anchorAndOneCycle]
+
+@[simp] theorem anchorAndOneCycle_crossingEdge_step
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (step : Fin cycle.walk.length)
+    (hstepAnchor : step ≠ cycle.anchor)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ sharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (cycle.walk.getVert step.val).1
+      (cycle.walk.getVert (step.val + 1)).1) :
+    (cycle.anchorAndOneCycle step hstepAnchor edge hedge).crossingEdge step = edge := by
+  simp [anchorAndOneCycle]
+
+/-- Step `1` of a source square, packaged with the length-four certificate
+instead of relying on an untyped numeral at later use sites. -/
+def squareSecondStep
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (square : MiddleReplacementSquareDualCycle (web := web) face) :
+    Fin square.cycle.walk.length :=
+  ⟨1, by rw [square.length_eq_four]; omega⟩
+
+@[simp] theorem squareSecondStep_val
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (square : MiddleReplacementSquareDualCycle (web := web) face) :
+    (squareSecondStep square).val = 1 := rfl
 
 /-- Retain the source rung and two additional literal rail crossings at three
 pairwise-distinct steps of the already-proved replacement cycle. -/
@@ -312,6 +440,110 @@ noncomputable def anchorAndTwoCycle
       firstEdge secondEdge hfirstEdge hsecondEdge).crossingEdge second =
         secondEdge := by
   simp [anchorAndTwoCycle]
+
+/-! ### L1: the two literal centre-to-centre crossings of the source square -/
+
+variable
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {rungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton}
+    {firstInterior : CorridorInterior blockLength}
+    {hfirstNext : firstInterior.center.val + 2 < blockLength}
+    {hbridgeNext :
+      (nextCorridorInterior firstInterior hfirstNext).center.val + 2 < blockLength}
+
+/-- The canonical first--third square, with its second centre-to-centre side
+reselected to carry the literal outgoing rung of the second Cell--3 interior.
+The facial walk is unchanged definitionally.  This is crossing provenance,
+not the still-open pointed-edge/component incidence theorem. -/
+noncomputable def squareDualCycleWithSecondRung
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (hfirst : interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) |>.Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          firstInterior.center) face)
+    (hthird : interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) |>.Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+        face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    MiddleReplacementSquareDualCycle (web := web) face := by
+  let square := squareDualCycle_of_firstThirdSquare (rungs := rungs)
+    hfirst hthird hfaceSecond
+  have hstepAnchor : squareSecondStep square ≠ square.cycle.anchor := by
+    intro h
+    have hval := congrArg Fin.val h
+    have hanchor : square.cycle.anchor.val = 0 := by
+      simp [square]
+    have hstep : (squareSecondStep square).val = 1 := rfl
+    omega
+  have hedge :
+      rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing ∈
+        sharedInteriorEdges
+          (orbitFaceBoundary web.annular.RS)
+          (Finset.univ : Finset (OrbitFace web.annular.RS))
+          (square.cycle.walk.getVert (squareSecondStep square).val).1
+          (square.cycle.walk.getVert ((squareSecondStep square).val + 1)).1 := by
+    simpa [square] using
+      squareDualCycle_of_firstThirdSquare_secondRung_mem_shared
+        (rungs := rungs) hfirst hthird hfaceSecond
+  exact
+    { cycle := square.cycle.anchorAndOneCycle (squareSecondStep square) hstepAnchor
+        (rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing) hedge
+      length_eq_four := by
+        change square.cycle.walk.length = 4
+        exact square.length_eq_four }
+
+@[simp] theorem squareDualCycleWithSecondRung_walk
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (hfirst : interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) |>.Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          firstInterior.center) face)
+    (hthird : interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) |>.Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+        face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    (squareDualCycleWithSecondRung (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.walk =
+      (squareDualCycle_of_firstThirdSquare (rungs := rungs)
+        hfirst hthird hfaceSecond).cycle.walk := by
+  rfl
+
+@[simp] theorem squareDualCycleWithSecondRung_crossingEdge_secondStep
+    {face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    (hfirst : interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) |>.Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          firstInterior.center) face)
+    (hthird : interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)) |>.Adj
+        (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+        face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    (squareDualCycleWithSecondRung (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.crossingEdge
+        (squareSecondStep (squareDualCycle_of_firstThirdSquare (rungs := rungs)
+          hfirst hthird hfaceSecond)) =
+      rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing := by
+  simp [squareDualCycleWithSecondRung, squareSecondStep]
 
 end MiddleReplacementShortDualCycle
 
