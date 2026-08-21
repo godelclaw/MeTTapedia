@@ -3164,8 +3164,20 @@ second-to-first case obtains them from the first track; each therefore
 constructs the complete pointed source-face packet without a new premise.
 Terminal collisions remain terminal alternatives rather than being coerced
 into an internal occurrence.  The unresolved geometric step is unchanged but
-now sits at the consumer boundary: orient the two retained primal corners
-against the selected component and discharge the opposite-endpoint branch.
+now sits at the consumer boundary; the next paragraph records the first
+construction on that boundary.
+
+The opposite-endpoint branch is now discharged constructively.  The two
+endpoint triangles share the literal facial-dual edge crossing the internal
+bond of the two-vertex residue.  One of that edge's two distinct faces is not
+the pointed collision face, and the two complete endpoint triangles join the
+rail predecessor to that face and that face to the successor.  Lean packages
+the result as an actual replacement walk of length at most two and proves that
+its support omits the collision.  The remaining local atom is therefore only
+the source-placement theorem putting the two pointed crossings into the exact
+endpoint-triangle packet, followed by splicing this bounded bypass into the
+retained rail and rechecking separation from its companion.  Arbitrary-length
+iteration, both end caps, and L1 remain open.
 
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
