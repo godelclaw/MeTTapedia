@@ -4444,8 +4444,33 @@ reruns the separated L7 pigeonhole argument on the smaller carrier.  The
 required number of prefix positions is therefore $6147484705$, while equality
 of the complete raw splice profiles is still the conclusion.
 
-This is a substantial carrier reduction, but six billion positions are not a
-practical base threshold.  It is not the promised reachable-state closure.
+Two further source laws reduce this carrier without changing that conclusion.
+Module
+\texttt{GoertzelV24WidthTwoBoundarySemanticCompression} proves that a tracked
+off-diagonal entry can be true only when both displayed boundary colours belong
+to the tracked colour pair, that every indexed boundary fragment contains a
+displayed port, and that every capped fragment length is positive.  It proves a
+second lossless codec on profiles satisfying those laws and computes its exact
+four-fragment carrier as $78419184$.  Module
+\texttt{GoertzelV24FramedCorridorBoundarySemanticPrefixProfileRepeat} proves
+these laws for the literal source prefix and lowers the separated repeat demand
+to $313676737$.
+
+Finally, the source face-continuation table is equality of literal face labels,
+so it is transitive as well as symmetric.  Module
+\texttt{GoertzelV24WidthTwoFaceEquivalenceCompression} encodes that equivalence
+relation by its six upper-triangular bits, retains only valid equivalence codes,
+and proves the encoding lossless on actual profiles.  There are exactly fifteen
+such codes on four fragments.  The resulting exact carrier has $18641184$
+states, more than $43012570$ times smaller than the original raw carrier.
+Module
+\texttt{GoertzelV24FramedCorridorFaceEquivalencePrefixProfileRepeat} connects
+the literal cumulative source prefixes to this quotient and proves a complete
+raw-profile repeat at gap at least four from $74564737$ positions.
+
+This is a substantial carrier reduction, but seventy-four million positions
+are not a practical base threshold.  It is not the promised reachable-state
+closure.
 The older twenty-mode Lemma~8.18 laboratory concerns the narrow
 $\tau$/mirror-$\tau$ automaton and is not used as a supplier for the general
 source corridor.  The live F obligation is now sharper: bind the proved
