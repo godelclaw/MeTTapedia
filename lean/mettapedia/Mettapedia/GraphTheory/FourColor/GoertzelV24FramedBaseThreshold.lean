@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedBoundaryCleanCorridor
-import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorPortIncidencePrefixProfileRepeat
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorThreeFacePrefixProfileRepeat
 
 /-!
 # An explicit framed threshold for a separated profile repeat
@@ -7,8 +7,8 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorPortIncidencePr
 Addenda XXIV--XXV bound the finite base by composing two effective numbers:
 the length needed to repeat a corridor profile and the face count needed to
 force a clean corridor of that length.  This module performs that numerical
-composition for the four-port source-layer profile already used by the
-annular splice layer.
+composition for the source-layer profile already used by the annular splice
+layer, using the proved three-face bound on its literal two-edge cut.
 
 The result is deliberately conditional on a proposed bound for the number of
 interior pentagons.  Spherical curvature alone does not supply the manuscript's
@@ -24,6 +24,7 @@ namespace GoertzelV24FramedBaseThreshold
 
 open GoertzelV24ClosedWebProfileFiniteness
 open GoertzelV24CleanHexCorridor
+open GoertzelV24FramedCorridorThreeFacePrefixProfileRepeat
 open GoertzelV24FramedTrail
 open GoertzelV24WidthTwoPortIncidenceCompression
 
@@ -39,14 +40,14 @@ local instance framedBaseThresholdEdgeSetDecidableEq : DecidableEq G.edgeSet :=
 /-- The first block length whose modulo-four profile pigeonhole has enough
 positions to return two source layers separated by more than three offsets. -/
 def separatedSourceProfileBlockLength : Nat :=
-  4 * boundedWidthTwoPortIncidenceProfileCount 4 + 4
+  4 * boundedWidthTwoPortIncidenceProfileCount 3 + 4
 
 /-- The semantic compression makes the actual block length a checked
 numeral, rather than leaving the conservative raw profile formula opaque. -/
 theorem separatedSourceProfileBlockLength_eq :
-    separatedSourceProfileBlockLength = 6164740 := by
+    separatedSourceProfileBlockLength = 764740 := by
   rw [separatedSourceProfileBlockLength,
-    boundedWidthTwoPortIncidenceProfileCount_four]
+    boundedWidthTwoPortIncidenceProfileCount_three]
 
 theorem separatedSourceProfileBlockLength_pos :
     0 < separatedSourceProfileBlockLength := by
@@ -56,14 +57,14 @@ theorem separatedSourceProfileBlockLength_pos :
 /-- The chosen block length discharges the exact arithmetic premise of the
 source-layer separated-profile theorem. -/
 theorem separatedSourceProfileBlockLength_large :
-    4 * boundedWidthTwoPortIncidenceProfileCount 4 + 1 ≤
+    4 * boundedWidthTwoPortIncidenceProfileCount 3 + 1 ≤
       separatedSourceProfileBlockLength - 3 := by
   unfold separatedSourceProfileBlockLength
   omega
 
 /-- Effective interior-face threshold obtained by asking the existing framed
-L1 theorem for a corridor long enough to force a separated four-port profile
-repeat. -/
+L1 theorem for a corridor long enough to force a separated source-profile
+repeat on the proved three-face carrier. -/
 def pentagonBoundedSeparatedProfileFaceThreshold
     (source : SourceTrail G) (pentagonBound : Nat) : Nat :=
   SourceTrail.AnnularEmbedding.pentagonBoundedBoundaryCleanHexBlockThreshold
