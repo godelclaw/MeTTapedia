@@ -4719,6 +4719,17 @@ it is the semantic update law for the actual source Cell.  It also explains
 why simply forgetting terminals was not a sound compression---a strand may
 pass through the shared rung and disappear from the zero-terminal view.
 
+The terminal refinement does not duplicate the face state.  Module
+\texttt{GoertzelV24FramedCorridorPrefixTerminalFaceCoordinates} proves that
+forgetting the shared-rung terminal recovers the established cumulative-prefix
+profile exactly.  In particular, the finite fragment count,
+occurrence-sensitive face equivalence, crossing-incidence rows, and capped
+face-progress coordinates are unchanged.  Thus the existing face-factor laws
+can be reused on the same incoming state as the finite connectivity update.
+This is an interface identification, not yet the joint finite transition: the
+local attachment and face-factor update must still be coordinateized together
+with the connectivity law before a reachable-state closure is authoritative.
+
 This result sharpens the remaining finite-state programme without changing
 the meaning of the base.  The old twenty-mode Lemma~8.18 closure concerns the
 narrow $\tau$/mirror-$\tau$ laboratory; no typed map currently identifies
