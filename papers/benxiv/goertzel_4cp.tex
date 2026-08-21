@@ -3708,15 +3708,31 @@ ordered outer edges lies on the transported outer hole.  These incidences
 assemble the existing cellulation into an actual
 \texttt{ClosedWebAnnularEmbedding}; no conditional incidence bundle remains.
 
+The minimum-face part of the output frontier geometry is now constructed too.
+The module
+\texttt{GoertzelV24ClosedWebSpliceGraphGeometry} first observes that the two
+source holes each contain their five injectively named boundary edges, while
+the interior source faces already carry the certified lower bound.  The
+finite seam-return predicate therefore applies the existing global splice
+theorem to every literal output face.  A canonical equivalence between the
+complete dart fibers of corresponding quotient faces then transports facial
+orbit cardinality through the simple-graph backing.  Consequently
+\texttt{outputGeometry} derives the minimum-five field rather than accepting
+it as output data.
+
 The ignored end-to-end probe still typechecks after consuming this constructor.
-On the output-instance side only annular frontier geometry and total closure
-remain explicit arguments.  The source side must still construct the physical
+Its remaining output-instance receipts are now the finite seam-face return
+test, simplicity of every internal output facial boundary, connectedness of
+the internal output facial dual, and total closure.  The latter two topology
+properties and total closure are not consequences of a cardinality transport,
+and remain explicit.  The source side must still construct the physical
 splice receipts---equal profiles, coloring alignment, both retained-hole
 receipts, endpoint simplicity, retained-side connectedness, and the local
 Euler balance.  Thus the graph-backed annular-embedding reconstruction joint
-is closed, but this remains an assembly audit rather than a supplier for
-arbitrary large inputs: the physical L1 crosscuts, output geometry, and total
-closure are not yet constructed.
+and the minimum-face geometry receipt are closed, but this remains an assembly
+audit rather than a supplier for arbitrary large inputs: the physical L1
+crosscuts, the two remaining output topology facts, and total closure are not
+yet constructed.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
