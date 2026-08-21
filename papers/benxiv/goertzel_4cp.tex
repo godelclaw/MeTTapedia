@@ -4088,6 +4088,19 @@ does not classify either actual pointed crossing into that packet or into the
 endpoint triangles' additional internal bond, so the local source comparison
 and all subsequent rail-repair obligations remain open.
 
+The endpoint table for that normal form is now finite and exact.  Module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareEndpointAllocation}
+first classifies the two collision-side crossings by which endpoint of the
+realized bond they meet.  Combining that four-way allocation with the earlier
+four-way source-rung allocation appears to create sixteen cases.  Local
+cubicity proves that exactly two selected square crossings meet each endpoint,
+so ten cases are impossible and exactly six incidence patterns remain.  Each
+case carries all four literal endpoint-incidence proofs.  This is not yet the
+pointed comparison: it does not identify either actual pointed rail crossing
+as one of the four square-boundary crossings or as the endpoint triangles'
+internal bond.  Companion separation, rolling iteration, both end caps, the
+separated-crosscut constructor, and L1 therefore remain open.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
