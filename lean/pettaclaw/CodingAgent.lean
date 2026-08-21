@@ -341,6 +341,25 @@ def prepareWithIter (transformations : List IterArchitecture.Transformation)
     ⟨messages, view.advertised⟩
   (boundary, { view with advertised := boundary.advertised })
 
+/-- The connector passes the transformation result itself; it does not sort,
+deduplicate, or otherwise reinterpret the transformed message order. -/
+theorem iter_preparation_messages_are_exact
+    (transformations : List IterArchitecture.Transformation)
+    (messages : List Nat) (view : RequestView) :
+    (prepareWithIter transformations messages view).1.messages =
+      (IterArchitecture.applyTransformations transformations
+        ⟨messages, view.advertised⟩).messages := by
+  rfl
+
+/-- Disabling the Iter connector is observationally the identity request
+preparation. -/
+theorem empty_iter_preparation_is_identity
+    (messages : List Nat) (view : RequestView) :
+    prepareWithIter [] messages view =
+      (⟨messages, view.advertised⟩, view) := by
+  cases view
+  rfl
+
 /-- Transformational plasticity of the request boundary cannot itself grant
 execution or permission. -/
 theorem iter_preparation_preserves_execution_authority
@@ -351,6 +370,21 @@ theorem iter_preparation_preserves_execution_authority
       (prepareWithIter transformations messages view).2.permitted =
         view.permitted := by
   simp [prepareWithIter]
+
+/-- Executable grounding is an assumption about the captured request view,
+not something a transformation may manufacture through advertisement. -/
+def ExecutionGrounded (inventory : List Nat) (view : RequestView) : Prop :=
+  ∀ tool, tool ∈ view.executable → tool ∈ inventory
+
+theorem iter_preparation_preserves_grounded_execution
+    (transformations : List IterArchitecture.Transformation)
+    (messages inventory : List Nat) (view : RequestView)
+    (grounded : ExecutionGrounded inventory view) :
+    ExecutionGrounded inventory
+      (prepareWithIter transformations messages view).2 := by
+  intro tool executable
+  apply grounded tool
+  simpa [prepareWithIter] using executable
 
 /-- Host the coding loop as protected development: the CodingAgent event may
 change development, but cannot rewrite constitution or life. -/
@@ -388,6 +422,9 @@ end CodingAgent
 #print axioms CodingAgent.every_trace_is_audited
 #print axioms CodingAgent.answer_is_terminal
 #print axioms CodingAgent.unverified_answer_is_reachable
+#print axioms CodingAgent.iter_preparation_messages_are_exact
+#print axioms CodingAgent.empty_iter_preparation_is_identity
 #print axioms CodingAgent.iter_preparation_preserves_execution_authority
+#print axioms CodingAgent.iter_preparation_preserves_grounded_execution
 #print axioms CodingAgent.hosted_coding_preserves_kernel_and_life
 #print axioms CodingAgent.coding_and_life_commute
