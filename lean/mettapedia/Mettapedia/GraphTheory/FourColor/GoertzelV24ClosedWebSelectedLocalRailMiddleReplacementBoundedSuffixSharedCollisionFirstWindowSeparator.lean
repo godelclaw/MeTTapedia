@@ -163,6 +163,62 @@ theorem MiddleReplacementShortDualCycle.exists_sharedCollisionSeparatorReceipt
       component hroot
   }⟩
 
+/-- The provenance-preserving form of the separator constructor.  The
+returned receipt records definitionally that its selected cycle is the input
+cycle; the older `Nonempty` interface intentionally forgets this equality. -/
+theorem MiddleReplacementShortDualCycle.exists_sharedCollisionSeparatorReceipt_eq
+    {face : SelectedFace (web := web)}
+    (cycle : MiddleReplacementShortDualCycle (web := web) face) :
+    ∃ receipt : RetainedSharedCollisionShortSeparatorReceipt
+        (web := web) face,
+      receipt.cycle = cycle := by
+  rcases cycle.exists_component_away_from_outerRoot with ⟨component, hroot⟩
+  exact ⟨{
+    cycle := cycle
+    component := component
+    outerRoot_not_mem := hroot
+    cut_card := cycle.crossingEdges_card_eq_three_or_four
+    disjoint_inner := cycle.crossingEdges_disjoint_innerHoleBoundary
+    disjoint_outer := cycle.crossingEdges_disjoint_outerHoleBoundary
+    disconnects := cycle.not_connected_deleteEdges_crossingEdges
+    componentGeometry := cycle.hasCycleOnSide_or_component_star_or_bond
+      component hroot
+  }, rfl⟩
+
+/-- **L1 source-tied square separator.**  The first--third square branch
+retains its literal ladder coordinates when it is promoted to a physical
+separator.  In particular, the separator cycle is definitionally the
+four-step cycle constructed from the two corridor edges and the collision
+face; it is not an unrelated short cycle reconstructed after the source
+classification has been forgotten.
+
+This is provenance for the finite square case, not a rail repair or an L1
+closure theorem. -/
+theorem exists_firstThirdSquare_sharedCollisionSeparatorReceipt
+    (selectedRungs : SelectedCorridorRungs
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ∃ square : MiddleReplacementSquareDualCycle (web := web) face,
+      ∃ receipt : RetainedSharedCollisionShortSeparatorReceipt
+          (web := web) face,
+        receipt.cycle = square.cycle := by
+  let square := squareDualCycle_of_firstThirdSquare (rungs := selectedRungs)
+    hfirst hthird hfaceSecond
+  rcases square.cycle.exists_sharedCollisionSeparatorReceipt_eq with
+    ⟨receipt, hreceipt⟩
+  exact ⟨square, receipt, hreceipt⟩
+
 /-- The exact source packet together with either the surviving centre or the
 complete physical short-separator receipt. -/
 structure RetainedSharedCollisionFirstWindowSeparatorResolution
