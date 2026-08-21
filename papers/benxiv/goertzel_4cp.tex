@@ -4360,10 +4360,10 @@ construct the separated crosscuts, or close L1.
 
 The finite-base threshold now has its first end-to-end numerical composition.
 Module
-\texttt{GoertzelV24FramedBaseThreshold} fixes the four-port separated-repeat
-length to
-$4\,\texttt{closedWebCutProfileCount}(4)+4$, proves that this length meets the
-literal source-layer spacing inequality, and feeds it to the existing framed
+\texttt{GoertzelV24FramedBaseThreshold} now fixes the four-port
+separated-repeat length to $74564740$, using the lossless
+face-equivalence carrier below.  It proves that this length meets the literal
+source-layer spacing inequality and feeds it to the existing framed
 boundary-clean corridor bound.  Above the resulting explicit face threshold,
 Lean constructs a clean corridor of the required length or proves that the
 caller's proposed interior-pentagon bound was false.  This is not yet a
@@ -4419,10 +4419,14 @@ states under the proved counting formula.  The heterogeneous transfer-word
 pumping theorem remembers a whole reachable \texttt{Finset} of such profiles,
 so its generic pigeonhole bound is the power set size
 \(2^{74853595474508474029607634310238208}\).  These are valid finiteness
-bounds but not a feasible base census.  The source-faithful next theorem must
-therefore bound the profiles and reachable sets actually realized by the
-literal corridor transfer; merely introducing a smaller carrier as a new
-hypothesis would relocate, rather than prove, the compression.
+bounds but not a feasible base census.  A dependency audit found that this
+generic heterogeneous-word fallback is currently an isolated module: no
+downstream file imports its source specialization, and the actual framed base
+threshold uses the ordinary repeated source-prefix profile.  Thus this power
+set is not the present $V_0$ bottleneck.  It remains a warning for any future
+consumer of that stronger acceptance-preserving fallback; merely introducing
+a smaller reachable carrier as a new hypothesis would relocate, rather than
+prove, its compression.
 
 The first lossless compression of that over-encoding is now machine checked.
 Module \texttt{GoertzelV24WidthTwoProfileCompression} observes only laws proved
@@ -4469,15 +4473,16 @@ the literal cumulative source prefixes to this quotient and proves a complete
 raw-profile repeat at gap at least four from $74564737$ positions.
 
 This is a substantial carrier reduction, but seventy-four million positions
-are not a practical base threshold.  It is not the promised reachable-state
-closure.
-The older twenty-mode Lemma~8.18 laboratory concerns the narrow
+still make a direct base audit impractical.  The primary manuscripts require
+an explicit L7 upper bound, not a separately postulated reachable-state
+quotient.  The older twenty-mode Lemma~8.18 laboratory concerns the narrow
 $\tau$/mirror-$\tau$ automaton and is not used as a supplier for the general
-source corridor.  The live F obligation is now sharper: bind the proved
-heterogeneous one-Cell transfer relation to a finite representation of its
-actually reachable semantic states, certify closure and completeness, and
-derive the resulting numerical $V_0$.  A smaller carrier introduced merely as
-a hypothesis would remain a conditional wrapper, not this construction.
+source corridor.  Further proved compression remains valuable, but the live
+F obligations are the ones exposed by the actual threshold: discharge the
+uniform negative-curvature/pentagon alternative, connect the resulting
+corridor repeat to the strict reduction supplier, and verify the route-native
+finite base.  A smaller carrier introduced merely as a hypothesis would remain
+a conditional wrapper, not such a discharge.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 
