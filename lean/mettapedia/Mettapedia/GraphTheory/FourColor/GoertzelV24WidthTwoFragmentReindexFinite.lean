@@ -301,6 +301,11 @@ set_option maxRecDepth 100000 in
 theorem totalComponentFixedFragmentPayloadCount_three :
     totalComponentFixedFragmentPayloadCount 3 = 7950 := by decide
 
+set_option maxHeartbeats 1000000 in
+set_option maxRecDepth 100000 in
+theorem totalComponentFixedFragmentPayloadCount_four :
+    totalComponentFixedFragmentPayloadCount 4 = 67800 := by decide
+
 theorem totalFixedFragmentPayloadCount_eq_card_orbits_mul_card_group
     (fragmentCount : Nat) :
     totalFixedFragmentPayloadCount fragmentCount =
@@ -345,6 +350,15 @@ theorem card_widthTwoUnlabelledFragmentPayload_three :
   rw [totalFixedFragmentPayloadCount_eq_components,
     totalComponentFixedFragmentPayloadCount_three] at h
   have hgroup : Fintype.card (Equiv.Perm (Fin 3)) = 6 := by decide
+  rw [hgroup] at h
+  omega
+
+theorem card_widthTwoUnlabelledFragmentPayload_four :
+    Fintype.card (WidthTwoUnlabelledFragmentPayload 4) = 2825 := by
+  have h := totalFixedFragmentPayloadCount_eq_card_orbits_mul_card_group 4
+  rw [totalFixedFragmentPayloadCount_eq_components,
+    totalComponentFixedFragmentPayloadCount_four] at h
+  have hgroup : Fintype.card (Equiv.Perm (Fin 4)) = 24 := by decide
   rw [hgroup] at h
   omega
 

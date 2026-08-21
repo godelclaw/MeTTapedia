@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedBoundaryCleanCorridor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixProfileCompression
+import Mettapedia.GraphTheory.FourColor.GoertzelV24WidthTwoFragmentReindexCompression
 
 /-!
 # An explicit framed threshold for the literal serial profile word
@@ -22,6 +23,7 @@ namespace GoertzelV24FramedSerialBaseThreshold
 
 open GoertzelV24CleanHexCorridor
 open GoertzelV24FramedTrail
+open GoertzelV24WidthTwoFragmentReindexCompression
 open GoertzelV24WidthTwoPortIncidenceCompression
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -57,12 +59,39 @@ theorem separatedSerialProfileBlockLength_large :
   unfold separatedSerialProfileBlockLength
   omega
 
+/-- The shorter clean block obtained by forgetting only the arbitrary
+enumeration of the at-most-four face fragments. -/
+def separatedFragmentReindexSerialProfileBlockLength : Nat :=
+  4 * boundedWidthTwoFragmentReindexProfileCount 4 + 4
+
+theorem separatedFragmentReindexSerialProfileBlockLength_eq :
+    separatedFragmentReindexSerialProfileBlockLength = 422980 := by
+  rw [separatedFragmentReindexSerialProfileBlockLength,
+    boundedWidthTwoFragmentReindexProfileCount_four]
+
+theorem separatedFragmentReindexSerialProfileBlockLength_pos :
+    0 < separatedFragmentReindexSerialProfileBlockLength := by
+  unfold separatedFragmentReindexSerialProfileBlockLength
+  omega
+
+theorem separatedFragmentReindexSerialProfileBlockLength_large :
+    4 * boundedWidthTwoFragmentReindexProfileCount 4 + 1 ≤
+      separatedFragmentReindexSerialProfileBlockLength - 3 := by
+  unfold separatedFragmentReindexSerialProfileBlockLength
+  omega
+
 /-- Effective interior-face threshold for a clean corridor long enough to
 carry the complete literal serial profile word. -/
 def pentagonBoundedSeparatedSerialProfileFaceThreshold
     (source : SourceTrail G) (pentagonBound : Nat) : Nat :=
   SourceTrail.AnnularEmbedding.pentagonBoundedBoundaryCleanHexBlockThreshold
     source pentagonBound separatedSerialProfileBlockLength
+
+/-- Effective face threshold for the fragment-reindexed serial repeat. -/
+def pentagonBoundedSeparatedFragmentReindexSerialProfileFaceThreshold
+    (source : SourceTrail G) (pentagonBound : Nat) : Nat :=
+  SourceTrail.AnnularEmbedding.pentagonBoundedBoundaryCleanHexBlockThreshold
+    source pentagonBound separatedFragmentReindexSerialProfileBlockLength
 
 /-- Above the displayed threshold, either the proposed pentagon bound fails
 or the actual annular carrier contains a clean corridor of the serial-repeat
@@ -101,6 +130,49 @@ theorem nonempty_separatedSerialProfileCorridor_of_pentagonCount_le
         separatedSerialProfileBlockLength) := by
   rcases
       pentagonCount_exceeds_bound_or_nonempty_separatedSerialProfileCorridor
+        hsource embedded geometry pentagonBound hlarge with hbad | hcorridor
+  · omega
+  · exact hcorridor
+
+/-- Above the shorter quotient threshold, either the proposed pentagon bound
+fails or the annular carrier contains a clean corridor long enough for the
+fragment-reindexed repeat theorem. -/
+theorem pentagonCount_exceeds_bound_or_nonempty_fragmentReindexSerialProfileCorridor
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    (pentagonBound : Nat)
+    (hlarge :
+      pentagonBoundedSeparatedFragmentReindexSerialProfileFaceThreshold
+          source pentagonBound <
+        embedded.cellulation.interiorFaces.card) :
+    pentagonBound < embedded.interiorFaceLengths.count 5 ∨
+      Nonempty (CleanOrbitHexCorridorSkeleton
+        embedded.cellulation.rotation.toRotationSystem
+          separatedFragmentReindexSerialProfileBlockLength) := by
+  exact embedded.pentagonCount_exceeds_bound_or_nonempty_cleanOrbitHexCorridorSkeleton
+    hsource geometry pentagonBound
+      separatedFragmentReindexSerialProfileBlockLength
+      separatedFragmentReindexSerialProfileBlockLength_pos hlarge
+
+/-- A supplied pentagon bound constructs a corridor of the shorter quotient
+length.  A uniform pentagon bound and the finite base remain separate
+obligations. -/
+theorem nonempty_fragmentReindexSerialProfileCorridor_of_pentagonCount_le
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    (pentagonBound : Nat)
+    (hpentagons : embedded.interiorFaceLengths.count 5 ≤ pentagonBound)
+    (hlarge :
+      pentagonBoundedSeparatedFragmentReindexSerialProfileFaceThreshold
+          source pentagonBound <
+        embedded.cellulation.interiorFaces.card) :
+    Nonempty (CleanOrbitHexCorridorSkeleton
+      embedded.cellulation.rotation.toRotationSystem
+        separatedFragmentReindexSerialProfileBlockLength) := by
+  rcases
+      pentagonCount_exceeds_bound_or_nonempty_fragmentReindexSerialProfileCorridor
         hsource embedded geometry pentagonBound hlarge with hbad | hcorridor
   · omega
   · exact hcorridor

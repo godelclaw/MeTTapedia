@@ -98,6 +98,17 @@ theorem boundedWidthTwoFragmentReindexProfileCount_three :
     card_widthTwoUnlabelledFragmentPayload_two,
     card_widthTwoUnlabelledFragmentPayload_three]
 
+/-- The exact quotient carrier through the four-fragment bound used by the
+literal serial-prefix word. -/
+theorem boundedWidthTwoFragmentReindexProfileCount_four :
+    boundedWidthTwoFragmentReindexProfileCount 4 = 105744 := by
+  norm_num [boundedWidthTwoFragmentReindexProfileCount, Fin.sum_univ_succ,
+    card_widthTwoUnlabelledFragmentPayload_zero,
+    card_widthTwoUnlabelledFragmentPayload_one,
+    card_widthTwoUnlabelledFragmentPayload_two,
+    card_widthTwoUnlabelledFragmentPayload_three,
+    card_widthTwoUnlabelledFragmentPayload_four]
+
 /-- Four residue classes force a distance-four repeat in the bounded quotient
 carrier. -/
 theorem exists_separated_boundedFragmentReindex_eq
@@ -140,6 +151,10 @@ theorem exists_separated_boundedFragmentReindex_eq
 theorem separated_boundedWidthTwoFragmentReindexProfileCount_three :
     4 * boundedWidthTwoFragmentReindexProfileCount 3 + 1 = 151777 := by
   rw [boundedWidthTwoFragmentReindexProfileCount_three]
+
+theorem separated_boundedWidthTwoFragmentReindexProfileCount_four :
+    4 * boundedWidthTwoFragmentReindexProfileCount 4 + 1 = 422977 := by
+  rw [boundedWidthTwoFragmentReindexProfileCount_four]
 
 end GoertzelV24WidthTwoFragmentReindexCompression
 
