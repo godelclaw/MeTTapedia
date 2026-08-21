@@ -3656,9 +3656,25 @@ darts over each wholly retained source boundary edge, sends those old edges
 through the canonical primal edge equivalence, and proves that the five inner
 and five outer edge coordinates remain injective.  The retained source stubs
 likewise give ordered vertex embeddings.  Together these data form an actual
-\texttt{AnnularBoundaryData} on the shortened simple graph.  The next boundary
-is graph-level well-formedness: cross-boundary disjointness, edge incidence,
-degree one at the ten stubs, and cubicity elsewhere have not yet been bundled.
+\texttt{AnnularBoundaryData} on the shortened simple graph.  Its graph-level
+validity is now proved in
+\texttt{GoertzelV24ClosedWebSpliceGraphBoundaryWellFormed}.  The two ordered
+stub families and their named edges remain disjoint, every named edge remains
+incident to its retained stub, all ten stubs retain degree one, and every
+other retained vertex remains cubic.  The proof uses the literal retained-edge
+endpoint calculation and the canonical dart equivalence to the computed primal
+graph; it does not replace the open tangle by a globally cubic carrier.
+
+The ignored end-to-end type probe now reaches an actual
+\texttt{StrictReductionCertificate}.  Given the already named physical splice
+receipts (equal profile, both holes retained, and endpoint simplicity), the
+boundary-validity and output Tait fields are constructed, and strict decrease
+is discharged by the retained-vertex count.  The remaining output-instance
+arguments are therefore explicit: connectedness, the graph-backed annular
+embedding, its frontier geometry, total closure, and preservation of the good
+inner word.  This is a type-level assembly audit, not a supplier for arbitrary
+large inputs; the physical crosscuts and those five output transports remain
+open.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
