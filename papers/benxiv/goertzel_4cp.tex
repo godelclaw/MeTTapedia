@@ -3187,6 +3187,18 @@ opposite-endpoint allocations and constructs the bounded bypass.  The premise
 is stated explicitly: the actual source placement has not yet been proved to
 put both corners on that component side.
 
+The named-corner formulation is sufficient but not intrinsic, because a
+crossing edge has one endpoint on either side of the deletion component.
+The new component-incidence theorem removes this artificial orientation:
+Lean proves that the exact endpoint-triangle packet consists precisely of the
+primal edges with \emph{some} endpoint in the selected two-vertex component.
+Two such edge/component incidence receipts therefore construct the same
+collision-free bypass without choosing which endpoint lies inside.  The
+remaining source-local statement is correspondingly smaller but still open:
+the two literal first-window crossing edges must be shown to meet that selected
+component.  No companion-rail separation, rolling iteration, end cap,
+separated-crosscut constructor, or L1 closure is claimed here.
+
 The bounded bypass is now also installed in the entire selected rail.  Path
 simplicity identifies the strict occurrence with the unique support index;
 this proves that the bypass endpoints are exactly the predecessor and
