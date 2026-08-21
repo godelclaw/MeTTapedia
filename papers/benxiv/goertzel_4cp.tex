@@ -3861,6 +3861,16 @@ receipt.  This transport still assumes the already-constructed planar bond;
 it is not a constructor for the source crosscut pair, and the adjacent-strip
 edge-disjointness statement remains the physical L1 obligation.
 
+The exact reduced receipt is now public in
+\texttt{GoertzelV24OrderedCutAdjacentSeamArcCriterion}.  Lean proves, under
+that actual two-orientation return calculation, that pairwise edge-disjointness
+of all canonical seam arcs is equivalent to checking only those actual
+left/right arc pairs whose offsets are adjacent.  Same-side and non-neighboring
+pairs disappear by proof, rather than by an informal locality assertion.  The
+new criterion is intentionally not counted as L1 closure: its right-hand side
+is the bounded neighboring-strip geometry which the long source crosscuts must
+still supply.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
