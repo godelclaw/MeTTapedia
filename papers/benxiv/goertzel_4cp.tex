@@ -4706,6 +4706,34 @@ corridor repeat to the strict reduction supplier, and verify the route-native
 finite base.  A smaller carrier introduced merely as a hypothesis would remain
 a conditional wrapper, not such a discharge.
 
+The first coordinate of a faithful reachable-state transition is now
+machine checked.  Module
+\texttt{GoertzelV24FramedCorridorPrefixFiniteConnectivityUpdate} keeps the
+shared rung as one fixed terminal of the incoming cumulative profile.  It
+then proves that every outgoing crossing-to-crossing connectivity bit is
+exactly the reflexive--transitive closure of a finite relation obtained from
+three pieces only: that terminal-aware incoming profile, the literal
+six-edge Cell profile, and the two residual seam turns computed from their
+stored colours.  This is stronger than a graph-size finiteness observation:
+it is the semantic update law for the actual source Cell.  It also explains
+why simply forgetting terminals was not a sound compression---a strand may
+pass through the shared rung and disappear from the zero-terminal view.
+
+This result sharpens the remaining finite-state programme without changing
+the meaning of the base.  The old twenty-mode Lemma~8.18 closure concerns the
+narrow $\tau$/mirror-$\tau$ laboratory; no typed map currently identifies
+those modes with the cumulative profiles used by the general source corridor.
+Moreover, the current Fable manuscript and the route-identity note define the
+terminal base as the target predicate on every bounded instance below the
+derived threshold.  A small reachable profile closure can reduce that
+threshold once a full five-coordinate update and a coverage theorem are
+proved, but it is not by itself \texttt{BaseVerified}.  The three-cell audit
+from v23 remains genuine local base material; where it was read as the entire
+bounded base, Addendum~XXVII's newer finite-base statement supersedes that
+reading.  Thus the honest order is: complete the terminal-aware joint update,
+measure and kernel-check its reachable closure, use the proved smaller carrier
+to lower $V_0$, and then verify the resulting route-native bounded base.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
